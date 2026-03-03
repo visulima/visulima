@@ -7,9 +7,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 The global API is available at `window.__VISULIMA_DEVTOOLS__` during development. It provides programmatic control over every aspect of the toolbar — useful for integration testing, browser console debugging, and runtime app registration.
 
-<Callout type="warn">
-    The global API is only available in development mode. Always guard calls with an existence check.
-</Callout>
+<Callout type="warn">The global API is only available in development mode. Always guard calls with an existence check.</Callout>
 
 ```ts
 const api = (window as any).__VISULIMA_DEVTOOLS__;
@@ -141,9 +139,9 @@ Returns the current toolbar state (position, size, theme preferences, keybinding
 
 ```ts
 const settings = api.getSettings();
-console.log(settings.position);      // "bottom"
-console.log(settings.width);         // 80
-console.log(settings.keybindings);   // { toggle: "Alt+Shift+D", close: "Escape" }
+console.log(settings.position); // "bottom"
+console.log(settings.width); // 80
+console.log(settings.keybindings); // { toggle: "Alt+Shift+D", close: "Escape" }
 ```
 
 ### `updateSettings(patch: Partial<DevToolsFrameState>): void`
@@ -219,16 +217,16 @@ The global API is useful for debugging directly in the browser console:
 
 ```js
 // Quickly open the Accessibility app
-__VISULIMA_DEVTOOLS__.openApp("dev-toolbar:a11y")
+__VISULIMA_DEVTOOLS__.openApp("dev-toolbar:a11y");
 
 // Check current panel size
-__VISULIMA_DEVTOOLS__.getSettings().width
+__VISULIMA_DEVTOOLS__.getSettings().width;
 
 // List all registered apps
-__VISULIMA_DEVTOOLS__.getApps().map(a => a.id)
+__VISULIMA_DEVTOOLS__.getApps().map((a) => a.id);
 
 // Trigger a fullscreen view
-__VISULIMA_DEVTOOLS__.updateSettings({ viewMode: "fullscreen" })
+__VISULIMA_DEVTOOLS__.updateSettings({ viewMode: "fullscreen" });
 ```
 
 ---

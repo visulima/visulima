@@ -16,7 +16,7 @@
     },
     "devDependencies": {
         "@cloudflare/vite-plugin": "^1.25.6",
-        "@cloudflare/workers-types": "^4.20250525.0",
+        "@cloudflare/workers-types": "^4.20260301.1",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@visulima/dev-toolbar": "workspace:*",

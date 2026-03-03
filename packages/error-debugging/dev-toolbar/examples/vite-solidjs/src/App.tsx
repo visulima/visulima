@@ -1,7 +1,8 @@
+import "./App.css";
+
 import { createSignal } from "solid-js";
 
 import solidLogo from "./assets/solid.svg";
-import "./App.css";
 
 function App() {
     const [count, setCount] = createSignal(0);
@@ -20,15 +21,15 @@ function App() {
         <>
             <div>
                 <a href="https://vite.dev" target="_blank">
-                    <img src="/vite.svg" class="logo" alt="Vite logo" />
+                    <img alt="Vite logo" class="logo" src="/vite.svg" />
                 </a>
                 <a href="https://solidjs.com" target="_blank">
-                    <img src={solidLogo} class="logo solid" alt="Solid logo" />
+                    <img alt="Solid logo" class="logo solid" src={solidLogo} />
                 </a>
             </div>
             <h1>Vite + Solid + Dev Toolbar</h1>
             <div class="card">
-                <button type="button" onClick={() => setCount((c) => c + 1)}>
+                <button onClick={() => setCount((c) => c + 1)} type="button">
                     count is {count()}
                 </button>
                 <p>
@@ -36,10 +37,10 @@ function App() {
                 </p>
             </div>
             <div class="card">
-                <button type="button" onClick={throwError}>
+                <button onClick={throwError} type="button">
                     Throw Error
                 </button>{" "}
-                <button type="button" onClick={rejectPromise}>
+                <button onClick={rejectPromise} type="button">
                     Unhandled Rejection
                 </button>
             </div>

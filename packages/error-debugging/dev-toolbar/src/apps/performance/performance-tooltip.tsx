@@ -2,14 +2,17 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { type CwvRating, getCwvRating, type MemoryInfo, type PerformanceSnapshot, performanceMonitor } from "../../performance/monitor";
+import type { CwvRating, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
+import { getCwvRating, performanceMonitor } from "../../performance/monitor";
 import type { AppTooltipProps } from "../../types/app";
 import cn from "../../utils/cn";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
 const formatBytes = (bytes: number): string => {
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    if (bytes < 1024 * 1024)
+        return `${(bytes / 1024).toFixed(0)} KB`;
+
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
@@ -30,9 +33,7 @@ const MiniSparkline = ({ samples }: { samples: number[] }): ComponentChildren =>
     }
 
     const step = W / (samples.length - 1);
-    const points = samples
-        .map((fps, i) => `${(i * step).toFixed(1)},${(H - (fps / 60) * H).toFixed(1)}`)
-        .join(" ");
+    const points = samples.map((fps, i) => `${(i * step).toFixed(1)},${(H - (fps / 60) * H).toFixed(1)}`).join(" ");
 
     return (
         <svg height={H} style="overflow:visible" width={W}>
@@ -65,7 +66,6 @@ const MAX_FPS_HISTORY = 60;
 
 // ─── Main tooltip component ──────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const [snapshot, setSnapshot] = useState<PerformanceSnapshot>(() => performanceMonitor.getSnapshot());
     const fpsHistoryRef = useRef<number[]>([]);
@@ -95,9 +95,7 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
             <div class="flex items-end gap-3">
                 {/* Large FPS counter */}
                 <div class="flex flex-col items-center gap-0 shrink-0">
-                    <span class={cn("text-2xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>
-                        {fps}
-                    </span>
+                    <span class={cn("text-2xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>{fps}</span>
                     <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">fps</span>
                 </div>
                 {/* Sparkline */}
@@ -111,17 +109,13 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 {vitals.lcp !== null && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">LCP</span>
-                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("lcp", vitals.lcp)])}>
-                            {vitals.lcp} ms
-                        </span>
+                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("lcp", vitals.lcp)])}>{vitals.lcp} ms</span>
                     </div>
                 )}
                 {vitals.fcp !== null && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">FCP</span>
-                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("fcp", vitals.fcp)])}>
-                            {vitals.fcp} ms
-                        </span>
+                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("fcp", vitals.fcp)])}>{vitals.fcp} ms</span>
                     </div>
                 )}
                 {vitals.cls !== null && (

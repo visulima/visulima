@@ -14,26 +14,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 ## Install
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-    <Tab value="npm">
-        ```bash
-        npm install -D @visulima/dev-toolbar
-        ```
-    </Tab>
-    <Tab value="pnpm">
-        ```bash
-        pnpm add -D @visulima/dev-toolbar
-        ```
-    </Tab>
-    <Tab value="yarn">
-        ```bash
-        yarn add -D @visulima/dev-toolbar
-        ```
-    </Tab>
-    <Tab value="bun">
-        ```bash
-        bun add -d @visulima/dev-toolbar
-        ```
-    </Tab>
+    <Tab value="npm">```bash npm install -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="pnpm">```bash pnpm add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="yarn">```bash yarn add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="bun">```bash bun add -d @visulima/dev-toolbar ```</Tab>
 </Tabs>
 
 <Callout type="info">
@@ -53,9 +37,7 @@ import { defineConfig } from "vite";
 import { devToolbar } from "@visulima/dev-toolbar/vite";
 
 export default defineConfig({
-    plugins: [
-        devToolbar(),
-    ],
+    plugins: [devToolbar()],
 });
 ```
 
@@ -69,10 +51,10 @@ That's it. Start your dev server and press **`Alt`+`Shift`+`D`** to open the too
 
 A small pill appears at the bottom-center of your page. Click any app icon to open its panel, or use the keyboard shortcut:
 
-| Action | Shortcut |
-|---|---|
+| Action                    | Shortcut          |
+| ------------------------- | ----------------- |
 | Toggle toolbar open/close | `Alt`+`Shift`+`D` |
-| Close active app / panel | `Escape` |
+| Close active app / panel  | `Escape`          |
 
 </Step>
 
@@ -149,6 +131,7 @@ export default defineConfig({
         }
     }, []);
     ```
+
 </Callout>
 
 ### Other SSR / Non-HTML Setups
@@ -158,7 +141,7 @@ For any project without a static `index.html` entry point, point `appendTo` at a
 ```ts title="vite.config.ts"
 devToolbar({
     appendTo: "src/main.ts",
-})
+});
 ```
 
 ## Framework Examples
@@ -240,6 +223,7 @@ devToolbar({
         });
         ```
     </Tab>
+
 </Tabs>
 
 ## Next Steps

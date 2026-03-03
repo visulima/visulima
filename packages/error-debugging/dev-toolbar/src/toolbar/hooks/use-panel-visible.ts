@@ -15,13 +15,7 @@ const matchesBinding = (e: KeyboardEvent, binding: string): boolean => {
 
     const keyMatches = e.key === key || e.code === `Key${key.toUpperCase()}`;
 
-    return (
-        keyMatches &&
-        e.altKey === needsAlt &&
-        e.shiftKey === needsShift &&
-        e.ctrlKey === needsCtrl &&
-        e.metaKey === needsMeta
-    );
+    return keyMatches && e.altKey === needsAlt && e.shiftKey === needsShift && e.ctrlKey === needsCtrl && e.metaKey === needsMeta;
 };
 
 /**
@@ -59,7 +53,7 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
         updateState({
             open: willOpen,
             // Exit fullscreen when closing so the panel re-opens in normal mode
-            ...(willOpen ? {} : { viewMode: "default" }),
+            ...willOpen ? {} : { viewMode: "default" },
         });
     };
 
@@ -92,7 +86,7 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
         return () => {
             globalThis.window?.removeEventListener("keydown", handleKeyDown);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.open, state.keybindings?.toggle]);
 
     const panelVisibleValue: boolean = useMemo(() => state.open, [state.open]);

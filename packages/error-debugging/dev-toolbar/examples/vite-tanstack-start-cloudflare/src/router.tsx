@@ -6,10 +6,10 @@ import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
     const router = createTanStackRouter({
-        routeTree,
-        defaultPreload: "intent",
         defaultErrorComponent: DefaultCatchBoundary,
         defaultNotFoundComponent: () => <NotFound />,
+        defaultPreload: "intent",
+        routeTree,
         scrollRestoration: true,
     });
 

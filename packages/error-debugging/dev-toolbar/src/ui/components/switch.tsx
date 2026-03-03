@@ -13,15 +13,7 @@ interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, 
     onCheckedChange?: (checked: boolean) => void;
 }
 
-const Switch = ({
-    checked,
-    class: className,
-    defaultChecked,
-    disabled,
-    id,
-    onCheckedChange,
-    ...rest
-}: SwitchProps): JSX.Element => {
+const Switch = ({ checked, class: className, defaultChecked, disabled, id, onCheckedChange, ...rest }: SwitchProps): JSX.Element => {
     const isControlled = checked !== undefined;
     const [internalChecked, setInternalChecked] = useState(defaultChecked ?? false);
     const isChecked = isControlled ? checked : internalChecked;

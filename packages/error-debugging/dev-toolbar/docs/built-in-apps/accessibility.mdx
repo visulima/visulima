@@ -59,12 +59,12 @@ Click a violation card to scroll to and highlight the first affected element on 
 
 Toggle **Show Overlays** to paint colour-coded outlines directly onto all failing elements:
 
-| Colour | Severity |
-|---|---|
-| Red outline | Critical |
-| Orange outline | Serious |
+| Colour         | Severity |
+| -------------- | -------- |
+| Red outline    | Critical |
+| Orange outline | Serious  |
 | Yellow outline | Moderate |
-| Blue outline | Minor |
+| Blue outline   | Minor    |
 
 Overlays use `el.style.setProperty('outline', ..., 'important')` so they always appear regardless of the page's own CSS.
 
@@ -98,28 +98,26 @@ devToolbar({
     apps: {
         a11y: false,
     },
-})
+});
 ```
 
 ### axe-core Dependency
 
 axe-core is a runtime dependency of `@visulima/dev-toolbar`. It is dynamically imported inside the scan function, so it does **not** add to your bundle size — axe-core is only loaded when the user triggers a scan in development mode.
 
-<Callout type="info">
-    axe-core runs entirely in the browser. No data leaves your machine. The scan reads the live DOM and reports violations locally.
-</Callout>
+<Callout type="info">axe-core runs entirely in the browser. No data leaves your machine. The scan reads the live DOM and reports violations locally.</Callout>
 
 ## Supported WCAG Standards
 
-| Standard | Description |
-|---|---|
-| `wcag2a` | WCAG 2.0 Level A — minimum compliance |
-| `wcag2aa` | WCAG 2.0 Level AA — standard compliance target (default) |
-| `wcag2aaa` | WCAG 2.0 Level AAA — maximum compliance |
-| `wcag21a` | WCAG 2.1 Level A |
-| `wcag21aa` | WCAG 2.1 Level AA |
-| `wcag21aaa` | WCAG 2.1 Level AAA — maximum compliance |
-| `wcag22a` | WCAG 2.2 Level A |
-| `wcag22aa` | WCAG 2.2 Level AA |
-| `wcag22aaa` | WCAG 2.2 Level AAA — maximum compliance |
-| `best-practice` | axe-core best practices (not a formal WCAG level) |
+| Standard        | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `wcag2a`        | WCAG 2.0 Level A — minimum compliance                    |
+| `wcag2aa`       | WCAG 2.0 Level AA — standard compliance target (default) |
+| `wcag2aaa`      | WCAG 2.0 Level AAA — maximum compliance                  |
+| `wcag21a`       | WCAG 2.1 Level A                                         |
+| `wcag21aa`      | WCAG 2.1 Level AA                                        |
+| `wcag21aaa`     | WCAG 2.1 Level AAA — maximum compliance                  |
+| `wcag22a`       | WCAG 2.2 Level A                                         |
+| `wcag22aa`      | WCAG 2.2 Level AA                                        |
+| `wcag22aaa`     | WCAG 2.2 Level AAA — maximum compliance                  |
+| `best-practice` | axe-core best practices (not a formal WCAG level)        |

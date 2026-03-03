@@ -2,7 +2,11 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import { type CoreWebVitals, type CwvRating, getCwvRating, type LongTask, type MemoryInfo, type PerformanceSnapshot, performanceMonitor } from "../../performance/monitor";
+import type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
+import {
+    getCwvRating,
+    performanceMonitor,
+} from "../../performance/monitor";
 import type { AppComponentProps } from "../../types/app";
 import cn from "../../utils/cn";
 
@@ -133,11 +137,7 @@ const LongTaskRow = ({ task }: { task: LongTask }): ComponentChildren => (
     <div class="flex items-center gap-3 px-3 py-2 border-b border-border/50 last:border-0 text-[0.7rem]">
         <span class="text-muted-foreground tabular-nums w-20 shrink-0">{task.startTime.toLocaleString()} ms</span>
         <div class="flex-1 bg-foreground/6 rounded-sm overflow-hidden h-2">
-            <div
-                class="h-full bg-warning"
-                style={{ width: `${Math.min(100, (task.duration / 200) * 100)}%` }}
-                title={`${task.duration} ms`}
-            />
+            <div class="h-full bg-warning" style={{ width: `${Math.min(100, (task.duration / 200) * 100)}%` }} title={`${task.duration} ms`} />
         </div>
         <span class="text-warning-foreground font-semibold tabular-nums w-16 text-right shrink-0">{task.duration} ms</span>
     </div>
@@ -145,15 +145,7 @@ const LongTaskRow = ({ task }: { task: LongTask }): ComponentChildren => (
 
 // ─── Section wrapper ─────────────────────────────────────────────────────────
 
-const Section = ({
-    children,
-    title,
-    action,
-}: {
-    children: ComponentChildren;
-    title: string;
-    action?: ComponentChildren;
-}): ComponentChildren => (
+const Section = ({ action, children, title }: { action?: ComponentChildren; children: ComponentChildren; title: string }): ComponentChildren => (
     <section class="border border-border">
         <div class="flex items-center justify-between px-4 py-2.5 bg-foreground/3 border-b border-border">
             <span class="text-[0.7rem] font-semibold text-foreground uppercase tracking-wide">{title}</span>
@@ -169,7 +161,6 @@ const MAX_FPS_HISTORY = 120;
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
     const [snapshot, setSnapshot] = useState<PerformanceSnapshot>(() => performanceMonitor.getSnapshot());
     const fpsHistoryRef = useRef<number[]>([]);
@@ -226,18 +217,19 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
             </Section>
 
             {/* Memory */}
-            {memory ? (
+            {memory
+                ? (
                 <Section title="JS Heap Memory">
                     <MemoryBar memory={memory} />
                 </Section>
-            ) : (
+                )
+                : (
                 <Section title="JS Heap Memory">
                     <p class="text-[0.72rem] text-muted-foreground text-center py-2">
-                        Not available — enable{" "}
-                        <code class="font-mono text-foreground/70">--enable-precise-memory-info</code> in Chrome flags.
+                        Not available — enable <code class="font-mono text-foreground/70">--enable-precise-memory-info</code> in Chrome flags.
                     </p>
                 </Section>
-            )}
+                )}
 
             {/* Core Web Vitals */}
             <Section title="Core Web Vitals">
@@ -254,7 +246,8 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Long Tasks */}
             <Section
                 action={
-                    longTasks.length > 0 ? (
+                    longTasks.length > 0
+                        ? (
                         <button
                             class="px-2 py-0.5 text-[0.65rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent transition-colors"
                             onClick={() => performanceMonitor.clearLongTasks()}
@@ -262,19 +255,22 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
                         >
                             Clear
                         </button>
-                    ) : undefined
+                        )
+                        : undefined
                 }
                 title={`Long Tasks${longTasks.length > 0 ? ` (${longTasks.length})` : ""}`}
             >
-                {longTasks.length === 0 ? (
+                {longTasks.length === 0
+                    ? (
                     <p class="text-[0.72rem] text-muted-foreground text-center py-2">No long tasks detected yet.</p>
-                ) : (
+                    )
+                    : (
                     <div class="max-h-48 overflow-y-auto devtools-content-scroll">
                         {longTasks.map((task) => (
                             <LongTaskRow key={task.id} task={task} />
                         ))}
                     </div>
-                )}
+                    )}
             </Section>
         </div>
     );

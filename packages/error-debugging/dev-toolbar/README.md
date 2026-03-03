@@ -53,9 +53,7 @@ import { defineConfig } from "vite";
 import { devToolbar } from "@visulima/dev-toolbar/vite";
 
 export default defineConfig({
-    plugins: [
-        devToolbar(),
-    ],
+    plugins: [devToolbar()],
 });
 ```
 
@@ -63,17 +61,17 @@ Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
 
 ## Built-in Apps
 
-| App | What it does |
-|---|---|
+| App               | What it does                                                                  |
+| ----------------- | ----------------------------------------------------------------------------- |
 | **Accessibility** | axe-core WCAG audit with live element overlays and sessionStorage persistence |
-| **Performance** | Web Vitals (LCP, INP, CLS, FCP, TTFB), resource timing, navigation waterfall |
-| **SEO** | Social preview cards for 7 platforms + full meta tag audit |
-| **Timeline** | Chronological event log from your app and integrated libraries |
-| **Module Graph** | Browse and filter Vite's live module dependency graph |
-| **Vite Config** | Inspect the fully resolved Vite configuration |
-| **Inspector** | Click any element to jump to its JSX source in your editor |
-| **Tailwind** | Browse all resolved Tailwind CSS design tokens and their values |
-| **Settings** | Theme, toolbar behaviour, panel sizing, and custom keyboard shortcuts |
+| **Performance**   | Web Vitals (LCP, INP, CLS, FCP, TTFB), resource timing, navigation waterfall  |
+| **SEO**           | Social preview cards for 7 platforms + full meta tag audit                    |
+| **Timeline**      | Chronological event log from your app and integrated libraries                |
+| **Module Graph**  | Browse and filter Vite's live module dependency graph                         |
+| **Vite Config**   | Inspect the fully resolved Vite configuration                                 |
+| **Inspector**     | Click any element to jump to its JSX source in your editor                    |
+| **Tailwind**      | Browse all resolved Tailwind CSS design tokens and their values               |
+| **Settings**      | Theme, toolbar behaviour, panel sizing, and custom keyboard shortcuts         |
 
 All apps are enabled by default. Disable individual apps via plugin options:
 
@@ -83,7 +81,7 @@ devToolbar({
         performance: false,
         seo: false,
     },
-})
+});
 ```
 
 ## Plugin Options
@@ -107,13 +105,13 @@ devToolbar({
     customApps: [],
 
     // Toolbar pill placement
-    placement: "bottom-center",     // "bottom-left" | "bottom-center" | "bottom-right"
-    position: "bottom",             // "bottom" | "top" | "left" | "right"
+    placement: "bottom-center", // "bottom-left" | "bottom-center" | "bottom-right"
+    position: "bottom", // "bottom" | "top" | "left" | "right"
 
     // Panel defaults (users can override via Settings app)
-    height: 60,                     // % of viewport height
-    width: 80,                      // % of viewport width
-    minimizePanelInactive: 5000,    // ms; -1 = never auto-hide
+    height: 60, // % of viewport height
+    width: 80, // % of viewport width
+    minimizePanelInactive: 5000, // ms; -1 = never auto-hide
     closeOnOutsideClick: true,
 
     // Keyboard shortcuts (project-level defaults)
@@ -130,23 +128,23 @@ devToolbar({
 
     // JSX source injection for click-to-source in the inspector
     injectSource: {
-        enabled: true,           // set false to opt out
+        enabled: true, // set false to opt out
         ignore: {
-            files: ["**/generated/**"],      // glob patterns
-            components: ["StrictMode"],      // component names
+            files: ["**/generated/**"], // glob patterns
+            components: ["StrictMode"], // component names
         },
     },
-})
+});
 ```
 
 See the [full configuration reference](./docs/configuration.mdx) for all options.
 
 ## Keyboard Shortcuts
 
-| Action | Default |
-|---|---|
+| Action                    | Default           |
+| ------------------------- | ----------------- |
 | Toggle toolbar open/close | `Alt`+`Shift`+`D` |
-| Close active app / panel | `Escape` |
+| Close active app / panel  | `Escape`          |
 
 Both shortcuts are configurable in the Settings app or via plugin options.
 
@@ -171,12 +169,12 @@ devToolbar({
         {
             id: "my-package:my-app",
             name: "My App",
-            icon: myIconSvg,        // raw SVG string
+            icon: myIconSvg, // raw SVG string
             component: MyApp,
-            tooltip: MyTooltip,     // optional hover summary
+            tooltip: MyTooltip, // optional hover summary
         },
     ],
-})
+});
 ```
 
 See the [custom apps guide](./docs/custom-apps/creating-apps.mdx) for a step-by-step walkthrough including RPC, tooltips, and styling.
@@ -194,7 +192,7 @@ devToolbar({
             return files.map((f) => `/${f.replace(/\.(tsx?|jsx?)$/, "")}`);
         },
     },
-})
+});
 
 // Call from your app component
 const routes = await helpers.rpc.getRoutes();
@@ -256,22 +254,22 @@ See the [library integration guide](./docs/integrations/library-integration.mdx)
 
 All docs are in the [`docs/`](./docs/) folder in Fumadocs MDX format:
 
-| Page | Contents |
-|---|---|
-| [Getting Started](./docs/getting-started.mdx) | Install, framework examples, first steps |
-| [Configuration](./docs/configuration.mdx) | Full plugin options reference |
-| [Accessibility](./docs/built-in-apps/accessibility.mdx) | axe-core, overlays, WCAG standards |
-| [Performance](./docs/built-in-apps/performance.mdx) | Web Vitals thresholds, timing APIs |
-| [SEO](./docs/built-in-apps/seo.mdx) | Social previews, meta tag audit |
-| [Timeline](./docs/built-in-apps/timeline.mdx) | Event structure, emitting events |
-| [Module Graph](./docs/built-in-apps/module-graph.mdx) | Search, ext badges, importer view |
-| [Vite Config](./docs/built-in-apps/vite-config.mdx) | Resolved config sections |
-| [Settings](./docs/built-in-apps/settings.mdx) | All settings, localStorage schema |
-| [Creating Apps](./docs/custom-apps/creating-apps.mdx) | Step-by-step custom app guide |
-| [App API](./docs/custom-apps/app-api.mdx) | TypeScript interface reference |
-| [RPC](./docs/custom-apps/rpc.mdx) | Server functions, type-safe pattern |
-| [Global API](./docs/custom-apps/global-api.mdx) | `__VISULIMA_DEVTOOLS__` reference |
-| [Library Integration](./docs/integrations/library-integration.mdx) | Zero-dependency hook pattern |
+| Page                                                               | Contents                                 |
+| ------------------------------------------------------------------ | ---------------------------------------- |
+| [Getting Started](./docs/getting-started.mdx)                      | Install, framework examples, first steps |
+| [Configuration](./docs/configuration.mdx)                          | Full plugin options reference            |
+| [Accessibility](./docs/built-in-apps/accessibility.mdx)            | axe-core, overlays, WCAG standards       |
+| [Performance](./docs/built-in-apps/performance.mdx)                | Web Vitals thresholds, timing APIs       |
+| [SEO](./docs/built-in-apps/seo.mdx)                                | Social previews, meta tag audit          |
+| [Timeline](./docs/built-in-apps/timeline.mdx)                      | Event structure, emitting events         |
+| [Module Graph](./docs/built-in-apps/module-graph.mdx)              | Search, ext badges, importer view        |
+| [Vite Config](./docs/built-in-apps/vite-config.mdx)                | Resolved config sections                 |
+| [Settings](./docs/built-in-apps/settings.mdx)                      | All settings, localStorage schema        |
+| [Creating Apps](./docs/custom-apps/creating-apps.mdx)              | Step-by-step custom app guide            |
+| [App API](./docs/custom-apps/app-api.mdx)                          | TypeScript interface reference           |
+| [RPC](./docs/custom-apps/rpc.mdx)                                  | Server functions, type-safe pattern      |
+| [Global API](./docs/custom-apps/global-api.mdx)                    | `__VISULIMA_DEVTOOLS__` reference        |
+| [Library Integration](./docs/integrations/library-integration.mdx) | Zero-dependency hook pattern             |
 
 ## Supported Node.js Versions
 

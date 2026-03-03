@@ -2,8 +2,7 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
-import type { DevToolbarApp } from "../../types/app";
-import type { AppComponentProps } from "../../types/app";
+import type { AppComponentProps, DevToolbarApp } from "../../types/app";
 import cn from "../../utils/cn";
 
 const MoreApp = (_props: AppComponentProps): ComponentChildren => {
@@ -20,9 +19,16 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
         // Filter to only non-core apps (overflow apps registered by users)
         const customApps = allApps.filter(
             (a: DevToolbarApp) =>
-                !["dev-toolbar:a11y", "dev-toolbar:settings", "dev-toolbar:timeline", "dev-toolbar:more",
-                  "dev-toolbar:vite-config", "dev-toolbar:module-graph", "dev-toolbar:seo",
-                  "dev-toolbar:performance"].includes(a.id),
+                ![
+                    "dev-toolbar:a11y",
+                    "dev-toolbar:module-graph",
+                    "dev-toolbar:more",
+                    "dev-toolbar:performance",
+                    "dev-toolbar:seo",
+                    "dev-toolbar:settings",
+                    "dev-toolbar:timeline",
+                    "dev-toolbar:vite-config",
+                ].includes(a.id),
         );
 
         setApps(customApps);
@@ -30,6 +36,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
 
     const openApp = (id: string): void => {
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
+
         api?.openApp(id).catch(console.error);
     };
 
@@ -45,8 +52,9 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
                     <p class="text-[0.8125rem] font-medium text-foreground/70">No additional apps registered</p>
                     <p class="text-[0.725rem] text-muted-foreground">Register a custom app to see it here</p>
                     <pre class="mt-3 text-[0.65rem] font-mono text-primary/70 bg-primary/5 border border-primary/15 px-3 py-2 text-left">
-{`window.__VISULIMA_DEVTOOLS__
-  .registerApp({ id, name, icon })`}</pre>
+                        {`window.__VISULIMA_DEVTOOLS__
+  .registerApp({ id, name, icon })`}
+                    </pre>
                 </div>
             </div>
         );
@@ -55,18 +63,20 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
     return (
         <div class="p-5">
             <h2 class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-3 flex items-center gap-1.5">
-                <span aria-hidden="true" class="text-primary/50">//</span>
+                <span aria-hidden="true" class="text-primary/50">
+                    //
+                </span>
                 Additional Apps
             </h2>
             <div class="grid grid-cols-2 gap-2">
                 {apps.map((app) => (
                     <button
-                        key={app.id}
                         class={cn(
                             "flex items-center gap-3 p-3",
                             "border border-border bg-card hover:bg-foreground/4",
                             "text-left cursor-pointer transition-colors duration-150",
                         )}
+                        key={app.id}
                         onClick={() => openApp(app.id)}
                         title={app.name}
                         type="button"

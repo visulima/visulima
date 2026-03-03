@@ -34,7 +34,7 @@ interface AxeViolation {
     helpUrl: string;
     id: string;
     impact: null | string;
-    nodes: Array<{ html: string; target: unknown[] }>;
+    nodes: { html: string; target: unknown[] }[];
     tags: string[];
 }
 
@@ -56,9 +56,9 @@ const SEVERITY_OUTLINE_COLOR: Record<Severity, string> = {
 
 const RULE_SET_TAGS: Record<Standard, string[]> = {
     "best-practice": ["best-practice"],
+    wcag2a: ["wcag2a"],
     wcag21aa: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
     wcag22aa: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22a", "wcag22aa"],
-    wcag2a: ["wcag2a"],
 };
 
 // ─── Persistence ─────────────────────────────────────────────────────────────
@@ -85,8 +85,8 @@ const loadFromSession = (): PersistedData => {
 
 // ─── Overlay DOM helpers ──────────────────────────────────────────────────────
 
-const setHighlight = (el: Element, impact: Severity): void => {
-    const h = el as HTMLElement;
+const setHighlight = (element: Element, impact: Severity): void => {
+    const h = element as HTMLElement;
 
     h.dataset["vdtA11y"] = impact;
     h.style.setProperty("outline", `2px solid ${SEVERITY_OUTLINE_COLOR[impact]}`, "important");
@@ -94,8 +94,8 @@ const setHighlight = (el: Element, impact: Severity): void => {
 };
 
 const clearHighlightsDOM = (): void => {
-    for (const el of document.querySelectorAll("[data-vdt-a11y]")) {
-        const h = el as HTMLElement;
+    for (const element of document.querySelectorAll("[data-vdt-a11y]")) {
+        const h = element as HTMLElement;
 
         delete h.dataset["vdtA11y"];
         h.style.removeProperty("outline");
@@ -109,10 +109,10 @@ const applyOverlaysDOM = (issues: A11yIssue[]): void => {
     for (const issue of issues) {
         for (const node of issue.nodes) {
             try {
-                const el = document.querySelector(node.selector);
+                const element = document.querySelector(node.selector);
 
-                if (el) {
-                    setHighlight(el, issue.impact);
+                if (element) {
+                    setHighlight(element, issue.impact);
                 }
             } catch {
                 // invalid selector — skip
@@ -124,7 +124,7 @@ const applyOverlaysDOM = (issues: A11yIssue[]): void => {
 // ─── Axe scan helpers ─────────────────────────────────────────────────────────
 
 const nodeSelector = (target: unknown[]): string => {
-    const last = target[target.length - 1];
+    const last = target.at(-1);
 
     if (Array.isArray(last)) {
         return (last as string[]).join(" ");
@@ -146,10 +146,12 @@ const convertViolations = (violations: AxeViolation[], disabledRules: string[]):
             id: v.id,
             impact: (v.impact ?? "minor") as Severity,
             message: v.help,
-            nodes: v.nodes.map((n) => ({
-                html: n.html,
-                selector: nodeSelector(n.target),
-            })),
+            nodes: v.nodes.map((n) => {
+                return {
+                    html: n.html,
+                    selector: nodeSelector(n.target),
+                };
+            }),
             wcagTags: v.tags.filter((t) => t.startsWith("wcag") || t === "best-practice"),
         });
     }
@@ -164,15 +166,13 @@ const runAxeScan = async (standard: Standard): Promise<{ violations: AxeViolatio
     //   Vite ESM interop  → { default: <axe api> }  (.default.run exists)
     //   esbuild CJS→ESM   → named exports on the ns  (.run exists directly)
     // Check which shape we got before calling .run.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+
     const axe = typeof axeModule.default?.run === "function" ? axeModule.default : axeModule;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (typeof axe.run !== "function") {
-        throw new Error("axe-core could not be loaded — .run is not available");
+        throw new TypeError("axe-core could not be loaded — .run is not available");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return axe.run(document, {
         exclude: [["dev-toolbar"]],
         runOnly: { type: "tag", values: RULE_SET_TAGS[standard] },
@@ -218,13 +218,13 @@ class A11yStore {
 
         for (const node of issue.nodes) {
             try {
-                const el = document.querySelector(node.selector);
+                const element = document.querySelector(node.selector);
 
-                if (el) {
-                    setHighlight(el, issue.impact);
+                if (element) {
+                    setHighlight(element, issue.impact);
 
                     if (!scrolled) {
-                        el.scrollIntoView({ behavior: "smooth", block: "center" });
+                        element.scrollIntoView({ behavior: "smooth", block: "center" });
                         scrolled = true;
                     }
                 }
@@ -252,10 +252,10 @@ class A11yStore {
             if (this.state.showOverlays) {
                 applyOverlaysDOM(issues);
             }
-        } catch (err) {
+        } catch (error) {
             this.update({
                 isScanning: false,
-                scanError: err instanceof Error ? err.message : String(err),
+                scanError: error instanceof Error ? error.message : String(error),
             });
         }
     }
@@ -276,17 +276,17 @@ class A11yStore {
         this.update({ standard });
     }
 
-    public subscribe(fn: Listener): () => void {
-        this.listeners.add(fn);
+    public subscribe(function_: Listener): () => void {
+        this.listeners.add(function_);
 
         return () => {
-            this.listeners.delete(fn);
+            this.listeners.delete(function_);
         };
     }
 
     private notify(): void {
-        for (const fn of this.listeners) {
-            fn();
+        for (const function_ of this.listeners) {
+            function_();
         }
     }
 

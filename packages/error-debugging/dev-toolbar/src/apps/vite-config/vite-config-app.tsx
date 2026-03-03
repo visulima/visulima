@@ -12,26 +12,32 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
     const [copied, setCopied] = useState(false);
 
     const copy = (): void => {
-        navigator.clipboard.writeText(text).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-        }).catch(() => {});
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                setCopied(true);
+                setTimeout(setCopied, 1500, false);
+            })
+            .catch(() => {});
     };
 
     return (
-        <Button class={cn(copied ? "border-primary/40 text-primary bg-primary/8" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30", "text-[0.65rem]")} onClick={copy} size="sm" title="Copy to clipboard" variant="outline">{copied ? "Copied!" : "Copy"}</Button>
+        <Button
+            class={cn(
+                copied ? "border-primary/40 text-primary bg-primary/8" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30",
+                "text-[0.65rem]",
+            )}
+            onClick={copy}
+            size="sm"
+            title="Copy to clipboard"
+            variant="outline"
+        >
+            {copied ? "Copied!" : "Copy"}
+        </Button>
     );
 };
 
-const Section = ({
-    title,
-    data,
-    defaultOpen = true,
-}: {
-    title: string;
-    data: unknown;
-    defaultOpen?: boolean;
-}): ComponentChildren => {
+const Section = ({ data, defaultOpen = true, title }: { data: unknown; defaultOpen?: boolean; title: string }): ComponentChildren => {
     const [open, setOpen] = useState(defaultOpen);
     const json = JSON.stringify(data, null, 2);
 
@@ -66,30 +72,29 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         setLoading(true);
         setError(null);
 
-        (helpers.rpc as any).getViteConfig().then((data: ViteConfig) => {
-            setConfig(data);
-            setLoading(false);
-        }).catch((err: Error) => {
-            setError(err.message ?? "Failed to load Vite config");
-            setLoading(false);
-        });
+        (helpers.rpc as any)
+            .getViteConfig()
+            .then((data: ViteConfig) => {
+                setConfig(data);
+                setLoading(false);
+            })
+            .catch((error_: Error) => {
+                setError(error_.message ?? "Failed to load Vite config");
+                setLoading(false);
+            });
     };
 
     useEffect(() => {
         load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (loading) {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div class="flex gap-1.5 items-center" aria-hidden="true">
+                <div aria-hidden="true" class="flex gap-1.5 items-center">
                     {([0, 160, 320] as const).map((delay) => (
-                        <span
-                            key={delay}
-                            class="size-1.5 bg-primary/50 rounded-full animate-pulse"
-                            style={{ animationDelay: `${delay}ms` }}
-                        />
+                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
                     ))}
                 </div>
                 <span class="text-[0.75rem] text-muted-foreground">Loading Vite config…</span>
@@ -101,7 +106,9 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
                 <p class="text-[0.8rem] text-destructive">{error ?? "No config available"}</p>
-                <Button onClick={load} size="sm" variant="outline">Retry</Button>
+                <Button onClick={load} size="sm" variant="outline">
+                    Retry
+                </Button>
             </div>
         );
     }
@@ -111,19 +118,19 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             {/* Header badges */}
             <div class="flex items-center gap-2 flex-wrap">
                 {config.mode && (
-                    <Badge class="uppercase tracking-wider" variant="default">{config.mode}</Badge>
+                    <Badge class="uppercase tracking-wider" variant="default">
+                        {config.mode}
+                    </Badge>
                 )}
                 {config.root && (
-                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">
-                        {config.root}
-                    </code>
+                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">{config.root}</code>
                 )}
                 {config.base && config.base !== "/" && (
-                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">
-                        base: {config.base}
-                    </code>
+                    <code class="text-[0.7rem] font-mono text-muted-foreground bg-foreground/5 px-2 py-1 border border-border/50">base: {config.base}</code>
                 )}
-                <Button class="ml-auto" onClick={load} size="sm" variant="outline">Refresh</Button>
+                <Button class="ml-auto" onClick={load} size="sm" variant="outline">
+                    Refresh
+                </Button>
             </div>
 
             {/* Sections */}

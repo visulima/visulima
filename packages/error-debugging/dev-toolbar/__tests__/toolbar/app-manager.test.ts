@@ -6,19 +6,23 @@ import type { DevToolbarApp } from "../../src/types/app";
 // Minimal mock that satisfies the ShadowRoot type where only a reference is needed.
 const makeShadowRoot = () => ({}) as unknown as ShadowRoot;
 
-const makeCanvas = () => ({
-    element: {} as HTMLElement,
-    shadowRoot: makeShadowRoot(),
-});
+const makeCanvas = () => {
+    return {
+        element: {} as HTMLElement,
+        shadowRoot: makeShadowRoot(),
+    };
+};
 
-const makeApp = (overrides: Partial<DevToolbarApp> = {}): DevToolbarApp => ({
-    icon: "<svg/>",
-    id: "test-app",
-    name: "Test App",
-    ...overrides,
-});
+const makeApp = (overrides: Partial<DevToolbarApp> = {}): DevToolbarApp => {
+    return {
+        icon: "<svg/>",
+        id: "test-app",
+        name: "Test App",
+        ...overrides,
+    };
+};
 
-describe("AppManager", () => {
+describe("appManager", () => {
     let manager: AppManager;
 
     beforeEach(() => {
@@ -146,7 +150,7 @@ describe("AppManager", () => {
 
     describe("openApp", () => {
         it("returns false for an unknown app id", async () => {
-            expect(await manager.openApp("no-such-app")).toBe(false);
+            await expect(manager.openApp("no-such-app")).resolves.toBe(false);
         });
 
         it("sets the app's active flag to true", async () => {
@@ -170,7 +174,7 @@ describe("AppManager", () => {
             manager.setAppCanvas("test-app", makeCanvas());
             await manager.openApp("test-app");
 
-            expect(init).toHaveBeenCalledOnce();
+            expect(init).toHaveBeenCalledTimes(1);
         });
 
         it("passes shadowRoot, eventTarget, and helpers to init()", async () => {
@@ -258,13 +262,13 @@ describe("AppManager", () => {
 
     describe("closeApp", () => {
         it("returns false for an unknown app id", async () => {
-            expect(await manager.closeApp("no-such-app")).toBe(false);
+            await expect(manager.closeApp("no-such-app")).resolves.toBe(false);
         });
 
         it("returns false if the app is not active", async () => {
             manager.registerApp(makeApp());
 
-            expect(await manager.closeApp("test-app")).toBe(false);
+            await expect(manager.closeApp("test-app")).resolves.toBe(false);
         });
 
         it("sets active to false after closing", async () => {
@@ -340,7 +344,7 @@ describe("AppManager", () => {
 
     describe("toggleApp", () => {
         it("returns false for an unknown app id", async () => {
-            expect(await manager.toggleApp("no-such-app")).toBe(false);
+            await expect(manager.toggleApp("no-such-app")).resolves.toBe(false);
         });
 
         it("opens an inactive app", async () => {
@@ -411,11 +415,11 @@ describe("AppManager", () => {
         });
 
         it("setNotification is a no-op for unknown app id", () => {
-            expect(() => manager.setNotification("ghost", true)).not.toThrow();
+            expect(() => manager.setNotification("ghost", true)).not.toThrowError();
         });
 
         it("clearNotification is a no-op for unknown app id", () => {
-            expect(() => manager.clearNotification("ghost")).not.toThrow();
+            expect(() => manager.clearNotification("ghost")).not.toThrowError();
         });
     });
 

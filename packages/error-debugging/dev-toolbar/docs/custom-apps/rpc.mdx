@@ -114,7 +114,9 @@ const MyApp = ({ helpers }: AppComponentProps) => {
     return (
         <ul class="p-4 space-y-1">
             {routes.map((route) => (
-                <li key={route} class="text-sm font-mono text-foreground/80">{route}</li>
+                <li key={route} class="text-sm font-mono text-foreground/80">
+                    {route}
+                </li>
             ))}
         </ul>
     );
@@ -162,7 +164,9 @@ const MyApp = ({ helpers }: AppComponentProps) => {
     return (
         <ul class="p-4 space-y-1">
             {routes.map((route) => (
-                <li key={route} class="text-sm font-mono text-foreground/80">{route}</li>
+                <li key={route} class="text-sm font-mono text-foreground/80">
+                    {route}
+                </li>
             ))}
         </ul>
     );
@@ -211,7 +215,9 @@ if (error) {
     return (
         <div class="p-8 text-center">
             <p class="text-sm text-destructive">{error}</p>
-            <button onClick={load} type="button">Retry</button>
+            <button onClick={load} type="button">
+                Retry
+            </button>
         </div>
     );
 }

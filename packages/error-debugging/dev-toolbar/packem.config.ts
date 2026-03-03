@@ -10,10 +10,7 @@ export default defineConfig({
     runtime: "node",
     preset: createPreactPreset(),
     isolatedDeclarationTransformer,
-    externals: [
-        "virtual:visulima-dev-toolbar-options",
-        /^virtual:visulima-dev-toolbar-path:/,
-    ],
+    externals: ["virtual:visulima-dev-toolbar-options", /^virtual:visulima-dev-toolbar-path:/],
     rollup: {
         css: {
             mode: "inline",

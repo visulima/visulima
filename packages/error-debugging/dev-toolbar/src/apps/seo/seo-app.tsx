@@ -3,75 +3,72 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
-import cn from "../../utils/cn";
 import { Badge, Button } from "../../ui";
+import cn from "../../utils/cn";
 
 // ─── Meta tag parsing ─────────────────────────────────────────────────────────
 
 interface MetaTags {
-    // Basic
-    title: string;
-    description: string;
+    // Article (og:type = "article")
+    articleAuthor: string;
+    articleModifiedTime: string;
+    articlePublishedTime: string;
+    articleSection: string;
     canonical: string;
-    // Open Graph
-    ogTitle: string;
+    description: string;
     ogDescription: string;
     ogImage: string;
     ogImageAlt: string;
-    ogUrl: string;
-    ogType: string;
-    ogSiteName: string;
     ogLocale: string;
+    ogSiteName: string;
+    // Open Graph
+    ogTitle: string;
+    ogType: string;
+    ogUrl: string;
+    // Basic
+    title: string;
     // Twitter / X
     twitterCard: string;
-    twitterTitle: string;
+    twitterCreator: string;
     twitterDescription: string;
     twitterImage: string;
     twitterImageAlt: string;
     twitterSite: string;
-    twitterCreator: string;
-    // Article (og:type = "article")
-    articleAuthor: string;
-    articlePublishedTime: string;
-    articleModifiedTime: string;
-    articleSection: string;
+    twitterTitle: string;
 }
 
 const readMetaTags = (): MetaTags => {
-    const getMeta = (name: string): string =>
-        (document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement)?.content ?? "";
-    const getOg = (prop: string): string =>
-        (document.querySelector(`meta[property="og:${prop}"]`) as HTMLMetaElement)?.content ?? "";
+    const getMeta = (name: string): string => (document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement)?.content ?? "";
+    const getOg = (prop: string): string => (document.querySelector(`meta[property="og:${prop}"]`) as HTMLMetaElement)?.content ?? "";
     const getTwitter = (name: string): string =>
-        (document.querySelector(`meta[name="twitter:${name}"]`) as HTMLMetaElement)?.content ??
-        (document.querySelector(`meta[property="twitter:${name}"]`) as HTMLMetaElement)?.content ??
-        "";
-    const getArticle = (prop: string): string =>
-        (document.querySelector(`meta[property="article:${prop}"]`) as HTMLMetaElement)?.content ?? "";
+        (document.querySelector(`meta[name="twitter:${name}"]`) as HTMLMetaElement)?.content
+        ?? (document.querySelector(`meta[property="twitter:${name}"]`) as HTMLMetaElement)?.content
+        ?? "";
+    const getArticle = (prop: string): string => (document.querySelector(`meta[property="article:${prop}"]`) as HTMLMetaElement)?.content ?? "";
 
     return {
-        title: document.title ?? "",
+        articleAuthor: getArticle("author"),
+        articleModifiedTime: getArticle("modified_time"),
+        articlePublishedTime: getArticle("published_time"),
+        articleSection: getArticle("section"),
+        canonical: (document.querySelector("link[rel=\"canonical\"]") as HTMLLinkElement)?.href ?? "",
         description: getMeta("description"),
-        canonical: (document.querySelector('link[rel="canonical"]') as HTMLLinkElement)?.href ?? "",
-        ogTitle: getOg("title"),
         ogDescription: getOg("description"),
         ogImage: getOg("image"),
         ogImageAlt: getOg("image:alt"),
-        ogUrl: getOg("url"),
-        ogType: getOg("type"),
-        ogSiteName: getOg("site_name"),
         ogLocale: getOg("locale"),
+        ogSiteName: getOg("site_name"),
+        ogTitle: getOg("title"),
+        ogType: getOg("type"),
+        ogUrl: getOg("url"),
+        title: document.title ?? "",
         twitterCard: getTwitter("card"),
-        twitterTitle: getTwitter("title"),
+        twitterCreator: getTwitter("creator"),
         twitterDescription: getTwitter("description"),
         twitterImage: getTwitter("image"),
         twitterImageAlt: getTwitter("image:alt"),
         twitterSite: getTwitter("site"),
-        twitterCreator: getTwitter("creator"),
-        articleAuthor: getArticle("author"),
-        articlePublishedTime: getArticle("published_time"),
-        articleModifiedTime: getArticle("modified_time"),
-        articleSection: getArticle("section"),
+        twitterTitle: getTwitter("title"),
     };
 };
 
@@ -99,28 +96,28 @@ const TAG_DEFINITIONS: TagDef[] = [
         key: "ogTitle",
         label: "og:title",
         priority: "required",
-        snippet: '<meta property="og:title" content="Your Page Title" />',
+        snippet: "<meta property=\"og:title\" content=\"Your Page Title\" />",
     },
     {
         description: "Description shown when sharing on social media (max 200 chars)",
         key: "ogDescription",
         label: "og:description",
         priority: "required",
-        snippet: '<meta property="og:description" content="Your page description" />',
+        snippet: "<meta property=\"og:description\" content=\"Your page description\" />",
     },
     {
         description: "Image shown when sharing (recommended: 1200 × 630 px)",
         key: "ogImage",
         label: "og:image",
         priority: "required",
-        snippet: '<meta property="og:image" content="https://yoursite.com/og-image.jpg" />',
+        snippet: "<meta property=\"og:image\" content=\"https://yoursite.com/og-image.jpg\" />",
     },
     {
         description: "Twitter card format — controls how link previews appear on X / Twitter",
         key: "twitterCard",
         label: "twitter:card",
         priority: "required",
-        snippet: '<meta name="twitter:card" content="summary_large_image" />',
+        snippet: "<meta name=\"twitter:card\" content=\"summary_large_image\" />",
     },
     // ── Recommended ───────────────────────────────────────────────────────────
     {
@@ -128,77 +125,77 @@ const TAG_DEFINITIONS: TagDef[] = [
         key: "description",
         label: "description",
         priority: "recommended",
-        snippet: '<meta name="description" content="Your page description" />',
+        snippet: "<meta name=\"description\" content=\"Your page description\" />",
     },
     {
         description: "Canonical URL to prevent duplicate content issues with search engines",
         key: "canonical",
         label: "canonical",
         priority: "recommended",
-        snippet: '<link rel="canonical" href="https://yoursite.com/page" />',
+        snippet: "<link rel=\"canonical\" href=\"https://yoursite.com/page\" />",
     },
     {
         description: "Canonical page URL for Open Graph — should match the canonical link tag",
         key: "ogUrl",
         label: "og:url",
         priority: "recommended",
-        snippet: '<meta property="og:url" content="https://yoursite.com/page" />',
+        snippet: "<meta property=\"og:url\" content=\"https://yoursite.com/page\" />",
     },
     {
-        description: 'Type of content: website, article, product, video.movie, etc.',
+        description: "Type of content: website, article, product, video.movie, etc.",
         key: "ogType",
         label: "og:type",
         priority: "recommended",
-        snippet: '<meta property="og:type" content="website" />',
+        snippet: "<meta property=\"og:type\" content=\"website\" />",
     },
     {
         description: "Your website name — shown for consistent branding on social platforms",
         key: "ogSiteName",
         label: "og:site_name",
         priority: "recommended",
-        snippet: '<meta property="og:site_name" content="Your Site Name" />',
+        snippet: "<meta property=\"og:site_name\" content=\"Your Site Name\" />",
     },
     {
         description: "Language and territory of page content (e.g. en_US, de_DE, fr_FR)",
         key: "ogLocale",
         label: "og:locale",
         priority: "recommended",
-        snippet: '<meta property="og:locale" content="en_US" />',
+        snippet: "<meta property=\"og:locale\" content=\"en_US\" />",
     },
     {
         description: "Alt text for the OG image — important for accessibility on social platforms",
         key: "ogImageAlt",
         label: "og:image:alt",
         priority: "recommended",
-        snippet: '<meta property="og:image:alt" content="Description of the shared image" />',
+        snippet: "<meta property=\"og:image:alt\" content=\"Description of the shared image\" />",
     },
     {
         description: "Override title specifically for X / Twitter cards (falls back to og:title)",
         key: "twitterTitle",
         label: "twitter:title",
         priority: "recommended",
-        snippet: '<meta name="twitter:title" content="Your Page Title" />',
+        snippet: "<meta name=\"twitter:title\" content=\"Your Page Title\" />",
     },
     {
         description: "Override description for X / Twitter cards (falls back to og:description)",
         key: "twitterDescription",
         label: "twitter:description",
         priority: "recommended",
-        snippet: '<meta name="twitter:description" content="Your page description" />',
+        snippet: "<meta name=\"twitter:description\" content=\"Your page description\" />",
     },
     {
         description: "Override image for X / Twitter cards (falls back to og:image)",
         key: "twitterImage",
         label: "twitter:image",
         priority: "recommended",
-        snippet: '<meta name="twitter:image" content="https://yoursite.com/twitter-card.jpg" />',
+        snippet: "<meta name=\"twitter:image\" content=\"https://yoursite.com/twitter-card.jpg\" />",
     },
     {
         description: "X / Twitter handle of the website owner (e.g. @yourhandle)",
         key: "twitterSite",
         label: "twitter:site",
         priority: "recommended",
-        snippet: '<meta name="twitter:site" content="@yourhandle" />',
+        snippet: "<meta name=\"twitter:site\" content=\"@yourhandle\" />",
     },
 ];
 
@@ -307,13 +304,15 @@ const SocialPreview = ({ meta, platform }: { meta: MetaTags; platform: PlatformC
             </div>
             <div class="p-3">
                 <div class="w-full aspect-[1200/630] bg-foreground/6 border border-border/50 mb-2.5 overflow-hidden relative">
-                    {image ? (
+                    {image
+                        ? (
                         <img alt="OG image preview" class="w-full h-full object-cover" loading="lazy" src={image} />
-                    ) : (
+                        )
+                        : (
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span class="text-[0.65rem] text-muted-foreground/40 uppercase tracking-wider">No image</span>
                         </div>
-                    )}
+                        )}
                 </div>
                 {url && <div class="text-[0.6rem] text-muted-foreground/60 uppercase tracking-wider truncate mb-1">{url}</div>}
                 <div class="text-[0.8rem] font-semibold text-foreground line-clamp-1">{title}</div>
@@ -331,13 +330,13 @@ const MetaRow = ({ label, required = false, value }: { label: string; required?:
             <span class="text-[0.7rem] font-mono text-muted-foreground">{label}</span>
         </div>
         <div class="flex-1 min-w-0">
-            {value ? (
+            {value
+                ? (
                 <span class="text-[0.75rem] text-foreground break-all">{value}</span>
-            ) : (
-                <span class={cn("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>
-                    {required ? "⚠ Missing" : "—"}
-                </span>
-            )}
+                )
+                : (
+                <span class={cn("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>{required ? "⚠ Missing" : "—"}</span>
+                )}
         </div>
     </div>
 );
@@ -367,7 +366,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
                     clearTimeout(timerRef.current);
                 }
 
-                timerRef.current = setTimeout(() => setCopied(false), 2000);
+                timerRef.current = setTimeout(setCopied, 2000, false);
             })
             .catch(console.error);
     };
@@ -390,10 +389,7 @@ const MissingTagCard = ({ def }: { def: TagDef }): ComponentChildren => (
     <div class="border border-border/60 bg-card p-3 space-y-2">
         <div class="flex items-start justify-between gap-3">
             <code class="text-[0.7rem] font-mono font-bold text-foreground">{def.label}</code>
-            <Badge
-                class="text-[0.58rem] uppercase tracking-wide shrink-0"
-                variant={def.priority === "required" ? "destructive" : "warning"}
-            >
+            <Badge class="text-[0.58rem] uppercase tracking-wide shrink-0" variant={def.priority === "required" ? "destructive" : "warning"}>
                 {def.priority}
             </Badge>
         </div>
@@ -426,13 +422,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     if (!meta) {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div class="flex gap-1.5 items-center" aria-hidden="true">
+                <div aria-hidden="true" class="flex gap-1.5 items-center">
                     {([0, 160, 320] as const).map((delay) => (
-                        <span
-                            key={delay}
-                            class="size-1.5 bg-primary/50 rounded-full animate-pulse"
-                            style={{ animationDelay: `${delay}ms` }}
-                        />
+                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
                     ))}
                 </div>
                 <span class="text-[0.75rem] text-muted-foreground">Reading meta tags…</span>
@@ -445,9 +437,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     const missingTotal = missingRequired.length + missingRecommended.length;
 
     // Show article section only when og:type is "article" or any article tag is set
-    const showArticle =
-        meta.ogType === "article" ||
-        !!(meta.articleAuthor || meta.articlePublishedTime || meta.articleModifiedTime || meta.articleSection);
+    const showArticle = meta.ogType === "article" || !!(meta.articleAuthor || meta.articlePublishedTime || meta.articleModifiedTime || meta.articleSection);
 
     return (
         <div class="flex flex-col h-full">
@@ -460,22 +450,19 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
 
                         return (
                             <button
-                                key={tab}
                                 class={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 text-[0.75rem] font-medium border-0 cursor-pointer transition-colors capitalize",
                                     activeTab === tab
                                         ? "text-foreground border-b-2 border-primary bg-transparent"
                                         : "text-muted-foreground bg-transparent hover:text-foreground",
                                 )}
+                                key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 type="button"
                             >
                                 {label}
                                 {badge !== null && (
-                                    <Badge
-                                        class="text-[0.58rem] min-w-[1.1rem] text-center"
-                                        variant={missingRequired.length > 0 ? "destructive" : "warning"}
-                                    >
+                                    <Badge class="text-[0.58rem] min-w-[1.1rem] text-center" variant={missingRequired.length > 0 ? "destructive" : "warning"}>
                                         {badge}
                                     </Badge>
                                 )}
@@ -483,7 +470,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                         );
                     })}
                 </div>
-                <Button onClick={refresh} size="sm" variant="outline">Refresh</Button>
+                <Button onClick={refresh} size="sm" variant="outline">
+                    Refresh
+                </Button>
             </div>
 
             {/* Content */}
@@ -504,8 +493,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                             <SectionHeading>Basic</SectionHeading>
                             <div class="border border-border bg-card">
                                 <div class="px-4">
-                                    <MetaRow label="title" value={meta.title} required />
-                                    <MetaRow label="description" value={meta.description} required />
+                                    <MetaRow label="title" required value={meta.title} />
+                                    <MetaRow label="description" required value={meta.description} />
                                     <MetaRow label="canonical" value={meta.canonical} />
                                 </div>
                             </div>
@@ -515,9 +504,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                             <SectionHeading>Open Graph</SectionHeading>
                             <div class="border border-border bg-card">
                                 <div class="px-4">
-                                    <MetaRow label="og:title" value={meta.ogTitle} required />
-                                    <MetaRow label="og:description" value={meta.ogDescription} required />
-                                    <MetaRow label="og:image" value={meta.ogImage} required />
+                                    <MetaRow label="og:title" required value={meta.ogTitle} />
+                                    <MetaRow label="og:description" required value={meta.ogDescription} />
+                                    <MetaRow label="og:image" required value={meta.ogImage} />
                                     <MetaRow label="og:image:alt" value={meta.ogImageAlt} />
                                     <MetaRow label="og:url" value={meta.ogUrl} />
                                     <MetaRow label="og:type" value={meta.ogType} />
@@ -545,7 +534,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                             <SectionHeading>X / Twitter</SectionHeading>
                             <div class="border border-border bg-card">
                                 <div class="px-4">
-                                    <MetaRow label="twitter:card" value={meta.twitterCard} required />
+                                    <MetaRow label="twitter:card" required value={meta.twitterCard} />
                                     <MetaRow label="twitter:title" value={meta.twitterTitle} />
                                     <MetaRow label="twitter:description" value={meta.twitterDescription} />
                                     <MetaRow label="twitter:image" value={meta.twitterImage} />
@@ -561,7 +550,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                 {/* ── Missing Tags ──────────────────────────────────────────── */}
                 {activeTab === "missing" && (
                     <div class="p-5 space-y-5">
-                        {missingTotal === 0 ? (
+                        {missingTotal === 0
+                            ? (
                             <div class="flex flex-col items-center justify-center py-12 gap-3">
                                 <div class="size-10 border border-success/30 bg-success/8 flex items-center justify-center text-success text-lg select-none">
                                     ✓
@@ -569,7 +559,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 <p class="text-[0.8rem] font-medium text-foreground/70">All recommended tags are present</p>
                                 <p class="text-[0.7rem] text-muted-foreground">Your page has all required and recommended meta tags.</p>
                             </div>
-                        ) : (
+                            )
+                            : (
                             <>
                                 {missingRequired.length > 0 && (
                                     <div>
@@ -581,7 +572,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                         </p>
                                         <div class="space-y-2">
                                             {missingRequired.map((def) => (
-                                                <MissingTagCard key={def.key} def={def} />
+                                                <MissingTagCard def={def} key={def.key} />
                                             ))}
                                         </div>
                                     </div>
@@ -591,19 +582,17 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                     <div>
                                         <p class="text-[0.58rem] font-bold uppercase tracking-[0.12em] text-warning/80 mb-2 flex items-center gap-1.5">
                                             <span>Recommended</span>
-                                            <span class="bg-warning/10 border border-warning/25 text-warning px-1 font-bold">
-                                                {missingRecommended.length}
-                                            </span>
+                                            <span class="bg-warning/10 border border-warning/25 text-warning px-1 font-bold">{missingRecommended.length}</span>
                                         </p>
                                         <div class="space-y-2">
                                             {missingRecommended.map((def) => (
-                                                <MissingTagCard key={def.key} def={def} />
+                                                <MissingTagCard def={def} key={def.key} />
                                             ))}
                                         </div>
                                     </div>
                                 )}
                             </>
-                        )}
+                            )}
                     </div>
                 )}
             </div>

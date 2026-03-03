@@ -15,13 +15,13 @@ interface TooltipContextValue {
 const TooltipContext = createContext<TooltipContextValue | null>(null);
 
 const useTooltipContext = (): TooltipContextValue => {
-    const ctx = useContext(TooltipContext);
+    const context = useContext(TooltipContext);
 
-    if (!ctx) {
+    if (!context) {
         throw new Error("Tooltip subcomponent must be used within <Tooltip>");
     }
 
-    return ctx;
+    return context;
 };
 
 interface TooltipProps {
@@ -55,18 +55,12 @@ const Tooltip = ({ children, delayDuration: _delayDuration = 0 }: TooltipProps):
 const TooltipTrigger = ({ children, class: className, ...rest }: TooltipTriggerProps): JSX.Element => {
     const { setOpen, triggerRef } = useTooltipContext();
 
-    const handleRef = (el: HTMLSpanElement | null): void => {
-        triggerRef.current = el;
+    const handleRef = (element: HTMLSpanElement | null): void => {
+        triggerRef.current = element;
     };
 
     return (
-        <span
-            class={className}
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
-            ref={handleRef}
-            {...rest}
-        >
+        <span class={className} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} ref={handleRef} {...rest}>
             {children}
         </span>
     );
@@ -100,10 +94,7 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
 
     return (
         <div
-            class={cn(
-                "z-50 rounded-none bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95",
-                className,
-            )}
+            class={cn("z-50 rounded-none bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95", className)}
             ref={contentRef}
             role="tooltip"
             style={{ left: `${position.x}px`, position: "fixed", top: `${position.y}px` }}

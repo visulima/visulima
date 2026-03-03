@@ -11,30 +11,30 @@ The Settings app provides a UI for every user-adjustable preference. Changes are
 
 ### Appearance
 
-| Setting | Description | Default |
-|---|---|---|
-| **Theme** | `Light`, `Dark`, or `System` (follows `prefers-color-scheme`) | System |
-| **Reduce motion** | Disable all animations and transitions in the toolbar | Off |
+| Setting           | Description                                                   | Default |
+| ----------------- | ------------------------------------------------------------- | ------- |
+| **Theme**         | `Light`, `Dark`, or `System` (follows `prefers-color-scheme`) | System  |
+| **Reduce motion** | Disable all animations and transitions in the toolbar         | Off     |
 
 ### Toolbar
 
-| Setting | Description | Default |
-|---|---|---|
-| **Auto-hide when inactive** | Collapse the toolbar pill after a period of inactivity. Options: Never, Always, 2 s, 5 s, 10 s, 30 s | 5 s |
-| **Show toolbar when panel is closed** | Keep the toolbar pill visible even when no app panel is open | On |
+| Setting                               | Description                                                                                          | Default |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------- |
+| **Auto-hide when inactive**           | Collapse the toolbar pill after a period of inactivity. Options: Never, Always, 2 s, 5 s, 10 s, 30 s | 5 s     |
+| **Show toolbar when panel is closed** | Keep the toolbar pill visible even when no app panel is open                                         | On      |
 
 ### Panel
 
-| Setting | Description | Default |
-|---|---|---|
-| **Close on outside click** | Close the DevTools panel when clicking anywhere outside it | On |
+| Setting                    | Description                                                | Default |
+| -------------------------- | ---------------------------------------------------------- | ------- |
+| **Close on outside click** | Close the DevTools panel when clicking anywhere outside it | On      |
 
 ### Keyboard Shortcuts
 
-| Setting | Description | Default |
-|---|---|---|
-| **Toggle toolbar** | Open or close the DevTools panel | `Alt`+`Shift`+`D` |
-| **Close panel** | Dismiss the active app or close the panel | `Escape` |
+| Setting            | Description                               | Default           |
+| ------------------ | ----------------------------------------- | ----------------- |
+| **Toggle toolbar** | Open or close the DevTools panel          | `Alt`+`Shift`+`D` |
+| **Close panel**    | Dismiss the active app or close the panel | `Escape`          |
 
 Each keyboard shortcut has a **Record** button that enters capture mode — the next key combination you press (excluding lone modifier keys) is saved as the new binding. A **Reset** link appears next to a customised binding to restore the default.
 
@@ -52,12 +52,12 @@ To cancel without saving, click the **✕** button.
 
 Key names follow the browser's `KeyboardEvent.key` specification. Modifier prefixes are:
 
-| Modifier | Prefix |
-|---|---|
-| Alt / Option | `Alt` |
-| Control | `Control` |
-| Meta / Cmd / Win | `Meta` |
-| Shift | `Shift` |
+| Modifier         | Prefix    |
+| ---------------- | --------- |
+| Alt / Option     | `Alt`     |
+| Control          | `Control` |
+| Meta / Cmd / Win | `Meta`    |
+| Shift            | `Shift`   |
 
 Examples: `Alt+Shift+D`, `Control+Shift+P`, `Meta+K`, `F12`
 
@@ -68,23 +68,23 @@ All settings are stored as a JSON object:
 ```ts
 interface DevToolsFrameState {
     closeOnOutsideClick: boolean;
-    height: number;            // panel height % (20–95)
-    isPip: boolean;            // picture-in-picture mode
-    isFirstVisit: boolean;     // onboarding hint shown
+    height: number; // panel height % (20–95)
+    isPip: boolean; // picture-in-picture mode
+    isFirstVisit: boolean; // onboarding hint shown
     keybindings: {
-        toggle: string;        // e.g. "Alt+Shift+D"
-        close: string;         // e.g. "Escape"
+        toggle: string; // e.g. "Alt+Shift+D"
+        close: string; // e.g. "Escape"
     };
-    left: number;              // pill horizontal position % (0–100)
+    left: number; // pill horizontal position % (0–100)
     minimizePanelInactive: number; // ms, -1 = never
-    open: boolean;             // panel open state (never restored on load)
+    open: boolean; // panel open state (never restored on load)
     position: "top" | "bottom" | "left" | "right";
     preferShowFloatingPanel: boolean;
     reduceMotion: boolean;
     route: string;
-    top: number;               // pill vertical position % (0–100)
+    top: number; // pill vertical position % (0–100)
     viewMode: "default" | "fullscreen" | "wide";
-    width: number;             // panel width % (0–100)
+    width: number; // panel width % (0–100)
 }
 ```
 
@@ -106,7 +106,7 @@ devToolbar({
     position: "bottom",
     reduceMotion: false,
     width: 80,
-})
+});
 ```
 
 User choices in the Settings app always override these defaults.
@@ -115,10 +115,10 @@ User choices in the Settings app always override these defaults.
 
 The panel supports three view modes accessible via the panel header controls:
 
-| Mode | Description |
-|---|---|
-| `default` | Panel fills the configured width percentage |
-| `wide` | Panel expands to 100% viewport width |
-| `fullscreen` | Panel covers the entire viewport |
+| Mode         | Description                                 |
+| ------------ | ------------------------------------------- |
+| `default`    | Panel fills the configured width percentage |
+| `wide`       | Panel expands to 100% viewport width        |
+| `fullscreen` | Panel covers the entire viewport            |
 
 View mode can also be set programmatically via the [Global API](/docs/dev-toolbar/custom-apps/global-api).

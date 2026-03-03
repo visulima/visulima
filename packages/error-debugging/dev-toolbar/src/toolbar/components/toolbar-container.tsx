@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks"
 import visulimaLogo from "../../assets/visulima-logo.svg";
 import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
 import cn from "../../utils/cn";
-import { type PinnedTooltip, ToolbarContext, type ToolbarContextState } from "../context/index";
+import type { PinnedTooltip, ToolbarContextState } from "../context/index";
+import { ToolbarContext } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
 import DevPanel from "./app-canvas";
 import AppTooltipOverlay from "./app-tooltip-overlay";
@@ -152,7 +153,7 @@ const ToolbarContainer = ({
 
     const { resolvedTheme } = useTheme();
     const { state, updateState } = useFrameState();
-    const { panelVisible, togglePanelVisible, closePanel } = usePanelVisible();
+    const { closePanel, panelVisible, togglePanelVisible } = usePanelVisible();
     const { anchorStyle, bringUp, isDragging, isHidden, isVertical, onPointerDown, panelStyle } = usePosition(panelRef);
 
     // ─── Tooltip hover state ──────────────────────────────────────────────────
@@ -183,41 +184,50 @@ const ToolbarContainer = ({
 
     pinnedTooltipsRef.current = pinnedTooltips;
 
-    const pinTooltip = useCallback((app: DevToolbarAppState, x: number, y: number): void => {
-        const id = `${app.id}-${Date.now()}`;
+    const pinTooltip = useCallback(
+        (app: DevToolbarAppState, x: number, y: number): void => {
+            const id = `${app.id}-${Date.now()}`;
 
-        setPinnedTooltips((prev) => {
-            const next = [...prev, { app, id, initialX: x, initialY: y }];
+            setPinnedTooltips((previous) => {
+                const next = [...previous, { app, id, initialX: x, initialY: y }];
 
-            savePins(next);
+                savePins(next);
 
-            return next;
-        });
-    }, [savePins]);
+                return next;
+            });
+        },
+        [savePins],
+    );
 
-    const unpinTooltip = useCallback((id: string): void => {
-        setPinnedTooltips((prev) => {
-            const next = prev.filter((p) => p.id !== id);
+    const unpinTooltip = useCallback(
+        (id: string): void => {
+            setPinnedTooltips((previous) => {
+                const next = previous.filter((p) => p.id !== id);
 
-            pinPositionsRef.current.delete(id);
-            savePins(next);
+                pinPositionsRef.current.delete(id);
+                savePins(next);
 
-            return next;
-        });
-    }, [savePins]);
+                return next;
+            });
+        },
+        [savePins],
+    );
 
     // Called by PinnedTooltipCard when a drag ends — record final position and save
-    const handlePinMove = useCallback((id: string, x: number, y: number): void => {
-        pinPositionsRef.current.set(id, { x, y });
-        savePins(pinnedTooltipsRef.current);
-    }, [savePins]);
+    const handlePinMove = useCallback(
+        (id: string, x: number, y: number): void => {
+            pinPositionsRef.current.set(id, { x, y });
+            savePins(pinnedTooltipsRef.current);
+        },
+        [savePins],
+    );
 
     // Restore pinned tooltips from localStorage.
     // Apps register one-by-one (registerApp → render), so we must re-check on
     // every apps change rather than assuming all apps are present on first run.
     // storedPinsRef caches the parsed localStorage data so we only JSON.parse once.
     // restoredAppIdsRef prevents restoring the same appId twice across renders.
-    const storedPinsRef = useRef<Array<{ appId: string; x: number; y: number }> | null>(null);
+    const storedPinsRef = useRef<{ appId: string; x: number; y: number }[] | null>(null);
     const restoredAppIdsRef = useRef(new Set<string>());
 
     useEffect(() => {
@@ -230,7 +240,7 @@ const ToolbarContainer = ({
             try {
                 const raw = localStorage.getItem(PINNED_KEY);
 
-                storedPinsRef.current = raw ? (JSON.parse(raw) as Array<{ appId: string; x: number; y: number }>) : [];
+                storedPinsRef.current = raw ? (JSON.parse(raw) as { appId: string; x: number; y: number }[]) : [];
             } catch {
                 storedPinsRef.current = [];
             }
@@ -264,17 +274,15 @@ const ToolbarContainer = ({
         }
 
         if (newPins.length > 0) {
-            setPinnedTooltips((prev) => [...prev, ...newPins]);
+            setPinnedTooltips((previous) => [...previous, ...newPins]);
         }
     }, [apps]);
 
     // Clear any pending leave timer on unmount to prevent post-unmount state updates
-    useEffect(() => {
-        return () => {
-            if (leaveTimerRef.current !== null) {
-                clearTimeout(leaveTimerRef.current);
-            }
-        };
+    useEffect(() => () => {
+        if (leaveTimerRef.current !== null) {
+            clearTimeout(leaveTimerRef.current);
+        }
     }, []);
 
     const handleSetHoveredApp = useCallback((app: DevToolbarAppState | null, rect?: DOMRect | null): void => {
@@ -298,12 +306,16 @@ const ToolbarContainer = ({
 
     // Refs so toggleApp always reads the freshest values, avoiding stale-closure issues
     const appsRef = useRef(apps);
+
     appsRef.current = apps;
     const panelVisibleRef = useRef(panelVisible);
+
     panelVisibleRef.current = panelVisible;
     const activeAppIdRef = useRef(activeAppId);
+
     activeAppIdRef.current = activeAppId;
     const onToggleAppRef = useRef(onToggleApp);
+
     onToggleAppRef.current = onToggleApp;
 
     const placement = useMemo(() => {
@@ -323,6 +335,7 @@ const ToolbarContainer = ({
 
             if (app?.onClick ?? app?.onDeactivate) {
                 await onToggleAppRef.current(appId);
+
                 return;
             }
 
@@ -330,6 +343,7 @@ const ToolbarContainer = ({
                 // Clicking the active app while panel is open → deactivate app + close panel
                 await onToggleAppRef.current(appId);
                 updateState({ open: false, viewMode: "default" });
+
                 return;
             }
 
@@ -356,8 +370,8 @@ const ToolbarContainer = ({
         hoveredAppRect,
         isDragging,
         isVisible: panelVisible,
-        pinTooltip,
         pinnedTooltips,
+        pinTooltip,
         placement,
         registerApp: onRegisterApp,
         setDragging: () => {
@@ -386,7 +400,6 @@ const ToolbarContainer = ({
             <div class={cn(resolvedTheme === "dark" && "dark")} style={{ display: "contents" }}>
                 {/* Anchor — positioned via JS; transitions left/top smoothly */}
                 <div
-                    ref={anchorRef}
                     class={cn(
                         "fixed z-[2147483647]",
                         "pointer-events-auto",
@@ -401,11 +414,11 @@ const ToolbarContainer = ({
                     data-placement={placement}
                     id="__v_dt__root"
                     onMouseMove={bringUp}
+                    ref={anchorRef}
                     style={anchorStyle}
                 >
                     {/* Draggable toolbar pill */}
                     <div
-                        ref={panelRef}
                         class={cn(
                             "group/panel",
                             "absolute left-0 top-0",
@@ -430,6 +443,7 @@ const ToolbarContainer = ({
 
                             onPointerDown(e);
                         }}
+                        ref={panelRef}
                         style={panelStyle}
                     >
                         {/* Logo toggle button */}
@@ -446,6 +460,7 @@ const ToolbarContainer = ({
                             )}
                             onClick={(e) => {
                                 e.stopPropagation();
+
                                 // Dismiss hint on first logo click
                                 if (state.isFirstVisit) {
                                     updateState({ isFirstVisit: false });

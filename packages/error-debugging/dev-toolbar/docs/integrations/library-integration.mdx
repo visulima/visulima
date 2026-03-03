@@ -38,9 +38,9 @@ function initDevTools(myLibraryInstance: MyLibrary): void {
     hook.registerApp({
         id: "my-library:devtools",
         name: "My Library",
-        icon: myLibraryIconSvg,         // raw SVG string
-        component: MyLibraryPanel,      // Preact component
-        tooltip: MyLibraryTooltip,      // optional
+        icon: myLibraryIconSvg, // raw SVG string
+        component: MyLibraryPanel, // Preact component
+        tooltip: MyLibraryTooltip, // optional
     });
 
     // Emit timeline events as things happen
@@ -101,12 +101,8 @@ const MyLibraryPanel = (_props: AppComponentProps): ComponentChildren => {
 
     return (
         <div class="p-5 space-y-4">
-            <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                // My Library State
-            </h2>
-            <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 border border-border p-4 overflow-auto">
-                {JSON.stringify(state, null, 2)}
-            </pre>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">// My Library State</h2>
+            <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 border border-border p-4 overflow-auto">{JSON.stringify(state, null, 2)}</pre>
         </div>
     );
 };
@@ -237,13 +233,13 @@ interface DevToolbarHook {
 
 ### Hook Events
 
-| Event | Payload | Description |
-|---|---|---|
-| `devtools:init` | — | Toolbar has mounted and is ready |
-| `devtools:open` | `appId: string` | An app panel was opened |
-| `devtools:close` | — | The panel was closed |
-| `app:error` | `(error: Error, appId?: string)` | An app component threw an error |
-| `timeline:event` | `(groupId, event)` | A timeline event was added |
+| Event            | Payload                          | Description                      |
+| ---------------- | -------------------------------- | -------------------------------- |
+| `devtools:init`  | —                                | Toolbar has mounted and is ready |
+| `devtools:open`  | `appId: string`                  | An app panel was opened          |
+| `devtools:close` | —                                | The panel was closed             |
+| `app:error`      | `(error: Error, appId?: string)` | An app component threw an error  |
+| `timeline:event` | `(groupId, event)`               | A timeline event was added       |
 
 ---
 
@@ -276,7 +272,9 @@ Your library does not need to add `@visulima/dev-toolbar` as a dependency. The i
 ```ts
 // ✅ No import from @visulima/dev-toolbar
 const hook = (window as any).__DEV_TOOLBAR_HOOK__;
-if (hook) { /* ... */ }
+if (hook) {
+    /* ... */
+}
 ```
 
 If your library ships TypeScript types and you want to type the hook, use a `declare global`:
@@ -285,20 +283,17 @@ If your library ships TypeScript types and you want to type the hook, use a `dec
 declare global {
     interface Window {
         __DEV_TOOLBAR_HOOK__?: {
-            registerApp(app: {
-                id: string;
-                name: string;
-                icon: string;
-                component: unknown;
-                tooltip?: unknown;
-            }): void;
-            addTimelineEvent(groupId: string, event: {
-                id: string;
-                title: string;
-                time: number;
-                level?: "info" | "warning" | "error";
-                data?: Record<string, unknown>;
-            }): void;
+            registerApp(app: { id: string; name: string; icon: string; component: unknown; tooltip?: unknown }): void;
+            addTimelineEvent(
+                groupId: string,
+                event: {
+                    id: string;
+                    title: string;
+                    time: number;
+                    level?: "info" | "warning" | "error";
+                    data?: Record<string, unknown>;
+                },
+            ): void;
             on(event: string, handler: (...args: any[]) => void): () => void;
         };
     }

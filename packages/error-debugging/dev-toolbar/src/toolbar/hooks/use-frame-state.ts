@@ -4,15 +4,15 @@ import { useEffect, useState } from "preact/hooks";
  * Keyboard shortcut bindings
  */
 export interface KeyBindings {
-    /** Toggle toolbar panel open/closed */
-    toggle: string;
     /** Close active app / panel */
     close: string;
+    /** Toggle toolbar panel open/closed */
+    toggle: string;
 }
 
 export const DEFAULT_KEYBINDINGS: KeyBindings = {
-    toggle: "Alt+Shift+D",
     close: "Escape",
+    toggle: "Alt+Shift+D",
 };
 
 /**
@@ -30,14 +30,14 @@ export interface DevToolsFrameState {
     height: number;
 
     /**
-     * Whether DevTools panel is open in a Picture-in-Picture window
-     */
-    isPip: boolean;
-
-    /**
      * Whether this is the first visit (used to show onboarding hint)
      */
     isFirstVisit: boolean;
+
+    /**
+     * Whether DevTools panel is open in a Picture-in-Picture window
+     */
+    isPip: boolean;
 
     /**
      * Keyboard shortcut bindings
@@ -103,8 +103,8 @@ const STORAGE_KEY = "__v_dt__frame_state";
 const DEFAULT_STATE: DevToolsFrameState = {
     closeOnOutsideClick: true,
     height: 60,
-    isPip: false,
     isFirstVisit: true,
+    isPip: false,
     keybindings: DEFAULT_KEYBINDINGS,
     left: 50,
     minimizePanelInactive: 5000,

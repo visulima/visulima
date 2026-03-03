@@ -5,19 +5,23 @@ import type { DevToolbarApp } from "../../src/types/app";
 import type { DevToolbarHook } from "../../src/types/hooks";
 import type { TimelineEvent } from "../../src/types/timeline";
 
-const makeApp = (overrides: Partial<DevToolbarApp> = {}): DevToolbarApp => ({
-    icon: "<svg/>",
-    id: "test-app",
-    name: "Test App",
-    ...overrides,
-});
+const makeApp = (overrides: Partial<DevToolbarApp> = {}): DevToolbarApp => {
+    return {
+        icon: "<svg/>",
+        id: "test-app",
+        name: "Test App",
+        ...overrides,
+    };
+};
 
-const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => ({
-    id: "evt-1",
-    time: Date.now(),
-    title: "Test",
-    ...overrides,
-});
+const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => {
+    return {
+        id: "evt-1",
+        time: Date.now(),
+        title: "Test",
+        ...overrides,
+    };
+};
 
 describe("createDevToolbarHook", () => {
     let hook: DevToolbarHook;
@@ -33,7 +37,7 @@ describe("createDevToolbarHook", () => {
             hook.on("devtools:init", handler);
             hook.emit("devtools:init");
 
-            expect(handler).toHaveBeenCalledOnce();
+            expect(handler).toHaveBeenCalledTimes(1);
         });
 
         it("passes arguments through to the handler", () => {
@@ -54,8 +58,8 @@ describe("createDevToolbarHook", () => {
             hook.on("devtools:open", h2);
             hook.emit("devtools:open", "some-app");
 
-            expect(h1).toHaveBeenCalledOnce();
-            expect(h2).toHaveBeenCalledOnce();
+            expect(h1).toHaveBeenCalledTimes(1);
+            expect(h2).toHaveBeenCalledTimes(1);
         });
 
         it("does not call handlers registered for a different event", () => {
@@ -68,7 +72,7 @@ describe("createDevToolbarHook", () => {
         });
 
         it("is a no-op when no handlers are registered", () => {
-            expect(() => hook.emit("devtools:close")).not.toThrow();
+            expect(() => hook.emit("devtools:close")).not.toThrowError();
         });
 
         it("continues calling remaining handlers when one throws", () => {
@@ -81,7 +85,7 @@ describe("createDevToolbarHook", () => {
             hook.on("devtools:close", safe);
             hook.emit("devtools:close");
 
-            expect(safe).toHaveBeenCalledOnce();
+            expect(safe).toHaveBeenCalledTimes(1);
         });
 
         it("returns an unsubscribe function from on()", () => {
@@ -104,7 +108,7 @@ describe("createDevToolbarHook", () => {
             hook.emit("devtools:init");
 
             expect(h1).not.toHaveBeenCalled();
-            expect(h2).toHaveBeenCalledOnce();
+            expect(h2).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -133,13 +137,13 @@ describe("createDevToolbarHook", () => {
         });
 
         it("is a no-op when event has no handlers", () => {
-            expect(() => hook.off("devtools:init")).not.toThrow();
+            expect(() => hook.off("devtools:init")).not.toThrowError();
         });
 
         it("is a no-op when removing a handler that was never registered", () => {
             const handler = vi.fn();
 
-            expect(() => hook.off("devtools:init", handler)).not.toThrow();
+            expect(() => hook.off("devtools:init", handler)).not.toThrowError();
         });
 
         it("cleans up the handler set when the last handler is removed", () => {
@@ -150,6 +154,7 @@ describe("createDevToolbarHook", () => {
 
             // Emitting should not throw and handler should not be called
             hook.emit("devtools:init");
+
             expect(handler).not.toHaveBeenCalled();
         });
     });
@@ -162,7 +167,7 @@ describe("createDevToolbarHook", () => {
             hook.emit("devtools:init");
             hook.emit("devtools:init");
 
-            expect(handler).toHaveBeenCalledOnce();
+            expect(handler).toHaveBeenCalledTimes(1);
         });
 
         it("passes arguments to the once handler", () => {
@@ -212,7 +217,7 @@ describe("createDevToolbarHook", () => {
         it("does not throw when no onRegisterApp callback is provided", () => {
             const app = makeApp();
 
-            expect(() => hook.registerApp(app)).not.toThrow();
+            expect(() => hook.registerApp(app)).not.toThrowError();
         });
     });
 
@@ -240,7 +245,7 @@ describe("createDevToolbarHook", () => {
         it("does not throw when no onTimelineEvent callback is provided", () => {
             const event = makeEvent();
 
-            expect(() => hook.addTimelineEvent("custom", event)).not.toThrow();
+            expect(() => hook.addTimelineEvent("custom", event)).not.toThrowError();
         });
 
         it("calls both the callback and the event listener", () => {
@@ -252,8 +257,8 @@ describe("createDevToolbarHook", () => {
             hookWithCallback.on("timeline:event", listener);
             hookWithCallback.addTimelineEvent("network", event);
 
-            expect(callback).toHaveBeenCalledOnce();
-            expect(listener).toHaveBeenCalledOnce();
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(listener).toHaveBeenCalledTimes(1);
         });
     });
 });

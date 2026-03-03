@@ -133,7 +133,7 @@ export class PerformanceMonitor {
      * Start collecting metrics. Safe to call multiple times — starts once.
      */
     start(): void {
-        if (this.running || typeof window === "undefined") {
+        if (this.running || globalThis.window === undefined) {
             return;
         }
 
@@ -353,6 +353,7 @@ export class PerformanceMonitor {
     private tryObserve(type: string, callback: (list: PerformanceObserverEntryList) => void): void {
         try {
             const observer = new PerformanceObserver(callback);
+
             observer.observe({ buffered: true, type });
             this.observers.push(observer);
         } catch {

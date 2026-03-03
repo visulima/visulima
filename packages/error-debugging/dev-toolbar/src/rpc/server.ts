@@ -31,7 +31,11 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
  * @param options Additional options (e.g. which editor to launch)
  * @returns Server RPC context
  */
-export const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial<ServerFunctions>, options: { editor?: string } = {}): ServerRPCContext => {
+export const createServerRPCContext = (
+    server: ViteDevServer,
+    customFunctions?: Partial<ServerFunctions>,
+    options: { editor?: string } = {},
+): ServerRPCContext => {
     const defaultFunctions = createDefaultServerFunctions(server, options);
     const functions: ServerFunctions = {
         ...defaultFunctions,

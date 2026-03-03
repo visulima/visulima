@@ -69,10 +69,6 @@ export const createGlobalAPI = (
             await appManager.toggleApp(appId);
         },
 
-        setAppActive(appId: string, active: boolean): void {
-            appManager.setAppActive(appId, active);
-        },
-
         registerApp(app: DevToolbarApp): void {
             appManager.registerApp(app);
         },
@@ -82,6 +78,10 @@ export const createGlobalAPI = (
                 return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
             },
         }),
+
+        setAppActive(appId: string, active: boolean): void {
+            appManager.setAppActive(appId, active);
+        },
 
         show(): void {
             toolbar.show();

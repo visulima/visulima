@@ -1,7 +1,7 @@
 import "./styles.css";
 
-import type { DevToolbarApp } from "@visulima/dev-toolbar";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import type { DevToolbarApp } from "@visulima/dev-toolbar";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 
@@ -41,9 +41,9 @@ if (rootElement && !rootElement.innerHTML) {
 
 // ── Global DevTools API ───────────────────────────────────────────────────────
 
-if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
+if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     const exampleApp: DevToolbarApp = {
-        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L2 7v6l8 5 8-5V7l-8-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M10 2L2 7v6l8 5 8-5V7l-8-5z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg>",
         id: "tanstack-example-app",
         init(canvas) {
             const wrapper = document.createElement("div");
@@ -51,14 +51,17 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
             wrapper.style.cssText = "padding:16px;color:white;";
 
             const heading = document.createElement("h2");
+
             heading.style.cssText = "margin:0 0 8px";
             heading.textContent = "TanStack Example";
 
             const desc = document.createElement("p");
+
             desc.style.cssText = "margin:0 0 12px;opacity:.7";
             desc.textContent = "Custom app registered in the TanStack dev-toolbar demo.";
 
             const hint = document.createElement("p");
+
             hint.style.cssText = "font-size:12px;opacity:.5";
             hint.textContent = "Open the browser console to see hook events.";
 
@@ -68,13 +71,13 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
         name: "TanStack App",
     };
 
-    window.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
+    globalThis.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
 }
 
 // ── Hook system ───────────────────────────────────────────────────────────────
 
-if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
-    const hook = window.__DEV_TOOLBAR_HOOK__;
+if (globalThis.window !== undefined && globalThis.__DEV_TOOLBAR_HOOK__) {
+    const hook = globalThis.__DEV_TOOLBAR_HOOK__;
 
     hook.on("devtools:init", () => {
         console.log("[TanStack] Dev Toolbar initialized!");

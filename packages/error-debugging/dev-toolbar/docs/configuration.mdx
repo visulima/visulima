@@ -58,7 +58,7 @@ devToolbar({
         seo: false,
         performance: false,
     },
-})
+});
 ```
 
 ---
@@ -75,7 +75,7 @@ devToolbar({
     appendTo: "src/main.ts",
     // or as a regex:
     appendTo: /main\.(ts|js)$/,
-})
+});
 ```
 
 **Why SSR frameworks need this**
@@ -91,11 +91,12 @@ Because that hook automatically skips SSR transforms (`transformOptions.ssr === 
 devToolbar({
     // router.tsx is always part of the client bundle.
     appendTo: /router\.tsx$/,
-})
+});
 ```
 
 <Callout type="warn">
-    Only set `appendTo` if you understand exactly what it does. The toolbar import is prepended to the matching module's source code at transform time. Make sure the target module is executed in the browser (not server-only code).
+    Only set `appendTo` if you understand exactly what it does. The toolbar import is prepended to the matching module's source code at transform time. Make
+    sure the target module is executed in the browser (not server-only code).
 </Callout>
 
 ---
@@ -126,7 +127,7 @@ const myApp: DevToolbarApp = {
 
 devToolbar({
     customApps: [myApp],
-})
+});
 ```
 
 ---
@@ -145,6 +146,7 @@ Whether the toolbar pill is visible when the page first loads. Set to `false` to
 
 The editor to open when clicking "Open in editor" in the Inspector app.
 Accepts any value understood by [`launch-editor`](https://github.com/yyx990803/launch-editor):
+
 - An editor alias: `"code"`, `"webstorm"`, `"vim"`, `"atom"`, `"subl"`
 - A full path to the editor executable
 
@@ -159,7 +161,7 @@ devToolbar({
     editor: "code",
     // or
     editor: "/usr/local/bin/hx",
-})
+});
 ```
 
 ---
@@ -176,11 +178,11 @@ Initial panel height as a percentage of the viewport height. Users can resize th
 
 **Type:** `{ enabled?: boolean; ignore?: { files?: string[]; components?: string[] } }` — **Default:** `{ enabled: true }`
 
-Controls the JSX source injection transform.  When enabled, `data-vdt-source="<file>:<line>:<col>"` attributes are
-added to every JSX opening element at build time (development mode only).  The Inspector app uses these attributes
+Controls the JSX source injection transform. When enabled, `data-vdt-source="<file>:<line>:<col>"` attributes are
+added to every JSX opening element at build time (development mode only). The Inspector app uses these attributes
 to jump directly to the source file when an element is clicked.
 
-Only runs when `config.mode === "development"`.  Set `enabled: false` to opt out entirely.
+Only runs when `config.mode === "development"`. Set `enabled: false` to opt out entirely.
 
 ```ts
 devToolbar({
@@ -189,16 +191,16 @@ devToolbar({
 
         // Optional: skip specific files or component names
         ignore: {
-            files: ["**/generated/**", "**/*.stories.tsx"],   // glob patterns
-            components: ["StrictMode", "Suspense"],            // component names (exact or glob)
+            files: ["**/generated/**", "**/*.stories.tsx"], // glob patterns
+            components: ["StrictMode", "Suspense"], // component names (exact or glob)
         },
     },
-})
+});
 ```
 
 <Callout type="info">
-    Source injection reads the unmodified on-disk file so that both SSR and client builds emit identical
-    `data-vdt-source` values.  This prevents React hydration mismatches in SSR frameworks such as TanStack Start.
+    Source injection reads the unmodified on-disk file so that both SSR and client builds emit identical `data-vdt-source` values. This prevents React hydration
+    mismatches in SSR frameworks such as TanStack Start.
 </Callout>
 
 ---
@@ -212,10 +214,10 @@ Project-level default keyboard shortcuts. These act as the defaults; users can o
 ```ts
 devToolbar({
     keybindings: {
-        toggle: "Alt+Shift+D",   // default
-        close: "Escape",          // default
+        toggle: "Alt+Shift+D", // default
+        close: "Escape", // default
     },
-})
+});
 ```
 
 Key names follow the `KeyboardEvent.key` property. Modifiers are joined with `+`: `Control`, `Alt`, `Meta`, `Shift`.
@@ -268,11 +270,12 @@ When enabled (the default), a second Vite plugin resolves all `virtual:visulima-
 devToolbar({
     // Keep the toolbar in staging / preview builds
     removeDevtoolsOnBuild: false,
-})
+});
 ```
 
 <Callout type="info">
-    Leave this at `true` for all standard use cases. Only set it to `false` if you intentionally ship the toolbar in non-development builds (e.g. internal staging environments where Vite builds instead of serving).
+    Leave this at `true` for all standard use cases. Only set it to `false` if you intentionally ship the toolbar in non-development builds (e.g. internal
+    staging environments where Vite builds instead of serving).
 </Callout>
 
 ---
@@ -286,8 +289,8 @@ When `true`, the toolbar is only injected when the page URL contains the flag sp
 ```ts
 devToolbar({
     requireUrlFlag: true,
-    urlFlagName: "devtools",   // ?devtools or #devtools in URL
-})
+    urlFlagName: "devtools", // ?devtools or #devtools in URL
+});
 ```
 
 ---
@@ -296,7 +299,7 @@ devToolbar({
 
 **Type:** `Partial<ServerFunctions>`
 
-Register additional Node.js functions that app components can call over RPC.  See [RPC Functions](/docs/dev-toolbar/custom-apps/rpc) for the full pattern.
+Register additional Node.js functions that app components can call over RPC. See [RPC Functions](/docs/dev-toolbar/custom-apps/rpc) for the full pattern.
 
 ```ts
 import fs from "node:fs/promises";
@@ -308,7 +311,7 @@ devToolbar({
             return files.map((f) => `/${f.replace(/\.(tsx?|jsx?)$/, "")}`);
         },
     },
-})
+});
 ```
 
 ---
@@ -383,7 +386,7 @@ interface DevToolbarOptions {
     /**
      * JSX source attribute injection config.
      */
-    injectSource?: { enabled?: boolean; ignore?: { files?: string[]; components?: string[] }; };
+    injectSource?: { enabled?: boolean; ignore?: { files?: string[]; components?: string[] } };
 
     /**
      * Project-level default keyboard shortcuts.

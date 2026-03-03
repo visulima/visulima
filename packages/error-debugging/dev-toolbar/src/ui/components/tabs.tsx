@@ -13,13 +13,13 @@ interface TabsContextValue {
 const TabsContext = createContext<TabsContextValue | null>(null);
 
 const useTabsContext = (): TabsContextValue => {
-    const ctx = useContext(TabsContext);
+    const context = useContext(TabsContext);
 
-    if (!ctx) {
+    if (!context) {
         throw new Error("Tabs subcomponent must be used within <Tabs>");
     }
 
-    return ctx;
+    return context;
 };
 
 interface TabsProps extends JSX.HTMLAttributes<HTMLDivElement> {
@@ -71,11 +71,7 @@ const Tabs = ({ children, class: className, defaultValue, onValueChange, value, 
 };
 
 const TabsList = ({ children, class: className, ...rest }: TabsListProps): JSX.Element => (
-    <div
-        class={cn("inline-flex h-9 items-center justify-center rounded-none bg-muted p-1 text-muted-foreground", className)}
-        role="tablist"
-        {...rest}
-    >
+    <div class={cn("inline-flex h-9 items-center justify-center rounded-none bg-muted p-1 text-muted-foreground", className)} role="tablist" {...rest}>
         {children}
     </div>
 );
@@ -113,7 +109,10 @@ const TabsContent = ({ children, class: className, value, ...rest }: TabsContent
 
     return (
         <div
-            class={cn("mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2", className)}
+            class={cn(
+                "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                className,
+            )}
             role="tabpanel"
             {...rest}
         >

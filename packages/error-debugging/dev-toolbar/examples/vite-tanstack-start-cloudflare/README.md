@@ -62,9 +62,11 @@ export default defineConfig({
 
 > **Cloudflare Note**: To enable the Cloudflare Pages SSR preset in newer versions
 > of TanStack Start (≥ 1.160), configure Nitro via `app.config.ts`:
+>
 > ```ts
 > export default defineConfig({ server: { preset: "cloudflare-pages" } });
 > ```
+>
 > The build output goes to `.output/public`, referenced by `wrangler.jsonc` via
 > `pages_build_output_dir`. Run `pnpm deploy` to publish to Cloudflare Pages.
 

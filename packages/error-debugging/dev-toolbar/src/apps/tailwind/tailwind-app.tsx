@@ -15,49 +15,47 @@ type Tab = "colors" | "spacing" | "type" | "effects" | "config";
  * Recurses into @layer, @media, and @supports blocks because Tailwind v4
  * wraps its theme tokens inside `@layer theme { :root { ... } }`.
  */
-const collectVarsFromRules = (rules: CSSRuleList, vars: Map<string, string>): void => {
+const collectVariablesFromRules = (rules: CSSRuleList, variables: Map<string, string>): void => {
     for (const rule of rules) {
         if (rule instanceof CSSStyleRule) {
-            const isRoot = rule.selectorText
-                .split(",")
-                .some((s) => {
-                    const t = s.trim();
+            const isRoot = rule.selectorText.split(",").some((s) => {
+                const t = s.trim();
 
-                    return t === ":root" || t === "html";
-                });
+                return t === ":root" || t === "html";
+            });
 
             if (isRoot) {
                 for (let i = 0; i < rule.style.length; i++) {
                     const prop = rule.style[i] as string;
 
                     if (prop.startsWith("--") && !prop.startsWith("--tw-") && !prop.startsWith("--brand-")) {
-                        const val = rule.style.getPropertyValue(prop).trim();
+                        const value = rule.style.getPropertyValue(prop).trim();
 
-                        if (val) {
-                            vars.set(prop, val);
+                        if (value) {
+                            variables.set(prop, value);
                         }
                     }
                 }
             }
         } else if ("cssRules" in rule && rule.cssRules instanceof CSSRuleList) {
             // Recurse into @layer, @media, @supports, and any other grouping rule
-            collectVarsFromRules(rule.cssRules as CSSRuleList, vars);
+            collectVariablesFromRules(rule.cssRules as CSSRuleList, variables);
         }
     }
 };
 
-const scanRootVars = (): Map<string, string> => {
-    const vars = new Map<string, string>();
+const scanRootVariables = (): Map<string, string> => {
+    const variables = new Map<string, string>();
 
     for (const sheet of document.styleSheets) {
         try {
-            collectVarsFromRules(sheet.cssRules, vars);
+            collectVariablesFromRules(sheet.cssRules, variables);
         } catch {
             // CORS — skip cross-origin stylesheets
         }
     }
 
-    return vars;
+    return variables;
 };
 
 // ─── Token types ──────────────────────────────────────────────────────────────
@@ -101,21 +99,21 @@ interface TokenSet {
 
 const parseToPx = (value: string): number => {
     if (value.endsWith("rem")) {
-        return parseFloat(value) * 16;
+        return Number.parseFloat(value) * 16;
     }
 
     if (value.endsWith("px")) {
-        return parseFloat(value);
+        return Number.parseFloat(value);
     }
 
     if (value.endsWith("em")) {
-        return parseFloat(value) * 16;
+        return Number.parseFloat(value) * 16;
     }
 
     return 0;
 };
 
-const extractTokens = (vars: Map<string, string>): TokenSet => {
+const extractTokens = (variables: Map<string, string>): TokenSet => {
     const colors: ColorToken[] = [];
     const spacing: SpacingToken[] = [];
     const fontSizes: FontSizeToken[] = [];
@@ -123,7 +121,7 @@ const extractTokens = (vars: Map<string, string>): TokenSet => {
     const radii: EffectToken[] = [];
     const shadows: EffectToken[] = [];
 
-    for (const [prop, value] of vars) {
+    for (const [prop, value] of variables) {
         if (prop.startsWith("--color-")) {
             colors.push({ cssVar: prop, name: prop.slice(8), value });
         } else if (prop.startsWith("--spacing-")) {
@@ -157,7 +155,7 @@ const extractTokens = (vars: Map<string, string>): TokenSet => {
 
 // ─── Color grouping ───────────────────────────────────────────────────────────
 
-const isNumericScale = (name: string): boolean => /^[\w]+-\d+$/.test(name);
+const isNumericScale = (name: string): boolean => /^\w+-\d+$/.test(name);
 
 const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>; semantic: ColorToken[] } => {
     const semantic: ColorToken[] = [];
@@ -177,10 +175,10 @@ const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>;
 
     for (const tokens of scaleMap.values()) {
         tokens.sort((a, b) => {
-            const numA = parseInt(a.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
-            const numB = parseInt(b.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
+            const numberA = Number.parseInt(a.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
+            const numberB = Number.parseInt(b.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
 
-            return numA - numB;
+            return numberA - numberB;
         });
     }
 
@@ -201,7 +199,7 @@ const useCopy = (): { copied: boolean; copy: (text: string) => void } => {
             clearTimeout(timer.current);
         }
 
-        timer.current = setTimeout(() => setCopied(false), 1500);
+        timer.current = setTimeout(setCopied, 1500, false);
     };
 
     return { copied, copy };
@@ -215,9 +213,7 @@ const SectionTitle = ({ count, title }: { count?: number; title: string }): Comp
             <span class="text-primary/50">// </span>
             {title}
         </span>
-        {count !== undefined && count > 0 && (
-            <span class="ml-auto text-[0.58rem] font-mono text-muted-foreground/50">{count}</span>
-        )}
+        {count !== undefined && count > 0 && <span class="ml-auto text-[0.58rem] font-mono text-muted-foreground/50">{count}</span>}
     </div>
 );
 
@@ -233,10 +229,7 @@ const ColorItem = ({ token }: { token: ColorToken }): ComponentChildren => {
             title={`Click to copy ${token.cssVar}`}
             type="button"
         >
-            <span
-                class="shrink-0 size-5 border border-black/10 dark:border-white/10"
-                style={{ background: `var(${token.cssVar})` }}
-            />
+            <span class="shrink-0 size-5 border border-black/10 dark:border-white/10" style={{ background: `var(${token.cssVar})` }} />
             <span class="flex-1 min-w-0">
                 <span class="block text-[0.68rem] font-mono text-foreground truncate">{token.name}</span>
                 <span class="block text-[0.6rem] font-mono text-muted-foreground/60 truncate">{token.value}</span>
@@ -265,8 +258,8 @@ const ColorScaleRow = ({ name, tokens }: { name: string; tokens: ColorToken[] })
                 <div class="flex flex-1 gap-px overflow-hidden">
                     {tokens.map((t) => (
                         <button
-                            key={t.cssVar}
                             class="flex-1 h-5 border-0 cursor-pointer transition-transform hover:scale-110 hover:z-10"
+                            key={t.cssVar}
                             onClick={() => copy(t.cssVar)}
                             style={{ background: `var(${t.cssVar})`, minWidth: 0 }}
                             title={`${t.name}\n${t.value}\nClick to copy ${t.cssVar}`}
@@ -275,9 +268,7 @@ const ColorScaleRow = ({ name, tokens }: { name: string; tokens: ColorToken[] })
                     ))}
                 </div>
             </div>
-            {copied && (
-                <span class="text-[0.6rem] font-mono text-primary/70 pl-[72px]">copied!</span>
-            )}
+            {copied && <span class="text-[0.6rem] font-mono text-primary/70 pl-[72px]">copied!</span>}
         </div>
     );
 };
@@ -293,8 +284,7 @@ const ColorsTab = ({ colors }: { colors: ColorToken[] }): ComponentChildren => {
                 <span class="text-3xl text-muted-foreground/20">◫</span>
                 <p class="text-[0.75rem] text-muted-foreground/60">No color tokens found</p>
                 <p class="text-[0.65rem] text-muted-foreground/40 leading-relaxed">
-                    Color tokens are read from <code class="font-mono">--color-*</code> CSS variables on{" "}
-                    <code class="font-mono">:root</code>
+                    Color tokens are read from <code class="font-mono">--color-*</code> CSS variables on <code class="font-mono">:root</code>
                 </p>
             </div>
         );
@@ -319,7 +309,7 @@ const ColorsTab = ({ colors }: { colors: ColorToken[] }): ComponentChildren => {
                 <div>
                     <SectionTitle count={scales.size} title="Palette" />
                     <div class="py-1 divide-y divide-border/20">
-                        {Array.from(scales.entries()).map(([name, tokens]) => (
+                        {Array.from(scales.entries(), ([name, tokens]) => (
                             <ColorScaleRow key={name} name={name} tokens={tokens} />
                         ))}
                     </div>
@@ -352,14 +342,11 @@ const SpacingTab = ({ spacing }: { spacing: SpacingToken[] }): ComponentChildren
                 const barPct = maxPx > 0 ? Math.max((token.numericPx / maxPx) * 100, 2) : 2;
 
                 return (
-                    <div key={token.cssVar} class="flex items-center gap-2.5">
+                    <div class="flex items-center gap-2.5" key={token.cssVar}>
                         <span class="text-[0.62rem] font-mono text-muted-foreground/70 w-8 shrink-0 text-right">{token.name}</span>
                         <div class="flex-1 flex items-center gap-1.5">
                             <div class="flex-1 h-3.5 bg-foreground/5 border border-border/30 overflow-hidden">
-                                <div
-                                    class="h-full bg-primary/30 border-r border-primary/40"
-                                    style={{ width: `${barPct}%` }}
-                                />
+                                <div class="h-full bg-primary/30 border-r border-primary/40" style={{ width: `${barPct}%` }} />
                             </div>
                         </div>
                         <code class="text-[0.62rem] font-mono text-muted-foreground/60 w-14 text-right shrink-0">{token.value}</code>
@@ -379,8 +366,7 @@ const TypographyTab = ({ fontFamilies, fontSizes }: { fontFamilies: EffectToken[
                 <span class="text-3xl text-muted-foreground/20">Aa</span>
                 <p class="text-[0.75rem] text-muted-foreground/60">No typography tokens found</p>
                 <p class="text-[0.65rem] text-muted-foreground/40 leading-relaxed">
-                    Font size tokens are read from <code class="font-mono">--text-*</code> and font family tokens from{" "}
-                    <code class="font-mono">--font-*</code>
+                    Font size tokens are read from <code class="font-mono">--text-*</code> and font family tokens from <code class="font-mono">--font-*</code>
                 </p>
             </div>
         );
@@ -397,12 +383,9 @@ const TypographyTab = ({ fontFamilies, fontSizes }: { fontFamilies: EffectToken[
                             const clampedPx = Math.min(token.sizePx || 14, 48);
 
                             return (
-                                <div key={token.cssVar} class="flex items-center gap-3">
+                                <div class="flex items-center gap-3" key={token.cssVar}>
                                     <span class="text-[0.6rem] font-mono text-muted-foreground/60 w-10 shrink-0 text-right">{token.name}</span>
-                                    <span
-                                        class="text-foreground leading-none truncate flex-1"
-                                        style={{ fontSize: `${clampedPx}px` }}
-                                    >
+                                    <span class="text-foreground leading-none truncate flex-1" style={{ fontSize: `${clampedPx}px` }}>
                                         Ag
                                     </span>
                                     <code class="text-[0.62rem] font-mono text-muted-foreground/60 shrink-0">{token.value}</code>
@@ -419,14 +402,11 @@ const TypographyTab = ({ fontFamilies, fontSizes }: { fontFamilies: EffectToken[
                     <SectionTitle count={fontFamilies.length} title="Font Families" />
                     <div class="p-3 space-y-2">
                         {fontFamilies.map((token) => (
-                            <div key={token.cssVar} class="space-y-0.5">
+                            <div class="space-y-0.5" key={token.cssVar}>
                                 <div class="flex items-center justify-between gap-2">
                                     <code class="text-[0.68rem] font-mono text-foreground">{token.name}</code>
                                 </div>
-                                <p
-                                    class="text-[0.75rem] text-foreground/70 truncate"
-                                    style={{ fontFamily: `var(${token.cssVar})` }}
-                                >
+                                <p class="text-[0.75rem] text-foreground/70 truncate" style={{ fontFamily: `var(${token.cssVar})` }}>
                                     The quick brown fox
                                 </p>
                                 <code class="block text-[0.58rem] font-mono text-muted-foreground/50 truncate">{token.value}</code>
@@ -448,8 +428,7 @@ const EffectsTab = ({ radii, shadows }: { radii: EffectToken[]; shadows: EffectT
                 <span class="text-3xl text-muted-foreground/20">◻</span>
                 <p class="text-[0.75rem] text-muted-foreground/60">No effect tokens found</p>
                 <p class="text-[0.65rem] text-muted-foreground/40 leading-relaxed">
-                    Radius tokens from <code class="font-mono">--radius-*</code> and shadow tokens from{" "}
-                    <code class="font-mono">--shadow-*</code>
+                    Radius tokens from <code class="font-mono">--radius-*</code> and shadow tokens from <code class="font-mono">--shadow-*</code>
                 </p>
             </div>
         );
@@ -463,11 +442,8 @@ const EffectsTab = ({ radii, shadows }: { radii: EffectToken[]; shadows: EffectT
                     <SectionTitle count={radii.length} title="Border Radius" />
                     <div class="p-3 flex flex-wrap gap-3">
                         {radii.map((token) => (
-                            <div key={token.cssVar} class="flex flex-col items-center gap-1.5">
-                                <div
-                                    class="size-10 border-2 border-primary/40 bg-primary/8"
-                                    style={{ borderRadius: `var(${token.cssVar})` }}
-                                />
+                            <div class="flex flex-col items-center gap-1.5" key={token.cssVar}>
+                                <div class="size-10 border-2 border-primary/40 bg-primary/8" style={{ borderRadius: `var(${token.cssVar})` }} />
                                 <code class="text-[0.6rem] font-mono text-muted-foreground/70">{token.name}</code>
                                 <code class="text-[0.58rem] font-mono text-muted-foreground/50">{token.value}</code>
                             </div>
@@ -482,14 +458,11 @@ const EffectsTab = ({ radii, shadows }: { radii: EffectToken[]; shadows: EffectT
                     <SectionTitle count={shadows.length} title="Shadows" />
                     <div class="p-3 space-y-3">
                         {shadows.map((token) => (
-                            <div key={token.cssVar} class="space-y-1.5">
+                            <div class="space-y-1.5" key={token.cssVar}>
                                 <div class="flex items-center justify-between gap-2">
                                     <code class="text-[0.68rem] font-mono text-foreground">{token.name}</code>
                                 </div>
-                                <div
-                                    class="h-10 bg-card border border-border/40"
-                                    style={{ boxShadow: `var(${token.cssVar})` }}
-                                />
+                                <div class="h-10 bg-card border border-border/40" style={{ boxShadow: `var(${token.cssVar})` }} />
                                 <code class="block text-[0.58rem] font-mono text-muted-foreground/50 truncate">{token.value}</code>
                             </div>
                         ))}
@@ -510,13 +483,13 @@ const ConfigColorScaleRow = ({ name, tokens }: { name: string; tokens: [string, 
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-[0.65rem] font-mono text-muted-foreground/70 w-16 shrink-0">{name}</span>
                 <div class="flex flex-1 gap-px overflow-hidden">
-                    {tokens.map(([varName, value]) => (
+                    {tokens.map(([variableName, value]) => (
                         <button
-                            key={varName}
                             class="flex-1 h-5 border-0 cursor-pointer transition-transform hover:scale-110 hover:z-10"
-                            onClick={() => copy(varName)}
+                            key={variableName}
+                            onClick={() => copy(variableName)}
                             style={{ background: value }}
-                            title={`${varName}\n${value}\nClick to copy`}
+                            title={`${variableName}\n${value}\nClick to copy`}
                             type="button"
                         />
                     ))}
@@ -527,15 +500,7 @@ const ConfigColorScaleRow = ({ name, tokens }: { name: string; tokens: [string, 
     );
 };
 
-const ConfigSemanticColorItem = ({
-    cssVar,
-    isCustom,
-    value,
-}: {
-    cssVar: string;
-    isCustom: boolean;
-    value: string;
-}): ComponentChildren => {
+const ConfigSemanticColorItem = ({ cssVar, isCustom, value }: { cssVar: string; isCustom: boolean; value: string }): ComponentChildren => {
     const { copied, copy } = useCopy();
     const name = cssVar.slice(8); // strip --color-
 
@@ -550,11 +515,7 @@ const ConfigSemanticColorItem = ({
             <span class="flex-1 min-w-0">
                 <span class="flex items-center gap-1.5">
                     <span class="text-[0.68rem] font-mono text-foreground truncate">{name}</span>
-                    {isCustom && (
-                        <span class="text-[0.55rem] font-bold uppercase tracking-wide text-primary/70 bg-primary/10 px-1">
-                            custom
-                        </span>
-                    )}
+                    {isCustom && <span class="text-[0.55rem] font-bold uppercase tracking-wide text-primary/70 bg-primary/10 px-1">custom</span>}
                 </span>
                 <span class="block text-[0.6rem] font-mono text-muted-foreground/60 truncate">{value}</span>
             </span>
@@ -606,15 +567,7 @@ const ConfigSection = ({
 
 // ─── Simple token row for non-color tokens ────────────────────────────────────
 
-const ConfigTokenRow = ({
-    cssVar,
-    isCustom,
-    value,
-}: {
-    cssVar: string;
-    isCustom: boolean;
-    value: string;
-}): ComponentChildren => {
+const ConfigTokenRow = ({ cssVar, isCustom, value }: { cssVar: string; isCustom: boolean; value: string }): ComponentChildren => {
     const { copied, copy } = useCopy();
     const name = cssVar.replace(/^--/, "");
 
@@ -627,11 +580,7 @@ const ConfigTokenRow = ({
             <span class="flex-1 min-w-0">
                 <span class="flex items-center gap-1.5">
                     <code class="text-[0.68rem] font-mono text-foreground truncate">{name}</code>
-                    {isCustom && (
-                        <span class="text-[0.55rem] font-bold uppercase tracking-wide text-primary/70 bg-primary/10 px-1 shrink-0">
-                            custom
-                        </span>
-                    )}
+                    {isCustom && <span class="text-[0.55rem] font-bold uppercase tracking-wide text-primary/70 bg-primary/10 px-1 shrink-0">custom</span>}
                 </span>
             </span>
             <code class="text-[0.62rem] font-mono text-muted-foreground/60 truncate max-w-[160px] shrink-0">{value}</code>
@@ -663,13 +612,9 @@ const ConfigTab = ({
     if (loading) {
         return (
             <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none">
-                <div class="flex gap-1.5 items-center" aria-hidden="true">
+                <div aria-hidden="true" class="flex gap-1.5 items-center">
                     {([0, 160, 320] as const).map((delay) => (
-                        <span
-                            key={delay}
-                            class="size-1.5 bg-primary/50 rounded-full animate-pulse"
-                            style={{ animationDelay: `${delay}ms` }}
-                        />
+                        <span class="size-1.5 bg-primary/50 rounded-full animate-pulse" key={delay} style={{ animationDelay: `${delay}ms` }} />
                     ))}
                 </div>
                 <span class="text-[0.75rem] text-muted-foreground">Loading Tailwind config…</span>
@@ -695,62 +640,75 @@ const ConfigTab = ({
     const { cssFiles, customTheme, defaultTheme, version } = configData;
 
     // Merge: custom overrides take priority over default for display
-    const allVars = { ...defaultTheme, ...customTheme };
+    const allVariables = { ...defaultTheme, ...customTheme };
 
     // ── Color partitioning ──
-    const colorEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--color-"));
+    const colorEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--color-"));
     const semanticColors = colorEntries.filter(([k]) => !isNumericScale(k.slice(8)));
     const scaleColors = colorEntries.filter(([k]) => isNumericScale(k.slice(8)));
 
     const scaleMap = new Map<string, [string, string][]>();
 
-    for (const [cssVar, value] of scaleColors) {
-        const scaleName = cssVar.slice(8).replace(/-\d+$/, "");
+    for (const [cssVariable, value] of scaleColors) {
+        const scaleName = cssVariable.slice(8).replace(/-\d+$/, "");
         const existing = scaleMap.get(scaleName) ?? [];
 
-        existing.push([cssVar, value]);
+        existing.push([cssVariable, value]);
         scaleMap.set(scaleName, existing);
     }
 
     for (const tokens of scaleMap.values()) {
         tokens.sort((a, b) => {
-            const numA = parseInt(a[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
-            const numB = parseInt(b[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
+            const numberA = Number.parseInt(a[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
+            const numberB = Number.parseInt(b[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
 
-            return numA - numB;
+            return numberA - numberB;
         });
     }
 
     const filteredScales = colorSearch
-        ? Array.from(scaleMap.entries()).filter(([name]) => name.toLowerCase().includes(colorSearch.toLowerCase()))
-        : Array.from(scaleMap.entries());
+        ? [...scaleMap.entries()].filter(([name]) => name.toLowerCase().includes(colorSearch.toLowerCase()))
+        : [...scaleMap.entries()];
 
     // ── Non-color token groups ──
-    const spacingEntries = Object.entries(allVars)
+    const spacingEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--spacing-"))
         .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
-    const fontFamilyEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--font-"));
+    const fontFamilyEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--font-"));
 
-    const fontSizeEntries = Object.entries(allVars)
+    const fontSizeEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--text-") && !k.includes("--line-height") && !k.endsWith("--font-weight"))
         .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
-    const breakpointEntries = Object.entries(allVars)
+    const breakpointEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--breakpoint-"))
         .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
-    const radiusEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--radius-"));
+    const radiusEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--radius-"));
 
-    const shadowEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--shadow-") || k.startsWith("--drop-shadow-"));
+    const shadowEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--shadow-") || k.startsWith("--drop-shadow-"));
 
-    const blurEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--blur-"));
+    const blurEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--blur-"));
 
-    const animateEntries = Object.entries(allVars).filter(([k]) => k.startsWith("--animate-"));
+    const animateEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--animate-"));
 
     // Everything not covered above
-    const knownPrefixes = ["--color-", "--spacing-", "--font-", "--text-", "--breakpoint-", "--radius-", "--shadow-", "--drop-shadow-", "--blur-", "--animate-", "--tw-", "--brand-"];
-    const otherEntries = Object.entries(allVars).filter(([k]) => !knownPrefixes.some((p) => k.startsWith(p)));
+    const knownPrefixes = [
+        "--color-",
+        "--spacing-",
+        "--font-",
+        "--text-",
+        "--breakpoint-",
+        "--radius-",
+        "--shadow-",
+        "--drop-shadow-",
+        "--blur-",
+        "--animate-",
+        "--tw-",
+        "--brand-",
+    ];
+    const otherEntries = Object.entries(allVariables).filter(([k]) => !knownPrefixes.some((p) => k.startsWith(p)));
 
     // Max spacing for bar widths
     const maxSpacingPx = spacingEntries.reduce((m, [, v]) => Math.max(m, parseToPx(v)), 1);
@@ -765,8 +723,8 @@ const ConfigTab = ({
                         version === "v4"
                             ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
                             : version === "v3"
-                              ? "bg-primary/10 text-primary border border-primary/20"
-                              : "bg-foreground/8 text-muted-foreground border border-border",
+                                ? "bg-primary/10 text-primary border border-primary/20"
+                                : "bg-foreground/8 text-muted-foreground border border-border",
                     )}
                 >
                     {version === "unknown" ? "Tailwind" : `Tailwind ${version}`}
@@ -777,21 +735,19 @@ const ConfigTab = ({
                         {cssFiles.length > 1 && <span class="text-muted-foreground/40"> +{cssFiles.length - 1}</span>}
                     </code>
                 )}
-                <span class="text-[0.6rem] font-mono text-muted-foreground/50 shrink-0">
-                    {Object.keys(allVars).length} tokens
-                </span>
+                <span class="text-[0.6rem] font-mono text-muted-foreground/50 shrink-0">{Object.keys(allVariables).length} tokens</span>
             </div>
 
             {/* Custom overrides */}
             {Object.keys(customTheme).length > 0 && (
                 <ConfigSection count={Object.keys(customTheme).length} title="Custom Overrides">
                     <div class="py-1">
-                        {Object.entries(customTheme).map(([cssVar, value]) =>
-                            cssVar.startsWith("--color-") && !isNumericScale(cssVar.slice(8)) ? (
-                                <ConfigSemanticColorItem key={cssVar} cssVar={cssVar} isCustom value={value} />
+                        {Object.entries(customTheme).map(([cssVariable, value]) =>
+                            (cssVariable.startsWith("--color-") && !isNumericScale(cssVariable.slice(8)) ? (
+                                <ConfigSemanticColorItem key={cssVariable} cssVar={cssVariable} isCustom value={value} />
                             ) : (
-                                <ConfigTokenRow key={cssVar} cssVar={cssVar} isCustom value={value} />
-                            ),
+                                <ConfigTokenRow key={cssVariable} cssVar={cssVariable} isCustom value={value} />
+                            )),
                         )}
                     </div>
                 </ConfigSection>
@@ -801,8 +757,8 @@ const ConfigTab = ({
             {semanticColors.length > 0 && (
                 <ConfigSection count={semanticColors.length} title="Semantic Colors">
                     <div class="py-1">
-                        {semanticColors.map(([cssVar, value]) => (
-                            <ConfigSemanticColorItem key={cssVar} cssVar={cssVar} isCustom={cssVar in customTheme} value={value} />
+                        {semanticColors.map(([cssVariable, value]) => (
+                            <ConfigSemanticColorItem cssVar={cssVariable} isCustom={cssVariable in customTheme} key={cssVariable} value={value} />
                         ))}
                     </div>
                 </ConfigSection>
@@ -810,7 +766,7 @@ const ConfigTab = ({
 
             {/* Color palette */}
             {scaleMap.size > 0 && (
-                <ConfigSection count={scaleMap.size} title="Color Palette" defaultOpen={false}>
+                <ConfigSection count={scaleMap.size} defaultOpen={false} title="Color Palette">
                     <div class="px-3 pt-2 pb-1 border-b border-border/20">
                         <input
                             class="w-full bg-foreground/4 border border-border/40 px-2 py-1 text-[0.68rem] font-mono text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/40"
@@ -824,26 +780,22 @@ const ConfigTab = ({
                         {filteredScales.map(([name, tokens]) => (
                             <ConfigColorScaleRow key={name} name={name} tokens={tokens} />
                         ))}
-                        {filteredScales.length === 0 && (
-                            <p class="text-center text-[0.7rem] text-muted-foreground/50 py-4">No colors match</p>
-                        )}
+                        {filteredScales.length === 0 && <p class="text-center text-[0.7rem] text-muted-foreground/50 py-4">No colors match</p>}
                     </div>
                 </ConfigSection>
             )}
 
             {/* Spacing */}
             {spacingEntries.length > 0 && (
-                <ConfigSection count={spacingEntries.length} title="Spacing" defaultOpen={false}>
+                <ConfigSection count={spacingEntries.length} defaultOpen={false} title="Spacing">
                     <div class="p-3 space-y-1">
-                        {spacingEntries.map(([cssVar, value]) => {
+                        {spacingEntries.map(([cssVariable, value]) => {
                             const px = parseToPx(value);
                             const barPct = maxSpacingPx > 0 ? Math.max((px / maxSpacingPx) * 100, 1) : 1;
 
                             return (
-                                <div key={cssVar} class="flex items-center gap-2.5">
-                                    <span class="text-[0.62rem] font-mono text-muted-foreground/70 w-10 shrink-0 text-right">
-                                        {cssVar.slice(10)}
-                                    </span>
+                                <div class="flex items-center gap-2.5" key={cssVariable}>
+                                    <span class="text-[0.62rem] font-mono text-muted-foreground/70 w-10 shrink-0 text-right">{cssVariable.slice(10)}</span>
                                     <div class="flex-1 h-3 bg-foreground/5 border border-border/30 overflow-hidden">
                                         <div class="h-full bg-primary/30 border-r border-primary/40" style={{ width: `${barPct}%` }} />
                                     </div>
@@ -857,10 +809,10 @@ const ConfigTab = ({
 
             {/* Breakpoints */}
             {breakpointEntries.length > 0 && (
-                <ConfigSection count={breakpointEntries.length} title="Breakpoints" defaultOpen={false}>
+                <ConfigSection count={breakpointEntries.length} defaultOpen={false} title="Breakpoints">
                     <div class="p-3 space-y-1.5">
-                        {breakpointEntries.map(([cssVar, value]) => (
-                            <ConfigTokenRow key={cssVar} cssVar={cssVar} isCustom={cssVar in customTheme} value={value} />
+                        {breakpointEntries.map(([cssVariable, value]) => (
+                            <ConfigTokenRow cssVar={cssVariable} isCustom={cssVariable in customTheme} key={cssVariable} value={value} />
                         ))}
                     </div>
                 </ConfigSection>
@@ -868,15 +820,12 @@ const ConfigTab = ({
 
             {/* Font families */}
             {fontFamilyEntries.length > 0 && (
-                <ConfigSection count={fontFamilyEntries.length} title="Font Families" defaultOpen={false}>
+                <ConfigSection count={fontFamilyEntries.length} defaultOpen={false} title="Font Families">
                     <div class="p-3 space-y-2">
-                        {fontFamilyEntries.map(([cssVar, value]) => (
-                            <div key={cssVar} class="space-y-0.5">
-                                <code class="text-[0.68rem] font-mono text-foreground">{cssVar.slice(7)}</code>
-                                <p
-                                    class="text-[0.75rem] text-foreground/70 truncate"
-                                    style={{ fontFamily: value.startsWith("--theme(") ? "inherit" : value }}
-                                >
+                        {fontFamilyEntries.map(([cssVariable, value]) => (
+                            <div class="space-y-0.5" key={cssVariable}>
+                                <code class="text-[0.68rem] font-mono text-foreground">{cssVariable.slice(7)}</code>
+                                <p class="text-[0.75rem] text-foreground/70 truncate" style={{ fontFamily: value.startsWith("--theme(") ? "inherit" : value }}>
                                     The quick brown fox
                                 </p>
                                 <code class="block text-[0.58rem] font-mono text-muted-foreground/50 truncate">{value}</code>
@@ -888,16 +837,14 @@ const ConfigTab = ({
 
             {/* Font sizes */}
             {fontSizeEntries.length > 0 && (
-                <ConfigSection count={fontSizeEntries.length} title="Font Sizes" defaultOpen={false}>
+                <ConfigSection count={fontSizeEntries.length} defaultOpen={false} title="Font Sizes">
                     <div class="p-3 space-y-1.5">
-                        {fontSizeEntries.map(([cssVar, value]) => {
+                        {fontSizeEntries.map(([cssVariable, value]) => {
                             const clampedPx = Math.min(parseToPx(value) || 14, 48);
 
                             return (
-                                <div key={cssVar} class="flex items-center gap-3">
-                                    <span class="text-[0.6rem] font-mono text-muted-foreground/60 w-12 shrink-0 text-right">
-                                        {cssVar.slice(7)}
-                                    </span>
+                                <div class="flex items-center gap-3" key={cssVariable}>
+                                    <span class="text-[0.6rem] font-mono text-muted-foreground/60 w-12 shrink-0 text-right">{cssVariable.slice(7)}</span>
                                     <span class="text-foreground leading-none truncate flex-1" style={{ fontSize: `${clampedPx}px` }}>
                                         Ag
                                     </span>
@@ -911,15 +858,15 @@ const ConfigTab = ({
 
             {/* Border radius */}
             {radiusEntries.length > 0 && (
-                <ConfigSection count={radiusEntries.length} title="Border Radius" defaultOpen={false}>
+                <ConfigSection count={radiusEntries.length} defaultOpen={false} title="Border Radius">
                     <div class="p-3 flex flex-wrap gap-3">
-                        {radiusEntries.map(([cssVar, value]) => (
-                            <div key={cssVar} class="flex flex-col items-center gap-1.5">
+                        {radiusEntries.map(([cssVariable, value]) => (
+                            <div class="flex flex-col items-center gap-1.5" key={cssVariable}>
                                 <div
                                     class="size-10 border-2 border-primary/40 bg-primary/8"
                                     style={{ borderRadius: value.startsWith("--theme(") ? "4px" : value }}
                                 />
-                                <code class="text-[0.6rem] font-mono text-muted-foreground/70">{cssVar.slice(9)}</code>
+                                <code class="text-[0.6rem] font-mono text-muted-foreground/70">{cssVariable.slice(9)}</code>
                                 <code class="text-[0.58rem] font-mono text-muted-foreground/50">{value}</code>
                             </div>
                         ))}
@@ -929,14 +876,12 @@ const ConfigTab = ({
 
             {/* Shadows */}
             {shadowEntries.length > 0 && (
-                <ConfigSection count={shadowEntries.length} title="Shadows" defaultOpen={false}>
+                <ConfigSection count={shadowEntries.length} defaultOpen={false} title="Shadows">
                     <div class="p-3 space-y-3">
-                        {shadowEntries.map(([cssVar, value]) => (
-                            <div key={cssVar} class="space-y-1">
-                                <code class="text-[0.68rem] font-mono text-foreground">{cssVar.slice(2)}</code>
-                                {!value.startsWith("--theme(") && (
-                                    <div class="h-8 bg-card border border-border/40" style={{ boxShadow: value }} />
-                                )}
+                        {shadowEntries.map(([cssVariable, value]) => (
+                            <div class="space-y-1" key={cssVariable}>
+                                <code class="text-[0.68rem] font-mono text-foreground">{cssVariable.slice(2)}</code>
+                                {!value.startsWith("--theme(") && <div class="h-8 bg-card border border-border/40" style={{ boxShadow: value }} />}
                                 <code class="block text-[0.58rem] font-mono text-muted-foreground/50 truncate">{value}</code>
                             </div>
                         ))}
@@ -946,10 +891,10 @@ const ConfigTab = ({
 
             {/* Blur */}
             {blurEntries.length > 0 && (
-                <ConfigSection count={blurEntries.length} title="Blur" defaultOpen={false}>
+                <ConfigSection count={blurEntries.length} defaultOpen={false} title="Blur">
                     <div class="py-1">
-                        {blurEntries.map(([cssVar, value]) => (
-                            <ConfigTokenRow key={cssVar} cssVar={cssVar} isCustom={cssVar in customTheme} value={value} />
+                        {blurEntries.map(([cssVariable, value]) => (
+                            <ConfigTokenRow cssVar={cssVariable} isCustom={cssVariable in customTheme} key={cssVariable} value={value} />
                         ))}
                     </div>
                 </ConfigSection>
@@ -957,10 +902,10 @@ const ConfigTab = ({
 
             {/* Animations */}
             {animateEntries.length > 0 && (
-                <ConfigSection count={animateEntries.length} title="Animations" defaultOpen={false}>
+                <ConfigSection count={animateEntries.length} defaultOpen={false} title="Animations">
                     <div class="py-1">
-                        {animateEntries.map(([cssVar, value]) => (
-                            <ConfigTokenRow key={cssVar} cssVar={cssVar} isCustom={cssVar in customTheme} value={value} />
+                        {animateEntries.map(([cssVariable, value]) => (
+                            <ConfigTokenRow cssVar={cssVariable} isCustom={cssVariable in customTheme} key={cssVariable} value={value} />
                         ))}
                     </div>
                 </ConfigSection>
@@ -968,10 +913,10 @@ const ConfigTab = ({
 
             {/* Other tokens */}
             {otherEntries.length > 0 && (
-                <ConfigSection count={otherEntries.length} title="Other" defaultOpen={false}>
+                <ConfigSection count={otherEntries.length} defaultOpen={false} title="Other">
                     <div class="py-1">
-                        {otherEntries.map(([cssVar, value]) => (
-                            <ConfigTokenRow key={cssVar} cssVar={cssVar} isCustom={cssVar in customTheme} value={value} />
+                        {otherEntries.map(([cssVariable, value]) => (
+                            <ConfigTokenRow cssVar={cssVariable} isCustom={cssVariable in customTheme} key={cssVariable} value={value} />
                         ))}
                     </div>
                 </ConfigSection>
@@ -984,15 +929,12 @@ const ConfigTab = ({
 
 const EmptyState = (): ComponentChildren => (
     <div class="flex flex-col items-center justify-center h-full gap-4 py-16 px-8 text-center select-none">
-        <div class="size-12 border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/30 text-2xl">
-            ◻
-        </div>
+        <div class="size-12 border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/30 text-2xl">◻</div>
         <div class="space-y-1.5">
             <p class="text-[0.8rem] font-medium text-foreground/70">No design tokens detected</p>
             <p class="text-[0.7rem] text-muted-foreground leading-relaxed max-w-[240px]">
-                This app reads CSS custom properties from your page's{" "}
-                <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your app uses Tailwind CSS v4 or
-                defines custom properties.
+                This app reads CSS custom properties from your page's <code class="font-mono text-[0.65rem]">:root</code> selector. Make sure your app uses
+                Tailwind CSS v4 or defines custom properties.
             </p>
         </div>
     </div>
@@ -1007,9 +949,9 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const [configError, setConfigError] = useState<string | null>(null);
 
     const tokens = useMemo(() => {
-        const vars = scanRootVars();
+        const variables = scanRootVariables();
 
-        return extractTokens(vars);
+        return extractTokens(variables);
     }, []);
 
     const loadConfig = (): void => {
@@ -1023,8 +965,8 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 setConfigData(data);
                 setConfigLoading(false);
             })
-            .catch((err: Error) => {
-                setConfigError(err.message ?? "Failed to load Tailwind config");
+            .catch((error: Error) => {
+                setConfigError(error.message ?? "Failed to load Tailwind config");
                 setConfigLoading(false);
             });
     };
@@ -1075,24 +1017,19 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     <div class="flex border-b border-border shrink-0 overflow-x-auto">
                         {tabs.map(({ id, label }) => (
                             <button
-                                key={id}
                                 class={cn(
                                     "flex-shrink-0 px-3 py-2 text-[0.68rem] font-medium transition-colors cursor-pointer border-0 border-b-2 -mb-px",
                                     tab === id
                                         ? "text-primary border-primary bg-primary/4"
                                         : "text-muted-foreground hover:text-foreground border-transparent bg-transparent",
                                 )}
+                                key={id}
                                 onClick={() => setTab(id)}
                                 type="button"
                             >
                                 {label}
                                 {tabCounts[id] > 0 && (
-                                    <span
-                                        class={cn(
-                                            "ml-1.5 text-[0.58rem] font-mono",
-                                            tab === id ? "text-primary/70" : "text-muted-foreground/50",
-                                        )}
-                                    >
+                                    <span class={cn("ml-1.5 text-[0.58rem] font-mono", tab === id ? "text-primary/70" : "text-muted-foreground/50")}>
                                         {tabCounts[id]}
                                     </span>
                                 )}
@@ -1106,14 +1043,7 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         {tab === "spacing" && <SpacingTab spacing={tokens.spacing} />}
                         {tab === "type" && <TypographyTab fontFamilies={tokens.fontFamilies} fontSizes={tokens.fontSizes} />}
                         {tab === "effects" && <EffectsTab radii={tokens.radii} shadows={tokens.shadows} />}
-                        {tab === "config" && (
-                            <ConfigTab
-                                configData={configData}
-                                error={configError}
-                                loading={configLoading}
-                                onRetry={loadConfig}
-                            />
-                        )}
+                        {tab === "config" && <ConfigTab configData={configData} error={configError} loading={configLoading} onRetry={loadConfig} />}
                     </div>
                 </>
             )}

@@ -1,4 +1,4 @@
-const escapeRegExp = (s: string): string => s.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+const escapeRegExp = (s: string): string => s.replaceAll(/[.+^${}()|[\]\\]/g, String.raw`\$&`);
 
 /**
  * Convert a glob pattern string to a RegExp.
@@ -17,5 +17,5 @@ const globToRegex = (glob: string): RegExp => {
  * Returns true if `value` matches any of the given patterns.
  * Strings are treated as glob patterns; RegExps are tested directly.
  */
-export const matcher = (patterns: Array<RegExp | string>, value: string): boolean =>
-    patterns.some((p) => (p instanceof RegExp ? p.test(value) : globToRegex(p).test(value)));
+export const matcher = (patterns: (RegExp | string)[], value: string): boolean =>
+    patterns.some((p) => p instanceof RegExp ? p.test(value) : globToRegex(p).test(value));

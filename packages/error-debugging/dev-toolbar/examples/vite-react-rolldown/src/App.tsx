@@ -2,7 +2,7 @@ import "./App.css";
 
 import { useState } from "react";
 
-import viteLogo from "/vite.svg";
+import viteLogo from "../../../../../../../../../../../vite.svg";
 import reactLogo from "./assets/react.svg";
 
 function App() {
@@ -11,10 +11,10 @@ function App() {
     const throwError = () => {
         setTimeout(() => {
             const cause = new TypeError("Cannot read properties of undefined (reading 'name')");
-            const err = new Error("Example client error thrown from the Rolldown-Vite + React dev-toolbar demo");
+            const error = new Error("Example client error thrown from the Rolldown-Vite + React dev-toolbar demo");
 
-            err.cause = cause;
-            throw err;
+            error.cause = cause;
+            throw error;
         }, 0);
     };
 
@@ -34,7 +34,7 @@ function App() {
             </div>
             <h1>Rolldown-Vite + React + Dev Toolbar</h1>
             <div className="card">
-                <button type="button" onClick={() => setCount((c) => c + 1)}>
+                <button onClick={() => setCount((c) => c + 1)} type="button">
                     count is {count}
                 </button>
                 <p>
@@ -42,10 +42,10 @@ function App() {
                 </p>
             </div>
             <div className="card">
-                <button type="button" onClick={throwError}>
+                <button onClick={throwError} type="button">
                     Throw Error
                 </button>{" "}
-                <button type="button" onClick={rejectPromise}>
+                <button onClick={rejectPromise} type="button">
                     Unhandled Rejection
                 </button>
             </div>

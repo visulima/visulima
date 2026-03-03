@@ -3,10 +3,10 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
-import cn from "../../utils/cn";
 import { Alert, AlertDescription, Button } from "../../ui";
-import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
+import cn from "../../utils/cn";
 import type { A11yIssue, A11yStoreState, Severity, Standard } from "./a11y-store";
+import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -75,10 +75,7 @@ interface IssueCardProps {
 
 const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): ComponentChildren => (
     <div
-        class={cn(
-            "p-3 border cursor-pointer transition-colors",
-            isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3",
-        )}
+        class={cn("p-3 border cursor-pointer transition-colors", isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3")}
         onClick={onClick}
     >
         {/* Header */}
@@ -94,7 +91,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
             <div class="mb-2 ml-4 space-y-0.5">
                 {issue.nodes.slice(0, 3).map((node, i) => (
                     // eslint-disable-next-line react/no-array-index-key
-                    <code key={i} class="block text-[0.65rem] text-foreground/70 font-mono bg-foreground/5 px-2 py-1 truncate">
+                    <code class="block text-[0.65rem] text-foreground/70 font-mono bg-foreground/5 px-2 py-1 truncate" key={i}>
                         {node.selector}
                     </code>
                 ))}
@@ -108,7 +105,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
         {/* Footer */}
         <div class="flex items-center gap-2 flex-wrap ml-4">
             {issue.wcagTags.slice(0, 3).map((tag) => (
-                <span key={tag} class="text-[0.58rem] font-mono uppercase bg-primary/8 text-primary/70 border border-primary/20 px-1.5 py-0.5">
+                <span class="text-[0.58rem] font-mono uppercase bg-primary/8 text-primary/70 border border-primary/20 px-1.5 py-0.5" key={tag}>
                     {tag}
                 </span>
             ))}
@@ -139,7 +136,6 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     const [storeState, setStoreState] = useState<Readonly<A11yStoreState>>(() => a11yStore.getState());
     const [disabledRules, setDisabledRules] = useState<string[]>([]);
@@ -176,7 +172,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     };
 
     const handleDisableRule = (ruleId: string): void => {
-        setDisabledRules((prev) => [...prev, ruleId]);
+        setDisabledRules((previous) => [...previous, ruleId]);
     };
 
     const displayedIssues = issues.filter((i) => {
@@ -231,9 +227,9 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                     <select
                         class="bg-card border border-border text-foreground text-[0.7rem] px-1.5 py-1 cursor-pointer"
                         onChange={(e) => {
-                            const val = (e.target as HTMLSelectElement).value;
+                            const { value } = e.target as HTMLSelectElement;
 
-                            setMinSeverity(val ? (val as Severity) : null);
+                            setMinSeverity(value ? (value as Severity) : null);
                         }}
                         style="color-scheme: dark"
                         value={minSeverity ?? ""}
@@ -257,17 +253,27 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
 
                 {hasDone && issues.length > 0 && (
                     <>
-                        <Button class="ml-auto" onClick={() => {
+                        <Button
+                            class="ml-auto"
+                            onClick={() => {
                                 const blob = new Blob([JSON.stringify(issues, null, 2)], { type: "application/json" });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement("a");
+
                                 a.href = url;
                                 a.download = "a11y-audit.json";
                                 a.click();
                                 URL.revokeObjectURL(url);
-                            }} size="sm" title="Export audit results as JSON" variant="outline">JSON</Button>
-                        <Button onClick={() => {
-                                const q = (s: string): string => `"${s.replaceAll('"', '""')}"`;
+                            }}
+                            size="sm"
+                            title="Export audit results as JSON"
+                            variant="outline"
+                        >
+                            JSON
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const q = (s: string): string => `"${s.replaceAll("\"", "\"\"")}"`;
                                 const header = ["Rule ID", "Severity", "Message", "Selector", "HTML", "WCAG Tags"].join(",");
                                 const rows = issues.flatMap((issue) =>
                                     issue.nodes.map((node) =>
@@ -279,11 +285,18 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                 const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement("a");
+
                                 a.href = url;
                                 a.download = "a11y-audit.csv";
                                 a.click();
                                 URL.revokeObjectURL(url);
-                            }} size="sm" title="Export audit results as CSV" variant="outline">CSV</Button>
+                            }}
+                            size="sm"
+                            title="Export audit results as CSV"
+                            variant="outline"
+                        >
+                            CSV
+                        </Button>
                     </>
                 )}
             </div>
@@ -303,7 +316,9 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         <p class="text-[0.8125rem] text-muted-foreground max-w-sm">
                             Run an accessibility audit using axe-core to detect WCAG violations on this page.
                         </p>
-                        <Button onClick={handleScan} variant="outline">Start scan</Button>
+                        <Button onClick={handleScan} variant="outline">
+                            Start scan
+                        </Button>
                     </div>
                 )}
 
@@ -321,16 +336,17 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         <div class="grid grid-cols-4 gap-2">
                             {SEVERITY_ORDER.map((sev) => (
                                 <SeverityBucket
-                                    key={sev}
                                     count={countBy(sev)}
                                     isActive={filterSeverity === sev}
+                                    key={sev}
                                     onClick={() => setFilterSeverity(filterSeverity === sev ? null : sev)}
                                     severity={sev}
                                 />
                             ))}
                         </div>
 
-                        {displayedIssues.length === 0 ? (
+                        {displayedIssues.length === 0
+                            ? (
                             <div class="p-6 text-center border border-border">
                                 <p class="text-[0.8125rem] font-medium text-foreground/70">
                                     {issues.length === 0 ? "No violations found!" : "No issues match the current filters."}
@@ -339,40 +355,45 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                     <p class="mt-1 text-[0.7rem] text-muted-foreground">Great — the page passes all rules for the selected standard.</p>
                                 )}
                             </div>
-                        ) : (
+                            )
+                            : (
                             <section>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                                         <span aria-hidden="true" class="text-primary/50">
                                             {"//"}
                                         </span>{" "}
-                                        {displayedIssues.length} issue{displayedIssues.length !== 1 ? "s" : ""}
+                                        {displayedIssues.length} issue{displayedIssues.length === 1 ? "" : "s"}
                                         {filterSeverity ? ` · ${SEVERITY_LABEL[filterSeverity]} only` : ""}
                                     </span>
                                     {filterSeverity && (
-                                        <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setFilterSeverity(null)} variant="link">Clear ×</Button>
+                                        <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setFilterSeverity(null)} variant="link">
+                                            Clear ×
+                                        </Button>
                                     )}
                                 </div>
                                 <div class="space-y-2">
                                     {displayedIssues.map((issue) => (
                                         <IssueCard
-                                            key={issue.id}
                                             isSelected={activeIssueId === issue.id}
                                             issue={issue}
+                                            key={issue.id}
                                             onClick={() => handleIssueClick(issue)}
                                             onDisable={handleDisableRule}
                                         />
                                     ))}
                                 </div>
                             </section>
-                        )}
+                            )}
 
                         {disabledRules.length > 0 && (
                             <div class="flex items-center gap-2 text-[0.65rem] text-muted-foreground/60">
                                 <span>
-                                    {disabledRules.length} rule{disabledRules.length !== 1 ? "s" : ""} disabled this session.
+                                    {disabledRules.length} rule{disabledRules.length === 1 ? "" : "s"} disabled this session.
                                 </span>
-                                <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setDisabledRules([])} variant="link">Reset</Button>
+                                <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setDisabledRules([])} variant="link">
+                                    Reset
+                                </Button>
                             </div>
                         )}
                     </div>

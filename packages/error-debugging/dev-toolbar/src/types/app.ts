@@ -38,24 +38,24 @@ export interface ToolbarAppEventTarget extends EventTarget {
 /**
  * App view configuration
  */
-export type AppView =
+export type AppView
+    = | {
+        /**
+         * Render app inline in shadow DOM (default)
+         */
+        type: "inline";
+    }
     | {
-          /**
-           * Render app inline in shadow DOM (default)
-           */
-          type: "inline";
-      }
-    | {
-          /**
-           * URL to load in iframe
-           */
-          src: string;
+        /**
+         * URL to load in iframe
+         */
+        src: string;
 
-          /**
-           * Render app in iframe for isolation
-           */
-          type: "iframe";
-      };
+        /**
+         * Render app in iframe for isolation
+         */
+        type: "iframe";
+    };
 
 /**
  * Props passed to Preact component apps
@@ -85,11 +85,10 @@ export interface DevToolbarApp {
     beforeTogglingOff?: (canvas: ShadowRoot) => boolean | Promise<boolean>;
 
     /**
-     * Called when the app is unregistered / removed from the toolbar.
-     * Use this for final cleanup (event listeners, timers, subscriptions).
-     * @param canvas Shadow root of the app
+     * Preact component for rendering (alternative to init)
+     * If provided, this will be used instead of init
      */
-    destroy?: (canvas: ShadowRoot) => Promise<void> | void;
+    component?: ComponentType<AppComponentProps>;
 
     /**
      * When true, this app is automatically activated when the toolbar opens for
@@ -100,32 +99,11 @@ export interface DevToolbarApp {
     defaultOpen?: boolean;
 
     /**
-     * Action button callback — called when the button is activated (active: false → true).
-     * When present, clicking the toolbar button will NOT open a panel.
-     * Instead the button toggles its active state and calls onClick (activate)
-     * or onDeactivate (deactivate).
+     * Called when the app is unregistered / removed from the toolbar.
+     * Use this for final cleanup (event listeners, timers, subscriptions).
+     * @param canvas Shadow root of the app
      */
-    onClick?: () => Promise<void> | void;
-
-    /**
-     * Called when the action button is deactivated (active: true → false).
-     * Only meaningful when onClick is also provided.
-     */
-    onDeactivate?: () => Promise<void> | void;
-
-    /**
-     * Preact component for rendering (alternative to init)
-     * If provided, this will be used instead of init
-     */
-    component?: ComponentType<AppComponentProps>;
-
-    /**
-     * Optional hover tooltip component — renders a compact live preview when the
-     * user hovers over this app's button in the toolbar pill.
-     * The component should be small (≤280px wide) and self-contained.
-     * If omitted, hovering shows the native title tooltip only.
-     */
-    tooltip?: ComponentType<AppTooltipProps>;
+    destroy?: (canvas: ShadowRoot) => Promise<void> | void;
 
     /**
      * Icon HTML string (SVG)
@@ -149,6 +127,28 @@ export interface DevToolbarApp {
      * Display name of the app
      */
     name: string;
+
+    /**
+     * Action button callback — called when the button is activated (active: false → true).
+     * When present, clicking the toolbar button will NOT open a panel.
+     * Instead the button toggles its active state and calls onClick (activate)
+     * or onDeactivate (deactivate).
+     */
+    onClick?: () => Promise<void> | void;
+
+    /**
+     * Called when the action button is deactivated (active: true → false).
+     * Only meaningful when onClick is also provided.
+     */
+    onDeactivate?: () => Promise<void> | void;
+
+    /**
+     * Optional hover tooltip component — renders a compact live preview when the
+     * user hovers over this app's button in the toolbar pill.
+     * The component should be small (≤280px wide) and self-contained.
+     * If omitted, hovering shows the native title tooltip only.
+     */
+    tooltip?: ComponentType<AppTooltipProps>;
 
     /**
      * App rendering mode

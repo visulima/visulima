@@ -15,13 +15,13 @@ interface PopoverContextValue {
 const PopoverContext = createContext<PopoverContextValue | null>(null);
 
 const usePopoverContext = (): PopoverContextValue => {
-    const ctx = useContext(PopoverContext);
+    const context = useContext(PopoverContext);
 
-    if (!ctx) {
+    if (!context) {
         throw new Error("Popover subcomponent must be used within <Popover>");
     }
 
-    return ctx;
+    return context;
 };
 
 interface PopoverProps {
@@ -73,8 +73,8 @@ const Popover = ({ children, defaultOpen, onOpenChange, open }: PopoverProps): J
 const PopoverTrigger = ({ children, class: className, ...rest }: PopoverTriggerProps): JSX.Element => {
     const { open, setOpen, triggerRef } = usePopoverContext();
 
-    const handleRef = (el: HTMLButtonElement | null): void => {
-        triggerRef.current = el;
+    const handleRef = (element: HTMLButtonElement | null): void => {
+        triggerRef.current = element;
     };
 
     return (
@@ -156,10 +156,7 @@ const PopoverContent = ({
 
     return (
         <div
-            class={cn(
-                "z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
-                className,
-            )}
+            class={cn("z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95", className)}
             ref={contentRef}
             role="dialog"
             style={{ left: `${position.x}px`, position: "fixed", top: `${position.y}px` }}
@@ -174,12 +171,7 @@ const PopoverClose = ({ children, class: className, ...rest }: PopoverCloseProps
     const { setOpen } = usePopoverContext();
 
     return (
-        <button
-            class={cn("", className)}
-            onClick={() => setOpen(false)}
-            type="button"
-            {...rest}
-        >
+        <button class={cn("", className)} onClick={() => setOpen(false)} type="button" {...rest}>
             {children}
         </button>
     );

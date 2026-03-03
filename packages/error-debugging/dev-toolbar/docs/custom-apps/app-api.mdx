@@ -46,16 +46,16 @@ interface DevToolbarApp {
 
 Do not use these IDs for custom apps:
 
-| ID | App |
-|---|---|
-| `dev-toolbar:a11y` | Accessibility |
-| `dev-toolbar:performance` | Performance |
-| `dev-toolbar:seo` | SEO |
-| `dev-toolbar:settings` | Settings |
-| `dev-toolbar:timeline` | Timeline |
-| `dev-toolbar:module-graph` | Module Graph |
-| `dev-toolbar:vite-config` | Vite Config |
-| `dev-toolbar:more` | Overflow panel (internal) |
+| ID                         | App                       |
+| -------------------------- | ------------------------- |
+| `dev-toolbar:a11y`         | Accessibility             |
+| `dev-toolbar:performance`  | Performance               |
+| `dev-toolbar:seo`          | SEO                       |
+| `dev-toolbar:settings`     | Settings                  |
+| `dev-toolbar:timeline`     | Timeline                  |
+| `dev-toolbar:module-graph` | Module Graph              |
+| `dev-toolbar:vite-config`  | Vite Config               |
+| `dev-toolbar:more`         | Overflow panel (internal) |
 
 ---
 
@@ -100,12 +100,14 @@ interface ServerFunctions {
     /**
      * Returns the current Vite module graph as a flat array.
      */
-    getModuleGraph(): Promise<Array<{
-        id: string;
-        url: string;
-        importerCount: number;
-        importerUrls: string[];
-    }>>;
+    getModuleGraph(): Promise<
+        Array<{
+            id: string;
+            url: string;
+            importerCount: number;
+            importerUrls: string[];
+        }>
+    >;
 
     /**
      * Opens a file in the configured editor.

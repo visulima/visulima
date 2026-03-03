@@ -71,24 +71,24 @@
 /* All foreground/background pairs verified to meet WCAG AA (4.5:1+).        */
 @theme {
     --color-background: #f2f2f2;
-    --color-foreground: #18181b;           /* zinc-900  — 15.6:1 on background ✅ */
-    --color-card: #ffffff;                  /* elevated surface */
+    --color-foreground: #18181b; /* zinc-900  — 15.6:1 on background ✅ */
+    --color-card: #ffffff; /* elevated surface */
     --color-card-foreground: #18181b;
     --color-popover: #ffffff;
     --color-popover-foreground: #18181b;
-    --color-primary: #7c3aed;              /* violet-600 — 5.6:1 on white ✅ WCAG AA */
-    --color-primary-foreground: #ffffff;   /* white on violet — 5.6:1 ✅ WCAG AA */
-    --color-secondary: #e4e4e7;            /* zinc-200 */
+    --color-primary: #7c3aed; /* violet-600 — 5.6:1 on white ✅ WCAG AA */
+    --color-primary-foreground: #ffffff; /* white on violet — 5.6:1 ✅ WCAG AA */
+    --color-secondary: #e4e4e7; /* zinc-200 */
     --color-secondary-foreground: #18181b;
-    --color-muted: #e4e4e7;                /* zinc-200 */
-    --color-muted-foreground: #52525b;     /* zinc-600  — 6.7:1 on background ✅ */
-    --color-accent: #e4e4e7;               /* zinc-200 */
+    --color-muted: #e4e4e7; /* zinc-200 */
+    --color-muted-foreground: #52525b; /* zinc-600  — 6.7:1 on background ✅ */
+    --color-accent: #e4e4e7; /* zinc-200 */
     --color-accent-foreground: #18181b;
     --color-destructive: oklch(0.55 0.22 25);
     --color-destructive-foreground: oklch(0.98 0.01 25);
-    --color-border: #d4d4d8;               /* zinc-300 */
+    --color-border: #d4d4d8; /* zinc-300 */
     --color-input: #d4d4d8;
-    --color-ring: #71717a;                 /* zinc-500 */
+    --color-ring: #71717a; /* zinc-500 */
 
     /* Semantic status colors */
     --color-info: oklch(0.45 0.2 240);
@@ -106,25 +106,25 @@
 /* Layered zinc-950 palette: background(950) < card(900) < secondary(800)    */
 /* All foreground/background pairs verified to meet WCAG AA (4.5:1+).        */
 .dark {
-    --color-background: #212121;           /* zinc-950 — deep base layer */
-    --color-foreground: #fafafa;           /* zinc-50   — 17.6:1 on background ✅ */
-    --color-card: #18181b;                  /* zinc-900  — elevated surface */
+    --color-background: #212121; /* zinc-950 — deep base layer */
+    --color-foreground: #fafafa; /* zinc-50   — 17.6:1 on background ✅ */
+    --color-card: #18181b; /* zinc-900  — elevated surface */
     --color-card-foreground: #fafafa;
     --color-popover: #18181b;
     --color-popover-foreground: #fafafa;
-    --color-primary: #c4b5fd;              /* violet-300 — 5.7:1 on #212121 ✅ WCAG AA */
-    --color-primary-foreground: #09090b;   /* near-black on light violet — 11:1 ✅ WCAG AAA */
-    --color-secondary: #27272a;            /* zinc-800 */
+    --color-primary: #c4b5fd; /* violet-300 — 5.7:1 on #212121 ✅ WCAG AA */
+    --color-primary-foreground: #09090b; /* near-black on light violet — 11:1 ✅ WCAG AAA */
+    --color-secondary: #27272a; /* zinc-800 */
     --color-secondary-foreground: #fafafa;
-    --color-muted: #27272a;                /* zinc-800 */
-    --color-muted-foreground: #a1a1aa;     /* zinc-400  — 8.3:1 on background ✅ */
-    --color-accent: #18181b;               /* zinc-900  — sidebar/panel chrome */
+    --color-muted: #27272a; /* zinc-800 */
+    --color-muted-foreground: #a1a1aa; /* zinc-400  — 8.3:1 on background ✅ */
+    --color-accent: #18181b; /* zinc-900  — sidebar/panel chrome */
     --color-accent-foreground: #fafafa;
     --color-destructive: oklch(0.65 0.2 25);
     --color-destructive-foreground: oklch(0.98 0.01 25);
-    --color-border: oklch(1 0 0 / 10%);   /* visible but subtle white hairline */
+    --color-border: oklch(1 0 0 / 10%); /* visible but subtle white hairline */
     --color-input: oklch(1 0 0 / 14%);
-    --color-ring: #71717a;                 /* zinc-500 */
+    --color-ring: #71717a; /* zinc-500 */
     --color-info: oklch(0.62 0.2 240);
     --color-info-foreground: oklch(0.75 0.18 240);
     --color-success: oklch(0.65 0.17 155);
@@ -146,7 +146,12 @@
 /* Multi-property transitions can't be expressed as @theme tokens; @utility   */
 /* wraps them as first-class Tailwind classes (transition-pill, transition-panel). */
 @utility transition-pill {
-    transition: all 0.6s ease, max-width 0.6s ease, padding 0.5s ease, transform 0.4s ease, opacity 0.2s ease;
+    transition:
+        all 0.6s ease,
+        max-width 0.6s ease,
+        padding 0.5s ease,
+        transform 0.4s ease,
+        opacity 0.2s ease;
 }
 
 @utility transition-panel {
@@ -164,13 +169,7 @@
 
 /* Subtle CRT scan-line texture — terminal HUD atmosphere */
 @utility scanlines {
-    background-image: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(0, 0, 0, 0.025) 3px,
-        rgba(0, 0, 0, 0.025) 4px
-    );
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.025) 3px, rgba(0, 0, 0, 0.025) 4px);
 }
 
 /* Thin scrollbar matching the border color token */
@@ -184,7 +183,11 @@
     /* JetBrains Mono (injected via <head>) → Geist Mono → system monospace */
     font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
     /* Contextual alternates + kerning + programming ligatures */
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "zero" 1;
+    font-feature-settings:
+        "kern" 1,
+        "liga" 1,
+        "calt" 1,
+        "zero" 1;
     font-optical-sizing: auto;
 }
 

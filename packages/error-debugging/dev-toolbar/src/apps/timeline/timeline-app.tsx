@@ -3,11 +3,11 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import { getTimelineStore } from "../../timeline/index";
+import type { AppComponentProps } from "../../types/app";
 import type { TimelineEvent, TimelineGroup } from "../../types/timeline";
 import { DEFAULT_TIMELINE_GROUPS } from "../../types/timeline";
-import type { AppComponentProps } from "../../types/app";
-import cn from "../../utils/cn";
 import { Badge, Button } from "../../ui";
+import cn from "../../utils/cn";
 
 const POLL_INTERVAL = 500;
 
@@ -15,7 +15,8 @@ const ALL_TAB = "all";
 
 const formatTime = (ms: number): string => {
     const d = new Date(ms);
-    return d.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit", fractionalSecondDigits: 3 });
+
+    return d.toLocaleTimeString("en-US", { fractionalSecondDigits: 3, hour: "2-digit", hour12: false, minute: "2-digit", second: "2-digit" });
 };
 
 const LEVEL_VARIANT: Record<string, "destructive" | "info" | "warning"> = {
@@ -28,6 +29,7 @@ const LevelBadge = ({ level }: { level?: string }): ComponentChildren | null => 
     if (!level) {
         return null;
     }
+
     return (
         <Badge class="text-[0.6rem] uppercase tracking-wider" variant={LEVEL_VARIANT[level] ?? "info"}>
             {level}
@@ -91,7 +93,8 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
 
     const refresh = (): void => {
         const store = getTimelineStore();
-        setGroups(store.getGroups().map((g) => ({ ...g, events: [...g.events] })));
+
+        setGroups(store.getGroups().map((g) => { return { ...g, events: [...g.events] }; }));
     };
 
     useEffect(() => {
@@ -107,15 +110,17 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
 
     const groupColorMap = new Map(DEFAULT_TIMELINE_GROUPS.map((g) => [g.id, g.color]));
 
-    const tabs = [{ id: ALL_TAB, label: "All", color: undefined }, ...groups.map((g) => ({ id: g.id, label: g.label, color: groupColorMap.get(g.id) ?? g.color }))];
+    const tabs = [
+        { color: undefined, id: ALL_TAB, label: "All" },
+        ...groups.map((g) => { return { color: groupColorMap.get(g.id) ?? g.color, id: g.id, label: g.label }; }),
+    ];
 
-    const visibleEvents: TimelineEvent[] =
-        activeTab === ALL_TAB
-            ? groups.flatMap((g) => g.events).sort((a, b) => a.time - b.time)
-            : (groups.find((g) => g.id === activeTab)?.events ?? []);
+    const visibleEvents: TimelineEvent[]
+        = activeTab === ALL_TAB ? groups.flatMap((g) => g.events).sort((a, b) => a.time - b.time) : groups.find((g) => g.id === activeTab)?.events ?? [];
 
     const clearAll = (): void => {
         const store = getTimelineStore();
+
         store.clearAll();
         setSelectedEvent(null);
         refresh();
@@ -129,25 +134,20 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                 <div class="flex items-center gap-0 overflow-x-auto">
                     {tabs.map((tab) => (
                         <button
-                            key={tab.id}
                             class={cn(
                                 "px-3 py-1.5 text-[0.75rem] font-medium whitespace-nowrap border-0 cursor-pointer transition-colors duration-150",
                                 activeTab === tab.id
                                     ? "text-foreground border-b-2 border-primary bg-transparent"
                                     : "text-muted-foreground bg-transparent hover:text-foreground",
                             )}
+                            key={tab.id}
                             onClick={() => {
                                 setActiveTab(tab.id);
                                 setSelectedEvent(null);
                             }}
                             type="button"
                         >
-                            {tab.color && (
-                                <span
-                                    class="inline-block size-2 rounded-full mr-1.5 align-middle"
-                                    style={{ backgroundColor: tab.color }}
-                                />
-                            )}
+                            {tab.color && <span class="inline-block size-2 rounded-full mr-1.5 align-middle" style={{ backgroundColor: tab.color }} />}
                             {tab.label}
                         </button>
                     ))}
@@ -162,20 +162,31 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 {/* Events list */}
                 <div class="flex-1 overflow-auto">
-                    {visibleEvents.length === 0 ? (
+                    {visibleEvents.length === 0
+                        ? (
                         <div class="flex flex-col items-center justify-center h-full gap-4 p-8 text-center select-none">
                             <div class="size-12 border border-border/50 bg-foreground/2 flex items-center justify-center">
-                                <svg aria-hidden="true" class="size-5 text-muted-foreground/40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                <svg
+                                    aria-hidden="true"
+                                    class="size-5 text-muted-foreground/40"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    viewBox="0 0 24 24"
+                                >
                                     <path d="M12 6v6h4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
                             </div>
                             <div class="space-y-1">
                                 <p class="text-[0.8rem] font-medium text-foreground/60">No events recorded yet</p>
                                 <p class="text-[0.7rem] text-muted-foreground">Events appear here as your app runs</p>
-                                <p class="text-[0.65rem] text-muted-foreground/50 mt-2 max-w-[240px] leading-relaxed">HMR updates, network requests, and custom events are captured automatically</p>
+                                <p class="text-[0.65rem] text-muted-foreground/50 mt-2 max-w-[240px] leading-relaxed">
+                                    HMR updates, network requests, and custom events are captured automatically
+                                </p>
                             </div>
                         </div>
-                    ) : (
+                        )
+                        : (
                         <div class="divide-y divide-border/50">
                             {visibleEvents.map((event) => {
                                 const group = groups.find((g) => g.events.some((e) => e.id === event.id));
@@ -183,36 +194,29 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
 
                                 return (
                                     <button
-                                        key={event.id}
                                         class={cn(
                                             "w-full flex items-start gap-3 px-4 py-3 text-left border-0 bg-transparent cursor-pointer",
                                             "hover:bg-foreground/4 transition-colors duration-100",
                                             selectedEvent?.id === event.id && "bg-primary/6",
                                         )}
+                                        key={event.id}
                                         onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
                                         type="button"
                                     >
-                                        {color && (
-                                            <span
-                                                class="mt-1 size-1.5 rounded-full shrink-0"
-                                                style={{ backgroundColor: color }}
-                                            />
-                                        )}
+                                        {color && <span class="mt-1 size-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />}
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="text-[0.8rem] font-medium text-foreground truncate">{event.title}</span>
                                                 <LevelBadge level={event.level} />
                                             </div>
-                                            {event.subtitle && (
-                                                <div class="text-[0.725rem] text-muted-foreground truncate mt-0.5">{event.subtitle}</div>
-                                            )}
+                                            {event.subtitle && <div class="text-[0.725rem] text-muted-foreground truncate mt-0.5">{event.subtitle}</div>}
                                         </div>
                                         <span class="text-[0.65rem] font-mono text-muted-foreground/70 shrink-0 mt-0.5">{formatTime(event.time)}</span>
                                     </button>
                                 );
                             })}
                         </div>
-                    )}
+                        )}
                 </div>
 
                 {/* Detail panel */}

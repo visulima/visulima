@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 /** @jsxImportSource preact */
 import "../../setup";
+
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -8,70 +9,88 @@ import Switch from "../../../src/ui/components/switch";
 
 afterEach(cleanup);
 
-describe("Switch", () => {
+describe("switch", () => {
     it("has role=switch", () => {
         render(<Switch />);
+
         expect(screen.getByRole("switch")).toBeInTheDocument();
     });
 
     it("aria-checked is false by default", () => {
         render(<Switch />);
+
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "false");
     });
 
     it("aria-checked is true when defaultChecked=true", () => {
         render(<Switch defaultChecked />);
+
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "true");
     });
 
     it("toggles when clicked (uncontrolled)", () => {
         render(<Switch />);
         const sw = screen.getByRole("switch");
+
         expect(sw).toHaveAttribute("aria-checked", "false");
+
         fireEvent.click(sw);
+
         expect(sw).toHaveAttribute("aria-checked", "true");
+
         fireEvent.click(sw);
+
         expect(sw).toHaveAttribute("aria-checked", "false");
     });
 
     it("calls onCheckedChange when toggled", () => {
         const onCheckedChange = vi.fn();
+
         render(<Switch onCheckedChange={onCheckedChange} />);
         fireEvent.click(screen.getByRole("switch"));
+
         expect(onCheckedChange).toHaveBeenCalledWith(true);
     });
 
     it("controlled: respects checked prop", () => {
         render(<Switch checked={true} onCheckedChange={() => {}} />);
+
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "true");
     });
 
     it("controlled: calls onCheckedChange on click", () => {
         const onCheckedChange = vi.fn();
+
         render(<Switch checked={false} onCheckedChange={onCheckedChange} />);
         fireEvent.click(screen.getByRole("switch"));
+
         expect(onCheckedChange).toHaveBeenCalledWith(true);
     });
 
     it("does not toggle when disabled", () => {
         render(<Switch disabled />);
         const sw = screen.getByRole("switch");
+
         fireEvent.click(sw);
+
         expect(sw).toHaveAttribute("aria-checked", "false");
     });
 
     it("sets data-state attribute", () => {
         render(<Switch defaultChecked />);
+
         expect(screen.getByRole("switch")).toHaveAttribute("data-state", "checked");
     });
 
     it("merges custom class", () => {
         render(<Switch class="my-switch" />);
+
         expect(screen.getByRole("switch")).toHaveClass("my-switch");
     });
 
     it("sets id attribute", () => {
         render(<Switch id="my-switch" />);
+
         expect(screen.getByRole("switch")).toHaveAttribute("id", "my-switch");
     });
 });
