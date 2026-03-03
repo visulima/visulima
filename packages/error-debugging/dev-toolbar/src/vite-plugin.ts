@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { Plugin, ResolvedConfig } from "vite";
+import type { Plugin, ResolvedConfig, UserConfig } from "vite";
 import { normalizePath } from "vite";
 
 import { createServerRPCContext } from "./rpc/server";
@@ -34,6 +34,9 @@ const devToolbarResourceSymbol = "?__visulima-dev-toolbar-resource";
 const VIRTUAL_OPTIONS = "virtual:visulima-dev-toolbar-options";
 const RESOLVED_OPTIONS = `\0${VIRTUAL_OPTIONS}`;
 const VIRTUAL_PATH_PREFIX = "virtual:visulima-dev-toolbar-path:";
+
+// Sentinel ID returned by the remove-on-build plugin for any of our virtual modules
+const RESOLVED_EMPTY = "\0__visulima-dev-toolbar-empty";
 
 /**
  * Dev toolbar plugin options
@@ -134,6 +137,15 @@ export interface DevToolbarOptions {
     requireUrlFlag?: boolean;
 
     /**
+     * Strip all @visulima/dev-toolbar imports and virtual modules when building
+     * for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
+     * This guarantees the toolbar never ends up in a production bundle even if the
+     * user accidentally imports our package in application code.
+     * @default true
+     */
+    removeDevtoolsOnBuild?: boolean;
+
+    /**
      * Custom server RPC functions
      */
     serverFunctions?: Partial<ServerFunctions>;
@@ -155,11 +167,12 @@ export interface DevToolbarOptions {
 /**
  * Dev toolbar Vite plugin
  */
-export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
+export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     const devToolbarPath = getDevToolbarPath();
+    const removeOnBuild = options.removeDevtoolsOnBuild ?? true;
     let config: ResolvedConfig;
 
-    return {
+    const mainPlugin: Plugin = {
         apply: "serve",
 
         configResolved(resolvedConfig) {
@@ -288,4 +301,30 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin => {
             };
         },
     };
+
+    const removeOnBuildPlugin: Plugin = {
+        apply(_userConfig: UserConfig, { command, mode }: { command: string; mode: string }): boolean {
+            return removeOnBuild && (command !== "serve" || mode === "production");
+        },
+
+        load(id) {
+            if (id === RESOLVED_EMPTY) {
+                return "export default {};";
+            }
+
+            return undefined;
+        },
+
+        name: "@visulima/dev-toolbar:remove-on-build",
+
+        resolveId(id) {
+            if (id === VIRTUAL_OPTIONS || id.startsWith(VIRTUAL_PATH_PREFIX)) {
+                return RESOLVED_EMPTY;
+            }
+
+            return undefined;
+        },
+    };
+
+    return [mainPlugin, removeOnBuildPlugin];
 };
