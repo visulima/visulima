@@ -1,13 +1,37 @@
 import inspectIcon from "lucide-static/icons/inspect.svg?raw";
 
 import type { DevToolbarApp } from "../../types/app";
-import InspectorApp from "./inspector-app";
+import { startGlobalInspection, stopGlobalInspection } from "./inspector-app";
 
 const inspectorApp: DevToolbarApp = {
-    component: InspectorApp,
     icon: inspectIcon,
     id: "dev-toolbar:inspector",
     name: "Inspector",
+
+    onClick() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
+
+        startGlobalInspection(
+            () => {
+                // Element clicked — deactivate the button (no callbacks fired)
+                if (api?.setAppActive) {
+                    api.setAppActive("dev-toolbar:inspector", false);
+                }
+            },
+            () => {
+                // Cancelled via badge or Escape — deactivate the button
+                if (api?.setAppActive) {
+                    api.setAppActive("dev-toolbar:inspector", false);
+                }
+            },
+        );
+    },
+
+    onDeactivate() {
+        // Button clicked while active — cancel the in-progress inspection
+        stopGlobalInspection();
+    },
 };
 
 export default inspectorApp;

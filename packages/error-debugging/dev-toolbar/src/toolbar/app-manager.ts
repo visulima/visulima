@@ -116,6 +116,21 @@ export class AppManager {
             return false;
         }
 
+        // Action button (onClick provided) — toggle active without opening a panel
+        if (app.onClick ?? app.onDeactivate) {
+            const wasActive = app.active;
+
+            app.active = !wasActive;
+
+            if (!wasActive && app.onClick) {
+                await app.onClick();
+            } else if (wasActive && app.onDeactivate) {
+                await app.onDeactivate();
+            }
+
+            return true;
+        }
+
         // If already active, close it
         if (app.active) {
             return await this.closeApp(appId);
@@ -132,6 +147,20 @@ export class AppManager {
 
         // Open new app
         return await this.openApp(appId);
+    }
+
+    /**
+     * Directly set active state for an action button without invoking callbacks.
+     * Use this to deactivate a button from outside the toolbar (e.g. after async work).
+     * @param appId App ID
+     * @param active New active state
+     */
+    setAppActive(appId: string, active: boolean): void {
+        const app = this.apps.get(appId);
+
+        if (app) {
+            app.active = active;
+        }
     }
 
     /**

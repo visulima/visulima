@@ -94,6 +94,10 @@ export class DevToolbar extends HTMLElement {
                     this.appManager.registerApp(app);
                     this.render();
                 },
+                setAppActive: (id, active) => {
+                    this.appManager.setAppActive(id, active);
+                    this.render();
+                },
                 setNotification: (id, state, level) => {
                     this.appManager.setNotification(id, state, level);
                     this.render();

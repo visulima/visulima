@@ -14,6 +14,7 @@ export const createGlobalAPI = (
         getActiveApp: () => DevToolbarApp | undefined;
         getApps: () => DevToolbarApp[];
         registerApp: (app: DevToolbarApp) => void;
+        setAppActive: (id: string, active: boolean) => void;
         setNotification: (id: string, state: boolean, level?: "info" | "warning" | "error") => void;
         toggleApp: (id: string) => Promise<boolean>;
         unregisterApp: (id: string) => void;
@@ -66,6 +67,10 @@ export const createGlobalAPI = (
 
         async openApp(appId: string): Promise<void> {
             await appManager.toggleApp(appId);
+        },
+
+        setAppActive(appId: string, active: boolean): void {
+            appManager.setAppActive(appId, active);
         },
 
         registerApp(app: DevToolbarApp): void {
