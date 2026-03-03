@@ -72,7 +72,8 @@ const MemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren => {
     const usedPct = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
     const totalPct = (memory.totalJSHeapSize / memory.jsHeapSizeLimit) * 100;
 
-    const barColor = usedPct > 80 ? "bg-destructive" : usedPct > 50 ? "bg-warning" : "bg-success";
+    const barColorHighWarning = usedPct > 50 ? "bg-warning" : "bg-success";
+    const barColor = usedPct > 80 ? "bg-destructive" : barColorHighWarning;
 
     return (
         <div class="space-y-1.5">
@@ -105,11 +106,11 @@ interface CwvMetric {
     label: string;
     metric: keyof CoreWebVitals;
     unit: string;
-    value: null | number;
+    value: number | undefined;
 }
 
 const CwvCard = ({ label, metric, unit, value }: CwvMetric): ComponentChildren => {
-    if (value === null) {
+    if (value === undefined) {
         return (
             <div class="flex flex-col items-center gap-1 p-3 border border-border bg-foreground/2 min-w-0">
                 <span class="text-[0.6rem] text-muted-foreground uppercase tracking-wider font-semibold truncate w-full text-center">{label}</span>
@@ -183,7 +184,8 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
     }, []);
 
     const { fps, longTasks, memory, vitals } = snapshot;
-    const fpsRating: CwvRating = fps >= 50 ? "good" : fps >= 30 ? "needs-improvement" : "poor";
+    const fpsMidRating: CwvRating = fps >= 30 ? "needs-improvement" : "poor";
+    const fpsRating: CwvRating = fps >= 50 ? "good" : fpsMidRating;
 
     const cwvMetrics: CwvMetric[] = [
         { label: "LCP", metric: "lcp", unit: "ms", value: vitals.lcp },

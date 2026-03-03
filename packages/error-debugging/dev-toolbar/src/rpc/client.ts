@@ -1,11 +1,11 @@
 import type { ClientFunctions, ClientRPCContext, ServerFunctions } from "../types/rpc";
 
 /**
- * Creates client-side RPC context
- * @param customFunctions Custom client functions to register
- * @returns Client RPC context
+ * Creates client-side RPC context.
+ * @param customFunctions Custom client functions to register.
+ * @returns Client RPC context.
  */
-export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): ClientRPCContext => {
+const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): ClientRPCContext => {
     const functions: ClientFunctions = {
         onConfigChange: () => {
             // Default implementation
@@ -20,10 +20,12 @@ export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions
     } as ClientFunctions;
 
     // Pending RPC requests map
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const pendingRequests = new Map<string, { reject: (error: any) => void; resolve: (value: any) => void }>();
 
     // Setup HMR listener for RPC responses
     if (globalThis.window !== undefined && import.meta.hot) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         import.meta.hot.on("dev-toolbar:rpc:response", (data: { id: string; result: any }) => {
             const request = pendingRequests.get(data.id);
 
@@ -43,13 +45,14 @@ export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions
         });
 
         // Listen for server-initiated client function calls
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         import.meta.hot.on("dev-toolbar:client", (data: { args: any[]; method: string }) => {
             const { args, method } = data;
-            const function_ = functions[method];
+            const handler = functions[method];
 
-            if (function_) {
+            if (handler) {
                 try {
-                    function_(...args);
+                    handler(...args);
                 } catch (error) {
                     console.error(`[dev-toolbar] Error calling client function ${method}:`, error);
                 }
@@ -63,6 +66,7 @@ export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions
                 throw new Error("RPC calls can only be made in browser environment with HMR");
             }
 
+            // eslint-disable-next-line sonarjs/pseudo-random
             const id = `${Date.now()}-${Math.random().toString(36).slice(7)}`;
 
             return new Promise<ReturnType<ServerFunctions[K]>>((resolve, reject) => {
@@ -77,6 +81,7 @@ export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions
                 }, 30_000); // 30 second timeout
 
                 // Send RPC request
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 import.meta.hot!.send("dev-toolbar:rpc", {
                     args,
                     id,
@@ -89,3 +94,6 @@ export const createClientRPCContext = (customFunctions?: Partial<ClientFunctions
         },
     };
 };
+
+export { createClientRPCContext };
+export default createClientRPCContext;

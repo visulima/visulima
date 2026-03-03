@@ -32,7 +32,6 @@ const getHintStyle = (position: FirstVisitHintProps["position"]): CSSProperties 
             // Pill at top edge → hint floats below
             return { left: "50%", top: "0", transform: "translateX(-50%) translateY(24px)" };
         }
-        case "bottom":
         default: {
             // Pill at bottom edge → hint floats above
             return { left: "50%", top: "0", transform: "translateX(-50%) translateY(calc(-100% - 24px))" };
@@ -62,7 +61,6 @@ const Arrow = ({ position }: { position: FirstVisitHintProps["position"] }): Com
             // Hint below pill → arrow at top of hint, points up
             return <div aria-hidden="true" class={cn(base, "top-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-t border-l")} />;
         }
-        case "bottom":
         default: {
             // Hint above pill → arrow at bottom of hint, points down
             return <div aria-hidden="true" class={cn(base, "bottom-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-b border-r")} />;
@@ -86,7 +84,7 @@ const TIPS = [
  */
 const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): ComponentChildren => {
     const [visible, setVisible] = useState(false);
-    const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const dismissTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     // Delay appearance so the pill animates in first
     useEffect(() => {
@@ -98,9 +96,9 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
     // Clear any pending dismiss timeout on unmount to prevent calling onDismiss
     // after the component has been removed from the tree.
     useEffect(() => () => {
-        if (dismissTimeoutRef.current !== null) {
+        if (dismissTimeoutRef.current !== undefined) {
             clearTimeout(dismissTimeoutRef.current);
-            dismissTimeoutRef.current = null;
+            dismissTimeoutRef.current = undefined;
         }
     }, []);
 

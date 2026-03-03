@@ -4,14 +4,14 @@ import type { MessageHandlers } from "../../types";
 import type { ViteHMREvents } from "./context";
 
 /**
- * Creates a Vite HMR client-side message channel
- * @param handlers Shared handlers map
- * @returns Message channel instance
+ * Creates a Vite HMR client-side message channel.
+ * @param handlers Shared handlers map.
+ * @returns Message channel instance.
  */
-export const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<ViteHMREvents> => {
+const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<ViteHMREvents> => {
     // Listen for messages from server via HMR
     if (globalThis.window !== undefined && import.meta.hot) {
-        import.meta.hot.on("dev-toolbar:server", (data: { data?: any; event: string; id?: string }) => {
+        import.meta.hot.on("dev-toolbar:server", (data: { data?: unknown; event: string; id?: string }) => {
             handleMessage(handlers, {
                 data: data.data,
                 event: data.event,
@@ -22,6 +22,7 @@ export const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<V
     }
 
     // Create channel with send function
+
     const sendMessage = (event: string, ...args: any[]): void => {
         if (globalThis.window === undefined || !import.meta.hot) {
             return;
@@ -35,3 +36,6 @@ export const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<V
 
     return createMessageChannel<ViteHMREvents>(handlers, sendMessage);
 };
+
+export { createViteHMRClient };
+export default createViteHMRClient;

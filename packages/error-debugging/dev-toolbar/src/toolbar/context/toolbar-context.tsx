@@ -1,3 +1,4 @@
+/** @jsxImportSource preact */
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
 
@@ -18,13 +19,13 @@ export interface PinnedTooltip {
 }
 
 /**
- * Toolbar context state
+ * Shared state and actions exposed by the ToolbarContext.
  */
 export interface ToolbarContextState {
     /**
      * Currently active app ID
      */
-    activeAppId: string | null;
+    activeAppId: string | undefined;
 
     /**
      * All registered apps
@@ -32,19 +33,19 @@ export interface ToolbarContextState {
     apps: DevToolbarAppState[];
 
     /**
-     * Clear app notification
+     * Clears the notification badge for an app.
      */
     clearNotification: (appId: string) => void;
 
     /**
      * Currently hovered app (has a tooltip component)
      */
-    hoveredApp: DevToolbarAppState | null;
+    hoveredApp: DevToolbarAppState | undefined;
 
     /**
      * Viewport rect of the hovered app button (for tooltip positioning)
      */
-    hoveredAppRect: DOMRect | null;
+    hoveredAppRect: DOMRect | undefined;
 
     /**
      * Whether toolbar is being dragged
@@ -73,62 +74,62 @@ export interface ToolbarContextState {
     placement: ToolbarPlacement;
 
     /**
-     * Register an app
+     * Registers an app with the toolbar.
      */
     registerApp: (app: DevToolbarAppState) => void;
 
     /**
-     * Set dragging state
+     * Sets the dragging state.
      */
     setDragging: (dragging: boolean) => void;
 
     /**
-     * Set/clear the hovered app. Pass null to start the leave debounce.
+     * Sets or clears the hovered app. Pass undefined to start the leave debounce.
      */
-    setHoveredApp: (app: DevToolbarAppState | null, rect?: DOMRect | null) => void;
+    setHoveredApp: (app: DevToolbarAppState | undefined, rect?: DOMRect | undefined) => void;
 
     /**
-     * Set app notification
+     * Sets a notification for an app.
      */
     setNotification: (appId: string, state: boolean, level?: "info" | "warning" | "error") => void;
 
     /**
-     * Set toolbar placement
+     * Sets the toolbar placement.
      */
     setPlacement: (placement: ToolbarPlacement) => void;
 
     /**
-     * Set toolbar visibility
+     * Sets toolbar visibility.
      */
     setVisible: (visible: boolean) => void;
 
     /**
-     * Toggle an app
+     * Toggles an app's active state.
      */
     toggleApp: (appId: string) => Promise<void>;
 
     /**
-     * Remove a pinned tooltip by its instance id.
+     * Removes a pinned tooltip by its instance id.
      */
     unpinTooltip: (id: string) => void;
 
     /**
-     * Unregister an app
+     * Unregisters an app.
      */
     unregisterApp: (appId: string) => void;
 }
 
 /**
- * Toolbar context
+ * Preact context object that exposes the toolbar's shared state to all child components.
  */
-export const ToolbarContext: ReturnType<typeof createContext<ToolbarContextState | null>> = createContext<ToolbarContextState | null>(null);
+export const ToolbarContext: ReturnType<typeof createContext<ToolbarContextState | undefined>> = createContext<ToolbarContextState | undefined>(undefined);
 
 /**
- * Hook to access toolbar context
- * @throws Error if used outside ToolbarContext provider
+ * Accesses the toolbar context, throwing if used outside a provider.
+ * @throws Error if used outside ToolbarContext provider.
  */
 export const useToolbarContext = (): ToolbarContextState => {
-    const context: ToolbarContextState | null = useContext(ToolbarContext);
+    const context: ToolbarContextState | undefined = useContext(ToolbarContext);
 
     if (!context) {
         throw new Error("useToolbarContext must be used within ToolbarContext provider");

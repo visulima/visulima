@@ -11,30 +11,40 @@ afterEach(cleanup);
 
 describe("progress", () => {
     it("has role=progressbar", () => {
+        expect.hasAssertions();
+
         render(<Progress />);
 
         expect(screen.getByRole("progressbar")).toBeInTheDocument();
     });
 
     it("sets aria-valuenow from value prop", () => {
+        expect.hasAssertions();
+
         render(<Progress value={42} />);
 
         expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "42");
     });
 
     it("sets aria-valuemin=0", () => {
+        expect.hasAssertions();
+
         render(<Progress value={50} />);
 
         expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemin", "0");
     });
 
     it("sets aria-valuemax=100", () => {
+        expect.hasAssertions();
+
         render(<Progress value={50} />);
 
         expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuemax", "100");
     });
 
     it("value=0 → translateX(-100%)", () => {
+        expect.hasAssertions();
+
         render(<Progress value={0} />);
         const indicator = screen.getByRole("progressbar").firstElementChild as HTMLElement;
 
@@ -42,6 +52,8 @@ describe("progress", () => {
     });
 
     it("value=50 → translateX(-50%)", () => {
+        expect.hasAssertions();
+
         render(<Progress value={50} />);
         const indicator = screen.getByRole("progressbar").firstElementChild as HTMLElement;
 
@@ -49,6 +61,8 @@ describe("progress", () => {
     });
 
     it("value=100 → translateX(0%)", () => {
+        expect.hasAssertions();
+
         render(<Progress value={100} />);
         const indicator = screen.getByRole("progressbar").firstElementChild as HTMLElement;
 
@@ -56,18 +70,24 @@ describe("progress", () => {
     });
 
     it("defaults aria-valuenow to 0 when no value", () => {
+        expect.hasAssertions();
+
         render(<Progress />);
 
         expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
     });
 
     it("merges custom class on container", () => {
+        expect.hasAssertions();
+
         render(<Progress class="my-progress" value={50} />);
 
         expect(screen.getByRole("progressbar")).toHaveClass("my-progress");
     });
 
     it("indicator has bg-primary class", () => {
+        expect.hasAssertions();
+
         render(<Progress value={50} />);
         const indicator = screen.getByRole("progressbar").firstElementChild;
 

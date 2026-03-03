@@ -2,9 +2,9 @@ import type { ToolbarPlacement } from "../../types/index";
 import { useToolbarContext } from "../context/index";
 
 /**
- * Hook for toolbar visibility and placement - exposes context methods directly
+ * Exposes toolbar visibility and placement controls from the toolbar context.
  */
-export const useToolbar = (): {
+const useToolbar = (): {
     hide: () => void;
     isDragging: boolean;
     isVisible: boolean;
@@ -27,3 +27,6 @@ export const useToolbar = (): {
         toggle: () => context.setVisible(!context.isVisible),
     };
 };
+
+export { useToolbar };
+export default useToolbar;

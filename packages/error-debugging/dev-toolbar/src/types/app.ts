@@ -200,5 +200,6 @@ export interface DevToolbarAppState extends DevToolbarApp {
  * Placeholder for ServerFunctions (defined in rpc.ts)
  */
 export interface ServerFunctions {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: (...args: any[]) => Promise<any>;
 }

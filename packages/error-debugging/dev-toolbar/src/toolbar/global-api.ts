@@ -6,7 +6,7 @@ import type { ServerFunctions } from "../types/rpc";
 import { loadSettings, updateSettings } from "./settings";
 
 /**
- * Global DevTools API implementation.
+ * Creates the global DevTools API implementation.
  */
 export const createGlobalAPI = (
     appManager: {
@@ -41,10 +41,10 @@ export const createGlobalAPI = (
             }
         },
 
-        getActiveApp(): string | null {
+        getActiveApp(): string | undefined {
             const activeApp = appManager.getActiveApp();
 
-            return activeApp?.id || null;
+            return activeApp?.id;
         },
 
         getApps(): DevToolbarApp[] {
@@ -75,6 +75,7 @@ export const createGlobalAPI = (
 
         rpc: new Proxy({} as ServerFunctions, {
             get(_target, prop: string) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
             },
         }),
@@ -104,12 +105,12 @@ export const createGlobalAPI = (
 };
 
 /**
- * Setup global API on window object
- * @param api API instance
+ * Mounts the global API on the window object so it can be accessed from outside the toolbar.
+ * @param api API instance to expose globally.
  */
 export const setupGlobalAPI = (api: VisulimaDevTools): void => {
     if (globalThis.window !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         (globalThis as any).__VISULIMA_DEVTOOLS__ = api;
     }
 };

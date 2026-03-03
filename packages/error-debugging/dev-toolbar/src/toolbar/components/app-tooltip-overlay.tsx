@@ -91,7 +91,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
     }, [isActive]);
 
     if (!isRendered || !hoveredApp?.tooltip || !hoveredAppRect) {
-        return null;
+        return undefined;
     }
 
     const TooltipComponent = hoveredApp.tooltip;
@@ -106,7 +106,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
         }
 
         // Dismiss the hover tooltip after pinning so it doesn't linger
-        setHoveredApp(null);
+        setHoveredApp(undefined);
     };
 
     return (
@@ -128,7 +128,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                     ),
             )}
             onMouseEnter={() => setHoveredApp(hoveredApp, hoveredAppRect)}
-            onMouseLeave={() => setHoveredApp(null)}
+            onMouseLeave={() => setHoveredApp(undefined)}
             ref={overlayRef}
             role="tooltip"
             style={tooltipStyle}

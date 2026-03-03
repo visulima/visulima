@@ -73,15 +73,30 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const { isScanning, issues, lastScan, showOverlays } = state;
 
     const total = issues.length;
-    const severityCounts = issues.reduce<Record<Severity, number>>(
-        (accumulator, issue) => {
-            accumulator[issue.impact] = (accumulator[issue.impact] ?? 0) + 1;
+    const severityCounts: Record<Severity, number> = { critical: 0, minor: 0, moderate: 0, serious: 0 };
 
-            return accumulator;
-        },
-        { critical: 0, minor: 0, moderate: 0, serious: 0 },
-    );
+    for (const issue of issues) {
+        severityCounts[issue.impact] = (severityCounts[issue.impact] ?? 0) + 1;
+    }
+
     const countBy = (sev: Severity): number => severityCounts[sev];
+
+    let scanButtonLabel: string;
+
+    if (isScanning) {
+        scanButtonLabel = "Scanning…";
+    } else if (lastScan) {
+        scanButtonLabel = "Re-scan";
+    } else {
+        scanButtonLabel = "Scan";
+    }
+
+    const overlayActiveClass = showOverlays
+        ? "border-primary/30 text-primary bg-primary/8"
+        : "border-border text-muted-foreground bg-transparent hover:text-foreground";
+    const overlayButtonClass = issues.length === 0
+        ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed"
+        : cn("cursor-pointer", overlayActiveClass);
 
     return (
         <div class="space-y-3 min-w-[200px]">
@@ -125,24 +140,14 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                             : "border-border text-foreground bg-transparent hover:bg-foreground/5",
                     )}
                     disabled={isScanning}
-                    onClick={() => void a11yStore.scan()}
+                    onClick={() => { a11yStore.scan().catch(() => { /* error handled in store */ }); }}
                     type="button"
                 >
-                    {isScanning ? "Scanning…" : lastScan ? "Re-scan" : "Scan"}
+                    {scanButtonLabel}
                 </button>
 
                 <button
-                    class={cn(
-                        "px-2.5 py-1.5 text-[0.7rem] border transition-colors",
-                        issues.length === 0
-                            ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed"
-                            : cn(
-                                "cursor-pointer",
-                                showOverlays
-                                    ? "border-primary/30 text-primary bg-primary/8"
-                                    : "border-border text-muted-foreground bg-transparent hover:text-foreground",
-                            ),
-                    )}
+                    class={cn("px-2.5 py-1.5 text-[0.7rem] border transition-colors", overlayButtonClass)}
                     disabled={issues.length === 0}
                     onClick={() => a11yStore.setShowOverlays(!showOverlays)}
                     title="Toggle visual highlights on affected elements"

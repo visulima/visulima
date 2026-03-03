@@ -4,8 +4,8 @@ import { DEFAULT_TOOLBAR_SETTINGS } from "../types/toolbar";
 const SETTINGS_STORAGE_KEY = "__v_dt__settings";
 
 /**
- * Load settings from localStorage
- * @returns Toolbar settings
+ * Loads settings from localStorage, merging with defaults.
+ * @returns Toolbar settings.
  */
 export const loadSettings = (): ToolbarSettings => {
     if (globalThis.window === undefined) {
@@ -31,8 +31,8 @@ export const loadSettings = (): ToolbarSettings => {
 };
 
 /**
- * Save settings to localStorage
- * @param settings Toolbar settings to save
+ * Saves settings to localStorage.
+ * @param settings Toolbar settings to save.
  */
 export const saveSettings = (settings: ToolbarSettings): void => {
     if (globalThis.window === undefined) {
@@ -47,9 +47,9 @@ export const saveSettings = (settings: ToolbarSettings): void => {
 };
 
 /**
- * Update settings (merge with existing)
- * @param updates Partial settings to update
- * @returns Updated settings
+ * Merges partial updates into the current settings and persists them.
+ * @param updates Partial settings to update.
+ * @returns Updated settings.
  */
 export const updateSettings = (updates: Partial<ToolbarSettings>): ToolbarSettings => {
     const current = loadSettings();

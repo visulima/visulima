@@ -25,13 +25,15 @@ const EXT_COLORS: Record<string, string> = {
     vue: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
 };
 
+const EXT_REGEX = /\.([a-z]+)(?:\?|$)/i;
+
 const getExtension = (url: string): string => {
-    const match = url.match(/\.([a-z]+)(?:\?|$)/i);
+    const match = url.match(EXT_REGEX);
 
     return match?.[1]?.toLowerCase() ?? "?";
 };
 
-const ExtBadge = ({ ext }: { ext: string }): ComponentChildren => (
+const ExtensionBadge = ({ ext }: { ext: string }): ComponentChildren => (
     <span
         class={cn(
             "inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border",
@@ -45,20 +47,23 @@ const ExtBadge = ({ ext }: { ext: string }): ComponentChildren => (
 const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const [modules, setModules] = useState<ModuleEntry[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | undefined>(undefined);
     const [search, setSearch] = useState("");
-    const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
     const [importersList, setImportersList] = useState<string[]>([]);
     const searchRef = useRef<HTMLInputElement>(null);
 
     const load = (): void => {
         setLoading(true);
-        setError(null);
-        setSelectedId(null);
+        setError(undefined);
+        setSelectedId(undefined);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (helpers.rpc as any)
             .getModuleGraph()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .then((rawModules: any[]) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const entries: ModuleEntry[] = rawModules.map((m: any) => {
                     return {
                         ext: getExtension(m.url ?? m.id ?? ""),
@@ -71,6 +76,8 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                 setModules(entries);
                 setLoading(false);
+
+                return undefined;
             })
             .catch((error_: Error) => {
                 setError(error_.message ?? "Failed to load module graph");
@@ -80,7 +87,6 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
     useEffect(() => {
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const filtered = modules.filter((m) => {
@@ -89,11 +95,11 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         return !q || m.url.toLowerCase().includes(q) || m.ext.includes(q);
     });
 
-    const selectedModule = selectedId ? modules.find((m) => m.id === selectedId) : null;
+    const selectedModule = selectedId ? modules.find((m) => m.id === selectedId) : undefined;
 
     const showImporters = (module_: ModuleEntry): void => {
         if (selectedId === module_.id) {
-            setSelectedId(null);
+            setSelectedId(undefined);
             setImportersList([]);
 
             return;
@@ -133,7 +139,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border shrink-0">
                 <Input
                     class="flex-1 bg-foreground/4 font-mono text-[0.8rem] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 border-border"
-                    onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
+                    onInput={(event) => setSearch((event.target as HTMLInputElement).value)}
                     placeholder="Filter modules…"
                     ref={searchRef}
                     type="text"
@@ -165,7 +171,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 onClick={() => showImporters(module_)}
                                 type="button"
                             >
-                                <ExtBadge ext={module_.ext} />
+                                <ExtensionBadge ext={module_.ext} />
                                 <span class="flex-1 text-[0.775rem] font-mono text-foreground/80 truncate min-w-0">{module_.url}</span>
                                 {module_.importers > 0 && (
                                     <span class="shrink-0 text-[0.65rem] text-muted-foreground px-1.5 py-0.5 bg-foreground/6 border border-border/50">
@@ -186,7 +192,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 aria-label="Close"
                                 class="h-6 w-6 text-xs"
                                 onClick={() => {
-                                    setSelectedId(null);
+                                    setSelectedId(undefined);
                                     setImportersList([]);
                                 }}
                                 size="icon"
@@ -202,7 +208,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             </div>
                             <div>
                                 <div class="text-[0.6rem] uppercase tracking-wider text-muted-foreground mb-1">Type</div>
-                                <ExtBadge ext={selectedModule.ext} />
+                                <ExtensionBadge ext={selectedModule.ext} />
                             </div>
                             <div>
                                 <div class="text-[0.6rem] uppercase tracking-wider text-muted-foreground mb-1">Importers</div>

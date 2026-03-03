@@ -2,17 +2,21 @@ import { createClientRPCContext } from "../rpc/client";
 import type { ServerHelpers } from "../types/app";
 
 /**
- * Create server helpers for apps
- * @returns Server helpers instance
+ * Creates server helpers that proxy RPC calls for use within app init().
+ * @returns Server helpers instance.
  */
-export const createServerHelpers = (): ServerHelpers => {
+const createServerHelpers = (): ServerHelpers => {
     const rpcContext = createClientRPCContext();
 
     return {
         rpc: new Proxy({} as ServerHelpers["rpc"], {
             get(_target, prop: string) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
             },
         }),
     };
 };
+
+export { createServerHelpers };
+export default createServerHelpers;

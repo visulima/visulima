@@ -9,6 +9,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
     const [apps, setApps] = useState<DevToolbarApp[]>([]);
 
     useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
         if (!api) {
@@ -35,9 +36,10 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
     }, []);
 
     const openApp = (id: string): void => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
-        api?.openApp(id).catch(console.error);
+        api?.openApp(id).catch(() => { /* ignore */ });
     };
 
     if (apps.length === 0) {

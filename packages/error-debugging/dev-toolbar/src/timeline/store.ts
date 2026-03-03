@@ -2,14 +2,14 @@ import type { TimelineEvent, TimelineGroup } from "../types/timeline";
 import { DEFAULT_TIMELINE_GROUPS } from "../types/timeline";
 
 /**
- * Timeline store for managing events
+ * Timeline store for managing timeline events.
  */
-export class TimelineStore {
+class TimelineStore {
     private groups: Map<string, TimelineGroup>;
 
     private maxEvents: number;
 
-    constructor(maxEvents = 1000) {
+    public constructor(maxEvents = 1000) {
         this.maxEvents = maxEvents;
         this.groups = new Map();
 
@@ -20,11 +20,9 @@ export class TimelineStore {
     }
 
     /**
-     * Add an event to a group
-     * @param groupId Group ID
-     * @param event Timeline event
+     * Adds an event to a group.
      */
-    addEvent(groupId: string, event: TimelineEvent): void {
+    public addEvent(groupId: string, event: TimelineEvent): void {
         let group = this.groups.get(groupId);
 
         if (!group) {
@@ -45,47 +43,42 @@ export class TimelineStore {
         }
 
         // Sort events by time
-        group.events.sort((a, b) => a.time - b.time);
+        group.events = group.events.toSorted((a, b) => a.time - b.time);
     }
 
     /**
-     * Get all groups
-     * @returns Array of timeline groups
+     * Gets all timeline groups.
      */
-    getGroups(): TimelineGroup[] {
+    public getGroups(): TimelineGroup[] {
         return [...this.groups.values()];
     }
 
     /**
-     * Get events for a specific group
-     * @param groupId Group ID
-     * @returns Array of events or empty array
+     * Gets events for a specific group.
      */
-    getGroupEvents(groupId: string): TimelineEvent[] {
+    public getGroupEvents(groupId: string): TimelineEvent[] {
         const group = this.groups.get(groupId);
 
-        return group?.events || [];
+        return group?.events ?? [];
     }
 
     /**
-     * Get all events across all groups
-     * @returns Array of all events
+     * Gets all events across all groups.
      */
-    getAllEvents(): TimelineEvent[] {
+    public getAllEvents(): TimelineEvent[] {
         const allEvents: TimelineEvent[] = [];
 
         for (const group of this.groups.values()) {
             allEvents.push(...group.events);
         }
 
-        return allEvents.sort((a, b) => a.time - b.time);
+        return allEvents.toSorted((a, b) => a.time - b.time);
     }
 
     /**
-     * Clear events for a group
-     * @param groupId Group ID
+     * Clears events for a specific group.
      */
-    clearGroup(groupId: string): void {
+    public clearGroup(groupId: string): void {
         const group = this.groups.get(groupId);
 
         if (group) {
@@ -94,21 +87,18 @@ export class TimelineStore {
     }
 
     /**
-     * Clear all events
+     * Clears all events from all groups.
      */
-    clearAll(): void {
+    public clearAll(): void {
         for (const group of this.groups.values()) {
             group.events = [];
         }
     }
 
     /**
-     * Get events within a time range
-     * @param startTime Start timestamp
-     * @param endTime End timestamp
-     * @returns Array of events in range
+     * Gets events within a time range.
      */
-    getEventsInRange(startTime: number, endTime: number): TimelineEvent[] {
+    public getEventsInRange(startTime: number, endTime: number): TimelineEvent[] {
         const allEvents = this.getAllEvents();
 
         return allEvents.filter((event) => event.time >= startTime && event.time <= endTime);
@@ -121,13 +111,14 @@ export class TimelineStore {
 let timelineStoreInstance: TimelineStore | undefined;
 
 /**
- * Get or create timeline store instance
- * @returns Timeline store instance
+ * Gets or creates the timeline store singleton instance.
  */
-export const getTimelineStore = (): TimelineStore => {
+const getTimelineStore = (): TimelineStore => {
     if (!timelineStoreInstance) {
         timelineStoreInstance = new TimelineStore();
     }
 
     return timelineStoreInstance;
 };
+
+export { getTimelineStore, TimelineStore };

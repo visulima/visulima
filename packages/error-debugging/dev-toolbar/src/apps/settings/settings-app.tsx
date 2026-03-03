@@ -15,7 +15,7 @@ import cn from "../../utils/cn";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 
-/** Single settings row: label + description on left, control on right */
+/** Single settings row with label and description on the left, and control on the right. */
 const SettingRow = ({ control, description, label }: { control: ComponentChildren; description?: string; label: string }): ComponentChildren => (
     <div class="flex items-center justify-between gap-6 py-3.5">
         <div class="min-w-0">
@@ -26,7 +26,7 @@ const SettingRow = ({ control, description, label }: { control: ComponentChildre
     </div>
 );
 
-/** Section with title and divider */
+/** Section with a title and divider. */
 const Section = ({ children, title }: { children: ComponentChildren; title: string }): ComponentChildren => (
     <section>
         <h3 class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
@@ -41,7 +41,7 @@ const Section = ({ children, title }: { children: ComponentChildren; title: stri
     </section>
 );
 
-/** Sliding toggle switch */
+/** Sliding toggle switch component. */
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }): ComponentChildren => (
     <button
         aria-checked={checked}
@@ -67,7 +67,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     </button>
 );
 
-/** 3-way segmented control for theme */
+/** Three-way segmented control for theme selection. */
 const ThemeControl = ({ onChange, value }: { onChange: (v: Theme) => void; value: Theme }): ComponentChildren => {
     const options: { icon: ComponentChildren; label: string; value: Theme }[] = [
         {
@@ -128,7 +128,7 @@ const HideDelayControl = ({ onChange, value }: { onChange: (v: number) => void; 
             "focus:outline-none focus:ring-1 focus:ring-ring",
             "transition-colors duration-150",
         )}
-        onChange={(e) => onChange(Number((e.target as HTMLSelectElement).value))}
+        onChange={(event) => onChange(Number((event.target as HTMLSelectElement).value))}
         value={String(value)}
     >
         {HIDE_OPTIONS.map((opt) => (
@@ -156,30 +156,30 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
             return undefined;
         }
 
-        const handleKeyDown = (e: KeyboardEvent): void => {
-            e.preventDefault();
-            e.stopPropagation();
+        const handleKeyDown = (event: KeyboardEvent): void => {
+            event.preventDefault();
+            event.stopPropagation();
 
             // Ignore lone modifier keys
-            if (["Alt", "Control", "Meta", "Shift"].includes(e.key)) {
+            if (["Alt", "Control", "Meta", "Shift"].includes(event.key)) {
                 return;
             }
 
             const parts: string[] = [];
 
-            if (e.altKey)
+            if (event.altKey)
                 parts.push("Alt");
 
-            if (e.ctrlKey)
+            if (event.ctrlKey)
                 parts.push("Control");
 
-            if (e.metaKey)
+            if (event.metaKey)
                 parts.push("Meta");
 
-            if (e.shiftKey)
+            if (event.shiftKey)
                 parts.push("Shift");
 
-            parts.push(e.key);
+            parts.push(event.key);
 
             onChange(parts.join("+"));
             setCapturing(false);

@@ -25,9 +25,9 @@ const LEVEL_VARIANT: Record<string, "destructive" | "info" | "warning"> = {
     warning: "warning",
 };
 
-const LevelBadge = ({ level }: { level?: string }): ComponentChildren | null => {
+const LevelBadge = ({ level }: { level?: string }): ComponentChildren => {
     if (!level) {
-        return null;
+        return undefined;
     }
 
     return (
@@ -77,7 +77,7 @@ const EventDetail = ({ event, onClose }: EventDetailProps): ComponentChildren =>
                 <div class="space-y-1">
                     <div class="text-[0.65rem] uppercase tracking-wider text-muted-foreground font-medium">Data</div>
                     <pre class="text-[0.7rem] font-mono text-foreground/80 bg-foreground/4 p-3 overflow-auto border border-border/50 whitespace-pre-wrap break-all">
-                        {JSON.stringify(event.data, null, 2)}
+                        {JSON.stringify(event.data, undefined, 2)}
                     </pre>
                 </div>
             )}
@@ -88,13 +88,15 @@ const EventDetail = ({ event, onClose }: EventDetailProps): ComponentChildren =>
 const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
     const [activeTab, setActiveTab] = useState<string>(ALL_TAB);
     const [groups, setGroups] = useState<TimelineGroup[]>([]);
-    const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
-    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | undefined>(undefined);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
     const refresh = (): void => {
         const store = getTimelineStore();
 
-        setGroups(store.getGroups().map((g) => { return { ...g, events: [...g.events] }; }));
+        setGroups(store.getGroups().map((g) => {
+            return { ...g, events: [...g.events] };
+        }));
     };
 
     useEffect(() => {
@@ -102,7 +104,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
         intervalRef.current = setInterval(refresh, POLL_INTERVAL);
 
         return () => {
-            if (intervalRef.current !== null) {
+            if (intervalRef.current !== undefined) {
                 clearInterval(intervalRef.current);
             }
         };
@@ -116,13 +118,13 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
     ];
 
     const visibleEvents: TimelineEvent[]
-        = activeTab === ALL_TAB ? groups.flatMap((g) => g.events).sort((a, b) => a.time - b.time) : groups.find((g) => g.id === activeTab)?.events ?? [];
+        = activeTab === ALL_TAB ? groups.flatMap((g) => g.events).toSorted((a, b) => a.time - b.time) : groups.find((g) => g.id === activeTab)?.events ?? [];
 
     const clearAll = (): void => {
         const store = getTimelineStore();
 
         store.clearAll();
-        setSelectedEvent(null);
+        setSelectedEvent(undefined);
         refresh();
     };
 
@@ -143,7 +145,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                             key={tab.id}
                             onClick={() => {
                                 setActiveTab(tab.id);
-                                setSelectedEvent(null);
+                                setSelectedEvent(undefined);
                             }}
                             type="button"
                         >
@@ -189,7 +191,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                         : (
                         <div class="divide-y divide-border/50">
                             {visibleEvents.map((event) => {
-                                const group = groups.find((g) => g.events.some((e) => e.id === event.id));
+                                const group = groups.find((g) => g.events.some((event_) => event_.id === event.id));
                                 const color = groupColorMap.get(group?.id ?? "") ?? group?.color;
 
                                 return (
@@ -200,7 +202,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                                             selectedEvent?.id === event.id && "bg-primary/6",
                                         )}
                                         key={event.id}
-                                        onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
+                                        onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? undefined : event)}
                                         type="button"
                                     >
                                         {color && <span class="mt-1 size-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />}
@@ -220,7 +222,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                 </div>
 
                 {/* Detail panel */}
-                {selectedEvent && <EventDetail event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+                {selectedEvent && <EventDetail event={selectedEvent} onClose={() => setSelectedEvent(undefined)} />}
             </div>
         </div>
     );

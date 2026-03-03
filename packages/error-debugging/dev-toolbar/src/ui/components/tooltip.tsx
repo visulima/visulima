@@ -12,7 +12,7 @@ interface TooltipContextValue {
     triggerRef: { current: Element | null };
 }
 
-const TooltipContext = createContext<TooltipContextValue | null>(null);
+const TooltipContext = createContext<TooltipContextValue | undefined>(undefined);
 
 const useTooltipContext = (): TooltipContextValue => {
     const context = useContext(TooltipContext);
@@ -66,7 +66,7 @@ const TooltipTrigger = ({ children, class: className, ...rest }: TooltipTriggerP
     );
 };
 
-const TooltipContent = ({ children, class: className, side = "top", sideOffset = 4, ...rest }: TooltipContentProps): JSX.Element | null => {
+const TooltipContent = ({ children, class: className, side = "top", sideOffset = 4, ...rest }: TooltipContentProps): JSX.Element | undefined => {
     const { open, triggerRef } = useTooltipContext();
     const contentRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -82,6 +82,8 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
         })
             .then((result) => {
                 setPosition({ x: result.x, y: result.y });
+
+                return result;
             })
             .catch(() => {
                 // ignore positioning errors in non-browser environments
@@ -89,7 +91,7 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
     }, [open, side, sideOffset, triggerRef]);
 
     if (!open) {
-        return null;
+        return undefined;
     }
 
     return (

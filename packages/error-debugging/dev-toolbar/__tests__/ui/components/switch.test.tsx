@@ -11,24 +11,32 @@ afterEach(cleanup);
 
 describe("switch", () => {
     it("has role=switch", () => {
+        expect.hasAssertions();
+
         render(<Switch />);
 
         expect(screen.getByRole("switch")).toBeInTheDocument();
     });
 
     it("aria-checked is false by default", () => {
+        expect.hasAssertions();
+
         render(<Switch />);
 
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "false");
     });
 
     it("aria-checked is true when defaultChecked=true", () => {
+        expect.hasAssertions();
+
         render(<Switch defaultChecked />);
 
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "true");
     });
 
     it("toggles when clicked (uncontrolled)", () => {
+        expect.hasAssertions();
+
         render(<Switch />);
         const sw = screen.getByRole("switch");
 
@@ -44,6 +52,8 @@ describe("switch", () => {
     });
 
     it("calls onCheckedChange when toggled", () => {
+        expect.hasAssertions();
+
         const onCheckedChange = vi.fn();
 
         render(<Switch onCheckedChange={onCheckedChange} />);
@@ -53,12 +63,16 @@ describe("switch", () => {
     });
 
     it("controlled: respects checked prop", () => {
+        expect.hasAssertions();
+
         render(<Switch checked={true} onCheckedChange={() => {}} />);
 
         expect(screen.getByRole("switch")).toHaveAttribute("aria-checked", "true");
     });
 
     it("controlled: calls onCheckedChange on click", () => {
+        expect.hasAssertions();
+
         const onCheckedChange = vi.fn();
 
         render(<Switch checked={false} onCheckedChange={onCheckedChange} />);
@@ -68,6 +82,8 @@ describe("switch", () => {
     });
 
     it("does not toggle when disabled", () => {
+        expect.hasAssertions();
+
         render(<Switch disabled />);
         const sw = screen.getByRole("switch");
 
@@ -77,18 +93,24 @@ describe("switch", () => {
     });
 
     it("sets data-state attribute", () => {
+        expect.hasAssertions();
+
         render(<Switch defaultChecked />);
 
         expect(screen.getByRole("switch")).toHaveAttribute("data-state", "checked");
     });
 
     it("merges custom class", () => {
+        expect.hasAssertions();
+
         render(<Switch class="my-switch" />);
 
         expect(screen.getByRole("switch")).toHaveClass("my-switch");
     });
 
     it("sets id attribute", () => {
+        expect.hasAssertions();
+
         render(<Switch id="my-switch" />);
 
         expect(screen.getByRole("switch")).toHaveAttribute("id", "my-switch");

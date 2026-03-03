@@ -9,12 +9,13 @@ import { getTimelineStore } from "./store";
 // Survive module hot-reloads / multiple initToolbar() calls
 const CAPTURE_KEY = "__visulima_timeline_capture__";
 
+// eslint-disable-next-line sonarjs/pseudo-random
 const generateId = (prefix: string): string => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
 const isViteInternalUrl = (url: string): boolean =>
     url.startsWith("/@") || url.includes("/__vite") || url.includes("__visulima-dev-toolbar") || url.startsWith("data:") || url.startsWith("blob:");
 
-export const startTimelineCapture = (): void => {
+const startTimelineCapture = (): void => {
     if ((globalThis as Record<string, unknown>)[CAPTURE_KEY]) {
         return;
     }
@@ -83,12 +84,8 @@ export const startTimelineCapture = (): void => {
         globalThis.fetch = async (...args: Parameters<typeof fetch>): ReturnType<typeof fetch> => {
             const input = args[0];
             const init = args[1];
-            const url
-                = typeof input === "string"
-                    ? input
-                    : input instanceof URL
-                        ? input.href
-                        : (input as Request).url;
+            const urlFromUrl = input instanceof URL ? input.href : (input as Request).url;
+            const url = typeof input === "string" ? input : urlFromUrl;
             const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
 
             // Skip Vite-internal and dev-toolbar requests silently
@@ -170,3 +167,6 @@ export const startTimelineCapture = (): void => {
         });
     }
 };
+
+export { startTimelineCapture };
+export default startTimelineCapture;

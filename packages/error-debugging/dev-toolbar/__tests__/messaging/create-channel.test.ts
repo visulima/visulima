@@ -24,6 +24,8 @@ describe("createMessageChannel", () => {
 
     describe("on / send", () => {
         it("registers a handler that is stored in the handlers map", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
 
@@ -33,6 +35,8 @@ describe("createMessageChannel", () => {
         });
 
         it("send() invokes the sendFn with the event name and arguments", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
 
             channel.send("user:login", "alice");
@@ -41,6 +45,8 @@ describe("createMessageChannel", () => {
         });
 
         it("send() passes multiple arguments to sendFn", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
 
             channel.send("data:update", { value: 42 });
@@ -49,14 +55,20 @@ describe("createMessageChannel", () => {
         });
 
         it("on() returns an unsubscribe function", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
             const off = channel.on("user:login", handler);
+
+            expect(off).toBeTypeOf("function");
 
             expectTypeOf(off).toBeFunction();
         });
 
         it("unsubscribe function removes the handler", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
             const off = channel.on("user:login", handler);
@@ -67,6 +79,8 @@ describe("createMessageChannel", () => {
         });
 
         it("unsubscribe does not affect other handlers on the same event", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const h1 = vi.fn();
             const h2 = vi.fn();
@@ -79,6 +93,8 @@ describe("createMessageChannel", () => {
         });
 
         it("multiple handlers can be registered for the same event", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
 
             channel.on("user:login", vi.fn());
@@ -90,6 +106,8 @@ describe("createMessageChannel", () => {
 
     describe("off", () => {
         it("removes a specific handler for an event", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
 
@@ -100,6 +118,8 @@ describe("createMessageChannel", () => {
         });
 
         it("removes all handlers when no handler argument is passed", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
 
             channel.on("user:login", vi.fn());
@@ -110,12 +130,16 @@ describe("createMessageChannel", () => {
         });
 
         it("is a no-op when the event has no registered handlers", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
 
             expect(() => channel.off("user:login")).not.toThrowError();
         });
 
         it("does not remove the entry when the handler set is still non-empty", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const h1 = vi.fn();
             const h2 = vi.fn();
@@ -131,6 +155,8 @@ describe("createMessageChannel", () => {
 
     describe("once", () => {
         it("calls handleMessage for a once-registered event exactly once", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
 
@@ -145,6 +171,8 @@ describe("createMessageChannel", () => {
         });
 
         it("auto-removes the once handler after the first invocation", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const handler = vi.fn();
 
@@ -155,6 +183,8 @@ describe("createMessageChannel", () => {
         });
 
         it("does not interfere with regular on() handlers", () => {
+            expect.hasAssertions();
+
             const channel = makeChannel();
             const onceHandler = vi.fn();
             const regularHandler = vi.fn();
@@ -178,6 +208,8 @@ describe("handleMessage", () => {
     });
 
     it("calls all registered handlers for the event", () => {
+        expect.hasAssertions();
+
         const h1 = vi.fn();
         const h2 = vi.fn();
 
@@ -192,6 +224,8 @@ describe("handleMessage", () => {
     });
 
     it("passes data and the full envelope to each handler", () => {
+        expect.hasAssertions();
+
         const handler = vi.fn();
         const envelope: MessageEnvelope = { data: { x: 1 }, event: "update", id: "req-1", timestamp: 123 };
 
@@ -202,12 +236,16 @@ describe("handleMessage", () => {
     });
 
     it("is a no-op when no handlers are registered for the event", () => {
+        expect.hasAssertions();
+
         const envelope: MessageEnvelope = { event: "unknown" };
 
         expect(() => handleMessage(handlers, envelope)).not.toThrowError();
     });
 
     it("is a no-op when handler set is empty", () => {
+        expect.hasAssertions();
+
         handlers.set("empty", new Set());
 
         const envelope: MessageEnvelope = { event: "empty" };
@@ -216,6 +254,8 @@ describe("handleMessage", () => {
     });
 
     it("continues calling remaining handlers when one throws", () => {
+        expect.hasAssertions();
+
         const throwing = vi.fn().mockImplementation(() => {
             throw new Error("handler error");
         });
@@ -228,6 +268,8 @@ describe("handleMessage", () => {
     });
 
     it("handles undefined data gracefully", () => {
+        expect.hasAssertions();
+
         const handler = vi.fn();
         const envelope: MessageEnvelope = { event: "no-data" };
 

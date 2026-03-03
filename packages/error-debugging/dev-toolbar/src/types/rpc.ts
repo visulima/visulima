@@ -11,6 +11,7 @@ export interface ServerFunctions {
     /**
      * Extension point for custom server functions
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: (...args: any[]) => Promise<any>;
 
     /**
@@ -26,6 +27,7 @@ export interface ServerFunctions {
     /**
      * Get Vite configuration
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getViteConfig: () => Promise<Record<string, any>>;
 
     /**
@@ -48,22 +50,20 @@ export interface ServerFunctions {
  * These can be called from the server
  */
 export interface ClientFunctions {
-    /**
-     * Extension point for custom client functions
-     */
+    // Extension point for custom client functions.
     [key: string]: (...args: any[]) => void;
 
     /**
      * Notify client of config change
      * @param config New Vite config
      */
-    onConfigChange: (config: Record<string, any>) => void;
+    onConfigChange: (config: Record<string, unknown>) => void;
 
     /**
      * Notify client of HMR update
      * @param payload HMR payload
      */
-    onHMRUpdate: (payload: any) => void;
+    onHMRUpdate: (payload: unknown) => void;
 
     /**
      * Notify client of module update
@@ -110,7 +110,7 @@ export interface ClientRPCContext {
     /**
      * Register a client function
      * @param name Function name
-     * @param fn Function implementation
+     * @param function_ Function implementation
      */
     registerFunction: <K extends keyof ClientFunctions>(name: K, function_: ClientFunctions[K]) => void;
 }

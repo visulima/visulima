@@ -18,7 +18,7 @@ interface ToolbarContainerProps {
     /**
      * Active app ID
      */
-    activeAppId: string | null;
+    activeAppId: string | undefined;
 
     /**
      * Initial apps
@@ -149,7 +149,7 @@ const ToolbarContainer = ({
 }: ToolbarContainerProps): ComponentChildren => {
     const anchorRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
-    const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const leaveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const { resolvedTheme } = useTheme();
     const { state, updateState } = useFrameState();
@@ -157,8 +157,8 @@ const ToolbarContainer = ({
     const { anchorStyle, bringUp, isDragging, isHidden, isVertical, onPointerDown, panelStyle } = usePosition(panelRef);
 
     // ─── Tooltip hover state ──────────────────────────────────────────────────
-    const [hoveredApp, setHoveredAppState] = useState<DevToolbarAppState | null>(null);
-    const [hoveredAppRect, setHoveredAppRect] = useState<DOMRect | null>(null);
+    const [hoveredApp, setHoveredAppState] = useState<DevToolbarAppState | undefined>(undefined);
+    const [hoveredAppRect, setHoveredAppRect] = useState<DOMRect | undefined>(undefined);
 
     // ─── Pinned tooltips + localStorage persistence ───────────────────────────
     // Latest dragged positions per pin id — updated by card on drag-end.
@@ -227,7 +227,7 @@ const ToolbarContainer = ({
     // every apps change rather than assuming all apps are present on first run.
     // storedPinsRef caches the parsed localStorage data so we only JSON.parse once.
     // restoredAppIdsRef prevents restoring the same appId twice across renders.
-    const storedPinsRef = useRef<{ appId: string; x: number; y: number }[] | null>(null);
+    const storedPinsRef = useRef<{ appId: string; x: number; y: number }[] | undefined>(undefined);
     const restoredAppIdsRef = useRef(new Set<string>());
 
     useEffect(() => {
@@ -236,7 +236,7 @@ const ToolbarContainer = ({
         }
 
         // Parse localStorage exactly once
-        if (storedPinsRef.current === null) {
+        if (storedPinsRef.current === undefined) {
             try {
                 const raw = localStorage.getItem(PINNED_KEY);
 
@@ -266,6 +266,7 @@ const ToolbarContainer = ({
                 restoredAppIdsRef.current.add(entry.appId);
                 newPins.push({
                     app,
+                    // eslint-disable-next-line sonarjs/pseudo-random
                     id: `${app.id}-restored-${Date.now()}-${Math.random().toString(36).slice(2)}`,
                     initialX: entry.x,
                     initialY: entry.y,
@@ -280,26 +281,26 @@ const ToolbarContainer = ({
 
     // Clear any pending leave timer on unmount to prevent post-unmount state updates
     useEffect(() => () => {
-        if (leaveTimerRef.current !== null) {
+        if (leaveTimerRef.current !== undefined) {
             clearTimeout(leaveTimerRef.current);
         }
     }, []);
 
-    const handleSetHoveredApp = useCallback((app: DevToolbarAppState | null, rect?: DOMRect | null): void => {
-        if (leaveTimerRef.current !== null) {
+    const handleSetHoveredApp = useCallback((app: DevToolbarAppState | undefined, rect?: DOMRect): void => {
+        if (leaveTimerRef.current !== undefined) {
             clearTimeout(leaveTimerRef.current);
-            leaveTimerRef.current = null;
+            leaveTimerRef.current = undefined;
         }
 
         if (app) {
             setHoveredAppState(app);
-            setHoveredAppRect(rect ?? null);
+            setHoveredAppRect(rect);
         } else {
             // Short debounce so moving mouse from button → tooltip doesn't flicker
             leaveTimerRef.current = setTimeout(() => {
-                setHoveredAppState(null);
-                setHoveredAppRect(null);
-                leaveTimerRef.current = null;
+                setHoveredAppState(undefined);
+                setHoveredAppRect(undefined);
+                leaveTimerRef.current = undefined;
             }, 180);
         }
     }, []);
@@ -358,7 +359,6 @@ const ToolbarContainer = ({
             }
         },
         // updateState is module-level (stable) — callback created once, stale closures impossible
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [updateState],
     );
 
@@ -390,7 +390,7 @@ const ToolbarContainer = ({
 
     // Always render the toolbar; CSS handles minimization via isHidden
     if (!state.preferShowFloatingPanel && !panelVisible) {
-        return null;
+        return undefined;
     }
 
     return (
@@ -435,13 +435,13 @@ const ToolbarContainer = ({
                             "transition-pill",
                         )}
                         data-vertical={isVertical || undefined}
-                        onPointerDown={(e) => {
+                        onPointerDown={(event) => {
                             // Dismiss hint on first drag
                             if (state.isFirstVisit) {
                                 updateState({ isFirstVisit: false });
                             }
 
-                            onPointerDown(e);
+                            onPointerDown(event);
                         }}
                         ref={panelRef}
                         style={panelStyle}
@@ -458,8 +458,8 @@ const ToolbarContainer = ({
                                 "group-data-[vertical]/panel:rotate-[-90deg]",
                                 panelVisible ? "opacity-100" : "opacity-60",
                             )}
-                            onClick={(e) => {
-                                e.stopPropagation();
+                            onClick={(event) => {
+                                event.stopPropagation();
 
                                 // Dismiss hint on first logo click
                                 if (state.isFirstVisit) {

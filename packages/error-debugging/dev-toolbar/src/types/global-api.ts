@@ -4,105 +4,93 @@ import type { ServerFunctions } from "./rpc";
 import type { ToolbarSettings } from "./toolbar";
 
 /**
- * Global DevTools API interface
+ * Global DevTools API interface.
  * Exposed as window.__VISULIMA_DEVTOOLS__
  */
-export interface VisulimaDevTools {
+interface VisulimaDevTools {
     /**
-     * Clear notification for an app
-     * @param appId App ID
+     * Clears notification for an app.
      */
     clearNotification: (appId: string) => void;
 
     /**
-     * Close the currently active app
+     * Closes the currently active app.
      */
     closeApp: () => Promise<void>;
 
     /**
-     * Get the currently active app ID
-     * @returns Active app ID or null
+     * Gets the currently active app ID.
      */
-    getActiveApp: () => string | null;
+    getActiveApp: () => string | undefined;
 
     /**
-     * Get all registered apps
-     * @returns Array of app definitions
+     * Gets all registered apps.
      */
     getApps: () => DevToolbarApp[];
 
     /**
-     * Get current toolbar settings
-     * @returns Toolbar settings
+     * Gets current toolbar settings.
      */
     getSettings: () => ToolbarSettings;
 
     /**
-     * Hide the toolbar
+     * Hides the toolbar.
      */
     hide: () => void;
 
     /**
-     * Hook instance for event subscriptions
+     * Hook instance for event subscriptions.
      */
     hook: DevToolbarHook;
 
     /**
-     * Show a notification for an app
-     * @param appId App ID
-     * @param level Notification level
+     * Shows a notification for an app.
      */
     notify: (appId: string, level: "info" | "warning" | "error") => void;
 
     /**
-     * Open an app
-     * @param appId App ID to open
+     * Opens an app by ID.
      */
     openApp: (appId: string) => Promise<void>;
 
     /**
-     * Register a custom app
-     * @param app App definition
+     * Registers a custom app.
      */
     registerApp: (app: DevToolbarApp) => void;
 
     /**
-     * RPC client for calling server functions
+     * RPC client for calling server functions.
      */
     rpc: ServerFunctions;
 
     /**
-     * Directly set the active state of an action button without invoking callbacks.
+     * Directly sets the active state of an action button without invoking callbacks.
      * Useful for deactivating a button from async work running outside the toolbar.
-     * @param appId App ID
-     * @param active New active state
      */
     setAppActive: (appId: string, active: boolean) => void;
 
     /**
-     * Show the toolbar
+     * Shows the toolbar.
      */
     show: () => void;
 
     /**
-     * Toggle toolbar visibility
+     * Toggles toolbar visibility.
      */
     toggle: () => void;
 
     /**
-     * Unregister an app
-     * @param appId App ID to unregister
+     * Unregisters an app by ID.
      */
     unregisterApp: (appId: string) => void;
 
     /**
-     * Update toolbar settings
-     * @param settings Partial settings to update
+     * Updates toolbar settings.
      */
     updateSettings: (settings: Partial<ToolbarSettings>) => void;
 
     /**
-     * Package version
+     * Package version.
      */
     version: string;
 }
@@ -113,8 +101,11 @@ export interface VisulimaDevTools {
 declare global {
     interface Window {
         /**
-         * Visulima DevTools global API
+         * Visulima DevTools global API.
          */
         __VISULIMA_DEVTOOLS__?: VisulimaDevTools;
     }
 }
+
+// eslint-disable-next-line import/prefer-default-export
+export type { VisulimaDevTools };

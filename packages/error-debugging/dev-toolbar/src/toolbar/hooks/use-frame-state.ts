@@ -3,22 +3,22 @@ import { useEffect, useState } from "preact/hooks";
 /**
  * Keyboard shortcut bindings
  */
-export interface KeyBindings {
+interface KeyBindings {
     /** Close active app / panel */
     close: string;
     /** Toggle toolbar panel open/closed */
     toggle: string;
 }
 
-export const DEFAULT_KEYBINDINGS: KeyBindings = {
+const DEFAULT_KEYBINDINGS: KeyBindings = {
     close: "Escape",
     toggle: "Alt+Shift+D",
 };
 
 /**
- * Frame state interface
+ * Persistent state for the devtools panel frame.
  */
-export interface DevToolsFrameState {
+interface DevToolsFrameState {
     /**
      * Close panel on outside click
      */
@@ -119,11 +119,11 @@ const DEFAULT_STATE: DevToolsFrameState = {
 };
 
 /**
- * Build effective defaults by layering plugin options on top of hardcoded defaults.
+ * Builds effective defaults by layering plugin options on top of hardcoded defaults.
  * Plugin options act as project-level defaults; localStorage values override them.
  */
 const buildEffectiveDefaults = (): DevToolsFrameState => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const pluginOptions = (globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ as Record<string, any> | undefined;
 
     if (!pluginOptions) {
@@ -146,7 +146,7 @@ const buildEffectiveDefaults = (): DevToolsFrameState => {
 };
 
 /**
- * Load state from localStorage
+ * Loads state from localStorage.
  */
 const loadState = (): DevToolsFrameState => {
     const effectiveDefaults = buildEffectiveDefaults();
@@ -179,7 +179,7 @@ const loadState = (): DevToolsFrameState => {
 };
 
 /**
- * Save state to localStorage
+ * Saves state to localStorage.
  */
 const saveState = (state: DevToolsFrameState): void => {
     if (globalThis.window === undefined) {
@@ -213,22 +213,22 @@ const notifyListeners = (): void => {
 };
 
 /**
- * Return type for useFrameState hook
+ * Return type for the useFrameState hook.
  */
-export interface UseFrameStateReturn {
+interface UseFrameStateReturn {
     /**
-     * Current frame state
+     * Current frame state.
      */
     state: DevToolsFrameState;
 
     /**
-     * Update state with partial values
+     * Updates state with partial values.
      */
     updateState: (value: Partial<DevToolsFrameState>) => void;
 }
 
 /**
- * Singleton shared state update - writes to localStorage and notifies all subscribers
+ * Singleton shared state update - writes to localStorage and notifies all subscribers.
  */
 const updateSharedState = (value: Partial<DevToolsFrameState>): void => {
     sharedState = { ...sharedState, ...value };
@@ -237,11 +237,11 @@ const updateSharedState = (value: Partial<DevToolsFrameState>): void => {
 };
 
 /**
- * Hook for frame state management.
+ * Manages the shared devtools frame state.
  * All callers share the same module-level state so position, open, and other
  * fields stay in sync regardless of how many times the hook is called.
  */
-export const useFrameState = (): UseFrameStateReturn => {
+const useFrameState = (): UseFrameStateReturn => {
     // Local counter used only to trigger re-renders when shared state changes
     const [, forceUpdate] = useState(0);
 
@@ -262,3 +262,6 @@ export const useFrameState = (): UseFrameStateReturn => {
         updateState: updateSharedState,
     };
 };
+
+export type { DevToolsFrameState, KeyBindings, UseFrameStateReturn };
+export { DEFAULT_KEYBINDINGS, DEFAULT_STATE, useFrameState };

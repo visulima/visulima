@@ -12,7 +12,7 @@ interface PopoverContextValue {
     triggerRef: { current: Element | null };
 }
 
-const PopoverContext = createContext<PopoverContextValue | null>(null);
+const PopoverContext = createContext<PopoverContextValue | undefined>(undefined);
 
 const usePopoverContext = (): PopoverContextValue => {
     const context = useContext(PopoverContext);
@@ -102,7 +102,7 @@ const PopoverContent = ({
     side = "bottom",
     sideOffset = 4,
     ...rest
-}: PopoverContentProps): JSX.Element | null => {
+}: PopoverContentProps): JSX.Element | undefined => {
     const { open, setOpen, triggerRef } = usePopoverContext();
     const contentRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -120,6 +120,8 @@ const PopoverContent = ({
         })
             .then((result) => {
                 setPosition({ x: result.x, y: result.y });
+
+                return result;
             })
             .catch(() => {
                 // ignore positioning errors in non-browser environments
@@ -128,14 +130,14 @@ const PopoverContent = ({
 
     useEffect(() => {
         if (!open) {
-            return;
+            return undefined;
         }
 
-        const handleMouseDown = (e: MouseEvent): void => {
-            if (contentRef.current && !contentRef.current.contains(e.target as Node)) {
+        const handleMouseDown = (event_: MouseEvent): void => {
+            if (contentRef.current && !contentRef.current.contains(event_.target as Node)) {
                 const trigger = triggerRef.current;
 
-                if (trigger && trigger.contains(e.target as Node)) {
+                if (trigger && trigger.contains(event_.target as Node)) {
                     return;
                 }
 
@@ -151,7 +153,7 @@ const PopoverContent = ({
     }, [open, setOpen, triggerRef]);
 
     if (!open) {
-        return null;
+        return undefined;
     }
 
     return (

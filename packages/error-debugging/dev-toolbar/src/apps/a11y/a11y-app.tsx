@@ -90,7 +90,6 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
         {issue.nodes.length > 0 && (
             <div class="mb-2 ml-4 space-y-0.5">
                 {issue.nodes.slice(0, 3).map((node, i) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <code class="block text-[0.65rem] text-foreground/70 font-mono bg-foreground/5 px-2 py-1 truncate" key={i}>
                         {node.selector}
                     </code>
@@ -113,7 +112,7 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
             <a
                 class="text-[0.62rem] text-primary/70 hover:text-primary transition-colors"
                 href={issue.helpUrl}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
                 rel="noopener noreferrer"
                 target="_blank"
             >
@@ -121,8 +120,8 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
             </a>
             <button
                 class="text-[0.62rem] text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-pointer bg-transparent border-0 p-0"
-                onClick={(e) => {
-                    e.stopPropagation();
+                onClick={(event) => {
+                    event.stopPropagation();
                     onDisable(issue.id);
                 }}
                 title="Disable this rule for current session"
@@ -139,9 +138,9 @@ const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): C
 const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     const [storeState, setStoreState] = useState<Readonly<A11yStoreState>>(() => a11yStore.getState());
     const [disabledRules, setDisabledRules] = useState<string[]>([]);
-    const [minSeverity, setMinSeverity] = useState<Severity | null>(null);
-    const [activeIssueId, setActiveIssueId] = useState<string | null>(null);
-    const [filterSeverity, setFilterSeverity] = useState<Severity | null>(null);
+    const [minSeverity, setMinSeverity] = useState<Severity | undefined>(undefined);
+    const [activeIssueId, setActiveIssueId] = useState<string | undefined>(undefined);
+    const [filterSeverity, setFilterSeverity] = useState<Severity | undefined>(undefined);
 
     useEffect(() => a11yStore.subscribe(() => setStoreState(a11yStore.getState())), []);
 
@@ -149,17 +148,17 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     useEffect(() => a11yStore.clearHighlights.bind(a11yStore), []);
 
     const { isScanning, issues, lastScan, scanError, showOverlays, standard } = storeState;
-    const hasDone = lastScan !== null || scanError !== null;
+    const hasDone = lastScan !== undefined || scanError !== undefined;
 
     const handleScan = (): void => {
-        setFilterSeverity(null);
-        setActiveIssueId(null);
-        void a11yStore.scan(disabledRules);
+        setFilterSeverity(undefined);
+        setActiveIssueId(undefined);
+        a11yStore.scan(disabledRules).catch(() => { /* error handled in store */ });
     };
 
     const handleIssueClick = (issue: A11yIssue): void => {
         if (activeIssueId === issue.id) {
-            setActiveIssueId(null);
+            setActiveIssueId(undefined);
             a11yStore.clearHighlights();
 
             if (showOverlays) {
@@ -211,7 +210,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                     Standard
                     <select
                         class="bg-card border border-border text-foreground text-[0.7rem] px-1.5 py-1 cursor-pointer"
-                        onChange={(e) => a11yStore.setStandard((e.target as HTMLSelectElement).value as Standard)}
+                        onChange={(event_) => a11yStore.setStandard((event_.target as HTMLSelectElement).value as Standard)}
                         style="color-scheme: dark"
                         value={standard}
                     >
@@ -226,10 +225,10 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                     Min
                     <select
                         class="bg-card border border-border text-foreground text-[0.7rem] px-1.5 py-1 cursor-pointer"
-                        onChange={(e) => {
-                            const { value } = e.target as HTMLSelectElement;
+                        onChange={(event) => {
+                            const { value } = event.target as HTMLSelectElement;
 
-                            setMinSeverity(value ? (value as Severity) : null);
+                            setMinSeverity(value ? (value as Severity) : undefined);
                         }}
                         style="color-scheme: dark"
                         value={minSeverity ?? ""}
@@ -256,7 +255,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         <Button
                             class="ml-auto"
                             onClick={() => {
-                                const blob = new Blob([JSON.stringify(issues, null, 2)], { type: "application/json" });
+                                const blob = new Blob([JSON.stringify(issues, undefined, 2)], { type: "application/json" });
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement("a");
 
@@ -339,7 +338,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                     count={countBy(sev)}
                                     isActive={filterSeverity === sev}
                                     key={sev}
-                                    onClick={() => setFilterSeverity(filterSeverity === sev ? null : sev)}
+                                    onClick={() => setFilterSeverity(filterSeverity === sev ? undefined : sev)}
                                     severity={sev}
                                 />
                             ))}
@@ -367,7 +366,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                         {filterSeverity ? ` · ${SEVERITY_LABEL[filterSeverity]} only` : ""}
                                     </span>
                                     {filterSeverity && (
-                                        <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setFilterSeverity(null)} variant="link">
+                                        <Button class="h-auto p-0 text-[0.62rem]" onClick={() => setFilterSeverity(undefined)} variant="link">
                                             Clear ×
                                         </Button>
                                     )}

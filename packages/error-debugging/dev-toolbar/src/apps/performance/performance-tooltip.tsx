@@ -46,7 +46,8 @@ const MiniSparkline = ({ samples }: { samples: number[] }): ComponentChildren =>
 
 const MiniMemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren => {
     const usedPct = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
-    const barColor = usedPct > 80 ? "bg-destructive" : usedPct > 50 ? "bg-warning" : "bg-success";
+    const barColorMid = usedPct > 50 ? "bg-warning" : "bg-success";
+    const barColor = usedPct > 80 ? "bg-destructive" : barColorMid;
 
     return (
         <div class="flex items-center gap-2">
@@ -87,7 +88,8 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
     }, []);
 
     const { fps, memory, vitals } = snapshot;
-    const fpsRating: CwvRating = fps >= 50 ? "good" : fps >= 30 ? "needs-improvement" : "poor";
+    const fpsMidRating: CwvRating = fps >= 30 ? "needs-improvement" : "poor";
+    const fpsRating: CwvRating = fps >= 50 ? "good" : fpsMidRating;
 
     return (
         <div class="space-y-3 min-w-[200px]">
@@ -106,19 +108,19 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
 
             {/* LCP + CLS row */}
             <div class="flex gap-3">
-                {vitals.lcp !== null && (
+                {vitals.lcp !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">LCP</span>
                         <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("lcp", vitals.lcp)])}>{vitals.lcp} ms</span>
                     </div>
                 )}
-                {vitals.fcp !== null && (
+                {vitals.fcp !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">FCP</span>
                         <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("fcp", vitals.fcp)])}>{vitals.fcp} ms</span>
                     </div>
                 )}
-                {vitals.cls !== null && (
+                {vitals.cls !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">CLS</span>
                         <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("cls", vitals.cls)])}>
@@ -126,7 +128,7 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
                         </span>
                     </div>
                 )}
-                {vitals.lcp === null && vitals.fcp === null && vitals.cls === null && (
+                {vitals.lcp === undefined && vitals.fcp === undefined && vitals.cls === undefined && (
                     <span class="text-[0.65rem] text-muted-foreground/50">Collecting metrics…</span>
                 )}
             </div>

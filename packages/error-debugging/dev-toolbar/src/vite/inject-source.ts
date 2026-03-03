@@ -2,10 +2,11 @@ import generate from "@babel/generator";
 import { parse } from "@babel/parser";
 import type { NodePath } from "@babel/traverse";
 import _traverse from "@babel/traverse";
+// eslint-disable-next-line import/no-namespace
 import * as t from "@babel/types";
 import { normalizePath } from "vite";
 
-import { matcher } from "./matcher";
+import matcher from "./matcher";
 
 // CJS/ESM interop — @babel/traverse and @babel/generator ship CJS with a .default wrapper
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,15 +14,15 @@ const trav: typeof _traverse = (_traverse as any).default ?? _traverse;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const gen: typeof generate = (generate as any).default ?? generate;
 
-/** The attribute name injected into each JSX opening element. */
+// eslint-disable-next-line import/exports-last
 export const SOURCE_ATTR = "data-vdt-source";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getPropsNameFromFunctionDeclaration = (
     functionDeclaration: t.ArrowFunctionExpression | t.FunctionDeclaration | t.FunctionExpression | t.VariableDeclarator,
-): null | string => {
-    let propsName: null | string = null;
+): string | undefined => {
+    let propsName: string | undefined;
 
     const extractFromParams = (params: (t.Identifier | t.Pattern | t.RestElement | t.TSParameterProperty)[]): void => {
         const first = params[0];
@@ -128,16 +129,16 @@ const buildPositionMap = (originalCode: string): PositionMap => {
 
 const transformJSX = (
     element: NodePath<t.JSXOpeningElement>,
-    propsName: null | string,
+    propsName: string | undefined,
     file: string,
     ignoreComponents: (RegExp | string)[],
     posMap: PositionMap | undefined,
     occurrenceCounter: Map<string, number> | undefined,
-): boolean | undefined => {
+): boolean => {
     const { loc } = element.node;
 
     if (!loc) {
-        return;
+        return false;
     }
 
     const nameOfElement = getNameOfElement(element.node.name);
@@ -163,7 +164,7 @@ const transformJSX = (
         || nameOfElement === "body"
         || matcher(ignoreComponents, nameOfElement)
     ) {
-        return;
+        return false;
     }
 
     // Skip if already annotated
@@ -178,7 +179,7 @@ const transformJSX = (
     );
 
     if (hasSpread || hasSourceAttribute) {
-        return;
+        return false;
     }
 
     // Prefer positions from the original file (accurate even when the received code
@@ -200,7 +201,7 @@ const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents
     const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
     const visitJSX
-        = (propsName: null | string) =>
+        = (propsName: string | undefined) =>
             (element: NodePath<t.JSXOpeningElement>): void => {
                 if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
                     didTransform = true;
@@ -264,7 +265,7 @@ export const addSourceToJsx = (code: string, id: string, ignore: InjectSourceIgn
     const location = filePath!.replace(`${normalizePath(process.cwd())}/`, "");
 
     if (matcher(ignore.files ?? [], location)) {
-        return;
+        return undefined;
     }
 
     try {
@@ -279,7 +280,7 @@ export const addSourceToJsx = (code: string, id: string, ignore: InjectSourceIgn
         const posMap = originalCode && originalCode !== code ? buildPositionMap(originalCode) : undefined;
 
         if (!transform(ast, location, ignore.components ?? [], posMap)) {
-            return;
+            return undefined;
         }
 
         return gen(ast, {

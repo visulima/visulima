@@ -19,4 +19,7 @@ const createSharedStylesheet = (): CSSStyleSheet | undefined => {
     return sheet;
 };
 
-export const sharedToolbarStylesheet: CSSStyleSheet | undefined = createSharedStylesheet();
+const sharedToolbarStylesheet: CSSStyleSheet | undefined = createSharedStylesheet();
+
+export { sharedToolbarStylesheet };
+export default sharedToolbarStylesheet;

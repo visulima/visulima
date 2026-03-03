@@ -22,24 +22,32 @@ const BasicTabs = ({ defaultValue = "tab1", onValueChange }: { defaultValue?: st
 
 describe("tabs", () => {
     it("tabsList has role=tablist", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs />);
 
         expect(screen.getByRole("tablist")).toBeInTheDocument();
     });
 
     it("tabsTrigger has role=tab", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs />);
 
         expect(screen.getAllByRole("tab")).toHaveLength(2);
     });
 
     it("tabsContent has role=tabpanel", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs />);
 
         expect(screen.getByRole("tabpanel")).toBeInTheDocument();
     });
 
     it("defaultValue activates the correct tab content", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs defaultValue="tab1" />);
 
         expect(screen.getByText("Content 1")).toBeInTheDocument();
@@ -47,6 +55,8 @@ describe("tabs", () => {
     });
 
     it("clicking a tab changes active content", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs />);
 
         expect(screen.getByText("Content 1")).toBeInTheDocument();
@@ -58,6 +68,8 @@ describe("tabs", () => {
     });
 
     it("controlled value prop", () => {
+        expect.hasAssertions();
+
         render(
             <Tabs value="tab2">
                 <TabsList>
@@ -74,6 +86,8 @@ describe("tabs", () => {
     });
 
     it("clicking calls onValueChange", () => {
+        expect.hasAssertions();
+
         const onValueChange = vi.fn();
 
         render(<BasicTabs onValueChange={onValueChange} />);
@@ -83,6 +97,8 @@ describe("tabs", () => {
     });
 
     it("controlled: clicking does not self-change when no internal state update", () => {
+        expect.hasAssertions();
+
         const onValueChange = vi.fn();
 
         render(
@@ -103,18 +119,24 @@ describe("tabs", () => {
     });
 
     it("inactive content is not rendered (null, not hidden)", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs defaultValue="tab1" />);
 
         expect(screen.queryByText("Content 2")).not.toBeInTheDocument();
     });
 
     it("active content is visible", () => {
+        expect.hasAssertions();
+
         render(<BasicTabs defaultValue="tab2" />);
 
         expect(screen.getByText("Content 2")).toBeVisible();
     });
 
     it("disabled trigger cannot be clicked", () => {
+        expect.hasAssertions();
+
         const onValueChange = vi.fn();
 
         render(
@@ -136,6 +158,8 @@ describe("tabs", () => {
     });
 
     it("merges custom class on TabsList", () => {
+        expect.hasAssertions();
+
         render(
             <Tabs defaultValue="tab1">
                 <TabsList class="custom-list">

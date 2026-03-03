@@ -22,18 +22,24 @@ describe("timelineStore", () => {
 
     describe("constructor", () => {
         it("initializes with all default groups", () => {
+            expect.hasAssertions();
+
             const groups = store.getGroups();
 
             expect(groups).toHaveLength(DEFAULT_TIMELINE_GROUPS.length);
         });
 
         it("initializes all default groups with empty event arrays", () => {
+            expect.hasAssertions();
+
             for (const group of store.getGroups()) {
                 expect(group.events).toHaveLength(0);
             }
         });
 
         it("includes default group ids", () => {
+            expect.hasAssertions();
+
             const ids = store.getGroups().map((g) => g.id);
 
             for (const group of DEFAULT_TIMELINE_GROUPS) {
@@ -42,6 +48,8 @@ describe("timelineStore", () => {
         });
 
         it("respects custom maxEvents limit", () => {
+            expect.hasAssertions();
+
             const small = new TimelineStore(3);
 
             for (let i = 0; i < 5; i++) {
@@ -54,6 +62,8 @@ describe("timelineStore", () => {
 
     describe("addEvent", () => {
         it("adds an event to an existing default group", () => {
+            expect.hasAssertions();
+
             const event = makeEvent({ id: "hmr-1", title: "HMR Update" });
 
             store.addEvent("hmr", event);
@@ -62,6 +72,8 @@ describe("timelineStore", () => {
         });
 
         it("creates a new group automatically when group does not exist", () => {
+            expect.hasAssertions();
+
             const event = makeEvent({ id: "custom-1", title: "Custom" });
 
             store.addEvent("my-group", event);
@@ -70,6 +82,8 @@ describe("timelineStore", () => {
         });
 
         it("new auto-created group uses groupId as both id and label", () => {
+            expect.hasAssertions();
+
             store.addEvent("auto-group", makeEvent());
 
             const groups = store.getGroups();
@@ -80,6 +94,8 @@ describe("timelineStore", () => {
         });
 
         it("drops the oldest event when maxEvents is exceeded", () => {
+            expect.hasAssertions();
+
             const small = new TimelineStore(3);
 
             for (let i = 0; i < 5; i++) {
@@ -90,10 +106,12 @@ describe("timelineStore", () => {
 
             expect(events).toHaveLength(3);
             // After sorting by time, oldest (0,1) are dropped; 2,3,4 remain
-            expect(events.map((e) => e.id)).toEqual(["2", "3", "4"]);
+            expect(events.map((e) => e.id)).toStrictEqual(["2", "3", "4"]);
         });
 
         it("sorts events by ascending time after each add", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "b", time: 200 }));
             store.addEvent("hmr", makeEvent({ id: "a", time: 100 }));
 
@@ -104,6 +122,8 @@ describe("timelineStore", () => {
         });
 
         it("events with same time maintain stable relative insertion order after sort", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "x", time: 100 }));
             store.addEvent("hmr", makeEvent({ id: "y", time: 100 }));
 
@@ -113,6 +133,8 @@ describe("timelineStore", () => {
         });
 
         it("stores optional event fields correctly", () => {
+            expect.hasAssertions();
+
             const event: TimelineEvent = {
                 data: { key: "value" },
                 duration: 42,
@@ -125,16 +147,20 @@ describe("timelineStore", () => {
 
             store.addEvent("hmr", event);
 
-            expect(store.getGroupEvents("hmr")[0]).toEqual(event);
+            expect(store.getGroupEvents("hmr")[0]).toStrictEqual(event);
         });
     });
 
     describe("getGroupEvents", () => {
         it("returns empty array for a non-existent group", () => {
+            expect.hasAssertions();
+
             expect(store.getGroupEvents("does-not-exist")).toHaveLength(0);
         });
 
         it("returns events for an existing group", () => {
+            expect.hasAssertions();
+
             const event = makeEvent({ id: "e1" });
 
             store.addEvent("network", event);
@@ -143,6 +169,8 @@ describe("timelineStore", () => {
         });
 
         it("returns events only for the requested group", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "hmr-1" }));
             store.addEvent("network", makeEvent({ id: "net-1" }));
 
@@ -155,10 +183,14 @@ describe("timelineStore", () => {
 
     describe("getAllEvents", () => {
         it("returns empty array when no events have been added", () => {
+            expect.hasAssertions();
+
             expect(store.getAllEvents()).toHaveLength(0);
         });
 
         it("returns all events across all groups", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "h1", time: 300 }));
             store.addEvent("network", makeEvent({ id: "n1", time: 100 }));
             store.addEvent("errors", makeEvent({ id: "e1", time: 200 }));
@@ -167,6 +199,8 @@ describe("timelineStore", () => {
         });
 
         it("returns events sorted by ascending time", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "h1", time: 300 }));
             store.addEvent("network", makeEvent({ id: "n1", time: 100 }));
             store.addEvent("errors", makeEvent({ id: "e1", time: 200 }));
@@ -181,6 +215,8 @@ describe("timelineStore", () => {
 
     describe("clearGroup", () => {
         it("removes all events from the specified group", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "h1" }));
             store.addEvent("hmr", makeEvent({ id: "h2" }));
             store.clearGroup("hmr");
@@ -189,6 +225,8 @@ describe("timelineStore", () => {
         });
 
         it("does not affect events in other groups", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "h1" }));
             store.addEvent("network", makeEvent({ id: "n1" }));
             store.clearGroup("hmr");
@@ -197,12 +235,16 @@ describe("timelineStore", () => {
         });
 
         it("does not throw for a non-existent group", () => {
+            expect.hasAssertions();
+
             expect(() => store.clearGroup("non-existent")).not.toThrowError();
         });
     });
 
     describe("clearAll", () => {
         it("removes all events from all groups", () => {
+            expect.hasAssertions();
+
             store.addEvent("hmr", makeEvent({ id: "h1" }));
             store.addEvent("network", makeEvent({ id: "n1" }));
             store.addEvent("errors", makeEvent({ id: "e1" }));
@@ -213,6 +255,8 @@ describe("timelineStore", () => {
         });
 
         it("preserves groups themselves (only events are cleared)", () => {
+            expect.hasAssertions();
+
             const countBefore = store.getGroups().length;
 
             store.clearAll();
@@ -229,12 +273,16 @@ describe("timelineStore", () => {
         });
 
         it("returns events within an inclusive range", () => {
+            expect.hasAssertions();
+
             const events = store.getEventsInRange(100, 200);
 
             expect(events).toHaveLength(2);
         });
 
         it("includes events exactly on the range boundaries", () => {
+            expect.hasAssertions();
+
             const events = store.getEventsInRange(100, 100);
 
             expect(events).toHaveLength(1);
@@ -242,16 +290,22 @@ describe("timelineStore", () => {
         });
 
         it("returns empty array when no events fall in range", () => {
+            expect.hasAssertions();
+
             expect(store.getEventsInRange(400, 500)).toHaveLength(0);
         });
 
         it("returns all events when range covers all times", () => {
+            expect.hasAssertions();
+
             expect(store.getEventsInRange(0, 9999)).toHaveLength(3);
         });
     });
 
     describe("getGroups", () => {
         it("returns a new array on each call (not the same reference)", () => {
+            expect.hasAssertions();
+
             const g1 = store.getGroups();
             const g2 = store.getGroups();
 
@@ -259,6 +313,8 @@ describe("timelineStore", () => {
         });
 
         it("returned array contains the correct number of groups", () => {
+            expect.hasAssertions();
+
             expect(store.getGroups()).toHaveLength(DEFAULT_TIMELINE_GROUPS.length);
         });
     });
@@ -266,10 +322,14 @@ describe("timelineStore", () => {
 
 describe("getTimelineStore", () => {
     it("returns a TimelineStore instance", () => {
+        expect.hasAssertions();
+
         expect(getTimelineStore()).toBeInstanceOf(TimelineStore);
     });
 
     it("returns the same singleton instance on repeated calls", () => {
+        expect.hasAssertions();
+
         const s1 = getTimelineStore();
         const s2 = getTimelineStore();
 

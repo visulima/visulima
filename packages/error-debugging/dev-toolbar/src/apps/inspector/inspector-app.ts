@@ -74,7 +74,7 @@ const BADGE_KEYFRAMES_ID = "__vdt_inspector_kf";
 const RESULT_ID = "__vdt_inspector_result";
 
 const getOrCreateOverlay = (): HTMLDivElement => {
-    let overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    let overlay = document.querySelector<HTMLDivElement>(`#${OVERLAY_ID}`);
 
     if (!overlay) {
         const c = getThemePalette();
@@ -116,8 +116,8 @@ const getOrCreateOverlay = (): HTMLDivElement => {
 };
 
 // Walk up the DOM to find the nearest element with data-vdt-source.
-const findSource = (element: Element): string | null => {
-    let node: Element | null = element;
+const findSource = (element: Element): string | undefined => {
+    let node: Element | undefined = element;
 
     while (node) {
         const src = (node as HTMLElement).dataset.vdtSource;
@@ -126,10 +126,10 @@ const findSource = (element: Element): string | null => {
             return src;
         }
 
-        node = node.parentElement;
+        node = node.parentElement ?? undefined;
     }
 
-    return null;
+    return undefined;
 };
 
 // Format "src/routes/index.tsx:14:10" → "index.tsx:14" for compact label display.
@@ -148,7 +148,7 @@ const formatSourceShort = (source: string): string => {
 };
 
 const updateOverlayPosition = (element: Element): void => {
-    const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    const overlay = document.querySelector<HTMLDivElement>(`#${OVERLAY_ID}`);
 
     if (!overlay) {
         return;
@@ -162,7 +162,7 @@ const updateOverlayPosition = (element: Element): void => {
     overlay.style.width = `${rect.width}px`;
     overlay.style.height = `${rect.height}px`;
 
-    const label = document.getElementById(LABEL_ID);
+    const label = document.querySelector(`#${LABEL_ID}`);
 
     if (label) {
         const tag = element.tagName.toLowerCase();
@@ -175,17 +175,17 @@ const updateOverlayPosition = (element: Element): void => {
         label.textContent = source ? `${base}  ·  ${formatSourceShort(source)}` : base;
 
         if (rect.top < 28) {
-            label.style.bottom = "auto";
-            label.style.top = "calc(100% + 2px)";
+            (label as HTMLElement).style.bottom = "auto";
+            (label as HTMLElement).style.top = "calc(100% + 2px)";
         } else {
-            label.style.top = "";
-            label.style.bottom = "calc(100% + 2px)";
+            (label as HTMLElement).style.top = "";
+            (label as HTMLElement).style.bottom = "calc(100% + 2px)";
         }
     }
 };
 
 const hideOverlay = (): void => {
-    const element = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    const element = document.querySelector<HTMLDivElement>(`#${OVERLAY_ID}`);
 
     if (element) {
         element.style.display = "none";
@@ -193,12 +193,12 @@ const hideOverlay = (): void => {
 };
 
 const removeOverlay = (): void => {
-    document.getElementById(OVERLAY_ID)?.remove();
-    document.getElementById(CURSOR_STYLE_ID)?.remove();
+    document.querySelector(`#${OVERLAY_ID}`)?.remove();
+    document.querySelector(`#${CURSOR_STYLE_ID}`)?.remove();
 };
 
 const setCrosshairCursor = (active: boolean): void => {
-    let style = document.getElementById(CURSOR_STYLE_ID) as HTMLStyleElement | null;
+    let style = document.querySelector<HTMLStyleElement>(`#${CURSOR_STYLE_ID}`);
 
     if (active) {
         if (!style) {
@@ -215,8 +215,12 @@ const setCrosshairCursor = (active: boolean): void => {
 
 // ─── Floating badge ───────────────────────────────────────────────────────────
 
+const removeFloatingBadge = (): void => {
+    document.querySelector(`#${BADGE_ID}`)?.remove();
+};
+
 const createFloatingBadge = (onCancel: () => void): void => {
-    if (!document.getElementById(BADGE_KEYFRAMES_ID)) {
+    if (!document.querySelector(`#${BADGE_KEYFRAMES_ID}`)) {
         const kf = document.createElement("style");
 
         kf.id = BADGE_KEYFRAMES_ID;
@@ -271,17 +275,13 @@ const createFloatingBadge = (onCancel: () => void): void => {
     cancelButton.style.cssText
         = `background:transparent;border:none;color:${c.primary};cursor:pointer;padding:0;`
             + "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
-    cancelButton.addEventListener("click", (e) => {
-        e.stopPropagation();
+    cancelButton.addEventListener("click", (event) => {
+        event.stopPropagation();
         onCancel();
     });
 
     badge.append(dot, text, separator, cancelButton);
     document.body.append(badge);
-};
-
-const removeFloatingBadge = (): void => {
-    document.getElementById(BADGE_ID)?.remove();
 };
 
 // ─── Result popup ─────────────────────────────────────────────────────────────
@@ -296,14 +296,14 @@ const openInEditor = (source: string): void => {
     const line = Number.parseInt(parts.at(-2) ?? "0", 10) || undefined;
     const file = parts.slice(0, -2).join(":");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
-    void rpc?.openInEditor?.(file, line, col);
+    rpc?.openInEditor?.(file, line, col).catch(() => { /* ignore */ });
 };
 
 const removeResultPopup = (): void => {
-    document.getElementById(RESULT_ID)?.remove();
+    document.querySelector(`#${RESULT_ID}`)?.remove();
 };
 
 const makeActionButton = (label: string, onClick: () => void): HTMLButtonElement => {
@@ -328,15 +328,15 @@ const makeActionButton = (label: string, onClick: () => void): HTMLButtonElement
         b.style.background = c.btnBg;
         b.style.borderColor = c.btnBorder;
     });
-    b.addEventListener("click", (e) => {
-        e.stopPropagation();
+    b.addEventListener("click", (event) => {
+        event.stopPropagation();
         onClick();
     });
 
     return b;
 };
 
-const showResultPopup = (element: Element, rect: DOMRect, source: string | null): void => {
+const showResultPopup = (element: Element, rect: DOMRect, source: string | undefined): void => {
     removeResultPopup();
 
     const c = getThemePalette();
@@ -408,7 +408,7 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | null)
 
     actions.append(
         makeActionButton("Copy HTML", () => {
-            void navigator.clipboard.writeText(element.outerHTML);
+            navigator.clipboard.writeText(element.outerHTML).catch(() => { /* ignore */ });
             removeResultPopup();
         }),
     );
@@ -416,7 +416,7 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | null)
     if (source) {
         actions.append(
             makeActionButton("Copy path", () => {
-                void navigator.clipboard.writeText(source);
+                navigator.clipboard.writeText(source).catch(() => { /* ignore */ });
                 removeResultPopup();
             }),
         );
@@ -447,8 +447,8 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | null)
     closeButton.addEventListener("pointerout", () => {
         closeButton.style.color = c.muted;
     });
-    closeButton.addEventListener("click", (e) => {
-        e.stopPropagation();
+    closeButton.addEventListener("click", (event) => {
+        event.stopPropagation();
         removeResultPopup();
     });
     popup.append(closeButton);
@@ -456,8 +456,8 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | null)
     document.body.append(popup);
 
     // Dismiss when clicking outside the popup (after a tick to skip this click).
-    const handleOutside = (e: MouseEvent): void => {
-        if (!popup.contains(e.target as Node)) {
+    const handleOutside = (event: MouseEvent): void => {
+        if (!popup.contains(event.target as Node)) {
             removeResultPopup();
             document.removeEventListener("click", handleOutside, true);
         }
@@ -470,7 +470,7 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | null)
 
 // ─── Module-level inspection state ───────────────────────────────────────────
 
-let _inspectionCleanup: (() => void) | null = null;
+let inspectionCleanup: (() => void) | undefined;
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -483,14 +483,14 @@ let _inspectionCleanup: (() => void) | null = null;
  */
 export const startGlobalInspection = (onComplete: () => void, onCancel: () => void): void => {
     // Cancel any in-progress inspection first
-    _inspectionCleanup?.();
+    inspectionCleanup?.();
 
     getOrCreateOverlay();
     setCrosshairCursor(true);
 
-    const badgeElement = (): Element | null => document.getElementById(BADGE_ID);
+    const badgeElement = (): Element | undefined => document.querySelector(`#${BADGE_ID}`) ?? undefined;
 
-    const isOverBadge = (target: Element | null): boolean => {
+    const isOverBadge = (target: Element | undefined): boolean => {
         if (!target) {
             return false;
         }
@@ -500,54 +500,57 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
         return !!(b && (target === b || b.contains(target)));
     };
 
-    const handleMouseMove = (e: MouseEvent): void => {
-        const target = e.target as Element | null;
-
-        if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+    // Use a handlers object so all functions can reference each other without
+    // triggering @typescript-eslint/no-use-before-define on const declarations.
+    const handlers = {
+        cleanup(): void {
+            document.removeEventListener("mousemove", handlers.handleMouseMove);
+            document.removeEventListener("click", handlers.handleClick, true);
+            document.removeEventListener("keydown", handlers.handleKeyDown);
             hideOverlay();
+            removeOverlay();
+            setCrosshairCursor(false);
+            removeFloatingBadge();
+            inspectionCleanup = undefined;
+        },
+        handleClick(event: MouseEvent): void {
+            const target = event.target as Element | undefined;
 
-            return;
-        }
+            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+                return;
+            }
 
-        updateOverlayPosition(target);
+            event.preventDefault();
+            event.stopPropagation();
+
+            const rect = target.getBoundingClientRect();
+            const source = findSource(target);
+
+            handlers.cleanup();
+            onComplete();
+
+            showResultPopup(target, rect, source);
+        },
+        handleKeyDown(event: KeyboardEvent): void {
+            if (event.key === "Escape") {
+                handlers.cleanup();
+                onCancel();
+            }
+        },
+        handleMouseMove(event: MouseEvent): void {
+            const target = event.target as Element | undefined;
+
+            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+                hideOverlay();
+
+                return;
+            }
+
+            updateOverlayPosition(target);
+        },
     };
 
-    const handleClick = (e: MouseEvent): void => {
-        const target = e.target as Element | null;
-
-        if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
-            return;
-        }
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const rect = target.getBoundingClientRect();
-        const source = findSource(target);
-
-        cleanup();
-        onComplete();
-
-        showResultPopup(target, rect, source);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent): void => {
-        if (e.key === "Escape") {
-            cleanup();
-            onCancel();
-        }
-    };
-
-    const cleanup = (): void => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("click", handleClick, true);
-        document.removeEventListener("keydown", handleKeyDown);
-        hideOverlay();
-        removeOverlay();
-        setCrosshairCursor(false);
-        removeFloatingBadge();
-        _inspectionCleanup = null;
-    };
+    const { cleanup, handleClick, handleKeyDown, handleMouseMove } = handlers;
 
     createFloatingBadge(() => {
         cleanup();
@@ -558,13 +561,13 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
     document.addEventListener("click", handleClick, true);
     document.addEventListener("keydown", handleKeyDown);
 
-    _inspectionCleanup = cleanup;
+    inspectionCleanup = cleanup;
 };
 
 /**
  * Cancel any in-progress inspection and clean up all DOM side-effects.
  */
 export const stopGlobalInspection = (): void => {
-    _inspectionCleanup?.();
+    inspectionCleanup?.();
     removeResultPopup();
 };

@@ -3,9 +3,9 @@ import { useEffect, useMemo } from "preact/hooks";
 import { useFrameState } from "./use-frame-state";
 
 /**
- * Check if a KeyboardEvent matches a binding string like "Alt+Shift+D" or "Escape"
+ * Returns true if the keyboard event matches the given binding string (e.g. "Alt+Shift+D" or "Escape").
  */
-const matchesBinding = (e: KeyboardEvent, binding: string): boolean => {
+const matchesBinding = (event: KeyboardEvent, binding: string): boolean => {
     const parts = binding.split("+");
     const key = parts.at(-1) ?? "";
     const needsAlt = parts.includes("Alt");
@@ -13,39 +13,39 @@ const matchesBinding = (e: KeyboardEvent, binding: string): boolean => {
     const needsCtrl = parts.includes("Control") || parts.includes("Ctrl");
     const needsMeta = parts.includes("Meta") || parts.includes("Cmd");
 
-    const keyMatches = e.key === key || e.code === `Key${key.toUpperCase()}`;
+    const keyMatches = event.key === key || event.code === `Key${key.toUpperCase()}`;
 
-    return keyMatches && e.altKey === needsAlt && e.shiftKey === needsShift && e.ctrlKey === needsCtrl && e.metaKey === needsMeta;
+    return keyMatches && event.altKey === needsAlt && event.shiftKey === needsShift && event.ctrlKey === needsCtrl && event.metaKey === needsMeta;
 };
 
 /**
- * Return type for usePanelVisible hook
+ * Return type for the usePanelVisible hook.
  */
-export interface UsePanelVisibleReturn {
+interface UsePanelVisibleReturn {
     /**
-     * Close panel
+     * Closes the panel.
      */
     closePanel: () => void;
 
     /**
-     * Whether panel is visible
+     * Whether the panel is currently visible.
      */
     panelVisible: boolean;
 
     /**
-     * Toggle panel visibility
+     * Toggles panel visibility, optionally forcing a specific state.
      */
     togglePanelVisible: (_?: unknown, newState?: boolean) => void;
 }
 
 /**
- * Hook for panel visibility management - converted from Vue DevTools usePanelVisible
+ * Manages panel visibility with keyboard shortcut support.
  */
-export const usePanelVisible = (): UsePanelVisibleReturn => {
+const usePanelVisible = (): UsePanelVisibleReturn => {
     const { state, updateState } = useFrameState();
 
     /**
-     * Toggle panel visibility
+     * Toggles panel visibility, optionally forcing a specific open/close state.
      */
     const togglePanelVisible = (_?: unknown, newState?: boolean): void => {
         const willOpen = newState ?? !state.open;
@@ -58,7 +58,7 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
     };
 
     /**
-     * Close panel
+     * Closes the panel and resets the view mode to default.
      */
     const closePanel = (): void => {
         if (!state.open) {
@@ -75,8 +75,8 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
     useEffect(() => {
         const binding = state.keybindings?.toggle ?? "Alt+Shift+D";
 
-        const handleKeyDown = (e: KeyboardEvent): void => {
-            if (matchesBinding(e, binding)) {
+        const handleKeyDown = (event: KeyboardEvent): void => {
+            if (matchesBinding(event, binding)) {
                 togglePanelVisible();
             }
         };
@@ -86,7 +86,6 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
         return () => {
             globalThis.window?.removeEventListener("keydown", handleKeyDown);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.open, state.keybindings?.toggle]);
 
     const panelVisibleValue: boolean = useMemo(() => state.open, [state.open]);
@@ -99,3 +98,6 @@ export const usePanelVisible = (): UsePanelVisibleReturn => {
 
     return result;
 };
+
+export type { UsePanelVisibleReturn };
+export { usePanelVisible };

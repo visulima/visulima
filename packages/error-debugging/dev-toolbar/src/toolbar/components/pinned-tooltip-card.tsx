@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
-import { useEffect, useMemo, useRef } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
@@ -32,9 +32,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
     const cardRef = useRef<HTMLDivElement>(null);
     const headerRef = useRef<HTMLDivElement>(null);
     const posRef = useRef({ x: pinned.initialX, y: pinned.initialY });
-    const dragRef = useRef<{ cardH: number; cardW: number; origX: number; origY: number; startX: number; startY: number } | null>(null);
-    const helpers = useMemo(() => createServerHelpers(), []);
-    const helpersRef = useRef(helpers);
+    const dragRef = useRef<{ cardH: number; cardW: number; origX: number; origY: number; startX: number; startY: number } | undefined>(undefined);
+    const helpersRef = useRef(createServerHelpers());
     // Keep latest prop values accessible inside the empty-dep useEffect to avoid stale closures
     const onMoveRef = useRef(onMove);
     const pinnedIdRef = useRef(pinned.id);
@@ -48,7 +47,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
         // so the card's size box stays frozen during the snap animation.
         const SNAP_TRANSITION = "transform 110ms cubic-bezier(0.25,0.46,0.45,0.94)";
 
-        const handleMove = (e: MouseEvent): void => {
+        const handleMove = (event: MouseEvent): void => {
             if (!dragRef.current || !cardRef.current) {
                 return;
             }
@@ -65,8 +64,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
             const PEEK_Y = Math.min(36, cardH);
 
             // Raw position from mouse delta
-            let rawX = dragRef.current.origX + (e.clientX - dragRef.current.startX);
-            let rawY = dragRef.current.origY + (e.clientY - dragRef.current.startY);
+            let rawX = dragRef.current.origX + (event.clientX - dragRef.current.startX);
+            let rawY = dragRef.current.origY + (event.clientY - dragRef.current.startY);
 
             // Hard clamp — allow partial off-screen but keep PEEK visible
             rawX = Math.max(PEEK_X - cardW, Math.min(vw - PEEK_X, rawX));
@@ -108,7 +107,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
                 return;
             }
 
-            dragRef.current = null;
+            dragRef.current = undefined;
 
             // Clear any lingering snap transition so the next drag starts clean
             if (cardRef.current) {
@@ -135,11 +134,11 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
     const TooltipComponent = pinned.app.tooltip;
 
     if (!TooltipComponent) {
-        return null;
+        return undefined;
     }
 
-    const handleDragStart = (e: MouseEvent): void => {
-        if (e.button !== 0) {
+    const handleDragStart = (event: MouseEvent): void => {
+        if (event.button !== 0) {
             return;
         }
 
@@ -150,8 +149,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
             cardW: cardRef.current?.offsetWidth ?? 300,
             origX: posRef.current.x,
             origY: posRef.current.y,
-            startX: e.clientX,
-            startY: e.clientY,
+            startX: event.clientX,
+            startY: event.clientY,
         };
 
         // Flip cursor immediately via direct style — no state, no re-render
@@ -159,7 +158,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
             headerRef.current.style.cursor = "grabbing";
         }
 
-        e.preventDefault();
+        event.preventDefault();
     };
 
     return (
@@ -193,7 +192,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
                         "transition-colors duration-150",
                     )}
                     onClick={() => onUnpin(pinned.id)}
-                    onMouseDown={(e) => e.stopPropagation()}
+                    onMouseDown={(event) => event.stopPropagation()}
                     title="Unpin"
                     type="button"
                 >

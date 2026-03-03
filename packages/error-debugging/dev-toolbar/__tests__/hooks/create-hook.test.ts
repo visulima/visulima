@@ -32,6 +32,8 @@ describe("createDevToolbarHook", () => {
 
     describe("on / emit", () => {
         it("calls registered handler when event is emitted", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.on("devtools:init", handler);
@@ -41,6 +43,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("passes arguments through to the handler", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
             const error = new Error("oops");
 
@@ -51,6 +55,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("calls all registered handlers for the same event", () => {
+            expect.hasAssertions();
+
             const h1 = vi.fn();
             const h2 = vi.fn();
 
@@ -63,6 +69,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("does not call handlers registered for a different event", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.on("devtools:open", handler);
@@ -72,10 +80,14 @@ describe("createDevToolbarHook", () => {
         });
 
         it("is a no-op when no handlers are registered", () => {
+            expect.hasAssertions();
+
             expect(() => hook.emit("devtools:close")).not.toThrowError();
         });
 
         it("continues calling remaining handlers when one throws", () => {
+            expect.hasAssertions();
+
             const throwing = vi.fn().mockImplementation(() => {
                 throw new Error("handler error");
             });
@@ -89,6 +101,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("returns an unsubscribe function from on()", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
             const off = hook.on("devtools:init", handler);
 
@@ -99,6 +113,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("unsubscribe does not affect other handlers for the same event", () => {
+            expect.hasAssertions();
+
             const h1 = vi.fn();
             const h2 = vi.fn();
             const off = hook.on("devtools:init", h1);
@@ -114,6 +130,8 @@ describe("createDevToolbarHook", () => {
 
     describe("off", () => {
         it("removes a specific handler", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.on("devtools:init", handler);
@@ -124,6 +142,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("removes all handlers for an event when no handler is specified", () => {
+            expect.hasAssertions();
+
             const h1 = vi.fn();
             const h2 = vi.fn();
 
@@ -137,16 +157,22 @@ describe("createDevToolbarHook", () => {
         });
 
         it("is a no-op when event has no handlers", () => {
+            expect.hasAssertions();
+
             expect(() => hook.off("devtools:init")).not.toThrowError();
         });
 
         it("is a no-op when removing a handler that was never registered", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             expect(() => hook.off("devtools:init", handler)).not.toThrowError();
         });
 
         it("cleans up the handler set when the last handler is removed", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.on("devtools:init", handler);
@@ -161,6 +187,8 @@ describe("createDevToolbarHook", () => {
 
     describe("once", () => {
         it("calls the handler exactly once", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.once("devtools:init", handler);
@@ -171,6 +199,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("passes arguments to the once handler", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.once("devtools:open", handler);
@@ -180,6 +210,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("auto-removes the once handler after first call", () => {
+            expect.hasAssertions();
+
             const handler = vi.fn();
 
             hook.once("devtools:close", handler);
@@ -190,6 +222,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("does not interfere with regular on() handlers on the same event", () => {
+            expect.hasAssertions();
+
             const onceHandler = vi.fn();
             const regularHandler = vi.fn();
 
@@ -205,6 +239,8 @@ describe("createDevToolbarHook", () => {
 
     describe("registerApp", () => {
         it("invokes the onRegisterApp callback when provided", () => {
+            expect.hasAssertions();
+
             const callback = vi.fn();
             const hookWithCallback = createDevToolbarHook(callback);
             const app = makeApp();
@@ -215,6 +251,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("does not throw when no onRegisterApp callback is provided", () => {
+            expect.hasAssertions();
+
             const app = makeApp();
 
             expect(() => hook.registerApp(app)).not.toThrowError();
@@ -223,6 +261,8 @@ describe("createDevToolbarHook", () => {
 
     describe("addTimelineEvent", () => {
         it("invokes the onTimelineEvent callback when provided", () => {
+            expect.hasAssertions();
+
             const callback = vi.fn();
             const hookWithCallback = createDevToolbarHook(undefined, callback);
             const event = makeEvent();
@@ -233,6 +273,8 @@ describe("createDevToolbarHook", () => {
         });
 
         it("also emits the timeline:event hook event", () => {
+            expect.hasAssertions();
+
             const listener = vi.fn();
             const event = makeEvent();
 
@@ -243,12 +285,16 @@ describe("createDevToolbarHook", () => {
         });
 
         it("does not throw when no onTimelineEvent callback is provided", () => {
+            expect.hasAssertions();
+
             const event = makeEvent();
 
             expect(() => hook.addTimelineEvent("custom", event)).not.toThrowError();
         });
 
         it("calls both the callback and the event listener", () => {
+            expect.hasAssertions();
+
             const callback = vi.fn();
             const listener = vi.fn();
             const hookWithCallback = createDevToolbarHook(undefined, callback);

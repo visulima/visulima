@@ -2,13 +2,13 @@
  * Performance Monitor — singleton that collects browser performance metrics.
  *
  * Metrics collected:
- *  - FPS via requestAnimationFrame circular buffer (last 60 samples)
- *  - Memory via performance.memory (Chrome only, 1-second polling)
- *  - Core Web Vitals: LCP, CLS, FID, FCP, TTFB (PerformanceObserver, buffered)
- *  - Long tasks (>50 ms blocking) via PerformanceObserver
+ * - FPS via requestAnimationFrame circular buffer (last 60 samples)
+ * - Memory via performance.memory (Chrome only, 1-second polling)
+ * - Core Web Vitals: LCP, CLS, FID, FCP, TTFB (PerformanceObserver, buffered)
+ * - Long tasks (>50 ms blocking) via PerformanceObserver
  */
 
-export interface MemoryInfo {
+interface MemoryInfo {
     /** JS heap size limit in bytes */
     jsHeapSizeLimit: number;
     /** Total allocated JS heap in bytes */
@@ -17,7 +17,7 @@ export interface MemoryInfo {
     usedJSHeapSize: number;
 }
 
-export interface LongTask {
+interface LongTask {
     /** Duration in milliseconds */
     duration: number;
     /** Unique id */
@@ -26,26 +26,26 @@ export interface LongTask {
     startTime: number;
 }
 
-export interface CoreWebVitals {
+interface CoreWebVitals {
     /** Cumulative Layout Shift score */
-    cls: null | number;
+    cls: number | undefined;
     /** First Contentful Paint in ms */
-    fcp: null | number;
+    fcp: number | undefined;
     /** First Input Delay in ms */
-    fid: null | number;
+    fid: number | undefined;
     /** Largest Contentful Paint in ms */
-    lcp: null | number;
+    lcp: number | undefined;
     /** Time to First Byte in ms */
-    ttfb: null | number;
+    ttfb: number | undefined;
 }
 
-export interface PerformanceSnapshot {
+interface PerformanceSnapshot {
     /** Current FPS (0–60) */
     fps: number;
     /** Long tasks captured since start */
     longTasks: LongTask[];
-    /** Memory info (Chrome only, otherwise null) */
-    memory: MemoryInfo | null;
+    /** Memory info (Chrome only, otherwise undefined) */
+    memory: MemoryInfo | undefined;
     /** Core Web Vitals */
     vitals: CoreWebVitals;
 }
@@ -56,7 +56,7 @@ type Listener = (snapshot: PerformanceSnapshot) => void;
 const FPS_BUFFER_SIZE = 60;
 
 // Thresholds (ms) for CWV ratings
-export const CWV_THRESHOLDS = {
+const CWV_THRESHOLDS = {
     cls: { good: 0.1, poor: 0.25 },
     fcp: { good: 1800, poor: 3000 },
     fid: { good: 100, poor: 300 },
@@ -64,9 +64,9 @@ export const CWV_THRESHOLDS = {
     ttfb: { good: 800, poor: 1800 },
 } as const;
 
-export type CwvRating = "good" | "needs-improvement" | "poor";
+type CwvRating = "good" | "needs-improvement" | "poor";
 
-export const getCwvRating = (metric: keyof typeof CWV_THRESHOLDS, value: number): CwvRating => {
+const getCwvRating = (metric: keyof typeof CWV_THRESHOLDS, value: number): CwvRating => {
     const { good, poor } = CWV_THRESHOLDS[metric];
 
     if (value <= good) {
@@ -80,7 +80,7 @@ export const getCwvRating = (metric: keyof typeof CWV_THRESHOLDS, value: number)
     return "poor";
 };
 
-export class PerformanceMonitor {
+class PerformanceMonitor {
     private clsValue = 0;
 
     private fpsSamples: number[] = [];
@@ -91,36 +91,36 @@ export class PerformanceMonitor {
 
     private longTasks: LongTask[] = [];
 
-    private memory: MemoryInfo | null = null;
+    private memory: MemoryInfo | undefined = undefined;
 
-    private memoryInterval: ReturnType<typeof setInterval> | null = null;
+    private memoryInterval: ReturnType<typeof setInterval> | undefined = undefined;
 
     private observers: PerformanceObserver[] = [];
 
-    private rafId: number | null = null;
+    private rafId: number | undefined = undefined;
 
     private running = false;
 
     private vitals: CoreWebVitals = {
-        cls: null,
-        fcp: null,
-        fid: null,
-        lcp: null,
-        ttfb: null,
+        cls: undefined,
+        fcp: undefined,
+        fid: undefined,
+        lcp: undefined,
+        ttfb: undefined,
     };
 
     /**
-     * Remove all collected long tasks (useful for the "Clear" button in the UI).
+     * Removes all collected long tasks (useful for the "Clear" button in the UI).
      */
-    clearLongTasks(): void {
+    public clearLongTasks(): void {
         this.longTasks = [];
         this.emit();
     }
 
     /**
-     * Return a snapshot of the current metrics (no subscription).
+     * Returns a snapshot of the current metrics (no subscription).
      */
-    getSnapshot(): PerformanceSnapshot {
+    public getSnapshot(): PerformanceSnapshot {
         return {
             fps: this.currentFps(),
             longTasks: [...this.longTasks],
@@ -130,9 +130,9 @@ export class PerformanceMonitor {
     }
 
     /**
-     * Start collecting metrics. Safe to call multiple times — starts once.
+     * Starts collecting metrics. Safe to call multiple times — starts once.
      */
-    start(): void {
+    public start(): void {
         if (this.running || globalThis.window === undefined) {
             return;
         }
@@ -147,23 +147,23 @@ export class PerformanceMonitor {
     }
 
     /**
-     * Stop all observers and timers.
+     * Stops all observers and timers.
      */
-    stop(): void {
+    public stop(): void {
         if (!this.running) {
             return;
         }
 
         this.running = false;
 
-        if (this.rafId !== null) {
+        if (this.rafId !== undefined) {
             cancelAnimationFrame(this.rafId);
-            this.rafId = null;
+            this.rafId = undefined;
         }
 
-        if (this.memoryInterval !== null) {
+        if (this.memoryInterval !== undefined) {
             clearInterval(this.memoryInterval);
-            this.memoryInterval = null;
+            this.memoryInterval = undefined;
         }
 
         for (const observer of this.observers) {
@@ -174,9 +174,9 @@ export class PerformanceMonitor {
     }
 
     /**
-     * Subscribe to metric updates. Returns an unsubscribe function.
+     * Subscribes to metric updates. Returns an unsubscribe function.
      */
-    subscribe(listener: Listener): () => void {
+    public subscribe(listener: Listener): () => void {
         this.listeners.add(listener);
 
         return () => {
@@ -199,12 +199,13 @@ export class PerformanceMonitor {
         let totalDelta = 0;
         let count = 0;
 
-        for (let i = 1; i < samples.length; i++) {
+        for (let i = 1; i < samples.length; i += 1) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const delta = samples[i]! - samples[i - 1]!;
 
             if (delta > 0 && delta < 500) {
                 totalDelta += delta;
-                count++;
+                count += 1;
             }
         }
 
@@ -281,14 +282,14 @@ export class PerformanceMonitor {
     }
 
     private startFps(): void {
-        let lastTime: number | null = null;
+        let lastTime: number | undefined;
 
         const tick = (timestamp: number): void => {
             if (!this.running) {
                 return;
             }
 
-            if (lastTime !== null) {
+            if (lastTime !== undefined) {
                 this.fpsSamples.push(timestamp);
 
                 if (this.fpsSamples.length > FPS_BUFFER_SIZE) {
@@ -311,7 +312,7 @@ export class PerformanceMonitor {
     private startLongTasks(): void {
         this.tryObserve("longtask", (list) => {
             for (const entry of list.getEntries()) {
-                this.longTaskIdCounter++;
+                this.longTaskIdCounter += 1;
                 this.longTasks.push({
                     duration: Math.round(entry.duration),
                     id: `lt-${this.longTaskIdCounter}`,
@@ -363,4 +364,7 @@ export class PerformanceMonitor {
 }
 
 // Module-level singleton — shared across all component instances
-export const performanceMonitor: PerformanceMonitor = new PerformanceMonitor();
+const performanceMonitor: PerformanceMonitor = new PerformanceMonitor();
+
+export type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot };
+export { CWV_THRESHOLDS, getCwvRating, PerformanceMonitor, performanceMonitor };
