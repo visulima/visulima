@@ -81,12 +81,12 @@ interface VisulimaDevTools {
 }
 
 declare global {
-    // eslint-disable-next-line no-var
+
     var __VISULIMA_DEV_TOOLBAR_OPTIONS__: import("virtual:visulima-dev-toolbar-options").DevToolbarVirtualOptions | undefined;
-    // eslint-disable-next-line no-var
+
     var __VISULIMA_DEVTOOLS_INITIALIZED__: boolean | undefined;
-    // eslint-disable-next-line no-var
+
     var __DEV_TOOLBAR_HOOK__: DevToolbarHook | undefined;
-    // eslint-disable-next-line no-var
+
     var __VISULIMA_DEVTOOLS__: VisulimaDevTools | undefined;
 }

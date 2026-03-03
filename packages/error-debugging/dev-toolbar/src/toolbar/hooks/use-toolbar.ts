@@ -1,5 +1,5 @@
-import { useToolbarContext } from "../context/index";
 import type { ToolbarPlacement } from "../../types/index";
+import { useToolbarContext } from "../context/index";
 
 /**
  * Hook for toolbar visibility and placement - exposes context methods directly

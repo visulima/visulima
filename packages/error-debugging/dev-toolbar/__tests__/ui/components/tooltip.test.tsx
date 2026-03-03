@@ -1,17 +1,20 @@
 // @vitest-environment jsdom
 /** @jsxImportSource preact */
 import "../../setup";
+
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../src/ui/components/tooltip";
 
-vi.mock("@floating-ui/dom", () => ({
-    computePosition: vi.fn().mockResolvedValue({ x: 10, y: 20 }),
-    flip: vi.fn(() => ({ name: "flip" })),
-    offset: vi.fn((n: number) => ({ name: "offset", options: n })),
-    shift: vi.fn(() => ({ name: "shift" })),
-}));
+vi.mock(import("@floating-ui/dom"), () => {
+    return {
+        computePosition: vi.fn().mockResolvedValue({ x: 10, y: 20 }),
+        flip: vi.fn(() => { return { name: "flip" }; }),
+        offset: vi.fn((n: number) => { return { name: "offset", options: n }; }),
+        shift: vi.fn(() => { return { name: "shift" }; }),
+    };
+});
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -19,14 +22,15 @@ beforeEach(() => {
 
 afterEach(cleanup);
 
-describe("Tooltip", () => {
-    it("TooltipTrigger renders children", () => {
+describe("tooltip", () => {
+    it("tooltipTrigger renders children", () => {
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
                 <TooltipContent>Tip</TooltipContent>
             </Tooltip>,
         );
+
         expect(screen.getByText("Hover me")).toBeInTheDocument();
     });
 
@@ -37,10 +41,13 @@ describe("Tooltip", () => {
                 <TooltipContent>Tip text</TooltipContent>
             </Tooltip>,
         );
+
         expect(screen.queryByText("Tip text")).not.toBeInTheDocument();
+
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Hover me"));
         });
+
         expect(screen.getByText("Tip text")).toBeInTheDocument();
     });
 
@@ -54,14 +61,17 @@ describe("Tooltip", () => {
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Hover me"));
         });
+
         expect(screen.getByText("Tip text")).toBeInTheDocument();
+
         await act(async () => {
             fireEvent.mouseLeave(screen.getByText("Hover me"));
         });
+
         expect(screen.queryByText("Tip text")).not.toBeInTheDocument();
     });
 
-    it("TooltipContent has role=tooltip", async () => {
+    it("tooltipContent has role=tooltip", async () => {
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
@@ -71,10 +81,11 @@ describe("Tooltip", () => {
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Hover me"));
         });
+
         expect(screen.getByRole("tooltip")).toBeInTheDocument();
     });
 
-    it("TooltipContent renders children", async () => {
+    it("tooltipContent renders children", async () => {
         render(
             <Tooltip>
                 <TooltipTrigger>Trigger</TooltipTrigger>
@@ -84,6 +95,7 @@ describe("Tooltip", () => {
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Trigger"));
         });
+
         expect(screen.getByText("My tooltip content")).toBeInTheDocument();
     });
 
@@ -97,11 +109,13 @@ describe("Tooltip", () => {
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Trigger"));
         });
+
         expect(screen.getByRole("tooltip")).toHaveClass("my-tooltip");
     });
 
     it("passes side prop to computePosition", async () => {
         const { computePosition } = await import("@floating-ui/dom");
+
         render(
             <Tooltip>
                 <TooltipTrigger>Trigger</TooltipTrigger>
@@ -114,15 +128,13 @@ describe("Tooltip", () => {
         await act(async () => {
             await Promise.resolve();
         });
-        expect(computePosition).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
-            expect.objectContaining({ placement: "right" }),
-        );
+
+        expect(computePosition).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ placement: "right" }));
     });
 
     it("sideOffset defaults to 4", async () => {
         const { offset } = await import("@floating-ui/dom");
+
         render(
             <Tooltip>
                 <TooltipTrigger>Trigger</TooltipTrigger>
@@ -135,6 +147,7 @@ describe("Tooltip", () => {
         await act(async () => {
             await Promise.resolve();
         });
+
         expect(offset).toHaveBeenCalledWith(4);
     });
 
@@ -148,6 +161,7 @@ describe("Tooltip", () => {
         await act(async () => {
             fireEvent.mouseEnter(screen.getByText("Trigger"));
         });
+
         expect(screen.getByText("content")).toBeInTheDocument();
     });
 });

@@ -40,7 +40,7 @@ export default defineConfig({
                 {
                     id: "my-package:my-app",
                     name: "My App",
-                    icon: myIconSvg,     // raw SVG string
+                    icon: myIconSvg, // raw SVG string
                     component: MyApp,
                 },
             ],
@@ -50,7 +50,8 @@ export default defineConfig({
 ```
 
 <Callout type="info">
-    App components are Preact components rendered inside the Shadow DOM. The JSX pragma `/** @jsxImportSource preact */` can be added per `.tsx` file, or set globally in `tsconfig.json` via `"jsxImportSource": "preact"`.
+    App components are Preact components rendered inside the Shadow DOM. The JSX pragma `/** @jsxImportSource preact */` can be added per `.tsx` file, or set
+    globally in `tsconfig.json` via `"jsxImportSource": "preact"`.
 </Callout>
 
 ## Step-by-Step Guide
@@ -80,18 +81,10 @@ const MyApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
     return (
         <div class="p-4 space-y-4">
-            <button
-                class="px-3 py-1.5 border border-border text-sm cursor-pointer bg-transparent text-foreground"
-                onClick={load}
-                type="button"
-            >
+            <button class="px-3 py-1.5 border border-border text-sm cursor-pointer bg-transparent text-foreground" onClick={load} type="button">
                 Load Data
             </button>
-            {data && (
-                <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 p-4 overflow-auto">
-                    {data}
-                </pre>
-            )}
+            {data && <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 p-4 overflow-auto">{data}</pre>}
         </div>
     );
 };
@@ -141,11 +134,11 @@ export default defineConfig({
         devToolbar({
             customApps: [
                 {
-                    id: "my-package:my-app",   // must be unique
-                    name: "My App",        // shown in tooltip and panel header
-                    icon: myIconSvg,       // raw SVG string
+                    id: "my-package:my-app", // must be unique
+                    name: "My App", // shown in tooltip and panel header
+                    icon: myIconSvg, // raw SVG string
                     component: MyApp,
-                    tooltip: MyTooltip,    // optional
+                    tooltip: MyTooltip, // optional
                 },
             ],
         }),
@@ -204,23 +197,21 @@ interface DevToolbarApp {
 
 App components are rendered inside Shadow DOM with Tailwind CSS v4 available. Use Tailwind utility classes directly. The design system uses CSS custom properties for theming:
 
-| Token | Usage |
-|---|---|
-| `text-foreground` | Primary text |
-| `text-muted-foreground` | Secondary/disabled text |
-| `bg-background` | Panel background |
-| `bg-card` | Card/section background |
-| `bg-primary` | Brand accent (lime `#caff00`) |
-| `text-primary` | Brand accent text |
-| `border-border` | Standard border colour |
+| Token                   | Usage                         |
+| ----------------------- | ----------------------------- |
+| `text-foreground`       | Primary text                  |
+| `text-muted-foreground` | Secondary/disabled text       |
+| `bg-background`         | Panel background              |
+| `bg-card`               | Card/section background       |
+| `bg-primary`            | Brand accent (lime `#caff00`) |
+| `text-primary`          | Brand accent text             |
+| `border-border`         | Standard border colour        |
 
 For example:
 
 ```tsx
 <div class="p-5 space-y-4">
-    <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-        // My Section
-    </h2>
+    <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">// My Section</h2>
     <div class="border border-border bg-card p-4">
         <p class="text-sm text-foreground">Content goes here</p>
     </div>
@@ -254,13 +245,13 @@ your-package:app-name
 
 Built-in app IDs use the `dev-toolbar:` prefix — do not use this prefix for custom apps.
 
-| Reserved | Reason |
-|---|---|
-| `dev-toolbar:a11y` | Built-in |
-| `dev-toolbar:performance` | Built-in |
-| `dev-toolbar:seo` | Built-in |
-| `dev-toolbar:settings` | Built-in |
-| `dev-toolbar:timeline` | Built-in |
-| `dev-toolbar:module-graph` | Built-in |
-| `dev-toolbar:vite-config` | Built-in |
-| `dev-toolbar:more` | Built-in overflow panel |
+| Reserved                   | Reason                  |
+| -------------------------- | ----------------------- |
+| `dev-toolbar:a11y`         | Built-in                |
+| `dev-toolbar:performance`  | Built-in                |
+| `dev-toolbar:seo`          | Built-in                |
+| `dev-toolbar:settings`     | Built-in                |
+| `dev-toolbar:timeline`     | Built-in                |
+| `dev-toolbar:module-graph` | Built-in                |
+| `dev-toolbar:vite-config`  | Built-in                |
+| `dev-toolbar:more`         | Built-in overflow panel |

@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import type { CSSProperties, ComponentChildren } from "preact";
+import type { ComponentChildren, CSSProperties } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import cn from "../../utils/cn";
@@ -12,6 +12,7 @@ interface FirstVisitHintProps {
 // Anchor origin = pill center (absolute left-0 top-0 with translate(-50%,-50%) on pill).
 // So (0,0) local coords here = pill visual center.
 // Offsets use ~24px to clear pill half-height (~20px) + 4px gap.
+
 /**
  * Computes inline CSS positioning for the hint bubble relative to the pill center.
  * @param position Current toolbar edge ("top" | "bottom" | "left" | "right")
@@ -19,19 +20,23 @@ interface FirstVisitHintProps {
  */
 const getHintStyle = (position: FirstVisitHintProps["position"]): CSSProperties => {
     switch (position) {
-        case "top":
-            // Pill at top edge → hint floats below
-            return { left: "50%", top: "0", transform: "translateX(-50%) translateY(24px)" };
-        case "left":
+        case "left": {
             // Pill at left edge (rotated) → hint floats to the right
             return { left: "0", top: "50%", transform: "translateX(24px) translateY(-50%)" };
-        case "right":
+        }
+        case "right": {
             // Pill at right edge (rotated) → hint floats to the left
             return { left: "0", top: "50%", transform: "translateX(calc(-100% - 24px)) translateY(-50%)" };
+        }
+        case "top": {
+            // Pill at top edge → hint floats below
+            return { left: "50%", top: "0", transform: "translateX(-50%) translateY(24px)" };
+        }
         case "bottom":
-        default:
+        default: {
             // Pill at bottom edge → hint floats above
             return { left: "50%", top: "0", transform: "translateX(-50%) translateY(calc(-100% - 24px))" };
+        }
     }
 };
 
@@ -45,19 +50,23 @@ const Arrow = ({ position }: { position: FirstVisitHintProps["position"] }): Com
     const base = "absolute w-2.5 h-2.5 bg-card border-border";
 
     switch (position) {
-        case "top":
-            // Hint below pill → arrow at top of hint, points up
-            return <div aria-hidden="true" class={cn(base, "top-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-t border-l")} />;
-        case "left":
+        case "left": {
             // Hint to the right of pill → arrow at left of hint, points left
             return <div aria-hidden="true" class={cn(base, "left-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-b border-l")} />;
-        case "right":
+        }
+        case "right": {
             // Hint to the left of pill → arrow at right of hint, points right
             return <div aria-hidden="true" class={cn(base, "right-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-t border-r")} />;
+        }
+        case "top": {
+            // Hint below pill → arrow at top of hint, points up
+            return <div aria-hidden="true" class={cn(base, "top-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-t border-l")} />;
+        }
         case "bottom":
-        default:
+        default: {
             // Hint above pill → arrow at bottom of hint, points down
             return <div aria-hidden="true" class={cn(base, "bottom-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-b border-r")} />;
+        }
     }
 };
 
@@ -70,9 +79,9 @@ const TIPS = [
 /**
  * First-visit hint overlay showing keyboard and interaction tips.
  * Appears ~600 ms after mount to let the toolbar pill animate in first.
- * @param props - Component props
- * @param props.onDismiss - Called after the dismiss animation completes
- * @param props.position - Current toolbar position (controls hint placement)
+ * @param props Component props
+ * @param props.onDismiss Called after the dismiss animation completes
+ * @param props.position Current toolbar position (controls hint placement)
  * @returns Rendered hint component
  */
 const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): ComponentChildren => {
@@ -81,20 +90,18 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
 
     // Delay appearance so the pill animates in first
     useEffect(() => {
-        const t = setTimeout(() => setVisible(true), 600);
+        const t = setTimeout(setVisible, 600, true);
 
         return () => clearTimeout(t);
     }, []);
 
     // Clear any pending dismiss timeout on unmount to prevent calling onDismiss
     // after the component has been removed from the tree.
-    useEffect(() => {
-        return () => {
-            if (dismissTimeoutRef.current !== null) {
-                clearTimeout(dismissTimeoutRef.current);
-                dismissTimeoutRef.current = null;
-            }
-        };
+    useEffect(() => () => {
+        if (dismissTimeoutRef.current !== null) {
+            clearTimeout(dismissTimeoutRef.current);
+            dismissTimeoutRef.current = null;
+        }
     }, []);
 
     const handleDismiss = (): void => {
@@ -122,7 +129,9 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
 
             {/* Header */}
             <p class="flex items-center gap-1.5 mb-2.5">
-                <span aria-hidden="true" class="text-primary text-[0.6rem]">▶</span>
+                <span aria-hidden="true" class="text-primary text-[0.6rem]">
+                    ▶
+                </span>
                 <span class="text-[0.6rem] font-bold uppercase tracking-[0.12em] text-foreground">Quick start</span>
             </p>
 
@@ -130,7 +139,9 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
             <ul class="space-y-1.5 mb-3 list-none p-0 m-0">
                 {TIPS.map(({ icon, text }) => (
                     <li class="flex items-center gap-2 text-[0.7rem] text-muted-foreground" key={text}>
-                        <span aria-hidden="true" class="text-primary shrink-0 w-3 text-center leading-none">{icon}</span>
+                        <span aria-hidden="true" class="text-primary shrink-0 w-3 text-center leading-none">
+                            {icon}
+                        </span>
                         {text}
                     </li>
                 ))}
@@ -146,7 +157,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
                     "transition-all duration-150 active:scale-[0.98]",
                 )}
                 onClick={handleDismiss}
-                tabIndex={!visible ? -1 : undefined}
+                tabIndex={visible ? undefined : -1}
                 type="button"
             >
                 Got it

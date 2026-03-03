@@ -1,7 +1,7 @@
 import type { DevToolbarApp } from "./app";
-import type { ToolbarSettings } from "./toolbar";
 import type { DevToolbarHook } from "./hooks";
 import type { ServerFunctions } from "./rpc";
+import type { ToolbarSettings } from "./toolbar";
 
 /**
  * Global DevTools API interface
@@ -61,14 +61,6 @@ export interface VisulimaDevTools {
     openApp: (appId: string) => Promise<void>;
 
     /**
-     * Directly set the active state of an action button without invoking callbacks.
-     * Useful for deactivating a button from async work running outside the toolbar.
-     * @param appId App ID
-     * @param active New active state
-     */
-    setAppActive: (appId: string, active: boolean) => void;
-
-    /**
      * Register a custom app
      * @param app App definition
      */
@@ -78,6 +70,14 @@ export interface VisulimaDevTools {
      * RPC client for calling server functions
      */
     rpc: ServerFunctions;
+
+    /**
+     * Directly set the active state of an action button without invoking callbacks.
+     * Useful for deactivating a button from async work running outside the toolbar.
+     * @param appId App ID
+     * @param active New active state
+     */
+    setAppActive: (appId: string, active: boolean) => void;
 
     /**
      * Show the toolbar

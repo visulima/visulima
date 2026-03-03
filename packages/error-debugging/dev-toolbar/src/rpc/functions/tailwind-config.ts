@@ -5,10 +5,10 @@ import path from "node:path";
 import type { ViteDevServer } from "vite";
 
 export interface TailwindConfigResult {
-    /** User-defined @theme overrides/extensions */
-    customTheme: Record<string, string>;
     /** CSS files that @import tailwindcss */
     cssFiles: string[];
+    /** User-defined @theme overrides/extensions */
+    customTheme: Record<string, string>;
     /** Full default Tailwind theme tokens */
     defaultTheme: Record<string, string>;
     /** Detected Tailwind version */
@@ -21,11 +21,11 @@ export interface TailwindConfigResult {
  * Extract CSS custom properties from @theme blocks.
  * Handles multi-line values (e.g. font stacks) and nested parentheses.
  */
-const parseThemeVars = (css: string): Record<string, string> => {
-    const vars: Record<string, string> = {};
+const parseThemeVariables = (css: string): Record<string, string> => {
+    const variables: Record<string, string> = {};
 
     // Strip CSS comments
-    const stripped = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const stripped = css.replaceAll(/\/\*[\s\S]*?\*\//g, "");
 
     let i = 0;
 
@@ -57,23 +57,23 @@ const parseThemeVars = (css: string): Record<string, string> => {
         }
 
         const blockContent = stripped.slice(openBrace + 1, j - 1);
-        const varRegex = /(--[\w-]+)\s*:\s*([\s\S]*?);/g;
+        const variableRegex = /(--[\w-]+)\s*:\s*([\s\S]*?);/g;
 
         let m: RegExpExecArray | null;
 
-        while ((m = varRegex.exec(blockContent)) !== null) {
-            const value = (m[2] as string).replace(/\s+/g, " ").trim();
+        while ((m = variableRegex.exec(blockContent)) !== null) {
+            const value = (m[2] as string).replaceAll(/\s+/g, " ").trim();
 
             // First occurrence wins — main block takes priority over deprecated aliases
-            if (value && !vars[m[1] as string]) {
-                vars[m[1] as string] = value;
+            if (value && !variables[m[1] as string]) {
+                variables[m[1] as string] = value;
             }
         }
 
         i = j;
     }
 
-    return vars;
+    return variables;
 };
 
 // ─── Find CSS files that import Tailwind ──────────────────────────────────────
@@ -105,12 +105,9 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
                 await walk(fullPath, depth + 1);
             } else if (entry.name.endsWith(".css")) {
                 try {
-                    const content = await fs.readFile(fullPath, "utf-8");
+                    const content = await fs.readFile(fullPath, "utf8");
 
-                    if (
-                        content.includes("@import") &&
-                        (content.includes('"tailwindcss"') || content.includes("'tailwindcss'"))
-                    ) {
+                    if (content.includes("@import") && (content.includes("\"tailwindcss\"") || content.includes("'tailwindcss'"))) {
                         results.push(fullPath);
                     }
                 } catch {
@@ -128,28 +125,28 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
 // ─── Extract user @theme overrides ───────────────────────────────────────────
 
 const extractUserTheme = async (cssFiles: string[]): Promise<Record<string, string>> => {
-    const vars: Record<string, string> = {};
+    const variables: Record<string, string> = {};
 
     for (const file of cssFiles) {
         try {
-            const content = await fs.readFile(file, "utf-8");
+            const content = await fs.readFile(file, "utf8");
             // Strip @theme default blocks so we only capture the user's own overrides
-            const userThemeContent = content.replace(/@theme\s+default[^{]*\{[\s\S]*?\}/g, "");
-            const fileVars = parseThemeVars(userThemeContent);
+            const userThemeContent = content.replaceAll(/@theme\s+default[^{]*\{[\s\S]*?\}/g, "");
+            const fileVariables = parseThemeVariables(userThemeContent);
 
-            Object.assign(vars, fileVars);
+            Object.assign(variables, fileVariables);
         } catch {
             // skip
         }
     }
 
-    return vars;
+    return variables;
 };
 
 // ─── Main RPC function ────────────────────────────────────────────────────────
 
 export const getTailwindConfig = async (server: ViteDevServer): Promise<TailwindConfigResult> => {
-    const root = server.config.root;
+    const { root } = server.config;
 
     let version: TailwindConfigResult["version"] = "unknown";
     let defaultTheme: Record<string, string> = {};
@@ -169,11 +166,11 @@ export const getTailwindConfig = async (server: ViteDevServer): Promise<Tailwind
 
     // Read the full Tailwind v4 default theme from the installed package
     try {
-        const req = createRequire(import.meta.url);
-        const themeCssPath = req.resolve("tailwindcss/theme.css");
-        const themeCss = await fs.readFile(themeCssPath, "utf-8");
+        const request = createRequire(import.meta.url);
+        const themeCssPath = request.resolve("tailwindcss/theme.css");
+        const themeCss = await fs.readFile(themeCssPath, "utf8");
 
-        defaultTheme = parseThemeVars(themeCss);
+        defaultTheme = parseThemeVariables(themeCss);
 
         if (Object.keys(defaultTheme).length > 0 && version !== "v3") {
             version = "v4";

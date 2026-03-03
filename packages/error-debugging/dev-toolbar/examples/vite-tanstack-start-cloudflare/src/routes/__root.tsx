@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { HeadContent, Link, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import * as React from "react";
 
@@ -9,33 +9,33 @@ import appCss from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
 
 export const Route = createRootRoute({
-    head: () => ({
-        meta: [
-            { charSet: "utf-8" },
-            { name: "viewport", content: "width=device-width, initial-scale=1" },
-            ...seo({
-                title: "TanStack Start + Cloudflare + Dev Toolbar",
-                description: "TanStack Start on Cloudflare Pages with @visulima/dev-toolbar integration.",
-            }),
-        ],
-        links: [
-            { rel: "stylesheet", href: appCss },
-            { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
-            { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
-            { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
-            { rel: "manifest", href: "/site.webmanifest", color: "#fffff" },
-            { rel: "icon", href: "/favicon.ico" },
-        ],
-    }),
-    errorComponent: (props) => {
-        return (
+    component: RootComponent,
+    errorComponent: (props) => (
             <RootLayout>
                 <DefaultCatchBoundary {...props} />
             </RootLayout>
-        );
+    ),
+    head: () => {
+        return {
+            links: [
+                { href: appCss, rel: "stylesheet" },
+                { href: "/apple-touch-icon.png", rel: "apple-touch-icon", sizes: "180x180" },
+                { href: "/favicon-32x32.png", rel: "icon", sizes: "32x32", type: "image/png" },
+                { href: "/favicon-16x16.png", rel: "icon", sizes: "16x16", type: "image/png" },
+                { color: "#fffff", href: "/site.webmanifest", rel: "manifest" },
+                { href: "/favicon.ico", rel: "icon" },
+            ],
+            meta: [
+                { charSet: "utf-8" },
+                { content: "width=device-width, initial-scale=1", name: "viewport" },
+                ...seo({
+                    description: "TanStack Start on Cloudflare Pages with @visulima/dev-toolbar integration.",
+                    title: "TanStack Start + Cloudflare + Dev Toolbar",
+                }),
+            ],
+        };
     },
     notFoundComponent: () => <NotFound />,
-    component: RootComponent,
 });
 
 function RootComponent() {
@@ -51,8 +51,8 @@ function RootLayout({ children }: { children: React.ReactNode }) {
         // ── Hook system ──────────────────────────────────────────────────────
         // Must run inside useEffect — TanStack Start SSR means window is only
         // available in the browser, not during server-side rendering.
-        if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
-            const hook = window.__DEV_TOOLBAR_HOOK__;
+        if (globalThis.window !== undefined && globalThis.__DEV_TOOLBAR_HOOK__) {
+            const hook = globalThis.__DEV_TOOLBAR_HOOK__;
 
             hook.on("devtools:init", () => {
                 console.log("[TanStack Start + Cloudflare] Dev Toolbar initialized!");
@@ -63,7 +63,7 @@ function RootLayout({ children }: { children: React.ReactNode }) {
             });
 
             hook.addTimelineEvent("custom", {
-                data: { framework: "TanStack Start", platform: "Cloudflare Pages", message: "Root mounted!" },
+                data: { framework: "TanStack Start", message: "Root mounted!", platform: "Cloudflare Pages" },
                 id: "tanstack-start-cloudflare-mount",
                 level: "info",
                 time: Date.now(),

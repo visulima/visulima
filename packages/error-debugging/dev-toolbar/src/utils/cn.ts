@@ -7,8 +7,6 @@ import { twMerge } from "tailwind-merge";
  * @param inputs Class values to merge
  * @returns Merged class string
  */
-const cn = (...inputs: ClassValue[]): string => {
-    return twMerge(clsx(inputs));
-};
+const cn = (...inputs: ClassValue[]): string => twMerge(clsx(inputs));
 
 export default cn;

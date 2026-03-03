@@ -1,16 +1,15 @@
 /** @jsxImportSource preact */
+import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
+import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
+import maximizeIcon from "lucide-static/icons/maximize.svg?data-uri&encoding=css";
+import maximize2Icon from "lucide-static/icons/maximize-2.svg?data-uri&encoding=css";
+import minimizeIcon from "lucide-static/icons/minimize.svg?data-uri&encoding=css";
+import minimize2Icon from "lucide-static/icons/minimize-2.svg?data-uri&encoding=css";
+import pictureInPicture2Icon from "lucide-static/icons/picture-in-picture-2.svg?data-uri&encoding=css";
+import xIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { render as preactRender } from "preact";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
-
-import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
-import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
-import maximize2Icon from "lucide-static/icons/maximize-2.svg?data-uri&encoding=css";
-import maximizeIcon from "lucide-static/icons/maximize.svg?data-uri&encoding=css";
-import minimize2Icon from "lucide-static/icons/minimize-2.svg?data-uri&encoding=css";
-import minimizeIcon from "lucide-static/icons/minimize.svg?data-uri&encoding=css";
-import pictureInPicture2Icon from "lucide-static/icons/picture-in-picture-2.svg?data-uri&encoding=css";
-import xIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 
 import type { DevToolbarAppState } from "../../types/index";
 import Icon from "../../ui/components/icon";
@@ -73,7 +72,7 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
             return () => {
                 // Remove all children without using innerHTML to avoid security-hook false positives
                 while (container.firstChild) {
-                    container.removeChild(container.firstChild);
+                    container.firstChild.remove();
                 }
                 initializedRef.current = false;
             };
@@ -121,98 +120,93 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                     sidebarCollapsed ? "w-12.5" : "w-62.5",
                 )}
             >
-                <div
-                    class={cn(
-                        "flex items-center shrink-0 border-b border-border/50 h-12",
-                        sidebarCollapsed ? "justify-center px-2" : "px-3",
-                    )}
-                >
-                    {sidebarCollapsed ? (
+                <div class={cn("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
+                    {sidebarCollapsed
+                        ? (
                         <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
                             V
                         </span>
-                    ) : (
+                        )
+                        : (
                         <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
                             <span aria-hidden="true" class="text-primary/60 mr-1">
                                 //
                             </span>
                             DevTools
                         </span>
-                    )}
+                        )}
                 </div>
 
                 <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
-                    {apps.filter((app) => app.component ?? app.init).map((app) => (
-                        <div class="relative group/nav-item" key={app.id}>
-                            <button
-                                aria-label={app.name}
-                                aria-pressed={activeAppId === app.id}
-                                class={cn(
-                                    "relative flex items-center w-full h-10",
-                                    "border-0 border-l-2 cursor-pointer",
-                                    "transition-all duration-150",
-                                    sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
-                                    activeAppId === app.id
-                                        ? "border-primary bg-primary/8 text-foreground"
-                                        : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
-                                )}
-                                onClick={() => setActiveAppId(app.id)}
-                                type="button"
-                            >
-                                {app.icon ? (
-                                    <span
-                                        class={cn(
-                                            "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
-                                            activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
-                                        )}
-                                        /* Icon is a trusted static SVG imported from lucide-static */
-                                        // eslint-disable-next-line react/no-danger
-                                        dangerouslySetInnerHTML={{ __html: app.icon }}
-                                    />
-                                ) : (
-                                    <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
-                                        {app.name.slice(0, 2)}
-                                    </span>
-                                )}
-                                {!sidebarCollapsed && (
-                                    <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">
-                                        {app.name}
-                                    </span>
-                                )}
-                            </button>
-
-                            {app.notification.state && (
-                                <span
-                                    aria-hidden="true"
+                    {apps
+                        .filter((app) => app.component ?? app.init)
+                        .map((app) => (
+                            <div class="relative group/nav-item" key={app.id}>
+                                <button
+                                    aria-label={app.name}
+                                    aria-pressed={activeAppId === app.id}
                                     class={cn(
-                                        "pointer-events-none absolute top-1.5 rounded-full",
-                                        sidebarCollapsed ? "right-1.5" : "right-2.5",
-                                        "size-1.5",
-                                        app.notification.level === "error"
-                                            ? "bg-destructive"
-                                            : app.notification.level === "warning"
-                                              ? "bg-warning"
-                                              : "bg-info",
+                                        "relative flex items-center w-full h-10",
+                                        "border-0 border-l-2 cursor-pointer",
+                                        "transition-all duration-150",
+                                        sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
+                                        activeAppId === app.id
+                                            ? "border-primary bg-primary/8 text-foreground"
+                                            : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
                                     )}
-                                />
-                            )}
-
-                            {sidebarCollapsed && (
-                                <div
-                                    class={cn(
-                                        "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
-                                        "pointer-events-none z-50 whitespace-nowrap",
-                                        "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
-                                        "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                                    )}
+                                    onClick={() => setActiveAppId(app.id)}
+                                    type="button"
                                 >
-                                    <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
-                                        {app.name}
+                                    {app.icon ? (
+                                        <span
+                                            class={cn(
+                                                "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
+                                                activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
+                                            )}
+                                            /* Icon is a trusted static SVG imported from lucide-static */
+                                            // eslint-disable-next-line react/no-danger
+                                            dangerouslySetInnerHTML={{ __html: app.icon }}
+                                        />
+                                    ) : (
+                                        <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
+                                            {app.name.slice(0, 2)}
+                                        </span>
+                                    )}
+                                    {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
+                                </button>
+
+                                {app.notification.state && (
+                                    <span
+                                        aria-hidden="true"
+                                        class={cn(
+                                            "pointer-events-none absolute top-1.5 rounded-full",
+                                            sidebarCollapsed ? "right-1.5" : "right-2.5",
+                                            "size-1.5",
+                                            app.notification.level === "error"
+                                                ? "bg-destructive"
+                                                : app.notification.level === "warning"
+                                                    ? "bg-warning"
+                                                    : "bg-info",
+                                        )}
+                                    />
+                                )}
+
+                                {sidebarCollapsed && (
+                                    <div
+                                        class={cn(
+                                            "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
+                                            "pointer-events-none z-50 whitespace-nowrap",
+                                            "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
+                                            "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                        )}
+                                    >
+                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
+                                            {app.name}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                                )}
+                            </div>
+                        ))}
                 </div>
             </nav>
 
@@ -275,13 +269,15 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
 
                 {/* Scrollable content */}
                 <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
-                    {activeApp ? (
+                    {activeApp
+                        ? (
                         <AppContent app={activeApp} key={activeApp.id} />
-                    ) : (
+                        )
+                        : (
                         <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none text-muted-foreground">
                             <p class="text-[0.8rem]">Select a tool from the sidebar</p>
                         </div>
-                    )}
+                        )}
                 </div>
             </div>
         </div>
@@ -303,31 +299,41 @@ const clamp = (value: number, min: number, max: number): number => Math.min(Math
  */
 const getPanelPositionClasses = (position: DevPanelProps["position"]): string => {
     switch (position) {
-        case "bottom":
+        case "bottom": {
             return "bottom-14";
-        case "left":
+        }
+        case "left": {
             return "left-14 top-4 bottom-4";
-        case "right":
+        }
+        case "right": {
             return "right-14 top-4 bottom-4";
-        case "top":
+        }
+        case "top": {
             return "top-14";
-        default:
+        }
+        default: {
             return "bottom-14";
+        }
     }
 };
 
 const getOriginClass = (position: DevPanelProps["position"]): string => {
     switch (position) {
-        case "bottom":
+        case "bottom": {
             return "origin-[bottom_center]";
-        case "left":
+        }
+        case "left": {
             return "origin-[left_center]";
-        case "right":
+        }
+        case "right": {
             return "origin-[right_center]";
-        case "top":
+        }
+        case "top": {
             return "origin-[top_center]";
-        default:
+        }
+        default: {
             return "origin-[bottom_center]";
+        }
     }
 };
 
@@ -360,13 +366,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const dimensionsRef = useRef({ height: state.height, width: state.width });
     const enteringFromRectRef = useRef<DOMRect | null>(null);
     const lastDockedRectRef = useRef<DOMRect | null>(null);
-    const prevIsFullscreenRef = useRef(false);
+    const previousIsFullscreenRef = useRef(false);
     const isExitAnimatingRef = useRef(false);
     const fsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const isFullscreen = state.viewMode === "fullscreen";
     const isWide = state.viewMode === "wide";
-    const isPipSupported = typeof (globalThis.window as any)?.documentPictureInPicture !== "undefined";
+    const isPipSupported = (globalThis.window as any)?.documentPictureInPicture !== undefined;
     const pipWindowRef = useRef<Window | null>(null);
 
     // ─── Compute inline panel size ────────────────────────────────────────────
@@ -383,7 +389,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
         switch (position) {
             case "bottom":
-            case "top":
+            case "top": {
                 // Both wide and container use left:50% + translateX(-50%) so that
                 // only `width` changes between modes — CSS can then transition it
                 // smoothly without any positional jump.
@@ -395,16 +401,19 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     // CSS width-transition works (both sides are pixel values).
                     width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
                 };
+            }
             case "left":
-            case "right":
+            case "right": {
                 return { width: `${(dimensionsRef.current.width / 100) * ww}px` };
-            default:
+            }
+            default: {
                 return {
                     height: h,
                     left: "50%",
                     transform: "translateX(-50%)",
                     width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
                 };
+            }
         }
         // rerender counter triggers recompute on each drag step
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -424,15 +433,19 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
             if (isResizingRef.current.top) {
                 const heightPx = Math.abs(box.bottom - e.clientY);
+
                 current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.bottom) {
                 const heightPx = Math.abs(e.clientY - box.top);
+
                 current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.right) {
                 const widthPx = Math.abs(e.clientX - box.left);
+
                 current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.left) {
                 const widthPx = Math.abs(box.right - e.clientX);
+
                 current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             }
 
@@ -447,12 +460,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             }
         };
 
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
+        globalThis.addEventListener("mousemove", handleMouseMove);
+        globalThis.addEventListener("mouseup", handleMouseUp);
 
         return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
+            globalThis.removeEventListener("mousemove", handleMouseMove);
+            globalThis.removeEventListener("mouseup", handleMouseUp);
         };
     }, [updateState]);
 
@@ -465,18 +478,18 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     // bounds, then let only clip-path animate to inset(0) in the next rAF.
     // Exit: freeze transitions for two frames so the snap-back is instant.
     useLayoutEffect(() => {
-        const wasFullscreen = prevIsFullscreenRef.current;
+        const wasFullscreen = previousIsFullscreenRef.current;
 
-        prevIsFullscreenRef.current = isFullscreen;
+        previousIsFullscreenRef.current = isFullscreen;
 
         if (fsTimerRef.current !== null) {
             clearTimeout(fsTimerRef.current);
             fsTimerRef.current = null;
         }
 
-        const el = panelDivRef.current;
+        const element = panelDivRef.current;
 
-        if (!el) {
+        if (!element) {
             return;
         }
 
@@ -491,33 +504,31 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
             // Override transition to clip-path only and clip to old bounds —
             // both applied before paint, so no slide is ever shown.
-            el.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
-            el.style.clipPath = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
+            element.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
+            element.style.clipPath = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
 
             // Next rAF: the clipped frame has been painted; start expanding.
             requestAnimationFrame(() => {
-                el.style.clipPath = "inset(0px 0px 0px 0px)";
+                element.style.clipPath = "inset(0px 0px 0px 0px)";
 
                 // After transition, clear overrides so normal transitions resume.
                 fsTimerRef.current = setTimeout(() => {
-                    el.style.clipPath = "";
-                    el.style.transition = "";
+                    element.style.clipPath = "";
+                    element.style.transition = "";
                     fsTimerRef.current = null;
                 }, 380);
             });
-        } else if (!isFullscreen && wasFullscreen) {
-            // ── Exiting fullscreen ───────────────────────────────────────────
+        } else if (!isFullscreen && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
             // If the animated exit is in progress, the onClick handler owns the
             // element styles — don't fight it. Only run instant snap for non-
             // animated exits (e.g. programmatic viewMode changes).
-            if (!isExitAnimatingRef.current) {
-                el.style.transition = "none";
-                el.style.clipPath = "";
+            && !isExitAnimatingRef.current) {
+            element.style.transition = "none";
+            element.style.clipPath = "";
 
-                requestAnimationFrame(() => {
-                    el.style.transition = "";
-                });
-            }
+            requestAnimationFrame(() => {
+                element.style.transition = "";
+            });
         }
     }, [isFullscreen]);
 
@@ -525,13 +536,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     useEffect(() => {
         if (panelVisible) {
             setIsRendered(true);
-            const timerId = setTimeout(() => setIsVisible(true), 16);
+            const timerId = setTimeout(setIsVisible, 16, true);
 
             return () => clearTimeout(timerId);
         }
 
         setIsVisible(false);
-        const timer = setTimeout(() => setIsRendered(false), 220);
+        const timer = setTimeout(setIsRendered, 220, false);
 
         return () => clearTimeout(timer);
     }, [panelVisible]);
@@ -556,12 +567,10 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             // Serialising cssRules back to text and injecting a <style> tag is
             // the approach recommended in the Chrome documentPictureInPicture docs.
             if (sharedToolbarStylesheet) {
-                const styleEl = pipWin.document.createElement("style");
+                const styleElement = pipWin.document.createElement("style");
 
-                styleEl.textContent = [...sharedToolbarStylesheet.cssRules]
-                    .map((r) => r.cssText)
-                    .join("\n");
-                pipWin.document.head.append(styleEl);
+                styleElement.textContent = Array.from(sharedToolbarStylesheet.cssRules, (r) => r.cssText).join("\n");
+                pipWin.document.head.append(styleElement);
             }
 
             // Container — apply toolbar dark/light theme via the same .dark class
@@ -570,12 +579,14 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             const container = pipWin.document.createElement("div");
 
             container.style.cssText = "width:100%;height:100%;display:flex;";
+
             // Apply dark/light theme at the document level so :root CSS variables
             // (--color-background etc.) are overridden by the .dark block correctly.
             if (resolvedTheme === "dark") {
                 pipWin.document.documentElement.classList.add("dark");
                 container.classList.add("dark");
             }
+
             pipWin.document.body.style.cssText = "margin:0;padding:0;height:100vh;";
             pipWin.document.body.append(container);
 
@@ -597,8 +608,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 updateState({ isPip: false });
                 pipWindowRef.current = null;
             });
-        } catch (err) {
-            console.error("[dev-toolbar] PiP activation failed:", err);
+        } catch (error) {
+            console.error("[dev-toolbar] PiP activation failed:", error);
         }
     };
 
@@ -625,12 +636,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         return null;
     }
 
-    const startResize =
-        (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
-        (e: MouseEvent): void => {
-            e.preventDefault();
-            isResizingRef.current = direction;
-        };
+    const startResize
+        = (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
+            (e: MouseEvent): void => {
+                e.preventDefault();
+                isResizingRef.current = direction;
+            };
 
     return (
         <>
@@ -648,7 +659,6 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
             {/* Unified DevTools panel */}
             <div
-                ref={panelDivRef}
                 aria-label="DevTools panel"
                 aria-modal="true"
                 class={cn(
@@ -662,6 +672,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     getVisibilityClasses(position, isVisible),
                     "flex flex-row",
                 )}
+                ref={panelDivRef}
                 role="dialog"
                 style={panelSizeStyle}
             >
@@ -717,93 +728,100 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     )}
                 >
                     {/* Sidebar header */}
-                    <div class={cn(
-                        "flex items-center shrink-0 border-b border-border/50 h-12",
-                        sidebarCollapsed ? "justify-center px-2" : "px-3"
-                    )}>
-                        {sidebarCollapsed ? (
-                            <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">V</span>
-                        ) : (
+                    <div class={cn("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
+                        {sidebarCollapsed
+                            ? (
+                            <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
+                                V
+                            </span>
+                            )
+                            : (
                             <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
-                                <span aria-hidden="true" class="text-primary/60 mr-1">//</span>
+                                <span aria-hidden="true" class="text-primary/60 mr-1">
+                                    //
+                                </span>
                                 DevTools
                             </span>
-                        )}
+                            )}
                     </div>
                     <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
-                        {apps.filter((app) => app.component ?? app.init).map((app) => (
-                            <div class="relative group/nav-item" key={app.id}>
-                                <button
-                                    aria-label={app.name}
-                                    aria-pressed={activeAppId === app.id}
-                                    class={cn(
-                                        "relative flex items-center w-full h-10",
-                                        "border-0 border-l-2 cursor-pointer",
-                                        "transition-all duration-150",
-                                        sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
-                                        activeAppId === app.id
-                                            ? "border-primary bg-primary/8 text-foreground"
-                                            : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
-                                    )}
-                                    onClick={() => {
-                                        if (app.id === activeAppId) {
-                                            return;
-                                        }
-
-                                        onToggleApp(app.id).catch(console.error);
-                                    }}
-                                    type="button"
-                                >
-                                    {app.icon ? (
-                                        <span
-                                            class={cn(
-                                                "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
-                                                activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
-                                            )}
-                                            // eslint-disable-next-line react/no-danger
-                                            dangerouslySetInnerHTML={{ __html: app.icon }}
-                                        />
-                                    ) : (
-                                        <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
-                                            {app.name.slice(0, 2)}
-                                        </span>
-                                    )}
-
-                                    {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
-                                </button>
-
-                                {app.notification.state && (
-                                    <span
-                                        aria-hidden="true"
+                        {apps
+                            .filter((app) => app.component ?? app.init)
+                            .map((app) => (
+                                <div class="relative group/nav-item" key={app.id}>
+                                    <button
+                                        aria-label={app.name}
+                                        aria-pressed={activeAppId === app.id}
                                         class={cn(
-                                            "pointer-events-none absolute top-1.5 rounded-full",
-                                            sidebarCollapsed ? "right-1.5" : "right-2.5",
-                                            "size-1.5",
-                                            app.notification.level === "error"
-                                                ? "bg-destructive"
-                                                : app.notification.level === "warning"
-                                                  ? "bg-warning"
-                                                  : "bg-info",
+                                            "relative flex items-center w-full h-10",
+                                            "border-0 border-l-2 cursor-pointer",
+                                            "transition-all duration-150",
+                                            sidebarCollapsed ? "justify-center px-0" : "gap-2.5 px-3",
+                                            activeAppId === app.id
+                                                ? "border-primary bg-primary/8 text-foreground"
+                                                : "border-transparent bg-transparent text-muted-foreground hover:bg-foreground/6 hover:text-foreground",
                                         )}
-                                    />
-                                )}
+                                        onClick={() => {
+                                            if (app.id === activeAppId) {
+                                                return;
+                                            }
 
-                                {sidebarCollapsed && (
-                                    <div
-                                        class={cn(
-                                            "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
-                                            "pointer-events-none z-50 whitespace-nowrap",
-                                            "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
-                                            "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                                        )}
+                                            onToggleApp(app.id).catch(console.error);
+                                        }}
+                                        type="button"
                                     >
-                                        <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
-                                            {app.name}
+                                        {app.icon ? (
+                                            <span
+                                                class={cn(
+                                                    "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
+                                                    activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
+                                                )}
+                                                // eslint-disable-next-line react/no-danger
+                                                dangerouslySetInnerHTML={{ __html: app.icon }}
+                                            />
+                                        ) : (
+                                            <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
+                                                {app.name.slice(0, 2)}
+                                            </span>
+                                        )}
+
+                                        {!sidebarCollapsed && (
+                                            <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>
+                                        )}
+                                    </button>
+
+                                    {app.notification.state && (
+                                        <span
+                                            aria-hidden="true"
+                                            class={cn(
+                                                "pointer-events-none absolute top-1.5 rounded-full",
+                                                sidebarCollapsed ? "right-1.5" : "right-2.5",
+                                                "size-1.5",
+                                                app.notification.level === "error"
+                                                    ? "bg-destructive"
+                                                    : app.notification.level === "warning"
+                                                        ? "bg-warning"
+                                                        : "bg-info",
+                                            )}
+                                        />
+                                    )}
+
+                                    {sidebarCollapsed && (
+                                        <div
+                                            class={cn(
+                                                "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
+                                                "pointer-events-none z-50 whitespace-nowrap",
+                                                "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
+                                                "transition-all duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
+                                            )}
+                                        >
+                                            <div class="text-[0.7rem] font-medium bg-card/95 backdrop-blur-[0.625rem] text-foreground/80 px-2.5 py-1 border border-border shadow-md">
+                                                {app.name}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                    )}
+                                </div>
+                            ))}
                     </div>
                     {/* Sidebar footer — keyboard hint */}
                     {!sidebarCollapsed && (
@@ -885,10 +903,10 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 onClick={() => {
                                     if (isFullscreen) {
                                         // ── Exit fullscreen — reverse clip-path collapse ──────────
-                                        const el = panelDivRef.current;
+                                        const element = panelDivRef.current;
                                         const rect = lastDockedRectRef.current;
 
-                                        if (el && rect) {
+                                        if (element && rect) {
                                             const ww = globalThis.window?.innerWidth ?? 0;
                                             const wh = globalThis.window?.innerHeight ?? 0;
                                             const targetClip = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
@@ -901,15 +919,15 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                             isExitAnimatingRef.current = true;
 
                                             // Start fully expanded (no-op visually), then animate to docked bounds.
-                                            el.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
-                                            el.style.clipPath = "inset(0px 0px 0px 0px)";
+                                            element.style.transition = "clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
+                                            element.style.clipPath = "inset(0px 0px 0px 0px)";
 
                                             requestAnimationFrame(() => {
-                                                el.style.clipPath = targetClip;
+                                                element.style.clipPath = targetClip;
 
                                                 fsTimerRef.current = setTimeout(() => {
-                                                    el.style.clipPath = "";
-                                                    el.style.transition = "";
+                                                    element.style.clipPath = "";
+                                                    element.style.transition = "";
                                                     isExitAnimatingRef.current = false;
                                                     fsTimerRef.current = null;
                                                     // State change after animation — useLayoutEffect will
@@ -946,13 +964,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     class={cn(
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
-                                        state.isPip
-                                            ? "text-primary hover:bg-primary/7"
-                                            : "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
+                                        state.isPip ? "text-primary hover:bg-primary/7" : "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
                                         "transition-all duration-200 active:scale-90",
                                     )}
                                     onClick={() => {
-                                        activatePip().then(() => onClose()).catch(console.error);
+                                        activatePip()
+                                            .then(() => onClose())
+                                            .catch(console.error);
                                     }}
                                     title="Open in floating window (PiP)"
                                     type="button"
@@ -1005,13 +1023,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         <div class="flex flex-col gap-0.5">
                                             {apps.map((a) => (
                                                 <button
-                                                    key={a.id}
                                                     class={cn(
                                                         "flex items-center gap-2.5 px-3 py-2",
                                                         "border border-border/40 bg-card/50",
                                                         "hover:border-primary/30 hover:bg-primary/4",
                                                         "cursor-pointer transition-all duration-150 text-left",
                                                     )}
+                                                    key={a.id}
                                                     onClick={() => onToggleApp(a.id).catch(console.error)}
                                                     type="button"
                                                 >
@@ -1022,7 +1040,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                             dangerouslySetInnerHTML={{ __html: a.icon }}
                                                         />
                                                     ) : (
-                                                        <span class="size-3.5 text-[0.5rem] font-bold text-muted-foreground shrink-0 text-center">{a.name.slice(0, 2).toUpperCase()}</span>
+                                                        <span class="size-3.5 text-[0.5rem] font-bold text-muted-foreground shrink-0 text-center">
+                                                            {a.name.slice(0, 2).toUpperCase()}
+                                                        </span>
                                                     )}
                                                     <span class="text-[0.75rem] font-medium text-muted-foreground">{a.name}</span>
                                                 </button>

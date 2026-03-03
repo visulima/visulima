@@ -3,10 +3,10 @@ import { createMiddleware } from "@tanstack/react-start";
 export const logMiddleware = createMiddleware({ type: "function" })
     .middleware([
         createMiddleware({ type: "function" })
-            .client(async (ctx) => {
+            .client(async (context) => {
                 const clientTime = new Date();
 
-                return await ctx.next({
+                return await context.next({
                     context: {
                         clientTime,
                     },
@@ -15,13 +15,13 @@ export const logMiddleware = createMiddleware({ type: "function" })
                     },
                 });
             })
-            .server(async (ctx) => {
+            .server(async (context) => {
                 const serverTime = new Date();
 
-                return await ctx.next({
+                return await context.next({
                     sendContext: {
+                        durationToServer: serverTime.getTime() - context.context.clientTime.getTime(),
                         serverTime,
-                        durationToServer: serverTime.getTime() - ctx.context.clientTime.getTime(),
                     },
                 });
             }),
@@ -33,8 +33,8 @@ export const logMiddleware = createMiddleware({ type: "function" })
 
         console.log("Client Req/Res:", {
             duration: result.context.clientTime.getTime() - now.getTime(),
-            durationToServer: result.context.durationToServer,
             durationFromServer: now.getTime() - result.context.serverTime.getTime(),
+            durationToServer: result.context.durationToServer,
         });
 
         return result;

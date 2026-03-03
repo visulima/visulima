@@ -8,10 +8,10 @@ function Home() {
     const throwError = () => {
         setTimeout(() => {
             const cause = new TypeError("Cannot read properties of undefined (reading 'name')");
-            const err = new Error("Example error from the TanStack Start dev-toolbar demo");
+            const error = new Error("Example error from the TanStack Start dev-toolbar demo");
 
-            err.cause = cause;
-            throw err;
+            error.cause = cause;
+            throw error;
         }, 0);
     };
 
@@ -30,18 +30,10 @@ function Home() {
                 with the Visulima Dev Toolbar.
             </p>
             <div className="flex flex-wrap gap-3">
-                <button
-                    type="button"
-                    onClick={throwError}
-                    className="rounded bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
-                >
+                <button className="rounded bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600" onClick={throwError} type="button">
                     Throw Error
                 </button>
-                <button
-                    type="button"
-                    onClick={rejectPromise}
-                    className="rounded bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
-                >
+                <button className="rounded bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600" onClick={rejectPromise} type="button">
                     Unhandled Rejection
                 </button>
             </div>

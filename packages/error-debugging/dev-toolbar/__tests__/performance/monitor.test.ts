@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
-import { CWV_THRESHOLDS, PerformanceMonitor, getCwvRating } from "../../src/performance/monitor";
+import { CWV_THRESHOLDS, getCwvRating, PerformanceMonitor } from "../../src/performance/monitor";
 
-describe("CWV_THRESHOLDS", () => {
+describe("cWV_THRESHOLDS", () => {
     it("defines thresholds for all five core web vitals", () => {
         expect(CWV_THRESHOLDS).toHaveProperty("lcp");
         expect(CWV_THRESHOLDS).toHaveProperty("cls");
@@ -119,7 +119,7 @@ describe("getCwvRating", () => {
     });
 });
 
-describe("PerformanceMonitor", () => {
+describe("performanceMonitor", () => {
     let monitor: PerformanceMonitor;
 
     beforeEach(() => {
@@ -181,7 +181,7 @@ describe("PerformanceMonitor", () => {
         it("subscribe returns an unsubscribe function", () => {
             const unsub = monitor.subscribe(vi.fn());
 
-            expect(typeof unsub).toBe("function");
+            expectTypeOf(unsub).toBeFunction();
         });
 
         it("listener is called when clearLongTasks emits", () => {
@@ -190,7 +190,7 @@ describe("PerformanceMonitor", () => {
             monitor.subscribe(listener);
             monitor.clearLongTasks();
 
-            expect(listener).toHaveBeenCalledOnce();
+            expect(listener).toHaveBeenCalledTimes(1);
         });
 
         it("listener receives a snapshot when called", () => {
@@ -223,8 +223,8 @@ describe("PerformanceMonitor", () => {
             monitor.subscribe(l2);
             monitor.clearLongTasks();
 
-            expect(l1).toHaveBeenCalledOnce();
-            expect(l2).toHaveBeenCalledOnce();
+            expect(l1).toHaveBeenCalledTimes(1);
+            expect(l2).toHaveBeenCalledTimes(1);
         });
 
         it("unsubscribing one listener does not affect others", () => {
@@ -237,13 +237,13 @@ describe("PerformanceMonitor", () => {
             monitor.clearLongTasks();
 
             expect(l1).not.toHaveBeenCalled();
-            expect(l2).toHaveBeenCalledOnce();
+            expect(l2).toHaveBeenCalledTimes(1);
         });
     });
 
     describe("clearLongTasks", () => {
         it("does not throw even when there are no long tasks", () => {
-            expect(() => monitor.clearLongTasks()).not.toThrow();
+            expect(() => monitor.clearLongTasks()).not.toThrowError();
         });
 
         it("results in an empty longTasks array in the snapshot", () => {
@@ -264,24 +264,24 @@ describe("PerformanceMonitor", () => {
 
     describe("start / stop (node environment — window is undefined)", () => {
         it("start() is safe to call when window is undefined (no-op in node)", () => {
-            expect(() => monitor.start()).not.toThrow();
+            expect(() => monitor.start()).not.toThrowError();
         });
 
         it("stop() is safe to call before start()", () => {
-            expect(() => monitor.stop()).not.toThrow();
+            expect(() => monitor.stop()).not.toThrowError();
         });
 
         it("start() can be called multiple times without error", () => {
             expect(() => {
                 monitor.start();
                 monitor.start();
-            }).not.toThrow();
+            }).not.toThrowError();
         });
 
         it("stop() after start() does not throw", () => {
             monitor.start();
 
-            expect(() => monitor.stop()).not.toThrow();
+            expect(() => monitor.stop()).not.toThrowError();
         });
     });
 });

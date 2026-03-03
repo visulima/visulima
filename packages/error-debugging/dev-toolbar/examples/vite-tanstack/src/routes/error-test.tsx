@@ -7,12 +7,13 @@ export const Route = createFileRoute("/error-test")({
 function ErrorTestPage() {
     const triggerSimpleError = () => {
         try {
-            throw new Error("This is a simple test error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+            throw new Error(`This is a simple test error from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
         } catch (error) {
             // Send error directly to our overlay system to bypass React's error boundaries
-            if (typeof window !== "undefined" && (window as any).__flameSendError) {
-                (window as any).__flameSendError(error);
+            if (globalThis.window !== undefined && (globalThis as any).__flameSendError) {
+                (globalThis as any).__flameSendError(error);
             }
+
             throw error; // Re-throw to still trigger React's error handling if needed
         }
     };
@@ -21,14 +22,15 @@ function ErrorTestPage() {
         try {
             // This will create a nested error with cause chain
             function innerFunction() {
-                throw new Error("Inner error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+                throw new Error(`Inner error from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
             }
 
             function middleFunction() {
                 try {
                     innerFunction();
                 } catch (error) {
-                    const causeError = new Error("Middle error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+                    const causeError = new Error(`Middle error from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
+
                     causeError.cause = error;
                     throw causeError;
                 }
@@ -36,7 +38,8 @@ function ErrorTestPage() {
 
             middleFunction();
         } catch (error) {
-            const outerError = new Error("Outer error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+            const outerError = new Error(`Outer error from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
+
             outerError.cause = error;
             throw outerError;
         }
@@ -49,7 +52,8 @@ function ErrorTestPage() {
             // Simulate an async error with cause chain
             await fetch("https://non-existent-endpoint2314654.com1");
         } catch (fetchError) {
-            const apiError = new Error("API error from line " + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+            const apiError = new Error(`API error from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
+
             apiError.cause = fetchError;
             throw apiError;
         }
@@ -59,14 +63,16 @@ function ErrorTestPage() {
         // Create a deeply nested cause chain
         function createNestedError(depth: number): Error {
             if (depth === 0) {
-                return new Error(`Base error at depth ${depth} from line ` + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+                return new Error(`Base error at depth ${depth} from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
             }
 
             try {
                 return createNestedError(depth - 1);
             } catch (error) {
-                const newError = new Error(`Error at depth ${depth} from line ` + new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]);
+                const newError = new Error(`Error at depth ${depth} from line ${new Error().stack?.split("\n")[1]?.match(/:(\d+):/)?.[1]}`);
+
                 newError.cause = error;
+
                 return newError;
             }
         }
@@ -82,7 +88,7 @@ function ErrorTestPage() {
                 <div className="rounded-lg bg-white p-6 shadow-md">
                     <h2 className="mb-4 text-xl font-semibold">Simple Error</h2>
                     <p className="mb-4 text-gray-600">Triggers a basic runtime error to test overlay display and source mapping.</p>
-                    <button onClick={triggerSimpleError} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600" data-testid="simple-error-btn">
+                    <button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600" data-testid="simple-error-btn" onClick={triggerSimpleError}>
                         Trigger Simple Error
                     </button>
                 </div>
@@ -91,10 +97,10 @@ function ErrorTestPage() {
                     <h2 className="mb-4 text-xl font-semibold">Cause Chain Error</h2>
                     <p className="mb-4 text-gray-600">Triggers an error with nested cause chain to test multi-error navigation.</p>
                     <button
-                        onClick={triggerCauseChainError}
                         className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-                        data-testid="cause-chain-btn"
                         data-error-trigger
+                        data-testid="cause-chain-btn"
+                        onClick={triggerCauseChainError}
                     >
                         Trigger Cause Chain
                     </button>
@@ -104,9 +110,9 @@ function ErrorTestPage() {
                     <h2 className="mb-4 text-xl font-semibold">Async Error</h2>
                     <p className="mb-4 text-gray-600">Triggers an async error with cause chain from failed API call.</p>
                     <button
-                        onClick={triggerAsyncError}
                         className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
                         data-testid="async-error-btn"
+                        onClick={triggerAsyncError}
                     >
                         Trigger Async Error
                     </button>
@@ -115,7 +121,7 @@ function ErrorTestPage() {
                 <div className="rounded-lg bg-white p-6 shadow-md">
                     <h2 className="mb-4 text-xl font-semibold">Complex Nested Error</h2>
                     <p className="mb-4 text-gray-600">Triggers a deeply nested error chain (4 levels) to test complex scenarios.</p>
-                    <button onClick={triggerComplexError} className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600" data-testid="complex-error-btn">
+                    <button className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600" data-testid="complex-error-btn" onClick={triggerComplexError}>
                         Trigger Complex Error
                     </button>
                 </div>

@@ -3,7 +3,7 @@ import "./App.css";
 import { useState } from "react";
 import { Link, Route, Routes } from "react-router";
 
-import viteLogo from "/vite.svg";
+import viteLogo from "../../../../../../../../../../../vite.svg";
 import reactLogo from "./assets/react.svg";
 
 function Home() {
@@ -12,10 +12,10 @@ function Home() {
     const throwError = () => {
         setTimeout(() => {
             const cause = new TypeError("Cannot read properties of undefined (reading 'name')");
-            const err = new Error("Example client error thrown from the React Router dev-toolbar demo");
+            const error = new Error("Example client error thrown from the React Router dev-toolbar demo");
 
-            err.cause = cause;
-            throw err;
+            error.cause = cause;
+            throw error;
         }, 0);
     };
 
@@ -35,7 +35,7 @@ function Home() {
             </div>
             <h1>Vite + React Router + Dev Toolbar</h1>
             <div className="card">
-                <button type="button" onClick={() => setCount((c) => c + 1)}>
+                <button onClick={() => setCount((c) => c + 1)} type="button">
                     count is {count}
                 </button>
                 <p>
@@ -43,10 +43,10 @@ function Home() {
                 </p>
             </div>
             <div className="card">
-                <button type="button" onClick={throwError}>
+                <button onClick={throwError} type="button">
                     Throw Error
                 </button>{" "}
-                <button type="button" onClick={rejectPromise}>
+                <button onClick={rejectPromise} type="button">
                     Unhandled Rejection
                 </button>
             </div>
@@ -60,10 +60,10 @@ function Home() {
 function About() {
     const triggerError = () => {
         const cause = new ReferenceError("undeclaredVariable is not defined");
-        const err = new Error("Error triggered from the About page");
+        const error = new Error("Error triggered from the About page");
 
-        err.cause = cause;
-        throw err;
+        error.cause = cause;
+        throw error;
     };
 
     return (
@@ -71,7 +71,7 @@ function About() {
             <h1>About</h1>
             <p>This page demonstrates React Router navigation with the Dev Toolbar.</p>
             <div className="card">
-                <button type="button" onClick={triggerError}>
+                <button onClick={triggerError} type="button">
                     Trigger Error on About Page
                 </button>
             </div>
@@ -85,8 +85,8 @@ function About() {
 function App() {
     return (
         <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
+            <Route element={<Home />} path="/" />
+            <Route element={<About />} path="/about" />
         </Routes>
     );
 }

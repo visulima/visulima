@@ -13,8 +13,8 @@ export interface SerializableModuleNode {
  * which cannot be JSON-serialized; this function returns a flat, safe representation.
  * Importer URLs are extracted from each ModuleNode's importers Set before serialization
  * so the client can display the full "imported by" list without a second RPC call.
- * @param {import('vite').ViteDevServer} server Vite dev server instance
- * @returns {Promise<SerializableModuleNode[]>} Array of serializable module entries
+ * @param server Vite dev server instance
+ * @returns Array of serializable module entries
  */
 export const getModuleGraph = async (server: ViteDevServer): Promise<SerializableModuleNode[]> => {
     const { moduleGraph } = server;

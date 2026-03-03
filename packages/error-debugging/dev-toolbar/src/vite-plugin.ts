@@ -85,10 +85,39 @@ export interface DevToolbarOptions {
     defaultVisible?: boolean;
 
     /**
+     * The editor to open when clicking "Open in editor" in the inspector.
+     * Accepts any value supported by `launch-editor` — an editor name/alias
+     * (e.g. `"code"`, `"webstorm"`, `"vim"`, `"atom"`) or the full path to
+     * the editor executable.
+     *
+     * If omitted, `launch-editor` auto-detects the editor from the `EDITOR`
+     * / `VISUAL` environment variables or from the currently running IDE
+     * process detected on the OS process list.
+     * @example "webstorm"
+     * @example "code"
+     */
+    editor?: string;
+
+    /**
      * Initial panel height as a percentage of the viewport height (20–95).
      * @default 60
      */
     height?: number;
+
+    /**
+     * Inject `data-vdt-source="&lt;file>:&lt;line>:&lt;col>"` attributes into every JSX
+     * opening element during development. This lets the inspector jump directly
+     * to the source file when an element is clicked.
+     *
+     * Only active when `mode === 'development'`. Set `enabled: false` to opt out.
+     * Use `ignore.files` / `ignore.components` to exclude specific paths or
+     * component names (strings are treated as glob patterns).
+     * @default { enabled: true }
+     */
+    injectSource?: {
+        enabled?: boolean;
+        ignore?: InjectSourceIgnore;
+    };
 
     /**
      * Keyboard shortcut bindings.
@@ -130,30 +159,6 @@ export interface DevToolbarOptions {
     reduceMotion?: boolean;
 
     /**
-     * Only activate the toolbar when the URL contains a specific query parameter.
-     * Useful for staging/production environments where you want opt-in debugging.
-     * @example requireUrlFlag: true, urlFlagName: 'debug' → toolbar only shows when URL has ?debug=true
-     * @default false
-     */
-    requireUrlFlag?: boolean;
-
-    /**
-     * Inject `data-vdt-source="<file>:<line>:<col>"` attributes into every JSX
-     * opening element during development. This lets the inspector jump directly
-     * to the source file when an element is clicked.
-     *
-     * Only active when `mode === 'development'`. Set `enabled: false` to opt out.
-     * Use `ignore.files` / `ignore.components` to exclude specific paths or
-     * component names (strings are treated as glob patterns).
-     *
-     * @default { enabled: true }
-     */
-    injectSource?: {
-        enabled?: boolean;
-        ignore?: InjectSourceIgnore;
-    };
-
-    /**
      * Strip all @visulima/dev-toolbar imports and virtual modules when building
      * for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
      * This guarantees the toolbar never ends up in a production bundle even if the
@@ -163,19 +168,12 @@ export interface DevToolbarOptions {
     removeDevtoolsOnBuild?: boolean;
 
     /**
-     * The editor to open when clicking "Open in editor" in the inspector.
-     * Accepts any value supported by `launch-editor` — an editor name/alias
-     * (e.g. `"code"`, `"webstorm"`, `"vim"`, `"atom"`) or the full path to
-     * the editor executable.
-     *
-     * If omitted, `launch-editor` auto-detects the editor from the `EDITOR`
-     * / `VISUAL` environment variables or from the currently running IDE
-     * process detected on the OS process list.
-     *
-     * @example "webstorm"
-     * @example "code"
+     * Only activate the toolbar when the URL contains a specific query parameter.
+     * Useful for staging/production environments where you want opt-in debugging.
+     * @example requireUrlFlag: true, urlFlagName: 'debug' → toolbar only shows when URL has ?debug=true
+     * @default false
      */
-    editor?: string;
+    requireUrlFlag?: boolean;
 
     /**
      * Custom server RPC functions
@@ -301,9 +299,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo &&
-                filename &&
-                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo
+                && filename
+                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }

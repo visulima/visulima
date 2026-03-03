@@ -9,10 +9,7 @@ interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
 }
 
 const Label = ({ children, class: className, ...rest }: LabelProps): JSX.Element => (
-    <label
-        class={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)}
-        {...rest}
-    >
+    <label class={cn("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70", className)} {...rest}>
         {children}
     </label>
 );

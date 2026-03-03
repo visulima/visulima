@@ -4,8 +4,8 @@ import { useEffect, useState } from "preact/hooks";
 
 import type { AppTooltipProps } from "../../types/app";
 import cn from "../../utils/cn";
-import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 import type { A11yStoreState, Severity } from "./a11y-store";
+import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -61,10 +61,10 @@ const formatElapsed = (isoDate: string): string => {
 /**
  * Hover tooltip for the Accessibility app button.
  * Shows a summary of scan results and quick action buttons.
- * @param _props - Tooltip props (unused; reads from a11yStore directly)
+ * @param _props Tooltip props (unused; reads from a11yStore directly)
  * @returns Rendered tooltip component
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const [state, setState] = useState<Readonly<A11yStoreState>>(() => a11yStore.getState());
 
@@ -74,10 +74,10 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
 
     const total = issues.length;
     const severityCounts = issues.reduce<Record<Severity, number>>(
-        (acc, issue) => {
-            acc[issue.impact] = (acc[issue.impact] ?? 0) + 1;
+        (accumulator, issue) => {
+            accumulator[issue.impact] = (accumulator[issue.impact] ?? 0) + 1;
 
-            return acc;
+            return accumulator;
         },
         { critical: 0, minor: 0, moderate: 0, serious: 0 },
     );
@@ -86,18 +86,19 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     return (
         <div class="space-y-3 min-w-[200px]">
             {/* Summary */}
-            {lastScan ? (
+            {lastScan
+                ? (
                 <>
                     <div class="flex items-baseline gap-2">
                         <span class={cn("text-2xl font-bold tabular-nums leading-none", total > 0 ? "text-destructive" : "text-success-foreground")}>
                             {total}
                         </span>
-                        <span class="text-[0.65rem] text-muted-foreground">violation{total !== 1 ? "s" : ""}</span>
+                        <span class="text-[0.65rem] text-muted-foreground">violation{total === 1 ? "" : "s"}</span>
                     </div>
 
                     <div class="grid grid-cols-4 gap-1.5">
                         {SEVERITY_ORDER.map((sev) => (
-                            <div key={sev} class="flex flex-col items-center gap-0.5">
+                            <div class="flex flex-col items-center gap-0.5" key={sev}>
                                 <span class={cn("text-[0.85rem] font-bold tabular-nums leading-none", SEVERITY_COLOR[sev])}>{countBy(sev)}</span>
                                 <span class="text-[0.55rem] uppercase tracking-wide text-muted-foreground/70">{SEVERITY_SHORT[sev]}</span>
                             </div>
@@ -106,12 +107,13 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
 
                     <p class="text-[0.62rem] text-muted-foreground/50">Scanned {formatElapsed(lastScan)}</p>
                 </>
-            ) : (
+                )
+                : (
                 <div>
                     <p class="text-[0.72rem] text-muted-foreground">No scan run yet.</p>
                     <p class="text-[0.65rem] text-muted-foreground/50 mt-0.5">Scan this page to detect WCAG violations.</p>
                 </div>
-            )}
+                )}
 
             {/* Actions */}
             <div class="flex items-center gap-2 pt-2 border-t border-border/50">

@@ -1,7 +1,6 @@
 /** @jsxImportSource preact */
-import type { ComponentChildren } from "preact";
-
 import moreHorizontalIcon from "lucide-static/icons/more-horizontal.svg?data-uri&encoding=css";
+import type { ComponentChildren } from "preact";
 
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
@@ -70,7 +69,7 @@ const ToolbarBar = ({ customAppsToShow = 3 }: ToolbarBarProps): ComponentChildre
         <div class="flex items-center pointer-events-auto" id="__v_dt__bar">
             <div class="flex flex-row items-center justify-start gap-1" id="__v_dt__bar_container">
                 {visibleApps.map((app) => (
-                    <AppButton key={app.id} app={app} />
+                    <AppButton app={app} key={app.id} />
                 ))}
                 {overflowApps.length > 0 && <MoreButton />}
                 <ViteOverlayButton />

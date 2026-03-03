@@ -1,23 +1,23 @@
 {
     "compilerOptions": {
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-        "strict": true,
-        "esModuleInterop": true,
+        "target": "ES2022",
         "jsx": "react-jsx",
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
+        "baseUrl": ".",
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "lib": ["DOM", "DOM.Iterable", "ES2022"],
-        "isolatedModules": true,
-        "resolveJsonModule": true,
-        "skipLibCheck": true,
-        "target": "ES2022",
-        "allowJs": true,
-        "forceConsistentCasingInFileNames": true,
-        "baseUrl": ".",
         "paths": {
             "~/*": ["./src/*"]
         },
-        "noEmit": true
+        "resolveJsonModule": true,
+        "allowJs": true,
+        "strict": true,
+        "noEmit": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "skipLibCheck": true
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

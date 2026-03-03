@@ -5,11 +5,11 @@
         "jsx": "react-jsx",
         "jsxImportSource": "preact",
         "moduleResolution": "bundler",
-        "types": ["node", "@visulima/packem/files", "vite/client"],
         "paths": {
             "@/*": ["./src/*"],
             "*": ["./*"]
-        }
+        },
+        "types": ["node", "@visulima/packem/files", "vite/client"]
     },
     "include": ["src/**/*", "*.d.ts"]
 }

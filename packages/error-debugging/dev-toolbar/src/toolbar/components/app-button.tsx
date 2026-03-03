@@ -18,8 +18,8 @@ interface AppButtonProps {
  * App button component — shown in the toolbar pill.
  * When an app declares a `tooltip` component, hovering the button shows a live
  * mini-canvas via AppTooltipOverlay (rendered outside overflow:hidden pill).
- * @param props - Component props
- * @param props.app - App state
+ * @param props Component props
+ * @param props.app App state
  * @returns Rendered button component
  */
 const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
@@ -55,7 +55,6 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
 
     return (
         <button
-            ref={buttonRef}
             aria-label={app.name}
             class={cn(
                 "relative flex justify-center items-center",
@@ -74,6 +73,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            ref={buttonRef}
             // Suppress native tooltip when the app provides its own rich tooltip
             title={app.tooltip ? undefined : app.name}
             type="button"

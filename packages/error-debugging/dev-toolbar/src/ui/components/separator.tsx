@@ -10,21 +10,9 @@ interface SeparatorProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 
 const Separator = ({ class: className, decorative = true, orientation = "horizontal", ...rest }: SeparatorProps): JSX.Element => {
-    const ariaProps = decorative
-        ? { role: "none" as const }
-        : { "aria-orientation": orientation, role: "separator" as const };
+    const ariaProps = decorative ? { role: "none" as const } : { "aria-orientation": orientation, role: "separator" as const };
 
-    return (
-        <div
-            class={cn(
-                "shrink-0 bg-border",
-                orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
-                className,
-            )}
-            {...ariaProps}
-            {...rest}
-        />
-    );
+    return <div class={cn("shrink-0 bg-border", orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]", className)} {...ariaProps} {...rest} />;
 };
 
 export default Separator;

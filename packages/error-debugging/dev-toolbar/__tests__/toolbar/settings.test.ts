@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { loadSettings, saveSettings, updateSettings } from "../../src/toolbar/settings";
-import { DEFAULT_TOOLBAR_SETTINGS } from "../../src/types/toolbar";
 import type { ToolbarSettings } from "../../src/types/toolbar";
+import { DEFAULT_TOOLBAR_SETTINGS } from "../../src/types/toolbar";
 
 const SETTINGS_KEY = "__v_dt__settings";
 
@@ -169,7 +169,7 @@ describe("settings (no browser / SSR environment)", () => {
     });
 
     it("saveSettings is a no-op and does not throw", () => {
-        expect(() => saveSettings(DEFAULT_TOOLBAR_SETTINGS)).not.toThrow();
+        expect(() => saveSettings(DEFAULT_TOOLBAR_SETTINGS)).not.toThrowError();
     });
 
     it("updateSettings returns defaults without persisting", () => {

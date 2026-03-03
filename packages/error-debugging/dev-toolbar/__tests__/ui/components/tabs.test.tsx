@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 /** @jsxImportSource preact */
 import "../../setup";
+
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -19,32 +20,39 @@ const BasicTabs = ({ defaultValue = "tab1", onValueChange }: { defaultValue?: st
     </Tabs>
 );
 
-describe("Tabs", () => {
-    it("TabsList has role=tablist", () => {
+describe("tabs", () => {
+    it("tabsList has role=tablist", () => {
         render(<BasicTabs />);
+
         expect(screen.getByRole("tablist")).toBeInTheDocument();
     });
 
-    it("TabsTrigger has role=tab", () => {
+    it("tabsTrigger has role=tab", () => {
         render(<BasicTabs />);
+
         expect(screen.getAllByRole("tab")).toHaveLength(2);
     });
 
-    it("TabsContent has role=tabpanel", () => {
+    it("tabsContent has role=tabpanel", () => {
         render(<BasicTabs />);
+
         expect(screen.getByRole("tabpanel")).toBeInTheDocument();
     });
 
     it("defaultValue activates the correct tab content", () => {
         render(<BasicTabs defaultValue="tab1" />);
+
         expect(screen.getByText("Content 1")).toBeInTheDocument();
         expect(screen.queryByText("Content 2")).not.toBeInTheDocument();
     });
 
     it("clicking a tab changes active content", () => {
         render(<BasicTabs />);
+
         expect(screen.getByText("Content 1")).toBeInTheDocument();
+
         fireEvent.click(screen.getByRole("tab", { name: "Tab 2" }));
+
         expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
         expect(screen.getByText("Content 2")).toBeInTheDocument();
     });
@@ -60,19 +68,23 @@ describe("Tabs", () => {
                 <TabsContent value="tab2">Content 2</TabsContent>
             </Tabs>,
         );
+
         expect(screen.queryByText("Content 1")).not.toBeInTheDocument();
         expect(screen.getByText("Content 2")).toBeInTheDocument();
     });
 
     it("clicking calls onValueChange", () => {
         const onValueChange = vi.fn();
+
         render(<BasicTabs onValueChange={onValueChange} />);
         fireEvent.click(screen.getByRole("tab", { name: "Tab 2" }));
+
         expect(onValueChange).toHaveBeenCalledWith("tab2");
     });
 
     it("controlled: clicking does not self-change when no internal state update", () => {
         const onValueChange = vi.fn();
+
         render(
             <Tabs onValueChange={onValueChange} value="tab1">
                 <TabsList>
@@ -84,6 +96,7 @@ describe("Tabs", () => {
             </Tabs>,
         );
         fireEvent.click(screen.getByRole("tab", { name: "Tab 2" }));
+
         expect(onValueChange).toHaveBeenCalledWith("tab2");
         // still shows tab1 content since controlled
         expect(screen.getByText("Content 1")).toBeInTheDocument();
@@ -91,27 +104,33 @@ describe("Tabs", () => {
 
     it("inactive content is not rendered (null, not hidden)", () => {
         render(<BasicTabs defaultValue="tab1" />);
+
         expect(screen.queryByText("Content 2")).not.toBeInTheDocument();
     });
 
     it("active content is visible", () => {
         render(<BasicTabs defaultValue="tab2" />);
+
         expect(screen.getByText("Content 2")).toBeVisible();
     });
 
     it("disabled trigger cannot be clicked", () => {
         const onValueChange = vi.fn();
+
         render(
             <Tabs defaultValue="tab1" onValueChange={onValueChange}>
                 <TabsList>
                     <TabsTrigger value="tab1">Tab 1</TabsTrigger>
-                    <TabsTrigger disabled value="tab2">Tab 2</TabsTrigger>
+                    <TabsTrigger disabled value="tab2">
+                        Tab 2
+                    </TabsTrigger>
                 </TabsList>
                 <TabsContent value="tab1">Content 1</TabsContent>
                 <TabsContent value="tab2">Content 2</TabsContent>
             </Tabs>,
         );
         fireEvent.click(screen.getByRole("tab", { name: "Tab 2" }));
+
         expect(onValueChange).not.toHaveBeenCalled();
         expect(screen.getByText("Content 1")).toBeInTheDocument();
     });
@@ -125,6 +144,7 @@ describe("Tabs", () => {
                 <TabsContent value="tab1">Content 1</TabsContent>
             </Tabs>,
         );
+
         expect(screen.getByRole("tablist")).toHaveClass("custom-list");
     });
 });

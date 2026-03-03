@@ -1,17 +1,19 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { TimelineStore, getTimelineStore } from "../../src/timeline/store";
-import { DEFAULT_TIMELINE_GROUPS } from "../../src/types/timeline";
+import { getTimelineStore, TimelineStore } from "../../src/timeline/store";
 import type { TimelineEvent } from "../../src/types/timeline";
+import { DEFAULT_TIMELINE_GROUPS } from "../../src/types/timeline";
 
-const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => ({
-    id: "evt-1",
-    time: Date.now(),
-    title: "Test Event",
-    ...overrides,
-});
+const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => {
+    return {
+        id: "evt-1",
+        time: Date.now(),
+        title: "Test Event",
+        ...overrides,
+    };
+};
 
-describe("TimelineStore", () => {
+describe("timelineStore", () => {
     let store: TimelineStore;
 
     beforeEach(() => {
@@ -195,7 +197,7 @@ describe("TimelineStore", () => {
         });
 
         it("does not throw for a non-existent group", () => {
-            expect(() => store.clearGroup("non-existent")).not.toThrow();
+            expect(() => store.clearGroup("non-existent")).not.toThrowError();
         });
     });
 

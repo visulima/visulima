@@ -9,19 +9,19 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = App();
 
 // ── Error trigger buttons ─────────────────────────────────────────────────────
 
-document.getElementById("btn-throw-error")?.addEventListener("click", () => {
+document.querySelector("#btn-throw-error")?.addEventListener("click", () => {
     // Throw inside setTimeout so it escapes the click handler's call stack and
     // reaches window.onerror, which @visulima/vite-overlay intercepts.
     setTimeout(() => {
         const cause = new TypeError("Cannot read properties of undefined (reading 'name')");
-        const err = new Error("Example client error thrown from the dev-toolbar demo page");
+        const error = new Error("Example client error thrown from the dev-toolbar demo page");
 
-        err.cause = cause;
-        throw err;
+        error.cause = cause;
+        throw error;
     }, 0);
 });
 
-document.getElementById("btn-unhandled-rejection")?.addEventListener("click", () => {
+document.querySelector("#btn-unhandled-rejection")?.addEventListener("click", () => {
     // Unhandled Promise rejection — intercepted by vite-overlay's
     // window.addEventListener("unhandledrejection", ...) handler.
     void Promise.reject(new Error("Example unhandled Promise rejection from the dev-toolbar demo page"));
@@ -29,23 +29,24 @@ document.getElementById("btn-unhandled-rejection")?.addEventListener("click", ()
 
 // ── Global DevTools API ───────────────────────────────────────────────────────
 
-if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
+if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     const exampleApp: DevToolbarApp = {
-        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2"/></svg>',
+        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"10\" cy=\"10\" r=\"8\" stroke=\"currentColor\" stroke-width=\"2\"/></svg>",
         id: "example-app",
         init(canvas, _, helpers) {
             const content = document.createElement("div");
             const pre = document.createElement("pre");
-            const btn = document.createElement("button");
+            const button = document.createElement("button");
 
             pre.id = "rpc-result";
             pre.style.cssText = "margin-top:8px;padding:8px;background:rgba(0,0,0,.3);border-radius:4px;overflow:auto;";
 
-            btn.id = "test-rpc";
-            btn.textContent = "Test RPC (Get Vite Config)";
-            btn.style.cssText = "padding:8px 16px;margin-top:8px;cursor:pointer;";
-            btn.addEventListener("click", async () => {
+            button.id = "test-rpc";
+            button.textContent = "Test RPC (Get Vite Config)";
+            button.style.cssText = "padding:8px 16px;margin-top:8px;cursor:pointer;";
+            button.addEventListener("click", async () => {
                 pre.textContent = "Loading...";
+
                 try {
                     const cfg = await helpers.rpc.getViteConfig();
 
@@ -60,20 +61,20 @@ if (typeof window !== "undefined" && window.__VISULIMA_DEVTOOLS__) {
             wrapper.style.cssText = "padding:16px;color:white;";
             wrapper.append(Object.assign(document.createElement("h2"), { textContent: "Example App" }));
             wrapper.append(Object.assign(document.createElement("p"), { textContent: "Custom app registered via the global API." }));
-            wrapper.append(btn, pre);
+            wrapper.append(button, pre);
             content.append(wrapper);
             canvas.append(content);
         },
         name: "Example",
     };
 
-    window.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
+    globalThis.__VISULIMA_DEVTOOLS__.registerApp(exampleApp);
 }
 
 // ── Hook system ───────────────────────────────────────────────────────────────
 
-if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
-    const hook = window.__DEV_TOOLBAR_HOOK__;
+if (globalThis.window !== undefined && globalThis.__DEV_TOOLBAR_HOOK__) {
+    const hook = globalThis.__DEV_TOOLBAR_HOOK__;
 
     hook.on("devtools:init", () => {
         console.log("Dev Tools initialized!");

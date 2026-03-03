@@ -22,64 +22,14 @@ export interface PinnedTooltip {
  */
 export interface ToolbarContextState {
     /**
-     * All registered apps
-     */
-    apps: DevToolbarAppState[];
-
-    /**
      * Currently active app ID
      */
     activeAppId: string | null;
 
     /**
-     * Whether toolbar is visible
+     * All registered apps
      */
-    isVisible: boolean;
-
-    /**
-     * Toolbar placement on screen
-     */
-    placement: ToolbarPlacement;
-
-    /**
-     * Whether toolbar is being dragged
-     */
-    isDragging: boolean;
-
-    /**
-     * Set toolbar visibility
-     */
-    setVisible: (visible: boolean) => void;
-
-    /**
-     * Set toolbar placement
-     */
-    setPlacement: (placement: ToolbarPlacement) => void;
-
-    /**
-     * Set dragging state
-     */
-    setDragging: (dragging: boolean) => void;
-
-    /**
-     * Register an app
-     */
-    registerApp: (app: DevToolbarAppState) => void;
-
-    /**
-     * Unregister an app
-     */
-    unregisterApp: (appId: string) => void;
-
-    /**
-     * Toggle an app
-     */
-    toggleApp: (appId: string) => Promise<void>;
-
-    /**
-     * Set app notification
-     */
-    setNotification: (appId: string, state: boolean, level?: "info" | "warning" | "error") => void;
+    apps: DevToolbarAppState[];
 
     /**
      * Clear app notification
@@ -97,9 +47,14 @@ export interface ToolbarContextState {
     hoveredAppRect: DOMRect | null;
 
     /**
-     * Set/clear the hovered app. Pass null to start the leave debounce.
+     * Whether toolbar is being dragged
      */
-    setHoveredApp: (app: DevToolbarAppState | null, rect?: DOMRect | null) => void;
+    isDragging: boolean;
+
+    /**
+     * Whether toolbar is visible
+     */
+    isVisible: boolean;
 
     /**
      * Currently pinned tooltip cards
@@ -113,9 +68,54 @@ export interface ToolbarContextState {
     pinTooltip: (app: DevToolbarAppState, x: number, y: number) => void;
 
     /**
+     * Toolbar placement on screen
+     */
+    placement: ToolbarPlacement;
+
+    /**
+     * Register an app
+     */
+    registerApp: (app: DevToolbarAppState) => void;
+
+    /**
+     * Set dragging state
+     */
+    setDragging: (dragging: boolean) => void;
+
+    /**
+     * Set/clear the hovered app. Pass null to start the leave debounce.
+     */
+    setHoveredApp: (app: DevToolbarAppState | null, rect?: DOMRect | null) => void;
+
+    /**
+     * Set app notification
+     */
+    setNotification: (appId: string, state: boolean, level?: "info" | "warning" | "error") => void;
+
+    /**
+     * Set toolbar placement
+     */
+    setPlacement: (placement: ToolbarPlacement) => void;
+
+    /**
+     * Set toolbar visibility
+     */
+    setVisible: (visible: boolean) => void;
+
+    /**
+     * Toggle an app
+     */
+    toggleApp: (appId: string) => Promise<void>;
+
+    /**
      * Remove a pinned tooltip by its instance id.
      */
     unpinTooltip: (id: string) => void;
+
+    /**
+     * Unregister an app
+     */
+    unregisterApp: (appId: string) => void;
 }
 
 /**

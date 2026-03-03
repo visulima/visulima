@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { createMessageChannel, handleMessage } from "../../src/messaging/create-channel";
 import type { MessageEnvelope, MessageHandlers } from "../../src/messaging/types";
@@ -13,14 +13,14 @@ const makeHandlers = (): MessageHandlers => new Map();
 
 describe("createMessageChannel", () => {
     let handlers: MessageHandlers;
-    let sendFn: ReturnType<typeof vi.fn>;
+    let sendFunction: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
         handlers = makeHandlers();
-        sendFn = vi.fn();
+        sendFunction = vi.fn();
     });
 
-    const makeChannel = () => createMessageChannel<TestEvents>(handlers, sendFn);
+    const makeChannel = () => createMessageChannel<TestEvents>(handlers, sendFunction);
 
     describe("on / send", () => {
         it("registers a handler that is stored in the handlers map", () => {
@@ -37,7 +37,7 @@ describe("createMessageChannel", () => {
 
             channel.send("user:login", "alice");
 
-            expect(sendFn).toHaveBeenCalledWith("user:login", "alice");
+            expect(sendFunction).toHaveBeenCalledWith("user:login", "alice");
         });
 
         it("send() passes multiple arguments to sendFn", () => {
@@ -45,7 +45,7 @@ describe("createMessageChannel", () => {
 
             channel.send("data:update", { value: 42 });
 
-            expect(sendFn).toHaveBeenCalledWith("data:update", { value: 42 });
+            expect(sendFunction).toHaveBeenCalledWith("data:update", { value: 42 });
         });
 
         it("on() returns an unsubscribe function", () => {
@@ -53,7 +53,7 @@ describe("createMessageChannel", () => {
             const handler = vi.fn();
             const off = channel.on("user:login", handler);
 
-            expect(typeof off).toBe("function");
+            expectTypeOf(off).toBeFunction();
         });
 
         it("unsubscribe function removes the handler", () => {
@@ -112,7 +112,7 @@ describe("createMessageChannel", () => {
         it("is a no-op when the event has no registered handlers", () => {
             const channel = makeChannel();
 
-            expect(() => channel.off("user:login")).not.toThrow();
+            expect(() => channel.off("user:login")).not.toThrowError();
         });
 
         it("does not remove the entry when the handler set is still non-empty", () => {
@@ -137,8 +137,8 @@ describe("createMessageChannel", () => {
             channel.once("user:login", handler);
 
             // Simulate receiving the message via handleMessage
-            handleMessage(handlers, { event: "user:login", data: "bob" });
-            handleMessage(handlers, { event: "user:login", data: "carol" });
+            handleMessage(handlers, { data: "bob", event: "user:login" });
+            handleMessage(handlers, { data: "carol", event: "user:login" });
 
             expect(handler).toHaveBeenCalledTimes(1);
             expect(handler).toHaveBeenCalledWith("bob", expect.objectContaining({ event: "user:login" }));
@@ -161,8 +161,8 @@ describe("createMessageChannel", () => {
 
             channel.once("user:login", onceHandler);
             channel.on("user:login", regularHandler);
-            handleMessage(handlers, { event: "user:login", data: "dave" });
-            handleMessage(handlers, { event: "user:login", data: "eve" });
+            handleMessage(handlers, { data: "dave", event: "user:login" });
+            handleMessage(handlers, { data: "eve", event: "user:login" });
 
             expect(onceHandler).toHaveBeenCalledTimes(1);
             expect(regularHandler).toHaveBeenCalledTimes(2);
@@ -183,7 +183,7 @@ describe("handleMessage", () => {
 
         handlers.set("ping", new Set([h1, h2]));
 
-        const envelope: MessageEnvelope = { event: "ping", data: "pong" };
+        const envelope: MessageEnvelope = { data: "pong", event: "ping" };
 
         handleMessage(handlers, envelope);
 
@@ -204,7 +204,7 @@ describe("handleMessage", () => {
     it("is a no-op when no handlers are registered for the event", () => {
         const envelope: MessageEnvelope = { event: "unknown" };
 
-        expect(() => handleMessage(handlers, envelope)).not.toThrow();
+        expect(() => handleMessage(handlers, envelope)).not.toThrowError();
     });
 
     it("is a no-op when handler set is empty", () => {
@@ -212,7 +212,7 @@ describe("handleMessage", () => {
 
         const envelope: MessageEnvelope = { event: "empty" };
 
-        expect(() => handleMessage(handlers, envelope)).not.toThrow();
+        expect(() => handleMessage(handlers, envelope)).not.toThrowError();
     });
 
     it("continues calling remaining handlers when one throws", () => {
@@ -221,10 +221,10 @@ describe("handleMessage", () => {
         });
         const safe = vi.fn();
 
-        handlers.set("error-event", new Set([throwing, safe]));
+        handlers.set("error-event", new Set([safe, throwing]));
         handleMessage(handlers, { event: "error-event" });
 
-        expect(safe).toHaveBeenCalledOnce();
+        expect(safe).toHaveBeenCalledTimes(1);
     });
 
     it("handles undefined data gracefully", () => {

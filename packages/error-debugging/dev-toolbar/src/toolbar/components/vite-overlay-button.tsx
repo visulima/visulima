@@ -1,8 +1,7 @@
 /** @jsxImportSource preact */
+import alertTriangleIcon from "lucide-static/icons/alert-triangle.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
-
-import alertTriangleIcon from "lucide-static/icons/alert-triangle.svg?data-uri&encoding=css";
 
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
@@ -34,9 +33,9 @@ const ViteOverlayButton = (): ComponentChildren => {
             const overlay = (globalThis as any).__v_o__current;
 
             if (overlay?.parentNode) {
-                const rootEl = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+                const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
 
-                setIsOverlayOpen(!!rootEl && !rootEl.classList.contains("hidden"));
+                setIsOverlayOpen(!!rootElement && !rootElement.classList.contains("hidden"));
             } else {
                 setIsOverlayOpen(false);
             }
@@ -61,10 +60,10 @@ const ViteOverlayButton = (): ComponentChildren => {
             return;
         }
 
-        const rootEl = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+        const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
 
-        if (rootEl?.classList.contains("hidden")) {
-            rootEl.classList.remove("hidden");
+        if (rootElement?.classList.contains("hidden")) {
+            rootElement.classList.remove("hidden");
             setIsOverlayOpen(true);
         } else if (typeof overlay.close === "function") {
             overlay.close();
@@ -72,7 +71,7 @@ const ViteOverlayButton = (): ComponentChildren => {
         }
     };
 
-    const label = `${errorCount} error${errorCount !== 1 ? "s" : ""} – click to ${isOverlayOpen ? "hide" : "show"} overlay`;
+    const label = `${errorCount} error${errorCount === 1 ? "" : "s"} – click to ${isOverlayOpen ? "hide" : "show"} overlay`;
 
     return (
         <>

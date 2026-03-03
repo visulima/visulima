@@ -47,10 +47,12 @@ const getSafeAreaInsets = (): { bottom: number; left: number; right: number; top
  * Hook for window size tracking
  */
 const useWindowSize = () => {
-    const [size, setSize] = useState(() => ({
-        height: globalThis.window?.innerHeight ?? 1080,
-        width: globalThis.window?.innerWidth ?? 1920,
-    }));
+    const [size, setSize] = useState(() => {
+        return {
+            height: globalThis.window?.innerHeight ?? 1080,
+            width: globalThis.window?.innerWidth ?? 1920,
+        };
+    });
 
     useEffect(() => {
         const updateSize = (): void => {
@@ -89,7 +91,7 @@ export interface UsePositionReturn {
  * Hook for position management - converted from Vue DevTools usePosition
  * @see https://github.com/vuejs/devtools/blob/main/packages/overlay/src/composables/position.ts
  */
-export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn => {
+export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn => {
     const { state, updateState } = useFrameState();
     const { height: windowHeight, width: windowWidth } = useWindowSize();
     const [isHovering, setIsHovering] = useState(false);
@@ -113,12 +115,14 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
     useEffect(() => {
         updateStateRef.current = updateState;
     }, [updateState]);
-    const [panelMargins, setPanelMargins] = useState(() => ({
-        bottom: 10,
-        left: 10,
-        right: 10,
-        top: 10,
-    }));
+    const [panelMargins, setPanelMargins] = useState(() => {
+        return {
+            bottom: 10,
+            left: 10,
+            right: 10,
+            top: 10,
+        };
+    });
 
     // Update panel margins with safe area
     useEffect(() => {
@@ -139,9 +143,9 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             const overlay = (globalThis as any).__v_o__current as { parentNode?: Node; shadowRoot?: ShadowRoot } | undefined;
 
             if (overlay?.parentNode) {
-                const rootEl = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+                const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
 
-                setIsViteOverlayOpen(!!rootEl && !rootEl.classList.contains("hidden"));
+                setIsViteOverlayOpen(!!rootElement && !rootElement.classList.contains("hidden"));
             } else {
                 setIsViteOverlayOpen(false);
             }
@@ -166,7 +170,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             setIsDragging(true);
             isDraggingRef.current = true;
 
-            const panel = panelEl.current;
+            const panel = panelElement.current;
 
             if (panel) {
                 const { height, left, top, width } = panel.getBoundingClientRect();
@@ -179,6 +183,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 // Capture pointer on the element that received the event (not necessarily the panel)
                 // This ensures we continue receiving events even when pointer leaves the window
                 const target = e.target as HTMLElement;
+
                 try {
                     if (target && target.setPointerCapture) {
                         target.setPointerCapture(e.pointerId);
@@ -188,9 +193,9 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                         panel.setPointerCapture(e.pointerId);
                         capturedPointerIdRef.current = e.pointerId;
                     }
-                } catch (err) {
+                } catch (error) {
                     // setPointerCapture may fail in some browsers, continue without it
-                    console.warn("Failed to capture pointer:", err);
+                    console.warn("Failed to capture pointer:", error);
                 }
 
                 // Add cursor style to document body for dragging
@@ -198,7 +203,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 document.body.style.userSelect = "none";
             }
         },
-        [panelEl],
+        [panelElement],
     );
 
     /**
@@ -247,13 +252,15 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             // Release pointer capture - try to release on any element that might have captured it
             if (capturedPointerIdRef.current !== null) {
                 try {
-                    const panel = panelEl.current;
+                    const panel = panelElement.current;
+
                     if (panel && capturedPointerIdRef.current !== null) {
                         panel.releasePointerCapture(capturedPointerIdRef.current);
                     }
                 } catch {
                     // Ignore errors when releasing capture
                 }
+
                 capturedPointerIdRef.current = null;
             }
         };
@@ -273,13 +280,15 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             // Release pointer capture
             if (capturedPointerIdRef.current !== null) {
                 try {
-                    const panel = panelEl.current;
+                    const panel = panelElement.current;
+
                     if (panel && capturedPointerIdRef.current !== null) {
                         panel.releasePointerCapture(capturedPointerIdRef.current);
                     }
                 } catch {
                     // Ignore errors when releasing capture
                 }
+
                 capturedPointerIdRef.current = null;
             }
         };
@@ -341,8 +350,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
             // Determine position based on angle ranges - matches Vue DevTools exactly
             // Using mouse position for angle detection (more responsive than panel center)
             // Vue DevTools ternary chain: (deg >= TL && deg <= TR) ? 'top' : (deg >= TR && deg <= BR) ? 'right' : (deg >= BR && deg <= BL) ? 'bottom' : 'left'
-            const newPosition: "top" | "bottom" | "left" | "right" =
-                deg >= TL && deg <= TR ? "top" : deg >= TR && deg <= BR ? "right" : deg >= BR && deg <= BL ? "bottom" : "left";
+            const newPosition: "top" | "bottom" | "left" | "right"
+                = deg >= TL && deg <= TR ? "top" : deg >= TR && deg <= BR ? "right" : deg >= BR && deg <= BL ? "bottom" : "left";
 
             // Clamp position percentages to valid range
             const clampedLeft = Math.max(0, Math.min(100, (x / currentWidth) * 100));
@@ -404,7 +413,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
 
     // Computed: anchorPos
     const anchorPos = useMemo(() => {
-        const panel = panelEl.current;
+        const panel = panelElement.current;
         const panelHalfWidth = (panel?.clientWidth ?? 0) / 2;
         const panelHalfHeight = (panel?.clientHeight ?? 0) / 2;
 
@@ -417,10 +426,10 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         const top = (state.top * windowHeight) / 100;
 
         switch (state.position) {
-            case "top": {
+            case "left": {
                 return {
-                    left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
-                    top: panelMargins.top + halfHeight - (isHidden ? 30 : 0),
+                    left: panelMargins.left + halfWidth - (isHidden ? 30 : 0),
+                    top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
                 };
             }
 
@@ -431,10 +440,10 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 };
             }
 
-            case "left": {
+            case "top": {
                 return {
-                    left: panelMargins.left + halfWidth - (isHidden ? 30 : 0),
-                    top: clamp(top, halfHeight + panelMargins.top, windowHeight - halfHeight - panelMargins.bottom),
+                    left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
+                    top: panelMargins.top + halfHeight - (isHidden ? 30 : 0),
                 };
             }
 
@@ -446,17 +455,19 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 };
             }
         }
-    }, [state.left, state.open, state.position, state.top, windowHeight, windowWidth, panelMargins, panelEl, isHidden, isVertical]);
+    }, [state.left, state.open, state.position, state.top, windowHeight, windowWidth, panelMargins, panelElement, isHidden, isVertical]);
 
     // Computed: anchorStyle with smooth transitions
     const anchorStyle = useMemo(
-        () => ({
-            left: `${anchorPos.left}px`,
-            top: `${anchorPos.top}px`,
-            // Add smooth transition for the slide in/out effect
-            // Disable during dragging for immediate response
-            transition: isDragging ? "none" : "left 0.3s ease, top 0.3s ease",
-        }),
+        () => {
+            return {
+                left: `${anchorPos.left}px`,
+                top: `${anchorPos.top}px`,
+                // Add smooth transition for the slide in/out effect
+                // Disable during dragging for immediate response
+                transition: isDragging ? "none" : "left 0.3s ease, top 0.3s ease",
+            };
+        },
         [anchorPos, isDragging],
     );
 
@@ -466,7 +477,7 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         mousePositionRef.current.x;
         mousePositionRef.current.y;
 
-        const panel = panelEl.current;
+        const panel = panelElement.current;
         const panelHalfWidth = (panel?.clientWidth ?? 0) / 2;
         const panelHalfHeight = (panel?.clientHeight ?? 0) / 2;
 
@@ -502,8 +513,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         const anchorY = anchor?.top ?? 0;
 
         switch (state.position) {
-            case "top":
-            case "bottom": {
+            case "bottom":
+            case "top": {
                 style.left = "0";
                 style.transform = "translate(-50%, 0)";
 
@@ -516,8 +527,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 break;
             }
 
-            case "right":
-            case "left": {
+            case "left":
+            case "right": {
                 style.top = "0";
                 style.transform = "translate(0, -50%)";
 
@@ -532,8 +543,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         }
 
         switch (state.position) {
-            case "top": {
-                style.top = "0";
+            case "left": {
+                style.left = "0";
 
                 break;
             }
@@ -544,8 +555,8 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
                 break;
             }
 
-            case "left": {
-                style.left = "0";
+            case "top": {
+                style.top = "0";
 
                 break;
             }
@@ -559,18 +570,13 @@ export const usePosition = (panelEl: RefObject<HTMLElement>): UsePositionReturn 
         }
 
         return style;
-    }, [anchorPos, isDragging, panelMargins, state.height, state.position, state.width, windowHeight, windowWidth, panelEl, isVertical]);
+    }, [anchorPos, isDragging, panelMargins, state.height, state.position, state.width, windowHeight, windowWidth, panelElement, isVertical]);
 
     // Computed: panelStyle - Vue DevTools pattern
     const panelStyle = useMemo(() => {
-        const style: Record<string, string> = {};
+        const style: Record<string, string> = { transform: isVertical ? "translate(-50%, -50%) rotate(90deg)" : "translate(-50%, -50%)" };
 
         // Vue DevTools: Rotate 90deg for vertical positions
-        if (isVertical) {
-            style.transform = "translate(-50%, -50%) rotate(90deg)";
-        } else {
-            style.transform = "translate(-50%, -50%)";
-        }
 
         // Disable transitions only during dragging for immediate response
         if (isDragging) {

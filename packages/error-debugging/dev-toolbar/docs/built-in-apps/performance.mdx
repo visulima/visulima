@@ -31,13 +31,13 @@ Hover the Performance button in the toolbar to see the current status without op
 
 Displays the Core Web Vitals collected from `PerformanceObserver` entries since the page loaded:
 
-| Metric | Good | Needs Improvement | Poor |
-|---|---|---|---|
-| **LCP** — Largest Contentful Paint | ≤ 2.5 s | 2.5–4.0 s | > 4.0 s |
-| **INP** — Interaction to Next Paint | ≤ 200 ms | 200–500 ms | > 500 ms |
-| **CLS** — Cumulative Layout Shift | ≤ 0.1 | 0.1–0.25 | > 0.25 |
-| **FCP** — First Contentful Paint | ≤ 1.8 s | 1.8–3.0 s | > 3.0 s |
-| **TTFB** — Time to First Byte | ≤ 800 ms | 800–1800 ms | > 1800 ms |
+| Metric                              | Good     | Needs Improvement | Poor      |
+| ----------------------------------- | -------- | ----------------- | --------- |
+| **LCP** — Largest Contentful Paint  | ≤ 2.5 s  | 2.5–4.0 s         | > 4.0 s   |
+| **INP** — Interaction to Next Paint | ≤ 200 ms | 200–500 ms        | > 500 ms  |
+| **CLS** — Cumulative Layout Shift   | ≤ 0.1    | 0.1–0.25          | > 0.25    |
+| **FCP** — First Contentful Paint    | ≤ 1.8 s  | 1.8–3.0 s         | > 3.0 s   |
+| **TTFB** — Time to First Byte       | ≤ 800 ms | 800–1800 ms       | > 1800 ms |
 
 Each metric shows the current value, a colour-coded badge, and the threshold boundaries for context.
 
@@ -56,15 +56,15 @@ Sort by duration to find the slowest assets.
 
 A waterfall breakdown of the page's navigation lifecycle:
 
-| Phase | Description |
-|---|---|
-| DNS Lookup | `domainLookupEnd - domainLookupStart` |
-| TCP Connection | `connectEnd - connectStart` |
-| SSL/TLS | `connectEnd - secureConnectionStart` |
-| Request | `responseStart - requestStart` |
-| Response | `responseEnd - responseStart` |
+| Phase          | Description                              |
+| -------------- | ---------------------------------------- |
+| DNS Lookup     | `domainLookupEnd - domainLookupStart`    |
+| TCP Connection | `connectEnd - connectStart`              |
+| SSL/TLS        | `connectEnd - secureConnectionStart`     |
+| Request        | `responseStart - requestStart`           |
+| Response       | `responseEnd - responseStart`            |
 | DOM Processing | `domContentLoadedEventEnd - responseEnd` |
-| Load Event | `loadEventEnd - loadEventStart` |
+| Load Event     | `loadEventEnd - loadEventStart`          |
 
 ## Configuration
 
@@ -75,7 +75,7 @@ devToolbar({
     apps: {
         performance: false,
     },
-})
+});
 ```
 
 ## Notes

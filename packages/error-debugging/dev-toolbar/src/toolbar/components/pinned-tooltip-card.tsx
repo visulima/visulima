@@ -1,8 +1,7 @@
 /** @jsxImportSource preact */
+import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef } from "preact/hooks";
-
-import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
@@ -97,7 +96,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
 
             // Apply a short CSS transition only when the snap pulls the card away
             // from the raw mouse position — normal drag stays instant (no transition).
-            cardRef.current.style.transition = (finalX !== rawX || finalY !== rawY) ? SNAP_TRANSITION : "";
+            cardRef.current.style.transition = finalX !== rawX || finalY !== rawY ? SNAP_TRANSITION : "";
 
             // Move via transform — compositor-only, zero layout, zero size change
             cardRef.current.style.transform = `translate(${finalX}px, ${finalY}px)`;
@@ -165,30 +164,24 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
 
     return (
         <div
-            ref={cardRef}
             aria-label={`${pinned.app.name} pinned tooltip`}
             class={cn(
                 "fixed z-[2147483647] pointer-events-auto antialiased toolbar-font",
                 "w-auto max-w-[300px]",
                 "bg-background border border-primary/40 shadow-2xl",
             )}
+            ref={cardRef}
             style={{ left: 0, top: 0, transform: `translate(${posRef.current.x}px, ${posRef.current.y}px)` }}
         >
             {/* Drag handle header */}
             <div
-                ref={headerRef}
-                class={cn(
-                    "flex items-center justify-between gap-2 px-3 py-2",
-                    "border-b border-primary/20 bg-primary/4",
-                    "select-none cursor-grab",
-                )}
+                class={cn("flex items-center justify-between gap-2 px-3 py-2", "border-b border-primary/20 bg-primary/4", "select-none cursor-grab")}
                 onMouseDown={handleDragStart}
+                ref={headerRef}
             >
                 <div class="flex items-center gap-2 min-w-0">
                     <span aria-hidden="true" class="size-1.5 rounded-full bg-primary shrink-0" />
-                    <span class="text-[0.6rem] font-bold uppercase tracking-[0.1em] text-primary/70 truncate">
-                        {pinned.app.name}
-                    </span>
+                    <span class="text-[0.6rem] font-bold uppercase tracking-[0.1em] text-primary/70 truncate">{pinned.app.name}</span>
                 </div>
 
                 <button
@@ -199,8 +192,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
                         "text-muted-foreground/50 hover:text-destructive",
                         "transition-colors duration-150",
                     )}
-                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => onUnpin(pinned.id)}
+                    onMouseDown={(e) => e.stopPropagation()}
                     title="Unpin"
                     type="button"
                 >

@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, max-classes-per-file, import/prefer-default-export */
+/* eslint-disable import/exports-last, max-classes-per-file */
 /** @jsxImportSource preact */
 import { render } from "preact";
 
@@ -167,9 +167,9 @@ export class DevToolbar extends HTMLElement {
 
         if (root) {
             if (visible) {
-                root.removeAttribute("data-hidden");
+                delete root.dataset.hidden;
             } else {
-                root.setAttribute("data-hidden", "");
+                root.dataset.hidden = "";
             }
         }
 
@@ -266,13 +266,13 @@ export class DevToolbar extends HTMLElement {
           }
         }
       `;
-            shadowRoot.appendChild(styleElement);
+            shadowRoot.append(styleElement);
         }
 
         // Create render root if it doesn't exist
         if (!this.renderRoot) {
             this.renderRoot = document.createElement("div");
-            shadowRoot.appendChild(this.renderRoot);
+            shadowRoot.append(this.renderRoot);
         }
 
         const activeApp = this.appManager.getActiveApp();
@@ -337,7 +337,6 @@ export class DevToolbar extends HTMLElement {
 }
 
 // Export shared stylesheet for use in components
-export { sharedToolbarStylesheet };
 
 // Register custom elements
 if (globalThis.window !== undefined) {
@@ -356,3 +355,5 @@ if (globalThis.window !== undefined) {
         customElements.define("dev-toolbar-app-canvas", DevToolbarAppCanvas);
     }
 }
+
+export { sharedToolbarStylesheet } from "./stylesheet";

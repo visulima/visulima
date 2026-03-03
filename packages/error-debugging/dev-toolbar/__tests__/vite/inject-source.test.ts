@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { addSourceToJsx } from "../../src/vite/inject-source";
 
-const removeEmptySpace = (str: string): string => str.replace(/\s/g, "").trim();
+const removeEmptySpace = (string_: string): string => string_.replaceAll(/\s/g, "").trim();
 
 describe("inject source", () => {
     it("shouldn't augment react fragments", () => {
@@ -16,7 +16,7 @@ describe("inject source", () => {
             "test.jsx",
         );
 
-        expect(output).toBe(undefined);
+        expect(output).toBeUndefined();
     });
 
     it("shouldn't augment react fragments if they start with Fragment", () => {
@@ -29,7 +29,7 @@ describe("inject source", () => {
             "test.jsx",
         );
 
-        expect(output).toBe(undefined);
+        expect(output).toBeUndefined();
     });
 
     it("shouldn't augment react fragments if they start with React.Fragment", () => {
@@ -42,10 +42,10 @@ describe("inject source", () => {
             "test.jsx",
         );
 
-        expect(output).toBe(undefined);
+        expect(output).toBeUndefined();
     });
 
-    describe("FunctionExpression", () => {
+    describe("functionExpression", () => {
         it("should work with deeply nested custom JSX syntax", () => {
             const output = removeEmptySpace(
                 addSourceToJsx(
@@ -77,7 +77,7 @@ describe("inject source", () => {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("should work with props destructured and spread", () => {
@@ -90,7 +90,7 @@ describe("inject source", () => {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("should work with props spread and other normal elements", () => {
@@ -115,7 +115,7 @@ describe("inject source", () => {
         });
     });
 
-    describe("ArrowFunctionExpression", () => {
+    describe("arrowFunctionExpression", () => {
         it("should work with deeply nested custom JSX syntax", () => {
             const output = removeEmptySpace(
                 addSourceToJsx(
@@ -147,7 +147,7 @@ describe("inject source", () => {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("should work with props spread and other normal elements", () => {
@@ -231,7 +231,7 @@ function test(props) {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("doesn't transform when props are spread but applies to other elements without spread", () => {
@@ -290,7 +290,7 @@ function test(props) {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
     });
 
@@ -326,7 +326,7 @@ function test(props) {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("works with props destructured and collected even on custom components", () => {
@@ -360,7 +360,7 @@ function test(props) {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
     });
 
@@ -375,7 +375,7 @@ function test(props) {
                 "test.jsx",
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("shouldn't augment <head> elements but still annotates children", () => {
@@ -426,7 +426,7 @@ function test(props) {
                 { components: ["Button"] },
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
 
         it("should skip injection for ignored file paths (glob)", () => {
@@ -440,11 +440,11 @@ function test(props) {
                 { files: ["**/ignored-file.jsx"] },
             );
 
-            expect(output).toBe(undefined);
+            expect(output).toBeUndefined();
         });
     });
 
-    describe("SSR position map (originalCode)", () => {
+    describe("sSR position map (originalCode)", () => {
         it("uses original file line numbers when the received code has prepended imports", () => {
             // Simulates what TanStack Start / Vinxi does: prepend server imports
             // to the file, shifting JSX line numbers in the received code.

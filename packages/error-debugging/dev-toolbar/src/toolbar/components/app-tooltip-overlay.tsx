@@ -1,8 +1,7 @@
 /** @jsxImportSource preact */
+import pinIcon from "lucide-static/icons/pin.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-
-import pinIcon from "lucide-static/icons/pin.svg?data-uri&encoding=css";
 
 import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
@@ -20,41 +19,42 @@ interface AppTooltipOverlayProps {
  * `overflow:hidden`. The position is derived from the button's DOMRect
  * (viewport-relative) so no ancestor coordinate transforms are needed.
  */
-const getTooltipStyle = (
-    rect: DOMRect,
-    position: AppTooltipOverlayProps["position"],
-): Record<string, string> => {
+const getTooltipStyle = (rect: DOMRect, position: AppTooltipOverlayProps["position"]): Record<string, string> => {
     const GAP = 10;
 
     switch (position) {
-        case "top":
-            return {
-                left: `${rect.left + rect.width / 2}px`,
-                top: `${rect.bottom + GAP}px`,
-                transform: "translateX(-50%)",
-            };
-
-        case "left":
+        case "left": {
             return {
                 left: `${rect.right + GAP}px`,
                 top: `${rect.top + rect.height / 2}px`,
                 transform: "translateY(-50%)",
             };
+        }
 
-        case "right":
+        case "right": {
             return {
                 right: `${globalThis.window ? globalThis.window.innerWidth - rect.left + GAP : 0}px`,
                 top: `${rect.top + rect.height / 2}px`,
                 transform: "translateY(-50%)",
             };
+        }
+
+        case "top": {
+            return {
+                left: `${rect.left + rect.width / 2}px`,
+                top: `${rect.bottom + GAP}px`,
+                transform: "translateX(-50%)",
+            };
+        }
 
         // "bottom" is the default — tooltip appears above the pill
-        default:
+        default: {
             return {
                 bottom: `${globalThis.window ? globalThis.window.innerHeight - rect.top + GAP : 0}px`,
                 left: `${rect.left + rect.width / 2}px`,
                 transform: "translateX(-50%)",
             };
+        }
     }
 };
 
@@ -79,13 +79,13 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
     useEffect(() => {
         if (isActive) {
             setIsRendered(true);
-            const t = setTimeout(() => setIsVisible(true), 16);
+            const t = setTimeout(setIsVisible, 16, true);
 
             return () => clearTimeout(t);
         }
 
         setIsVisible(false);
-        const t = setTimeout(() => setIsRendered(false), 200);
+        const t = setTimeout(setIsRendered, 200, false);
 
         return () => clearTimeout(t);
     }, [isActive]);
@@ -111,7 +111,6 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
 
     return (
         <div
-            ref={overlayRef}
             aria-label={`${hoveredApp.name} quick preview`}
             class={cn(
                 "fixed z-[2147483647] pointer-events-auto",
@@ -119,25 +118,26 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                 "w-auto max-w-[300px]",
                 "bg-background border border-border shadow-2xl",
                 "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
-                isVisible ? "opacity-100 translate-y-0 scale-100" : cn(
-                    "opacity-0 scale-[0.97]",
-                    position === "bottom" && "translate-y-1",
-                    position === "top" && "-translate-y-1",
-                    isVertical && "translate-x-[-2px]",
-                ),
+                isVisible
+                    ? "opacity-100 translate-y-0 scale-100"
+                    : cn(
+                        "opacity-0 scale-[0.97]",
+                        position === "bottom" && "translate-y-1",
+                        position === "top" && "-translate-y-1",
+                        isVertical && "translate-x-[-2px]",
+                    ),
             )}
             onMouseEnter={() => setHoveredApp(hoveredApp, hoveredAppRect)}
             onMouseLeave={() => setHoveredApp(null)}
+            ref={overlayRef}
             role="tooltip"
             style={tooltipStyle}
         >
             {/* Header strip — app name + pin button */}
             <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/60 bg-foreground/3">
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class="size-1.5 rounded-full bg-primary shrink-0" aria-hidden="true" />
-                    <span class="text-[0.6rem] font-bold uppercase tracking-[0.1em] text-muted-foreground truncate">
-                        {hoveredApp.name}
-                    </span>
+                    <span aria-hidden="true" class="size-1.5 rounded-full bg-primary shrink-0" />
+                    <span class="text-[0.6rem] font-bold uppercase tracking-[0.1em] text-muted-foreground truncate">{hoveredApp.name}</span>
                 </div>
 
                 {/* Pin button — keeps this tooltip open after hover ends */}

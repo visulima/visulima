@@ -25,6 +25,7 @@ const loadTheme = (): Theme => {
 
     try {
         const stored = localStorage.getItem(THEME_STORAGE_KEY);
+
         if (stored === "light" || stored === "dark" || stored === "system") {
             return stored;
         }
@@ -85,14 +86,10 @@ const syncViteOverlayTheme = (resolved: "light" | "dark"): void => {
     }
 
     const overlay = (globalThis as any).__v_o__current as { shadowRoot?: ShadowRoot } | undefined;
-    const rootEl = overlay?.shadowRoot?.querySelector("#__v_o__root");
+    const rootElement = overlay?.shadowRoot?.querySelector("#__v_o__root");
 
-    if (rootEl) {
-        if (resolved === "dark") {
-            rootEl.classList.add("dark");
-        } else {
-            rootEl.classList.remove("dark");
-        }
+    if (rootElement) {
+        rootElement.classList.toggle("dark", resolved === "dark");
     }
 };
 
