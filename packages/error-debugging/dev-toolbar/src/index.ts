@@ -1,5 +1,10 @@
 export { createDevToolbarHook, getGlobalHook, setupGlobalHook } from "./hooks/index";
-export { createClientRPCContext, createServerRPCContext } from "./rpc/index";
+// Client-safe RPC context (uses import.meta.hot — no Node.js I/O)
+export { createClientRPCContext } from "./rpc/client";
+// Server RPC context is Node.js-only; exported for consumers who build custom
+// Vite plugins. Importing it from the main entry is fine because the bundler
+// runs that entry only in a Node.js (Vite plugin) context.
+export { createServerRPCContext } from "./rpc/server";
 export { getTimelineStore, TimelineStore } from "./timeline/index";
 export { DevToolbar } from "./toolbar/index.js";
 export { loadSettings, saveSettings, updateSettings } from "./toolbar/settings";
