@@ -130,6 +130,10 @@ const transformJSX = (
     }
 
     element.node.attributes.push(t.jsxAttribute(t.jsxIdentifier(SOURCE_ATTR), t.stringLiteral(`${file}:${line}:${column + 1}`)));
+    // Suppress React hydration warnings for this element. SSR builds skip source injection
+    // (transformOptions.ssr check) while client builds inject the attribute; React would
+    // otherwise warn about the mismatch on every SSR-rendered element.
+    element.node.attributes.push(t.jsxAttribute(t.jsxIdentifier("suppressHydrationWarning")));
 
     return true;
 };

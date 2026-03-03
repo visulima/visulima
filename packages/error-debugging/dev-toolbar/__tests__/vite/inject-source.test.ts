@@ -61,7 +61,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: function() { return <div data-vdt-source="test.jsx:3:38">Hello World</div>; }
+      component: function() { return <div data-vdt-source="test.jsx:3:38" suppressHydrationWarning>Hello World</div>; }
       });
         `),
             );
@@ -108,7 +108,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: function({...rest}) { return <div data-vdt-source="test.jsx:3:47"><div {...rest}>Hello World</div></div>; }
+      component: function({...rest}) { return <div data-vdt-source="test.jsx:3:47" suppressHydrationWarning><div {...rest}>Hello World</div></div>; }
       });
         `),
             );
@@ -131,7 +131,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: () => <div data-vdt-source="test.jsx:3:24">Hello World</div>
+      component: () => <div data-vdt-source="test.jsx:3:24" suppressHydrationWarning>Hello World</div>
       });
         `),
             );
@@ -165,7 +165,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: ({...rest}) => <div data-vdt-source="test.jsx:3:33"><div {...rest}>Hello World</div></div>
+      component: ({...rest}) => <div data-vdt-source="test.jsx:3:33" suppressHydrationWarning><div {...rest}>Hello World</div></div>
       });
         `),
             );
@@ -192,7 +192,7 @@ describe("inject source", () => {
                 removeEmptySpace(`
           function Parent({ ...props }) {
             function Child({ ...props }) {
-              return <div data-vdt-source="test.jsx:4:18" />;
+              return <div data-vdt-source="test.jsx:4:18" suppressHydrationWarning />;
             }
             return <Child {...props} />;
           }
@@ -215,7 +215,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
 function test(props) {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
       }
 `),
             );
@@ -251,7 +251,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
 function test(props) {
-        return  <div data-vdt-source="test.jsx:3:17">
+        return  <div data-vdt-source="test.jsx:3:17" suppressHydrationWarning>
         <button {...props}  />
         </div>;
       }
@@ -274,7 +274,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
     function test({ ...props }) {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
       }
 `),
             );
@@ -310,7 +310,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
   const ButtonWithProps = (props) => {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
       };
 `),
             );
@@ -344,7 +344,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
       const ButtonWithProps = ({ ...props }) => {
-        return <CustomButton  children={props.children} data-vdt-source="test.jsx:3:16" />;
+        return <CustomButton  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
       };
 `),
             );
@@ -393,6 +393,7 @@ function test(props) {
             expect(code).not.toContain("head data-vdt-source");
             expect(code).not.toContain("body data-vdt-source");
             expect(code).toContain(`title data-vdt-source`);
+            expect(code).toContain("suppressHydrationWarning");
         });
 
         it("shouldn't augment <body> elements", () => {
