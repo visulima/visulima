@@ -126,6 +126,7 @@
         "axe-core": "^4.11.1",
         "clsx": "^2.1.1",
         "launch-editor": "^2.13.1",
+        "lucide-static": "^0.576.0",
         "preact": "^10.28.4",
         "tailwind-merge": "^3.5.0"
     },
@@ -156,7 +157,6 @@
         "esbuild": "^0.27.3",
         "eslint": "10.0.2",
         "jsdom": "^28.1.0",
-        "lucide-static": "^0.576.0",
         "prettier": "^3.8.1",
         "publint": "^0.3.18",
         "rimraf": "^6.1.3",
