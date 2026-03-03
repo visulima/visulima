@@ -364,6 +364,56 @@ function test(props) {
         });
     });
 
+    describe("SSR root layout elements", () => {
+        it("shouldn't augment <html> elements (SSR hydration mismatch prevention)", () => {
+            const output = addSourceToJsx(
+                `
+    function RootLayout() {
+        return <html lang="en"><body>hello</body></html>
+    }
+        `,
+                "test.jsx",
+            );
+
+            expect(output).toBe(undefined);
+        });
+
+        it("shouldn't augment <head> elements but still annotates children", () => {
+            const code = addSourceToJsx(
+                `
+    function RootLayout() {
+        return <html><head><title>Test</title></head><body>hello</body></html>
+    }
+        `,
+                "test.jsx",
+            )?.code;
+
+            // html/head/body are skipped; <title> inside head can still be annotated
+            expect(code).not.toContain("html data-vdt-source");
+            expect(code).not.toContain("head data-vdt-source");
+            expect(code).not.toContain("body data-vdt-source");
+            expect(code).toContain(`title data-vdt-source`);
+        });
+
+        it("shouldn't augment <body> elements", () => {
+            const output = addSourceToJsx(
+                `
+    function RootLayout() {
+        return <html><body><div>hello</div></body></html>
+    }
+        `,
+                "test.jsx",
+            );
+
+            // Only the inner <div> should be transformed; html/head/body skipped
+            const code = output?.code ?? "";
+
+            expect(code).not.toContain("html data-vdt-source");
+            expect(code).not.toContain("body data-vdt-source");
+            expect(code).toContain(`div data-vdt-source`);
+        });
+    });
+
     describe("ignore patterns", () => {
         it("should skip injection for ignored component names (string)", () => {
             const output = addSourceToJsx(

@@ -349,8 +349,16 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         name: "@visulima/dev-toolbar:inject-source",
 
-        async transform(code, id) {
+        async transform(code, id, transformOptions) {
             if (!injectSourceEnabled || config.mode !== "development") {
+                return undefined;
+            }
+
+            // Skip SSR transforms — data-vdt-source is a client-only diagnostic attribute.
+            // SSR compilation pipelines (e.g. TanStack Start / Vinxi) may prepend server-
+            // specific imports that shift JSX line numbers, causing React hydration mismatches
+            // when the server-injected value differs from the client-injected value.
+            if (transformOptions?.ssr) {
                 return undefined;
             }
 
