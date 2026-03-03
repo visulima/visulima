@@ -100,6 +100,20 @@ export interface DevToolbarApp {
     defaultOpen?: boolean;
 
     /**
+     * Action button callback — called when the button is activated (active: false → true).
+     * When present, clicking the toolbar button will NOT open a panel.
+     * Instead the button toggles its active state and calls onClick (activate)
+     * or onDeactivate (deactivate).
+     */
+    onClick?: () => Promise<void> | void;
+
+    /**
+     * Called when the action button is deactivated (active: true → false).
+     * Only meaningful when onClick is also provided.
+     */
+    onDeactivate?: () => Promise<void> | void;
+
+    /**
      * Preact component for rendering (alternative to init)
      * If provided, this will be used instead of init
      */

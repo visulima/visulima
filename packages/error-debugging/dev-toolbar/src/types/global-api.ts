@@ -61,6 +61,14 @@ export interface VisulimaDevTools {
     openApp: (appId: string) => Promise<void>;
 
     /**
+     * Directly set the active state of an action button without invoking callbacks.
+     * Useful for deactivating a button from async work running outside the toolbar.
+     * @param appId App ID
+     * @param active New active state
+     */
+    setAppActive: (appId: string, active: boolean) => void;
+
+    /**
      * Register a custom app
      * @param app App definition
      */
