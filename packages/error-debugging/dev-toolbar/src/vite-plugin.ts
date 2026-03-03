@@ -7,6 +7,7 @@ import { normalizePath } from "vite";
 
 import { createServerRPCContext } from "./rpc/server";
 import type { DevToolbarApp, ServerFunctions } from "./types/index";
+import type { InjectSourceIgnore } from "./vite/inject-source";
 
 /**
  * Get the path to the dev-toolbar dist directory
@@ -137,6 +138,22 @@ export interface DevToolbarOptions {
     requireUrlFlag?: boolean;
 
     /**
+     * Inject `data-vdt-source="<file>:<line>:<col>"` attributes into every JSX
+     * opening element during development. This lets the inspector jump directly
+     * to the source file when an element is clicked.
+     *
+     * Only active when `mode === 'development'`. Set `enabled: false` to opt out.
+     * Use `ignore.files` / `ignore.components` to exclude specific paths or
+     * component names (strings are treated as glob patterns).
+     *
+     * @default { enabled: true }
+     */
+    injectSource?: {
+        enabled?: boolean;
+        ignore?: InjectSourceIgnore;
+    };
+
+    /**
      * Strip all @visulima/dev-toolbar imports and virtual modules when building
      * for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
      * This guarantees the toolbar never ends up in a production bundle even if the
@@ -170,6 +187,7 @@ export interface DevToolbarOptions {
 export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     const devToolbarPath = getDevToolbarPath();
     const removeOnBuild = options.removeDevtoolsOnBuild ?? true;
+    const injectSourceEnabled = options.injectSource?.enabled ?? true;
     let config: ResolvedConfig;
 
     const mainPlugin: Plugin = {
@@ -326,5 +344,34 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
         },
     };
 
-    return [mainPlugin, removeOnBuildPlugin];
+    const injectSourcePlugin: Plugin = {
+        enforce: "pre",
+
+        name: "@visulima/dev-toolbar:inject-source",
+
+        async transform(code, id) {
+            if (!injectSourceEnabled || config.mode !== "development") {
+                return undefined;
+            }
+
+            if (id.includes("node_modules") || id.includes("?raw") || /\/dist\/|\/build\//.test(id)) {
+                return undefined;
+            }
+
+            if (!/\.[jt]sx$/.test(id.split("?")[0] ?? "")) {
+                return undefined;
+            }
+
+            const { addSourceToJsx } = await import("./vite/inject-source.js");
+            const result = addSourceToJsx(code, id, options.injectSource?.ignore);
+
+            if (!result) {
+                return undefined;
+            }
+
+            return { code: result.code ?? code, map: result.map ?? null };
+        },
+    };
+
+    return [mainPlugin, injectSourcePlugin, removeOnBuildPlugin];
 };
