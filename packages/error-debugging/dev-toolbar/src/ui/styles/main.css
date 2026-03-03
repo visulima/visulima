@@ -180,7 +180,7 @@
 
 /* JetBrains Mono font stack + programming ligatures — too complex for a single Tailwind class */
 @utility toolbar-font {
-    /* JetBrains Mono (injected via <head>) → Geist Mono → system monospace */
+    /* JetBrains Mono (if installed locally) → Geist Mono → system monospace */
     font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
     /* Contextual alternates + kerning + programming ligatures */
     font-feature-settings:
