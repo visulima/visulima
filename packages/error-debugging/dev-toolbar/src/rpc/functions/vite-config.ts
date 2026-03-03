@@ -1,11 +1,12 @@
 import type { ViteDevServer } from "vite";
 
 /**
- * Get Vite configuration
- * @param server Vite dev server instance
- * @returns Vite config object
+ * Gets Vite configuration from the dev server.
+ * @param server Vite dev server instance.
+ * @returns Vite config object.
  */
-export const getViteConfig = async (server: ViteDevServer): Promise<Record<string, any>> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getViteConfig = async (server: ViteDevServer): Promise<Record<string, any>> => {
     return {
         base: server.config.base,
         build: {
@@ -23,3 +24,6 @@ export const getViteConfig = async (server: ViteDevServer): Promise<Record<strin
         },
     };
 };
+
+export { getViteConfig };
+export default getViteConfig;

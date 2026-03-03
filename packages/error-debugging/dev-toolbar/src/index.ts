@@ -5,7 +5,8 @@ export { createClientRPCContext } from "./rpc/client";
 // Vite plugins. Importing it from the main entry is fine because the bundler
 // runs that entry only in a Node.js (Vite plugin) context.
 export { createServerRPCContext } from "./rpc/server";
-export { getTimelineStore, TimelineStore } from "./timeline/index";
+export type { TimelineStore } from "./timeline/index";
+export { getTimelineStore } from "./timeline/index";
 export { DevToolbar } from "./toolbar/index.js";
 export { loadSettings, saveSettings, updateSettings } from "./toolbar/settings";
 export type * from "./types/index";

@@ -31,12 +31,16 @@ const BasicPopover = ({ defaultOpen, onOpenChange, open }: { defaultOpen?: boole
 
 describe("popover", () => {
     it("popoverTrigger renders", () => {
+        expect.hasAssertions();
+
         render(<BasicPopover />);
 
         expect(screen.getByRole("button", { name: "Open" })).toBeInTheDocument();
     });
 
     it("click on trigger opens content", async () => {
+        expect.hasAssertions();
+
         render(<BasicPopover />);
 
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -49,6 +53,8 @@ describe("popover", () => {
     });
 
     it("popoverContent has role=dialog", async () => {
+        expect.hasAssertions();
+
         render(<BasicPopover />);
         await act(async () => {
             fireEvent.click(screen.getByRole("button", { name: "Open" }));
@@ -58,6 +64,8 @@ describe("popover", () => {
     });
 
     it("click outside closes popover", async () => {
+        expect.hasAssertions();
+
         render(<BasicPopover />);
         await act(async () => {
             fireEvent.click(screen.getByRole("button", { name: "Open" }));
@@ -73,6 +81,8 @@ describe("popover", () => {
     });
 
     it("popoverClose button closes the popover", async () => {
+        expect.hasAssertions();
+
         render(
             <Popover>
                 <PopoverTrigger>Open</PopoverTrigger>
@@ -96,12 +106,16 @@ describe("popover", () => {
     });
 
     it("controlled open=true shows content", () => {
+        expect.hasAssertions();
+
         render(<BasicPopover open={true} />);
 
         expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     it("controlled: calls onOpenChange on trigger click", async () => {
+        expect.hasAssertions();
+
         const onOpenChange = vi.fn();
 
         render(<BasicPopover onOpenChange={onOpenChange} open={false} />);
@@ -113,6 +127,8 @@ describe("popover", () => {
     });
 
     it("merges custom class on PopoverContent", async () => {
+        expect.hasAssertions();
+
         render(
             <Popover>
                 <PopoverTrigger>Open</PopoverTrigger>
@@ -127,12 +143,16 @@ describe("popover", () => {
     });
 
     it("defaultOpen=true shows content immediately", () => {
+        expect.hasAssertions();
+
         render(<BasicPopover defaultOpen={true} />);
 
         expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
     it("disabled trigger does not open popover", async () => {
+        expect.hasAssertions();
+
         render(
             <Popover>
                 <PopoverTrigger disabled>Open</PopoverTrigger>
@@ -150,6 +170,8 @@ describe("popover", () => {
     });
 
     it("align prop is passed through to computePosition", async () => {
+        expect.hasAssertions();
+
         const { computePosition } = await import("@floating-ui/dom");
 
         render(

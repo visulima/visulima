@@ -1,6 +1,9 @@
 import type { HookEvents } from "../types/hooks";
 
 /**
- * Hook event names
+ * Hook event names.
  */
-export const HOOK_EVENT_NAMES: (keyof HookEvents)[] = ["devtools:init", "devtools:open", "devtools:close", "app:error", "timeline:event"] as const;
+const HOOK_EVENT_NAMES: (keyof HookEvents)[] = ["devtools:init", "devtools:open", "devtools:close", "app:error", "timeline:event"] as const;
+
+export { HOOK_EVENT_NAMES };
+export default HOOK_EVENT_NAMES;

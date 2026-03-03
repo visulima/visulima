@@ -6,7 +6,7 @@ import type { AppComponentProps } from "../../types/app";
 import { Badge, Button } from "../../ui";
 import cn from "../../utils/cn";
 
-type ViteConfig = Record<string, any>;
+type ViteConfig = Record<string, unknown>;
 
 const CopyButton = ({ text }: { text: string }): ComponentChildren => {
     const [copied, setCopied] = useState(false);
@@ -17,8 +17,10 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
             .then(() => {
                 setCopied(true);
                 setTimeout(setCopied, 1500, false);
+
+                return undefined;
             })
-            .catch(() => {});
+            .catch(() => { /* ignore */ });
     };
 
     return (
@@ -39,7 +41,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
 const Section = ({ data, defaultOpen = true, title }: { data: unknown; defaultOpen?: boolean; title: string }): ComponentChildren => {
     const [open, setOpen] = useState(defaultOpen);
-    const json = JSON.stringify(data, null, 2);
+    const json = JSON.stringify(data, undefined, 2);
 
     return (
         <section class="border border-border">
@@ -64,19 +66,22 @@ const Section = ({ data, defaultOpen = true, title }: { data: unknown; defaultOp
 };
 
 const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
-    const [config, setConfig] = useState<ViteConfig | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [config, setConfig] = useState<ViteConfig | undefined>(undefined);
+    const [error, setError] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(true);
 
     const load = (): void => {
         setLoading(true);
-        setError(null);
+        setError(undefined);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (helpers.rpc as any)
             .getViteConfig()
             .then((data: ViteConfig) => {
                 setConfig(data);
                 setLoading(false);
+
+                return undefined;
             })
             .catch((error_: Error) => {
                 setError(error_.message ?? "Failed to load Vite config");
@@ -86,7 +91,6 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
     useEffect(() => {
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (loading) {

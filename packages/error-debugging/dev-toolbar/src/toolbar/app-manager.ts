@@ -2,23 +2,23 @@ import type { DevToolbarApp, DevToolbarAppState, ToolbarAppEventTarget } from ".
 import { createServerHelpers } from "./helpers";
 
 /**
- * App manager for handling app lifecycle
+ * Manages the lifecycle of all registered dev-toolbar apps.
  */
-export class AppManager {
+class AppManager {
     private apps = new Map<string, DevToolbarAppState>();
 
-    private activeAppId: string | null = null;
+    private activeAppId: string | undefined = undefined;
 
     private initializedApps = new Set<string>();
 
     private appCanvases = new Map<string, { element: HTMLElement; shadowRoot: ShadowRoot }>();
 
     /**
-     * Register an app
-     * @param app App definition
-     * @param builtIn Whether this is a built-in app
+     * Registers an app with the toolbar.
+     * @param app App definition.
+     * @param builtIn Whether this is a built-in app.
      */
-    registerApp(app: DevToolbarApp, builtIn = false): void {
+    public registerApp(app: DevToolbarApp, builtIn = false): void {
         if (this.apps.has(app.id)) {
             // Clean up the previous registration so lifecycle state stays consistent.
             // Calling unregisterApp asynchronously is not feasible here (synchronous
@@ -27,7 +27,7 @@ export class AppManager {
             this.appCanvases.delete(app.id);
 
             if (this.activeAppId === app.id) {
-                this.activeAppId = null;
+                this.activeAppId = undefined;
             }
         }
 
@@ -48,10 +48,10 @@ export class AppManager {
     }
 
     /**
-     * Unregister an app
-     * @param appId App ID
+     * Unregisters an app and calls its destroy hook if initialized.
+     * @param appId App ID to unregister.
      */
-    async unregisterApp(appId: string): Promise<void> {
+    public async unregisterApp(appId: string): Promise<void> {
         const app = this.apps.get(appId);
 
         if (app?.destroy && this.initializedApps.has(appId)) {
@@ -71,32 +71,30 @@ export class AppManager {
         this.appCanvases.delete(appId);
 
         if (this.activeAppId === appId) {
-            this.activeAppId = null;
+            this.activeAppId = undefined;
         }
     }
 
     /**
-     * Get an app by ID
-     * @param appId App ID
-     * @returns App state or undefined
+     * Returns the app state for a given ID.
+     * @param appId App ID to look up.
+     * @returns App state or undefined.
      */
-    getApp(appId: string): DevToolbarAppState | undefined {
+    public getApp(appId: string): DevToolbarAppState | undefined {
         return this.apps.get(appId);
     }
 
     /**
-     * Get all apps
-     * @returns Array of app states
+     * Returns all registered app states.
      */
-    getAllApps(): DevToolbarAppState[] {
+    public getAllApps(): DevToolbarAppState[] {
         return [...this.apps.values()];
     }
 
     /**
-     * Get active app
-     * @returns Active app state or undefined
+     * Returns the currently active app state, or undefined if none is active.
      */
-    getActiveApp(): DevToolbarAppState | undefined {
+    public getActiveApp(): DevToolbarAppState | undefined {
         if (!this.activeAppId) {
             return undefined;
         }
@@ -105,11 +103,11 @@ export class AppManager {
     }
 
     /**
-     * Toggle app active state
-     * @param appId App ID
-     * @returns Whether toggle was successful
+     * Toggles the active state of an app.
+     * @param appId App ID to toggle.
+     * @returns Whether the toggle was successful.
      */
-    async toggleApp(appId: string): Promise<boolean> {
+    public async toggleApp(appId: string): Promise<boolean> {
         const app = this.apps.get(appId);
 
         if (!app) {
@@ -150,12 +148,12 @@ export class AppManager {
     }
 
     /**
-     * Directly set active state for an action button without invoking callbacks.
+     * Directly sets the active state of an action button without invoking callbacks.
      * Use this to deactivate a button from outside the toolbar (e.g. after async work).
-     * @param appId App ID
-     * @param active New active state
+     * @param appId The unique identifier of the app whose active state to change.
+     * @param active New active state.
      */
-    setAppActive(appId: string, active: boolean): void {
+    public setAppActive(appId: string, active: boolean): void {
         const app = this.apps.get(appId);
 
         if (app) {
@@ -164,27 +162,27 @@ export class AppManager {
     }
 
     /**
-     * Check if an app has been initialized
-     * @returns True when the app's init() has already been called
+     * Returns whether an app has already had its init() called.
+     * @param appId App ID to check.
      */
-    isAppInitialized(appId: string): boolean {
+    public isAppInitialized(appId: string): boolean {
         return this.initializedApps.has(appId);
     }
 
     /**
-     * Mark an app as initialized
-     * @returns void
+     * Marks an app as having been initialized.
+     * @param appId App ID to mark.
      */
-    markAppInitialized(appId: string): void {
+    public markAppInitialized(appId: string): void {
         this.initializedApps.add(appId);
     }
 
     /**
-     * Open an app
-     * @param appId App ID
-     * @returns Whether open was successful
+     * Opens an app and initializes it if necessary.
+     * @param appId App ID to open.
+     * @returns Whether the open was successful.
      */
-    async openApp(appId: string): Promise<boolean> {
+    public async openApp(appId: string): Promise<boolean> {
         const app = this.apps.get(appId);
 
         if (!app) {
@@ -217,11 +215,10 @@ export class AppManager {
                     app.status = "pending";
                 }
             } catch (error) {
-                // eslint-disable-next-line no-console
                 console.error(`[dev-toolbar] Failed to init app ${appId}:`, error);
                 app.status = "error";
                 app.active = false;
-                this.activeAppId = null;
+                this.activeAppId = undefined;
 
                 return false;
             }
@@ -233,11 +230,11 @@ export class AppManager {
     }
 
     /**
-     * Close an app
-     * @param appId App ID
-     * @returns Whether close was successful
+     * Closes an active app.
+     * @param appId App ID to close.
+     * @returns Whether the close was successful.
      */
-    async closeApp(appId: string): Promise<boolean> {
+    public async closeApp(appId: string): Promise<boolean> {
         const app = this.apps.get(appId);
 
         if (!app || !app.active) {
@@ -267,19 +264,19 @@ export class AppManager {
         app.active = false;
 
         if (this.activeAppId === appId) {
-            this.activeAppId = null;
+            this.activeAppId = undefined;
         }
 
         return true;
     }
 
     /**
-     * Set app notification
-     * @param appId App ID
-     * @param state Notification state
-     * @param level Notification level
+     * Sets a notification for an app.
+     * @param appId The unique identifier of the app to notify.
+     * @param state Whether the notification is currently visible.
+     * @param level The severity level of the notification badge.
      */
-    setNotification(appId: string, state: boolean, level?: "info" | "warning" | "error"): void {
+    public setNotification(appId: string, state: boolean, level?: "info" | "warning" | "error"): void {
         const app = this.apps.get(appId);
 
         if (app) {
@@ -288,10 +285,10 @@ export class AppManager {
     }
 
     /**
-     * Clear app notification
-     * @param appId App ID
+     * Clears the notification for an app.
+     * @param appId The unique identifier of the app whose notification to clear.
      */
-    clearNotification(appId: string): void {
+    public clearNotification(appId: string): void {
         const app = this.apps.get(appId);
 
         if (app) {
@@ -300,20 +297,25 @@ export class AppManager {
     }
 
     /**
-     * Get app canvas element
-     * @param appId App ID
-     * @returns Canvas element with shadow root or null
+     * Returns the canvas element and shadow root for an app.
+     * @param appId The unique identifier of the app whose canvas to retrieve.
+     * @returns Canvas element with shadow root or undefined.
      */
-    getAppCanvas(appId: string): { element: HTMLElement; shadowRoot: ShadowRoot } | null {
-        return this.appCanvases.get(appId) || null;
+    public getAppCanvas(appId: string): { element: HTMLElement; shadowRoot: ShadowRoot } | undefined {
+        return this.appCanvases.get(appId);
     }
 
     /**
-     * Set app canvas element (called by toolbar component)
-     * @param appId App ID
-     * @param canvas Canvas with shadow root
+     * Stores the canvas element and shadow root for an app.
+     * @param appId The unique identifier of the app whose canvas to store.
+     * @param canvas The canvas object containing the host element and its shadow root.
+     * @param canvas.element The host HTMLElement that wraps the app's shadow DOM.
+     * @param canvas.shadowRoot The ShadowRoot attached to the canvas element.
      */
-    setAppCanvas(appId: string, canvas: { element: HTMLElement; shadowRoot: ShadowRoot }): void {
+    public setAppCanvas(appId: string, canvas: { element: HTMLElement; shadowRoot: ShadowRoot }): void {
         this.appCanvases.set(appId, canvas);
     }
 }
+
+export { AppManager };
+export default AppManager;

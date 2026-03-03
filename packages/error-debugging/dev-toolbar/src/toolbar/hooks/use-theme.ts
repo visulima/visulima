@@ -1,11 +1,11 @@
 import { useEffect, useState } from "preact/hooks";
 
-export type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark" | "system";
 
 const THEME_STORAGE_KEY = "__v_dt__theme";
 
 /**
- * Get the system color scheme preference
+ * Returns the current OS/browser color scheme preference.
  */
 const getSystemTheme = (): "light" | "dark" => {
     if (globalThis.window === undefined) {
@@ -16,7 +16,7 @@ const getSystemTheme = (): "light" | "dark" => {
 };
 
 /**
- * Load theme preference from localStorage
+ * Loads the theme preference from localStorage.
  */
 const loadTheme = (): Theme => {
     if (globalThis.window === undefined) {
@@ -37,7 +37,7 @@ const loadTheme = (): Theme => {
 };
 
 /**
- * Save theme preference to localStorage
+ * Saves the theme preference to localStorage.
  */
 const saveTheme = (theme: Theme): void => {
     if (globalThis.window === undefined) {
@@ -51,7 +51,7 @@ const saveTheme = (theme: Theme): void => {
     }
 };
 
-export interface UseThemeReturn {
+interface UseThemeReturn {
     resolvedTheme: "light" | "dark";
     setTheme: (newTheme: Theme) => void;
     theme: Theme;
@@ -74,7 +74,7 @@ const notifyThemeListeners = (): void => {
 };
 
 /**
- * Sync the resolved theme to vite-overlay so both UIs stay in lock-step.
+ * Syncs the resolved theme to vite-overlay so both UIs stay in lock-step.
  * Writes to localStorage and applies/removes the `dark` class on the live
  * overlay root element if the overlay is currently mounted.
  */
@@ -85,6 +85,7 @@ const syncViteOverlayTheme = (resolved: "light" | "dark"): void => {
         // localStorage unavailable — skip
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const overlay = (globalThis as any).__v_o__current as { shadowRoot?: ShadowRoot } | undefined;
     const rootElement = overlay?.shadowRoot?.querySelector("#__v_o__root");
 
@@ -121,11 +122,11 @@ if (globalThis.window !== undefined) {
 }
 
 /**
- * Hook for managing theme (light/dark mode).
+ * Manages the shared light/dark/system theme preference.
  * All callers share the same module-level state so theme changes propagate
  * to every component (ToolbarContainer, SettingsApp, etc.) immediately.
  */
-export const useTheme = (): UseThemeReturn => {
+const useTheme = (): UseThemeReturn => {
     const [, forceUpdate] = useState(0);
 
     useEffect(() => {
@@ -151,3 +152,6 @@ export const useTheme = (): UseThemeReturn => {
         toggleTheme,
     };
 };
+
+export type { Theme, UseThemeReturn };
+export { useTheme };

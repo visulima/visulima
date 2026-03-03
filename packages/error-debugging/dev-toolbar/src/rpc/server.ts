@@ -7,7 +7,7 @@ import { getTailwindConfig } from "./functions/tailwind-config";
 import { getViteConfig } from "./functions/vite-config";
 
 /**
- * Create default server functions bound to a server instance
+ * Creates default server functions bound to a server instance.
  */
 const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?: string } = {}): Partial<ServerFunctions> => {
     return {
@@ -19,19 +19,20 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
             const { readFile } = await import("node:fs/promises");
             const filePath = path.startsWith("/") ? path : `${server.config.root}/${path}`;
 
-            return readFile(filePath, "utf-8");
+            return readFile(filePath, "utf8");
         },
     };
 };
 
 /**
- * Creates server-side RPC context
- * @param server Vite dev server instance
- * @param customFunctions Custom server functions to register
- * @param options Additional options (e.g. which editor to launch)
- * @returns Server RPC context
+ * Creates server-side RPC context.
+ * @param server Vite dev server instance.
+ * @param customFunctions Custom server functions to register.
+ * @param options Additional options (e.g. which editor to launch).
+ * @param options.editor Editor to use for "open in editor" functionality.
+ * @returns Server RPC context.
  */
-export const createServerRPCContext = (
+const createServerRPCContext = (
     server: ViteDevServer,
     customFunctions?: Partial<ServerFunctions>,
     options: { editor?: string } = {},
@@ -43,11 +44,12 @@ export const createServerRPCContext = (
     } as ServerFunctions;
 
     // Setup WebSocket handler for RPC calls
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     server.ws.on("dev-toolbar:rpc", async (data: { args: any[]; id: string; method: string }, client: WebSocketClient) => {
         const { args, id, method } = data;
-        const function_ = functions[method];
+        const handler = functions[method];
 
-        if (!function_) {
+        if (!handler) {
             client.send("dev-toolbar:rpc:error", {
                 error: `Unknown RPC method: ${method}`,
                 id,
@@ -59,7 +61,7 @@ export const createServerRPCContext = (
         try {
             // All registered functions already close over `server` via
             // createDefaultServerFunctions, so just spread the RPC args.
-            const result = await function_(...args);
+            const result = await handler(...args);
 
             client.send("dev-toolbar:rpc:response", { id, result });
         } catch (error) {
@@ -90,3 +92,6 @@ export const createServerRPCContext = (
         server,
     };
 };
+
+export { createServerRPCContext };
+export default createServerRPCContext;

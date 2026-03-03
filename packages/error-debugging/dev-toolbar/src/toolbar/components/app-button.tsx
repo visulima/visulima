@@ -30,7 +30,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
     const handleClick = (): void => {
         // Dismiss the hover tooltip immediately — mouseLeave may not fire when
         // the user clicks without moving the cursor off the button first.
-        setHoveredApp(null);
+        setHoveredApp(undefined);
         toggleApp(app.id).catch((error) => {
             console.error(`[dev-toolbar] Failed to toggle app ${app.id}:`, error);
         });
@@ -42,7 +42,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             return;
         }
 
-        setHoveredApp(app, buttonRef.current?.getBoundingClientRect() ?? null);
+        setHoveredApp(app, buttonRef.current?.getBoundingClientRect());
     };
 
     const handleMouseLeave = (): void => {
@@ -50,7 +50,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             return;
         }
 
-        setHoveredApp(null);
+        setHoveredApp(undefined);
     };
 
     return (
@@ -81,7 +81,6 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
             {/* Icon + notification badge */}
             <div class="relative size-6 select-none flex items-center justify-center">
                 {/* App SVG icon — content comes from the app's own icon string (trusted developer-authored SVG) */}
-                {/* eslint-disable-next-line react/no-danger */}
                 <div class="size-6 flex items-center justify-center [&_svg]:size-4.5" dangerouslySetInnerHTML={{ __html: app.icon }} />
                 {app.notification.state && (
                     <span

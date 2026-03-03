@@ -11,18 +11,24 @@ afterEach(cleanup);
 
 describe("card", () => {
     it("card has bg-card class", () => {
+        expect.hasAssertions();
+
         const { container } = render(<Card>content</Card>);
 
         expect(container.firstChild).toHaveClass("bg-card");
     });
 
     it("cardHeader has p-6 class", () => {
+        expect.hasAssertions();
+
         const { container } = render(<CardHeader>header</CardHeader>);
 
         expect(container.firstChild).toHaveClass("p-6");
     });
 
     it("cardTitle renders as h3 with font-semibold", () => {
+        expect.hasAssertions();
+
         render(<CardTitle>Title</CardTitle>);
         const h3 = screen.getByRole("heading", { level: 3 });
 
@@ -31,24 +37,32 @@ describe("card", () => {
     });
 
     it("cardDescription has text-muted-foreground", () => {
+        expect.hasAssertions();
+
         const { container } = render(<CardDescription>desc</CardDescription>);
 
         expect(container.firstChild).toHaveClass("text-muted-foreground");
     });
 
     it("cardContent has p-6 and pt-0", () => {
+        expect.hasAssertions();
+
         const { container } = render(<CardContent>content</CardContent>);
 
         expect(container.firstChild).toHaveClass("p-6", "pt-0");
     });
 
     it("cardFooter has flex and items-center", () => {
+        expect.hasAssertions();
+
         const { container } = render(<CardFooter>footer</CardFooter>);
 
         expect(container.firstChild).toHaveClass("flex", "items-center");
     });
 
     it("all parts accept custom class", () => {
+        expect.hasAssertions();
+
         const { container: c1 } = render(<Card class="custom-card">card</Card>);
 
         expect(c1.firstChild).toHaveClass("custom-card");
@@ -59,6 +73,8 @@ describe("card", () => {
     });
 
     it("renders compound card correctly", () => {
+        expect.hasAssertions();
+
         render(
             <Card>
                 <CardHeader>

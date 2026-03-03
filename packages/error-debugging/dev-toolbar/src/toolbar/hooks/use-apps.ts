@@ -2,10 +2,10 @@ import type { DevToolbarAppState } from "../../types/index";
 import { useToolbarContext } from "../context/index";
 
 /**
- * Hook for app management - exposes context app methods directly
+ * Exposes app management methods from the toolbar context.
  */
-export const useApps = (): {
-    activeAppId: string | null;
+const useApps = (): {
+    activeAppId: string | undefined;
     apps: DevToolbarAppState[];
     clearNotification: (appId: string) => void;
     registerApp: (app: DevToolbarAppState) => void;
@@ -25,3 +25,6 @@ export const useApps = (): {
         unregisterApp: context.unregisterApp,
     };
 };
+
+export { useApps };
+export default useApps;

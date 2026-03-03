@@ -9,7 +9,7 @@ const inspectorApp: DevToolbarApp = {
     name: "Inspector",
 
     onClick() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
         startGlobalInspection(

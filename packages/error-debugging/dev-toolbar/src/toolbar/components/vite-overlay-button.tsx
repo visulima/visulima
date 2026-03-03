@@ -7,11 +7,11 @@ import Icon from "../../ui/components/icon";
 import cn from "../../utils/cn";
 
 /**
- * Shows a red error button in the toolbar when @visulima/vite-overlay errors exist.
+ * Shows a red error button in the toolbar when `@visulima/vite-overlay` errors exist.
  * Clicking toggles the vite-overlay panel visibility.
  *
  * Only rendered when:
- * - @visulima/vite-overlay is installed and active (window.ErrorOverlay is defined)
+ * - `@visulima/vite-overlay` is installed and active (window.ErrorOverlay is defined)
  * - At least one error is present in the history
  *
  * Renders with its own left separator so it stays visually grouped on the
@@ -23,17 +23,17 @@ const ViteOverlayButton = (): ComponentChildren => {
 
     useEffect(() => {
         const sync = () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const history = (globalThis as any).__v_o_error_history;
             const count = Array.isArray(history) ? history.length : 0;
 
             setErrorCount(count);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const overlay = (globalThis as any).__v_o__current;
 
             if (overlay?.parentNode) {
-                const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+                const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | undefined;
 
                 setIsOverlayOpen(!!rootElement && !rootElement.classList.contains("hidden"));
             } else {
@@ -49,18 +49,18 @@ const ViteOverlayButton = (): ComponentChildren => {
     }, []);
 
     if (errorCount === 0) {
-        return null;
+        return undefined;
     }
 
     const handleClick = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const overlay = (globalThis as any).__v_o__current;
 
         if (!overlay?.parentNode) {
             return;
         }
 
-        const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | null;
+        const rootElement = overlay.shadowRoot?.querySelector("#__v_o__root") as HTMLElement | undefined;
 
         if (rootElement?.classList.contains("hidden")) {
             rootElement.classList.remove("hidden");

@@ -10,8 +10,8 @@ import type { DevToolbarApp, ServerFunctions } from "./types/index";
 import type { InjectSourceIgnore } from "./vite/inject-source";
 
 /**
- * Get the path to the dev-toolbar dist directory
- * Always use dist folder - Vite should never access src
+ * Returns the path to the dev-toolbar dist directory.
+ * Always uses the dist folder — Vite should never access src.
  */
 const getDevToolbarPath = (): string => {
     const pluginPath = normalizePath(path.dirname(fileURLToPath(import.meta.url)));
@@ -20,10 +20,15 @@ const getDevToolbarPath = (): string => {
     return pluginPath;
 };
 
+// eslint-disable-next-line sonarjs/slow-regex
+const URL_QUERY_RE = /\?.+$/;
+const DIST_BUILD_RE = /\/dist\/|\/build\//;
+const JSX_EXT_RE = /\.[jt]sx$/;
+
 /**
- * Remove URL query string from a path
+ * Removes the URL query string from a path.
  */
-const removeUrlQuery = (url: string): string => url.replace(/\?.*$/, "");
+const removeUrlQuery = (url: string): string => url.replace(URL_QUERY_RE, "");
 
 // Query marker for dev-toolbar resources
 // Why use query instead of vite virtual module on devtools resource?
@@ -48,7 +53,7 @@ export interface DevToolbarOptions {
      * useful for projects that do not use html file as an entry
      *
      * WARNING: only set this if you know exactly what it does.
-     * @default ''
+     * @default Empty string (disabled).
      */
     appendTo?: string | RegExp;
 
@@ -125,9 +130,9 @@ export interface DevToolbarOptions {
      * Settings app (stored in localStorage).
      */
     keybindings?: {
-        /** Close active app / panel. @default "Escape" */
+        /** Close active app / panel. \@default "Escape" */
         close?: string;
-        /** Toggle the DevTools panel open/closed. @default "Alt+Shift+D" */
+        /** Toggle the DevTools panel open/closed. \@default "Alt+Shift+D" */
         toggle?: string;
     };
 
@@ -159,7 +164,7 @@ export interface DevToolbarOptions {
     reduceMotion?: boolean;
 
     /**
-     * Strip all @visulima/dev-toolbar imports and virtual modules when building
+     * Strip all \@visulima/dev-toolbar imports and virtual modules when building
      * for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
      * This guarantees the toolbar never ends up in a production bundle even if the
      * user accidentally imports our package in application code.
@@ -195,7 +200,7 @@ export interface DevToolbarOptions {
 }
 
 /**
- * Dev toolbar Vite plugin
+ * Returns the Vite plugin array for the dev toolbar.
  */
 export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     const devToolbarPath = getDevToolbarPath();
@@ -367,11 +372,11 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return undefined;
             }
 
-            if (id.includes("node_modules") || id.includes("?raw") || /\/dist\/|\/build\//.test(id)) {
+            if (id.includes("node_modules") || id.includes("?raw") || DIST_BUILD_RE.test(id)) {
                 return undefined;
             }
 
-            if (!/\.[jt]sx$/.test(id.split("?")[0] ?? "")) {
+            if (!JSX_EXT_RE.test(id.split("?")[0] ?? "")) {
                 return undefined;
             }
 
@@ -388,7 +393,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             let originalCode: string | undefined;
 
             try {
-                const diskContent = await readFile(id.split("?")[0] ?? id, "utf-8");
+                const diskContent = await readFile(id.split("?")[0] ?? id, "utf8");
 
                 if (diskContent !== code) {
                     originalCode = diskContent;
@@ -404,7 +409,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return undefined;
             }
 
-            return { code: result.code ?? code, map: result.map ?? null };
+            return { code: result.code ?? code, map: result.map ?? undefined };
         },
     };
 

@@ -2,10 +2,10 @@ import type { MessageChannel } from "../types/messaging";
 import type { MessageEnvelope, MessageHandler, MessageHandlers } from "./types";
 
 /**
- * Creates a message channel implementation
- * @param handlers Shared handlers map
- * @param sendFn Function to send messages
- * @returns Message channel instance
+ * Creates a message channel implementation.
+ * @param handlers Shared handlers map.
+ * @param sendFunction Function to send messages.
+ * @returns Message channel instance.
  */
 export const createMessageChannel = <TEvents extends Record<string, (...args: any[]) => void>>(
     handlers: MessageHandlers,
@@ -39,6 +39,7 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
                 handlers.set(eventName, new Set());
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             handlers.get(eventName)!.add(handler as MessageHandler);
 
             // Return unsubscribe function
@@ -70,9 +71,9 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
     }) as MessageChannel<TEvents>;
 
 /**
- * Handles incoming messages
- * @param handlers Message handlers map
- * @param envelope Message envelope
+ * Handles incoming messages.
+ * @param handlers Message handlers map.
+ * @param envelope Message envelope containing event and data.
  */
 export const handleMessage = (handlers: MessageHandlers, envelope: MessageEnvelope): void => {
     const eventHandlers = handlers.get(envelope.event);

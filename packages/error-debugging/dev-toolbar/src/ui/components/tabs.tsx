@@ -10,7 +10,7 @@ interface TabsContextValue {
     value: string;
 }
 
-const TabsContext = createContext<TabsContextValue | null>(null);
+const TabsContext = createContext<TabsContextValue | undefined>(undefined);
 
 const useTabsContext = (): TabsContextValue => {
     const context = useContext(TabsContext);
@@ -100,11 +100,11 @@ const TabsTrigger = ({ children, class: className, disabled, value, ...rest }: T
     );
 };
 
-const TabsContent = ({ children, class: className, value, ...rest }: TabsContentProps): JSX.Element | null => {
+const TabsContent = ({ children, class: className, value, ...rest }: TabsContentProps): JSX.Element | undefined => {
     const { value: activeValue } = useTabsContext();
 
     if (activeValue !== value) {
-        return null;
+        return undefined;
     }
 
     return (

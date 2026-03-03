@@ -5,7 +5,7 @@ import { clamp, pixelToNumber } from "../utils/index";
 import { useFrameState } from "./use-frame-state";
 
 /**
- * Snap to key points (0, 50, 100) like Vue DevTools
+ * Snaps to key points (0, 50, 100) like Vue DevTools.
  */
 const snapToPoints = (value: number): number => {
     const SNAP_THRESHOLD = 2;
@@ -26,7 +26,7 @@ const snapToPoints = (value: number): number => {
 };
 
 /**
- * Get safe area insets from CSS env variables
+ * Gets safe area insets from CSS env variables.
  */
 const getSafeAreaInsets = (): { bottom: number; left: number; right: number; top: number } => {
     if (globalThis.window === undefined) {
@@ -44,7 +44,7 @@ const getSafeAreaInsets = (): { bottom: number; left: number; right: number; top
 };
 
 /**
- * Hook for window size tracking
+ * Tracks the current window size and updates on resize.
  */
 const useWindowSize = () => {
     const [size, setSize] = useState(() => {
@@ -74,24 +74,24 @@ const useWindowSize = () => {
 };
 
 /**
- * Return type for usePosition hook
+ * Return type for usePosition hook.
  */
-export interface UsePositionReturn {
+interface UsePositionReturn {
     anchorStyle: { left: string; top: string };
     bringUp: () => void;
     iframeStyle: Record<string, string>;
     isDragging: boolean;
     isHidden: boolean;
     isVertical: boolean;
-    onPointerDown: (e: PointerEvent) => void;
+    onPointerDown: (event: PointerEvent) => void;
     panelStyle: Record<string, string>;
 }
 
 /**
- * Hook for position management - converted from Vue DevTools usePosition
+ * Manages the draggable toolbar position, converted from Vue DevTools usePosition.
  * @see https://github.com/vuejs/devtools/blob/main/packages/overlay/src/composables/position.ts
  */
-export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn => {
+const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn => {
     const { state, updateState } = useFrameState();
     const { height: windowHeight, width: windowWidth } = useWindowSize();
     const [isHovering, setIsHovering] = useState(false);
@@ -99,8 +99,8 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
     const [isViteOverlayOpen, setIsViteOverlayOpen] = useState(false);
     const draggingOffsetRef = useRef({ x: 0, y: 0 });
     const mousePositionRef = useRef({ x: 0, y: 0 });
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const capturedPointerIdRef = useRef<number | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const capturedPointerIdRef = useRef<number | undefined>(undefined);
     const isDraggingRef = useRef(false);
     const windowWidthRef = useRef(windowWidth);
     const windowHeightRef = useRef(windowHeight);
@@ -139,7 +139,7 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
     // Keep toolbar visible while the @visulima/vite-overlay dialog is open
     useEffect(() => {
         const check = (): void => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const overlay = (globalThis as any).__v_o__current as { parentNode?: Node; shadowRoot?: ShadowRoot } | undefined;
 
             if (overlay?.parentNode) {
@@ -162,10 +162,10 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
      * Handle pointer down - start dragging
      */
     const onPointerDown = useCallback(
-        (e: PointerEvent) => {
+        (event: PointerEvent) => {
             // Prevent default to avoid text selection and other default behaviors
-            e.preventDefault();
-            e.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
 
             setIsDragging(true);
             isDraggingRef.current = true;
@@ -176,22 +176,22 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
                 const { height, left, top, width } = panel.getBoundingClientRect();
 
                 draggingOffsetRef.current = {
-                    x: e.clientX - left - width / 2,
-                    y: e.clientY - top - height / 2,
+                    x: event.clientX - left - width / 2,
+                    y: event.clientY - top - height / 2,
                 };
 
                 // Capture pointer on the element that received the event (not necessarily the panel)
                 // This ensures we continue receiving events even when pointer leaves the window
-                const target = e.target as HTMLElement;
+                const target = event.target as HTMLElement;
 
                 try {
                     if (target && target.setPointerCapture) {
-                        target.setPointerCapture(e.pointerId);
-                        capturedPointerIdRef.current = e.pointerId;
+                        target.setPointerCapture(event.pointerId);
+                        capturedPointerIdRef.current = event.pointerId;
                     } else if (panel.setPointerCapture) {
                         // Fallback to panel if target doesn't support capture
-                        panel.setPointerCapture(e.pointerId);
-                        capturedPointerIdRef.current = e.pointerId;
+                        panel.setPointerCapture(event.pointerId);
+                        capturedPointerIdRef.current = event.pointerId;
                     }
                 } catch (error) {
                     // setPointerCapture may fail in some browsers, continue without it
@@ -237,7 +237,23 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
     // Handle pointer events - use global listeners to track pointer even when it leaves window
     // Set up listeners once and keep them active - use refs to access current values
     useEffect(() => {
-        const handlePointerUp = (_e: PointerEvent): void => {
+        const releaseCapture = (): void => {
+            if (capturedPointerIdRef.current !== undefined) {
+                try {
+                    const panel = panelElement.current;
+
+                    if (panel && capturedPointerIdRef.current !== undefined) {
+                        panel.releasePointerCapture(capturedPointerIdRef.current);
+                    }
+                } catch {
+                    // Ignore errors when releasing capture
+                }
+
+                capturedPointerIdRef.current = undefined;
+            }
+        };
+
+        const finishDrag = (): void => {
             if (!isDraggingRef.current) {
                 return;
             }
@@ -250,47 +266,15 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
             document.body.style.userSelect = "";
 
             // Release pointer capture - try to release on any element that might have captured it
-            if (capturedPointerIdRef.current !== null) {
-                try {
-                    const panel = panelElement.current;
-
-                    if (panel && capturedPointerIdRef.current !== null) {
-                        panel.releasePointerCapture(capturedPointerIdRef.current);
-                    }
-                } catch {
-                    // Ignore errors when releasing capture
-                }
-
-                capturedPointerIdRef.current = null;
-            }
+            releaseCapture();
         };
 
-        const handlePointerCancel = (_e: PointerEvent): void => {
-            if (!isDraggingRef.current) {
-                return;
-            }
+        const handlePointerUp = (_event: PointerEvent): void => {
+            finishDrag();
+        };
 
-            setIsDragging(false);
-            isDraggingRef.current = false;
-
-            // Restore cursor and user select
-            document.body.style.cursor = "";
-            document.body.style.userSelect = "";
-
-            // Release pointer capture
-            if (capturedPointerIdRef.current !== null) {
-                try {
-                    const panel = panelElement.current;
-
-                    if (panel && capturedPointerIdRef.current !== null) {
-                        panel.releasePointerCapture(capturedPointerIdRef.current);
-                    }
-                } catch {
-                    // Ignore errors when releasing capture
-                }
-
-                capturedPointerIdRef.current = null;
-            }
+        const handlePointerCancel = (_event: PointerEvent): void => {
+            finishDrag();
         };
 
         const handleLostPointerCapture = (): void => {
@@ -298,7 +282,7 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
             if (isDraggingRef.current) {
                 setIsDragging(false);
                 isDraggingRef.current = false;
-                capturedPointerIdRef.current = null;
+                capturedPointerIdRef.current = undefined;
 
                 // Restore cursor and user select
                 document.body.style.cursor = "";
@@ -306,14 +290,14 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
             }
         };
 
-        const handlePointerMove = (e: PointerEvent): void => {
+        const handlePointerMove = (event: PointerEvent): void => {
             // Use ref to check dragging state to avoid stale closure issues
             if (!isDraggingRef.current) {
                 return;
             }
 
             // Prevent default to avoid text selection during drag
-            e.preventDefault();
+            event.preventDefault();
 
             // Use refs for window dimensions to avoid stale closures
             const currentWidth = windowWidthRef.current;
@@ -324,8 +308,8 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
 
             // Don't clamp coordinates - allow dragging even when pointer is outside window
             // The browser will still send events with pointer capture
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
 
             // Calculate panel center position (where panel should be)
             const x = mouseX - draggingOffsetRef.current.x;
@@ -349,9 +333,17 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
 
             // Determine position based on angle ranges - matches Vue DevTools exactly
             // Using mouse position for angle detection (more responsive than panel center)
-            // Vue DevTools ternary chain: (deg >= TL && deg <= TR) ? 'top' : (deg >= TR && deg <= BR) ? 'right' : (deg >= BR && deg <= BL) ? 'bottom' : 'left'
-            const newPosition: "top" | "bottom" | "left" | "right"
-                = deg >= TL && deg <= TR ? "top" : deg >= TR && deg <= BR ? "right" : deg >= BR && deg <= BL ? "bottom" : "left";
+            let newPosition: "top" | "bottom" | "left" | "right";
+
+            if (deg >= TL && deg <= TR) {
+                newPosition = "top";
+            } else if (deg >= TR && deg <= BR) {
+                newPosition = "right";
+            } else if (deg >= BR && deg <= BL) {
+                newPosition = "bottom";
+            } else {
+                newPosition = "left";
+            }
 
             // Clamp position percentages to valid range
             const clampedLeft = Math.max(0, Math.min(100, (x / currentWidth) * 100));
@@ -447,8 +439,8 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
                 };
             }
 
-            case "bottom":
             default: {
+                // "bottom" and default
                 return {
                     left: clamp(left, halfWidth + panelMargins.left, windowWidth - halfWidth - panelMargins.right),
                     top: windowHeight - panelMargins.bottom - halfHeight + (isHidden ? 30 : 0),
@@ -527,8 +519,8 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
                 break;
             }
 
-            case "left":
-            case "right": {
+            default: {
+                // "left" and "right"
                 style.top = "0";
                 style.transform = "translate(0, -50%)";
 
@@ -545,26 +537,21 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
         switch (state.position) {
             case "left": {
                 style.left = "0";
-
                 break;
             }
 
             case "right": {
                 style.right = "0";
-
                 break;
             }
 
             case "top": {
                 style.top = "0";
-
                 break;
             }
 
-            case "bottom":
             default: {
                 style.bottom = "0";
-
                 break;
             }
         }
@@ -599,3 +586,6 @@ export const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionRe
 
     return result;
 };
+
+export type { UsePositionReturn };
+export { usePosition };

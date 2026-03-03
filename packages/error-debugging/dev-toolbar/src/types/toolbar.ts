@@ -41,7 +41,7 @@ export interface FrameState {
 }
 
 /**
- * Toolbar settings
+ * Configuration options controlling the toolbar's initial appearance.
  */
 export interface ToolbarSettings {
     /**

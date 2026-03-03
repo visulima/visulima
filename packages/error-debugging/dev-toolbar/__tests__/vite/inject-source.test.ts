@@ -7,6 +7,8 @@ const removeEmptySpace = (string_: string): string => string_.replaceAll(/\s/g, 
 
 describe("inject source", () => {
     it("shouldn't augment react fragments", () => {
+        expect.hasAssertions();
+
         const output = addSourceToJsx(
             `
       export const Route = createFileRoute("/test")({
@@ -20,6 +22,8 @@ describe("inject source", () => {
     });
 
     it("shouldn't augment react fragments if they start with Fragment", () => {
+        expect.hasAssertions();
+
         const output = addSourceToJsx(
             `
       export const Route = createFileRoute("/test")({
@@ -33,6 +37,8 @@ describe("inject source", () => {
     });
 
     it("shouldn't augment react fragments if they start with React.Fragment", () => {
+        expect.hasAssertions();
+
         const output = addSourceToJsx(
             `
       export const Route = createFileRoute("/test")({
@@ -47,6 +53,8 @@ describe("inject source", () => {
 
     describe("functionExpression", () => {
         it("should work with deeply nested custom JSX syntax", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -68,6 +76,8 @@ describe("inject source", () => {
         });
 
         it("should work with props not destructured and spread", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
       export const Route = createFileRoute("/test")({
@@ -81,6 +91,8 @@ describe("inject source", () => {
         });
 
         it("should work with props destructured and spread", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
       export const Route = createFileRoute("/test")({
@@ -94,6 +106,8 @@ describe("inject source", () => {
         });
 
         it("should work with props spread and other normal elements", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -117,6 +131,8 @@ describe("inject source", () => {
 
     describe("arrowFunctionExpression", () => {
         it("should work with deeply nested custom JSX syntax", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -138,6 +154,8 @@ describe("inject source", () => {
         });
 
         it("should work with props not destructured and spread", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
       export const Route = createFileRoute("/test")({
@@ -151,6 +169,8 @@ describe("inject source", () => {
         });
 
         it("should work with props spread and other normal elements", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -174,6 +194,8 @@ describe("inject source", () => {
 
     describe("function declarations", () => {
         it("should not duplicate the same property if there are nested functions", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -201,6 +223,8 @@ describe("inject source", () => {
         });
 
         it("props not destructured", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -222,6 +246,8 @@ function test(props) {
         });
 
         it("doesn't transform when props are spread across the element", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function test(props) {
@@ -235,6 +261,8 @@ function test(props) {
         });
 
         it("doesn't transform when props are spread but applies to other elements without spread", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -260,6 +288,8 @@ function test(props) {
         });
 
         it("props destructured and collected", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -281,6 +311,8 @@ function test(props) {
         });
 
         it("props destructured and collected with different name — spread on element", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function test({ children, ...rest }) {
@@ -296,6 +328,8 @@ function test(props) {
 
     describe("arrow functions", () => {
         it("works with arrow function and props not destructured", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -317,6 +351,8 @@ function test(props) {
         });
 
         it("doesn't transform when props are spread across the element", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
       const ButtonWithProps = (props) => {
@@ -330,6 +366,8 @@ function test(props) {
         });
 
         it("works with props destructured and collected even on custom components", () => {
+            expect.hasAssertions();
+
             const output = removeEmptySpace(
                 addSourceToJsx(
                     `
@@ -351,6 +389,8 @@ function test(props) {
         });
 
         it("works with arrow function and props destructured with different name — skips spread", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
       const ButtonWithProps = ({ children, ...rest }) => {
@@ -366,6 +406,8 @@ function test(props) {
 
     describe("structural HTML document elements", () => {
         it("shouldn't augment <html> elements", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function RootLayout() {
@@ -379,6 +421,8 @@ function test(props) {
         });
 
         it("shouldn't augment <head> elements but still annotates children", () => {
+            expect.hasAssertions();
+
             const code = addSourceToJsx(
                 `
     function RootLayout() {
@@ -396,6 +440,8 @@ function test(props) {
         });
 
         it("shouldn't augment <body> elements", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function RootLayout() {
@@ -416,6 +462,8 @@ function test(props) {
 
     describe("ignore patterns", () => {
         it("should skip injection for ignored component names (string)", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function test() {
@@ -430,6 +478,8 @@ function test(props) {
         });
 
         it("should skip injection for ignored file paths (glob)", () => {
+            expect.hasAssertions();
+
             const output = addSourceToJsx(
                 `
     function test() {
@@ -446,6 +496,8 @@ function test(props) {
 
     describe("sSR position map (originalCode)", () => {
         it("uses original file line numbers when the received code has prepended imports", () => {
+            expect.hasAssertions();
+
             // Simulates what TanStack Start / Vinxi does: prepend server imports
             // to the file, shifting JSX line numbers in the received code.
             const original = `

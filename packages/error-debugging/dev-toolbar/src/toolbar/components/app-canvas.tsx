@@ -20,7 +20,7 @@ import { useTheme } from "../hooks/use-theme";
 import { sharedToolbarStylesheet } from "../stylesheet";
 
 interface DevPanelProps {
-    activeAppId: string | null;
+    activeAppId: string | undefined;
     apps: DevToolbarAppState[];
     onClose: () => void;
     onToggleApp: (appId: string) => Promise<void>;
@@ -37,7 +37,7 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
     // Only for legacy init-based apps that bootstrap inside a shadow root
     useEffect(() => {
         if (!contentRef.current || initializedRef.current || app.component) {
-            return;
+            return undefined;
         }
 
         const container = contentRef.current;
@@ -61,6 +61,8 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
                 (result as Promise<void>)
                     .then(() => {
                         initializedRef.current = true;
+
+                        return undefined;
                     })
                     .catch((error) => {
                         console.error(`[dev-toolbar] Failed to init app ${app.id}:`, error);
@@ -74,6 +76,7 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
                 while (container.firstChild) {
                     container.firstChild.remove();
                 }
+
                 initializedRef.current = false;
             };
         }
@@ -99,9 +102,21 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
 
 interface PipPanelProps {
     apps: DevToolbarAppState[];
-    initialActiveAppId: string | null;
+    initialActiveAppId: string | undefined;
     onClose: () => void;
 }
+
+const getNotificationColor = (level: "error" | "info" | "warning" | undefined): string => {
+    if (level === "error") {
+        return "bg-destructive";
+    }
+
+    if (level === "warning") {
+        return "bg-warning";
+    }
+
+    return "bg-info";
+};
 
 const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): ComponentChildren => {
     const [activeAppId, setActiveAppId] = useState(initialActiveAppId);
@@ -157,21 +172,23 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                     onClick={() => setActiveAppId(app.id)}
                                     type="button"
                                 >
-                                    {app.icon ? (
+                                    {app.icon
+                                        ? (
                                         <span
                                             class={cn(
                                                 "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
-                                                activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
+                                                activeAppId === app.id
+                                                    ? "opacity-100"
+                                                    : "opacity-65 group-hover/nav-item:opacity-100",
                                             )}
-                                            /* Icon is a trusted static SVG imported from lucide-static */
-                                            // eslint-disable-next-line react/no-danger
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
-                                    ) : (
+                                        )
+                                        : (
                                         <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
                                             {app.name.slice(0, 2)}
                                         </span>
-                                    )}
+                                        )}
                                     {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
                                 </button>
 
@@ -182,11 +199,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                             "pointer-events-none absolute top-1.5 rounded-full",
                                             sidebarCollapsed ? "right-1.5" : "right-2.5",
                                             "size-1.5",
-                                            app.notification.level === "error"
-                                                ? "bg-destructive"
-                                                : app.notification.level === "warning"
-                                                    ? "bg-warning"
-                                                    : "bg-info",
+                                            getNotificationColor(app.notification.level),
                                         )}
                                     />
                                 )}
@@ -233,8 +246,6 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                             />
                         </button>
                         {activeApp?.icon && (
-                            /* Icon is a trusted static SVG imported from lucide-static */
-                            // eslint-disable-next-line react/no-danger
                             <span
                                 class="size-5 flex items-center justify-center [&_svg]:size-5 shrink-0 text-foreground opacity-80"
                                 dangerouslySetInnerHTML={{ __html: activeApp.icon }}
@@ -352,6 +363,7 @@ const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: bo
     return cn("opacity-0 pointer-events-none scale-[0.99]", directionTranslate[position] ?? "translate-y-2");
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, position }: DevPanelProps): ComponentChildren => {
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
@@ -364,19 +376,19 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const panelDivRef = useRef<HTMLDivElement>(null);
     const isResizingRef = useRef<{ bottom?: boolean; left?: boolean; right?: boolean; top?: boolean } | false>(false);
     const dimensionsRef = useRef({ height: state.height, width: state.width });
-    const enteringFromRectRef = useRef<DOMRect | null>(null);
-    const lastDockedRectRef = useRef<DOMRect | null>(null);
+    const enteringFromRectRef = useRef<DOMRect | undefined>(undefined);
+    const lastDockedRectRef = useRef<DOMRect | undefined>(undefined);
     const previousIsFullscreenRef = useRef(false);
     const isExitAnimatingRef = useRef(false);
-    const fsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const fsTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const isFullscreen = state.viewMode === "fullscreen";
     const isWide = state.viewMode === "wide";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isPipSupported = (globalThis.window as any)?.documentPictureInPicture !== undefined;
-    const pipWindowRef = useRef<Window | null>(null);
+    const pipWindowRef = useRef<Window | undefined>(undefined);
 
     // ─── Compute inline panel size ────────────────────────────────────────────
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const panelSizeStyle = useMemo(() => {
         if (isFullscreen) {
             return {};
@@ -387,41 +399,26 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
         const h = `${(dimensionsRef.current.height / 100) * wh}px`;
 
-        switch (position) {
-            case "bottom":
-            case "top": {
-                // Both wide and container use left:50% + translateX(-50%) so that
-                // only `width` changes between modes — CSS can then transition it
-                // smoothly without any positional jump.
-                return {
-                    height: h,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    // min() embeds the 1280px cap into the computed width value so
-                    // CSS width-transition works (both sides are pixel values).
-                    width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
-                };
-            }
-            case "left":
-            case "right": {
-                return { width: `${(dimensionsRef.current.width / 100) * ww}px` };
-            }
-            default: {
-                return {
-                    height: h,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
-                };
-            }
+        if (position === "left" || position === "right") {
+            return { width: `${(dimensionsRef.current.width / 100) * ww}px` };
         }
+
+        // "bottom" and "top": Both wide and container use left:50% + translateX(-50%) so that
+        // only `width` changes between modes — CSS can then transition it smoothly.
+        return {
+            height: h,
+            left: "50%",
+            transform: "translateX(-50%)",
+            // min() embeds the 1280px cap into the computed width value so
+            // CSS width-transition works (both sides are pixel values).
+            width: isWide ? "calc(100vw - 2rem)" : "min(calc(100vw - 2rem), 1280px)",
+        };
         // rerender counter triggers recompute on each drag step
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isFullscreen, isWide, position, rerender]);
 
     // ─── Resize event handlers ────────────────────────────────────────────────
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent): void => {
+        const handleMouseMove = (event: MouseEvent): void => {
             if (!isResizingRef.current || !panelDivRef.current) {
                 return;
             }
@@ -432,19 +429,19 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             const current = { ...dimensionsRef.current };
 
             if (isResizingRef.current.top) {
-                const heightPx = Math.abs(box.bottom - e.clientY);
+                const heightPx = Math.abs(box.bottom - event.clientY);
 
                 current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.bottom) {
-                const heightPx = Math.abs(e.clientY - box.top);
+                const heightPx = Math.abs(event.clientY - box.top);
 
                 current.height = clamp((heightPx / wh) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.right) {
-                const widthPx = Math.abs(e.clientX - box.left);
+                const widthPx = Math.abs(event.clientX - box.left);
 
                 current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             } else if (isResizingRef.current.left) {
-                const widthPx = Math.abs(box.right - e.clientX);
+                const widthPx = Math.abs(box.right - event.clientX);
 
                 current.width = clamp((widthPx / ww) * 100, PANEL_MIN_PERCENT, PANEL_MAX_PERCENT);
             }
@@ -482,9 +479,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
         previousIsFullscreenRef.current = isFullscreen;
 
-        if (fsTimerRef.current !== null) {
+        if (fsTimerRef.current !== undefined) {
             clearTimeout(fsTimerRef.current);
-            fsTimerRef.current = null;
+            fsTimerRef.current = undefined;
         }
 
         const element = panelDivRef.current;
@@ -497,7 +494,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             // ── Entering fullscreen ──────────────────────────────────────────
             const rect = enteringFromRectRef.current;
 
-            enteringFromRectRef.current = null;
+            enteringFromRectRef.current = undefined;
 
             const ww = globalThis.window?.innerWidth ?? 0;
             const wh = globalThis.window?.innerHeight ?? 0;
@@ -515,7 +512,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 fsTimerRef.current = setTimeout(() => {
                     element.style.clipPath = "";
                     element.style.transition = "";
-                    fsTimerRef.current = null;
+                    fsTimerRef.current = undefined;
                 }, 380);
             });
         } else if (!isFullscreen && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
@@ -549,6 +546,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
     // ─── PiP activation ───────────────────────────────────────────────────────
     const activatePip = async (): Promise<void> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pipApi = (globalThis.window as any)?.documentPictureInPicture;
 
         if (!pipApi) {
@@ -606,7 +604,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
             pipWin.addEventListener("pagehide", () => {
                 updateState({ isPip: false });
-                pipWindowRef.current = null;
+                pipWindowRef.current = undefined;
             });
         } catch (error) {
             console.error("[dev-toolbar] PiP activation failed:", error);
@@ -619,8 +617,8 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             return undefined;
         }
 
-        const handleKeyDown = (e: KeyboardEvent): void => {
-            if (e.key === "Escape") {
+        const handleKeyDown = (event_: KeyboardEvent): void => {
+            if (event_.key === "Escape") {
                 onClose();
             }
         };
@@ -633,13 +631,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
     const activeApp = useMemo(() => apps.find((a) => a.id === activeAppId), [apps, activeAppId]);
 
     if (!isRendered) {
-        return null;
+        return undefined;
     }
 
     const startResize
         = (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
-            (e: MouseEvent): void => {
-                e.preventDefault();
+            (event_: MouseEvent): void => {
+                event_.preventDefault();
                 isResizingRef.current = direction;
             };
 
@@ -770,20 +768,21 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         }}
                                         type="button"
                                     >
-                                        {app.icon ? (
+                                        {app.icon
+                                            ? (
                                             <span
                                                 class={cn(
                                                     "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
                                                     activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                                 )}
-                                                // eslint-disable-next-line react/no-danger
                                                 dangerouslySetInnerHTML={{ __html: app.icon }}
                                             />
-                                        ) : (
+                                            )
+                                            : (
                                             <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
                                                 {app.name.slice(0, 2)}
                                             </span>
-                                        )}
+                                            )}
 
                                         {!sidebarCollapsed && (
                                             <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>
@@ -797,11 +796,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                 "pointer-events-none absolute top-1.5 rounded-full",
                                                 sidebarCollapsed ? "right-1.5" : "right-2.5",
                                                 "size-1.5",
-                                                app.notification.level === "error"
-                                                    ? "bg-destructive"
-                                                    : app.notification.level === "warning"
-                                                        ? "bg-warning"
-                                                        : "bg-info",
+                                                getNotificationColor(app.notification.level),
                                             )}
                                         />
                                     )}
@@ -911,9 +906,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                             const wh = globalThis.window?.innerHeight ?? 0;
                                             const targetClip = `inset(${rect.top}px ${ww - rect.right}px ${wh - rect.bottom}px ${rect.left}px)`;
 
-                                            if (fsTimerRef.current !== null) {
+                                            if (fsTimerRef.current !== undefined) {
                                                 clearTimeout(fsTimerRef.current);
-                                                fsTimerRef.current = null;
+                                                fsTimerRef.current = undefined;
                                             }
 
                                             isExitAnimatingRef.current = true;
@@ -929,7 +924,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                     element.style.clipPath = "";
                                                     element.style.transition = "";
                                                     isExitAnimatingRef.current = false;
-                                                    fsTimerRef.current = null;
+                                                    fsTimerRef.current = undefined;
                                                     // State change after animation — useLayoutEffect will
                                                     // see the exit branch but isExitAnimatingRef is now
                                                     // false so it'll do the instant class-swap freeze.
@@ -999,9 +994,11 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
                     {/* Scrollable content */}
                     <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
-                        {activeApp ? (
+                        {activeApp
+                            ? (
                             <AppContent app={activeApp} key={activeApp.id} />
-                        ) : (
+                            )
+                            : (
                             <div class="flex flex-col items-center justify-center h-full gap-7 p-8 select-none">
                                 {/* Hero icon */}
                                 <div class="flex flex-col items-center gap-3">
@@ -1033,17 +1030,18 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                     onClick={() => onToggleApp(a.id).catch(console.error)}
                                                     type="button"
                                                 >
-                                                    {a.icon ? (
+                                                    {a.icon
+                                                        ? (
                                                         <span
                                                             class="size-3.5 shrink-0 flex items-center justify-center [&_svg]:size-3.5 text-muted-foreground"
-                                                            // eslint-disable-next-line react/no-danger
                                                             dangerouslySetInnerHTML={{ __html: a.icon }}
                                                         />
-                                                    ) : (
+                                                        )
+                                                        : (
                                                         <span class="size-3.5 text-[0.5rem] font-bold text-muted-foreground shrink-0 text-center">
                                                             {a.name.slice(0, 2).toUpperCase()}
                                                         </span>
-                                                    )}
+                                                        )}
                                                     <span class="text-[0.75rem] font-medium text-muted-foreground">{a.name}</span>
                                                 </button>
                                             ))}
@@ -1051,7 +1049,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     </div>
                                 )}
                             </div>
-                        )}
+                            )}
                     </div>
                 </div>
             </div>

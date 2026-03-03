@@ -38,11 +38,11 @@ export interface MessageChannel<TEvents extends Record<string, (...args: any[]) 
 export type ChannelFactory<TEvents extends Record<string, (...args: any[]) => void>> = () => MessageChannel<TEvents>;
 
 /**
- * Message channel context
+ * Factory result providing a method to instantiate named message channels.
  */
 export interface MessageChannelContext<TEvents extends Record<string, (...args: any[]) => void>> {
     /**
-     * Create a new channel instance
+     * Creates and returns a new channel instance.
      */
     createChannel: () => MessageChannel<TEvents>;
 }

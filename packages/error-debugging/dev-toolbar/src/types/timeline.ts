@@ -1,15 +1,16 @@
 /**
- * Timeline event level
+ * Severity levels for timeline events.
  */
 export type TimelineEventLevel = "info" | "warning" | "error";
 
 /**
- * Timeline event
+ * A single captured event displayed in the timeline panel.
  */
 export interface TimelineEvent {
     /**
      * Optional event data
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data?: Record<string, any>;
 
     /**
@@ -44,7 +45,7 @@ export interface TimelineEvent {
 }
 
 /**
- * Timeline group
+ * A named group that holds related timeline events.
  */
 export interface TimelineGroup {
     /**

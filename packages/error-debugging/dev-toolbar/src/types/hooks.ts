@@ -4,86 +4,84 @@ import type { TimelineEvent } from "./timeline";
 /**
  * Hook event definitions
  */
-export interface HookEvents {
-    /**
-     * Extension point for custom events
-     */
+interface HookEvents {
+    // Extension point for custom events.
     [key: string]: (...args: any[]) => void;
 
     /**
-     * App error occurred
-     * @param error Error object
-     * @param appId Optional app ID where error occurred
+     * App error occurred.
+     * @param error Error object.
+     * @param appId Optional app ID where error occurred.
      */
     "app:error": (error: Error, appId?: string) => void;
 
     /**
-     * DevTools closed
+     * DevTools closed.
      */
     "devtools:close": () => void;
 
     /**
-     * DevTools initialized
+     * DevTools initialized.
      */
     "devtools:init": () => void;
 
     /**
-     * DevTools opened
-     * @param appId ID of the opened app
+     * DevTools opened.
+     * @param appId ID of the opened app.
      */
     "devtools:open": (appId: string) => void;
 
     /**
-     * Timeline event added
-     * @param event Timeline event
+     * Timeline event added.
+     * @param event Timeline event.
      */
     "timeline:event": (event: TimelineEvent) => void;
 }
 
 /**
- * Dev toolbar hook interface
+ * Dev toolbar hook interface.
  * Exposed as window.__DEV_TOOLBAR_HOOK__
  */
-export interface DevToolbarHook {
+interface DevToolbarHook {
     /**
-     * Add a timeline event
-     * @param groupId Timeline group ID
-     * @param event Timeline event
+     * Adds a timeline event.
+     * @param groupId Timeline group ID.
+     * @param event Timeline event.
      */
     addTimelineEvent: (groupId: string, event: TimelineEvent) => void;
 
     /**
-     * Emit an event
-     * @param event Event name
-     * @param args Event arguments
+     * Emits an event.
+     * @param event Event name.
+     * @param args Event arguments.
      */
     emit: <T extends keyof HookEvents>(event: T, ...args: Parameters<HookEvents[T]>) => void;
 
     /**
-     * Unsubscribe from an event
-     * @param event Event name
-     * @param handler Optional specific handler to remove
+     * Unsubscribes from an event.
+     * @param event Event name.
+     * @param handler Optional specific handler to remove.
      */
     off: <T extends keyof HookEvents>(event: T, handler?: HookEvents[T]) => void;
 
     /**
-     * Subscribe to an event
-     * @param event Event name
-     * @param handler Event handler
-     * @returns Unsubscribe function
+     * Subscribes to an event.
+     * @param event Event name.
+     * @param handler Event handler.
+     * @returns Unsubscribe function.
      */
     on: <T extends keyof HookEvents>(event: T, handler: HookEvents[T]) => () => void;
 
     /**
-     * Subscribe to an event once
-     * @param event Event name
-     * @param handler Event handler
+     * Subscribes to an event once.
+     * @param event Event name.
+     * @param handler Event handler.
      */
     once: <T extends keyof HookEvents>(event: T, handler: HookEvents[T]) => void;
 
     /**
-     * Register a custom app
-     * @param app App definition
+     * Registers a custom app.
+     * @param app App definition.
      */
     registerApp: (app: DevToolbarApp) => void;
 }
@@ -94,8 +92,10 @@ export interface DevToolbarHook {
 declare global {
     interface Window {
         /**
-         * Dev toolbar hook for library integrations
+         * Dev toolbar hook for library integrations.
          */
         __DEV_TOOLBAR_HOOK__?: DevToolbarHook;
     }
 }
+
+export type { DevToolbarHook, HookEvents };

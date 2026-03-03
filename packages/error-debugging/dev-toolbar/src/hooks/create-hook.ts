@@ -3,17 +3,17 @@ import type { DevToolbarHook, HookEvents } from "../types/hooks";
 import type { TimelineEvent } from "../types/timeline";
 
 /**
- * Event handler storage
+ * Event handler storage.
  */
 type EventHandlers = Map<keyof HookEvents, Set<HookEvents[keyof HookEvents]>>;
 
 /**
- * Creates a dev toolbar hook instance
- * @param onRegisterApp Callback when app is registered
- * @param onTimelineEvent Callback when timeline event is added
- * @returns Hook instance
+ * Creates a dev toolbar hook instance.
+ * @param onRegisterApp Callback when app is registered.
+ * @param onTimelineEvent Callback when timeline event is added.
+ * @returns Hook instance.
  */
-export const createDevToolbarHook = (
+const createDevToolbarHook = (
     onRegisterApp?: (app: DevToolbarApp) => void,
     onTimelineEvent?: (groupId: string, event: TimelineEvent) => void,
 ): DevToolbarHook => {
@@ -69,6 +69,7 @@ export const createDevToolbarHook = (
                 handlers.set(event, new Set());
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             handlers.get(event)!.add(handler);
 
             // Return unsubscribe function
@@ -101,3 +102,6 @@ export const createDevToolbarHook = (
         },
     };
 };
+
+export { createDevToolbarHook };
+export default createDevToolbarHook;

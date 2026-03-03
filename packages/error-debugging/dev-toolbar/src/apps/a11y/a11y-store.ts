@@ -1,15 +1,15 @@
-// ─── Exported types ───────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-export type Severity = "critical" | "minor" | "moderate" | "serious";
+type Severity = "critical" | "minor" | "moderate" | "serious";
 
-export type Standard = "best-practice" | "wcag21aa" | "wcag22aa" | "wcag2a";
+type Standard = "best-practice" | "wcag21aa" | "wcag22aa" | "wcag2a";
 
-export interface A11yNode {
+interface A11yNode {
     html: string;
     selector: string;
 }
 
-export interface A11yIssue {
+interface A11yIssue {
     helpUrl: string;
     id: string;
     impact: Severity;
@@ -18,11 +18,11 @@ export interface A11yIssue {
     wcagTags: string[];
 }
 
-export interface A11yStoreState {
+interface A11yStoreState {
     isScanning: boolean;
     issues: A11yIssue[];
-    lastScan: null | string; // ISO date string
-    scanError: null | string;
+    lastScan: string | undefined; // ISO date string
+    scanError: string | undefined;
     showOverlays: boolean;
     standard: Standard;
 }
@@ -33,19 +33,19 @@ interface AxeViolation {
     help: string;
     helpUrl: string;
     id: string;
-    impact: null | string;
+    impact: string | undefined;
     nodes: { html: string; target: unknown[] }[];
     tags: string[];
 }
 
 interface PersistedData {
     issues: A11yIssue[];
-    lastScan: null | string;
+    lastScan: string | undefined;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const SEVERITY_ORDER: Severity[] = ["critical", "serious", "moderate", "minor"];
+const SEVERITY_ORDER: Severity[] = ["critical", "serious", "moderate", "minor"];
 
 const SEVERITY_OUTLINE_COLOR: Record<Severity, string> = {
     critical: "rgb(239,68,68)",
@@ -73,14 +73,14 @@ const loadFromSession = (): PersistedData => {
             const parsed = JSON.parse(raw) as PersistedData;
 
             if (Array.isArray(parsed.issues)) {
-                return { issues: parsed.issues, lastScan: parsed.lastScan ?? null };
+                return { issues: parsed.issues, lastScan: parsed.lastScan ?? undefined };
             }
         }
     } catch {
         // ignore parse / quota errors
     }
 
-    return { issues: [], lastScan: null };
+    return { issues: [], lastScan: undefined };
 };
 
 // ─── Overlay DOM helpers ──────────────────────────────────────────────────────
@@ -195,13 +195,13 @@ class A11yStore {
             isScanning: false,
             issues,
             lastScan,
-            scanError: null,
+            scanError: undefined,
             showOverlays: false,
             standard: "wcag21aa",
         };
     }
 
-    /** Remove all outline highlights from the page */
+    // eslint-disable-next-line class-methods-use-this
     public clearHighlights(): void {
         clearHighlightsDOM();
     }
@@ -210,7 +210,7 @@ class A11yStore {
         return this.state;
     }
 
-    /** Scroll to and outline a single issue's elements */
+    // eslint-disable-next-line class-methods-use-this
     public highlightIssue(issue: A11yIssue): void {
         clearHighlightsDOM();
 
@@ -234,13 +234,12 @@ class A11yStore {
         }
     }
 
-    /** Run an axe-core scan and persist results */
     public async scan(disabledRules: string[] = []): Promise<void> {
         if (this.state.isScanning) {
             return;
         }
 
-        this.update({ isScanning: true, scanError: null });
+        this.update({ isScanning: true, scanError: undefined });
 
         try {
             const results = await runAxeScan(this.state.standard);
@@ -260,7 +259,6 @@ class A11yStore {
         }
     }
 
-    /** Toggle overlay highlights on all affected elements */
     public setShowOverlays(show: boolean): void {
         this.update({ showOverlays: show });
 
@@ -271,22 +269,21 @@ class A11yStore {
         }
     }
 
-    /** Change the WCAG standard used for future scans */
     public setStandard(standard: Standard): void {
         this.update({ standard });
     }
 
-    public subscribe(function_: Listener): () => void {
-        this.listeners.add(function_);
+    public subscribe(listener: Listener): () => void {
+        this.listeners.add(listener);
 
         return () => {
-            this.listeners.delete(function_);
+            this.listeners.delete(listener);
         };
     }
 
     private notify(): void {
-        for (const function_ of this.listeners) {
-            function_();
+        for (const listener of this.listeners) {
+            listener();
         }
     }
 
@@ -304,4 +301,7 @@ class A11yStore {
     }
 }
 
-export const a11yStore: A11yStore = new A11yStore();
+const a11yStore: A11yStore = new A11yStore();
+
+export type { A11yIssue, A11yNode, A11yStoreState, Severity, Standard };
+export { a11yStore, SEVERITY_ORDER };

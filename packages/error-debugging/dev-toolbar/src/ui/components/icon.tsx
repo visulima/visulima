@@ -17,10 +17,9 @@ interface IconProps {
 /**
  * Renders a lucide-static icon using CSS mask-image.
  * Color is driven by the parent element's `color` property (currentColor).
- *
- * Usage:
- *   import xIcon from "lucide-static/icons/x.svg?data-uri&amp;encoding=css";
- *   &lt;Icon src={xIcon} size={13} />
+ * @example
+ * import xIcon from "lucide-static/icons/x.svg?data-uri&amp;encoding=css";
+ * &lt;Icon src={xIcon} size={13} />
  */
 const Icon = ({ class: className, size = 13, src }: IconProps): ComponentChildren => (
     <span

@@ -1,4 +1,6 @@
-const escapeRegExp = (s: string): string => s.replaceAll(/[.+^${}()|[\]\\]/g, String.raw`\$&`);
+const ESCAPE_REGEXP_CHARS = /[.+^${}()|[\]\\]/g;
+
+const escapeRegExp = (s: string): string => s.replaceAll(ESCAPE_REGEXP_CHARS, String.raw`\$&`);
 
 /**
  * Convert a glob pattern string to a RegExp.
@@ -7,7 +9,7 @@ const escapeRegExp = (s: string): string => s.replaceAll(/[.+^${}()|[\]\\]/g, St
 const globToRegex = (glob: string): RegExp => {
     const pattern = glob
         .split("**")
-        .map((segment) => segment.split("*").map(escapeRegExp).join("[^/]*"))
+        .map((segment) => segment.split("*").map((s) => escapeRegExp(s)).join("[^/]*"))
         .join(".*");
 
     return new RegExp(pattern);
@@ -17,5 +19,13 @@ const globToRegex = (glob: string): RegExp => {
  * Returns true if `value` matches any of the given patterns.
  * Strings are treated as glob patterns; RegExps are tested directly.
  */
-export const matcher = (patterns: (RegExp | string)[], value: string): boolean =>
-    patterns.some((p) => p instanceof RegExp ? p.test(value) : globToRegex(p).test(value));
+const matcher = (patterns: (RegExp | string)[], value: string): boolean =>
+    patterns.some((p) => {
+        if (p instanceof RegExp) {
+            return p.test(value);
+        }
+
+        return globToRegex(p).test(value);
+    });
+
+export default matcher;

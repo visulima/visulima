@@ -24,6 +24,8 @@ afterEach(cleanup);
 
 describe("tooltip", () => {
     it("tooltipTrigger renders children", () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
@@ -35,6 +37,8 @@ describe("tooltip", () => {
     });
 
     it("hover on trigger shows content", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
@@ -52,6 +56,8 @@ describe("tooltip", () => {
     });
 
     it("mouse leave hides content", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
@@ -72,6 +78,8 @@ describe("tooltip", () => {
     });
 
     it("tooltipContent has role=tooltip", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Hover me</TooltipTrigger>
@@ -86,6 +94,8 @@ describe("tooltip", () => {
     });
 
     it("tooltipContent renders children", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Trigger</TooltipTrigger>
@@ -100,6 +110,8 @@ describe("tooltip", () => {
     });
 
     it("merges custom class on TooltipContent", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip>
                 <TooltipTrigger>Trigger</TooltipTrigger>
@@ -114,6 +126,8 @@ describe("tooltip", () => {
     });
 
     it("passes side prop to computePosition", async () => {
+        expect.hasAssertions();
+
         const { computePosition } = await import("@floating-ui/dom");
 
         render(
@@ -133,6 +147,8 @@ describe("tooltip", () => {
     });
 
     it("sideOffset defaults to 4", async () => {
+        expect.hasAssertions();
+
         const { offset } = await import("@floating-ui/dom");
 
         render(
@@ -152,6 +168,8 @@ describe("tooltip", () => {
     });
 
     it("delayDuration=0 shows immediately (default)", async () => {
+        expect.hasAssertions();
+
         render(
             <Tooltip delayDuration={0}>
                 <TooltipTrigger>Trigger</TooltipTrigger>

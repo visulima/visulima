@@ -12,16 +12,51 @@ import { loadSettings } from "./settings";
 import { sharedToolbarStylesheet } from "./stylesheet";
 
 /**
- * Dev Toolbar Web Component
+ * Dev Toolbar Web Component.
  */
 export class DevToolbar extends HTMLElement {
+    /**
+     * Injects the JetBrains Mono font into document.head once.
+     * The `@font-face` declared in the document is part of the global font registry and
+     * is accessible from within shadow DOM roots — no duplication needed.
+     */
+    private static injectFont(): void {
+        const id = "__v_dt__font";
+
+        if (document.querySelector(`#${id}`)) {
+            return;
+        }
+
+        // Preconnect hints reduce first-byte latency for the font CDN
+        const preconnect1 = document.createElement("link");
+
+        preconnect1.rel = "preconnect";
+        preconnect1.href = "https://fonts.googleapis.com";
+        document.head.append(preconnect1);
+
+        const preconnect2 = document.createElement("link");
+
+        preconnect2.rel = "preconnect";
+        preconnect2.href = "https://fonts.gstatic.com";
+        preconnect2.crossOrigin = "anonymous";
+        document.head.append(preconnect2);
+
+        const stylesheet = document.createElement("link");
+
+        stylesheet.id = id;
+        stylesheet.rel = "stylesheet";
+        // JetBrains Mono — monospace font designed for developers; terminal HUD aesthetic
+        stylesheet.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap";
+        document.head.append(stylesheet);
+    }
+
     private appManager: AppManager;
 
     private hasBeenInitialized = false;
 
     private customAppsToShow = 3;
 
-    private renderRoot: HTMLElement | null = null;
+    private renderRoot: HTMLElement | undefined = undefined;
 
     public constructor() {
         super();
@@ -31,8 +66,8 @@ export class DevToolbar extends HTMLElement {
     }
 
     /**
-     * Called when element is inserted into the DOM
-     * According to Preact docs, rendering should happen here or after connection
+     * Called when element is inserted into the DOM.
+     * According to Preact docs, rendering should happen here or after connection.
      */
     public connectedCallback(): void {
         // If init() was called before connection, ensure render happens
@@ -43,14 +78,15 @@ export class DevToolbar extends HTMLElement {
     }
 
     /**
-     * Called when element is removed from the DOM
-     * Clean up Preact component to prevent memory leaks
+     * Called when element is removed from the DOM.
+     * Cleans up the Preact component to prevent memory leaks.
      */
     public disconnectedCallback(): void {
         // Unmount Preact component when element is removed
         if (this.renderRoot) {
+            // eslint-disable-next-line unicorn/no-null
             render(null, this.renderRoot);
-            this.renderRoot = null;
+            this.renderRoot = undefined;
         }
     }
 
@@ -178,7 +214,7 @@ export class DevToolbar extends HTMLElement {
     }
 
     /**
-     * Register an app.
+     * Adds an app to the toolbar and triggers a re-render.
      */
     public registerApp(app: DevToolbarApp, builtIn = false): void {
         this.appManager.registerApp(app, builtIn);
@@ -193,42 +229,7 @@ export class DevToolbar extends HTMLElement {
     }
 
     /**
-     * Inject Geist font into document.head once.
-     * @font-face declared in the document is part of the global font registry and
-     * is accessible from within shadow DOM roots — no duplication needed.
-     */
-    private static injectFont(): void {
-        const id = "__v_dt__font";
-
-        if (document.getElementById(id)) {
-            return;
-        }
-
-        // Preconnect hints reduce first-byte latency for the font CDN
-        const preconnect1 = document.createElement("link");
-
-        preconnect1.rel = "preconnect";
-        preconnect1.href = "https://fonts.googleapis.com";
-        document.head.append(preconnect1);
-
-        const preconnect2 = document.createElement("link");
-
-        preconnect2.rel = "preconnect";
-        preconnect2.href = "https://fonts.gstatic.com";
-        preconnect2.crossOrigin = "anonymous";
-        document.head.append(preconnect2);
-
-        const stylesheet = document.createElement("link");
-
-        stylesheet.id = id;
-        stylesheet.rel = "stylesheet";
-        // JetBrains Mono — monospace font designed for developers; terminal HUD aesthetic
-        stylesheet.href = "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap";
-        document.head.append(stylesheet);
-    }
-
-    /**
-     * Render the toolbar UI using Preact
+     * Renders the toolbar UI using Preact.
      */
     private render(): void {
         const apps = this.appManager.getAllApps();
@@ -276,7 +277,7 @@ export class DevToolbar extends HTMLElement {
         }
 
         const activeApp = this.appManager.getActiveApp();
-        const activeAppId = activeApp?.id || null;
+        const activeAppId = activeApp?.id;
 
         // Render Preact component
         render(
@@ -310,7 +311,7 @@ export class DevToolbar extends HTMLElement {
     }
 
     /**
-     * Setup event listeners.
+     * Attaches global keyboard shortcuts and other DOM event listeners.
      */
     private setupEventListeners(): void {
         // Keyboard shortcuts
@@ -326,9 +327,15 @@ export class DevToolbar extends HTMLElement {
             const activeApp = this.appManager.getActiveApp();
 
             if (activeApp) {
-                this.appManager.toggleApp(activeApp.id).then(() => {
-                    this.render();
-                });
+                this.appManager.toggleApp(activeApp.id)
+                    .then(() => {
+                        this.render();
+
+                        return undefined;
+                    })
+                    .catch((error: unknown) => {
+                        console.error("[dev-toolbar] Error toggling app:", error);
+                    });
             } else {
                 this.setToolbarVisible(false);
             }

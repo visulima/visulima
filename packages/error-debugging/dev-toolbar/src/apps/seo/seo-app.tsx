@@ -74,7 +74,7 @@ const readMetaTags = (): MetaTags => {
 
 // ─── Tag definitions (for Missing tab) ────────────────────────────────────────
 
-interface TagDef {
+interface TagDefinition {
     description: string;
     key: keyof MetaTags;
     label: string;
@@ -82,7 +82,7 @@ interface TagDef {
     snippet: string;
 }
 
-const TAG_DEFINITIONS: TagDef[] = [
+const TAG_DEFINITIONS: TagDefinition[] = [
     // ── Required ──────────────────────────────────────────────────────────────
     {
         description: "Page title shown in browser tabs and search engine results",
@@ -354,7 +354,7 @@ const SectionHeading = ({ children }: { children: ComponentChildren }): Componen
 
 const CopyButton = ({ text }: { text: string }): ComponentChildren => {
     const [copied, setCopied] = useState(false);
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const handleCopy = (): void => {
         navigator.clipboard
@@ -367,8 +367,10 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
                 }
 
                 timerRef.current = setTimeout(setCopied, 2000, false);
+
+                return undefined;
             })
-            .catch(console.error);
+            .catch(() => { /* ignore */ });
     };
 
     return (
@@ -385,7 +387,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
 // ─── Missing tag card ─────────────────────────────────────────────────────────
 
-const MissingTagCard = ({ def }: { def: TagDef }): ComponentChildren => (
+const MissingTagCard = ({ def }: { def: TagDefinition }): ComponentChildren => (
     <div class="border border-border/60 bg-card p-3 space-y-2">
         <div class="flex items-start justify-between gap-3">
             <code class="text-[0.7rem] font-mono font-bold text-foreground">{def.label}</code>
@@ -408,7 +410,7 @@ const MissingTagCard = ({ def }: { def: TagDef }): ComponentChildren => (
 type SeoTab = "missing" | "preview" | "tags";
 
 const SeoApp = (_props: AppComponentProps): ComponentChildren => {
-    const [meta, setMeta] = useState<MetaTags | null>(null);
+    const [meta, setMeta] = useState<MetaTags | undefined>(undefined);
     const [activeTab, setActiveTab] = useState<SeoTab>("preview");
 
     const refresh = (): void => {
@@ -445,8 +447,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border shrink-0">
                 <div class="flex items-center gap-0">
                     {(["preview", "tags", "missing"] as const).map((tab) => {
-                        const label = tab === "preview" ? "Social Previews" : tab === "tags" ? "Meta Tags" : "Missing";
-                        const badge = tab === "missing" && missingTotal > 0 ? missingTotal : null;
+                        const labelMid = tab === "tags" ? "Meta Tags" : "Missing";
+                        const label = tab === "preview" ? "Social Previews" : labelMid;
+                        const badge = tab === "missing" && missingTotal > 0 ? missingTotal : undefined;
 
                         return (
                             <button
@@ -461,7 +464,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 type="button"
                             >
                                 {label}
-                                {badge !== null && (
+                                {badge !== undefined && (
                                     <Badge class="text-[0.58rem] min-w-[1.1rem] text-center" variant={missingRequired.length > 0 ? "destructive" : "warning"}>
                                         {badge}
                                     </Badge>
@@ -571,8 +574,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                             </span>
                                         </p>
                                         <div class="space-y-2">
-                                            {missingRequired.map((def) => (
-                                                <MissingTagCard def={def} key={def.key} />
+                                            {missingRequired.map((definition) => (
+                                                <MissingTagCard def={definition} key={definition.key} />
                                             ))}
                                         </div>
                                     </div>
@@ -585,8 +588,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                             <span class="bg-warning/10 border border-warning/25 text-warning px-1 font-bold">{missingRecommended.length}</span>
                                         </p>
                                         <div class="space-y-2">
-                                            {missingRecommended.map((def) => (
-                                                <MissingTagCard def={def} key={def.key} />
+                                            {missingRecommended.map((definition) => (
+                                                <MissingTagCard def={definition} key={definition.key} />
                                             ))}
                                         </div>
                                     </div>

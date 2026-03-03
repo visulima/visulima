@@ -8,37 +8,49 @@ import cn from "../../utils/cn";
 
 type Tab = "colors" | "spacing" | "type" | "effects" | "config";
 
+// ─── Module-scope regex constants ─────────────────────────────────────────────
+
+const NUMERIC_SCALE_RE = /^\w+-\d+$/;
+const TRAILING_NUMBER_RE = /-\d+$/;
+const TRAILING_NUMBER_CAPTURE_RE = /-(\d+)$/;
+const CSS_VAR_PREFIX_RE = /^--/;
+
 // ─── CSS variable scanner ─────────────────────────────────────────────────────
 
 /**
  * Collect CSS custom properties from :root / html rules.
- * Recurses into @layer, @media, and @supports blocks because Tailwind v4
- * wraps its theme tokens inside `@layer theme { :root { ... } }`.
+ * Recurses into \@layer, \@media, and \@supports blocks because Tailwind v4
+ * wraps its theme tokens inside `\@layer theme { :root { ... } }`.
  */
+const isRootSelector = (selectorText: string): boolean =>
+    selectorText.split(",").some((s) => {
+        const t = s.trim();
+
+        return t === ":root" || t === "html";
+    });
+
+const collectRootStyleVariables = (style: CSSStyleDeclaration, variables: Map<string, string>): void => {
+    for (let i = 0; i < style.length; i += 1) {
+        const prop = style[i] as string;
+
+        if (prop.startsWith("--") && !prop.startsWith("--tw-") && !prop.startsWith("--brand-")) {
+            const value = style.getPropertyValue(prop).trim();
+
+            if (value) {
+                variables.set(prop, value);
+            }
+        }
+    }
+};
+
 const collectVariablesFromRules = (rules: CSSRuleList, variables: Map<string, string>): void => {
     for (const rule of rules) {
         if (rule instanceof CSSStyleRule) {
-            const isRoot = rule.selectorText.split(",").some((s) => {
-                const t = s.trim();
-
-                return t === ":root" || t === "html";
-            });
-
-            if (isRoot) {
-                for (let i = 0; i < rule.style.length; i++) {
-                    const prop = rule.style[i] as string;
-
-                    if (prop.startsWith("--") && !prop.startsWith("--tw-") && !prop.startsWith("--brand-")) {
-                        const value = rule.style.getPropertyValue(prop).trim();
-
-                        if (value) {
-                            variables.set(prop, value);
-                        }
-                    }
-                }
+            if (isRootSelector(rule.selectorText)) {
+                collectRootStyleVariables(rule.style, variables);
             }
         } else if ("cssRules" in rule && rule.cssRules instanceof CSSRuleList) {
-            // Recurse into @layer, @media, @supports, and any other grouping rule
+            // Recurse into \@layer, \@media, \@supports, and any other grouping rule
             collectVariablesFromRules(rule.cssRules as CSSRuleList, variables);
         }
     }
@@ -147,15 +159,15 @@ const extractTokens = (variables: Map<string, string>): TokenSet => {
         }
     }
 
-    spacing.sort((a, b) => a.numericPx - b.numericPx);
-    fontSizes.sort((a, b) => a.sizePx - b.sizePx);
+    const sortedSpacing = spacing.toSorted((a, b) => a.numericPx - b.numericPx);
+    const sortedFontSizes = fontSizes.toSorted((a, b) => a.sizePx - b.sizePx);
 
-    return { colors, fontFamilies, fontSizes, radii, shadows, spacing };
+    return { colors, fontFamilies, fontSizes: sortedFontSizes, radii, shadows, spacing: sortedSpacing };
 };
 
 // ─── Color grouping ───────────────────────────────────────────────────────────
 
-const isNumericScale = (name: string): boolean => /^\w+-\d+$/.test(name);
+const isNumericScale = (name: string): boolean => NUMERIC_SCALE_RE.test(name);
 
 const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>; semantic: ColorToken[] } => {
     const semantic: ColorToken[] = [];
@@ -163,7 +175,7 @@ const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>;
 
     for (const token of colors) {
         if (isNumericScale(token.name)) {
-            const scaleName = token.name.replace(/-\d+$/, "");
+            const scaleName = token.name.replace(TRAILING_NUMBER_RE, "");
             const existing = scaleMap.get(scaleName) ?? [];
 
             existing.push(token);
@@ -173,13 +185,13 @@ const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>;
         }
     }
 
-    for (const tokens of scaleMap.values()) {
-        tokens.sort((a, b) => {
-            const numberA = Number.parseInt(a.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
-            const numberB = Number.parseInt(b.name.match(/-(\d+)$/)?.[1] ?? "0", 10);
+    for (const [key, tokens] of scaleMap) {
+        scaleMap.set(key, tokens.toSorted((a, b) => {
+            const numberA = Number.parseInt(a.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+            const numberB = Number.parseInt(b.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
 
             return numberA - numberB;
-        });
+        }));
     }
 
     return { scales: scaleMap, semantic };
@@ -569,7 +581,7 @@ const ConfigSection = ({
 
 const ConfigTokenRow = ({ cssVar, isCustom, value }: { cssVar: string; isCustom: boolean; value: string }): ComponentChildren => {
     const { copied, copy } = useCopy();
-    const name = cssVar.replace(/^--/, "");
+    const name = cssVar.replace(CSS_VAR_PREFIX_RE, "");
 
     return (
         <button
@@ -602,8 +614,8 @@ const ConfigTab = ({
     loading,
     onRetry,
 }: {
-    configData: TailwindConfigResult | null;
-    error: string | null;
+    configData: TailwindConfigResult | undefined;
+    error: string | undefined;
     loading: boolean;
     onRetry: () => void;
 }): ComponentChildren => {
@@ -650,20 +662,20 @@ const ConfigTab = ({
     const scaleMap = new Map<string, [string, string][]>();
 
     for (const [cssVariable, value] of scaleColors) {
-        const scaleName = cssVariable.slice(8).replace(/-\d+$/, "");
+        const scaleName = cssVariable.slice(8).replace(TRAILING_NUMBER_RE, "");
         const existing = scaleMap.get(scaleName) ?? [];
 
         existing.push([cssVariable, value]);
         scaleMap.set(scaleName, existing);
     }
 
-    for (const tokens of scaleMap.values()) {
-        tokens.sort((a, b) => {
-            const numberA = Number.parseInt(a[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
-            const numberB = Number.parseInt(b[0].match(/-(\d+)$/)?.[1] ?? "0", 10);
+    for (const [key, tokens] of scaleMap) {
+        scaleMap.set(key, tokens.toSorted((a, b) => {
+            const numberA = Number.parseInt(a[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+            const numberB = Number.parseInt(b[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
 
             return numberA - numberB;
-        });
+        }));
     }
 
     const filteredScales = colorSearch
@@ -673,17 +685,17 @@ const ConfigTab = ({
     // ── Non-color token groups ──
     const spacingEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--spacing-"))
-        .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
+        .toSorted(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
     const fontFamilyEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--font-"));
 
     const fontSizeEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--text-") && !k.includes("--line-height") && !k.endsWith("--font-weight"))
-        .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
+        .toSorted(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
     const breakpointEntries = Object.entries(allVariables)
         .filter(([k]) => k.startsWith("--breakpoint-"))
-        .sort(([, a], [, b]) => parseToPx(a) - parseToPx(b));
+        .toSorted(([, a], [, b]) => parseToPx(a) - parseToPx(b));
 
     const radiusEntries = Object.entries(allVariables).filter(([k]) => k.startsWith("--radius-"));
 
@@ -711,7 +723,11 @@ const ConfigTab = ({
     const otherEntries = Object.entries(allVariables).filter(([k]) => !knownPrefixes.some((p) => k.startsWith(p)));
 
     // Max spacing for bar widths
-    const maxSpacingPx = spacingEntries.reduce((m, [, v]) => Math.max(m, parseToPx(v)), 1);
+    let maxSpacingPx = 1;
+
+    for (const [, v] of spacingEntries) {
+        maxSpacingPx = Math.max(maxSpacingPx, parseToPx(v));
+    }
 
     return (
         <div>
@@ -720,11 +736,9 @@ const ConfigTab = ({
                 <span
                     class={cn(
                         "text-[0.6rem] font-bold uppercase tracking-wide px-1.5 py-0.5 shrink-0",
-                        version === "v4"
-                            ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20"
-                            : version === "v3"
-                                ? "bg-primary/10 text-primary border border-primary/20"
-                                : "bg-foreground/8 text-muted-foreground border border-border",
+                        version === "v4" && "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
+                        version === "v3" && "bg-primary/10 text-primary border border-primary/20",
+                        version === "unknown" && "bg-foreground/8 text-muted-foreground border border-border",
                     )}
                 >
                     {version === "unknown" ? "Tailwind" : `Tailwind ${version}`}
@@ -742,13 +756,15 @@ const ConfigTab = ({
             {Object.keys(customTheme).length > 0 && (
                 <ConfigSection count={Object.keys(customTheme).length} title="Custom Overrides">
                     <div class="py-1">
-                        {Object.entries(customTheme).map(([cssVariable, value]) =>
-                            (cssVariable.startsWith("--color-") && !isNumericScale(cssVariable.slice(8)) ? (
-                                <ConfigSemanticColorItem key={cssVariable} cssVar={cssVariable} isCustom value={value} />
-                            ) : (
-                                <ConfigTokenRow key={cssVariable} cssVar={cssVariable} isCustom value={value} />
-                            )),
-                        )}
+                        {Object.entries(customTheme).map(([cssVariable, value]) => {
+                            const isSemanticColor = cssVariable.startsWith("--color-") && !isNumericScale(cssVariable.slice(8));
+
+                            if (isSemanticColor) {
+                                return <ConfigSemanticColorItem cssVar={cssVariable} isCustom key={cssVariable} value={value} />;
+                            }
+
+                            return <ConfigTokenRow cssVar={cssVariable} isCustom key={cssVariable} value={value} />;
+                        })}
                     </div>
                 </ConfigSection>
             )}
@@ -770,7 +786,7 @@ const ConfigTab = ({
                     <div class="px-3 pt-2 pb-1 border-b border-border/20">
                         <input
                             class="w-full bg-foreground/4 border border-border/40 px-2 py-1 text-[0.68rem] font-mono text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary/40"
-                            onInput={(e) => setColorSearch((e.target as HTMLInputElement).value)}
+                            onInput={(event_) => setColorSearch((event_.target as HTMLInputElement).value)}
                             placeholder="Filter scales…"
                             type="text"
                             value={colorSearch}
@@ -944,19 +960,23 @@ const EmptyState = (): ComponentChildren => (
 
 const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const [tab, setTab] = useState<Tab>("colors");
-    const [configData, setConfigData] = useState<TailwindConfigResult | null>(null);
+    const [configData, setConfigData] = useState<TailwindConfigResult | undefined>(undefined);
     const [configLoading, setConfigLoading] = useState(false);
-    const [configError, setConfigError] = useState<string | null>(null);
+    const [configError, setConfigError] = useState<string | undefined>(undefined);
 
-    const tokens = useMemo(() => {
+    const tokensRef = useRef<ReturnType<typeof extractTokens> | undefined>(undefined);
+
+    if (!tokensRef.current) {
         const variables = scanRootVariables();
 
-        return extractTokens(variables);
-    }, []);
+        tokensRef.current = extractTokens(variables);
+    }
+
+    const tokens = tokensRef.current;
 
     const loadConfig = (): void => {
         setConfigLoading(true);
-        setConfigError(null);
+        setConfigError(undefined);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (helpers.rpc as any)
@@ -964,6 +984,8 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             .then((data: TailwindConfigResult) => {
                 setConfigData(data);
                 setConfigLoading(false);
+
+                return data;
             })
             .catch((error: Error) => {
                 setConfigError(error.message ?? "Failed to load Tailwind config");
@@ -976,7 +998,6 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         if (tab === "config" && !configData && !configLoading && !configError) {
             loadConfig();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tab]);
 
     const total = tokens.colors.length + tokens.spacing.length + tokens.fontSizes.length + tokens.radii.length;
@@ -1009,9 +1030,11 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 )}
             </div>
 
-            {total === 0 && tab !== "config" ? (
+            {total === 0 && tab !== "config"
+                ? (
                 <EmptyState />
-            ) : (
+                )
+                : (
                 <>
                     {/* Tab bar */}
                     <div class="flex border-b border-border shrink-0 overflow-x-auto">
@@ -1046,7 +1069,7 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         {tab === "config" && <ConfigTab configData={configData} error={configError} loading={configLoading} onRetry={loadConfig} />}
                     </div>
                 </>
-            )}
+                )}
         </div>
     );
 };
