@@ -163,6 +163,21 @@ export interface DevToolbarOptions {
     removeDevtoolsOnBuild?: boolean;
 
     /**
+     * The editor to open when clicking "Open in editor" in the inspector.
+     * Accepts any value supported by `launch-editor` — an editor name/alias
+     * (e.g. `"code"`, `"webstorm"`, `"vim"`, `"atom"`) or the full path to
+     * the editor executable.
+     *
+     * If omitted, `launch-editor` auto-detects the editor from the `EDITOR`
+     * / `VISUAL` environment variables or from the currently running IDE
+     * process detected on the OS process list.
+     *
+     * @example "webstorm"
+     * @example "code"
+     */
+    editor?: string;
+
+    /**
      * Custom server RPC functions
      */
     serverFunctions?: Partial<ServerFunctions>;
@@ -199,7 +214,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         configureServer(srv) {
             // Setup RPC context
-            createServerRPCContext(srv, options.serverFunctions);
+            createServerRPCContext(srv, options.serverFunctions, { editor: options.editor });
 
             // Send init event to clients on connection
             srv.ws.on("connection", () => {

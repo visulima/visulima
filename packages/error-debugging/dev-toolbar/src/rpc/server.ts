@@ -9,12 +9,12 @@ import { getViteConfig } from "./functions/vite-config";
 /**
  * Create default server functions bound to a server instance
  */
-const createDefaultServerFunctions = (server: ViteDevServer): Partial<ServerFunctions> => {
+const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?: string } = {}): Partial<ServerFunctions> => {
     return {
         getModuleGraph: async () => getModuleGraph(server),
         getTailwindConfig: async () => getTailwindConfig(server),
         getViteConfig: async () => getViteConfig(server),
-        openInEditor: async (file: string, line?: number, column?: number) => openInEditor(server, file, line, column),
+        openInEditor: async (file: string, line?: number, column?: number) => openInEditor(server, file, line, column, options.editor),
         readFile: async (path: string) => {
             const { readFile } = await import("node:fs/promises");
             const filePath = path.startsWith("/") ? path : `${server.config.root}/${path}`;
@@ -28,10 +28,11 @@ const createDefaultServerFunctions = (server: ViteDevServer): Partial<ServerFunc
  * Creates server-side RPC context
  * @param server Vite dev server instance
  * @param customFunctions Custom server functions to register
+ * @param options Additional options (e.g. which editor to launch)
  * @returns Server RPC context
  */
-export const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial<ServerFunctions>): ServerRPCContext => {
-    const defaultFunctions = createDefaultServerFunctions(server);
+export const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial<ServerFunctions>, options: { editor?: string } = {}): ServerRPCContext => {
+    const defaultFunctions = createDefaultServerFunctions(server, options);
     const functions: ServerFunctions = {
         ...defaultFunctions,
         ...customFunctions,

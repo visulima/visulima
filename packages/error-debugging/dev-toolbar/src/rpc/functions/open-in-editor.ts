@@ -11,16 +11,16 @@ import type { ViteDevServer } from "vite";
  * @param file File path (absolute or relative to server.config.root)
  * @param line Line number (1-based)
  * @param column Column number (1-based)
+ * @param editor Optional editor override — any value accepted by launch-editor
+ *   (e.g. "code", "webstorm", "vim", "/usr/local/bin/hx"). When omitted,
+ *   launch-editor auto-detects from EDITOR / VISUAL env vars or the running IDE.
  */
-export const openInEditor = async (server: ViteDevServer, file: string, line?: number, column?: number): Promise<void> => {
+export const openInEditor = async (server: ViteDevServer, file: string, line?: number, column?: number, editor?: string): Promise<void> => {
     const filePath = file.startsWith("/") ? file : path.join(server.config.root, file);
     const position = line !== undefined ? `:${line}${column !== undefined ? `:${column}` : ""}` : "";
     const target = `${filePath}${position}`;
 
-    // launch-editor picks the right CLI flags per editor (--goto for VS Code, -l
-    // for vim, etc.) and respects the EDITOR / VISUAL env vars or auto-detects
-    // the running editor from the OS process list.
     const { default: launch } = await import("launch-editor");
 
-    launch(target);
+    launch(target, editor);
 };
