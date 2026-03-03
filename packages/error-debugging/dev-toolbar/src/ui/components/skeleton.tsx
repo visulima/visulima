@@ -8,7 +8,7 @@ interface SkeletonProps extends JSX.HTMLAttributes<HTMLDivElement> {
 }
 
 const Skeleton = ({ class: className, ...rest }: SkeletonProps): JSX.Element => (
-    <div class={cn("animate-pulse rounded-md bg-primary/10", className)} {...rest} />
+    <div class={cn("animate-pulse rounded-none bg-primary/10", className)} {...rest} />
 );
 
 export default Skeleton;

@@ -24,7 +24,7 @@ const variantClasses: Record<BadgeVariant, string> = {
 const Badge = ({ children, class: className, variant = "default", ...rest }: BadgeProps): JSX.Element => (
     <div
         class={cn(
-            "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+            "inline-flex items-center rounded-none border px-2.5 py-0.5 text-xs font-semibold transition-colors",
             variantClasses[variant],
             className,
         )}
