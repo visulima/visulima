@@ -5,6 +5,7 @@ const LABEL_ID = "__vdt_inspector_label";
 const CURSOR_STYLE_ID = "__vdt_inspector_cursor";
 const BADGE_ID = "__vdt_inspector_badge";
 const BADGE_KEYFRAMES_ID = "__vdt_inspector_kf";
+const RESULT_ID = "__vdt_inspector_result";
 
 const getOrCreateOverlay = (): HTMLDivElement => {
     let overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
@@ -47,6 +48,38 @@ const getOrCreateOverlay = (): HTMLDivElement => {
     return overlay;
 };
 
+// Walk up the DOM to find the nearest element with data-vdt-source.
+const findSource = (el: Element): string | null => {
+    let node: Element | null = el;
+
+    while (node) {
+        const src = node.getAttribute("data-vdt-source");
+
+        if (src) {
+            return src;
+        }
+
+        node = node.parentElement;
+    }
+
+    return null;
+};
+
+// Format "src/routes/index.tsx:14:10" → "index.tsx:14" for compact label display.
+const formatSourceShort = (source: string): string => {
+    const parts = source.split(":");
+
+    if (parts.length < 3) {
+        return source;
+    }
+
+    const line = parts[parts.length - 2];
+    const filePath = parts.slice(0, -2).join(":");
+    const fileName = filePath.split("/").pop() ?? filePath;
+
+    return `${fileName}:${line}`;
+};
+
 const updateOverlayPosition = (el: Element): void => {
     const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
 
@@ -68,8 +101,10 @@ const updateOverlayPosition = (el: Element): void => {
         const tag = el.tagName.toLowerCase();
         const id = el.id ? `#${el.id}` : "";
         const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
+        const base = `${tag}${id}${cls}`;
 
-        label.textContent = `${tag}${id}${cls}`;
+        const source = findSource(el);
+        label.textContent = source ? `${base}  ·  ${formatSourceShort(source)}` : base;
 
         if (rect.top < 28) {
             label.style.bottom = "auto";
@@ -181,6 +216,167 @@ const removeFloatingBadge = (): void => {
     document.getElementById(BADGE_ID)?.remove();
 };
 
+// ─── Result popup ─────────────────────────────────────────────────────────────
+
+const removeResultPopup = (): void => {
+    document.getElementById(RESULT_ID)?.remove();
+};
+
+const makeActionBtn = (label: string, onClick: () => void): HTMLButtonElement => {
+    const b = document.createElement("button");
+
+    b.textContent = label;
+    b.style.cssText = [
+        "background:rgba(124,58,237,0.12)",
+        "border:1px solid rgba(124,58,237,0.35)",
+        "border-radius:4px",
+        "color:#a78bfa",
+        "cursor:pointer",
+        "font:11px/1 'JetBrains Mono',monospace",
+        "padding:5px 10px",
+        "white-space:nowrap",
+    ].join(";");
+    b.addEventListener("pointerover", () => {
+        b.style.background = "rgba(124,58,237,0.25)";
+        b.style.borderColor = "rgba(124,58,237,0.65)";
+    });
+    b.addEventListener("pointerout", () => {
+        b.style.background = "rgba(124,58,237,0.12)";
+        b.style.borderColor = "rgba(124,58,237,0.35)";
+    });
+    b.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onClick();
+    });
+
+    return b;
+};
+
+const showResultPopup = (el: Element, rect: DOMRect, source: string | null): void => {
+    removeResultPopup();
+
+    const popup = document.createElement("div");
+
+    popup.id = RESULT_ID;
+    popup.style.cssText = [
+        "position:fixed",
+        "z-index:2147483646",
+        "background:#0f0f17",
+        "border:1px solid rgba(124,58,237,0.55)",
+        "border-radius:6px",
+        "padding:10px 32px 10px 12px",
+        "font:12px/1.4 'JetBrains Mono',monospace",
+        "color:#cdd6f4",
+        "box-shadow:0 8px 32px rgba(0,0,0,.75)",
+        "min-width:200px",
+        "max-width:400px",
+        "pointer-events:auto",
+    ].join(";");
+
+    // Position below the element; flip up if too close to bottom edge.
+    let top = rect.bottom + 8;
+
+    if (top + 110 > window.innerHeight) {
+        top = rect.top - 110 - 8;
+    }
+
+    let left = rect.left;
+
+    if (left + 280 > window.innerWidth) {
+        left = Math.max(8, window.innerWidth - 288);
+    }
+
+    popup.style.top = `${top}px`;
+    popup.style.left = `${left}px`;
+
+    // Element label (tag + id + classes)
+    const tag = el.tagName.toLowerCase();
+    const elId = el.id ? `#${el.id}` : "";
+    const cls = el.classList.length > 0 ? `.${[...el.classList].slice(0, 3).join(".")}` : "";
+    const header = document.createElement("div");
+
+    header.style.cssText = "color:#a78bfa;font-weight:bold;margin-bottom:4px;word-break:break-all;";
+    header.textContent = `${tag}${elId}${cls}`;
+    popup.append(header);
+
+    // Source location
+    if (source) {
+        const srcEl = document.createElement("div");
+
+        srcEl.style.cssText = "color:#6272a4;margin-bottom:10px;word-break:break-all;font-size:10px;";
+        srcEl.textContent = source;
+        popup.append(srcEl);
+    }
+
+    // Action buttons row
+    const actions = document.createElement("div");
+
+    actions.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;";
+
+    if (source) {
+        actions.append(
+            makeActionBtn("Open in editor", () => {
+                void fetch(`/__open_in_editor?file=${encodeURIComponent(source)}`);
+                removeResultPopup();
+            }),
+        );
+    }
+
+    actions.append(
+        makeActionBtn("Copy HTML", () => {
+            void navigator.clipboard.writeText(el.outerHTML);
+            removeResultPopup();
+        }),
+    );
+
+    if (source) {
+        actions.append(
+            makeActionBtn("Copy path", () => {
+                void navigator.clipboard.writeText(source);
+                removeResultPopup();
+            }),
+        );
+    }
+
+    popup.append(actions);
+
+    // Close (×) button in top-right corner
+    const closeBtn = document.createElement("button");
+
+    closeBtn.textContent = "×";
+    closeBtn.style.cssText = [
+        "position:absolute",
+        "top:6px",
+        "right:8px",
+        "background:transparent",
+        "border:none",
+        "color:#6272a4",
+        "cursor:pointer",
+        "font:16px/1 monospace",
+        "padding:0",
+        "line-height:1",
+    ].join(";");
+    closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        removeResultPopup();
+    });
+    popup.append(closeBtn);
+
+    document.body.append(popup);
+
+    // Dismiss when clicking outside the popup (after a tick to skip this click).
+    const handleOutside = (e: MouseEvent): void => {
+        if (!popup.contains(e.target as Node)) {
+            removeResultPopup();
+            document.removeEventListener("click", handleOutside, true);
+        }
+    };
+
+    setTimeout(() => {
+        document.addEventListener("click", handleOutside, true);
+    }, 100);
+};
+
 // ─── Module-level inspection state ───────────────────────────────────────────
 
 let _inspectionCleanup: (() => void) | null = null;
@@ -236,8 +432,13 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
         e.preventDefault();
         e.stopPropagation();
 
+        const rect = target.getBoundingClientRect();
+        const source = findSource(target);
+
         cleanup();
         onComplete();
+
+        showResultPopup(target, rect, source);
     };
 
     const handleKeyDown = (e: KeyboardEvent): void => {
@@ -275,4 +476,5 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
  */
 export const stopGlobalInspection = (): void => {
     _inspectionCleanup?.();
+    removeResultPopup();
 };
