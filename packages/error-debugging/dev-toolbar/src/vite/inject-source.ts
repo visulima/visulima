@@ -1,10 +1,9 @@
-import { normalizePath } from "vite";
 import generate from "@babel/generator";
 import { parse } from "@babel/parser";
+import type { NodePath } from "@babel/traverse";
 import _traverse from "@babel/traverse";
 import * as t from "@babel/types";
-
-import type { NodePath } from "@babel/traverse";
+import { normalizePath } from "vite";
 
 import { matcher } from "./matcher";
 
@@ -20,11 +19,7 @@ export const SOURCE_ATTR = "data-vdt-source";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getPropsNameFromFunctionDeclaration = (
-    functionDeclaration:
-        | t.ArrowFunctionExpression
-        | t.FunctionDeclaration
-        | t.FunctionExpression
-        | t.VariableDeclarator,
+    functionDeclaration: t.ArrowFunctionExpression | t.FunctionDeclaration | t.FunctionExpression | t.VariableDeclarator,
 ): null | string => {
     let propsName: null | string = null;
 
@@ -51,9 +46,9 @@ const getPropsNameFromFunctionDeclaration = (
     };
 
     if (
-        functionDeclaration.type === "FunctionExpression" ||
-        functionDeclaration.type === "ArrowFunctionExpression" ||
-        functionDeclaration.type === "FunctionDeclaration"
+        functionDeclaration.type === "FunctionExpression"
+        || functionDeclaration.type === "ArrowFunctionExpression"
+        || functionDeclaration.type === "FunctionDeclaration"
     ) {
         extractFromParams(functionDeclaration.params);
 
@@ -62,8 +57,8 @@ const getPropsNameFromFunctionDeclaration = (
 
     // VariableDeclarator — init may be an arrow or function expression
     if (
-        functionDeclaration.type === "VariableDeclarator" &&
-        (functionDeclaration.init?.type === "ArrowFunctionExpression" || functionDeclaration.init?.type === "FunctionExpression")
+        functionDeclaration.type === "VariableDeclarator"
+        && (functionDeclaration.init?.type === "ArrowFunctionExpression" || functionDeclaration.init?.type === "FunctionExpression")
     ) {
         extractFromParams(functionDeclaration.init.params);
     }
@@ -110,12 +105,12 @@ const buildPositionMap = (originalCode: string): PositionMap => {
         trav(ast, {
             JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
                 const name = getNameOfElement(path.node.name);
-                const idx = counter.get(name) ?? 0;
+                const index = counter.get(name) ?? 0;
 
-                counter.set(name, idx + 1);
+                counter.set(name, index + 1);
 
                 if (path.node.loc) {
-                    posMap.set(`${name}:${idx}`, {
+                    posMap.set(`${name}:${index}`, {
                         col: path.node.loc.start.column,
                         line: path.node.loc.start.line,
                     });
@@ -135,7 +130,7 @@ const transformJSX = (
     element: NodePath<t.JSXOpeningElement>,
     propsName: null | string,
     file: string,
-    ignoreComponents: Array<RegExp | string>,
+    ignoreComponents: (RegExp | string)[],
     posMap: PositionMap | undefined,
     occurrenceCounter: Map<string, number> | undefined,
 ): boolean | undefined => {
@@ -152,38 +147,37 @@ const transformJSX = (
     let originalPos: { col: number; line: number } | undefined;
 
     if (posMap && occurrenceCounter) {
-        const idx = occurrenceCounter.get(nameOfElement) ?? 0;
+        const index = occurrenceCounter.get(nameOfElement) ?? 0;
 
-        occurrenceCounter.set(nameOfElement, idx + 1);
-        originalPos = posMap.get(`${nameOfElement}:${idx}`);
+        occurrenceCounter.set(nameOfElement, index + 1);
+        originalPos = posMap.get(`${nameOfElement}:${index}`);
     }
 
     // Skip fragments and structural HTML document elements — there is no useful
     // click-to-source action for <html>, <head>, or <body>.
     if (
-        nameOfElement === "Fragment" ||
-        nameOfElement === "React.Fragment" ||
-        nameOfElement === "html" ||
-        nameOfElement === "head" ||
-        nameOfElement === "body" ||
-        matcher(ignoreComponents, nameOfElement)
+        nameOfElement === "Fragment"
+        || nameOfElement === "React.Fragment"
+        || nameOfElement === "html"
+        || nameOfElement === "head"
+        || nameOfElement === "body"
+        || matcher(ignoreComponents, nameOfElement)
     ) {
         return;
     }
 
     // Skip if already annotated
-    const hasSourceAttr = element.node.attributes.some(
-        (attr: t.JSXAttribute | t.JSXSpreadAttribute) =>
-            attr.type === "JSXAttribute" && attr.name.type === "JSXIdentifier" && attr.name.name === SOURCE_ATTR,
+    const hasSourceAttribute = element.node.attributes.some(
+        (attribute: t.JSXAttribute | t.JSXSpreadAttribute) => attribute.type === "JSXAttribute" && attribute.name.type === "JSXIdentifier" && attribute.name.name === SOURCE_ATTR,
     );
 
     // Skip if component props are spread onto this element (would break prop forwarding)
     const hasSpread = element.node.attributes.some(
-        (attr: t.JSXAttribute | t.JSXSpreadAttribute) =>
-            attr.type === "JSXSpreadAttribute" && attr.argument.type === "Identifier" && attr.argument.name === propsName,
+        (attribute: t.JSXAttribute | t.JSXSpreadAttribute) =>
+            attribute.type === "JSXSpreadAttribute" && attribute.argument.type === "Identifier" && attribute.argument.name === propsName,
     );
 
-    if (hasSpread || hasSourceAttr) {
+    if (hasSpread || hasSourceAttribute) {
         return;
     }
 
@@ -199,24 +193,19 @@ const transformJSX = (
 
 // ─── AST transform ────────────────────────────────────────────────────────────
 
-const transform = (
-    ast: ReturnType<typeof parse>,
-    file: string,
-    ignoreComponents: Array<RegExp | string>,
-    posMap?: PositionMap,
-): boolean => {
+const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents: (RegExp | string)[], posMap?: PositionMap): boolean => {
     let didTransform = false;
     // Shared across all function scopes so occurrence indices match the file-level
     // position map built from the original source.
     const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
-    const visitJSX =
-        (propsName: null | string) =>
-        (element: NodePath<t.JSXOpeningElement>): void => {
-            if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
-                didTransform = true;
-            }
-        };
+    const visitJSX
+        = (propsName: null | string) =>
+            (element: NodePath<t.JSXOpeningElement>): void => {
+                if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
+                    didTransform = true;
+                }
+            };
 
     trav(ast, {
         ArrowFunctionExpression(path: NodePath<t.ArrowFunctionExpression>) {
@@ -248,13 +237,13 @@ const transform = (
 
 export interface InjectSourceIgnore {
     /** Component names or patterns to skip. */
-    components?: Array<RegExp | string>;
+    components?: (RegExp | string)[];
     /** File paths or patterns to skip. */
-    files?: Array<RegExp | string>;
+    files?: (RegExp | string)[];
 }
 
 /**
- * Inject `data-vdt-source="<file>:<line>:<col>"` into every JSX opening element
+ * Inject `data-vdt-source="&lt;file>:&lt;line>:&lt;col>"` into every JSX opening element
  * in the given source code, enabling the inspector to resolve elements back to
  * their source location.
  *
@@ -266,12 +255,7 @@ export interface InjectSourceIgnore {
  *
  * Returns `undefined` when the file was skipped or contained no JSX to transform.
  */
-export const addSourceToJsx = (
-    code: string,
-    id: string,
-    ignore: InjectSourceIgnore = {},
-    originalCode?: string,
-): ReturnType<typeof gen> | undefined => {
+export const addSourceToJsx = (code: string, id: string, ignore: InjectSourceIgnore = {}, originalCode?: string): ReturnType<typeof gen> | undefined => {
     const [filePath] = id.split("?");
     // Strip the CWD prefix (including the trailing separator) so the stored path is
     // relative without a leading slash, e.g. "src/routes/index.tsx" not "/src/…".
@@ -301,11 +285,11 @@ export const addSourceToJsx = (
         return gen(ast, {
             filename: id,
             retainLines: true,
+            sourceFileName: filePath,
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             sourceMaps: true as any,
-            sourceFileName: filePath,
         });
     } catch {
-        return;
+        return undefined;
     }
 };
