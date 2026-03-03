@@ -98,7 +98,18 @@ const transformJSX = (
     const { column, line } = loc.start;
     const nameOfElement = getNameOfElement(element.node.name);
 
-    if (nameOfElement === "Fragment" || nameOfElement === "React.Fragment" || matcher(ignoreComponents, nameOfElement)) {
+    // Skip fragments and structural HTML elements that are typically SSR-rendered root layout
+    // nodes — injecting source attributes onto <html>, <head>, or <body> causes React
+    // hydration mismatches because SSR and client compilation pipelines produce different
+    // line numbers for the same source file.
+    if (
+        nameOfElement === "Fragment" ||
+        nameOfElement === "React.Fragment" ||
+        nameOfElement === "html" ||
+        nameOfElement === "head" ||
+        nameOfElement === "body" ||
+        matcher(ignoreComponents, nameOfElement)
+    ) {
         return;
     }
 
