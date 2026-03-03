@@ -6,7 +6,7 @@ import type { AppComponentProps } from "../../types/app";
 import { Button } from "../../ui";
 import cn from "../../utils/cn";
 
-// ─── Element info types ───────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ComponentInfo {
     name: string;
@@ -50,7 +50,6 @@ const getComponentInfo = (el: Element): ComponentInfo | null => {
 
         node = node.return;
 
-        // Stop at root fiber or after reasonable depth
         if (stack.length >= 10 || (node && node.type === null && !node.return)) {
             break;
         }
@@ -58,8 +57,6 @@ const getComponentInfo = (el: Element): ComponentInfo | null => {
 
     return stack.length > 0 ? { name: stack[0] as string, stack } : null;
 };
-
-// ─── Element path breadcrumb ──────────────────────────────────────────────────
 
 const getElementPath = (el: Element): string[] => {
     const path: string[] = [];
@@ -81,8 +78,6 @@ const getElementPath = (el: Element): string[] => {
 
     return path;
 };
-
-// ─── Extract full element info ────────────────────────────────────────────────
 
 const extractElementInfo = (el: Element): ElementInfo => {
     const domRect = el.getBoundingClientRect();
@@ -106,11 +101,13 @@ const extractElementInfo = (el: Element): ElementInfo => {
     };
 };
 
-// ─── Overlay helpers ──────────────────────────────────────────────────────────
+// ─── DOM overlay helpers ──────────────────────────────────────────────────────
 
 const OVERLAY_ID = "__vdt_inspector_overlay";
 const LABEL_ID = "__vdt_inspector_label";
 const CURSOR_STYLE_ID = "__vdt_inspector_cursor";
+const BADGE_ID = "__vdt_inspector_badge";
+const BADGE_KEYFRAMES_ID = "__vdt_inspector_kf";
 
 const getOrCreateOverlay = (): HTMLDivElement => {
     let overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
@@ -172,7 +169,6 @@ const updateOverlayPosition = (el: Element): void => {
 
         label.textContent = `${tag}${id}${cls}`;
 
-        // Flip label below element when near top of viewport
         if (rect.top < 28) {
             label.style.bottom = "auto";
             label.style.top = "calc(100% + 2px)";
@@ -184,10 +180,10 @@ const updateOverlayPosition = (el: Element): void => {
 };
 
 const hideOverlay = (): void => {
-    const overlay = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
+    const el = document.getElementById(OVERLAY_ID) as HTMLDivElement | null;
 
-    if (overlay) {
-        overlay.style.display = "none";
+    if (el) {
+        el.style.display = "none";
     }
 };
 
@@ -211,7 +207,170 @@ const setCrosshairCursor = (active: boolean): void => {
     }
 };
 
-// ─── Section wrapper ──────────────────────────────────────────────────────────
+// ─── Floating badge (lives outside shadow DOM, visible during inspection) ─────
+
+const createFloatingBadge = (onCancel: () => void): void => {
+    // Ensure keyframes exist once
+    if (!document.getElementById(BADGE_KEYFRAMES_ID)) {
+        const kf = document.createElement("style");
+
+        kf.id = BADGE_KEYFRAMES_ID;
+        kf.textContent = "@keyframes __vdt_pulse{0%,100%{opacity:1}50%{opacity:.3}}";
+        document.head.append(kf);
+    }
+
+    removeFloatingBadge();
+
+    const badge = document.createElement("div");
+
+    badge.id = BADGE_ID;
+    badge.style.cssText = [
+        "position:fixed",
+        "bottom:4rem",
+        "left:50%",
+        "transform:translateX(-50%)",
+        "z-index:2147483645",
+        "display:flex",
+        "align-items:center",
+        "gap:8px",
+        "padding:6px 14px 6px 10px",
+        "background:#0f0f17",
+        "border:1px solid rgba(124,58,237,0.6)",
+        "border-radius:4px",
+        "box-shadow:0 4px 24px rgba(0,0,0,.6)",
+        "font:12px/1 'JetBrains Mono',monospace",
+        "color:#cdd6f4",
+        "pointer-events:auto",
+        "user-select:none",
+        "white-space:nowrap",
+    ].join(";");
+
+    const dot = document.createElement("span");
+
+    dot.style.cssText =
+        "display:inline-block;width:7px;height:7px;border-radius:50%;background:#7c3aed;" +
+        "animation:__vdt_pulse 1.4s ease-in-out infinite;flex-shrink:0;";
+
+    const text = document.createElement("span");
+
+    text.textContent = "Click any element to inspect";
+
+    const sep = document.createElement("span");
+
+    sep.style.cssText = "color:rgba(124,58,237,.4);margin:0 4px;";
+    sep.textContent = "·";
+
+    const cancelBtn = document.createElement("button");
+
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.style.cssText =
+        "background:transparent;border:none;color:#a78bfa;cursor:pointer;padding:0;" +
+        "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
+    cancelBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onCancel();
+    });
+
+    badge.append(dot, text, sep, cancelBtn);
+    document.body.append(badge);
+};
+
+const removeFloatingBadge = (): void => {
+    document.getElementById(BADGE_ID)?.remove();
+};
+
+// ─── Module-level inspection state (persists across component mounts) ─────────
+//
+// When the user clicks "Start Inspecting", we close the panel (which unmounts
+// the component). Inspection must survive that unmount so the user can freely
+// click any page element without the panel's backdrop intercepting events.
+// The result is stored here so the next mount can read it.
+
+let _pendingResult: ElementInfo | null = null;
+let _inspectionCleanup: (() => void) | null = null;
+
+const startGlobalInspection = (
+    onComplete: (result: ElementInfo) => void,
+    onCancel: () => void,
+): void => {
+    // Cancel any existing inspection first
+    _inspectionCleanup?.();
+
+    getOrCreateOverlay();
+    setCrosshairCursor(true);
+
+    const badgeEl = (): Element | null => document.getElementById(BADGE_ID);
+
+    const isOverBadge = (target: Element | null): boolean => {
+        if (!target) {
+            return false;
+        }
+
+        const b = badgeEl();
+
+        return !!(b && (target === b || b.contains(target)));
+    };
+
+    const handleMouseMove = (e: MouseEvent): void => {
+        const target = e.target as Element | null;
+
+        if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+            hideOverlay();
+
+            return;
+        }
+
+        updateOverlayPosition(target);
+    };
+
+    const handleClick = (e: MouseEvent): void => {
+        const target = e.target as Element | null;
+
+        if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        cleanup();
+        onComplete(extractElementInfo(target));
+    };
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+        if (e.key === "Escape") {
+            cleanup();
+            onCancel();
+        }
+    };
+
+    const cleanup = (): void => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("click", handleClick, true);
+        document.removeEventListener("keydown", handleKeyDown);
+        hideOverlay();
+        setCrosshairCursor(false);
+        removeFloatingBadge();
+        _inspectionCleanup = null;
+    };
+
+    createFloatingBadge(() => {
+        cleanup();
+        onCancel();
+    });
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("keydown", handleKeyDown);
+
+    _inspectionCleanup = cleanup;
+};
+
+const stopGlobalInspection = (): void => {
+    _inspectionCleanup?.();
+};
+
+// ─── UI sub-components ────────────────────────────────────────────────────────
 
 const Section = ({ children, title }: { children: ComponentChildren; title: string }): ComponentChildren => (
     <div class="border border-border/60 bg-card overflow-hidden">
@@ -225,11 +384,16 @@ const Section = ({ children, title }: { children: ComponentChildren; title: stri
     </div>
 );
 
-// ─── Element info panel ───────────────────────────────────────────────────────
+const InfoRow = ({ children, label }: { children: ComponentChildren; label: string }): ComponentChildren => (
+    <div class="flex items-start gap-3">
+        <span class="text-[0.65rem] font-mono text-muted-foreground/60 w-16 shrink-0 pt-0.5">{label}</span>
+        <div class="flex-1 min-w-0">{children}</div>
+    </div>
+);
 
 const ElementInfoPanel = ({ info }: { info: ElementInfo }): ComponentChildren => (
     <div class="space-y-3">
-        {/* Path breadcrumb */}
+        {/* DOM path breadcrumb */}
         <div class="flex items-center flex-wrap gap-1">
             {info.path.map((segment, i) => (
                 <span key={i} class="flex items-center gap-1">
@@ -248,7 +412,7 @@ const ElementInfoPanel = ({ info }: { info: ElementInfo }): ComponentChildren =>
             ))}
         </div>
 
-        {/* Component info */}
+        {/* React / Preact component stack */}
         {info.componentInfo && (
             <Section title="Component">
                 <div class="space-y-0.5">
@@ -315,7 +479,7 @@ const ElementInfoPanel = ({ info }: { info: ElementInfo }): ComponentChildren =>
             </div>
         </Section>
 
-        {/* Attributes */}
+        {/* HTML attributes */}
         {info.attributes.length > 0 && (
             <Section title="Attributes">
                 <div class="space-y-1.5">
@@ -332,71 +496,22 @@ const ElementInfoPanel = ({ info }: { info: ElementInfo }): ComponentChildren =>
     </div>
 );
 
-const InfoRow = ({ children, label }: { children: ComponentChildren; label: string }): ComponentChildren => (
-    <div class="flex items-start gap-3">
-        <span class="text-[0.65rem] font-mono text-muted-foreground/60 w-16 shrink-0 pt-0.5">{label}</span>
-        <div class="flex-1 min-w-0">{children}</div>
-    </div>
-);
-
-// ─── Main component ────────────────────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const InspectorApp = (_props: AppComponentProps): ComponentChildren => {
-    const [isActive, setIsActive] = useState(false);
-    const [selectedEl, setSelectedEl] = useState<ElementInfo | null>(null);
+    // Read any pending result left by the previous inspection cycle.
+    // Using an initializer so we read+clear it exactly once on mount.
+    const [selectedEl, setSelectedEl] = useState<ElementInfo | null>(() => {
+        const pending = _pendingResult;
 
-    // Inspector overlay lifecycle
-    useEffect(() => {
-        if (!isActive) {
-            hideOverlay();
-            setCrosshairCursor(false);
+        _pendingResult = null;
 
-            return undefined;
-        }
+        return pending;
+    });
 
-        // Ensure overlay exists
-        getOrCreateOverlay();
-        setCrosshairCursor(true);
-
-        const handleMouseMove = (e: MouseEvent): void => {
-            const target = e.target as Element | null;
-
-            // Skip toolbar shadow host
-            if (!target || target.tagName === "DEV-TOOLBAR" || target.closest?.("dev-toolbar")) {
-                hideOverlay();
-
-                return;
-            }
-
-            updateOverlayPosition(target);
-        };
-
-        const handleClick = (e: MouseEvent): void => {
-            const target = e.target as Element | null;
-
-            if (!target || target.tagName === "DEV-TOOLBAR" || target.closest?.("dev-toolbar")) {
-                return;
-            }
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            setSelectedEl(extractElementInfo(target));
-            setIsActive(false);
-        };
-
-        document.addEventListener("mousemove", handleMouseMove);
-        document.addEventListener("click", handleClick, true);
-
-        return () => {
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("click", handleClick, true);
-            hideOverlay();
-            setCrosshairCursor(false);
-        };
-    }, [isActive]);
-
-    // Cleanup on unmount
+    // Remove the light-DOM overlay when component is finally torn down.
+    // Do NOT stop inspection here — it may be intentionally running after the
+    // panel closed and should persist until the user clicks or cancels.
     useEffect(
         () => () => {
             removeOverlay();
@@ -404,24 +519,49 @@ const InspectorApp = (_props: AppComponentProps): ComponentChildren => {
         [],
     );
 
+    const handleStartInspecting = (): void => {
+        setSelectedEl(null);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
+
+        // Close the panel so the backdrop div is removed from the DOM.
+        // Without this, the backdrop (z-index:2147483646, pointer-events:auto)
+        // inside the shadow root blocks all pointer events on page elements.
+        if (api?.closeApp) {
+            api.closeApp().catch(console.error);
+        }
+
+        // Start inspection at module level — this SURVIVES the component unmount
+        // that happens when the panel closes above.
+        startGlobalInspection(
+            (result) => {
+                // Store result so the next mount can pick it up
+                _pendingResult = result;
+                // Reopen the inspector panel to display the result
+                if (api?.openApp) {
+                    api.openApp("dev-toolbar:inspector").catch(console.error);
+                }
+            },
+            () => {
+                // Cancelled (badge button or Escape) — reopen panel at empty state
+                if (api?.openApp) {
+                    api.openApp("dev-toolbar:inspector").catch(console.error);
+                }
+            },
+        );
+    };
+
     const hasComponent = useMemo(() => selectedEl !== null && selectedEl.componentInfo !== null, [selectedEl]);
 
     return (
         <div class="flex flex-col h-full">
-            {/* Header bar */}
+            {/* Header */}
             <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border shrink-0">
-                <div class="flex items-center gap-2.5">
-                    {isActive && (
-                        <span class="relative flex size-2">
-                            <span class="absolute inline-flex h-full w-full rounded-full bg-primary/60 animate-ping" />
-                            <span class="relative inline-flex rounded-full size-2 bg-primary" />
-                        </span>
-                    )}
-                    <span class="text-[0.75rem] font-medium text-foreground">
-                        {isActive ? "Click any element to inspect" : "Element Inspector"}
-                    </span>
-                </div>
-                <Button class={cn(isActive ? "border-primary/50 text-primary bg-primary/8" : "")} onClick={() => setIsActive((v) => !v)} size="sm" variant="outline">{isActive ? "Cancel" : "Start Inspecting"}</Button>
+                <span class="text-[0.75rem] font-medium text-foreground">Element Inspector</span>
+                <Button onClick={handleStartInspecting} size="sm" variant="outline">
+                    Start Inspecting
+                </Button>
             </div>
 
             {/* Content */}
@@ -434,20 +574,19 @@ const InspectorApp = (_props: AppComponentProps): ComponentChildren => {
                         <div class="text-center space-y-1.5">
                             <p class="text-[0.8rem] font-medium text-foreground/70">No element selected</p>
                             <p class="text-[0.7rem] text-muted-foreground max-w-[220px] leading-relaxed">
-                                {isActive
-                                    ? "Hover over any element and click to select it"
-                                    : 'Click "Start Inspecting" then click any element on the page'}
+                                Click "Start Inspecting" then hover and click any element on the page
                             </p>
                         </div>
                     </div>
                 ) : (
                     <div class="space-y-3">
-                        {/* Re-inspect button */}
                         <div class="flex items-center justify-between gap-3">
                             <span class="text-[0.7rem] text-muted-foreground">
                                 {hasComponent ? "React component detected" : "HTML element"}
                             </span>
-                            <Button onClick={() => { setSelectedEl(null); setIsActive(true); }} size="sm" variant="outline">Inspect another</Button>
+                            <Button onClick={handleStartInspecting} size="sm" variant="outline">
+                                Inspect another
+                            </Button>
                         </div>
                         <ElementInfoPanel info={selectedEl} />
                     </div>
@@ -457,4 +596,6 @@ const InspectorApp = (_props: AppComponentProps): ComponentChildren => {
     );
 };
 
+// Export stopGlobalInspection so it can be called externally if needed
+export { stopGlobalInspection };
 export default InspectorApp;

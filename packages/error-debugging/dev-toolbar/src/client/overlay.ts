@@ -86,12 +86,8 @@ const initToolbar = async () => {
         toolbar = document.createElement("dev-toolbar");
         document.body.append(toolbar);
 
-        // Register built-in apps
+        // Register built-in apps (settings goes last — pinned to the bottom)
         if (toolbar.registerApp) {
-            if (settingsModule) {
-                toolbar.registerApp(settingsModule.default, true);
-            }
-
             if (timelineModule) {
                 toolbar.registerApp(timelineModule.default, true);
             }
@@ -122,6 +118,11 @@ const initToolbar = async () => {
 
             if (tailwindModule) {
                 toolbar.registerApp(tailwindModule.default, true);
+            }
+
+            // Settings last — appears at the bottom of the sidebar
+            if (settingsModule) {
+                toolbar.registerApp(settingsModule.default, true);
             }
 
             // Always register more app
