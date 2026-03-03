@@ -39,10 +39,12 @@ Controls which built-in apps are registered. All apps are enabled by default.
 ```ts
 apps?: {
     a11y?: boolean;           // default: true
+    inspector?: boolean;      // default: true
     moduleGraph?: boolean;    // default: true
     performance?: boolean;    // default: true
     seo?: boolean;            // default: true
     settings?: boolean;       // default: true
+    tailwind?: boolean;       // default: true
     timeline?: boolean;       // default: true
     viteConfig?: boolean;     // default: true
 }
@@ -137,11 +139,67 @@ Whether the toolbar pill is visible when the page first loads. Set to `false` to
 
 ---
 
+### `editor`
+
+**Type:** `string` — **Default:** auto-detected
+
+The editor to open when clicking "Open in editor" in the Inspector app.
+Accepts any value understood by [`launch-editor`](https://github.com/yyx990803/launch-editor):
+- An editor alias: `"code"`, `"webstorm"`, `"vim"`, `"atom"`, `"subl"`
+- A full path to the editor executable
+
+When omitted, `launch-editor` auto-detects the editor from the `EDITOR` / `VISUAL`
+environment variables, or by scanning the running IDE process list (e.g. it detects
+a running WebStorm or VS Code window automatically).
+
+```ts
+devToolbar({
+    editor: "webstorm",
+    // or
+    editor: "code",
+    // or
+    editor: "/usr/local/bin/hx",
+})
+```
+
+---
+
 ### `height`
 
 **Type:** `number` (20–95) — **Default:** `60`
 
 Initial panel height as a percentage of the viewport height. Users can resize the panel by dragging its top edge; the value is then saved to `localStorage`.
+
+---
+
+### `injectSource`
+
+**Type:** `{ enabled?: boolean; ignore?: { files?: string[]; components?: string[] } }` — **Default:** `{ enabled: true }`
+
+Controls the JSX source injection transform.  When enabled, `data-vdt-source="<file>:<line>:<col>"` attributes are
+added to every JSX opening element at build time (development mode only).  The Inspector app uses these attributes
+to jump directly to the source file when an element is clicked.
+
+Only runs when `config.mode === "development"`.  Set `enabled: false` to opt out entirely.
+
+```ts
+devToolbar({
+    injectSource: {
+        enabled: true,
+
+        // Optional: skip specific files or component names
+        ignore: {
+            files: ["**/generated/**", "**/*.stories.tsx"],   // glob patterns
+            components: ["StrictMode", "Suspense"],            // component names (exact or glob)
+        },
+    },
+})
+```
+
+<Callout type="info">
+    Source injection reads the unmodified on-disk file so that both SSR and client builds emit identical
+    `data-vdt-source` values.  This prevents React hydration mismatches in SSR frameworks such as TanStack Start.
+</Callout>
 
 ---
 
@@ -234,6 +292,27 @@ devToolbar({
 
 ---
 
+### `serverFunctions`
+
+**Type:** `Partial<ServerFunctions>`
+
+Register additional Node.js functions that app components can call over RPC.  See [RPC Functions](/docs/dev-toolbar/custom-apps/rpc) for the full pattern.
+
+```ts
+import fs from "node:fs/promises";
+
+devToolbar({
+    serverFunctions: {
+        async getRoutes() {
+            const files = await fs.readdir("src/pages");
+            return files.map((f) => `/${f.replace(/\.(tsx?|jsx?)$/, "")}`);
+        },
+    },
+})
+```
+
+---
+
 ### `urlFlagName`
 
 **Type:** `string` — **Default:** `"devtools"`
@@ -263,10 +342,12 @@ interface DevToolbarOptions {
      */
     apps?: {
         a11y?: boolean;
+        inspector?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;
         seo?: boolean;
         settings?: boolean;
+        tailwind?: boolean;
         timeline?: boolean;
         viteConfig?: boolean;
     };
@@ -289,10 +370,20 @@ interface DevToolbarOptions {
     defaultVisible?: boolean;
 
     /**
+     * Force a specific editor for open-in-editor. Auto-detected if omitted.
+     */
+    editor?: string;
+
+    /**
      * Initial panel height as viewport height percentage (20–95).
      * @default 60
      */
     height?: number;
+
+    /**
+     * JSX source attribute injection config.
+     */
+    injectSource?: { enabled?: boolean; ignore?: { files?: string[]; components?: string[] }; };
 
     /**
      * Project-level default keyboard shortcuts.
@@ -340,6 +431,11 @@ interface DevToolbarOptions {
      * @default false
      */
     requireUrlFlag?: boolean;
+
+    /**
+     * Additional server-side RPC functions.
+     */
+    serverFunctions?: Partial<ServerFunctions>;
 
     /**
      * URL flag name for requireUrlFlag.

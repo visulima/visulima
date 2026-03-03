@@ -40,9 +40,28 @@ interface ModuleEntry {
 }
 ```
 
+### `getTailwindConfig()`
+
+Returns the resolved Tailwind CSS design tokens from the project's CSS. Returns `null` when no Tailwind config is found.
+
+```ts
+const tokens = await (helpers.rpc as any).getTailwindConfig();
+// { colors: { primary: "#...", ... }, spacing: { ... }, ... } | null
+```
+
+### `readFile(path)`
+
+Reads a file relative to the project root (or absolute) and returns its UTF-8 content.
+
+```ts
+const content = await (helpers.rpc as any).readFile("package.json");
+```
+
 ### `openInEditor(file, line?, column?)`
 
-Opens a file in the configured editor (uses Vite's `open-in-editor` mechanism, which respects the `LAUNCH_EDITOR` environment variable and falls back to VS Code).
+Opens a file in the configured editor using [`launch-editor`](https://github.com/yyx990803/launch-editor), which knows the right CLI flags for each editor (`--goto` for VS Code, `-l` for vim, etc.).
+
+The editor is auto-detected from the `EDITOR` / `VISUAL` environment variables or by scanning running IDE processes. Override it project-wide with the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option.
 
 ```ts
 await (helpers.rpc as any).openInEditor("/absolute/path/to/file.ts", 10, 5);
