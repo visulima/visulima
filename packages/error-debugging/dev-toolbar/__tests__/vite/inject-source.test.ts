@@ -61,7 +61,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: function() { return <div data-vdt-source="test.jsx:3:38" suppressHydrationWarning>Hello World</div>; }
+      component: function() { return <div data-vdt-source="test.jsx:3:38">Hello World</div>; }
       });
         `),
             );
@@ -108,7 +108,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: function({...rest}) { return <div data-vdt-source="test.jsx:3:47" suppressHydrationWarning><div {...rest}>Hello World</div></div>; }
+      component: function({...rest}) { return <div data-vdt-source="test.jsx:3:47"><div {...rest}>Hello World</div></div>; }
       });
         `),
             );
@@ -131,7 +131,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: () => <div data-vdt-source="test.jsx:3:24" suppressHydrationWarning>Hello World</div>
+      component: () => <div data-vdt-source="test.jsx:3:24">Hello World</div>
       });
         `),
             );
@@ -165,7 +165,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
             export const Route = createFileRoute("/test")({
-      component: ({...rest}) => <div data-vdt-source="test.jsx:3:33" suppressHydrationWarning><div {...rest}>Hello World</div></div>
+      component: ({...rest}) => <div data-vdt-source="test.jsx:3:33"><div {...rest}>Hello World</div></div>
       });
         `),
             );
@@ -192,7 +192,7 @@ describe("inject source", () => {
                 removeEmptySpace(`
           function Parent({ ...props }) {
             function Child({ ...props }) {
-              return <div data-vdt-source="test.jsx:4:18" suppressHydrationWarning />;
+              return <div data-vdt-source="test.jsx:4:18" />;
             }
             return <Child {...props} />;
           }
@@ -215,7 +215,7 @@ describe("inject source", () => {
             expect(output).toBe(
                 removeEmptySpace(`
 function test(props) {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
       }
 `),
             );
@@ -251,7 +251,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
 function test(props) {
-        return  <div data-vdt-source="test.jsx:3:17" suppressHydrationWarning>
+        return  <div data-vdt-source="test.jsx:3:17">
         <button {...props}  />
         </div>;
       }
@@ -274,7 +274,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
     function test({ ...props }) {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
       }
 `),
             );
@@ -310,7 +310,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
   const ButtonWithProps = (props) => {
-        return <button  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
+        return <button  children={props.children} data-vdt-source="test.jsx:3:16" />;
       };
 `),
             );
@@ -344,7 +344,7 @@ function test(props) {
             expect(output).toBe(
                 removeEmptySpace(`
       const ButtonWithProps = ({ ...props }) => {
-        return <CustomButton  children={props.children} data-vdt-source="test.jsx:3:16" suppressHydrationWarning />;
+        return <CustomButton  children={props.children} data-vdt-source="test.jsx:3:16" />;
       };
 `),
             );
@@ -364,8 +364,8 @@ function test(props) {
         });
     });
 
-    describe("SSR root layout elements", () => {
-        it("shouldn't augment <html> elements (SSR hydration mismatch prevention)", () => {
+    describe("structural HTML document elements", () => {
+        it("shouldn't augment <html> elements", () => {
             const output = addSourceToJsx(
                 `
     function RootLayout() {
@@ -393,7 +393,6 @@ function test(props) {
             expect(code).not.toContain("head data-vdt-source");
             expect(code).not.toContain("body data-vdt-source");
             expect(code).toContain(`title data-vdt-source`);
-            expect(code).toContain("suppressHydrationWarning");
         });
 
         it("shouldn't augment <body> elements", () => {
@@ -442,6 +441,41 @@ function test(props) {
             );
 
             expect(output).toBe(undefined);
+        });
+    });
+
+    describe("SSR position map (originalCode)", () => {
+        it("uses original file line numbers when the received code has prepended imports", () => {
+            // Simulates what TanStack Start / Vinxi does: prepend server imports
+            // to the file, shifting JSX line numbers in the received code.
+            const original = `
+function Home() {
+    return <div>Hello</div>
+}
+            `;
+
+            // SSR pipeline prepends 5 lines of server imports
+            const ssrCode = `import "server-only";
+import { createServerFn } from "@tanstack/start";
+import { createMiddleware } from "@tanstack/start";
+import { headers } from "@tanstack/start/server";
+import { getEvent } from "@tanstack/start/server";
+function Home() {
+    return <div>Hello</div>
+}
+            `;
+
+            const clientResult = addSourceToJsx(original, "test.jsx");
+            const ssrResult = addSourceToJsx(ssrCode, "test.jsx", {}, original);
+
+            // Both should produce the same line number (from the original file)
+            expect(clientResult?.code).toContain(`data-vdt-source="test.jsx:3:`);
+            expect(ssrResult?.code).toContain(`data-vdt-source="test.jsx:3:`);
+
+            const clientLine = clientResult?.code?.match(/data-vdt-source="test\.jsx:(\d+):/)?.[1];
+            const ssrLine = ssrResult?.code?.match(/data-vdt-source="test\.jsx:(\d+):/)?.[1];
+
+            expect(clientLine).toBe(ssrLine);
         });
     });
 });

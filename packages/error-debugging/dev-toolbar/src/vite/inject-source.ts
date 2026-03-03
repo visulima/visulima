@@ -83,11 +83,61 @@ const getNameOfElement = (element: t.JSXIdentifier | t.JSXMemberExpression | t.J
     return `${element.namespace.name}:${element.name.name}`;
 };
 
+// ─── Position map ─────────────────────────────────────────────────────────────
+//
+// SSR compilation pipelines (e.g. TanStack Start / Vinxi) prepend server-specific
+// imports before our enforce:"pre" transform runs, shifting JSX line numbers.
+// To get identical data-vdt-source values on both server and client we read the
+// original source file from disk and build a map of every JSXOpeningElement's
+// position keyed by "elementName:occurrenceIndex".
+//
+// The received `code` (which may have SSR imports prepended) is then traversed and
+// positions are looked up from the map instead of using the shifted AST locations.
+// When elements differ (virtual modules, generated code), we fall back silently.
+
+type PositionMap = Map<string, { col: number; line: number }>;
+
+const buildPositionMap = (originalCode: string): PositionMap => {
+    const posMap: PositionMap = new Map();
+    const counter = new Map<string, number>();
+
+    try {
+        const ast = parse(originalCode, {
+            plugins: ["jsx", "typescript"],
+            sourceType: "module",
+        });
+
+        trav(ast, {
+            JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
+                const name = getNameOfElement(path.node.name);
+                const idx = counter.get(name) ?? 0;
+
+                counter.set(name, idx + 1);
+
+                if (path.node.loc) {
+                    posMap.set(`${name}:${idx}`, {
+                        col: path.node.loc.start.column,
+                        line: path.node.loc.start.line,
+                    });
+                }
+            },
+        });
+    } catch {
+        // Return partial/empty map; caller falls back to received-code positions
+    }
+
+    return posMap;
+};
+
+// ─── JSX transform ────────────────────────────────────────────────────────────
+
 const transformJSX = (
     element: NodePath<t.JSXOpeningElement>,
     propsName: null | string,
     file: string,
     ignoreComponents: Array<RegExp | string>,
+    posMap: PositionMap | undefined,
+    occurrenceCounter: Map<string, number> | undefined,
 ): boolean | undefined => {
     const { loc } = element.node;
 
@@ -95,13 +145,21 @@ const transformJSX = (
         return;
     }
 
-    const { column, line } = loc.start;
     const nameOfElement = getNameOfElement(element.node.name);
 
-    // Skip fragments and structural HTML elements that are typically SSR-rendered root layout
-    // nodes — injecting source attributes onto <html>, <head>, or <body> causes React
-    // hydration mismatches because SSR and client compilation pipelines produce different
-    // line numbers for the same source file.
+    // Track the occurrence index before any early returns so it stays in sync with
+    // the position map built from the original file.
+    let originalPos: { col: number; line: number } | undefined;
+
+    if (posMap && occurrenceCounter) {
+        const idx = occurrenceCounter.get(nameOfElement) ?? 0;
+
+        occurrenceCounter.set(nameOfElement, idx + 1);
+        originalPos = posMap.get(`${nameOfElement}:${idx}`);
+    }
+
+    // Skip fragments and structural HTML document elements — there is no useful
+    // click-to-source action for <html>, <head>, or <body>.
     if (
         nameOfElement === "Fragment" ||
         nameOfElement === "React.Fragment" ||
@@ -129,24 +187,33 @@ const transformJSX = (
         return;
     }
 
+    // Prefer positions from the original file (accurate even when the received code
+    // has been pre-processed by SSR pipelines that shift line numbers).
+    const line = originalPos?.line ?? loc.start.line;
+    const column = originalPos?.col ?? loc.start.column;
+
     element.node.attributes.push(t.jsxAttribute(t.jsxIdentifier(SOURCE_ATTR), t.stringLiteral(`${file}:${line}:${column + 1}`)));
-    // Suppress React hydration warnings for this element. SSR builds skip source injection
-    // (transformOptions.ssr check) while client builds inject the attribute; React would
-    // otherwise warn about the mismatch on every SSR-rendered element.
-    element.node.attributes.push(t.jsxAttribute(t.jsxIdentifier("suppressHydrationWarning")));
 
     return true;
 };
 
 // ─── AST transform ────────────────────────────────────────────────────────────
 
-const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents: Array<RegExp | string>): boolean => {
+const transform = (
+    ast: ReturnType<typeof parse>,
+    file: string,
+    ignoreComponents: Array<RegExp | string>,
+    posMap?: PositionMap,
+): boolean => {
     let didTransform = false;
+    // Shared across all function scopes so occurrence indices match the file-level
+    // position map built from the original source.
+    const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
     const visitJSX =
         (propsName: null | string) =>
         (element: NodePath<t.JSXOpeningElement>): void => {
-            if (transformJSX(element, propsName, file, ignoreComponents)) {
+            if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
                 didTransform = true;
             }
         };
@@ -191,12 +258,19 @@ export interface InjectSourceIgnore {
  * in the given source code, enabling the inspector to resolve elements back to
  * their source location.
  *
+ * Pass `originalCode` when the received `code` may have been pre-processed by an
+ * SSR pipeline (e.g. Vinxi / TanStack Start) that shifts JSX line numbers relative
+ * to the source file on disk. Positions are then read from `originalCode` but
+ * injected into `code`'s AST, ensuring server and client produce identical
+ * attribute values and React hydration never reports a mismatch.
+ *
  * Returns `undefined` when the file was skipped or contained no JSX to transform.
  */
 export const addSourceToJsx = (
     code: string,
     id: string,
     ignore: InjectSourceIgnore = {},
+    originalCode?: string,
 ): ReturnType<typeof gen> | undefined => {
     const [filePath] = id.split("?");
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -212,7 +286,12 @@ export const addSourceToJsx = (
             sourceType: "module",
         });
 
-        if (!transform(ast, location, ignore.components ?? [])) {
+        // Build a position map from the unmodified source when the received code
+        // differs (SSR pipeline prepended imports), so both builds use the same
+        // line/column values and React hydration never sees a mismatch.
+        const posMap = originalCode && originalCode !== code ? buildPositionMap(originalCode) : undefined;
+
+        if (!transform(ast, location, ignore.components ?? [], posMap)) {
             return;
         }
 
