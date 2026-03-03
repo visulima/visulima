@@ -23,8 +23,7 @@ export const openInEditor = async (server: ViteDevServer, file: string, line?: n
     const filePath = file.startsWith("/") ? file : `${server.config.root}/${file}`;
     const position = line && column ? `:${line}:${column}` : line ? `:${line}` : "";
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { spawn } = require("node:child_process");
+    const { spawn } = await import("node:child_process");
 
     spawn(editor, [`${filePath}${position}`], {
         detached: true,
