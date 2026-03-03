@@ -273,8 +273,11 @@ export const addSourceToJsx = (
     originalCode?: string,
 ): ReturnType<typeof gen> | undefined => {
     const [filePath] = id.split("?");
+    // Strip the CWD prefix (including the trailing separator) so the stored path is
+    // relative without a leading slash, e.g. "src/routes/index.tsx" not "/src/…".
+    // The RPC openInEditor handler then resolves it against server.config.root.
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const location = filePath!.replace(normalizePath(process.cwd()), "");
+    const location = filePath!.replace(`${normalizePath(process.cwd())}/`, "");
 
     if (matcher(ignore.files ?? [], location)) {
         return;
