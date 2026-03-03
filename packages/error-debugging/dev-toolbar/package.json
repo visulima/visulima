@@ -118,6 +118,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@babel/generator": "^7.29.0",
+        "@babel/parser": "^7.29.0",
+        "@babel/traverse": "^7.29.0",
+        "@babel/types": "^7.29.0",
         "@floating-ui/dom": "^1.6.13",
         "axe-core": "^4.11.1",
         "clsx": "^2.1.1",
@@ -139,6 +143,9 @@
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/preact": "^3.2.4",
         "@total-typescript/ts-reset": "^0.6.1",
+        "@types/babel__core": "^7.20.5",
+        "@types/babel__generator": "^7.6.8",
+        "@types/babel__traverse": "^7.20.7",
         "@types/node": "25.3.2",
         "@visulima/packem": "2.0.0-alpha.51",
         "@vitest/coverage-v8": "^4.0.18",
