@@ -117,6 +117,9 @@ devToolbar({
         toggle: "Alt+Shift+D",
         close: "Escape",
     },
+
+    // Strip toolbar from production builds (default: true)
+    removeDevtoolsOnBuild: true,
 })
 ```
 

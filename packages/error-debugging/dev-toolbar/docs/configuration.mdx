@@ -196,6 +196,29 @@ Disable animations and transitions in the toolbar. Users can also toggle this in
 
 ---
 
+### `removeDevtoolsOnBuild`
+
+**Type:** `boolean` — **Default:** `true`
+
+Strip all dev-toolbar virtual modules from the bundle when building for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
+
+The plugin already has `apply: "serve"` so the toolbar is never injected during a standard build. `removeDevtoolsOnBuild` is an explicit safety net that ensures nothing leaks through in edge cases — such as the [`appendTo`](#appendto) option, where the toolbar import is added to a user module that is also present in the production build graph.
+
+When enabled (the default), a second Vite plugin resolves all `virtual:visulima-dev-toolbar-*` imports to an empty module so they are safely tree-shaken away.
+
+```ts
+devToolbar({
+    // Keep the toolbar in staging / preview builds
+    removeDevtoolsOnBuild: false,
+})
+```
+
+<Callout type="info">
+    Leave this at `true` for all standard use cases. Only set it to `false` if you intentionally ship the toolbar in non-development builds (e.g. internal staging environments where Vite builds instead of serving).
+</Callout>
+
+---
+
 ### `requireUrlFlag`
 
 **Type:** `boolean` — **Default:** `false`
@@ -305,6 +328,12 @@ interface DevToolbarOptions {
      * @default false
      */
     reduceMotion?: boolean;
+
+    /**
+     * Strip toolbar virtual modules from production builds.
+     * @default true
+     */
+    removeDevtoolsOnBuild?: boolean;
 
     /**
      * Only activate when URL contains urlFlagName.
