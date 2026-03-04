@@ -70,6 +70,17 @@ interface VisulimaViteOverlayErrorPayload {
 }
 ```
 
+## Client API
+
+The plugin injects a `window.__visulima_overlay__` object for programmatic control:
+
+```typescript
+window.__visulima_overlay__.open();         // Show the overlay panel
+window.__visulima_overlay__.close();        // Close/dismiss the overlay
+window.__visulima_overlay__.getInstance();  // Get the current overlay instance (or null)
+window.__visulima_overlay__.sendError(error: Error, loc?: ErrorLocation); // Report an error manually
+```
+
 ### `ExtendedError`
 
 ```typescript
