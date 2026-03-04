@@ -2217,30 +2217,15 @@ importers:
       '@babel/traverse':
         specifier: ^7.29.0
         version: 7.29.0
-      '@babel/types':
-        specifier: ^7.29.0
-        version: 7.29.0
       '@floating-ui/dom':
         specifier: ^1.7.6
         version: 1.7.6
-      axe-core:
-        specifier: ^4.11.1
-        version: 4.11.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
       launch-editor:
         specifier: ^2.13.1
         version: 2.13.1
-      lucide-static:
-        specifier: ^0.576.0
-        version: 0.576.0
       preact:
         specifier: ^10.28.4
         version: 10.28.4
-      tailwind-merge:
-        specifier: ^3.5.0
-        version: 3.5.0
       vite:
         specifier: '>=7.1.11'
         version: 7.3.1(@types/node@25.3.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2)
@@ -2263,6 +2248,9 @@ importers:
       '@babel/preset-react':
         specifier: ^7.28.5
         version: 7.28.5(@babel/core@7.29.0)
+      '@babel/types':
+        specifier: ^7.29.0
+        version: 7.29.0
       '@eslint/css':
         specifier: 0.14.1
         version: 0.14.1
@@ -2305,9 +2293,15 @@ importers:
       '@vitest/ui':
         specifier: ^4.0.18
         version: 4.0.18(vitest@4.0.18)
+      axe-core:
+        specifier: ^4.11.1
+        version: 4.11.1
       babel-plugin-transform-hook-names:
         specifier: ^1.0.2
         version: 1.0.2(@babel/core@7.29.0)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       conventional-changelog-conventionalcommits:
         specifier: 9.2.0
         version: 9.2.0
@@ -2323,6 +2317,9 @@ importers:
       jsdom:
         specifier: ^28.1.0
         version: 28.1.0(@noble/hashes@1.8.0)
+      lucide-static:
+        specifier: ^0.576.0
+        version: 0.576.0
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
@@ -2341,6 +2338,9 @@ importers:
       tailwind-csstree:
         specifier: 0.1.4
         version: 0.1.4
+      tailwind-merge:
+        specifier: ^3.5.0
+        version: 3.5.0
       tailwindcss:
         specifier: 4.2.1
         version: 4.2.1
@@ -2715,6 +2715,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.1.4
         version: 5.1.4(vite@7.3.1(@types/node@25.3.3)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.44.1)(tsx@4.21.0)(yaml@2.8.2))
+      axe-core:
+        specifier: ^4.11.1
+        version: 4.11.1
       postcss:
         specifier: ^8.5.8
         version: 8.5.8
