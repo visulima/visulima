@@ -286,6 +286,8 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
 // ─── Result popup ─────────────────────────────────────────────────────────────
 
+let removePopupOutsideHandler: (() => void) | undefined;
+
 // Parse "src/routes/index.tsx:44:17" → { file, line, col } and call the toolbar
 // RPC system (HMR WebSocket) to open the file in the editor.  This bypasses
 // Vite's HTTP endpoint, which is not reachable in frameworks (e.g. TanStack
@@ -299,7 +301,9 @@ const openInEditor = (source: string): void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
-    rpc?.openInEditor?.(file, line, col, getEditorPreference()).catch(() => { /* ignore */ });
+    rpc?.openInEditor?.(file, line, col, getEditorPreference()).catch(() => {
+        /* ignore */
+    });
 };
 
 const removeResultPopup = (): void => {
@@ -415,7 +419,9 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
 
     actions.append(
         makeActionButton("Copy HTML", () => {
-            navigator.clipboard.writeText(element.outerHTML).catch(() => { /* ignore */ });
+            navigator.clipboard.writeText(element.outerHTML).catch(() => {
+                /* ignore */
+            });
             removeResultPopup();
         }),
     );
@@ -423,7 +429,9 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
     if (source) {
         actions.append(
             makeActionButton("Copy path", () => {
-                navigator.clipboard.writeText(source).catch(() => { /* ignore */ });
+                navigator.clipboard.writeText(source).catch(() => {
+                    /* ignore */
+                });
                 removeResultPopup();
             }),
         );
@@ -484,7 +492,6 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
 // ─── Module-level inspection state ───────────────────────────────────────────
 
 let inspectionCleanup: (() => void) | undefined;
-let removePopupOutsideHandler: (() => void) | undefined;
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
