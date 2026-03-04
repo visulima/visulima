@@ -1,5 +1,7 @@
 /** @jsxImportSource preact */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
@@ -21,7 +23,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/ho
 
 import type { DevToolbarAppState } from "../../types/index";
 import Icon from "../../ui/components/icon";
-import { clsx } from "clsx";
 import { createServerHelpers } from "../helpers";
 import { useFrameState } from "../hooks/use-frame-state";
 import { useTheme } from "../hooks/use-theme";
