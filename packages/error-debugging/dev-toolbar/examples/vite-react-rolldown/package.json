@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc -b && vite build",
+        "build": "vite build",
         "dev": "vite",
         "preview": "vite preview"
     },
@@ -19,6 +19,6 @@
         "@visulima/vite-overlay": "workspace:*",
         "@vitejs/plugin-react": "^5.1.4",
         "typescript": "~5.9.3",
-        "vite": "npm:rolldown-vite@latest"
+        "vite": "^8.0.0-beta.16"
     }
 }

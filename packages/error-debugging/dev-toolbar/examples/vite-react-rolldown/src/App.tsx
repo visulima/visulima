@@ -2,7 +2,6 @@ import "./App.css";
 
 import { useState } from "react";
 
-import viteLogo from "../../../../../../../../../../../vite.svg";
 import reactLogo from "./assets/react.svg";
 
 function App() {
@@ -26,7 +25,6 @@ function App() {
         <>
             <div>
                 <a href="https://vite.dev" target="_blank">
-                    <img alt="Vite logo" className="logo" src={viteLogo} />
                 </a>
                 <a href="https://react.dev" target="_blank">
                     <img alt="React logo" className="logo react" src={reactLogo} />
