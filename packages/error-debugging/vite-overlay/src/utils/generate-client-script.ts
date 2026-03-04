@@ -165,19 +165,29 @@ function clearErrorState() {
     globalThis.__v_o_error_history = [];
 
     var overlay = globalThis.__v_o__current;
-    if (!overlay) return;
+
+    if (!overlay) {
+        return;
+    }
 
     var root = overlay.__elements && overlay.__elements.root;
-    if (root) root.classList.add('hidden');
+
+    if (root) {
+        root.classList.add('hidden');
+    }
 
     var balloonGroup = overlay.__elements && overlay.__elements.balloonGroup;
+
     if (balloonGroup) {
         balloonGroup.classList.add('hidden');
         balloonGroup.classList.remove('inline-flex');
     }
 
     var balloonCount = overlay.__elements && overlay.__elements.balloonCount;
-    if (balloonCount) balloonCount.style.setProperty('--num', '0');
+
+    if (balloonCount) {
+        balloonCount.style.setProperty('--num', '0');
+    }
 
     // Reset dismissed flag so the next error shows the balloon again
     overlay.__v_oBalloonDismissed = false;
