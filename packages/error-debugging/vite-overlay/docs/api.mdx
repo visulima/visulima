@@ -4,18 +4,93 @@ title: "API Reference"
 
 # API Reference
 
-## viteOverlay()
+## `errorOverlayPlugin(options?)`
 
-Vite plugin for error overlay.
+The default export. A Vite plugin that intercepts and enhances error display.
 
 ```typescript
-function viteOverlay(options?: Options): Plugin;
+import errorOverlayPlugin from "@visulima/vite-overlay";
+
+// vite.config.ts
+export default defineConfig({
+    plugins: [errorOverlayPlugin(options)],
+});
 ```
 
-## showError()
+### Options
 
-Display error in overlay.
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `forwardConsole` | `boolean` | `true` | Forward client runtime errors to the terminal |
+| `forwardedConsoleMethods` | `string[]` | `["error"]` | Console methods to intercept |
+| `logClientRuntimeError` | `boolean` | — | **Deprecated.** Use `forwardConsole` instead |
+| `overlay` | `OverlayConfig` | — | Overlay UI configuration |
+| `reactPluginName` | `string` | — | Custom React plugin name for detection |
+| `vuePluginName` | `string` | — | Custom Vue plugin name for detection |
+| `showBallonButton` | `boolean` | — | **Deprecated.** Use `overlay.balloon.enabled` instead |
+| `solutionFinders` | `SolutionFinder[]` | `[]` | Custom solution finder handlers |
+
+## Types
+
+### `OverlayConfig`
 
 ```typescript
-function showError(error: Error): void;
+interface OverlayConfig {
+    balloon?: BalloonConfig;
+    /** Custom CSS injected into the shadow DOM */
+    customCSS?: string | CSSProperties;
+}
+```
+
+### `BalloonConfig`
+
+```typescript
+interface BalloonConfig {
+    /** Show/hide the floating balloon button (default: true) */
+    enabled?: boolean;
+    /** Custom SVG icon for the balloon */
+    icon?: string;
+    /** Position of the balloon (default: "bottom-right") */
+    position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+    /** Custom styles for the balloon */
+    style?: string | CSSProperties;
+}
+```
+
+### `VisulimaViteOverlayErrorPayload`
+
+The error payload sent to the client over WebSocket.
+
+```typescript
+interface VisulimaViteOverlayErrorPayload {
+    errors: ExtendedError[];
+    errorType: "client" | "server";
+    rootPath: string;
+    solution?: Solution;
+}
+```
+
+### `ExtendedError`
+
+```typescript
+interface ExtendedError {
+    message: string;
+    name: string;
+    stack: string;
+    hint?: string;
+    originalFilePath: string;
+    originalFileLine: number;
+    originalFileColumn: number;
+    originalSnippet: string;
+    originalStack?: string;
+    originalCodeFrameContent?: string;
+    compiledFilePath?: string;
+    compiledLine?: number;
+    compiledColumn?: number;
+    compiledStack?: string;
+    compiledCodeFrameContent?: string;
+    fixPrompt: string;
+    plugin?: string;
+    errorCount?: number;
+}
 ```
