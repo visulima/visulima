@@ -371,13 +371,13 @@ const setupWebSocketInterception = (
                     const message = String(err.message);
                     const rawStack = String(err.stack);
 
-                    const syntaicError = new Error(message);
+                    const syntheticError = new Error(message);
 
-                    syntaicError.name = name;
-                    syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
+                    syntheticError.name = name;
+                    syntheticError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
                     if (err.cause) {
-                        syntaicError.cause = reconstructCauseChain(err.cause as CauseData);
+                        syntheticError.cause = reconstructCauseChain(err.cause as CauseData);
                     }
 
                     const viteErrorData = err.sourceFile
@@ -389,7 +389,7 @@ const setupWebSocketInterception = (
                         }
                         : undefined;
 
-                    const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
+                    const extensionPayload = await buildExtendedError(syntheticError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
 
                     // eslint-disable-next-line no-param-reassign
                     data.err = extensionPayload;
@@ -455,18 +455,18 @@ const setupHMRHandler = (
         const message = String(raw.message);
         const rawStack = String(raw.stack);
 
-        const syntaicError = new Error(message);
+        const syntheticError = new Error(message);
 
-        syntaicError.name = name;
-        syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
+        syntheticError.name = name;
+        syntheticError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
         if (raw.cause) {
-            syntaicError.cause = reconstructCauseChain(raw.cause as CauseData);
+            syntheticError.cause = reconstructCauseChain(raw.cause as CauseData);
         }
 
         try {
             const extensionPayload = await buildExtendedError(
-                syntaicError,
+                syntheticError,
                 server,
                 rootPath,
                 {
