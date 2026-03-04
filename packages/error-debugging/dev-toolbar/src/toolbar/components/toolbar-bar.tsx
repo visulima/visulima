@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import moreHorizontalIcon from "lucide-static/icons/more-horizontal.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 

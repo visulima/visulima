@@ -29,31 +29,55 @@ const isUrlFlagPresent = (): boolean => {
  * Loads all enabled app modules in parallel.
  */
 
-const loadAppModules = (appConfig: (typeof devToolbarOptions)["apps"]) => Promise.all([
-    appConfig.settings ? import("virtual:visulima-dev-toolbar-path:apps/settings/index.js") : undefined,
-    appConfig.timeline ? import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js") : undefined,
-    appConfig.viteConfig ? import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js") : undefined,
-    appConfig.moduleGraph ? import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js") : undefined,
-    appConfig.seo ? import("virtual:visulima-dev-toolbar-path:apps/seo/index.js") : undefined,
-    appConfig.performance ? import("virtual:visulima-dev-toolbar-path:apps/performance/index.js") : undefined,
-    appConfig.a11y ? import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js") : undefined,
-    appConfig.inspector ? import("virtual:visulima-dev-toolbar-path:apps/inspector/index.js") : undefined,
-    appConfig.tailwind ? import("virtual:visulima-dev-toolbar-path:apps/tailwind/index.js") : undefined,
-    import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
-]);
+const loadAppModules = (appConfig: (typeof devToolbarOptions)["apps"]) =>
+    Promise.all([
+        appConfig.settings ? import("virtual:visulima-dev-toolbar-path:apps/settings/index.js") : undefined,
+        appConfig.timeline ? import("virtual:visulima-dev-toolbar-path:apps/timeline/index.js") : undefined,
+        appConfig.viteConfig ? import("virtual:visulima-dev-toolbar-path:apps/vite-config/index.js") : undefined,
+        appConfig.moduleGraph ? import("virtual:visulima-dev-toolbar-path:apps/module-graph/index.js") : undefined,
+        appConfig.seo ? import("virtual:visulima-dev-toolbar-path:apps/seo/index.js") : undefined,
+        appConfig.performance ? import("virtual:visulima-dev-toolbar-path:apps/performance/index.js") : undefined,
+        appConfig.a11y ? import("virtual:visulima-dev-toolbar-path:apps/a11y/index.js") : undefined,
+        appConfig.inspector ? import("virtual:visulima-dev-toolbar-path:apps/inspector/index.js") : undefined,
+        appConfig.tailwind ? import("virtual:visulima-dev-toolbar-path:apps/tailwind/index.js") : undefined,
+        appConfig.assets ? import("virtual:visulima-dev-toolbar-path:apps/assets/index.js") : undefined,
+        import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
+    ]);
 
 /**
  * Registers all loaded app modules with the toolbar element.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppModules>>) => {
-    const [settingsModule, timelineModule, viteConfigModule, moduleGraphModule, seoModule, performanceModule, a11yModule, inspectorModule, tailwindModule, moreModule] = modules;
+    const [
+        settingsModule,
+        timelineModule,
+        viteConfigModule,
+        moduleGraphModule,
+        seoModule,
+        performanceModule,
+        a11yModule,
+        inspectorModule,
+        tailwindModule,
+        assetsModule,
+        moreModule,
+    ] = modules;
 
     if (!toolbar.registerApp) {
         return;
     }
 
-    const optionalApps = [timelineModule, viteConfigModule, moduleGraphModule, seoModule, performanceModule, a11yModule, inspectorModule, tailwindModule];
+    const optionalApps = [
+        timelineModule,
+        viteConfigModule,
+        moduleGraphModule,
+        seoModule,
+        performanceModule,
+        a11yModule,
+        inspectorModule,
+        tailwindModule,
+        assetsModule,
+    ];
 
     for (const appModule of optionalApps) {
         if (appModule) {
@@ -136,7 +160,9 @@ if (typeof document !== "undefined") {
         document.addEventListener("DOMContentLoaded", initToolbar);
     } else {
         // eslint-disable-next-line unicorn/prefer-top-level-await
-        initToolbar().catch(() => { /* ignore */ });
+        initToolbar().catch(() => {
+            /* ignore */
+        });
     }
 }
 
@@ -153,6 +179,8 @@ if (import.meta.hot) {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
-        initToolbar().catch(() => { /* ignore */ });
+        initToolbar().catch(() => {
+            /* ignore */
+        });
     });
 }

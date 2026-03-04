@@ -94,9 +94,8 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const overlayActiveClass = showOverlays
         ? "border-primary/30 text-primary bg-primary/8"
         : "border-border text-muted-foreground bg-transparent hover:text-foreground";
-    const overlayButtonClass = issues.length === 0
-        ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed"
-        : cn("cursor-pointer", overlayActiveClass);
+    const overlayButtonClass
+        = issues.length === 0 ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed" : cn("cursor-pointer", overlayActiveClass);
 
     return (
         <div class="space-y-3 min-w-[200px]">
@@ -140,7 +139,11 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                             : "border-border text-foreground bg-transparent hover:bg-foreground/5",
                     )}
                     disabled={isScanning}
-                    onClick={() => { a11yStore.scan().catch(() => { /* error handled in store */ }); }}
+                    onClick={() => {
+                        a11yStore.scan().catch(() => {
+                            /* error handled in store */
+                        });
+                    }}
                     type="button"
                 >
                     {scanButtonLabel}

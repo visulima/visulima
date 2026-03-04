@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import settingsIcon from "lucide-static/icons/settings.svg?raw";
 
 import type { DevToolbarApp } from "../../types/app";

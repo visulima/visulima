@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import ganttChartIcon from "lucide-static/icons/gantt-chart.svg?raw";
 
 import { startTimelineCapture } from "../../timeline/capture";

@@ -1,5 +1,6 @@
 import type { ViteDevServer } from "vite";
 
+import type { StaticAsset } from "../rpc/functions/assets";
 import type { SerializableModuleNode } from "../rpc/functions/module-graph";
 import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
 
@@ -7,6 +8,7 @@ import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
  * Server-side RPC functions
  * These can be called from the client
  */
+
 export interface ServerFunctions {
     /**
      * Extension point for custom server functions
@@ -18,6 +20,11 @@ export interface ServerFunctions {
      * Get module dependency graph
      */
     getModuleGraph: () => Promise<SerializableModuleNode[]>;
+
+    /**
+     * Get all static assets from the public directory
+     */
+    getStaticAssets: () => Promise<StaticAsset[]>;
 
     /**
      * Get full Tailwind CSS theme (default + user overrides)
@@ -115,3 +122,5 @@ export interface ClientRPCContext {
      */
     registerFunction: <K extends keyof ClientFunctions>(name: K, function_: ClientFunctions[K]) => void;
 }
+
+export { type StaticAsset } from "../rpc/functions/assets";

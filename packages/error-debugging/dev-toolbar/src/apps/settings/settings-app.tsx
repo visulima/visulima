@@ -1,6 +1,9 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import monitorIcon from "lucide-static/icons/monitor.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import moonIcon from "lucide-static/icons/moon.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import sunIcon from "lucide-static/icons/sun.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";

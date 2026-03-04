@@ -91,8 +91,9 @@ interface JsonLdSchema {
     type: string;
 }
 
-const isISO8601 = (value: unknown): boolean =>
-    typeof value === "string" && /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)?)?$/.test(value);
+// eslint-disable-next-line sonarjs/regex-complexity
+const ISO8601_RE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?(?:[+-]\d{2}:\d{2}|Z)?)?$/;
+const isISO8601 = (value: unknown): boolean => typeof value === "string" && ISO8601_RE.test(value);
 
 const has = (schema: Record<string, unknown>, key: string): boolean => schema[key] !== undefined && schema[key] !== null && schema[key] !== "";
 
@@ -107,14 +108,12 @@ const validateArticle: Validator = (schema) => {
     if (!has(schema, "headline") && !has(schema, "name"))
         msgs.push({ message: "headline (or name) is required", property: "headline", severity: "error" });
 
-    if (!has(schema, "author"))
-        msgs.push({ message: "author is required", property: "author", severity: "error" });
-    else {
+    if (has(schema, "author")) {
         const author = schema["author"] as Record<string, unknown>;
 
         if (typeof author === "object" && !Array.isArray(author) && !has(author, "name"))
             msgs.push({ message: "author.name is missing", property: "author.name", severity: "warning" });
-    }
+    } else { msgs.push({ message: "author is required", property: "author", severity: "error" }); }
 
     if (!has(schema, "datePublished"))
         msgs.push({ message: "datePublished is required", property: "datePublished", severity: "error" });
@@ -130,6 +129,7 @@ const validateArticle: Validator = (schema) => {
     return msgs;
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const validateProduct: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
@@ -327,6 +327,7 @@ const validateVideoObject: Validator = (schema) => {
 const TYPE_VALIDATORS: Record<string, Validator> = {
     Article: validateArticle,
     BlogPosting: validateArticle,
+    BreadcrumbList: validateBreadcrumbList,
     Event: validateEvent,
     EventSeries: validateEvent,
     FAQPage: validateFaqPage,
@@ -339,7 +340,6 @@ const TYPE_VALIDATORS: Record<string, Validator> = {
     VideoObject: validateVideoObject,
     WebPage: validateWebSiteOrPage,
     WebSite: validateWebSiteOrPage,
-    BreadcrumbList: validateBreadcrumbList,
 };
 
 const KNOWN_TYPES = new Set(Object.keys(TYPE_VALIDATORS));
@@ -395,11 +395,16 @@ const processJsonLdNode = (parsed: Record<string, unknown>, index: number, graph
         index,
         messages,
         parsed,
-        raw: raw ?? JSON.stringify(parsed, null, 2),
+        raw: raw ?? JSON.stringify(parsed, undefined, 2),
         status: deriveStatus(messages),
         type,
     };
 };
+
+const JS_CDATA_START_RE = /^\/\/<!\[CDATA\[/;
+const JS_CDATA_END_RE = /\/\/\]\]>$/;
+const XML_CDATA_START_RE = /^<!\[CDATA\[/;
+const XML_CDATA_END_RE = /\]\]>$/;
 
 const readJsonLdSchemas = (): JsonLdSchema[] => {
     const scripts = document.querySelectorAll("script[type=\"application/ld+json\"]");
@@ -409,8 +414,8 @@ const readJsonLdSchemas = (): JsonLdSchema[] => {
         let content = (script.textContent ?? "").trim();
 
         // Strip JS and XML CDATA wrappers
-        content = content.replace(/^\/\/<!\[CDATA\[/, "").replace(/\/\/\]\]>$/, "");
-        content = content.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
+        content = content.replace(JS_CDATA_START_RE, "").replace(JS_CDATA_END_RE, "");
+        content = content.replace(XML_CDATA_START_RE, "").replace(XML_CDATA_END_RE, "");
 
         try {
             const parsed = JSON.parse(content) as Record<string, unknown>;
@@ -740,7 +745,9 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
                 return undefined;
             })
-            .catch(() => { /* ignore */ });
+            .catch(() => {
+                /* ignore */
+            });
     };
 
     return (
@@ -795,7 +802,7 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
     const [open, setOpen] = useState(false);
     const [showRaw, setShowRaw] = useState(false);
     const cfg = SEVERITY_CONFIG[schema.status];
-    const label = schema.graphIndex !== undefined ? `Script ${schema.index + 1} @graph[${schema.graphIndex}]` : `Script ${schema.index + 1}`;
+    const label = schema.graphIndex === undefined ? `Script ${schema.index + 1}` : `Script ${schema.index + 1} @graph[${schema.graphIndex}]`;
 
     return (
         <div class="border border-border bg-card overflow-hidden">
@@ -821,17 +828,15 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
                     {schema.messages.length > 0
                         ? (
                         <div class="px-4 py-3 space-y-1.5">
-                            {schema.messages.map((msg, i) => {
-                                const msgCfg = SEVERITY_CONFIG[msg.severity];
+                            {schema.messages.map((message, i) => {
+                                const messageCfg = SEVERITY_CONFIG[message.severity];
 
                                 return (
                                     <div class="flex items-start gap-2 text-[0.72rem]" key={i}>
-                                        <span class={cn("shrink-0 leading-none mt-px", msgCfg.color)}>{msgCfg.icon}</span>
+                                        <span class={cn("shrink-0 leading-none mt-px", messageCfg.color)}>{messageCfg.icon}</span>
                                         <div class="min-w-0">
-                                            {msg.property && (
-                                                <code class="text-[0.65rem] font-mono text-muted-foreground mr-1.5">{msg.property}:</code>
-                                            )}
-                                            <span class="text-foreground/80">{msg.message}</span>
+                                            {message.property && <code class="text-[0.65rem] font-mono text-muted-foreground mr-1.5">{message.property}:</code>}
+                                            <span class="text-foreground/80">{message.message}</span>
                                         </div>
                                     </div>
                                 );
@@ -904,7 +909,13 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     const missingTotal = missingRequired.length + missingRecommended.length;
     const jsonLdErrors = schemas.filter((s) => s.status === "error").length;
     const jsonLdWarnings = schemas.filter((s) => s.status === "warning").length;
-    const jsonLdBadge = jsonLdErrors > 0 ? jsonLdErrors : jsonLdWarnings > 0 ? jsonLdWarnings : undefined;
+    let jsonLdBadge: number | undefined;
+
+    if (jsonLdErrors > 0) {
+        jsonLdBadge = jsonLdErrors;
+    } else if (jsonLdWarnings > 0) {
+        jsonLdBadge = jsonLdWarnings;
+    }
 
     // Show article section only when og:type is "article" or any article tag is set
     const showArticle = meta.ogType === "article" || !!(meta.articleAuthor || meta.articlePublishedTime || meta.articleModifiedTime || meta.articleSection);
@@ -917,15 +928,21 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                     {(["preview", "tags", "missing", "jsonld"] as const).map((tab) => {
                         const LABELS: Record<SeoTab, string> = { jsonld: "Structured Data", missing: "Missing", preview: "Social Previews", tags: "Meta Tags" };
                         const label = LABELS[tab];
-                        const badge = tab === "missing" && missingTotal > 0
-                            ? missingTotal
-                            : tab === "jsonld" && jsonLdBadge !== undefined
-                                ? jsonLdBadge
-                                : undefined;
+                        let badge: number | undefined;
 
-                        const badgeVariant = tab === "missing"
-                            ? (missingRequired.length > 0 ? "destructive" : "warning")
-                            : (jsonLdErrors > 0 ? "destructive" : "warning");
+                        if (tab === "missing" && missingTotal > 0) {
+                            badge = missingTotal;
+                        } else if (tab === "jsonld" && jsonLdBadge !== undefined) {
+                            badge = jsonLdBadge;
+                        }
+
+                        let badgeVariant: "destructive" | "warning";
+
+                        if (tab === "missing") {
+                            badgeVariant = missingRequired.length > 0 ? "destructive" : "warning";
+                        } else {
+                            badgeVariant = jsonLdErrors > 0 ? "destructive" : "warning";
+                        }
 
                         return (
                             <button
@@ -1037,9 +1054,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 </div>
                                 <p class="text-[0.8rem] font-medium text-foreground/70">No structured data found</p>
                                 <p class="text-[0.7rem] text-muted-foreground text-center max-w-xs leading-relaxed">
-                                    Add a{" "}
-                                    <code class="font-mono bg-foreground/6 px-1">{"<script type=\"application/ld+json\">"}</code>
-                                    {" "}block to help search engines understand your content.
+                                    {/* eslint-disable-next-line no-secrets/no-secrets */}
+                                    Add a <code class="font-mono bg-foreground/6 px-1">{"<script type=\"application/ld+json\">"}</code> block to help search
+                                    engines understand your content.
                                 </p>
                             </div>
                             )
@@ -1047,10 +1064,12 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                             <>
                                 <div class="flex items-center justify-between mb-1">
                                     <p class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                                        {schemas.length} schema{schemas.length !== 1 ? "s" : ""} detected
+                                        {schemas.length} schema{schemas.length === 1 ? "" : "s"} detected
                                     </p>
                                     {jsonLdErrors > 0 && (
-                                        <span class="text-[0.65rem] text-destructive font-medium">{jsonLdErrors} error{jsonLdErrors !== 1 ? "s" : ""}</span>
+                                        <span class="text-[0.65rem] text-destructive font-medium">
+                                            {jsonLdErrors} error{jsonLdErrors === 1 ? "" : "s"}
+                                        </span>
                                     )}
                                 </div>
                                 {schemas.map((schema, i) => (

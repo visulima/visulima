@@ -2,7 +2,7 @@ import generate from "@babel/generator";
 import { parse } from "@babel/parser";
 import type { NodePath } from "@babel/traverse";
 import _traverse from "@babel/traverse";
-// eslint-disable-next-line import/no-namespace
+// eslint-disable-next-line import/no-namespace, import/no-extraneous-dependencies
 import * as t from "@babel/types";
 import { normalizePath } from "vite";
 
@@ -169,7 +169,8 @@ const transformJSX = (
 
     // Skip if already annotated
     const hasSourceAttribute = element.node.attributes.some(
-        (attribute: t.JSXAttribute | t.JSXSpreadAttribute) => attribute.type === "JSXAttribute" && attribute.name.type === "JSXIdentifier" && attribute.name.name === SOURCE_ATTR,
+        (attribute: t.JSXAttribute | t.JSXSpreadAttribute) =>
+            attribute.type === "JSXAttribute" && attribute.name.type === "JSXIdentifier" && attribute.name.name === SOURCE_ATTR,
     );
 
     // Skip if component props are spread onto this element (would break prop forwarding)

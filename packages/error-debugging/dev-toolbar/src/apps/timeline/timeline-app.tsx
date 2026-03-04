@@ -94,9 +94,11 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
     const refresh = (): void => {
         const store = getTimelineStore();
 
-        setGroups(store.getGroups().map((g) => {
-            return { ...g, events: [...g.events] };
-        }));
+        setGroups(
+            store.getGroups().map((g) => {
+                return { ...g, events: [...g.events] };
+            }),
+        );
     };
 
     useEffect(() => {
@@ -114,7 +116,9 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
 
     const tabs = [
         { color: undefined, id: ALL_TAB, label: "All" },
-        ...groups.map((g) => { return { color: groupColorMap.get(g.id) ?? g.color, id: g.id, label: g.label }; }),
+        ...groups.map((g) => {
+            return { color: groupColorMap.get(g.id) ?? g.color, id: g.id, label: g.label };
+        }),
     ];
 
     const visibleEvents: TimelineEvent[]

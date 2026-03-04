@@ -20,7 +20,9 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
                 return undefined;
             })
-            .catch(() => { /* ignore */ });
+            .catch(() => {
+                /* ignore */
+            });
     };
 
     return (

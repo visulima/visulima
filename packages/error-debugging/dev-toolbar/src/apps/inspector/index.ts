@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import inspectIcon from "lucide-static/icons/inspect.svg?raw";
 
 import type { DevToolbarApp } from "../../types/app";

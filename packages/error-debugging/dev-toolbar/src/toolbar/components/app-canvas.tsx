@@ -1,11 +1,19 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import chevronRightIcon from "lucide-static/icons/chevron-right.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import layersIcon from "lucide-static/icons/layers.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import maximizeIcon from "lucide-static/icons/maximize.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import maximize2Icon from "lucide-static/icons/maximize-2.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import minimizeIcon from "lucide-static/icons/minimize.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import minimize2Icon from "lucide-static/icons/minimize-2.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import pictureInPicture2Icon from "lucide-static/icons/picture-in-picture-2.svg?data-uri&encoding=css";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import xIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { render as preactRender } from "preact";
@@ -177,9 +185,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                         <span
                                             class={cn(
                                                 "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
-                                                activeAppId === app.id
-                                                    ? "opacity-100"
-                                                    : "opacity-65 group-hover/nav-item:opacity-100",
+                                                activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                             )}
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
@@ -515,11 +521,14 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     fsTimerRef.current = undefined;
                 }, 380);
             });
-        } else if (!isFullscreen && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
+        } else if (
+            !isFullscreen
+            && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
             // If the animated exit is in progress, the onClick handler owns the
             // element styles — don't fight it. Only run instant snap for non-
             // animated exits (e.g. programmatic viewMode changes).
-            && !isExitAnimatingRef.current) {
+            && !isExitAnimatingRef.current
+        ) {
             element.style.transition = "none";
             element.style.clipPath = "";
 
