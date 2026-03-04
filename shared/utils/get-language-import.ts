@@ -26,7 +26,8 @@ export const LANGUAGE_IMPORT_MAP: Record<string, () => Promise<LanguageInput>> =
     vue: () => import("@shikijs/langs/vue"),
     bash: () => import("@shikijs/langs/bash"),
     shell: () => import("@shikijs/langs/shell"),
-    text: () => Promise.resolve({ name: "text", patterns: [], scopeName: "source.text" } as LanguageInput),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    text: () => Promise.resolve({ name: "text", patterns: [], scopeName: "source.text", repository: {} } as any as LanguageInput),
 };
 
 /**

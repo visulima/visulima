@@ -8,7 +8,7 @@ import type { BalloonConfig } from "../types";
  * @param balloonConfig Balloon configuration options (optional)
  * @returns The client-side JavaScript code as a string
  */
-const generateClientScript = (mode: string, forwardedConsoleMethods: string[], balloonConfig?: BalloonConfig): string => {
+const generateClientScript = (mode: string, forwardedConsoleMethods: string[], _balloonConfig?: BalloonConfig): string => {
     const consoleInterceptors = forwardedConsoleMethods
         .map((method) => {
             const capitalizedMethod = method.charAt(0).toUpperCase() + method.slice(1);
@@ -157,6 +157,37 @@ window.addEventListener("error", function (evt) {
 window.addEventListener("unhandledrejection", function (evt) {
     sendError(evt.reason);
 });
+
+// Clears all error state when an HMR update is successfully applied (i.e. the error was fixed).
+// vite:beforeUpdate fires after successful compilation, before module replacement.
+// vite:beforeFullReload fires before a full-page reload (server restart / config change).
+function clearErrorState() {
+    globalThis.__v_o_error_history = [];
+
+    var overlay = globalThis.__v_o__current;
+    if (!overlay) return;
+
+    var root = overlay.__elements && overlay.__elements.root;
+    if (root) root.classList.add('hidden');
+
+    var balloonGroup = overlay.__elements && overlay.__elements.balloonGroup;
+    if (balloonGroup) {
+        balloonGroup.classList.add('hidden');
+        balloonGroup.classList.remove('inline-flex');
+    }
+
+    var balloonCount = overlay.__elements && overlay.__elements.balloonCount;
+    if (balloonCount) balloonCount.style.setProperty('--num', '0');
+
+    // Reset dismissed flag so the next error shows the balloon again
+    overlay.__v_oBalloonDismissed = false;
+    if (typeof overlay._saveBalloonState === 'function') {
+        overlay._saveBalloonState('dismissed', 'false');
+    }
+}
+
+hot.on('vite:beforeUpdate', function() { clearErrorState(); });
+hot.on('vite:beforeFullReload', function() { clearErrorState(); });
 
 // Expose overlay API for manual control
 window.__visulima_overlay__ = {
