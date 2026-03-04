@@ -61,7 +61,6 @@ describe(resolveOriginalLocation, () => {
         expect.assertions(2);
 
         mockServer.transformRequest.mockResolvedValue({
-
             map: null, // No source map
         });
 
