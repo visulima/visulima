@@ -532,7 +532,7 @@ const setupHMRHandler = (
             await developmentLogger.error(consoleMessage.join("\n"));
 
             client.send(payload);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
 
@@ -543,7 +543,7 @@ const setupHMRHandler = (
                     stack: error.stack,
                 },
                 type: "error",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any);
         }
     });

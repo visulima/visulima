@@ -19,16 +19,16 @@ export default defineConfig({
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `forwardConsole` | `boolean` | `true` | Forward client runtime errors to the terminal |
-| `forwardedConsoleMethods` | `string[]` | `["error"]` | Console methods to intercept |
-| `logClientRuntimeError` | `boolean` | — | **Deprecated.** Use `forwardConsole` instead |
-| `overlay` | `OverlayConfig` | — | Overlay UI configuration |
-| `reactPluginName` | `string` | — | Custom React plugin name for detection |
-| `vuePluginName` | `string` | — | Custom Vue plugin name for detection |
-| `showBallonButton` | `boolean` | — | **Deprecated.** Use `overlay.balloon.enabled` instead |
-| `solutionFinders` | `SolutionFinder[]` | `[]` | Custom solution finder handlers |
+| Option                    | Type               | Default     | Description                                           |
+| ------------------------- | ------------------ | ----------- | ----------------------------------------------------- |
+| `forwardConsole`          | `boolean`          | `true`      | Forward client runtime errors to the terminal         |
+| `forwardedConsoleMethods` | `string[]`         | `["error"]` | Console methods to intercept                          |
+| `logClientRuntimeError`   | `boolean`          | —           | **Deprecated.** Use `forwardConsole` instead          |
+| `overlay`                 | `OverlayConfig`    | —           | Overlay UI configuration                              |
+| `reactPluginName`         | `string`           | —           | Custom React plugin name for detection                |
+| `vuePluginName`           | `string`           | —           | Custom Vue plugin name for detection                  |
+| `showBallonButton`        | `boolean`          | —           | **Deprecated.** Use `overlay.balloon.enabled` instead |
+| `solutionFinders`         | `SolutionFinder[]` | `[]`        | Custom solution finder handlers                       |
 
 ## Types
 

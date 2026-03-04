@@ -810,7 +810,7 @@ class ErrorOverlay extends HTMLElement {
                     return;
                 }
 
-                let codeFrame = "<div class=\"no-code-frame font-mono\">No code frame could be generated.</div>";
+                let codeFrame = "<div class=\"no-code-frame font-mono py-4 px-5\">No code frame could be generated.</div>";
 
                 // Try current error's code frame first
                 if (mode === "compiled" && currentError.compiledCodeFrameContent) {
