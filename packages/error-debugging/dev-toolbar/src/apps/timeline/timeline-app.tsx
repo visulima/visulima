@@ -7,7 +7,7 @@ import type { AppComponentProps } from "../../types/app";
 import type { TimelineEvent, TimelineGroup } from "../../types/timeline";
 import { DEFAULT_TIMELINE_GROUPS } from "../../types/timeline";
 import { Badge, Button } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 const POLL_INTERVAL = 500;
 
@@ -140,7 +140,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                 <div class="flex items-center gap-0 overflow-x-auto">
                     {tabs.map((tab) => (
                         <button
-                            class={cn(
+                            class={clsx(
                                 "px-3 py-1.5 text-[0.75rem] font-medium whitespace-nowrap border-0 cursor-pointer transition-colors duration-150",
                                 activeTab === tab.id
                                     ? "text-foreground border-b-2 border-primary bg-transparent"
@@ -200,7 +200,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
 
                                 return (
                                     <button
-                                        class={cn(
+                                        class={clsx(
                                             "w-full flex items-start gap-3 px-4 py-3 text-left border-0 bg-transparent cursor-pointer",
                                             "hover:bg-foreground/4 transition-colors duration-100",
                                             selectedEvent?.id === event.id && "bg-primary/6",

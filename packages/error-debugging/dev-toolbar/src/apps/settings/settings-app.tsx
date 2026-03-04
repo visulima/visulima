@@ -14,7 +14,7 @@ import { useTheme } from "../../toolbar/hooks/use-theme";
 import type { AppComponentProps } from "../../types/app";
 import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 
@@ -48,7 +48,7 @@ const Section = ({ children, title }: { children: ComponentChildren; title: stri
 const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }): ComponentChildren => (
     <button
         aria-checked={checked}
-        class={cn(
+        class={clsx(
             "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-none border-2 border-transparent",
             "transition-colors duration-200 ease-in-out",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -59,7 +59,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
         type="button"
     >
         <span
-            class={cn(
+            class={clsx(
                 "pointer-events-none inline-block h-4 w-4 shadow-sm",
                 "transition-all duration-200 ease-in-out",
                 // When ON the track is lime (#caff00) — use dark thumb for contrast (17:1)
@@ -95,7 +95,7 @@ const ThemeControl = ({ onChange, value }: { onChange: (v: Theme) => void; value
             {options.map((opt) => (
                 <button
                     aria-pressed={value === opt.value}
-                    class={cn(
+                    class={clsx(
                         "flex items-center gap-1.5 px-2.5 py-1.5 text-[0.75rem] font-medium",
                         "transition-all duration-150 cursor-pointer border-0",
                         value === opt.value ? "bg-background text-foreground shadow-sm" : "bg-transparent text-muted-foreground hover:text-foreground",
@@ -124,7 +124,7 @@ const HIDE_OPTIONS: { label: string; value: number }[] = [
 
 const HideDelayControl = ({ onChange, value }: { onChange: (v: number) => void; value: number }): ComponentChildren => (
     <select
-        class={cn(
+        class={clsx(
             "bg-foreground/6 border border-border",
             "text-[0.775rem] font-medium text-foreground",
             "px-2.5 py-1.5 cursor-pointer",
@@ -177,7 +177,7 @@ const EDITOR_OPTIONS: { label: string; value: string }[] = [
 
 const EditorControl = ({ onChange, value }: { onChange: (v: string) => void; value: string }): ComponentChildren => (
     <select
-        class={cn(
+        class={clsx(
             "bg-foreground/6 border border-border",
             "text-[0.775rem] font-medium text-foreground",
             "px-2.5 py-1.5 cursor-pointer",
@@ -257,7 +257,7 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
                 ))}
             </div>
             <Button
-                class={cn("text-[0.7rem]", capturing ? "border-primary text-primary bg-primary/8 animate-pulse" : "")}
+                class={clsx("text-[0.7rem]", capturing ? "border-primary text-primary bg-primary/8 animate-pulse" : "")}
                 onClick={() => setCapturing((c) => !c)}
                 ref={buttonRef}
                 size="sm"

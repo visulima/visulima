@@ -4,7 +4,7 @@ import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Alert, AlertDescription, Button } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import type { A11yIssue, A11yStoreState, Severity, Standard } from "./a11y-store";
 import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 
@@ -52,7 +52,7 @@ const SeverityBucket = ({
     severity: Severity;
 }): ComponentChildren => (
     <button
-        class={cn(
+        class={clsx(
             "flex flex-col items-center gap-1 px-3 py-2.5 border cursor-pointer transition-colors",
             isActive ? "ring-1 ring-inset ring-primary/40" : "hover:bg-foreground/6",
             SEVERITY_BG[severity],
@@ -61,7 +61,7 @@ const SeverityBucket = ({
         title={`${isActive ? "Clear" : "Filter by"} ${SEVERITY_LABEL[severity]}`}
         type="button"
     >
-        <span class={cn("text-xl font-bold tabular-nums leading-none", SEVERITY_COLOR[severity])}>{count}</span>
+        <span class={clsx("text-xl font-bold tabular-nums leading-none", SEVERITY_COLOR[severity])}>{count}</span>
         <span class="text-[0.6rem] font-semibold uppercase tracking-wider text-muted-foreground">{SEVERITY_LABEL[severity]}</span>
     </button>
 );
@@ -75,14 +75,14 @@ interface IssueCardProps {
 
 const IssueCard = ({ isSelected, issue, onClick, onDisable }: IssueCardProps): ComponentChildren => (
     <div
-        class={cn("p-3 border cursor-pointer transition-colors", isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3")}
+        class={clsx("p-3 border cursor-pointer transition-colors", isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3")}
         onClick={onClick}
     >
         {/* Header */}
         <div class="flex items-start gap-2 mb-1.5">
-            <span class={cn("mt-1 size-2 rounded-full shrink-0", SEVERITY_DOT[issue.impact])} />
+            <span class={clsx("mt-1 size-2 rounded-full shrink-0", SEVERITY_DOT[issue.impact])} />
             <span class="text-[0.75rem] font-semibold text-foreground flex-1 leading-snug">{issue.id}</span>
-            <span class={cn("text-[0.6rem] font-bold uppercase tracking-wide shrink-0", SEVERITY_COLOR[issue.impact])}>{SEVERITY_LABEL[issue.impact]}</span>
+            <span class={clsx("text-[0.6rem] font-bold uppercase tracking-wide shrink-0", SEVERITY_COLOR[issue.impact])}>{SEVERITY_LABEL[issue.impact]}</span>
         </div>
         {/* Message */}
         <p class="text-[0.7rem] text-muted-foreground leading-relaxed mb-2 ml-4">{issue.message}</p>
@@ -199,7 +199,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Toolbar */}
             <div class="shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-border bg-foreground/2 flex-wrap">
                 <Button
-                    class={cn(isScanning ? "border-primary/30 text-primary/50 bg-primary/5" : "")}
+                    class={clsx(isScanning ? "border-primary/30 text-primary/50 bg-primary/5" : "")}
                     disabled={isScanning}
                     onClick={handleScan}
                     size="sm"
@@ -243,7 +243,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                 </label>
 
                 <Button
-                    class={cn(showOverlays ? "border-primary/30 text-primary bg-primary/8" : "")}
+                    class={clsx(showOverlays ? "border-primary/30 text-primary bg-primary/8" : "")}
                     onClick={() => a11yStore.setShowOverlays(!showOverlays)}
                     size="sm"
                     title="Toggle visual highlights on affected elements"

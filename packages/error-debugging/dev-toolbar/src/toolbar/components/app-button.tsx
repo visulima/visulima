@@ -3,7 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useRef } from "preact/hooks";
 
 import type { DevToolbarAppState } from "../../types/index";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import { useToolbarContext } from "../context/index";
 import { useApps } from "../hooks/index";
 
@@ -56,7 +56,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
     return (
         <button
             aria-label={app.name}
-            class={cn(
+            class={clsx(
                 "relative flex justify-center items-center",
                 "border-0",
                 "whitespace-nowrap no-underline p-0 m-0",
@@ -84,7 +84,7 @@ const AppButton = ({ app }: AppButtonProps): ComponentChildren => {
                 <div class="size-6 flex items-center justify-center [&_svg]:size-4.5" dangerouslySetInnerHTML={{ __html: app.icon }} />
                 {app.notification.state && (
                     <span
-                        class={cn(
+                        class={clsx(
                             "absolute -top-1 -right-1 size-1.5 rounded-full border border-background",
                             app.notification.level === "error" && "bg-destructive",
                             app.notification.level === "warning" && "bg-warning",

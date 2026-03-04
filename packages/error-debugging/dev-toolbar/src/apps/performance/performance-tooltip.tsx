@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { CwvRating, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
 import { getCwvRating, performanceMonitor } from "../../performance/monitor";
 import type { AppTooltipProps } from "../../types/app";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -52,7 +52,7 @@ const MiniMemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren =>
     return (
         <div class="flex items-center gap-2">
             <div class="flex-1 h-1.5 bg-foreground/8 rounded-full overflow-hidden">
-                <div class={cn("h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
+                <div class={clsx("h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
             </div>
             <span class="text-[0.65rem] tabular-nums text-muted-foreground shrink-0">
                 {formatBytes(memory.usedJSHeapSize)} / {formatBytes(memory.jsHeapSizeLimit)}
@@ -97,11 +97,11 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
             <div class="flex items-end gap-3">
                 {/* Large FPS counter */}
                 <div class="flex flex-col items-center gap-0 shrink-0">
-                    <span class={cn("text-2xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>{fps}</span>
+                    <span class={clsx("text-2xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>{fps}</span>
                     <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">fps</span>
                 </div>
                 {/* Sparkline */}
-                <div class={cn("flex-1 min-w-0", RATING_CLASSES[fpsRating])}>
+                <div class={clsx("flex-1 min-w-0", RATING_CLASSES[fpsRating])}>
                     <MiniSparkline samples={fpsHistoryRef.current} />
                 </div>
             </div>
@@ -111,19 +111,19 @@ const PerformanceTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 {vitals.lcp !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">LCP</span>
-                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("lcp", vitals.lcp)])}>{vitals.lcp} ms</span>
+                        <span class={clsx("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("lcp", vitals.lcp)])}>{vitals.lcp} ms</span>
                     </div>
                 )}
                 {vitals.fcp !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">FCP</span>
-                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("fcp", vitals.fcp)])}>{vitals.fcp} ms</span>
+                        <span class={clsx("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("fcp", vitals.fcp)])}>{vitals.fcp} ms</span>
                     </div>
                 )}
                 {vitals.cls !== undefined && (
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[0.55rem] text-muted-foreground uppercase tracking-wide">CLS</span>
-                        <span class={cn("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("cls", vitals.cls)])}>
+                        <span class={clsx("text-[0.8rem] font-semibold tabular-nums", RATING_CLASSES[getCwvRating("cls", vitals.cls)])}>
                             {vitals.cls.toFixed(3)}
                         </span>
                     </div>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { TailwindConfigResult } from "../../rpc/functions/tailwind-config";
 import type { AppComponentProps } from "../../types/app";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 type Tab = "colors" | "spacing" | "type" | "effects" | "config";
 
@@ -250,7 +250,7 @@ const ColorItem = ({ token }: { token: ColorToken }): ComponentChildren => {
                 <span class="block text-[0.6rem] font-mono text-muted-foreground/60 truncate">{token.value}</span>
             </span>
             <span
-                class={cn(
+                class={clsx(
                     "text-[0.6rem] font-mono shrink-0 transition-opacity",
                     copied ? "text-primary opacity-100" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100",
                 )}
@@ -535,7 +535,7 @@ const ConfigSemanticColorItem = ({ cssVar, isCustom, value }: { cssVar: string; 
                 <span class="block text-[0.6rem] font-mono text-muted-foreground/60 truncate">{value}</span>
             </span>
             <span
-                class={cn(
+                class={clsx(
                     "text-[0.6rem] font-mono shrink-0 transition-opacity",
                     copied ? "text-primary opacity-100" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100",
                 )}
@@ -573,7 +573,7 @@ const ConfigSection = ({
                     {title}
                 </span>
                 <span class="text-[0.58rem] font-mono text-muted-foreground/50">{count}</span>
-                <span class={cn("text-muted-foreground/40 text-[0.6rem] transition-transform duration-150 ml-1", open && "rotate-90")}>▶</span>
+                <span class={clsx("text-muted-foreground/40 text-[0.6rem] transition-transform duration-150 ml-1", open && "rotate-90")}>▶</span>
             </button>
             {open && children}
         </div>
@@ -600,7 +600,7 @@ const ConfigTokenRow = ({ cssVar, isCustom, value }: { cssVar: string; isCustom:
             </span>
             <code class="text-[0.62rem] font-mono text-muted-foreground/60 truncate max-w-[160px] shrink-0">{value}</code>
             <span
-                class={cn(
+                class={clsx(
                     "text-[0.6rem] font-mono shrink-0 transition-opacity w-8 text-right",
                     copied ? "text-primary opacity-100" : "text-muted-foreground/40 opacity-0 group-hover:opacity-100",
                 )}
@@ -740,7 +740,7 @@ const ConfigTab = ({
             {/* Meta bar */}
             <div class="flex items-center gap-2 px-3 py-2 border-b border-border/40 bg-foreground/2 shrink-0">
                 <span
-                    class={cn(
+                    class={clsx(
                         "text-[0.6rem] font-bold uppercase tracking-wide px-1.5 py-0.5 shrink-0",
                         version === "v4" && "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
                         version === "v3" && "bg-primary/10 text-primary border border-primary/20",
@@ -1046,7 +1046,7 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     <div class="flex border-b border-border shrink-0 overflow-x-auto">
                         {tabs.map(({ id, label }) => (
                             <button
-                                class={cn(
+                                class={clsx(
                                     "flex-shrink-0 px-3 py-2 text-[0.68rem] font-medium transition-colors cursor-pointer border-0 border-b-2 -mb-px",
                                     tab === id
                                         ? "text-primary border-primary bg-primary/4"
@@ -1058,7 +1058,7 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             >
                                 {label}
                                 {tabCounts[id] > 0 && (
-                                    <span class={cn("ml-1.5 text-[0.58rem] font-mono", tab === id ? "text-primary/70" : "text-muted-foreground/50")}>
+                                    <span class={clsx("ml-1.5 text-[0.58rem] font-mono", tab === id ? "text-primary/70" : "text-muted-foreground/50")}>
                                         {tabCounts[id]}
                                     </span>
                                 )}

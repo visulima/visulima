@@ -137,6 +137,7 @@ export const App = (): string => `
         <ul>
             <li><span class="badge">✓</span>Dev Toolbar with built-in apps (Settings, Timeline)</li>
             <li><span class="badge">✓</span>Custom app registration via global API</li>
+            <li><span class="badge">✓</span>Iframe app — JSON Formatter loaded via <code>view.type = "iframe"</code></li>
             <li><span class="badge">✓</span>RPC communication with the Vite server</li>
             <li><span class="badge">✓</span>Hook system for event subscriptions</li>
             <li><span class="badge">✓</span>vite-overlay error integration — red badge in toolbar</li>

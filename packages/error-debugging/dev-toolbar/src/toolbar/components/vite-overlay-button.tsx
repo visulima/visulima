@@ -5,7 +5,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 /**
  * Shows a red error button in the toolbar when `@visulima/vite-overlay` errors exist.
@@ -80,7 +80,7 @@ const ViteOverlayButton = (): ComponentChildren => {
             <div aria-hidden="true" class="w-px h-5 bg-primary/20 shrink-0 mx-0.5" />
             <button
                 aria-label={label}
-                class={cn(
+                class={clsx(
                     "relative flex justify-center items-center size-6",
                     "border-0",
                     "whitespace-nowrap no-underline p-0 m-0",

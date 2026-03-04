@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
 import { getCwvRating, performanceMonitor } from "../../performance/monitor";
 import type { AppComponentProps } from "../../types/app";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -79,7 +79,7 @@ const MemoryBar = ({ memory }: { memory: MemoryInfo }): ComponentChildren => {
                 {/* Total allocated */}
                 <div class="absolute left-0 top-0 h-full bg-foreground/12 rounded-full" style={{ width: `${totalPct}%` }} />
                 {/* Used */}
-                <div class={cn("absolute left-0 top-0 h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
+                <div class={clsx("absolute left-0 top-0 h-full rounded-full", barColor)} style={{ width: `${usedPct}%` }} />
             </div>
             {/* Labels */}
             <div class="flex justify-between text-[0.65rem] text-muted-foreground">
@@ -121,9 +121,9 @@ const CwvCard = ({ label, metric, unit, value }: CwvMetric): ComponentChildren =
     const display = metric === "cls" ? value.toFixed(3) : formatMs(value);
 
     return (
-        <div class={cn("flex flex-col items-center gap-1 p-3 border min-w-0", RATING_BG[rating])}>
+        <div class={clsx("flex flex-col items-center gap-1 p-3 border min-w-0", RATING_BG[rating])}>
             <span class="text-[0.6rem] text-muted-foreground uppercase tracking-wider font-semibold truncate w-full text-center">{label}</span>
-            <span class={cn("text-[0.9rem] font-bold tabular-nums", RATING_CLASSES[rating])}>{display}</span>
+            <span class={clsx("text-[0.9rem] font-bold tabular-nums", RATING_CLASSES[rating])}>{display}</span>
             <span class="text-[0.6rem] text-muted-foreground/70 uppercase tracking-wide">{unit}</span>
         </div>
     );
@@ -199,11 +199,11 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
                 <div class="flex items-end gap-5">
                     {/* Current FPS badge */}
                     <div class="flex flex-col items-center gap-0.5 shrink-0">
-                        <span class={cn("text-3xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>{fps}</span>
+                        <span class={clsx("text-3xl font-bold tabular-nums leading-none", RATING_CLASSES[fpsRating])}>{fps}</span>
                         <span class="text-[0.6rem] text-muted-foreground uppercase tracking-wide">fps</span>
                     </div>
                     {/* Sparkline */}
-                    <div class={cn("flex-1 min-w-0", RATING_CLASSES[fpsRating])}>
+                    <div class={clsx("flex-1 min-w-0", RATING_CLASSES[fpsRating])}>
                         <FpsSparkline samples={fpsHistoryRef.current} />
                     </div>
                     {/* FPS bar scale labels */}

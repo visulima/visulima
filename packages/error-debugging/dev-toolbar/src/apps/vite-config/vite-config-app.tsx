@@ -4,7 +4,7 @@ import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Badge, Button } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 type ViteConfig = Record<string, unknown>;
 
@@ -27,7 +27,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
     return (
         <Button
-            class={cn(
+            class={clsx(
                 copied ? "border-primary/40 text-primary bg-primary/8" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30",
                 "text-[0.65rem]",
             )}
@@ -55,7 +55,7 @@ const Section = ({ data, defaultOpen = true, title }: { data: unknown; defaultOp
                 <span class="text-[0.75rem] font-semibold text-foreground uppercase tracking-wide">{title}</span>
                 <div class="flex items-center gap-2">
                     <CopyButton text={json} />
-                    <span class={cn("text-muted-foreground text-[0.7rem] transition-transform duration-200", open && "rotate-90")}>▶</span>
+                    <span class={clsx("text-muted-foreground text-[0.7rem] transition-transform duration-200", open && "rotate-90")}>▶</span>
                 </div>
             </button>
             {open && (

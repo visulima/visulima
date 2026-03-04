@@ -3,7 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import type { AppComponentProps, DevToolbarApp } from "../../types/app";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 const MoreApp = (_props: AppComponentProps): ComponentChildren => {
     const [apps, setApps] = useState<DevToolbarApp[]>([]);
@@ -77,7 +77,7 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="grid grid-cols-2 gap-2">
                 {apps.map((app) => (
                     <button
-                        class={cn(
+                        class={clsx(
                             "flex items-center gap-3 p-3",
                             "border border-border bg-card hover:bg-foreground/4",
                             "text-left cursor-pointer transition-colors duration-150",

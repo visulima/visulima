@@ -4,7 +4,7 @@ import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface PopoverContextValue {
     open: boolean;
@@ -80,7 +80,7 @@ const PopoverTrigger = ({ children, class: className, ...rest }: PopoverTriggerP
     return (
         <button
             aria-expanded={open}
-            class={cn("", className)}
+            class={clsx("", className)}
             onClick={() => {
                 if (!rest.disabled) {
                     setOpen(!open);
@@ -158,7 +158,7 @@ const PopoverContent = ({
 
     return (
         <div
-            class={cn("z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95", className)}
+            class={clsx("z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95", className)}
             ref={contentRef}
             role="dialog"
             style={{ left: `${position.x}px`, position: "fixed", top: `${position.y}px` }}
@@ -173,7 +173,7 @@ const PopoverClose = ({ children, class: className, ...rest }: PopoverCloseProps
     const { setOpen } = usePopoverContext();
 
     return (
-        <button class={cn("", className)} onClick={() => setOpen(false)} type="button" {...rest}>
+        <button class={clsx("", className)} onClick={() => setOpen(false)} type="button" {...rest}>
             {children}
         </button>
     );

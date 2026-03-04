@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { AppComponentProps } from "../../types/app";
 import type { StaticAsset } from "../../types/rpc";
 import { Button, Input } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ const TYPE_BADGE: Record<StaticAsset["type"], string> = {
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 const TypeBadge = ({ type }: { type: StaticAsset["type"] }): ComponentChildren => (
-    <span class={cn("inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border", TYPE_BADGE[type])}>{type}</span>
+    <span class={clsx("inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border", TYPE_BADGE[type])}>{type}</span>
 );
 
 const AssetPreview = ({ asset }: { asset: StaticAsset }): ComponentChildren => {
@@ -207,7 +207,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 {TYPE_FILTER_OPTIONS.map((opt) => (
                     <button
                         aria-pressed={typeFilter === opt.value}
-                        class={cn(
+                        class={clsx(
                             "px-2.5 py-0.5 text-[0.7rem] font-medium border cursor-pointer transition-colors duration-100",
                             typeFilter === opt.value
                                 ? "bg-primary/15 text-primary border-primary/30"
@@ -236,7 +236,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             <button
                                 aria-label={asset.publicPath}
                                 aria-selected={selected?.publicPath === asset.publicPath}
-                                class={cn(
+                                class={clsx(
                                     "w-full flex items-center gap-3 px-4 py-2.5 text-left border-0 bg-transparent cursor-pointer",
                                     "hover:bg-foreground/4 transition-colors duration-100",
                                     selected?.publicPath === asset.publicPath && "bg-primary/6",
@@ -291,7 +291,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                     {copied ? "Copied!" : "Copy URL"}
                                 </Button>
                                 <a
-                                    class={cn(
+                                    class={clsx(
                                         "w-full text-[0.75rem] inline-flex items-center justify-center",
                                         "px-3 py-1.5 border border-border bg-transparent",
                                         "text-foreground hover:bg-foreground/6 transition-colors duration-100",

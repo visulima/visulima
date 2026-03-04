@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren, JSX } from "preact";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 type BadgeVariant = "default" | "destructive" | "info" | "outline" | "secondary" | "success" | "warning";
 
@@ -23,7 +23,7 @@ const variantClasses: Record<BadgeVariant, string> = {
 
 const Badge = ({ children, class: className, variant = "default", ...rest }: BadgeProps): JSX.Element => (
     <div
-        class={cn("inline-flex items-center rounded-none border px-2.5 py-0.5 text-xs font-semibold transition-colors", variantClasses[variant], className)}
+        class={clsx("inline-flex items-center rounded-none border px-2.5 py-0.5 text-xs font-semibold transition-colors", variantClasses[variant], className)}
         {...rest}
     >
         {children}

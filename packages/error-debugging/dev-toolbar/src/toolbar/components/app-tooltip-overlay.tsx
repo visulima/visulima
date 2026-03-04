@@ -5,7 +5,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import { useToolbarContext } from "../context/index";
 import { createServerHelpers } from "../helpers";
 
@@ -113,7 +113,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
     return (
         <div
             aria-label={`${hoveredApp.name} quick preview`}
-            class={cn(
+            class={clsx(
                 "fixed z-[2147483647] pointer-events-auto",
                 "antialiased toolbar-font",
                 "w-auto max-w-[300px]",
@@ -121,7 +121,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                 "transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)]",
                 isVisible
                     ? "opacity-100 translate-y-0 scale-100"
-                    : cn(
+                    : clsx(
                         "opacity-0 scale-[0.97]",
                         position === "bottom" && "translate-y-1",
                         position === "top" && "-translate-y-1",
@@ -144,7 +144,7 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                 {/* Pin button — keeps this tooltip open after hover ends */}
                 <button
                     aria-label={`Pin ${hoveredApp.name} tooltip`}
-                    class={cn(
+                    class={clsx(
                         "size-5 flex items-center justify-center shrink-0",
                         "border-0 bg-transparent cursor-pointer p-0",
                         "text-muted-foreground/60 hover:text-primary",

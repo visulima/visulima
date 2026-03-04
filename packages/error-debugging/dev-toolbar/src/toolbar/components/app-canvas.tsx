@@ -21,7 +21,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/ho
 
 import type { DevToolbarAppState } from "../../types/index";
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import { createServerHelpers } from "../helpers";
 import { useFrameState } from "../hooks/use-frame-state";
 import { useTheme } from "../hooks/use-theme";
@@ -44,7 +44,7 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
 
     // Only for legacy init-based apps that bootstrap inside a shadow root
     useEffect(() => {
-        if (!contentRef.current || initializedRef.current || app.component) {
+        if (!contentRef.current || initializedRef.current || app.component || app.view?.type === "iframe") {
             return undefined;
         }
 
@@ -92,6 +92,11 @@ const AppContent = ({ app }: { app: DevToolbarAppState }): ComponentChildren => 
         return undefined;
     }, [app]);
 
+    // Iframe apps — rendered in an isolated browsing context
+    if (app.view?.type === "iframe") {
+        return <iframe class="w-full h-full block border-0" src={app.view.src} title={app.name} />;
+    }
+
     // Component-based apps render directly in the Preact tree so that hooks like
     // useTheme() participate in the same render cycle.  A nested render() call
     // inside useEffect creates an isolated tree whose setState calls can fire
@@ -137,13 +142,13 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
             {/* Sidebar */}
             <nav
                 aria-label="DevTools apps"
-                class={cn(
+                class={clsx(
                     "flex flex-col shrink-0 bg-accent border-r border-border/60",
                     "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
                     sidebarCollapsed ? "w-12.5" : "w-62.5",
                 )}
             >
-                <div class={cn("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
+                <div class={clsx("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
                     {sidebarCollapsed
                         ? (
                         <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
@@ -162,13 +167,13 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
 
                 <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
                     {apps
-                        .filter((app) => app.component ?? app.init)
+                        .filter((app) => app.component || app.init || app.view?.type === "iframe")
                         .map((app) => (
                             <div class="relative group/nav-item" key={app.id}>
                                 <button
                                     aria-label={app.name}
                                     aria-pressed={activeAppId === app.id}
-                                    class={cn(
+                                    class={clsx(
                                         "relative flex items-center w-full h-10",
                                         "border-0 border-l-2 cursor-pointer",
                                         "transition-all duration-150",
@@ -183,7 +188,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                     {app.icon
                                         ? (
                                         <span
-                                            class={cn(
+                                            class={clsx(
                                                 "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
                                                 activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                             )}
@@ -201,7 +206,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                 {app.notification.state && (
                                     <span
                                         aria-hidden="true"
-                                        class={cn(
+                                        class={clsx(
                                             "pointer-events-none absolute top-1.5 rounded-full",
                                             sidebarCollapsed ? "right-1.5" : "right-2.5",
                                             "size-1.5",
@@ -212,7 +217,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
 
                                 {sidebarCollapsed && (
                                     <div
-                                        class={cn(
+                                        class={clsx(
                                             "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
                                             "pointer-events-none z-50 whitespace-nowrap",
                                             "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
@@ -236,7 +241,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                     <div class="flex items-center gap-3 min-w-0">
                         <button
                             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                            class={cn(
+                            class={clsx(
                                 "flex items-center justify-center size-7 shrink-0",
                                 "border-0 cursor-pointer bg-transparent",
                                 "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -246,7 +251,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                             type="button"
                         >
                             <Icon
-                                class={cn("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                class={clsx("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
                                 size={14}
                                 src={chevronRightIcon}
                             />
@@ -270,7 +275,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
 
                     <button
                         aria-label="Close floating window"
-                        class={cn(
+                        class={clsx(
                             "flex items-center justify-center size-8",
                             "cursor-pointer border-0 bg-transparent",
                             "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -366,7 +371,7 @@ const getVisibilityClasses = (position: DevPanelProps["position"], isVisible: bo
         top: "-translate-y-2",
     };
 
-    return cn("opacity-0 pointer-events-none scale-[0.99]", directionTranslate[position] ?? "translate-y-2");
+    return clsx("opacity-0 pointer-events-none scale-[0.99]", directionTranslate[position] ?? "translate-y-2");
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -655,7 +660,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             {/* Backdrop — respects closeOnOutsideClick setting */}
             <div
                 aria-hidden="true"
-                class={cn(
+                class={clsx(
                     "fixed inset-0 z-[2147483646]",
                     "transition-opacity duration-200",
                     isVisible && !isFullscreen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
@@ -668,7 +673,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
             <div
                 aria-label="DevTools panel"
                 aria-modal="true"
-                class={cn(
+                class={clsx(
                     "fixed z-[2147483647] pointer-events-auto antialiased font-mono",
                     isFullscreen ? "inset-0" : getPanelPositionClasses(position),
                     "bg-background overflow-hidden",
@@ -727,7 +732,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 {/* Left sidebar — collapsible navigation */}
                 <nav
                     aria-label="DevTools apps"
-                    class={cn(
+                    class={clsx(
                         "flex flex-col shrink-0 overflow-hidden",
                         "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
                         "bg-accent border-r border-border/60",
@@ -735,7 +740,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     )}
                 >
                     {/* Sidebar header */}
-                    <div class={cn("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
+                    <div class={clsx("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
                         {sidebarCollapsed
                             ? (
                             <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
@@ -753,13 +758,13 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                     </div>
                     <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
                         {apps
-                            .filter((app) => app.component ?? app.init)
+                            .filter((app) => app.component || app.init || app.view?.type === "iframe")
                             .map((app) => (
                                 <div class="relative group/nav-item" key={app.id}>
                                     <button
                                         aria-label={app.name}
                                         aria-pressed={activeAppId === app.id}
-                                        class={cn(
+                                        class={clsx(
                                             "relative flex items-center w-full h-10",
                                             "border-0 border-l-2 cursor-pointer",
                                             "transition-all duration-150",
@@ -780,7 +785,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         {app.icon
                                             ? (
                                             <span
-                                                class={cn(
+                                                class={clsx(
                                                     "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
                                                     activeAppId === app.id ? "opacity-100" : "opacity-65 group-hover/nav-item:opacity-100",
                                                 )}
@@ -801,7 +806,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     {app.notification.state && (
                                         <span
                                             aria-hidden="true"
-                                            class={cn(
+                                            class={clsx(
                                                 "pointer-events-none absolute top-1.5 rounded-full",
                                                 sidebarCollapsed ? "right-1.5" : "right-2.5",
                                                 "size-1.5",
@@ -812,7 +817,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
                                     {sidebarCollapsed && (
                                         <div
-                                            class={cn(
+                                            class={clsx(
                                                 "absolute left-[calc(100%+0.5rem)] top-1/2 -translate-y-1/2",
                                                 "pointer-events-none z-50 whitespace-nowrap",
                                                 "opacity-0 -translate-x-1 group-hover/nav-item:opacity-100 group-hover/nav-item:translate-x-0",
@@ -844,7 +849,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                         <div class="flex items-center gap-3 min-w-0">
                             <button
                                 aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                                class={cn(
+                                class={clsx(
                                     "flex items-center justify-center size-7 shrink-0",
                                     "border-0 cursor-pointer bg-transparent",
                                     "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -854,7 +859,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                 type="button"
                             >
                                 <Icon
-                                    class={cn("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
+                                    class={clsx("size-3.5 transition-transform duration-300", !sidebarCollapsed && "rotate-180")}
                                     size={14}
                                     src={chevronRightIcon}
                                 />
@@ -881,7 +886,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             {(position === "bottom" || position === "top") && !isFullscreen && (
                                 <button
                                     aria-label={isWide ? "Switch to container width" : "Expand to full width"}
-                                    class={cn(
+                                    class={clsx(
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
                                         "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -898,7 +903,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             {/* Fullscreen toggle */}
                             <button
                                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                                class={cn(
+                                class={clsx(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -965,7 +970,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             {isPipSupported && !isFullscreen && (
                                 <button
                                     aria-label="Open in Picture-in-Picture window"
-                                    class={cn(
+                                    class={clsx(
                                         "flex items-center justify-center size-8",
                                         "cursor-pointer border-0 bg-transparent",
                                         state.isPip ? "text-primary hover:bg-primary/7" : "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -986,7 +991,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                             {/* Close */}
                             <button
                                 aria-label="Close DevTools panel"
-                                class={cn(
+                                class={clsx(
                                     "flex items-center justify-center size-8",
                                     "cursor-pointer border-0 bg-transparent",
                                     "text-muted-foreground hover:text-foreground hover:bg-foreground/7",
@@ -1029,7 +1034,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         <div class="flex flex-col gap-0.5">
                                             {apps.map((a) => (
                                                 <button
-                                                    class={cn(
+                                                    class={clsx(
                                                         "flex items-center gap-2.5 px-3 py-2",
                                                         "border border-border/40 bg-card/50",
                                                         "hover:border-primary/30 hover:bg-primary/4",

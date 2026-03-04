@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface ProgressProps extends JSX.HTMLAttributes<HTMLDivElement> {
     class?: string;
@@ -13,7 +13,7 @@ const Progress = ({ class: className, value, ...rest }: ProgressProps): JSX.Elem
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={value ?? 0}
-        class={cn("relative h-2 w-full overflow-hidden rounded-none bg-primary/20", className)}
+        class={clsx("relative h-2 w-full overflow-hidden rounded-none bg-primary/20", className)}
         role="progressbar"
         {...rest}
     >

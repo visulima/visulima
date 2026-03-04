@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks"
 
 import visulimaLogo from "../../assets/visulima-logo.svg";
 import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import type { PinnedTooltip, ToolbarContextState } from "../context/index";
 import { ToolbarContext } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
@@ -400,10 +400,10 @@ const ToolbarContainer = ({
         <ToolbarContext.Provider value={contextValue}>
             {/* display:contents wrapper — dark class inherited by both pill and panel
                 without creating a CSS containing block that would break fixed positioning */}
-            <div class={cn(resolvedTheme === "dark" && "dark")} style={{ display: "contents" }}>
+            <div class={clsx(resolvedTheme === "dark" && "dark")} style={{ display: "contents" }}>
                 {/* Anchor — positioned via JS; transitions left/top smoothly */}
                 <div
-                    class={cn(
+                    class={clsx(
                         "fixed z-[2147483647]",
                         "pointer-events-auto",
                         "origin-center",
@@ -422,7 +422,7 @@ const ToolbarContainer = ({
                 >
                     {/* Draggable toolbar pill */}
                     <div
-                        class={cn(
+                        class={clsx(
                             "group/panel",
                             "absolute left-0 top-0",
                             "flex flex-row justify-start items-center",
@@ -452,7 +452,7 @@ const ToolbarContainer = ({
                         {/* Logo toggle button */}
                         <button
                             aria-label="Toggle devtools panel"
-                            class={cn(
+                            class={clsx(
                                 "size-8 flex justify-center items-center shrink-0",
                                 "cursor-pointer p-0 m-0 border-0",
                                 "bg-transparent",
@@ -478,10 +478,10 @@ const ToolbarContainer = ({
                         </button>
 
                         {/* Thin vertical divider */}
-                        <div aria-hidden="true" class={cn("w-px h-5 bg-primary/20 shrink-0", isHidden && "hidden")} />
+                        <div aria-hidden="true" class={clsx("w-px h-5 bg-primary/20 shrink-0", isHidden && "hidden")} />
 
                         {/* App buttons group */}
-                        <div class={cn("px-0.5", isHidden && "hidden")}>
+                        <div class={clsx("px-0.5", isHidden && "hidden")}>
                             <ToolbarBar customAppsToShow={customAppsToShow} />
                         </div>
                     </div>

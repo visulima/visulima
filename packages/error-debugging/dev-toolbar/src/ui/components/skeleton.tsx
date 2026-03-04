@@ -1,14 +1,14 @@
 /** @jsxImportSource preact */
 import type { JSX } from "preact";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface SkeletonProps extends JSX.HTMLAttributes<HTMLDivElement> {
     class?: string;
 }
 
 const Skeleton = ({ class: className, ...rest }: SkeletonProps): JSX.Element => (
-    <div class={cn("animate-pulse rounded-none bg-primary/10", className)} {...rest} />
+    <div class={clsx("animate-pulse rounded-none bg-primary/10", className)} {...rest} />
 );
 
 export default Skeleton;

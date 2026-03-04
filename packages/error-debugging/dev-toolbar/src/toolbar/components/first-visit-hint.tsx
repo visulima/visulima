@@ -2,7 +2,7 @@
 import type { ComponentChildren, CSSProperties } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface FirstVisitHintProps {
     onDismiss: () => void;
@@ -51,19 +51,19 @@ const Arrow = ({ position }: { position: FirstVisitHintProps["position"] }): Com
     switch (position) {
         case "left": {
             // Hint to the right of pill → arrow at left of hint, points left
-            return <div aria-hidden="true" class={cn(base, "left-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-b border-l")} />;
+            return <div aria-hidden="true" class={clsx(base, "left-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-b border-l")} />;
         }
         case "right": {
             // Hint to the left of pill → arrow at right of hint, points right
-            return <div aria-hidden="true" class={cn(base, "right-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-t border-r")} />;
+            return <div aria-hidden="true" class={clsx(base, "right-[-5px] top-1/2 -translate-y-1/2 rotate-45 border-t border-r")} />;
         }
         case "top": {
             // Hint below pill → arrow at top of hint, points up
-            return <div aria-hidden="true" class={cn(base, "top-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-t border-l")} />;
+            return <div aria-hidden="true" class={clsx(base, "top-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-t border-l")} />;
         }
         default: {
             // Hint above pill → arrow at bottom of hint, points down
-            return <div aria-hidden="true" class={cn(base, "bottom-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-b border-r")} />;
+            return <div aria-hidden="true" class={clsx(base, "bottom-[-5px] left-1/2 -translate-x-1/2 rotate-45 border-b border-r")} />;
         }
     }
 };
@@ -114,7 +114,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
         <div
             aria-hidden={!visible}
             aria-label="DevTools quick start"
-            class={cn(
+            class={clsx(
                 "absolute pointer-events-auto",
                 "w-[240px]",
                 "bg-card border border-border",
@@ -150,7 +150,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
 
             {/* Dismiss */}
             <button
-                class={cn(
+                class={clsx(
                     "w-full h-6 text-[0.6rem] font-bold uppercase tracking-[0.1em]",
                     "border border-primary/30 bg-primary/6",
                     "text-primary cursor-pointer",

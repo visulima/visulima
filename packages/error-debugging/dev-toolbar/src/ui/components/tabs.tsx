@@ -3,7 +3,7 @@ import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";
 import { useContext, useState } from "preact/hooks";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface TabsContextValue {
     onValueChange: (v: string) => void;
@@ -63,7 +63,7 @@ const Tabs = ({ children, class: className, defaultValue, onValueChange, value, 
 
     return (
         <TabsContext.Provider value={{ onValueChange: handleValueChange, value: activeValue }}>
-            <div class={cn("", className)} {...rest}>
+            <div class={clsx("", className)} {...rest}>
                 {children}
             </div>
         </TabsContext.Provider>
@@ -71,7 +71,7 @@ const Tabs = ({ children, class: className, defaultValue, onValueChange, value, 
 };
 
 const TabsList = ({ children, class: className, ...rest }: TabsListProps): JSX.Element => (
-    <div class={cn("inline-flex h-9 items-center justify-center rounded-none bg-muted p-1 text-muted-foreground", className)} role="tablist" {...rest}>
+    <div class={clsx("inline-flex h-9 items-center justify-center rounded-none bg-muted p-1 text-muted-foreground", className)} role="tablist" {...rest}>
         {children}
     </div>
 );
@@ -83,7 +83,7 @@ const TabsTrigger = ({ children, class: className, disabled, value, ...rest }: T
     return (
         <button
             aria-selected={isActive}
-            class={cn(
+            class={clsx(
                 "inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
                 isActive ? "bg-background text-foreground shadow" : "hover:bg-background/50",
                 className,
@@ -109,7 +109,7 @@ const TabsContent = ({ children, class: className, value, ...rest }: TabsContent
 
     return (
         <div
-            class={cn(
+            class={clsx(
                 "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 className,
             )}

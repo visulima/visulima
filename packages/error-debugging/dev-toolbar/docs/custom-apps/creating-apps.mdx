@@ -218,6 +218,39 @@ For example:
 </div>
 ```
 
+## Iframe Apps
+
+Instead of a Preact component, you can load any URL inside the panel using `view: { type: "iframe", src: "..." }`. The URL is rendered in a full-size `<iframe>` that fills the panel area — useful for embedding existing web pages, Storybook, Swagger UI, or any standalone dev tool.
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import myIconSvg from "./my-icon.svg?raw";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            customApps: [
+                {
+                    id: "my-package:storybook",
+                    name: "Storybook",
+                    icon: myIconSvg,
+                    view: {
+                        type: "iframe",
+                        src: "http://localhost:6006",
+                    },
+                },
+            ],
+        }),
+    ],
+});
+```
+
+Iframe apps:
+- Do **not** use a `component` or `init` — set only `view`.
+- Cannot access `helpers.rpc` from inside the iframe (different origin).
+- The toolbar header, resize handles, and fullscreen/PiP controls all work normally.
+
 ## Dynamic Registration
 
 Apps can also be registered at runtime via the [Global API](/docs/dev-toolbar/custom-apps/global-api):
