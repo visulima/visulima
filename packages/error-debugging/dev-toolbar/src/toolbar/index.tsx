@@ -19,8 +19,6 @@ export class DevToolbar extends HTMLElement {
 
     private hasBeenInitialized = false;
 
-    private customAppsToShow = 3;
-
     private renderRoot: HTMLElement | undefined = undefined;
 
     public constructor() {
@@ -253,7 +251,6 @@ export class DevToolbar extends HTMLElement {
             <ToolbarContainer
                 activeAppId={activeAppId}
                 apps={apps}
-                customAppsToShow={this.customAppsToShow}
                 onClearNotification={(appId) => {
                     this.appManager.clearNotification(appId);
                     this.render();
