@@ -32,8 +32,6 @@ class ErrorOverlay extends HTMLElement {
 
     static SCROLL_PADDING = 8;
 
-    static WHEEL_TIMEOUT = 100;
-
     // Cached DOM elements for performance
     __elements = {};
 
@@ -125,6 +123,7 @@ class ErrorOverlay extends HTMLElement {
         this._initializeCopyError();
         this._initializePagination();
         this._initializeHistory();
+        this._initializeFocusTrap();
 
         if (this.__v_oPayload.solution) {
             this._injectSolution(this.__v_oPayload.solution);
@@ -236,7 +235,7 @@ class ErrorOverlay extends HTMLElement {
 
         // Limit history to prevent memory issues
         if (this.__v_oHistory.length > ErrorOverlay.HISTORY_LIMIT) {
-            this.__v_oHistory = this.__v_oHistory.slice(0, ErrorOverlay.HISTORY_LIMIT);
+            this.__v_oHistory.length = ErrorOverlay.HISTORY_LIMIT;
         }
 
         // Update balloon count with animation
@@ -485,10 +484,11 @@ class ErrorOverlay extends HTMLElement {
                     event.preventDefault();
                     event.stopPropagation();
 
-                    // Hide the balloon and mark as dismissed
+                    // Hide the balloon and mark as dismissed (persisted across hard reloads)
                     balloonGroup.classList.add("hidden");
                     balloonGroup.classList.remove("inline-flex");
                     this.__v_oBalloonDismissed = true;
+                    this._saveBalloonState("dismissed", "true");
                 };
 
                 // Remove existing listener if any
@@ -585,6 +585,41 @@ class ErrorOverlay extends HTMLElement {
     }
 
     /**
+     * Traps keyboard focus within the overlay when it is open (WCAG 2.1 – 2.1.2 No Keyboard Trap).
+     * Tab cycles forward through focusable elements; Shift+Tab cycles backward.
+     * @private
+     */
+    _initializeFocusTrap() {
+        const FOCUSABLE_SELECTORS = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+        this._addEventListener(this.root, "keydown", (event) => {
+            if (event.key !== "Tab") return;
+
+            const root = this.__elements?.root;
+
+            if (!root || root.classList.contains("hidden")) return;
+
+            const focusable = Array.from(this.root.querySelectorAll(FOCUSABLE_SELECTORS));
+
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            const active = this.root.activeElement;
+
+            if (event.shiftKey) {
+                if (active === first || !active) {
+                    event.preventDefault();
+                    last.focus();
+                }
+            } else if (active === last || !active) {
+                event.preventDefault();
+                first.focus();
+            }
+        });
+    }
+
+    /**
      * Initializes the layered error history functionality with Mac Time Machine-like scrolling.
      * @private
      */
@@ -673,13 +708,17 @@ class ErrorOverlay extends HTMLElement {
                             if (isHttpLink) {
                                 globalThis.open(fullPath, "_blank");
                             } else {
-                                // injected by the hmr plugin when served
-                                // eslint-disable-next-line no-undef
-                                const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
-                                    line ? `&line=${line}` : ""
-                                }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
+                                try {
+                                    // injected by the hmr plugin when served
+                                    // eslint-disable-next-line no-undef
+                                    const url = `${base}__open-in-editor?file=${encodeURIComponent(fullPath)}${
+                                        line ? `&line=${line}` : ""
+                                    }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
-                                fetch(url);
+                                    fetch(url).catch(() => {});
+                                } catch {
+                                    // base may not be defined outside Vite HMR context
+                                }
                             }
                         });
 
@@ -757,13 +796,17 @@ class ErrorOverlay extends HTMLElement {
 
                             const editor = localStorage.getItem("__v-o__editor");
 
-                            // injected by the hmr plugin when served
-                            // eslint-disable-next-line no-undef
-                            const url = `${base}__open-in-editor?file=${encodeURIComponent(resolved)}${
-                                line ? `&line=${line}` : ""
-                            }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
+                            try {
+                                // injected by the hmr plugin when served
+                                // eslint-disable-next-line no-undef
+                                const url = `${base}__open-in-editor?file=${encodeURIComponent(resolved)}${
+                                    line ? `&line=${line}` : ""
+                                }${column ? `&column=${column}` : ""}${editor ? `&editor=${editor}` : ""}`;
 
-                            fetch(url);
+                                fetch(url).catch(() => {});
+                            } catch {
+                                // base may not be defined outside Vite HMR context
+                            }
                         });
                     });
                 }
@@ -988,18 +1031,8 @@ class ErrorOverlay extends HTMLElement {
             this._navigateHistoryByScroll(scrollDirection);
         };
 
-        // Add wheel event listener - attach to the shadow root for better event capture
-        this._addEventListener(this.root, "wheel", handleWheel, { passive: false });
-
-        // Also add to the main overlay element
+        // Single wheel event listener — events from children bubble up to rootElement
         this._addEventListener(rootElement, "wheel", handleWheel, { passive: false });
-
-        // Also add to the backdrop for better coverage
-        const backdrop = this.root.querySelector("#__v_o__backdrop");
-
-        if (backdrop) {
-            this._addEventListener(backdrop, "wheel", handleWheel, { passive: false });
-        }
     }
 
     /**
@@ -1051,7 +1084,7 @@ class ErrorOverlay extends HTMLElement {
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
         themeButtons.forEach((button) => {
-            button.addEventListener("click", (event) => {
+            this._addEventListener(button, "click", (event) => {
                 event.preventDefault();
 
                 const theme = event.currentTarget.dataset.vOThemeClickValue;
@@ -1276,9 +1309,18 @@ class ErrorOverlay extends HTMLElement {
     _restoreBalloonState() {
         try {
             const balloonStates = JSON.parse(localStorage.getItem("__v-o__balloon") || "{}");
-            const { balloon, root: rootElement } = this.__elements || {};
+            const { balloon, balloonGroup, root: rootElement } = this.__elements || {};
 
             if (balloon && rootElement) {
+                if (balloonStates.dismissed === "true") {
+                    this.__v_oBalloonDismissed = true;
+
+                    if (balloonGroup) {
+                        balloonGroup.classList.add("hidden");
+                        balloonGroup.classList.remove("inline-flex");
+                    }
+                }
+
                 if (balloonStates.overlay === "open") {
                     rootElement.classList.remove("hidden");
                 } else if (balloonStates.overlay === "closed") {
@@ -1459,13 +1501,12 @@ class ErrorOverlay extends HTMLElement {
             const span = timeElement.querySelector("span");
 
             if (span) {
-                span.textContent = new Date(historyEntry.timestamp).toLocaleString("en-US", {
+                span.textContent = new Date(historyEntry.timestamp).toLocaleString(undefined, {
                     day: "2-digit",
                     hour: "2-digit",
                     minute: "2-digit",
                     month: "2-digit",
                     second: "2-digit",
-                    timeZone: "UTC",
                     year: "numeric",
                 });
             }
@@ -1524,6 +1565,7 @@ class ErrorOverlay extends HTMLElement {
         if (balloonGroup) {
             // Clear dismissed state and show balloon for new errors
             this.__v_oBalloonDismissed = false;
+            this._saveBalloonState("dismissed", "false");
             balloonGroup.classList.add("inline-flex");
             balloonGroup.classList.remove("hidden");
         }
