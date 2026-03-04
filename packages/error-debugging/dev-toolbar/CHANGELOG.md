@@ -1,3 +1,16 @@
+## @visulima/dev-toolbar [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.3...@visulima/dev-toolbar@1.0.0-alpha.4) (2026-03-04)
+
+### Bug Fixes
+
+* allowed vite 8 ([807071e](https://github.com/visulima/visulima/commit/807071ea041e1beaf7e773ac6bbd23efa9f33b32))
+* **dev-toolbar:** exclude inspector and tailwind from More "Additional Apps" ([812252a](https://github.com/visulima/visulima/commit/812252a96916ac346765631a0997ff2150e54e40))
+
+### Miscellaneous Chores
+
+* deps update ([9be09e9](https://github.com/visulima/visulima/commit/9be09e95e2bce8fe52e88b186c43b8cc6bae865c))
+* **dev-toolbar:** fix all ESLint errors and warnings across src and tests ([a14d2ed](https://github.com/visulima/visulima/commit/a14d2ed116b23ff1c61db28324b76aa55931919c))
+* **dev-toolbar:** remove external Google Fonts dependency ([2e81646](https://github.com/visulima/visulima/commit/2e81646f49a886d8ef9df7f9c951c87363f9b50d))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.2...@visulima/dev-toolbar@1.0.0-alpha.3) (2026-03-03)
 
 ### Features
