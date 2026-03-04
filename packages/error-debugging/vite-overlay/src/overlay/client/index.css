@@ -332,18 +332,24 @@ textarea:focus-visible,
     background-color: currentColor;
 }
 
-/* ─── Editor select: dark/light mode theming ─────────────────────────────── */
-/* color-scheme tells the browser to render the native options popup in the
-   correct OS color scheme so the dropdown doesn't look like a white popup
-   in the middle of a dark overlay. */
-select {
+/* ─── Editor select: theme-aware colors ──────────────────────────────────── */
+/* @tailwindcss/forms injects background-color: #fff on <select> elements.
+   In Tailwind v4 with a v3-compatible @plugin, that unlayered rule can beat
+   the @layer utilities class bg-(--ono-v-surface) on the element.
+   Explicit unlayered rules here win over all layered styles. */
+select#editor-selector {
+    background-color: var(--ono-v-surface);
+    color: var(--ono-v-text);
+    border-color: var(--ono-v-border);
+    /* color-scheme tells the browser to render the native options popup in
+       the correct OS color scheme. */
     color-scheme: light;
 }
 
-/* In dark mode, swap the @tailwindcss/forms chevron (hard-coded gray-500
+/* In dark mode: swap the @tailwindcss/forms chevron (hard-coded gray-500
    stroke) for zinc-400 so the arrow is visible on dark backgrounds, and
    tell the browser to render the native options popup in dark OS mode. */
-.dark select {
+.dark select#editor-selector {
     color-scheme: dark;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
