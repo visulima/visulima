@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
-import type { ComponentChildren, JSX } from "preact";
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
+import type { ComponentChildren, JSX } from "preact";
 
 type AlertVariant = "default" | "destructive" | "info" | "success" | "warning";
 

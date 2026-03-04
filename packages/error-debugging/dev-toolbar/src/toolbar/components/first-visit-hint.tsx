@@ -1,8 +1,8 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren, CSSProperties } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-
-import { clsx } from "clsx";
 
 interface FirstVisitHintProps {
     onDismiss: () => void;

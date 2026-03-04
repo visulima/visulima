@@ -1,8 +1,8 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
-
-import { clsx } from "clsx";
 
 interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> {
     checked?: boolean;

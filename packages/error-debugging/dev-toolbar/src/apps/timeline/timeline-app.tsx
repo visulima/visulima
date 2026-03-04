@@ -1,4 +1,6 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
@@ -7,7 +9,6 @@ import type { AppComponentProps } from "../../types/app";
 import type { TimelineEvent, TimelineGroup } from "../../types/timeline";
 import { DEFAULT_TIMELINE_GROUPS } from "../../types/timeline";
 import { Badge, Button } from "../../ui";
-import { clsx } from "clsx";
 
 const POLL_INTERVAL = 500;
 

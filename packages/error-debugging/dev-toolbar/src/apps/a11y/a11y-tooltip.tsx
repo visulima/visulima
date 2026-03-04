@@ -1,9 +1,10 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import type { AppTooltipProps } from "../../types/app";
-import { clsx } from "clsx";
 import type { A11yStoreState, Severity } from "./a11y-store";
 import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 

@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
-import type { JSX } from "preact";
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
+import type { JSX } from "preact";
 
 interface SeparatorProps extends JSX.HTMLAttributes<HTMLDivElement> {
     class?: string;

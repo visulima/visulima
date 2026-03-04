@@ -1,10 +1,11 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import type { TailwindConfigResult } from "../../rpc/functions/tailwind-config";
 import type { AppComponentProps } from "../../types/app";
-import { clsx } from "clsx";
 
 type Tab = "colors" | "spacing" | "type" | "effects" | "config";
 

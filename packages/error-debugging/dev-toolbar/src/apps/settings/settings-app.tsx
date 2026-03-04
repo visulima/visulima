@@ -1,5 +1,7 @@
 /** @jsxImportSource preact */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import monitorIcon from "lucide-static/icons/monitor.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import moonIcon from "lucide-static/icons/moon.svg?data-uri&encoding=css";
@@ -14,7 +16,6 @@ import { useTheme } from "../../toolbar/hooks/use-theme";
 import type { AppComponentProps } from "../../types/app";
 import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
-import { clsx } from "clsx";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 

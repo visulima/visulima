@@ -1,10 +1,11 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Button, Input } from "../../ui";
-import { clsx } from "clsx";
 
 interface ModuleEntry {
     ext: string;
