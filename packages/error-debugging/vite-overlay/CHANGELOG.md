@@ -1,3 +1,19 @@
+## @visulima/vite-overlay [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.6...@visulima/vite-overlay@2.0.0-alpha.7) (2026-03-04)
+
+### Bug Fixes
+
+* added hint to the overlay back ([5df1227](https://github.com/visulima/visulima/commit/5df122779364090d10d60f440e61a595c7e1ee83))
+* **vite-overlay:** clear balloon on HMR update and fix pre-existing TS errors ([6904661](https://github.com/visulima/visulima/commit/69046610f5a5c36ba68539ecb7a088cb767922ca))
+* **vite-overlay:** explicitly override forms plugin background on editor select ([9614446](https://github.com/visulima/visulima/commit/96144461dd00fad5dad3dd1aa3976af1ec34a896)), closes [#fff](https://github.com/visulima/visulima/issues/fff) [select#editor-selector](https://github.com/visulima/select/issues/editor-selector)
+* **vite-overlay:** fix all ESLint errors and prevent e2e specs from running in vitest ([c212416](https://github.com/visulima/visulima/commit/c212416be37c7bbe2276e440401103146838b8e5))
+* **vite-overlay:** fix editor select chevron and options popup in dark/light mode ([69e3274](https://github.com/visulima/visulima/commit/69e327476990e4b37a300f6655bf73af0aba2060))
+* **vite-overlay:** fix syntheticError typo, blank line lint error, and rewrite corrupted docs ([a990844](https://github.com/visulima/visulima/commit/a99084491d19f07704488d10ab4930c5b7b779d0))
+* **vite-overlay:** resolve 10 runtime bugs in error overlay ([da43fcb](https://github.com/visulima/visulima/commit/da43fcb1eeec62e7855c3bcbc9f365613fa9001c))
+
+### Documentation
+
+* **vite-overlay:** fix incorrect BalloonConfig properties and add client API docs ([6f045cf](https://github.com/visulima/visulima/commit/6f045cf186dc9ca7552e3cd21ff959414ddf2b13))
+
 ## @visulima/vite-overlay [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.5...@visulima/vite-overlay@2.0.0-alpha.6) (2026-02-28)
 
 ### Features
