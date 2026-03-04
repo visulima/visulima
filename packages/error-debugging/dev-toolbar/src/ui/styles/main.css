@@ -70,6 +70,10 @@
 /* Dark mode overrides --color-* directly in .dark below.                    */
 /* All foreground/background pairs verified to meet WCAG AA (4.5:1+).        */
 @theme {
+    /* Custom text size below xs */
+    --text-xxs: 0.625rem; /* 10px */
+    --text-xxs--line-height: 1rem;
+
     --color-background: #f2f2f2;
     --color-foreground: #18181b; /* zinc-900  — 15.6:1 on background ✅ */
     --color-card: #ffffff; /* elevated surface */
