@@ -22,11 +22,13 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
             (a: DevToolbarApp) =>
                 ![
                     "dev-toolbar:a11y",
+                    "dev-toolbar:inspector",
                     "dev-toolbar:module-graph",
                     "dev-toolbar:more",
                     "dev-toolbar:performance",
                     "dev-toolbar:seo",
                     "dev-toolbar:settings",
+                    "dev-toolbar:tailwind",
                     "dev-toolbar:timeline",
                     "dev-toolbar:vite-config",
                 ].includes(a.id),
