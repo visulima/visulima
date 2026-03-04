@@ -209,7 +209,7 @@ const setCrosshairCursor = (active: boolean): void => {
             document.head.append(style);
         }
 
-        style.textContent = "*, *::before, *::after { cursor: crosshair !important; }";
+        style.textContent = `*, *::before, *::after { cursor: crosshair !important; } #${BADGE_ID}, #${BADGE_ID} *, #${RESULT_ID}, #${RESULT_ID} * { cursor: pointer !important; }`;
     } else if (style) {
         style.remove();
     }
@@ -255,6 +255,10 @@ const createFloatingBadge = (onCancel: () => void): void => {
         "user-select:none",
         "white-space:nowrap",
     ].join(";");
+    badge.addEventListener("click", (event) => {
+        event.stopPropagation();
+        onCancel();
+    });
 
     const dot = document.createElement("span");
 
@@ -271,18 +275,12 @@ const createFloatingBadge = (onCancel: () => void): void => {
     separator.style.cssText = `color:${c.muted};margin:0 4px;`;
     separator.textContent = "·";
 
-    const cancelButton = document.createElement("button");
+    const cancelLabel = document.createElement("span");
 
-    cancelButton.textContent = "Cancel";
-    cancelButton.style.cssText
-        = `background:transparent;border:none;color:${c.primary};cursor:pointer;padding:0;`
-            + "font:12px/1 'JetBrains Mono',monospace;text-decoration:underline;text-underline-offset:3px;";
-    cancelButton.addEventListener("click", (event) => {
-        event.stopPropagation();
-        onCancel();
-    });
+    cancelLabel.textContent = "Cancel";
+    cancelLabel.style.cssText = `color:${c.primary};text-decoration:underline;text-underline-offset:3px;`;
 
-    badge.append(dot, text, separator, cancelButton);
+    badge.append(dot, text, separator, cancelLabel);
     document.body.append(badge);
 };
 
@@ -305,6 +303,8 @@ const openInEditor = (source: string): void => {
 };
 
 const removeResultPopup = (): void => {
+    removePopupOutsideHandler?.();
+    removePopupOutsideHandler = undefined;
     document.querySelector(`#${RESULT_ID}`)?.remove();
 };
 
@@ -339,6 +339,11 @@ const makeActionButton = (label: string, onClick: () => void): HTMLButtonElement
 };
 
 const showResultPopup = (element: Element, rect: DOMRect, source: string | undefined): void => {
+    // Cancel any pending outside-click handler from a previous popup before
+    // removing the popup element, so the stale handler can't fire and remove
+    // the new popup that is about to be created.
+    removePopupOutsideHandler?.();
+    removePopupOutsideHandler = undefined;
     removeResultPopup();
 
     const c = getThemePalette();
@@ -462,28 +467,37 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
         if (!popup.contains(event.target as Node)) {
             removeResultPopup();
             document.removeEventListener("click", handleOutside, true);
+            removePopupOutsideHandler = undefined;
         }
     };
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
         document.addEventListener("click", handleOutside, true);
     }, 100);
+
+    removePopupOutsideHandler = (): void => {
+        clearTimeout(timeoutId);
+        document.removeEventListener("click", handleOutside, true);
+    };
 };
 
 // ─── Module-level inspection state ───────────────────────────────────────────
 
 let inspectionCleanup: (() => void) | undefined;
+let removePopupOutsideHandler: (() => void) | undefined;
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Start element inspection mode.
  * Attaches crosshair cursor, hover highlight overlay, and a floating badge.
+ * Inspection stays active after each click so the user can inspect multiple
+ * elements without re-activating. Only stops on explicit cancel (Escape,
+ * badge Cancel button) or via {@link stopGlobalInspection}.
  * Survives component unmounts — state lives at module level.
- * @param onComplete Called when the user clicks an element (after cleanup).
  * @param onCancel Called when the user cancels via badge button or Escape.
  */
-export const startGlobalInspection = (onComplete: () => void, onCancel: () => void): void => {
+export const startGlobalInspection = (onCancel: () => void): void => {
     // Cancel any in-progress inspection first
     inspectionCleanup?.();
 
@@ -502,6 +516,16 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
         return !!(b && (target === b || b.contains(target)));
     };
 
+    const isOverResultPopup = (target: Element | undefined): boolean => {
+        if (!target) {
+            return false;
+        }
+
+        const popup = document.querySelector(`#${RESULT_ID}`);
+
+        return !!(popup && (target === popup || popup.contains(target)));
+    };
+
     // Use a handlers object so all functions can reference each other without
     // triggering @typescript-eslint/no-use-before-define on const declarations.
     const handlers = {
@@ -518,7 +542,7 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
         handleClick(event: MouseEvent): void {
             const target = event.target as Element | undefined;
 
-            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target) || isOverResultPopup(target)) {
                 return;
             }
 
@@ -528,9 +552,9 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
             const rect = target.getBoundingClientRect();
             const source = findSource(target);
 
-            handlers.cleanup();
-            onComplete();
-
+            // Hide the hover overlay while the popup is visible, but keep
+            // inspection mode active so the user can click another element.
+            hideOverlay();
             showResultPopup(target, rect, source);
         },
         handleKeyDown(event: KeyboardEvent): void {
@@ -542,7 +566,7 @@ export const startGlobalInspection = (onComplete: () => void, onCancel: () => vo
         handleMouseMove(event: MouseEvent): void {
             const target = event.target as Element | undefined;
 
-            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target)) {
+            if (!target || target.tagName === "DEV-TOOLBAR" || isOverBadge(target) || isOverResultPopup(target)) {
                 hideOverlay();
 
                 return;
