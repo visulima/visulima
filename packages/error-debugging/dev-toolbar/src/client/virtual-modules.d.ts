@@ -17,6 +17,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
         };
         base: string;
         closeOnOutsideClick: boolean;
+        editor: string;
         defaultVisible: boolean;
         height: number;
         keybindings: { close?: string; toggle?: string };

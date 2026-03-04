@@ -35,6 +35,14 @@ export class DevToolbar extends HTMLElement {
      * According to Preact docs, rendering should happen here or after connection.
      */
     public connectedCallback(): void {
+        // Enforce singleton — remove self if another instance is already in the DOM
+        if (document.querySelectorAll("dev-toolbar").length > 1) {
+            console.warn("[dev-toolbar] Only one instance is allowed. Removing duplicate.");
+            this.remove();
+
+            return;
+        }
+
         // If init() was called before connection, ensure render happens
         // Otherwise, init() will be called externally and will handle rendering
         if (this.hasBeenInitialized && this.shadowRoot && !this.renderRoot) {

@@ -58,7 +58,10 @@ export interface DevToolbarOptions {
     appendTo?: string | RegExp;
 
     /**
-     * Built-in apps to enable
+     * Built-in apps to enable. All apps are disabled by default — only
+     * `viteConfig`, `settings`, and the "more" drawer are shown out of the box.
+     * Explicitly set an app to `true` to enable it.
+     * @example { inspector: true, seo: true }
      */
     apps?: {
         [key: string]: boolean | undefined;
@@ -234,18 +237,19 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             if (id === RESOLVED_OPTIONS) {
                 return `export default ${JSON.stringify({
                     apps: {
-                        a11y: options.apps?.a11y ?? true,
-                        inspector: options.apps?.inspector ?? true,
-                        moduleGraph: options.apps?.moduleGraph ?? true,
-                        performance: options.apps?.performance ?? true,
-                        seo: options.apps?.seo ?? true,
+                        a11y: options.apps?.a11y ?? false,
+                        inspector: options.apps?.inspector ?? false,
+                        moduleGraph: options.apps?.moduleGraph ?? false,
+                        performance: options.apps?.performance ?? false,
+                        seo: options.apps?.seo ?? false,
                         settings: options.apps?.settings ?? true,
-                        tailwind: options.apps?.tailwind ?? true,
-                        timeline: options.apps?.timeline ?? true,
+                        tailwind: options.apps?.tailwind ?? false,
+                        timeline: options.apps?.timeline ?? false,
                         viteConfig: options.apps?.viteConfig ?? true,
                     },
                     base: config.base,
                     closeOnOutsideClick: options.closeOnOutsideClick ?? true,
+                    editor: options.editor ?? "",
                     defaultVisible: options.defaultVisible ?? true,
                     height: options.height ?? 60,
                     keybindings: options.keybindings ?? {},

@@ -18,6 +18,30 @@ const svelteStub: Plugin = {
     },
 };
 
+// Stub plugin for Vite virtual modules used by dev-toolbar client code.
+// When vitest related runs its global import analysis, it encounters
+// virtual:visulima-* imports from dev-toolbar/src/client/overlay.ts.
+// Without a resolver, Vite's import-analysis plugin rejects these IDs.
+// The workspace project (dev-toolbar/vitest.config.ts) uses vi.mock() to
+// replace the stubs; this root-level plugin only needs to make resolution succeed.
+const virtualModuleStubs: Plugin = {
+    load(id: string) {
+        if (id.startsWith("virtual:visulima-")) {
+            return "export default {};";
+        }
+
+        return undefined;
+    },
+    name: "vitest-root-virtual-module-stubs",
+    resolveId(id: string) {
+        if (id.startsWith("virtual:visulima-")) {
+            return id;
+        }
+
+        return undefined;
+    },
+};
+
 export default defineConfig({
-    plugins: [svelteStub],
+    plugins: [svelteStub, virtualModuleStubs],
 });

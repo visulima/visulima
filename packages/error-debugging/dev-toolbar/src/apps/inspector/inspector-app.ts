@@ -1,3 +1,5 @@
+import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";
+
 // ─── Theme palette ─────────────────────────────────────────────────────────────
 // These elements live in document.body (outside the shadow DOM), so CSS variables
 // from the toolbar's :host are not available. We resolve the theme from the same
@@ -299,7 +301,7 @@ const openInEditor = (source: string): void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
-    rpc?.openInEditor?.(file, line, col).catch(() => { /* ignore */ });
+    rpc?.openInEditor?.(file, line, col, getEditorPreference()).catch(() => { /* ignore */ });
 };
 
 const removeResultPopup = (): void => {
