@@ -18,6 +18,13 @@ declare module "virtual:visulima-dev-toolbar-options" {
         };
         base: string;
         closeOnOutsideClick: boolean;
+        customApps: {
+            defaultOpen?: boolean;
+            icon: string;
+            id: string;
+            name: string;
+            view: { src: string; type: "iframe" };
+        }[];
         defaultVisible: boolean;
         editor: string;
         height: number;

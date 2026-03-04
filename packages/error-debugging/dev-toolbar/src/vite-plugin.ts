@@ -236,6 +236,20 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         async load(id) {
             if (id === RESOLVED_OPTIONS) {
+                // Only include serializable custom apps (iframe apps with no function properties).
+                // Component/init-based custom apps must be registered via the global API at runtime.
+                const serializableCustomApps = (options.customApps ?? [])
+                    .filter((app) => !app.component && !app.init && app.view?.type === "iframe")
+                    .map((app) => {
+                        return {
+                            defaultOpen: app.defaultOpen,
+                            icon: app.icon,
+                            id: app.id,
+                            name: app.name,
+                            view: app.view,
+                        };
+                    });
+
                 return `export default ${JSON.stringify({
                     apps: {
                         a11y: options.apps?.a11y ?? false,
@@ -251,6 +265,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     },
                     base: config.base,
                     closeOnOutsideClick: options.closeOnOutsideClick ?? true,
+                    customApps: serializableCustomApps,
                     defaultVisible: options.defaultVisible ?? true,
                     editor: options.editor ?? "",
                     height: options.height ?? 60,
