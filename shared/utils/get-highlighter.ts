@@ -41,14 +41,15 @@ const ensureLanguageLoaded = async (highlighter: Highlighter, langName: string):
     }
 
     const normalizedLangName = langName.toLowerCase();
-    const loadedLanguages = highlighter.getLanguages?.() || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const loadedLanguages: string[] = (highlighter as any).getLoadedLanguages?.() ?? (highlighter as any).getLanguages?.() ?? [];
 
     if (!loadedLanguages.includes(normalizedLangName)) {
         const importer = LANGUAGE_IMPORT_MAP[normalizedLangName];
 
         if (importer) {
-            // Pass the import promise directly to loadLanguage
-            await highlighter.loadLanguage?.(importer());
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await highlighter.loadLanguage?.(await importer() as any);
         }
     }
 };

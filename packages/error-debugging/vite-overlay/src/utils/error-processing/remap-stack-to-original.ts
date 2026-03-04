@@ -33,7 +33,8 @@ const remapStackToOriginal = async (server: ViteDevServer, stack: string, header
     const frames = parseStacktrace({ stack: normalizedStack } as unknown as Error);
 
     const mapped = await Promise.all(
-        frames.map(async (frame) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        frames.map(async (frame: any) => {
             const { file } = frame;
             const line = frame.line ?? 0;
             const column = frame.column ?? 0;
