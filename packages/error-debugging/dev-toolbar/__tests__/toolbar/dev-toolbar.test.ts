@@ -2,42 +2,54 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock CSS-dependent stylesheet module to avoid CSSStyleSheet.replaceSync issues in jsdom
-vi.mock("../../src/toolbar/stylesheet", () => ({
-    default: undefined,
-    sharedToolbarStylesheet: undefined,
-}));
+vi.mock(import("../../src/toolbar/stylesheet"), () => {
+    return {
+        default: undefined,
+        sharedToolbarStylesheet: undefined,
+    };
+});
 
 // Mock the hooks to avoid global state side effects
-vi.mock("../../src/hooks/index", () => ({
-    getGlobalHook: vi.fn(() => ({ emit: vi.fn() })),
-    setupGlobalHook: vi.fn(() => ({ emit: vi.fn() })),
-}));
+vi.mock(import("../../src/hooks/index"), () => {
+    return {
+        getGlobalHook: vi.fn(() => { return { emit: vi.fn() }; }),
+        setupGlobalHook: vi.fn(() => { return { emit: vi.fn() }; }),
+    };
+});
 
 // Mock settings to avoid localStorage dependencies
-vi.mock("../../src/toolbar/settings", () => ({
-    loadSettings: vi.fn(() => ({ defaultVisible: false })),
-    updateSettings: vi.fn(),
-}));
+vi.mock(import("../../src/toolbar/settings"), () => {
+    return {
+        loadSettings: vi.fn(() => { return { defaultVisible: false }; }),
+        updateSettings: vi.fn(),
+    };
+});
 
 // Mock RPC client
-vi.mock("../../src/rpc/client", () => ({
-    createClientRPCContext: vi.fn(() => ({ callServer: vi.fn() })),
-}));
+vi.mock(import("../../src/rpc/client"), () => {
+    return {
+        createClientRPCContext: vi.fn(() => { return { callServer: vi.fn() }; }),
+    };
+});
 
 // Mock timeline store
-vi.mock("../../src/timeline/index", () => ({
-    getTimelineStore: vi.fn(() => ({ addEvent: vi.fn() })),
-}));
+vi.mock(import("../../src/timeline/index"), () => {
+    return {
+        getTimelineStore: vi.fn(() => { return { addEvent: vi.fn() }; }),
+    };
+});
 
 // Mock JSX components to avoid full Preact render pipeline in unit tests
-vi.mock("../../src/toolbar/components/index", () => ({
-    ToolbarContainer: vi.fn(() => null),
-}));
+vi.mock(import("../../src/toolbar/components/index"), () => {
+    return {
+        ToolbarContainer: vi.fn(() => null),
+    };
+});
 
 // Import the module to trigger customElements.define("dev-toolbar", DevToolbar)
 await import("../../src/toolbar/index");
 
-describe("DevToolbar custom element — disconnectedCallback", () => {
+describe("devToolbar custom element — disconnectedCallback", () => {
     beforeEach(() => {
         document.body.replaceChildren();
     });
@@ -53,7 +65,7 @@ describe("DevToolbar custom element — disconnectedCallback", () => {
 
         document.body.append(toolbar);
 
-        expect(() => toolbar.remove()).not.toThrow();
+        expect(() => toolbar.remove()).not.toThrowError();
         expect(toolbar.isConnected).toBe(false);
     });
 
@@ -74,7 +86,7 @@ describe("DevToolbar custom element — disconnectedCallback", () => {
     });
 });
 
-describe("DevToolbar custom element — singleton guard", () => {
+describe("devToolbar custom element — singleton guard", () => {
     beforeEach(() => {
         document.body.replaceChildren();
     });
@@ -119,8 +131,7 @@ describe("DevToolbar custom element — singleton guard", () => {
         document.body.append(first);
         document.body.append(second);
 
-        expect(warnSpy).toHaveBeenCalledOnce();
-        expect(warnSpy).toHaveBeenCalledWith("[dev-toolbar] Only one instance is allowed. Removing duplicate.");
+        expect(warnSpy).toHaveBeenCalledExactlyOnceWith("[dev-toolbar] Only one instance is allowed. Removing duplicate.");
 
         warnSpy.mockRestore();
     });
