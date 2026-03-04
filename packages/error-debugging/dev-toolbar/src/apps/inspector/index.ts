@@ -12,20 +12,12 @@ const inspectorApp: DevToolbarApp = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
-        startGlobalInspection(
-            () => {
-                // Element clicked — deactivate the button (no callbacks fired)
-                if (api?.setAppActive) {
-                    api.setAppActive("dev-toolbar:inspector", false);
-                }
-            },
-            () => {
-                // Cancelled via badge or Escape — deactivate the button
-                if (api?.setAppActive) {
-                    api.setAppActive("dev-toolbar:inspector", false);
-                }
-            },
-        );
+        startGlobalInspection(() => {
+            // Cancelled via badge or Escape — deactivate the button
+            if (api?.setAppActive) {
+                api.setAppActive("dev-toolbar:inspector", false);
+            }
+        });
     },
 
     onDeactivate() {
