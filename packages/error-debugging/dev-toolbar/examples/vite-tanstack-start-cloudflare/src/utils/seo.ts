@@ -10,13 +10,13 @@ export const seo = ({ description, image, keywords, title }: { description?: str
         { content: "website", name: "og:type" },
         { content: title, name: "og:title" },
         { content: description, name: "og:description" },
-        ...image
+        ...(image
             ? [
-                { content: image, name: "twitter:image" },
-                { content: "summary_large_image", name: "twitter:card" },
-                { content: image, name: "og:image" },
-            ]
-            : [],
+                  { content: image, name: "twitter:image" },
+                  { content: "summary_large_image", name: "twitter:card" },
+                  { content: image, name: "og:image" },
+              ]
+            : []),
     ];
 
     return tags;

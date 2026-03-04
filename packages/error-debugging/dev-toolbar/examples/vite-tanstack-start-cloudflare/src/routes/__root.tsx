@@ -11,9 +11,9 @@ import { seo } from "~/utils/seo";
 export const Route = createRootRoute({
     component: RootComponent,
     errorComponent: (props) => (
-            <RootLayout>
-                <DefaultCatchBoundary {...props} />
-            </RootLayout>
+        <RootLayout>
+            <DefaultCatchBoundary {...props} />
+        </RootLayout>
     ),
     head: () => {
         return {

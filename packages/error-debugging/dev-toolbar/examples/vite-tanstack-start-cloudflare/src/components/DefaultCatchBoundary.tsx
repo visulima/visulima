@@ -22,13 +22,11 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
                 >
                     Try Again
                 </button>
-                {isRoot
-                    ? (
+                {isRoot ? (
                     <Link className={`rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700`} to="/">
                         Home
                     </Link>
-                    )
-                    : (
+                ) : (
                     <Link
                         className={`rounded bg-gray-600 px-2 py-1 font-extrabold text-white uppercase dark:bg-gray-700`}
                         onClick={(e) => {
@@ -39,7 +37,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
                     >
                         Go Back
                     </Link>
-                    )}
+                )}
             </div>
         </div>
     );

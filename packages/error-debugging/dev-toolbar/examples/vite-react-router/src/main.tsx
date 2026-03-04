@@ -19,7 +19,7 @@ createRoot(document.querySelector("#root")!).render(
 
 if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     const exampleApp: DevToolbarApp = {
-        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 13v-4H5l6-9v4h4l-6 9z\" fill=\"currentColor\"/></svg>",
+        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm-1 13v-4H5l6-9v4h4l-6 9z" fill="currentColor"/></svg>',
         id: "react-router-example-app",
         init(canvas) {
             const wrapper = document.createElement("div");

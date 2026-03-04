@@ -16,7 +16,7 @@ createRoot(document.querySelector("#root")!).render(
 
 if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     const exampleApp: DevToolbarApp = {
-        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 1.5c.96 0 1.87.22 2.68.6L4.1 12.68A6.5 6.5 0 0 1 3.5 10a6.5 6.5 0 0 1 6.5-6.5zm0 13a6.5 6.5 0 0 1-2.68-.6l8.58-8.58c.38.81.6 1.72.6 2.68a6.5 6.5 0 0 1-6.5 6.5z\" fill=\"currentColor\"/></svg>",
+        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 1.5c.96 0 1.87.22 2.68.6L4.1 12.68A6.5 6.5 0 0 1 3.5 10a6.5 6.5 0 0 1 6.5-6.5zm0 13a6.5 6.5 0 0 1-2.68-.6l8.58-8.58c.38.81.6 1.72.6 2.68a6.5 6.5 0 0 1-6.5 6.5z" fill="currentColor"/></svg>',
         id: "cloudflare-example-app",
         init(canvas) {
             const wrapper = document.createElement("div");

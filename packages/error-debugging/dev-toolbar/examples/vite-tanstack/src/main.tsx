@@ -43,7 +43,7 @@ if (rootElement && !rootElement.innerHTML) {
 
 if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     const exampleApp: DevToolbarApp = {
-        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M10 2L2 7v6l8 5 8-5V7l-8-5z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg>",
+        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L2 7v6l8 5 8-5V7l-8-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
         id: "tanstack-example-app",
         init(canvas) {
             const wrapper = document.createElement("div");
