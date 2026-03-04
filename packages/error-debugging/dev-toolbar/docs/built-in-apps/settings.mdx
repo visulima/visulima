@@ -29,6 +29,14 @@ The Settings app provides a UI for every user-adjustable preference. Changes are
 | -------------------------- | ---------------------------------------------------------- | ------- |
 | **Close on outside click** | Close the DevTools panel when clicking anywhere outside it | On      |
 
+### Editor
+
+| Setting              | Description                                                                                                      | Default       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------- |
+| **Preferred editor** | Editor used when clicking "Open in editor" in the Inspector. Overrides the plugin-level `editor` option per-user | Auto-detected |
+
+Select from a dropdown of all editors supported by [`launch-editor`](https://github.com/yyx990803/launch-editor) (VS Code, WebStorm, Cursor, Vim, etc.). Choose **Auto-detected** to let `launch-editor` detect the running IDE from the OS process list or `EDITOR` / `VISUAL` environment variables.
+
 ### Keyboard Shortcuts
 
 | Setting            | Description                               | Default           |
@@ -68,6 +76,7 @@ All settings are stored as a JSON object:
 ```ts
 interface DevToolsFrameState {
     closeOnOutsideClick: boolean;
+    editor: string; // preferred editor key, "" = auto-detect
     height: number; // panel height % (20–95)
     isPip: boolean; // picture-in-picture mode
     isFirstVisit: boolean; // onboarding hint shown
@@ -97,6 +106,7 @@ You can set project-level defaults in `vite.config.ts`. These are used as the in
 ```ts title="vite.config.ts"
 devToolbar({
     closeOnOutsideClick: true,
+    editor: "webstorm", // seeds the "Preferred editor" dropdown for all users
     height: 60,
     keybindings: {
         toggle: "Alt+Shift+D",

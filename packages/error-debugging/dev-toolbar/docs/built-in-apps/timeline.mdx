@@ -141,12 +141,14 @@ Click **Clear** in the panel header to remove all events from the in-memory stor
 
 ## Configuration
 
-### Disable via Plugin
+### Enable via Plugin
+
+The Timeline app is disabled by default. Enable it in your Vite config:
 
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        timeline: false,
+        timeline: true,
     },
 });
 ```

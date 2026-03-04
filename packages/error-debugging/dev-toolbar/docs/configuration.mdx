@@ -16,14 +16,16 @@ export default defineConfig({
     plugins: [
         devToolbar({
             placement: "bottom-center",
+            // Opt-in to the apps you want — all are off by default
             apps: {
-                a11y: true,
-                performance: true,
+                inspector: true,
                 seo: true,
-                settings: true,
+                performance: true,
+                a11y: true,
                 timeline: true,
                 moduleGraph: true,
-                viteConfig: true,
+                tailwind: true,
+                assets: true,
             },
         }),
     ],
@@ -34,29 +36,31 @@ export default defineConfig({
 
 ### `apps`
 
-Controls which built-in apps are registered. All apps are enabled by default.
+Controls which built-in apps are registered. All optional apps are **disabled by default** — only `viteConfig`, `settings`, and the "more" drawer are shown out of the box. Set an app to `true` to enable it.
 
 ```ts
 apps?: {
-    a11y?: boolean;           // default: true
-    inspector?: boolean;      // default: true
-    moduleGraph?: boolean;    // default: true
-    performance?: boolean;    // default: true
-    seo?: boolean;            // default: true
-    settings?: boolean;       // default: true
-    tailwind?: boolean;       // default: true
-    timeline?: boolean;       // default: true
-    viteConfig?: boolean;     // default: true
+    a11y?: boolean;           // default: false
+    assets?: boolean;         // default: false
+    inspector?: boolean;      // default: false
+    moduleGraph?: boolean;    // default: false
+    performance?: boolean;    // default: false
+    seo?: boolean;            // default: false
+    settings?: boolean;       // default: true  (always shown)
+    tailwind?: boolean;       // default: false
+    timeline?: boolean;       // default: false
+    viteConfig?: boolean;     // default: true  (always shown)
 }
 ```
 
-**Example** — disable the SEO and Performance apps:
+**Example** — enable the SEO, Inspector, and Performance apps:
 
 ```ts
 devToolbar({
     apps: {
-        seo: false,
-        performance: false,
+        inspector: true,
+        seo: true,
+        performance: true,
     },
 });
 ```
@@ -341,10 +345,12 @@ interface DevToolbarOptions {
     appendTo?: string | RegExp;
 
     /**
-     * Built-in apps to enable. All enabled by default.
+     * Built-in apps to enable. All optional apps are disabled by default.
+     * Only viteConfig, settings, and the more drawer are shown out of the box.
      */
     apps?: {
         a11y?: boolean;
+        assets?: boolean;
         inspector?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;

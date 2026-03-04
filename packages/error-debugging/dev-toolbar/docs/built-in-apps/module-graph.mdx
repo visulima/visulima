@@ -69,12 +69,14 @@ If the RPC call fails (e.g. the Vite server is temporarily unavailable), an erro
 
 ## Configuration
 
-### Disable via Plugin
+### Enable via Plugin
+
+The Module Graph app is disabled by default. Enable it in your Vite config:
 
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        moduleGraph: false,
+        moduleGraph: true,
     },
 });
 ```
