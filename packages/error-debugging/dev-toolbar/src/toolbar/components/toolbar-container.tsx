@@ -1,10 +1,11 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import visulimaLogo from "../../assets/visulima-logo.svg";
 import type { DevToolbarAppState, ToolbarPlacement } from "../../types/index";
-import { clsx } from "clsx";
 import type { PinnedTooltip, ToolbarContextState } from "../context/index";
 import { ToolbarContext } from "../context/index";
 import { useFrameState, usePanelVisible, usePosition, useTheme } from "../hooks/index";
@@ -24,11 +25,6 @@ interface ToolbarContainerProps {
      * Initial apps
      */
     apps: DevToolbarAppState[];
-
-    /**
-     * Number of custom apps to show
-     */
-    customAppsToShow?: number;
 
     /**
      * Callback when notification should be cleared
@@ -129,7 +125,6 @@ const computePlacement = (
  * @param props Component props
  * @param props.activeAppId ID of the currently open app, or null if no app is open
  * @param props.apps Initial array of registered app states
- * @param props.customAppsToShow Maximum number of custom apps to show in the pill (default: 3)
  * @param props.onClearNotification Called when an app's notification badge should be cleared
  * @param props.onRegisterApp Called when a new app is dynamically registered
  * @param props.onSetNotification Called when an app requests a notification badge update
@@ -140,7 +135,6 @@ const computePlacement = (
 const ToolbarContainer = ({
     activeAppId,
     apps,
-    customAppsToShow = 3,
     onClearNotification,
     onRegisterApp,
     onSetNotification,
@@ -482,7 +476,7 @@ const ToolbarContainer = ({
 
                         {/* App buttons group */}
                         <div class={clsx("px-0.5", isHidden && "hidden")}>
-                            <ToolbarBar customAppsToShow={customAppsToShow} />
+                            <ToolbarBar />
                         </div>
                     </div>
 

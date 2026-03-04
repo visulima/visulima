@@ -41,7 +41,6 @@ const loadAppModules = (appConfig: (typeof devToolbarOptions)["apps"]) =>
         appConfig.inspector ? import("virtual:visulima-dev-toolbar-path:apps/inspector/index.js") : undefined,
         appConfig.tailwind ? import("virtual:visulima-dev-toolbar-path:apps/tailwind/index.js") : undefined,
         appConfig.assets ? import("virtual:visulima-dev-toolbar-path:apps/assets/index.js") : undefined,
-        import("virtual:visulima-dev-toolbar-path:apps/more/index.js"),
     ]);
 
 /**
@@ -60,7 +59,6 @@ const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppMo
         inspectorModule,
         tailwindModule,
         assetsModule,
-        moreModule,
     ] = modules;
 
     if (!toolbar.registerApp) {
@@ -89,9 +87,6 @@ const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppMo
     if (settingsModule) {
         toolbar.registerApp(settingsModule.default, true);
     }
-
-    // Always register more app
-    toolbar.registerApp(moreModule.default, true);
 };
 
 /**
@@ -134,6 +129,13 @@ const initToolbar = async (): Promise<void> => {
         document.body.append(toolbar);
 
         registerApps(toolbar, modules);
+
+        // Register serializable custom apps (iframe apps) from the plugin options
+        if (devToolbarOptions.customApps) {
+            for (const app of devToolbarOptions.customApps) {
+                toolbar.registerApp(app, false);
+            }
+        }
 
         // Initialize toolbar
         if (toolbar.init) {
