@@ -22,15 +22,21 @@ const mockOptions = {
 // Static mock — factory reads the mutable mockOptions object, so per-test
 // changes to its properties are picked up when the module is re-imported
 // after vi.resetModules().
-vi.mock("virtual:visulima-dev-toolbar-options", () => ({ default: mockOptions }));
-vi.mock("virtual:visulima-dev-toolbar-path:toolbar/index.js", () => ({}));
-vi.mock("virtual:visulima-dev-toolbar-path:apps/more/index.js", () => ({
-    default: { icon: "", id: "more", name: "More" },
-}));
+vi.mock(import("virtual:visulima-dev-toolbar-options"), () => {
+    return { default: mockOptions };
+});
+vi.mock(import("virtual:visulima-dev-toolbar-path:toolbar/index.js"), () => {
+    return {};
+});
+vi.mock(import("virtual:visulima-dev-toolbar-path:apps/more/index.js"), () => {
+    return {
+        default: { icon: "", id: "more", name: "More" },
+    };
+});
 
 /** Reset between tests. */
 const resetGlobals = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+    // eslint-disable-next-line no-underscore-dangle
     delete (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__;
     document.body.replaceChildren();
 };
@@ -60,11 +66,11 @@ describe("overlay — initToolbar", () => {
 
         // Wait for initToolbar() to finish so it does not bleed into the next test
         await vi.waitFor(() => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle
             expect((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__).toBe(true);
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle
         expect((globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__).toBeDefined();
     });
 
@@ -74,7 +80,7 @@ describe("overlay — initToolbar", () => {
         await import("../../src/client/overlay");
 
         await vi.waitFor(() => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle
             expect((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__).toBe(true);
         });
     });
@@ -83,7 +89,7 @@ describe("overlay — initToolbar", () => {
         expect.hasAssertions();
 
         // Simulate a prior initialization
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle
         (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
 
         await import("../../src/client/overlay");
@@ -109,7 +115,7 @@ describe("overlay — initToolbar", () => {
 
         expect(document.querySelectorAll("dev-toolbar")).toHaveLength(0);
         // Flag must NOT be set so a later navigation to the flagged URL can still init
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+        // eslint-disable-next-line no-underscore-dangle
         expect((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__).toBeUndefined();
     });
 
@@ -128,7 +134,7 @@ describe("overlay — initToolbar", () => {
         await import("../../src/client/overlay");
 
         await vi.waitFor(() => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+            // eslint-disable-next-line no-underscore-dangle
             expect((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__).toBe(false);
         });
 
