@@ -332,6 +332,22 @@ textarea:focus-visible,
     background-color: currentColor;
 }
 
+/* ─── Editor select: dark/light mode theming ─────────────────────────────── */
+/* color-scheme tells the browser to render the native options popup in the
+   correct OS color scheme so the dropdown doesn't look like a white popup
+   in the middle of a dark overlay. */
+select {
+    color-scheme: light;
+}
+
+/* In dark mode, swap the @tailwindcss/forms chevron (hard-coded gray-500
+   stroke) for zinc-400 so the arrow is visible on dark backgrounds, and
+   tell the browser to render the native options popup in dark OS mode. */
+.dark select {
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
 /* Skeleton loader — animated sweep matching dev-toolbar pulse */
 .v-o-skeleton {
     background: linear-gradient(90deg, var(--color-muted) 25%, color-mix(in srgb, var(--color-muted) 40%, transparent) 50%, var(--color-muted) 75%);
