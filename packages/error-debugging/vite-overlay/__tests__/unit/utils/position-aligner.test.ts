@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import realignOriginalPosition from "../../../src/utils/position-aligner";
+import realignOriginalPosition from "../../../src/utils/realign-original-position";
 
 describe(realignOriginalPosition, () => {
     it("should return null for empty or invalid inputs", () => {
         expect.assertions(3);
 
-        expect(realignOriginalPosition("", 1, 1, "")).toBeNull();
-        expect(realignOriginalPosition("code", 0, 0, "original")).toBeNull();
-        expect(realignOriginalPosition("code", -1, -1, "original")).toBeNull();
+        expect(realignOriginalPosition("", 1, 1, "")).toBeUndefined();
+        expect(realignOriginalPosition("code", 0, 0, "original")).toBeUndefined();
+        expect(realignOriginalPosition("code", -1, -1, "original")).toBeUndefined();
     });
 
     it("should handle simple token-based alignment", () => {
@@ -96,7 +96,7 @@ throw new Error("Multi-line error message");
 
         const result = realignOriginalPosition(compiledCode, 1, 15, originalCode);
 
-        expect(result).toBeNull();
+        expect(result).toBeUndefined();
     });
 
     it("should handle large code blocks", () => {

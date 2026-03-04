@@ -21,10 +21,15 @@ import type {
     ViteErrorData,
 } from "./types";
 import createViteSolutionFinder from "./utils/create-vite-solution-finder";
+import enhanceViteSsrError from "./utils/enhance-vite-ssr-error";
 import buildExtendedErrorData from "./utils/error-processing";
 import generateClientScript from "./utils/generate-client-script";
-import enhanceViteSsrError from "./utils/ssr-error-enhancer";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace";
+
+const AT_PAREN_FRAME_RE = /at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/;
+// eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
+const AT_BARE_FRAME_RE = /at\s+([^:)]+):(\d+):(\d+)/;
+const FAILED_RESOLVE_IMPORT_RE = /Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/;
 
 /**
  * Logs an error using the Vite dev server's logger with a prefix.
@@ -101,7 +106,7 @@ const createErrorSignature = (raw: Error | RawErrorData): string => `${String(ra
  * @returns A function that handles unhandled rejections
  */
 const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string, developmentLogger: DevelopmentLogger) => async (reason: unknown) => {
-    const runtimeError = reason instanceof Error ? reason : new Error(String((reason as any)?.stack || reason));
+    const runtimeError = reason instanceof Error ? reason : new Error(String((reason as { stack?: string })?.stack || reason));
 
     try {
         server.ssrFixStacktrace(runtimeError as Error);
@@ -125,6 +130,7 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
 
     await developmentLogger.error(renderError(runtimeError));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     server.ws.send({ err: runtimeError, type: "error" } as any);
 };
 
@@ -224,7 +230,7 @@ const buildExtendedError = async (
                 const firstStackLine = stackLines.find((line: string) => line.includes("at ") && !line.includes("node_modules"));
 
                 if (firstStackLine) {
-                    const match = firstStackLine.match(/at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/) || firstStackLine.match(/at\s+([^:)]+):(\d+):(\d+)/);
+                    const match = firstStackLine.match(AT_PAREN_FRAME_RE) || firstStackLine.match(AT_BARE_FRAME_RE);
 
                     if (match) {
                         const [, file, line, col] = match;
@@ -277,10 +283,16 @@ const buildExtendedError = async (
  * @param causeData The cause data object from the client
  * @returns A reconstructed Error object with cause chain
  */
-const reconstructCauseChain = (causeData: any): Error | null => {
+interface CauseData {
+    cause?: CauseData;
+    message?: string;
+    name?: string;
+    stack?: string;
+}
+
+const reconstructCauseChain = (causeData: CauseData | undefined): Error | undefined => {
     if (!causeData) {
-        // eslint-disable-next-line unicorn/no-null
-        return null;
+        return undefined;
     }
 
     const causeError = new Error(String(causeData.message || "Caused by error"));
@@ -325,7 +337,7 @@ const setupWebSocketInterception = (
                 }
 
                 if (err.message?.includes("Failed to resolve import")) {
-                    const match = err.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
+                    const match = err.message.match(FAILED_RESOLVE_IMPORT_RE);
 
                     if (match) {
                         const sourceFile = match[2];
@@ -365,20 +377,21 @@ const setupWebSocketInterception = (
                     syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
                     if (err.cause) {
-                        syntaicError.cause = reconstructCauseChain(err.cause);
+                        syntaicError.cause = reconstructCauseChain(err.cause as CauseData);
                     }
 
                     const viteErrorData = err.sourceFile
                         ? {
-                              column: err.column,
-                              file: err.sourceFile,
-                              line: err.line,
-                              plugin: err.plugin,
-                          }
+                            column: err.column,
+                            file: err.sourceFile,
+                            line: err.line,
+                            plugin: err.plugin,
+                        }
                         : undefined;
 
                     const extensionPayload = await buildExtendedError(syntaicError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
 
+                    // eslint-disable-next-line no-param-reassign
                     data.err = extensionPayload;
 
                     recentErrors.set(JSON.stringify(extensionPayload), Date.now());
@@ -424,13 +437,13 @@ const setupHMRHandler = (
             return;
         }
 
-        const raw =
-            data && typeof data === "object"
+        const raw
+            = data && typeof data === "object"
                 ? (data as RawErrorData)
                 : ({
-                      message: DEFAULT_ERROR_MESSAGE,
-                      stack: "",
-                  } as RawErrorData);
+                    message: DEFAULT_ERROR_MESSAGE,
+                    stack: "",
+                } as RawErrorData);
 
         const rawSig = createErrorSignature(raw);
 
@@ -448,7 +461,7 @@ const setupHMRHandler = (
         syntaicError.stack = `${name}: ${message}\n${absolutizeStackUrls(rawStack, rootPath)}`;
 
         if (raw.cause) {
-            syntaicError.cause = reconstructCauseChain(raw.cause);
+            syntaicError.cause = reconstructCauseChain(raw.cause as CauseData);
         }
 
         try {
@@ -469,6 +482,7 @@ const setupHMRHandler = (
 
             recentErrors.set(JSON.stringify(extensionPayload), Date.now());
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const payload: any = { err: { ...extensionPayload }, type: "error" };
 
             if (extensionPayload.solution) {
@@ -487,18 +501,19 @@ const setupHMRHandler = (
 
             const consoleMessage = [
                 `${styleText("red", "[client]")} ${mainError.name}: ${mainError.message}`,
-                ...(mainError.originalFilePath.includes("-extension://")
+                ...mainError.originalFilePath.includes("-extension://")
                     ? []
                     : [
-                          "",
-                          styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
-                          "",
-                          await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath) as any, "nord"),
-                          "",
-                          "Raw stack trace:",
-                          "",
-                          mainError.originalStack,
-                      ]),
+                        "",
+                        styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
+                        "",
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath) as any, "nord"),
+                        "",
+                        "Raw stack trace:",
+                        "",
+                        mainError.originalStack,
+                    ],
             ];
 
             // add error cause
@@ -517,7 +532,7 @@ const setupHMRHandler = (
             await developmentLogger.error(consoleMessage.join("\n"));
 
             client.send(payload);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             logError(server, "[visulima:vite-overlay:server] failed to build extended client error", error);
 
@@ -528,7 +543,8 @@ const setupHMRHandler = (
                     stack: error.stack,
                 },
                 type: "error",
-            });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any);
         }
     });
 };
@@ -544,14 +560,14 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
         .flat()
         .some(
             (plugin) =>
-                plugin &&
-                ((reactPluginName && (plugin as Plugin).name === reactPluginName) ||
-                    (plugin as Plugin).name === "vite:react-swc" ||
-                    (plugin as Plugin).name === "vite:react-refresh" ||
-                    (plugin as Plugin).name === "vite:react-babel" ||
-                    (plugin as Plugin).name === "@vitejs/plugin-react" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("react")) ||
-                    ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
+                plugin
+                && ((reactPluginName && (plugin as Plugin).name === reactPluginName)
+                    || (plugin as Plugin).name === "vite:react-swc"
+                    || (plugin as Plugin).name === "vite:react-refresh"
+                    || (plugin as Plugin).name === "vite:react-babel"
+                    || (plugin as Plugin).name === "@vitejs/plugin-react"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
         );
 
 /**
@@ -565,12 +581,12 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
         .flat()
         .some(
             (plugin) =>
-                plugin &&
-                ((vuePluginName && (plugin as Plugin).name === vuePluginName) ||
-                    (plugin as Plugin).name === "vite:vue" ||
-                    (plugin as Plugin).name === "@vitejs/plugin-vue" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue")) ||
-                    ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
+                plugin
+                && ((vuePluginName && (plugin as Plugin).name === vuePluginName)
+                    || (plugin as Plugin).name === "vite:vue"
+                    || (plugin as Plugin).name === "@vitejs/plugin-vue"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
         );
 
 /**
@@ -585,8 +601,6 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.vuePluginName Custom Vue plugin name (optional)
  * @param options.showBallonButton Whether to show the balloon button (optional, deprecated - use overlay.balloon.enabled)
  * @param options.overlay Overlay configuration (optional)
- * @param options.overlay.balloon Balloon trigger configuration (optional)
- * @param options.overlay.customCSS Custom CSS to inject for styling customization (optional)
  * @returns The Vite plugin configuration
  */
 const errorOverlayPlugin = (
@@ -642,21 +656,19 @@ const errorOverlayPlugin = (
 
             const originalTransformRequest = server.transformRequest.bind(server);
 
+            // eslint-disable-next-line no-param-reassign
             server.transformRequest = async (url: string, transformOptions?: TransformOptions) => {
                 try {
                     return await originalTransformRequest(url, transformOptions);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                } catch (error: any) {
-                    if (error?.message?.includes("Failed to resolve import")) {
-                        const match = error.message.match(/Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/);
+                } catch (error: unknown) {
+                    if ((error as { message?: string })?.message?.includes("Failed to resolve import")) {
+                        const match = (error as { message: string }).message.match(FAILED_RESOLVE_IMPORT_RE);
 
                         if (match) {
                             const [, importPath, sourceFile] = match;
 
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (error as any).sourceFile = sourceFile;
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (error as any).importPath = importPath;
+                            (error as Record<string, unknown>).sourceFile = sourceFile;
+                            (error as Record<string, unknown>).importPath = importPath;
                         }
                     }
 
@@ -699,7 +711,7 @@ const errorOverlayPlugin = (
             }
 
             // Backward compatibility: showBallonButton takes precedence over overlay.balloon.enabled
-            const balloonEnabled = options?.showBallonButton === undefined ? (options?.overlay?.balloon?.enabled ?? true) : options.showBallonButton;
+            const balloonEnabled = options?.showBallonButton === undefined ? options?.overlay?.balloon?.enabled ?? true : options.showBallonButton;
 
             return patchOverlay(code, balloonEnabled, options?.overlay?.balloon, options?.overlay?.customCSS);
         },

@@ -1,41 +1,44 @@
 import type { Page } from "@playwright/test";
 
+const ORIGINAL_EXTENSION_REGEX = /\.(?:tsx?|jsx?|vue|svelte)(?::\d+)?$/;
+const VITE_BUILD_DIR_REGEX = /\.vite\//;
+
 /**
- * Wait for the error overlay to appear
+ * Waits for the error overlay to appear.
  */
-export const waitForErrorOverlay = async (page: Page, timeout = 10_000) => {
+export const waitForErrorOverlay = async (page: Page, timeout = 10_000): Promise<void> => {
     await page.waitForSelector("#__v_o__overlay", { timeout });
 };
 
 /**
- * Wait for the error test page to fully load
+ * Waits for the error test page to fully load.
  */
-export const waitForErrorTestPage = async (page: Page, timeout = 10_000) => {
+export const waitForErrorTestPage = async (page: Page, timeout = 10_000): Promise<void> => {
     await page.waitForSelector("h1:has-text('Error Overlay Test Page')", { timeout });
     // Wait a bit more for React to fully render
     await page.waitForTimeout(1000);
 };
 
 /**
- * Trigger a runtime error on the page
+ * Triggers a runtime error on the page.
  */
-export const triggerRuntimeError = async (page: Page, message = "Test runtime error") => {
+export const triggerRuntimeError = async (page: Page, message = "Test runtime error"): Promise<void> => {
     await page.evaluate((errorMessage) => {
         throw new Error(errorMessage);
     }, message);
 };
 
 /**
- * Trigger an error with cause chain
+ * Triggers an error with cause chain.
  */
-export const triggerCauseChainError = async (page: Page) => {
+export const triggerCauseChainError = async (page: Page): Promise<void> => {
     await page.evaluate(() => {
         try {
-            function inner() {
+            const inner = () => {
                 throw new Error("Inner cause error");
-            }
+            };
 
-            function middle() {
+            const middle = () => {
                 try {
                     inner();
                 } catch (error) {
@@ -44,7 +47,7 @@ export const triggerCauseChainError = async (page: Page) => {
                     middleError.cause = error;
                     throw middleError;
                 }
-            }
+            };
 
             middle();
         } catch (error) {
@@ -57,9 +60,9 @@ export const triggerCauseChainError = async (page: Page) => {
 };
 
 /**
- * Get the current error overlay content
+ * Gets the current error overlay content.
  */
-export const getOverlayContent = async (page: Page) => {
+export const getOverlayContent = async (page: Page): Promise<{ html: string; isVisible: boolean; text: string | null }> => {
     const overlay = page.locator("#__v_o__overlay");
 
     return {
@@ -70,9 +73,9 @@ export const getOverlayContent = async (page: Page) => {
 };
 
 /**
- * Get error overlay header information
+ * Gets error overlay header information.
  */
-export const getOverlayHeader = async (page: Page) => {
+export const getOverlayHeader = async (page: Page): Promise<{ fileHref: string | null; filePath: string | null; title: string | null }> => {
     const heading = page.locator("#__v_o__heading");
     const fileLink = page.locator("#__v_o__filelink");
 
@@ -84,9 +87,9 @@ export const getOverlayHeader = async (page: Page) => {
 };
 
 /**
- * Navigate through cause chain errors
+ * Navigates through cause chain errors.
  */
-export const navigateErrors = async (page: Page, direction: "next" | "prev") => {
+export const navigateErrors = async (page: Page, direction: "next" | "prev"): Promise<void> => {
     const button = direction === "next" ? page.locator("#__v_o__error-overlay-pagination-next") : page.locator("#__v_o__error-overlay-pagination-previous");
 
     await button.click();
@@ -94,9 +97,9 @@ export const navigateErrors = async (page: Page, direction: "next" | "prev") => 
 };
 
 /**
- * Get current error index and total
+ * Gets current error index and total.
  */
-export const getErrorNavigation = async (page: Page) => {
+export const getErrorNavigation = async (page: Page): Promise<{ canGoNext: boolean; canGoPrev: boolean; current: string | null; total: string | null }> => {
     const currentIndex = page.locator("#__v_o__pagination_current");
     const totalCount = page.locator("#__v_o__pagination_total");
     const previousButton = page.locator("#__v_o__error-overlay-pagination-previous");
@@ -111,9 +114,9 @@ export const getErrorNavigation = async (page: Page) => {
 };
 
 /**
- * Switch between original and compiled code views
+ * Switches between original and compiled code views.
  */
-export const switchCodeView = async (page: Page, mode: "original" | "compiled") => {
+export const switchCodeView = async (page: Page, mode: "original" | "compiled"): Promise<void> => {
     const button = page.locator(`[data-flame-mode="${mode}"]`);
 
     if (await button.isVisible()) {
@@ -123,7 +126,7 @@ export const switchCodeView = async (page: Page, mode: "original" | "compiled") 
 };
 
 /**
- * Get the current error title/name
+ * Gets the current error title/name.
  */
 export const getErrorTitle = async (page: Page): Promise<string> =>
     await page.evaluate(() => {
@@ -139,7 +142,7 @@ export const getErrorTitle = async (page: Page): Promise<string> =>
     });
 
 /**
- * Get the current error message
+ * Gets the current error message.
  */
 export const getErrorMessage = async (page: Page): Promise<string> =>
     await page.evaluate(() => {
@@ -155,7 +158,7 @@ export const getErrorMessage = async (page: Page): Promise<string> =>
     });
 
 /**
- * Get the current file path being displayed
+ * Gets the current file path being displayed.
  */
 export const getCurrentFilePath = async (page: Page): Promise<string> =>
     await page.evaluate(() => {
@@ -171,7 +174,7 @@ export const getCurrentFilePath = async (page: Page): Promise<string> =>
     });
 
 /**
- * Check if the code frame contains a specific line number
+ * Checks if the code frame contains a specific line number.
  */
 export const codeFrameContainsLine = async (page: Page, lineNumber: number): Promise<boolean> =>
     await page.evaluate((line) => {
@@ -188,21 +191,21 @@ export const codeFrameContainsLine = async (page: Page, lineNumber: number): Pro
     }, lineNumber);
 
 /**
- * Wait for the overlay to update after navigation
+ * Waits for the overlay to update after navigation.
  */
-export const waitForOverlayUpdate = async (page: Page, timeout = 1000) => {
+export const waitForOverlayUpdate = async (page: Page, timeout = 1000): Promise<void> => {
     await page.waitForTimeout(timeout);
 };
 
 /**
- * Check if a file path represents an original source file (not compiled)
+ * Checks if a file path represents an original source file (not compiled).
  */
 export const isOriginalSourcePath = (filePath: string | null): boolean => {
     if (!filePath)
         return false;
 
     // Should contain original source extensions (handle line numbers like :37)
-    const hasOriginalExtension = /\.(tsx?|jsx?|vue|svelte)(:\d+)?$/.test(filePath);
+    const hasOriginalExtension = ORIGINAL_EXTENSION_REGEX.test(filePath);
 
     // Handle relative paths that start with .
     const isRelativePath = filePath.startsWith(".");
@@ -220,9 +223,9 @@ export const isOriginalSourcePath = (filePath: string | null): boolean => {
 };
 
 /**
- * Close the error overlay
+ * Closes the error overlay via the close button.
  */
-export const closeErrorOverlay = async (page: Page) => {
+export const closeErrorOverlay = async (page: Page): Promise<void> => {
     const closeButton = page.locator("#__v_o__close");
 
     await closeButton.click();
@@ -230,17 +233,17 @@ export const closeErrorOverlay = async (page: Page) => {
 };
 
 /**
- * Close overlay using ESC key
+ * Closes overlay using ESC key.
  */
-export const closeOverlayWithEsc = async (page: Page) => {
+export const closeOverlayWithEsc = async (page: Page): Promise<void> => {
     await page.keyboard.press("Escape");
     await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 };
 
 /**
- * Get stack trace content
+ * Gets stack trace content.
  */
-export const getStackTrace = async (page: Page) => {
+export const getStackTrace = async (page: Page): Promise<{ content: string | null; isVisible: boolean; links: string[] }> => {
     const stackTrace = page.locator("#__v_o__stacktrace");
 
     return {
@@ -251,9 +254,11 @@ export const getStackTrace = async (page: Page) => {
 };
 
 /**
- * Verify overlay shows original source locations
+ * Verifies overlay shows original source locations.
  */
-export const verifyOriginalSourceLocations = async (page: Page) => {
+export const verifyOriginalSourceLocations = async (
+    page: Page,
+): Promise<{ filePathValid: boolean; overallValid: boolean; stackHasContent: boolean; stackHasNoCompiledPaths: boolean; stackHasNoUnknown: boolean }> => {
     const header = await getOverlayHeader(page);
     const stackTrace = await getStackTrace(page);
 
@@ -261,10 +266,10 @@ export const verifyOriginalSourceLocations = async (page: Page) => {
 
     // Check if stack trace contains original source paths
     // Be more lenient - just check that it has some content and doesn't have <unknown>
-    const stackHasContent = stackTrace.content?.length > 50;
+    const stackHasContent = (stackTrace.content?.length ?? 0) > 50;
     const stackHasNoUnknown = !stackTrace.content?.includes("<unknown>:0:0");
 
-    const stackHasNoCompiledPaths = !stackTrace.content?.includes("node_modules") && !stackTrace.content?.match(/\.vite\//);
+    const stackHasNoCompiledPaths = !stackTrace.content?.includes("node_modules") && !VITE_BUILD_DIR_REGEX.test(stackTrace.content ?? "");
 
     return {
         filePathValid,

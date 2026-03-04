@@ -65,15 +65,14 @@ storybook-static/
 
 # Nx cache
 .nx/
+.github/instructions/nx.instructions.md
 
 # Package build output
 dist
-
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
 
 data/
 
 !packages/data-manipulation/iso-locale/src/data/
 
 .claude/settings.local.json
+.playwright-mcp

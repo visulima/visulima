@@ -1,23 +1,22 @@
+const STYLE_TAG_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
+const SCRIPT_TAG_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
+const TEMPLATE_TAG_RE = /<template\b[^>]*>[\s\S]*?<\/template>/gi;
+const STYLE_ATTR_RE = /style="([^"]*)"/g;
+
 /**
  * Removes style and data attributes from a string.
  * @param inputString The input string to remove style and data attributes from
  * @returns The input string with style and data attributes removed
  */
 const removeStyleAndDataAttributes = (inputString: string) => {
-    // Define the regular expressions to match <style>...</style> tags
-    const styleTagRegex = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
-    const scriptTagRegex = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
-    const templateRegex = /<template\b[^>]*>[\s\S]*?<\/template>/gi;
-    const styleRegex = /style="([^"]*)"/g;
-
     let resultString = inputString
-        .replaceAll(styleTagRegex, "")
-        .replaceAll(scriptTagRegex, "")
-        .replaceAll(templateRegex, "")
+        .replaceAll(STYLE_TAG_RE, "")
+        .replaceAll(SCRIPT_TAG_RE, "")
+        .replaceAll(TEMPLATE_TAG_RE, "")
         .replaceAll("<!--$?-->", "")
         .replaceAll("<!--/$-->", "");
 
-    resultString = resultString.replaceAll(styleRegex, (_, styleValue) => {
+    resultString = resultString.replaceAll(STYLE_ATTR_RE, (_, styleValue) => {
         // Add a semicolon at the end of the style attribute if it doesn't already exist and remove spacing to remove false positives
         const updatedStyle = styleValue.trim().endsWith(";") ? styleValue : `${styleValue};`;
 

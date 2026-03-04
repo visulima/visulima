@@ -1,11 +1,13 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import type { ViteDevServer } from "vite";
 
-import findErrorInSourceCode from "./find-error-in-source";
+import findErrorInSourceCode from "./find-error-in-source-code";
 import { isHttpUrl } from "./normalize-id-candidates";
 
 // Constants
 const COLUMN_OFFSET = 1;
+const LEADING_SLASH_RE = /^\//;
 
 /**
  * Estimates the original line and column when source maps are unavailable or fail.
@@ -15,8 +17,8 @@ const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
     const validLine = Math.max(1, fileLine);
     const validColumn = Math.max(0, fileColumn);
 
-    let estimatedLine = validLine;
-    let estimatedColumn = validColumn;
+    let estimatedLine: number;
+    let estimatedColumn: number;
 
     // Estimate line number based on common patterns
     if (validLine >= 20) {
@@ -36,6 +38,8 @@ const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
         estimatedColumn = Math.max(0, validColumn - 1);
     } else if (validColumn > 5) {
         estimatedColumn = Math.max(0, validColumn);
+    } else {
+        estimatedColumn = validColumn;
     }
 
     return { estimatedColumn, estimatedLine };
@@ -47,10 +51,12 @@ interface ResolvedLocation {
     originalFilePath: string;
 }
 
+
 interface ViteModule {
     id?: string | null;
     transformResult?: {
         code?: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         map?: any;
     } | null;
     url?: string;
@@ -59,6 +65,7 @@ interface ViteModule {
 /**
  * Resolves the original position using source maps.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: number) => {
     try {
         const traced = new TraceMap(rawMap);
@@ -103,6 +110,7 @@ const resolveSourceMapPosition = (rawMap: any, fileLine: number, fileColumn: num
             }
         }
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn("Source map processing failed:", error);
     }
 
@@ -131,11 +139,12 @@ const resolveSourcePath = (originalPath: string, sourceName: string): string => 
 const resolveHttpSourcePath = (urlString: string, sourceName: string): string => {
     try {
         const url = new URL(urlString);
-        const modulePath = (url.pathname || "").replace(/^\//, "");
+        const modulePath = (url.pathname || "").replace(LEADING_SLASH_RE, "");
         const sourceDirectory = modulePath.includes("/") ? modulePath.slice(0, Math.max(0, modulePath.lastIndexOf("/"))) : "";
 
         return `${url.origin}/${sourceDirectory ? `${sourceDirectory}/` : ""}${sourceName}`;
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn("URL parsing failed for source path resolution:", error);
 
         return urlString;
@@ -163,13 +172,14 @@ const resolveOriginalLocation = async (
     fileColumn: number,
     errorMessage?: string,
     errorIndex: number = 0,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<ResolvedLocation> => {
     if (errorMessage && module_) {
         try {
-            let originalSourceCode = null;
+            let originalSourceCode: string | null | undefined;
 
             if (module_.transformResult?.map?.sourcesContent?.[0]) {
-                originalSourceCode = module_.transformResult.map.sourcesContent[0];
+                [originalSourceCode] = module_.transformResult.map.sourcesContent;
             } else if (module_.transformResult?.code) {
                 originalSourceCode = module_.transformResult.code;
             }
@@ -182,11 +192,12 @@ const resolveOriginalLocation = async (
                         const transformed = await server.transformRequest(transformId);
 
                         if (transformed?.map && "sourcesContent" in transformed.map && transformed.map.sourcesContent?.[0]) {
-                            originalSourceCode = transformed.map.sourcesContent[0];
+                            [originalSourceCode] = transformed.map.sourcesContent as (string | null)[];
                         } else if (transformed?.code) {
                             originalSourceCode = transformed.code;
                         }
                     } catch (error) {
+                        // eslint-disable-next-line no-console
                         console.warn("Failed to get fresh source for error search:", error);
                     }
                 }
@@ -220,14 +231,13 @@ const resolveOriginalLocation = async (
 
                     originalSourceCode = await fs.readFile(resolvedPath, "utf8");
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.warn("Failed to read source file from disk:", error);
                 }
             }
 
             if (originalSourceCode) {
-                const searchMessage = errorMessage;
-
-                const foundLocation = findErrorInSourceCode(originalSourceCode, searchMessage, errorIndex);
+                const foundLocation = findErrorInSourceCode(originalSourceCode, errorMessage, errorIndex);
 
                 if (foundLocation) {
                     return {
@@ -238,6 +248,7 @@ const resolveOriginalLocation = async (
                 }
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn("Source code search failed:", error);
         }
     }
@@ -255,6 +266,7 @@ const resolveOriginalLocation = async (
                     rawMap = transformed.map;
                 }
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.warn("Failed to get fresh source map:", error);
             }
         }
@@ -291,6 +303,7 @@ const resolveOriginalLocation = async (
             originalFilePath: resolvedPath,
         };
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn("Source map resolution failed:", error);
 
         return { originalFileColumn: fileColumn, originalFileLine: fileLine, originalFilePath: filePath };

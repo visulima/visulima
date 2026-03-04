@@ -5,16 +5,28 @@ import type { ViteDevServer } from "vite";
 import type { SourceTexts } from "../../types";
 import getSourceFromMap from "../get-source-from-map";
 
+interface TransformResultMap {
+    mappings?: string;
+    sources?: string[];
+    sourcesContent?: (string | null)[];
+}
+
+interface TransformResultCache {
+    code?: string;
+    map?: TransformResultMap;
+}
+
 /**
  * Retrieves original and compiled source texts from various sources.
  * Attempts multiple strategies to find source code for error context.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, filePath: string, idCandidates: ReadonlyArray<string>): Promise<SourceTexts> => {
     let originalSourceText: string | undefined;
     let compiledSourceText: string | undefined;
 
     if (module_ && typeof module_ === "object" && "transformResult" in module_ && module_.transformResult) {
-        const cached = module_.transformResult as { code?: string; map?: any };
+        const cached = module_.transformResult as TransformResultCache;
 
         if (cached.code && !compiledSourceText) {
             compiledSourceText = cached.code;
@@ -40,9 +52,10 @@ const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, file
 
             if (transformed?.map && !originalSourceText) {
                 const { map } = transformed;
+                const typedMap = map as TransformResultMap;
 
-                if (typeof map === "object" && map !== null && "mappings" in map && (map as any).mappings !== "") {
-                    originalSourceText = getSourceFromMap(map as any, filePath);
+                if (typeof map === "object" && map !== null && "mappings" in map && typedMap.mappings !== "") {
+                    originalSourceText = getSourceFromMap(typedMap, filePath);
                 }
             }
         } catch {

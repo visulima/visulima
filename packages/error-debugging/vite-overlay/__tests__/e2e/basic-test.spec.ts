@@ -2,11 +2,13 @@ import { expect, test } from "@playwright/test";
 
 import { waitForErrorTestPage } from "./utils/test-helpers";
 
+const TANSTACK_TITLE_REGEX = /TanStack/;
+
 test.describe("Basic Infrastructure Test", () => {
     test("should load the homepage", async ({ page }) => {
         await page.goto("/");
 
-        await expect(page).toHaveTitle(/TanStack/);
+        await expect(page).toHaveTitle(TANSTACK_TITLE_REGEX);
 
         // Homepage no longer shows error overlay by default
         // This test is just checking basic homepage loading

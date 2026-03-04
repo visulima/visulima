@@ -13,12 +13,12 @@ export interface ESBuildMessage extends Error {
  * @param errors Array of potential ESBuild errors
  * @returns True if the array contains ESBuild errors
  */
-export const isESBuildErrorArray = (errors: any[]): boolean => {
+export const isESBuildErrorArray = (errors: unknown[]): boolean => {
     if (!Array.isArray(errors) || errors.length === 0) {
         return false;
     }
 
-    return errors.some((error: any) => error && typeof error === "object" && (error.location || error.pluginName || error.text));
+    return errors.some((error: unknown) => error && typeof error === "object" && ("location" in error || "pluginName" in error || "text" in error));
 };
 
 /**
@@ -40,8 +40,18 @@ export const processESBuildErrors = (
     esbuildErrors.map((buildError, index) => {
         const { location, pluginName, text } = buildError;
 
-        const processedError: any = {
+        const processedError: {
+            column?: number;
+            file?: string;
+            line?: number;
+            message: string;
+            name: string;
+            plugin?: string;
+            stack: string;
+        } = {
             message: text || `ESBuild error #${index + 1}`,
+            name: buildError.name || "Error",
+            stack: buildError.stack || "",
         };
 
         if (location) {
@@ -53,9 +63,6 @@ export const processESBuildErrors = (
         if (pluginName) {
             processedError.plugin = pluginName;
         }
-
-        processedError.name = buildError.name || "Error";
-        processedError.stack = buildError.stack || "";
 
         return processedError;
     });

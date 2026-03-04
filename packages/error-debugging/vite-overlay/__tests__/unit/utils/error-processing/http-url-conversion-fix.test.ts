@@ -97,8 +97,8 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         const allErrors = [primaryError, causeError];
 
         // Mock parseStacktrace to handle both direct error objects and {stack: string} objects
-        vi.mocked(parseStacktrace).mockImplementation((error: any, options?: any) => {
-            const stack = error.stack || "";
+        vi.mocked(parseStacktrace).mockImplementation((_error: any, _options?: any) => {
+            const stack = _error.stack || "";
 
             if (stack.includes("http://localhost:5173/src/App.tsx?tsr-split=component")) {
                 return [
@@ -203,8 +203,8 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         } as any;
 
         // Mock stack trace parsing with malformed HTTP URL
-        vi.mocked(parseStacktrace).mockImplementation((error: any, options?: any) => {
-            const stack = error.stack || "";
+        vi.mocked(parseStacktrace).mockImplementation((_error: any, _options?: any) => {
+            const stack = _error.stack || "";
 
             if (stack.includes("not-a-valid-http-url")) {
                 return [

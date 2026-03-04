@@ -8,7 +8,8 @@ interface SourceMap {
 
 const isValidSourceMap = (map: SourceMap): boolean => Boolean(map && Array.isArray(map.sources) && Array.isArray(map.sourcesContent));
 
-const getSourceContent = (content: string | null | undefined): string | undefined => (typeof content === "string" ? content : undefined);
+// eslint-disable-next-line no-confusing-arrow
+const getSourceContent = (content: string | null | undefined): string | undefined => typeof content === "string" ? content : undefined;
 
 const isPartialMatch = (source: string, wanted: string): boolean => source === wanted || source.endsWith(wanted) || wanted.endsWith(source);
 

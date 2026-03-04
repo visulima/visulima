@@ -1,5 +1,8 @@
 import type { ModuleNode, ViteDevServer } from "vite";
 
+const FS_PATH_PREFIX_RE = /^\/@fs\//;
+const RELATIVE_PREFIX_RE = /^[./]*/;
+
 /**
  * Finds the best module match by comparing candidate paths against all modules in the module graph.
  * @param server The Vite dev server instance
@@ -37,7 +40,11 @@ const findBestModuleMatch = (server: ViteDevServer, candidates: ReadonlyArray<st
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const findModuleForPath = (server: ViteDevServer, candidates: string[]): ModuleNode | undefined => {
-    const prioritizedCandidates = [...candidates, ...candidates.map((c) => c.replace(/^\/@fs\//, "")), ...candidates.map((c) => c.replace(/^[./]*/, ""))];
+    const prioritizedCandidates = [
+        ...candidates,
+        ...candidates.map((c) => c.replace(FS_PATH_PREFIX_RE, "")),
+        ...candidates.map((c) => c.replace(RELATIVE_PREFIX_RE, "")),
+    ];
 
     let bestModule: ModuleNode | undefined;
     let bestModuleScore = 0;

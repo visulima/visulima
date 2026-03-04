@@ -3,11 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import findModuleForPath from "../../../src/utils/find-module-for-path";
 
+const ANY_CHAR_REGEX = /./;
+
 describe(findModuleForPath, () => {
     const mockServer = {
         moduleGraph: {
-            getModuleById: vi.fn(),
-            getModuleByUrl: vi.fn(),
+            getModuleById: vi.fn<() => unknown>(),
+            getModuleByUrl: vi.fn<() => unknown>(),
             idToModuleMap: new Map(),
         },
     } as unknown as ViteDevServer;
@@ -83,8 +85,10 @@ describe(findModuleForPath, () => {
         expect.assertions(2);
 
         // These should throw because we can't access moduleGraph on null/undefined
-        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrowError();
-        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrowError();
+
+        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrowError(ANY_CHAR_REGEX);
+
+        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrowError(ANY_CHAR_REGEX);
     });
 
     describe("module scoring and prioritization", () => {

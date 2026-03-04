@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import findErrorInSourceCode from "../../../src/utils/find-error-in-source";
+import findErrorInSourceCode from "../../../src/utils/find-error-in-source-code";
 
 describe(findErrorInSourceCode, () => {
     describe("standard Error patterns", () => {
@@ -228,7 +228,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Single message", 5);
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
     });
 
@@ -238,7 +238,7 @@ describe(findErrorInSourceCode, () => {
 
             const result = findErrorInSourceCode("", "error message");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should return null for empty error message", () => {
@@ -247,7 +247,7 @@ describe(findErrorInSourceCode, () => {
             const sourceCode = "console.log('test');";
             const result = findErrorInSourceCode(sourceCode, "");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should return null when error message is not found", () => {
@@ -260,7 +260,7 @@ describe(findErrorInSourceCode, () => {
             `;
             const result = findErrorInSourceCode(sourceCode, "Error not present");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should handle lines with only whitespace", () => {
@@ -506,11 +506,11 @@ describe(findErrorInSourceCode, () => {
                     return missingFunction();
                 }
             `;
-            const result = findErrorInSourceCode(sourceCode, "missingFunction is not a function");
 
             // TypeError for undefined functions is harder to pinpoint exactly
             // The function call location might not be found due to how the error is generated
-            expect(result).toBeDefined(); // At least it shouldn't crash
+            // At least it shouldn't crash
+            expect(() => findErrorInSourceCode(sourceCode, "missingFunction is not a function")).not.toThrow();
         });
 
         it("should handle property access errors", () => {
