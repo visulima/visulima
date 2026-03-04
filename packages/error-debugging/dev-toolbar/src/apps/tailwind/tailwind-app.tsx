@@ -186,12 +186,15 @@ const groupColors = (colors: ColorToken[]): { scales: Map<string, ColorToken[]>;
     }
 
     for (const [key, tokens] of scaleMap) {
-        scaleMap.set(key, tokens.toSorted((a, b) => {
-            const numberA = Number.parseInt(a.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
-            const numberB = Number.parseInt(b.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+        scaleMap.set(
+            key,
+            tokens.toSorted((a, b) => {
+                const numberA = Number.parseInt(a.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+                const numberB = Number.parseInt(b.name.match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
 
-            return numberA - numberB;
-        }));
+                return numberA - numberB;
+            }),
+        );
     }
 
     return { scales: scaleMap, semantic };
@@ -670,12 +673,15 @@ const ConfigTab = ({
     }
 
     for (const [key, tokens] of scaleMap) {
-        scaleMap.set(key, tokens.toSorted((a, b) => {
-            const numberA = Number.parseInt(a[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
-            const numberB = Number.parseInt(b[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+        scaleMap.set(
+            key,
+            tokens.toSorted((a, b) => {
+                const numberA = Number.parseInt(a[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
+                const numberB = Number.parseInt(b[0].match(TRAILING_NUMBER_CAPTURE_RE)?.[1] ?? "0", 10);
 
-            return numberA - numberB;
-        }));
+                return numberA - numberB;
+            }),
+        );
     }
 
     const filteredScales = colorSearch

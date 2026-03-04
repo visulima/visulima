@@ -6,6 +6,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
     interface DevToolbarVirtualOptions {
         apps: {
             a11y: boolean;
+            assets: boolean;
             inspector: boolean;
             moduleGraph: boolean;
             performance: boolean;
@@ -17,8 +18,8 @@ declare module "virtual:visulima-dev-toolbar-options" {
         };
         base: string;
         closeOnOutsideClick: boolean;
-        editor: string;
         defaultVisible: boolean;
+        editor: string;
         height: number;
         keybindings: { close?: string; toggle?: string };
         minimizePanelInactive: number;
@@ -82,7 +83,6 @@ interface VisulimaDevTools {
 }
 
 declare global {
-
     var __VISULIMA_DEV_TOOLBAR_OPTIONS__: import("virtual:visulima-dev-toolbar-options").DevToolbarVirtualOptions | undefined;
 
     var __VISULIMA_DEVTOOLS_INITIALIZED__: boolean | undefined;

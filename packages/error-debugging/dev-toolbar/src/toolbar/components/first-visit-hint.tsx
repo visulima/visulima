@@ -95,12 +95,15 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
 
     // Clear any pending dismiss timeout on unmount to prevent calling onDismiss
     // after the component has been removed from the tree.
-    useEffect(() => () => {
-        if (dismissTimeoutRef.current !== undefined) {
-            clearTimeout(dismissTimeoutRef.current);
-            dismissTimeoutRef.current = undefined;
-        }
-    }, []);
+    useEffect(
+        () => () => {
+            if (dismissTimeoutRef.current !== undefined) {
+                clearTimeout(dismissTimeoutRef.current);
+                dismissTimeoutRef.current = undefined;
+            }
+        },
+        [],
+    );
 
     const handleDismiss = (): void => {
         setVisible(false);

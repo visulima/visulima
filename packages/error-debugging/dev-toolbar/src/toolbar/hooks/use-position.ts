@@ -450,18 +450,15 @@ const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn =>
     }, [state.left, state.open, state.position, state.top, windowHeight, windowWidth, panelMargins, panelElement, isHidden, isVertical]);
 
     // Computed: anchorStyle with smooth transitions
-    const anchorStyle = useMemo(
-        () => {
-            return {
-                left: `${anchorPos.left}px`,
-                top: `${anchorPos.top}px`,
-                // Add smooth transition for the slide in/out effect
-                // Disable during dragging for immediate response
-                transition: isDragging ? "none" : "left 0.3s ease, top 0.3s ease",
-            };
-        },
-        [anchorPos, isDragging],
-    );
+    const anchorStyle = useMemo(() => {
+        return {
+            left: `${anchorPos.left}px`,
+            top: `${anchorPos.top}px`,
+            // Add smooth transition for the slide in/out effect
+            // Disable during dragging for immediate response
+            transition: isDragging ? "none" : "left 0.3s ease, top 0.3s ease",
+        };
+    }, [anchorPos, isDragging]);
 
     // Computed: iframeStyle
     const iframeStyle = useMemo(() => {

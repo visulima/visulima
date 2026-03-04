@@ -3,10 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
-import {
-    getCwvRating,
-    performanceMonitor,
-} from "../../performance/monitor";
+import { getCwvRating, performanceMonitor } from "../../performance/monitor";
 import type { AppComponentProps } from "../../types/app";
 import cn from "../../utils/cn";
 

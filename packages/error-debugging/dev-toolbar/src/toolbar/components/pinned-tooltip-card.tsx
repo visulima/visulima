@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";

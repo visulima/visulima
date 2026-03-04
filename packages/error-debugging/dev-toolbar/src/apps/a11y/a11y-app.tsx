@@ -153,7 +153,9 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
     const handleScan = (): void => {
         setFilterSeverity(undefined);
         setActiveIssueId(undefined);
-        a11yStore.scan(disabledRules).catch(() => { /* error handled in store */ });
+        a11yStore.scan(disabledRules).catch(() => {
+            /* error handled in store */
+        });
     };
 
     const handleIssueClick = (issue: A11yIssue): void => {

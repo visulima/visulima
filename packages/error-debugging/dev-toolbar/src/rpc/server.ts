@@ -1,6 +1,7 @@
 import type { ViteDevServer, WebSocketClient } from "vite";
 
 import type { ServerFunctions, ServerRPCContext } from "../types/rpc";
+import { getStaticAssets } from "./functions/assets";
 import { getModuleGraph } from "./functions/module-graph";
 import { openInEditor } from "./functions/open-in-editor";
 import { getTailwindConfig } from "./functions/tailwind-config";
@@ -12,6 +13,7 @@ import { getViteConfig } from "./functions/vite-config";
 const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?: string } = {}): Partial<ServerFunctions> => {
     return {
         getModuleGraph: async () => getModuleGraph(server),
+        getStaticAssets: async () => getStaticAssets(server),
         getTailwindConfig: async () => getTailwindConfig(server),
         getViteConfig: async () => getViteConfig(server),
         openInEditor: async (file: string, line?: number, column?: number, editor?: string) =>
@@ -33,11 +35,7 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
  * @param options.editor Editor to use for "open in editor" functionality.
  * @returns Server RPC context.
  */
-const createServerRPCContext = (
-    server: ViteDevServer,
-    customFunctions?: Partial<ServerFunctions>,
-    options: { editor?: string } = {},
-): ServerRPCContext => {
+const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial<ServerFunctions>, options: { editor?: string } = {}): ServerRPCContext => {
     const defaultFunctions = createDefaultServerFunctions(server, options);
     const functions: ServerFunctions = {
         ...defaultFunctions,

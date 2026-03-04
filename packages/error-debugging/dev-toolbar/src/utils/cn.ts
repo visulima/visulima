@@ -1,5 +1,7 @@
 import type { ClassValue } from "clsx";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { twMerge } from "tailwind-merge";
 
 /**

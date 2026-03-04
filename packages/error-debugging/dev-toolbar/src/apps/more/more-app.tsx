@@ -41,7 +41,9 @@ const MoreApp = (_props: AppComponentProps): ComponentChildren => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
-        api?.openApp(id).catch(() => { /* ignore */ });
+        api?.openApp(id).catch(() => {
+            /* ignore */
+        });
     };
 
     if (apps.length === 0) {

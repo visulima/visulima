@@ -296,7 +296,8 @@ export class DevToolbar extends HTMLElement {
             const activeApp = this.appManager.getActiveApp();
 
             if (activeApp) {
-                this.appManager.toggleApp(activeApp.id)
+                this.appManager
+                    .toggleApp(activeApp.id)
                     .then(() => {
                         this.render();
 

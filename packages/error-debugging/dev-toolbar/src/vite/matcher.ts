@@ -9,7 +9,12 @@ const escapeRegExp = (s: string): string => s.replaceAll(ESCAPE_REGEXP_CHARS, St
 const globToRegex = (glob: string): RegExp => {
     const pattern = glob
         .split("**")
-        .map((segment) => segment.split("*").map((s) => escapeRegExp(s)).join("[^/]*"))
+        .map((segment) =>
+            segment
+                .split("*")
+                .map((s) => escapeRegExp(s))
+                .join("[^/]*"),
+        )
         .join(".*");
 
     return new RegExp(pattern);

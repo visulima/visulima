@@ -1,4 +1,5 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
 import alertTriangleIcon from "lucide-static/icons/alert-triangle.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";

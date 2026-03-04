@@ -66,6 +66,7 @@ export interface DevToolbarOptions {
     apps?: {
         [key: string]: boolean | undefined;
         a11y?: boolean;
+        assets?: boolean;
         inspector?: boolean;
         moduleGraph?: boolean;
         performance?: boolean;
@@ -238,6 +239,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return `export default ${JSON.stringify({
                     apps: {
                         a11y: options.apps?.a11y ?? false,
+                        assets: options.apps?.assets ?? false,
                         inspector: options.apps?.inspector ?? false,
                         moduleGraph: options.apps?.moduleGraph ?? false,
                         performance: options.apps?.performance ?? false,
@@ -249,8 +251,8 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     },
                     base: config.base,
                     closeOnOutsideClick: options.closeOnOutsideClick ?? true,
-                    editor: options.editor ?? "",
                     defaultVisible: options.defaultVisible ?? true,
+                    editor: options.editor ?? "",
                     height: options.height ?? 60,
                     keybindings: options.keybindings ?? {},
                     minimizePanelInactive: options.minimizePanelInactive ?? 5000,
