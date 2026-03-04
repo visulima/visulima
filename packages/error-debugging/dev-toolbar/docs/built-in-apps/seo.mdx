@@ -5,13 +5,14 @@ description: Preview how your page looks when shared on social platforms and aud
 
 **App ID:** `dev-toolbar:seo`
 
-The SEO app reads the current page's `<head>` in real time and shows you two things: live social preview cards showing how your link will appear when shared, and a complete meta tag audit table flagging any missing required tags.
+The SEO app reads the current page's `<head>` in real time across four tabs: live social preview cards, a meta tag audit table, a missing-tag checklist, and a JSON-LD structured data validator.
 
 ## Features
 
 - **Social preview cards** for 7 platforms — see exactly how your link looks when posted
 - **Meta tag audit** — every relevant tag listed with presence/absence status
 - **Missing tag warnings** — required tags highlighted with a warning badge
+- **Structured data validation** — scans all `<script type="application/ld+json">` blocks and validates against Schema.org rules for 10+ types
 - **Refresh on demand** — re-reads the page head without a full reload
 
 ## Social Preview Tab
@@ -71,15 +72,53 @@ The Meta Tags tab shows every relevant tag as a flat list with the raw value alo
 
 ## Configuration
 
-### Disable via Plugin
+### Enable via Plugin
+
+The SEO app is disabled by default. Enable it in your Vite config:
 
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        seo: false,
+        seo: true,
     },
 });
 ```
+
+## Structured Data Tab
+
+The Structured Data tab scans every `<script type="application/ld+json">` block in the page's `<head>` and validates each schema against Schema.org rules.
+
+### What it checks
+
+Each schema is shown as an expandable card with an overall status badge (`Error`, `Warning`, `Info`, `OK`) and per-field messages. `@graph` arrays are expanded into individual cards, each inheriting the parent `@context`.
+
+### Supported Schema.org types
+
+| Type                                      | Required fields checked                                                                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Article` / `NewsArticle` / `BlogPosting` | `headline` (or `name`), `author.name`, `datePublished` (ISO 8601), `image`                                                                               |
+| `Product`                                 | `name`; at least one of `offers`, `aggregateRating`, or `review`; `offers.price` + `offers.priceCurrency`; `aggregateRating.ratingValue` + `reviewCount` |
+| `BreadcrumbList`                          | `itemListElement` array (≥ 2 items), sequential `position`, item `name`                                                                                  |
+| `FAQPage`                                 | `mainEntity` array (≥ 1 item), each with `name` and `acceptedAnswer.text`                                                                                |
+| `Event` / `EventSeries`                   | `name`, `startDate` (ISO 8601), `location.name`                                                                                                          |
+| `LocalBusiness` / `Organization`          | `name`, `url`, `logo` (suggestion)                                                                                                                       |
+| `Person`                                  | `name`, `url` (suggestion)                                                                                                                               |
+| `Recipe`                                  | `name`, `image`, `recipeIngredient`, `recipeInstructions`                                                                                                |
+| `WebSite` / `WebPage`                     | `name`, `url`                                                                                                                                            |
+| `VideoObject`                             | `name`, `description`, `thumbnailUrl`, `uploadDate` (ISO 8601)                                                                                           |
+
+All schemas are also checked for a valid `@context` referencing `schema.org` and a present `@type`.
+
+### Severity levels
+
+| Icon | Level   | Meaning                                                  |
+| ---- | ------- | -------------------------------------------------------- |
+| ✖    | Error   | Critical issue — schema will not produce rich results    |
+| ⚠    | Warning | Missing recommended field — rich results may be degraded |
+| ℹ    | Info    | Optional enhancement                                     |
+| ✔    | OK      | No issues found                                          |
+
+The tab badge shows the count of schemas with errors (red) or warnings (amber).
 
 ## Notes
 

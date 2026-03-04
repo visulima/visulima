@@ -91,12 +91,14 @@ This means:
 
 ## Configuration
 
-### Disable via Plugin
+### Enable via Plugin
+
+The Accessibility app is disabled by default. Enable it in your Vite config:
 
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        a11y: false,
+        a11y: true,
     },
 });
 ```

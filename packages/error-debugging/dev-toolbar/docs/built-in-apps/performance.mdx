@@ -68,12 +68,14 @@ A waterfall breakdown of the page's navigation lifecycle:
 
 ## Configuration
 
-### Disable via Plugin
+### Enable via Plugin
+
+The Performance app is disabled by default. Enable it in your Vite config:
 
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        performance: false,
+        performance: true,
     },
 });
 ```

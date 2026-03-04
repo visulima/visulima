@@ -62,7 +62,7 @@ A small pill appears at the bottom-center of your page. Click any app icon to op
 
 ## Minimal Configuration
 
-All built-in apps are enabled by default. To selectively disable apps or change the toolbar position:
+By default only the **Vite Config** and **Settings** apps are shown alongside the always-present "more" drawer. Enable whichever optional apps you need:
 
 ```ts title="vite.config.ts"
 import { defineConfig } from "vite";
@@ -74,10 +74,11 @@ export default defineConfig({
             // Toolbar placement
             placement: "bottom-right",
 
-            // Disable specific built-in apps
+            // Opt-in to the apps you want
             apps: {
-                performance: false,
-                seo: false,
+                inspector: true,
+                performance: true,
+                seo: true,
             },
 
             // Change the default keyboard shortcuts

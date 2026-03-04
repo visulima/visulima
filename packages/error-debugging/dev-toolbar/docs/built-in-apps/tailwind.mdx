@@ -27,12 +27,14 @@ The Tailwind app calls the built-in `getTailwindConfig()` RPC function, which re
     Only Tailwind CSS v4 is supported. The app returns `null` and shows a "No Tailwind config found" message when no Tailwind v4 CSS is detected.
 </Callout>
 
-## Disabling the Tailwind app
+## Enabling the Tailwind app
 
-```ts
+The Tailwind app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        tailwind: false,
+        tailwind: true,
     },
 });
 ```

@@ -44,7 +44,10 @@ devToolbar({
 ## Configuring the editor
 
 By default, `launch-editor` auto-detects the running editor (WebStorm, VS Code, etc.) from the OS process list.
-Override it with the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option:
+
+**Per-user override (Settings app):** open the Settings app and choose your editor from the **"Preferred editor"** dropdown. The selection is saved to `localStorage` and takes priority over the plugin-level default.
+
+**Project-level default:** set the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option in your Vite config — this seeds the initial value for all users who haven't made a personal selection:
 
 ```ts
 devToolbar({
@@ -52,12 +55,14 @@ devToolbar({
 });
 ```
 
-## Disabling the Inspector
+## Enabling the Inspector
+
+The Inspector is disabled by default. Enable it in your Vite config:
 
 ```ts
 devToolbar({
     apps: {
-        inspector: false,
+        inspector: true,
     },
 });
 ```
