@@ -10,9 +10,15 @@ import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "../../../
 vi.mock(import("@floating-ui/dom"), () => {
     return {
         computePosition: vi.fn().mockResolvedValue({ x: 10, y: 20 }),
-        flip: vi.fn(() => { return { name: "flip" }; }),
-        offset: vi.fn((n: number) => { return { name: "offset", options: n }; }),
-        shift: vi.fn(() => { return { name: "shift" }; }),
+        flip: vi.fn(() => {
+            return { name: "flip" };
+        }),
+        offset: vi.fn((n: number) => {
+            return { name: "offset", options: n };
+        }),
+        shift: vi.fn(() => {
+            return { name: "shift" };
+        }),
     };
 });
 
