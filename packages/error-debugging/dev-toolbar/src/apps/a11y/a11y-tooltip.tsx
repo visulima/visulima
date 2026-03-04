@@ -3,7 +3,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import type { AppTooltipProps } from "../../types/app";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import type { A11yStoreState, Severity } from "./a11y-store";
 import { a11yStore, SEVERITY_ORDER } from "./a11y-store";
 
@@ -95,7 +95,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
         ? "border-primary/30 text-primary bg-primary/8"
         : "border-border text-muted-foreground bg-transparent hover:text-foreground";
     const overlayButtonClass
-        = issues.length === 0 ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed" : cn("cursor-pointer", overlayActiveClass);
+        = issues.length === 0 ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed" : clsx("cursor-pointer", overlayActiveClass);
 
     return (
         <div class="space-y-3 min-w-[200px]">
@@ -104,7 +104,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 ? (
                 <>
                     <div class="flex items-baseline gap-2">
-                        <span class={cn("text-2xl font-bold tabular-nums leading-none", total > 0 ? "text-destructive" : "text-success-foreground")}>
+                        <span class={clsx("text-2xl font-bold tabular-nums leading-none", total > 0 ? "text-destructive" : "text-success-foreground")}>
                             {total}
                         </span>
                         <span class="text-[0.65rem] text-muted-foreground">violation{total === 1 ? "" : "s"}</span>
@@ -113,7 +113,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                     <div class="grid grid-cols-4 gap-1.5">
                         {SEVERITY_ORDER.map((sev) => (
                             <div class="flex flex-col items-center gap-0.5" key={sev}>
-                                <span class={cn("text-[0.85rem] font-bold tabular-nums leading-none", SEVERITY_COLOR[sev])}>{countBy(sev)}</span>
+                                <span class={clsx("text-[0.85rem] font-bold tabular-nums leading-none", SEVERITY_COLOR[sev])}>{countBy(sev)}</span>
                                 <span class="text-[0.55rem] uppercase tracking-wide text-muted-foreground/70">{SEVERITY_SHORT[sev]}</span>
                             </div>
                         ))}
@@ -132,7 +132,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
             {/* Actions */}
             <div class="flex items-center gap-2 pt-2 border-t border-border/50">
                 <button
-                    class={cn(
+                    class={clsx(
                         "flex-1 px-2.5 py-1.5 text-[0.7rem] font-medium border transition-colors cursor-pointer",
                         isScanning
                             ? "border-primary/30 text-primary/50 bg-primary/5 cursor-not-allowed"
@@ -150,7 +150,7 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
                 </button>
 
                 <button
-                    class={cn("px-2.5 py-1.5 text-[0.7rem] border transition-colors", overlayButtonClass)}
+                    class={clsx("px-2.5 py-1.5 text-[0.7rem] border transition-colors", overlayButtonClass)}
                     disabled={issues.length === 0}
                     onClick={() => a11yStore.setShowOverlays(!showOverlays)}
                     title="Toggle visual highlights on affected elements"

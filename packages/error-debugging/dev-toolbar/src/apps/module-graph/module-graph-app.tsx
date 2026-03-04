@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Button, Input } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface ModuleEntry {
     ext: string;
@@ -35,7 +35,7 @@ const getExtension = (url: string): string => {
 
 const ExtensionBadge = ({ ext }: { ext: string }): ComponentChildren => (
     <span
-        class={cn(
+        class={clsx(
             "inline-flex px-1.5 py-0.5 text-[0.6rem] font-mono font-bold uppercase border",
             EXT_COLORS[ext] ?? "bg-foreground/6 text-muted-foreground border-border",
         )}
@@ -162,7 +162,7 @@ const ModuleGraphApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         )
                         : filtered.map((module_) => (
                             <button
-                                class={cn(
+                                class={clsx(
                                     "w-full flex items-center gap-3 px-4 py-2.5 text-left border-0 bg-transparent cursor-pointer",
                                     "hover:bg-foreground/4 transition-colors duration-100",
                                     selectedId === module_.id && "bg-primary/6",

@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren, JSX } from "preact";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 type ButtonSize = "default" | "icon" | "lg" | "sm";
 type ButtonVariant = "default" | "destructive" | "ghost" | "link" | "outline" | "secondary";
@@ -31,7 +31,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const Button = ({ children, class: className, size = "default", type = "button", variant = "default", ...rest }: ButtonProps): JSX.Element => (
     <button
-        class={cn(
+        class={clsx(
             "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
             variantClasses[variant],
             sizeClasses[size],

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { AppComponentProps } from "../../types/app";
 import { Badge, Button } from "../../ui";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 // ─── Meta tag parsing ─────────────────────────────────────────────────────────
 
@@ -668,7 +668,7 @@ const SocialPreview = ({ meta, platform }: { meta: MetaTags; platform: PlatformC
     const missing = platform.requiredKeys.filter((k) => !(meta[k] as string));
 
     return (
-        <div class={cn("border bg-card overflow-hidden", platform.accentClass)}>
+        <div class={clsx("border bg-card overflow-hidden", platform.accentClass)}>
             <div class="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/50 bg-foreground/2">
                 <span class="text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground">{platform.name}</span>
                 {missing.length > 0 && (
@@ -710,7 +710,7 @@ const MetaRow = ({ label, required = false, value }: { label: string; required?:
                 <span class="text-[0.75rem] text-foreground break-all">{value}</span>
                 )
                 : (
-                <span class={cn("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>{required ? "⚠ Missing" : "—"}</span>
+                <span class={clsx("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>{required ? "⚠ Missing" : "—"}</span>
                 )}
         </div>
     </div>
@@ -752,7 +752,7 @@ const CopyButton = ({ text }: { text: string }): ComponentChildren => {
 
     return (
         <Button
-            class={cn("text-[0.6rem] font-mono shrink-0", copied ? "border-success/40 text-success bg-success/8" : "")}
+            class={clsx("text-[0.6rem] font-mono shrink-0", copied ? "border-success/40 text-success bg-success/8" : "")}
             onClick={handleCopy}
             size="sm"
             variant="outline"
@@ -812,13 +812,13 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
                 type="button"
             >
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class={cn("text-base shrink-0 leading-none", cfg.color)}>{cfg.icon}</span>
+                    <span class={clsx("text-base shrink-0 leading-none", cfg.color)}>{cfg.icon}</span>
                     <span class="text-[0.7rem] text-muted-foreground font-mono shrink-0">{label}</span>
                     <code class="text-[0.75rem] font-mono font-semibold text-foreground truncate">{schema.type}</code>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <Badge variant={STATUS_BADGE_VARIANT[schema.status]}>{cfg.label}</Badge>
-                    <span class={cn("text-muted-foreground text-[0.65rem] transition-transform duration-150", open ? "rotate-90" : "")}>▶</span>
+                    <span class={clsx("text-muted-foreground text-[0.65rem] transition-transform duration-150", open ? "rotate-90" : "")}>▶</span>
                 </div>
             </button>
 
@@ -833,7 +833,7 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
 
                                 return (
                                     <div class="flex items-start gap-2 text-[0.72rem]" key={i}>
-                                        <span class={cn("shrink-0 leading-none mt-px", messageCfg.color)}>{messageCfg.icon}</span>
+                                        <span class={clsx("shrink-0 leading-none mt-px", messageCfg.color)}>{messageCfg.icon}</span>
                                         <div class="min-w-0">
                                             {message.property && <code class="text-[0.65rem] font-mono text-muted-foreground mr-1.5">{message.property}:</code>}
                                             <span class="text-foreground/80">{message.message}</span>
@@ -946,7 +946,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
 
                         return (
                             <button
-                                class={cn(
+                                class={clsx(
                                     "flex items-center gap-1.5 px-3 py-1.5 text-[0.75rem] font-medium border-0 cursor-pointer transition-colors capitalize",
                                     activeTab === tab
                                         ? "text-foreground border-b-2 border-primary bg-transparent"

@@ -39,6 +39,13 @@ interface DevToolbarApp {
      * Receives the same AppComponentProps as the main component.
      */
     tooltip?: ComponentType<AppComponentProps>;
+
+    /**
+     * Optional rendering mode. Defaults to inline (Shadow DOM).
+     * Set to { type: "iframe", src: "..." } to load a URL in a full-size iframe.
+     * When view is set, component and init are ignored.
+     */
+    view?: AppView;
 }
 ```
 
@@ -56,6 +63,33 @@ Do not use these IDs for custom apps:
 | `dev-toolbar:module-graph` | Module Graph              |
 | `dev-toolbar:vite-config`  | Vite Config               |
 | `dev-toolbar:more`         | Overflow panel (internal) |
+
+---
+
+## `AppView`
+
+Controls how the app content is rendered inside the panel.
+
+```ts
+type AppView =
+    | {
+          /** Render the app inline in the Shadow DOM (default). */
+          type: "inline";
+      }
+    | {
+          /** Load a URL in a full-size iframe. */
+          type: "iframe";
+          /** The URL to load. */
+          src: string;
+      };
+```
+
+When `view` is omitted, the toolbar defaults to `{ type: "inline" }` and renders the `component` (or calls `init`) inside the panel's Shadow DOM.
+
+When `view: { type: "iframe", src }` is set:
+- `component` and `init` are ignored.
+- The panel renders a borderless `<iframe>` that fills the content area.
+- The toolbar chrome (resize handles, fullscreen, PiP) works as normal.
 
 ---
 

@@ -4,7 +4,7 @@ import moreHorizontalIcon from "lucide-static/icons/more-horizontal.svg?data-uri
 import type { ComponentChildren } from "preact";
 
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import { useApps } from "../hooks/index";
 import AppButton from "./app-button";
 import ViteOverlayButton from "./vite-overlay-button";
@@ -18,7 +18,7 @@ const MoreButton = (): ComponentChildren => {
 
     return (
         <button
-            class={cn(
+            class={clsx(
                 "relative flex justify-center items-center size-6",
                 "border-0",
                 "whitespace-nowrap no-underline p-0 m-0",

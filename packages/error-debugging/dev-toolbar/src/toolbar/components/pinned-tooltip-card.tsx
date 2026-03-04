@@ -5,7 +5,7 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
 import Icon from "../../ui/components/icon";
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 import type { PinnedTooltip } from "../context/index";
 import { createServerHelpers } from "../helpers";
 
@@ -165,7 +165,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
     return (
         <div
             aria-label={`${pinned.app.name} pinned tooltip`}
-            class={cn(
+            class={clsx(
                 "fixed z-[2147483647] pointer-events-auto antialiased toolbar-font",
                 "w-auto max-w-[300px]",
                 "bg-background border border-primary/40 shadow-2xl",
@@ -175,7 +175,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
         >
             {/* Drag handle header */}
             <div
-                class={cn("flex items-center justify-between gap-2 px-3 py-2", "border-b border-primary/20 bg-primary/4", "select-none cursor-grab")}
+                class={clsx("flex items-center justify-between gap-2 px-3 py-2", "border-b border-primary/20 bg-primary/4", "select-none cursor-grab")}
                 onMouseDown={handleDragStart}
                 ref={headerRef}
             >
@@ -186,7 +186,7 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
 
                 <button
                     aria-label={`Unpin ${pinned.app.name}`}
-                    class={cn(
+                    class={clsx(
                         "size-5 flex items-center justify-center shrink-0",
                         "border-0 bg-transparent cursor-pointer p-0",
                         "text-muted-foreground/50 hover:text-destructive",

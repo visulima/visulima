@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import type { ComponentChildren } from "preact";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface IconProps {
     class?: string;
@@ -23,7 +23,7 @@ interface IconProps {
  */
 const Icon = ({ class: className, size = 13, src }: IconProps): ComponentChildren => (
     <span
-        class={cn("inline-block shrink-0", className)}
+        class={clsx("inline-block shrink-0", className)}
         style={{
             backgroundColor: "currentColor",
             height: size,

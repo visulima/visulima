@@ -4,7 +4,7 @@ import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";
 import { useContext, useEffect, useRef, useState } from "preact/hooks";
 
-import cn from "../../utils/cn";
+import { clsx } from "clsx";
 
 interface TooltipContextValue {
     open: boolean;
@@ -96,7 +96,7 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
 
     return (
         <div
-            class={cn("z-50 rounded-none bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95", className)}
+            class={clsx("z-50 rounded-none bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95", className)}
             ref={contentRef}
             role="tooltip"
             style={{ left: `${position.x}px`, position: "fixed", top: `${position.y}px` }}
