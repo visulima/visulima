@@ -1,0 +1,85 @@
+---
+title: Assets
+description: Browse, preview, and inspect all static files in your project's public directory.
+---
+
+**App ID:** `dev-toolbar:assets`
+
+The Assets app scans Vite's `publicDir` (defaults to `public/`) via RPC and displays all static files in a searchable, filterable list. Click any asset to open a detail panel with a live preview and metadata.
+
+## Features
+
+- **Full asset listing** — all files from `publicDir`, sorted alphabetically
+- **Type filtering** — filter by image, video, audio, font, text, or other
+- **Full-text search** — filter by file path
+- **Live preview** — images render inline, videos show the first frame, audio gets a playback control
+- **Metadata** — file size and last-modified timestamp
+- **Copy URL** — copy the public URL to the clipboard in one click
+- **Open in browser** — open the asset URL in a new tab
+- **Refresh** — re-fetch the asset list without reloading the page
+
+## Using the Panel
+
+### Browsing
+
+On open the panel fetches all files in `publicDir` and displays them as a scrollable list. Each row shows:
+
+- **Type badge** — colour-coded by file category
+- **Public path** — the URL-accessible path (e.g. `/images/logo.png`)
+- **Size** — human-readable file size
+
+### Filtering
+
+Use the search box to filter by path substring. The type filter pills below the search box narrow the list to a single category. The counter shows `filtered / total`.
+
+### Asset Detail
+
+Click any row to open the detail panel on the right:
+
+| Field             | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| **Preview**       | Inline image/video/audio preview when applicable |
+| **Path**          | Full public URL path                             |
+| **Type**          | Asset category badge                             |
+| **Size**          | File size                                        |
+| **Last Modified** | File modification timestamp                      |
+
+Two action buttons are available:
+
+- **Copy URL** — copies the public path to the clipboard
+- **Open in browser** — opens the asset in a new browser tab
+
+### Refreshing
+
+Click **Refresh** in the header to re-scan `publicDir`. Useful after adding or deleting files without reloading the page.
+
+## Asset Type Reference
+
+| Type    | Extensions                                        | Badge colour |
+| ------- | ------------------------------------------------- | ------------ |
+| `image` | png, jpg, jpeg, gif, svg, webp, avif, ico, bmp, … | Blue         |
+| `video` | mp4, webm, mov, avi, mkv, ogv                     | Purple       |
+| `audio` | mp3, wav, ogg, aac, flac, m4a, opus               | Yellow       |
+| `font`  | woff, woff2, ttf, otf, eot                        | Orange       |
+| `text`  | html, css, js, json, xml, csv, md, txt            | Emerald      |
+| `other` | Everything else                                   | Grey         |
+
+## Configuration
+
+### Enable via Plugin
+
+The Assets app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        assets: true,
+    },
+});
+```
+
+## Notes
+
+- Assets are read from `server.config.publicDir`. If `publicDir` is set to `false` or the directory does not exist, the panel shows an empty state.
+- The asset list reflects the current state of the filesystem at the time of the RPC call. Click **Refresh** to pick up newly added or deleted files.
+- Large directories with many files may take a moment to load.
