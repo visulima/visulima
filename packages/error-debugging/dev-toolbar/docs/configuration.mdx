@@ -36,7 +36,7 @@ export default defineConfig({
 
 ### `apps`
 
-Controls which built-in apps are registered. All optional apps are **disabled by default** — only `viteConfig`, `settings`, and the "more" drawer are shown out of the box. Set an app to `true` to enable it.
+Controls which built-in apps are registered. All optional apps are **disabled by default** — only `viteConfig` and `settings` are shown out of the box. Set an app to `true` to enable it.
 
 ```ts
 apps?: {
@@ -346,7 +346,7 @@ interface DevToolbarOptions {
 
     /**
      * Built-in apps to enable. All optional apps are disabled by default.
-     * Only viteConfig, settings, and the more drawer are shown out of the box.
+     * Only viteConfig and settings are shown out of the box.
      */
     apps?: {
         a11y?: boolean;
