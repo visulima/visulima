@@ -139,6 +139,59 @@ const HideDelayControl = ({ onChange, value }: { onChange: (v: number) => void; 
     </select>
 );
 
+// ─── Editor selector ─────────────────────────────────────────────────────────
+
+const EDITOR_OPTIONS: { label: string; value: string }[] = [
+    { label: "Auto-detected", value: "" },
+    { label: "AppCode", value: "appcode" },
+    { label: "Android Studio", value: "android-studio" },
+    { label: "Atom", value: "atom" },
+    { label: "Atom Beta", value: "atom-beta" },
+    { label: "Brackets", value: "brackets" },
+    { label: "CLion", value: "clion" },
+    { label: "Visual Studio Code", value: "code" },
+    { label: "Visual Studio Code Insiders", value: "code-insiders" },
+    { label: "VSCodium", value: "codium" },
+    { label: "Cursor", value: "cursor" },
+    { label: "GNU Emacs", value: "emacs" },
+    { label: "GNU Emacs for Mac OS X", value: "emacsforosx" },
+    { label: "IntelliJ IDEA", value: "intellij" },
+    { label: "GNU nano", value: "nano" },
+    { label: "NeoVim", value: "neovim" },
+    { label: "Notepad++", value: "notepad++" },
+    { label: "PhpStorm", value: "phpstorm" },
+    { label: "PyCharm", value: "pycharm" },
+    { label: "Rider", value: "rider" },
+    { label: "RubyMine", value: "rubymine" },
+    { label: "SublimeText", value: "sublime" },
+    { label: "TextMate", value: "textmate" },
+    { label: "Vim", value: "vim" },
+    { label: "Visual Studio", value: "visualstudio" },
+    { label: "WebStorm", value: "webstorm" },
+    { label: "Xcode", value: "xcode" },
+    { label: "Zed", value: "zed" },
+];
+
+const EditorControl = ({ onChange, value }: { onChange: (v: string) => void; value: string }): ComponentChildren => (
+    <select
+        class={cn(
+            "bg-foreground/6 border border-border",
+            "text-[0.775rem] font-medium text-foreground",
+            "px-2.5 py-1.5 cursor-pointer",
+            "focus:outline-none focus:ring-1 focus:ring-ring",
+            "transition-colors duration-150",
+        )}
+        onChange={(event) => onChange((event.target as HTMLSelectElement).value)}
+        value={value}
+    >
+        {EDITOR_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+                {opt.label}
+            </option>
+        ))}
+    </select>
+);
+
 // ─── Keyboard shortcut capture ────────────────────────────────────────────────
 
 const formatBinding = (binding: string): string[] => binding.split("+");
@@ -262,6 +315,15 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={<Toggle checked={state.closeOnOutsideClick} onChange={(v) => updateState({ closeOnOutsideClick: v })} />}
                     description="Close the DevTools panel when clicking outside of it."
                     label="Close on outside click"
+                />
+            </Section>
+
+            {/* Editor */}
+            <Section title="Editor">
+                <SettingRow
+                    control={<EditorControl onChange={(v) => updateState({ editor: v })} value={state.editor} />}
+                    description="Editor to open when clicking 'Open in editor'. Select Auto-detected to use the running IDE or EDITOR environment variable."
+                    label="Preferred editor"
                 />
             </Section>
 

@@ -25,6 +25,11 @@ interface DevToolsFrameState {
     closeOnOutsideClick: boolean;
 
     /**
+     * Preferred editor for "Open in editor" (empty string = auto-detect)
+     */
+    editor: string;
+
+    /**
      * Panel height as viewport height percentage
      */
     height: number;
@@ -102,6 +107,7 @@ const STORAGE_KEY = "__v_dt__frame_state";
  */
 const DEFAULT_STATE: DevToolsFrameState = {
     closeOnOutsideClick: true,
+    editor: "",
     height: 60,
     isFirstVisit: true,
     isPip: false,
@@ -133,6 +139,7 @@ const buildEffectiveDefaults = (): DevToolsFrameState => {
     return {
         ...DEFAULT_STATE,
         closeOnOutsideClick: pluginOptions["closeOnOutsideClick"] ?? DEFAULT_STATE.closeOnOutsideClick,
+        editor: pluginOptions["editor"] ?? DEFAULT_STATE.editor,
         height: pluginOptions["height"] ?? DEFAULT_STATE.height,
         keybindings: {
             ...DEFAULT_KEYBINDINGS,
@@ -263,5 +270,12 @@ const useFrameState = (): UseFrameStateReturn => {
     };
 };
 
+/**
+ * Returns the currently selected editor preference (empty string = auto-detect).
+ * Reads from the singleton shared state, so always reflects the latest value
+ * without re-reading localStorage.
+ */
+const getEditorPreference = (): string | undefined => sharedState.editor || undefined;
+
 export type { DevToolsFrameState, KeyBindings, UseFrameStateReturn };
-export { DEFAULT_KEYBINDINGS, DEFAULT_STATE, useFrameState };
+export { DEFAULT_KEYBINDINGS, DEFAULT_STATE, getEditorPreference, useFrameState };

@@ -72,6 +72,376 @@ const readMetaTags = (): MetaTags => {
     };
 };
 
+// ─── JSON-LD parsing & validation ─────────────────────────────────────────────
+
+interface JsonLdValidationMessage {
+    message: string;
+    property: string;
+    severity: "error" | "suggestion" | "warning";
+}
+
+interface JsonLdSchema {
+    context: string;
+    graphIndex?: number;
+    index: number;
+    messages: JsonLdValidationMessage[];
+    parsed: Record<string, unknown>;
+    raw: string;
+    status: "error" | "ok" | "suggestion" | "warning";
+    type: string;
+}
+
+const isISO8601 = (value: unknown): boolean =>
+    typeof value === "string" && /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?([+-]\d{2}:\d{2}|Z)?)?$/.test(value);
+
+const has = (schema: Record<string, unknown>, key: string): boolean => schema[key] !== undefined && schema[key] !== null && schema[key] !== "";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isNonEmptyArray = (value: unknown): value is any[] => Array.isArray(value) && value.length > 0;
+
+type Validator = (schema: Record<string, unknown>) => JsonLdValidationMessage[];
+
+const validateArticle: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "headline") && !has(schema, "name"))
+        msgs.push({ message: "headline (or name) is required", property: "headline", severity: "error" });
+
+    if (!has(schema, "author"))
+        msgs.push({ message: "author is required", property: "author", severity: "error" });
+    else {
+        const author = schema["author"] as Record<string, unknown>;
+
+        if (typeof author === "object" && !Array.isArray(author) && !has(author, "name"))
+            msgs.push({ message: "author.name is missing", property: "author.name", severity: "warning" });
+    }
+
+    if (!has(schema, "datePublished"))
+        msgs.push({ message: "datePublished is required", property: "datePublished", severity: "error" });
+    else if (!isISO8601(schema["datePublished"]))
+        msgs.push({ message: "datePublished should be ISO 8601 format (e.g. 2024-01-15T09:00:00Z)", property: "datePublished", severity: "warning" });
+
+    if (!has(schema, "image"))
+        msgs.push({ message: "image is recommended for rich results", property: "image", severity: "warning" });
+
+    if (!has(schema, "description"))
+        msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validateProduct: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    const hasOffers = has(schema, "offers");
+    const hasRating = has(schema, "aggregateRating");
+    const hasReview = has(schema, "review");
+
+    if (!hasOffers && !hasRating && !hasReview)
+        msgs.push({ message: "At least one of: offers, aggregateRating, or review is required for rich results", property: "offers", severity: "error" });
+
+    if (hasOffers) {
+        const offers = Array.isArray(schema["offers"]) ? (schema["offers"] as Record<string, unknown>[])[0] : (schema["offers"] as Record<string, unknown>);
+
+        if (offers && typeof offers === "object") {
+            if (!has(offers, "price") && !has(offers, "priceSpecification"))
+                msgs.push({ message: "offers.price is required", property: "offers.price", severity: "error" });
+
+            if (!has(offers, "priceCurrency"))
+                msgs.push({ message: "offers.priceCurrency is required (e.g. 'USD')", property: "offers.priceCurrency", severity: "error" });
+        }
+    }
+
+    if (hasRating) {
+        const rating = schema["aggregateRating"] as Record<string, unknown>;
+
+        if (!has(rating, "ratingValue"))
+            msgs.push({ message: "aggregateRating.ratingValue is required", property: "aggregateRating.ratingValue", severity: "error" });
+
+        if (!has(rating, "reviewCount") && !has(rating, "ratingCount"))
+            msgs.push({ message: "aggregateRating.reviewCount (or ratingCount) is required", property: "aggregateRating.reviewCount", severity: "error" });
+    }
+
+    if (!has(schema, "image"))
+        msgs.push({ message: "image is recommended for rich results", property: "image", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validateBreadcrumbList: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+    const items = schema["itemListElement"];
+
+    if (!isNonEmptyArray(items)) {
+        msgs.push({ message: "itemListElement array is required", property: "itemListElement", severity: "error" });
+
+        return msgs;
+    }
+
+    if (items.length < 2)
+        msgs.push({ message: "itemListElement should have at least 2 items", property: "itemListElement", severity: "warning" });
+
+    items.forEach((item: Record<string, unknown>, i: number) => {
+        if (item["position"] !== i + 1)
+            msgs.push({ message: `itemListElement[${i}].position should be ${i + 1}`, property: `itemListElement[${i}].position`, severity: "warning" });
+
+        const name = (item["name"] as string) || (item["item"] as Record<string, unknown>)?.["name"];
+
+        if (!name)
+            msgs.push({ message: `itemListElement[${i}].name is required`, property: `itemListElement[${i}].name`, severity: "error" });
+    });
+
+    return msgs;
+};
+
+const validateFaqPage: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+    const items = schema["mainEntity"];
+
+    if (!isNonEmptyArray(items)) {
+        msgs.push({ message: "mainEntity array with at least one Question is required", property: "mainEntity", severity: "error" });
+
+        return msgs;
+    }
+
+    items.forEach((item: Record<string, unknown>, i: number) => {
+        if (!has(item, "name"))
+            msgs.push({ message: `mainEntity[${i}].name (question text) is required`, property: `mainEntity[${i}].name`, severity: "error" });
+
+        const answer = item["acceptedAnswer"] as Record<string, unknown> | undefined;
+
+        if (!answer || !has(answer, "text"))
+            msgs.push({ message: `mainEntity[${i}].acceptedAnswer.text is required`, property: `mainEntity[${i}].acceptedAnswer.text`, severity: "error" });
+    });
+
+    return msgs;
+};
+
+const validateEvent: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "startDate"))
+        msgs.push({ message: "startDate is required", property: "startDate", severity: "error" });
+    else if (!isISO8601(schema["startDate"]))
+        msgs.push({ message: "startDate should be ISO 8601 format", property: "startDate", severity: "warning" });
+
+    const location = schema["location"] as Record<string, unknown> | undefined;
+
+    if (!location)
+        msgs.push({ message: "location is required", property: "location", severity: "error" });
+    else if (!has(location, "name"))
+        msgs.push({ message: "location.name is required", property: "location.name", severity: "error" });
+
+    if (!has(schema, "description"))
+        msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validateOrganization: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "url"))
+        msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+
+    if (!has(schema, "logo"))
+        msgs.push({ message: "logo is recommended for Knowledge Panel eligibility", property: "logo", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validatePerson: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "url"))
+        msgs.push({ message: "url is recommended", property: "url", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validateRecipe: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "image"))
+        msgs.push({ message: "image is required for rich results", property: "image", severity: "error" });
+
+    if (!has(schema, "recipeIngredient") && !has(schema, "ingredients"))
+        msgs.push({ message: "recipeIngredient is recommended", property: "recipeIngredient", severity: "suggestion" });
+
+    if (!has(schema, "recipeInstructions"))
+        msgs.push({ message: "recipeInstructions is recommended", property: "recipeInstructions", severity: "suggestion" });
+
+    if (!has(schema, "author"))
+        msgs.push({ message: "author is recommended", property: "author", severity: "suggestion" });
+
+    return msgs;
+};
+
+const validateWebSiteOrPage: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "url"))
+        msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+
+    return msgs;
+};
+
+const validateVideoObject: Validator = (schema) => {
+    const msgs: JsonLdValidationMessage[] = [];
+
+    if (!has(schema, "name"))
+        msgs.push({ message: "name is required", property: "name", severity: "error" });
+
+    if (!has(schema, "description"))
+        msgs.push({ message: "description is required", property: "description", severity: "error" });
+
+    if (!has(schema, "thumbnailUrl"))
+        msgs.push({ message: "thumbnailUrl is required for rich results", property: "thumbnailUrl", severity: "error" });
+
+    if (!has(schema, "uploadDate"))
+        msgs.push({ message: "uploadDate is required", property: "uploadDate", severity: "error" });
+    else if (!isISO8601(schema["uploadDate"]))
+        msgs.push({ message: "uploadDate should be ISO 8601 format", property: "uploadDate", severity: "warning" });
+
+    return msgs;
+};
+
+const TYPE_VALIDATORS: Record<string, Validator> = {
+    Article: validateArticle,
+    BlogPosting: validateArticle,
+    Event: validateEvent,
+    EventSeries: validateEvent,
+    FAQPage: validateFaqPage,
+    LocalBusiness: validateOrganization,
+    NewsArticle: validateArticle,
+    Organization: validateOrganization,
+    Person: validatePerson,
+    Product: validateProduct,
+    Recipe: validateRecipe,
+    VideoObject: validateVideoObject,
+    WebPage: validateWebSiteOrPage,
+    WebSite: validateWebSiteOrPage,
+    BreadcrumbList: validateBreadcrumbList,
+};
+
+const KNOWN_TYPES = new Set(Object.keys(TYPE_VALIDATORS));
+
+const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessage[] => {
+    const msgs: JsonLdValidationMessage[] = [];
+    const context = String(schema["@context"] ?? "");
+    const type = String(schema["@type"] ?? "");
+
+    if (!context)
+        msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
+    else if (!context.includes("schema.org"))
+        msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
+
+    if (!type) {
+        msgs.push({ message: "@type is required", property: "@type", severity: "error" });
+
+        return msgs;
+    }
+
+    if (!KNOWN_TYPES.has(type))
+        msgs.push({ message: `@type '${type}' is not validated — no known rules for this type`, property: "@type", severity: "suggestion" });
+
+    const validator = TYPE_VALIDATORS[type];
+
+    if (validator)
+        msgs.push(...validator(schema));
+
+    return msgs;
+};
+
+const deriveStatus = (messages: JsonLdValidationMessage[]): JsonLdSchema["status"] => {
+    if (messages.some((m) => m.severity === "error"))
+        return "error";
+
+    if (messages.some((m) => m.severity === "warning"))
+        return "warning";
+
+    if (messages.some((m) => m.severity === "suggestion"))
+        return "suggestion";
+
+    return "ok";
+};
+
+const processJsonLdNode = (parsed: Record<string, unknown>, index: number, graphIndex?: number, raw?: string): JsonLdSchema => {
+    const messages = validateJsonLd(parsed);
+    const type = String(parsed["@type"] ?? "Unknown");
+    const context = String(parsed["@context"] ?? "");
+
+    return {
+        context,
+        graphIndex,
+        index,
+        messages,
+        parsed,
+        raw: raw ?? JSON.stringify(parsed, null, 2),
+        status: deriveStatus(messages),
+        type,
+    };
+};
+
+const readJsonLdSchemas = (): JsonLdSchema[] => {
+    const scripts = document.querySelectorAll("script[type=\"application/ld+json\"]");
+    const schemas: JsonLdSchema[] = [];
+
+    scripts.forEach((script, scriptIndex) => {
+        let content = (script.textContent ?? "").trim();
+
+        // Strip JS and XML CDATA wrappers
+        content = content.replace(/^\/\/<!\[CDATA\[/, "").replace(/\/\/\]\]>$/, "");
+        content = content.replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
+
+        try {
+            const parsed = JSON.parse(content) as Record<string, unknown>;
+
+            if (isNonEmptyArray(parsed["@graph"])) {
+                const parentContext = String(parsed["@context"] ?? "");
+
+                (parsed["@graph"] as Record<string, unknown>[]).forEach((item, graphIndex) => {
+                    const enriched = { "@context": item["@context"] ?? parentContext, ...item };
+
+                    schemas.push(processJsonLdNode(enriched, scriptIndex, graphIndex, undefined));
+                });
+            } else {
+                schemas.push(processJsonLdNode(parsed, scriptIndex, undefined, content));
+            }
+        } catch {
+            schemas.push({
+                context: "",
+                index: scriptIndex,
+                messages: [{ message: "Could not parse JSON content", property: "", severity: "error" }],
+                parsed: {},
+                raw: content,
+                status: "error",
+                type: "Invalid JSON",
+            });
+        }
+    });
+
+    return schemas;
+};
+
 // ─── Tag definitions (for Missing tab) ────────────────────────────────────────
 
 interface TagDefinition {
@@ -405,16 +775,111 @@ const MissingTagCard = ({ def }: { def: TagDefinition }): ComponentChildren => (
     </div>
 );
 
+// ─── JSON-LD schema card ──────────────────────────────────────────────────────
+
+const SEVERITY_CONFIG = {
+    error: { color: "text-destructive", icon: "✖", label: "Error" },
+    ok: { color: "text-success", icon: "✔", label: "OK" },
+    suggestion: { color: "text-primary", icon: "ℹ", label: "Info" },
+    warning: { color: "text-warning", icon: "⚠", label: "Warning" },
+} as const;
+
+const STATUS_BADGE_VARIANT: Record<JsonLdSchema["status"], "destructive" | "outline" | "success" | "warning"> = {
+    error: "destructive",
+    ok: "success",
+    suggestion: "outline",
+    warning: "warning",
+};
+
+const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => {
+    const [open, setOpen] = useState(false);
+    const [showRaw, setShowRaw] = useState(false);
+    const cfg = SEVERITY_CONFIG[schema.status];
+    const label = schema.graphIndex !== undefined ? `Script ${schema.index + 1} @graph[${schema.graphIndex}]` : `Script ${schema.index + 1}`;
+
+    return (
+        <div class="border border-border bg-card overflow-hidden">
+            <button
+                class="w-full flex items-center justify-between gap-3 px-4 py-3 bg-transparent border-0 cursor-pointer text-left hover:bg-foreground/3 transition-colors"
+                onClick={() => setOpen((v) => !v)}
+                type="button"
+            >
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class={cn("text-base shrink-0 leading-none", cfg.color)}>{cfg.icon}</span>
+                    <span class="text-[0.7rem] text-muted-foreground font-mono shrink-0">{label}</span>
+                    <code class="text-[0.75rem] font-mono font-semibold text-foreground truncate">{schema.type}</code>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <Badge variant={STATUS_BADGE_VARIANT[schema.status]}>{cfg.label}</Badge>
+                    <span class={cn("text-muted-foreground text-[0.65rem] transition-transform duration-150", open ? "rotate-90" : "")}>▶</span>
+                </div>
+            </button>
+
+            {open && (
+                <div class="border-t border-border">
+                    {/* Validation messages */}
+                    {schema.messages.length > 0
+                        ? (
+                        <div class="px-4 py-3 space-y-1.5">
+                            {schema.messages.map((msg, i) => {
+                                const msgCfg = SEVERITY_CONFIG[msg.severity];
+
+                                return (
+                                    <div class="flex items-start gap-2 text-[0.72rem]" key={i}>
+                                        <span class={cn("shrink-0 leading-none mt-px", msgCfg.color)}>{msgCfg.icon}</span>
+                                        <div class="min-w-0">
+                                            {msg.property && (
+                                                <code class="text-[0.65rem] font-mono text-muted-foreground mr-1.5">{msg.property}:</code>
+                                            )}
+                                            <span class="text-foreground/80">{msg.message}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        )
+                        : (
+                        <div class="px-4 py-3 flex items-center gap-2 text-[0.72rem] text-success">
+                            <span>✔</span>
+                            <span>No issues found</span>
+                        </div>
+                        )}
+
+                    {/* Raw JSON toggle */}
+                    <div class="border-t border-border/50 px-4 py-2 flex items-center justify-between">
+                        <button
+                            class="text-[0.65rem] text-muted-foreground hover:text-foreground transition-colors bg-transparent border-0 cursor-pointer p-0"
+                            onClick={() => setShowRaw((v) => !v)}
+                            type="button"
+                        >
+                            {showRaw ? "Hide" : "Show"} raw JSON
+                        </button>
+                        <CopyButton text={schema.raw} />
+                    </div>
+
+                    {showRaw && (
+                        <pre class="text-[0.65rem] font-mono leading-relaxed bg-foreground/3 border-t border-border/50 px-4 py-3 overflow-x-auto max-h-60 text-muted-foreground whitespace-pre-wrap break-all m-0">
+                            {schema.raw}
+                        </pre>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
-type SeoTab = "missing" | "preview" | "tags";
+type SeoTab = "jsonld" | "missing" | "preview" | "tags";
 
 const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     const [meta, setMeta] = useState<MetaTags | undefined>(undefined);
+    const [schemas, setSchemas] = useState<JsonLdSchema[]>([]);
     const [activeTab, setActiveTab] = useState<SeoTab>("preview");
 
     const refresh = (): void => {
         setMeta(readMetaTags());
+        setSchemas(readJsonLdSchemas());
     };
 
     useEffect(() => {
@@ -437,6 +902,9 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     const missingRequired = TAG_DEFINITIONS.filter((d) => d.priority === "required" && !(meta[d.key] as string));
     const missingRecommended = TAG_DEFINITIONS.filter((d) => d.priority === "recommended" && !(meta[d.key] as string));
     const missingTotal = missingRequired.length + missingRecommended.length;
+    const jsonLdErrors = schemas.filter((s) => s.status === "error").length;
+    const jsonLdWarnings = schemas.filter((s) => s.status === "warning").length;
+    const jsonLdBadge = jsonLdErrors > 0 ? jsonLdErrors : jsonLdWarnings > 0 ? jsonLdWarnings : undefined;
 
     // Show article section only when og:type is "article" or any article tag is set
     const showArticle = meta.ogType === "article" || !!(meta.articleAuthor || meta.articlePublishedTime || meta.articleModifiedTime || meta.articleSection);
@@ -446,10 +914,18 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Header */}
             <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border shrink-0">
                 <div class="flex items-center gap-0">
-                    {(["preview", "tags", "missing"] as const).map((tab) => {
-                        const labelMid = tab === "tags" ? "Meta Tags" : "Missing";
-                        const label = tab === "preview" ? "Social Previews" : labelMid;
-                        const badge = tab === "missing" && missingTotal > 0 ? missingTotal : undefined;
+                    {(["preview", "tags", "missing", "jsonld"] as const).map((tab) => {
+                        const LABELS: Record<SeoTab, string> = { jsonld: "Structured Data", missing: "Missing", preview: "Social Previews", tags: "Meta Tags" };
+                        const label = LABELS[tab];
+                        const badge = tab === "missing" && missingTotal > 0
+                            ? missingTotal
+                            : tab === "jsonld" && jsonLdBadge !== undefined
+                                ? jsonLdBadge
+                                : undefined;
+
+                        const badgeVariant = tab === "missing"
+                            ? (missingRequired.length > 0 ? "destructive" : "warning")
+                            : (jsonLdErrors > 0 ? "destructive" : "warning");
 
                         return (
                             <button
@@ -465,7 +941,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                             >
                                 {label}
                                 {badge !== undefined && (
-                                    <Badge class="text-[0.58rem] min-w-[1.1rem] text-center" variant={missingRequired.length > 0 ? "destructive" : "warning"}>
+                                    <Badge class="text-[0.58rem] min-w-[1.1rem] text-center" variant={badgeVariant}>
                                         {badge}
                                     </Badge>
                                 )}
@@ -547,6 +1023,41 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* ── Structured Data ──────────────────────────────────────── */}
+                {activeTab === "jsonld" && (
+                    <div class="p-5 space-y-3">
+                        {schemas.length === 0
+                            ? (
+                            <div class="flex flex-col items-center justify-center py-12 gap-3">
+                                <div class="size-10 border border-border flex items-center justify-center text-muted-foreground/40 text-lg select-none">
+                                    {"{}"}
+                                </div>
+                                <p class="text-[0.8rem] font-medium text-foreground/70">No structured data found</p>
+                                <p class="text-[0.7rem] text-muted-foreground text-center max-w-xs leading-relaxed">
+                                    Add a{" "}
+                                    <code class="font-mono bg-foreground/6 px-1">{"<script type=\"application/ld+json\">"}</code>
+                                    {" "}block to help search engines understand your content.
+                                </p>
+                            </div>
+                            )
+                            : (
+                            <>
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                                        {schemas.length} schema{schemas.length !== 1 ? "s" : ""} detected
+                                    </p>
+                                    {jsonLdErrors > 0 && (
+                                        <span class="text-[0.65rem] text-destructive font-medium">{jsonLdErrors} error{jsonLdErrors !== 1 ? "s" : ""}</span>
+                                    )}
+                                </div>
+                                {schemas.map((schema, i) => (
+                                    <SchemaCard key={i} schema={schema} />
+                                ))}
+                            </>
+                            )}
                     </div>
                 )}
 
