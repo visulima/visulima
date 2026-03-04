@@ -14,7 +14,7 @@ export default app;
 
 if (globalThis.window !== undefined && globalThis.__VISULIMA_DEVTOOLS__) {
     globalThis.__VISULIMA_DEVTOOLS__.registerApp({
-        icon: "<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1.5 11.5l-5-3 5-3v6z\" fill=\"currentColor\"/></svg>",
+        icon: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm1.5 11.5l-5-3 5-3v6z" fill="currentColor"/></svg>',
         id: "svelte-example-app",
         init(canvas) {
             const wrapper = document.createElement("div");

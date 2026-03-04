@@ -64,8 +64,8 @@ export default defineConfig({
     "main": "./src/worker.ts",
     "assets": {
         "directory": "./public",
-        "binding": "ASSETS"
-    }
+        "binding": "ASSETS",
+    },
 }
 ```
 
