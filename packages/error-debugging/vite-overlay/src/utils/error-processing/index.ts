@@ -4,7 +4,7 @@ import type { ViteDevServer } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../../../shared/utils/find-language-based-on-extension";
 import getHighlighter, { transformerCompactLineOptions } from "../../../../../../shared/utils/get-highlighter";
-import type { ErrorProcessingResult, ViteErrorData } from "../../types";
+import type { ErrorProcessingResult, SourceTexts, ViteErrorData } from "../../types";
 import type { ESBuildMessage } from "../esbuild-error";
 import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error";
 import findModuleForPath from "../find-module-for-path";
@@ -499,17 +499,22 @@ const buildExtendedErrorData = async (
             }
         }
 
-        const emptyResult = { compiledSourceText: undefined, originalSourceText: undefined };
-        const compiledTask
-            = !compiledSourceText && compiledModule
-                ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
-                // eslint-disable-next-line promise/no-promise-in-callback
-                : Promise.resolve(emptyResult);
-        const originalTask
-            = !originalSourceText && originalModule
-                ? retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval))
-                // eslint-disable-next-line promise/no-promise-in-callback
-                : Promise.resolve(emptyResult);
+        const emptyResult: SourceTexts = { compiledSourceText: undefined, originalSourceText: undefined };
+
+        // eslint-disable-next-line promise/no-promise-in-callback
+        let compiledTask: Promise<SourceTexts> = Promise.resolve(emptyResult);
+
+        if (!compiledSourceText && compiledModule) {
+            compiledTask = retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval));
+        }
+
+        // eslint-disable-next-line promise/no-promise-in-callback
+        let originalTask: Promise<SourceTexts> = Promise.resolve(emptyResult);
+
+        if (!originalSourceText && originalModule) {
+            originalTask = retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval));
+        }
+
         // eslint-disable-next-line promise/no-promise-in-callback
         const [compiledSourceResult, originalSourceResult] = await Promise.all([compiledTask, originalTask]);
 
