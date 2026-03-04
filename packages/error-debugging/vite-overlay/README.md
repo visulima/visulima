@@ -36,7 +36,7 @@
 
 | Light Mode                       | Dark Mode                      | Solution Mode                         |
 | -------------------------------- | ------------------------------ | ------------------------------------- |
-| ![light](./__assets__/light.png) | ![dark](./__assets__/dark.png) | ![light](./__assets__/light-hint.png) |
+| ![light](./__assets__/light.jpg) | ![dark](./__assets__/dark.jpg) | ![light](./__assets__/hint.jpg) |
 
 ## Features
 

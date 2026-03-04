@@ -486,7 +486,7 @@ const setupHMRHandler = (
             const payload: any = { err: { ...extensionPayload }, type: "error" };
 
             if (extensionPayload.solution) {
-                payload.solutions = extensionPayload.solution;
+                payload.solution = extensionPayload.solution;
             }
 
             const errors = [...extensionPayload.errors];

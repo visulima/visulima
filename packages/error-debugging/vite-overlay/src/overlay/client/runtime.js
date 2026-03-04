@@ -119,6 +119,7 @@ class ErrorOverlay extends HTMLElement {
             errors: error.errors,
             errorType: error.errorType || "server",
             rootPath: error.rootPath || "",
+            solution: error.solution,
         };
 
         this.__v_oPayload = payload;
