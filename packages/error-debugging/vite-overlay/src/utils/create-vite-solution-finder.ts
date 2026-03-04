@@ -4,6 +4,10 @@ import path from "node:path";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { distance } from "fastest-levenshtein";
 
+const FAILED_TO_RESOLVE_IMPORT_RE = /Failed to resolve import ["']([^"']+)["']/;
+const CANNOT_RESOLVE_MODULE_RE = /Cannot resolve module ["']([^"']+)["']/;
+const CANNOT_RESOLVE_RELATIVE_RE = /Cannot resolve ["'](\.\.?\/[^"']*)["']/;
+
 const MAX_SEARCH_DEPTH = 4;
 const MAX_FILES_TO_SEARCH = 1000;
 const MAX_SUGGESTIONS = 5;
@@ -373,8 +377,8 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
             // 1. Import resolution errors with file suggestions
             if (has(message, "Failed to resolve import", "Cannot resolve module")) {
                 // Extract the import path from the error message
-                const importMatch = message.match(/Failed to resolve import ["']([^"']+)["']/);
-                const moduleMatch = message.match(/Cannot resolve module ["']([^"']+)["']/);
+                const importMatch = message.match(FAILED_TO_RESOLVE_IMPORT_RE);
+                const moduleMatch = message.match(CANNOT_RESOLVE_MODULE_RE);
 
                 const importPath = importMatch?.[1] || moduleMatch?.[1];
 
@@ -406,7 +410,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
             // Check relative import issues with file extension
             if (has(message, "Cannot resolve") && (language === "typescript" || language === "javascript")) {
-                const relativeImportMatch = message.match(/Cannot resolve ["'](\.\.?\/[^"']*)["']/);
+                const relativeImportMatch = message.match(CANNOT_RESOLVE_RELATIVE_RE);
 
                 if (relativeImportMatch) {
                     const importPath = relativeImportMatch[1];

@@ -6,7 +6,9 @@ import type { ViteDevServer } from "vite";
 
 const MDX_FILE_PATTERN = /\.mdx$/i;
 const FRAME_LIMIT = 1;
+const MDX_SYNTAX_ERROR_RE = /syntax error/i;
 
+// eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
 const FAILED_LOAD_PATTERN = /Failed to load url\s+(.*?)\s+\(resolved id:/i;
 const GLOB_PATTERN = /glob:\s*"(.+)"\s*\(/i;
 
@@ -81,7 +83,7 @@ const safeReadFile = async (filePath: string): Promise<string | undefined> => {
 const enhanceMdxError = (error: EnhancedError, topFile: string | undefined): void => {
     const fileId = error.id || error.loc?.file || topFile;
 
-    if (fileId && MDX_FILE_PATTERN.test(String(fileId)) && /syntax error/i.test(error.message)) {
+    if (fileId && MDX_FILE_PATTERN.test(String(fileId)) && MDX_SYNTAX_ERROR_RE.test(error.message)) {
         // eslint-disable-next-line no-param-reassign
         error.hint = error.hint || "MDX detected without an appropriate integration. Install and configure the MDX plugin for Vite/your framework.";
     }
@@ -138,7 +140,7 @@ const enhanceFailedLoadError = async (error: EnhancedError, topFile: string | un
 };
 
 /**
- * Enhances glob pattern errors
+ * Enhances glob pattern errors.
  */
 const enhanceGlobError = async (error: EnhancedError, topFile: string | undefined, fileContents: string | undefined): Promise<void> => {
     const globMatch = GLOB_PATTERN.exec(error.message);
@@ -169,8 +171,8 @@ const enhanceGlobError = async (error: EnhancedError, topFile: string | undefine
 
 /**
  * Enhances SSR errors with better stack traces and contextual hints.
- * - Fixes stack traces via Vite's SSR helper
- * - Detects common SSR failure patterns and enriches message/loc
+ * Fixes stack traces via Vite's SSR helper.
+ * Detects common SSR failure patterns and enriches message and loc.
  */
 const enhanceViteSsrError = async (rawError: unknown, server: ViteDevServer): Promise<Error> => {
     const error = createEnhancedError(rawError);

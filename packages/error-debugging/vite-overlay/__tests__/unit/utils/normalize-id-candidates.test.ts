@@ -24,7 +24,9 @@ describe(isHttpUrl, () => {
         expect.assertions(3);
 
         expect(isHttpUrl("")).toBe(false);
+
         expect(isHttpUrl(null as any)).toBe(false);
+
         expect(isHttpUrl(undefined as any)).toBe(false);
     });
 });
@@ -101,6 +103,7 @@ describe(normalizeIdCandidates, () => {
         expect.assertions(3);
 
         expect(() => normalizeIdCandidates(null as any)).not.toThrowError();
+
         expect(() => normalizeIdCandidates(undefined as any)).not.toThrowError();
         expect(normalizeIdCandidates("")).toStrictEqual([]);
     });

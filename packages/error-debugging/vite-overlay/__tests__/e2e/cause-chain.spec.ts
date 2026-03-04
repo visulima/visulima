@@ -13,6 +13,8 @@ import {
     waitForOverlayUpdate,
 } from "./utils/test-helpers";
 
+const FILE_PATH_REGEX = /\.tsx?:\d+/;
+
 test.describe("Cause Chain Error Handling", () => {
     test.beforeEach(async ({ page }) => {
         // Ensure clean state for each test
@@ -62,13 +64,16 @@ test.describe("Cause Chain Error Handling", () => {
         const totalErrors = Number.parseInt(initialNavigation.total || "1", 10);
 
         // Navigate through all errors
-        for (let index = 1; index < totalErrors; index++) {
+        for (let index = 1; index < totalErrors; index += 1) {
+            // eslint-disable-next-line no-await-in-loop
             const beforeNavigation = await getErrorNavigation(page);
 
             expect(beforeNavigation.current).toBe(index.toString());
 
+            // eslint-disable-next-line no-await-in-loop
             await navigateErrors(page, "next");
 
+            // eslint-disable-next-line no-await-in-loop
             const afterNavigation = await getErrorNavigation(page);
 
             expect(afterNavigation.current).toBe((index + 1).toString());
@@ -80,12 +85,14 @@ test.describe("Cause Chain Error Handling", () => {
         expect(lastNavigation.canGoNext).toBe(false);
 
         // Navigate back to first error
-        for (let index = totalErrors; index > 1; index--) {
+        for (let index = totalErrors; index > 1; index -= 1) {
+            // eslint-disable-next-line no-await-in-loop
             await navigateErrors(page, "prev");
 
-            const navigation = await getErrorNavigation(page);
+            // eslint-disable-next-line no-await-in-loop
+            const nav = await getErrorNavigation(page);
 
-            expect(navigation.current).toBe((index - 1).toString());
+            expect(nav.current).toBe((index - 1).toString());
         }
     });
 
@@ -98,21 +105,26 @@ test.describe("Cause Chain Error Handling", () => {
         const totalErrors = Number.parseInt(navigation.total || "1", 10);
 
         // Check each error in the chain
-        for (let index = 1; index <= totalErrors; index++) {
+        for (let index = 1; index <= totalErrors; index += 1) {
             // Navigate to this error if not already there
             if (index > 1) {
-                const navigation = await getErrorNavigation(page);
+                // eslint-disable-next-line no-await-in-loop
+                const nav = await getErrorNavigation(page);
 
-                if (navigation.canGoNext) {
+                if (nav.canGoNext) {
+                    // eslint-disable-next-line no-await-in-loop
                     await navigateErrors(page, "next");
                 }
             }
 
             // Get header and stack trace for detailed checking
+            // eslint-disable-next-line no-await-in-loop
             const header = await getOverlayHeader(page);
+            // eslint-disable-next-line no-await-in-loop
             const stackTrace = await getStackTrace(page);
 
             // Verify this error shows original source locations
+            // eslint-disable-next-line no-await-in-loop
             const verification = await verifyOriginalSourceLocations(page);
 
             if (verification.overallValid !== undefined) {
@@ -121,7 +133,7 @@ test.describe("Cause Chain Error Handling", () => {
 
             // Basic assertions that should pass
             if (header.filePath) {
-                expect(header.filePath).toMatch(/\.tsx?:\d+/);
+                expect(header.filePath).toMatch(FILE_PATH_REGEX);
                 expect(header.filePath).not.toContain("node_modules");
             }
 
@@ -161,7 +173,7 @@ test.describe("Cause Chain Error Handling", () => {
         expect(navigation.canGoNext).toBe(totalErrors > 1);
 
         // Navigate to last error
-        for (let index = 1; index < totalErrors; index++) {
+        for (let index = 1; index < totalErrors; index += 1) {
             // eslint-disable-next-line no-await-in-loop
             await navigateErrors(page, "next");
         }
@@ -180,7 +192,7 @@ test.describe("Cause Chain Error Handling", () => {
         await waitForErrorOverlay(page);
 
         const initialNavigation = await getErrorNavigation(page);
-        const totalErrors = Number.parseInt(initialNavigation.total || "1");
+        const totalErrors = Number.parseInt(initialNavigation.total || "1", 10);
 
         // Only test navigation if we have multiple errors
         if (totalErrors > 1) {
@@ -229,8 +241,7 @@ test.describe("Cause Chain Error Handling", () => {
         expect(totalErrors).toBeGreaterThan(1);
 
         // Navigate to the last cause error to verify we can navigate through them
-        // eslint-disable-next-line no-plusplus
-        for (let index = 1; index < totalErrors; index++) {
+        for (let index = 1; index < totalErrors; index += 1) {
             // eslint-disable-next-line no-await-in-loop
             await navigateErrors(page, "next");
             // eslint-disable-next-line no-await-in-loop
@@ -275,14 +286,17 @@ test.describe("Cause Chain Error Handling", () => {
         const historyTotal = page.locator("#__v_o__history_total");
         const totalText = await historyTotal.textContent();
 
-        expect(Number.parseInt(totalText || "0")).toBeGreaterThan(0);
+        expect(Number.parseInt(totalText || "0", 10)).toBeGreaterThan(0);
 
         // Navigate back to the cause chain error in history by directly calling the navigation method
         await page.evaluate(() => {
-            const overlay = (globalThis as any).__v_o__current;
+            // eslint-disable-next-line no-underscore-dangle
+            const currentOverlay = (globalThis as unknown as Record<string, unknown>).__v_o__current as Record<string, unknown> | undefined;
 
-            if (overlay && typeof overlay._navigateHistoryByScroll === "function") {
-                overlay._navigateHistoryByScroll(-1); // Navigate backward in history
+            // eslint-disable-next-line no-underscore-dangle
+            if (currentOverlay && typeof currentOverlay._navigateHistoryByScroll === "function") {
+                // eslint-disable-next-line no-underscore-dangle
+                (currentOverlay._navigateHistoryByScroll as (delta: number) => void)(-1); // Navigate backward in history
             }
         });
         await waitForOverlayUpdate(page, 500);
@@ -295,18 +309,21 @@ test.describe("Cause Chain Error Handling", () => {
         expect(historyMessage).toBe(originalMessage); // Should match the original cause chain error
 
         const historyNavigation = await getErrorNavigation(page);
-        const historyTotalErrors = Number.parseInt(historyNavigation.total || "1");
+        const historyTotalErrors = Number.parseInt(historyNavigation.total || "1", 10);
 
         expect(historyTotalErrors).toBeGreaterThan(1); // Should still have multiple cause errors
 
         // Test that we can navigate through cause errors in the historical error
-        for (let index = 1; index <= historyTotalErrors; index++) {
+        for (let index = 1; index <= historyTotalErrors; index += 1) {
+            // eslint-disable-next-line no-await-in-loop
             const currentHistoryNav = await getErrorNavigation(page);
 
             expect(currentHistoryNav.current).toBe(index.toString());
 
             // Check that error title and message are correct for each cause error
+            // eslint-disable-next-line no-await-in-loop
             const currentTitle = await getErrorTitle(page);
+            // eslint-disable-next-line no-await-in-loop
             const currentMessage = await getErrorMessage(page);
 
             expect(currentTitle).toBeDefined();
@@ -314,6 +331,7 @@ test.describe("Cause Chain Error Handling", () => {
 
             // Check that code frame is properly displayed for each cause error
             const historyOverlay = page.locator("#__v_o__overlay");
+            // eslint-disable-next-line no-await-in-loop
             const historyOverlayText = await historyOverlay.textContent();
 
             // The key assertion: should not show "No code frame could be generated"
@@ -324,7 +342,9 @@ test.describe("Cause Chain Error Handling", () => {
 
             // Navigate to next cause error if not at the last one
             if (index < historyTotalErrors) {
+                // eslint-disable-next-line no-await-in-loop
                 await navigateErrors(page, "next");
+                // eslint-disable-next-line no-await-in-loop
                 await waitForOverlayUpdate(page, 200);
             }
         }

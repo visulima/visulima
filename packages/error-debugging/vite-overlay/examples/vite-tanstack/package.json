@@ -9,13 +9,13 @@
         "test": "vitest run"
     },
     "dependencies": {
-        "@tailwindcss/vite": "^4.1.18",
-        "@tanstack/react-router": "^1.160.0",
-        "@tanstack/react-router-devtools": "^1.160.0",
-        "@tanstack/router-plugin": "^1.160.0",
+        "@tailwindcss/vite": "^4.2.1",
+        "@tanstack/react-router": "^1.163.3",
+        "@tanstack/react-router-devtools": "^1.163.3",
+        "@tanstack/router-plugin": "^1.164.0",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
-        "tailwindcss": "^4.1.18"
+        "tailwindcss": "^4.2.1"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.1",

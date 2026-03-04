@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 
 import { waitForErrorTestPage } from "./utils/test-helpers";
 
+const RELATIVE_OR_HTTP_URL_REGEX = /^(\.|http:\/\/localhost:5173\/)/;
+const RELATIVE_PATH_REGEX = /^\./;
+
 test.describe("Cause Chain Error URL Consistency", () => {
     test.describe("Error with cause chain should show consistent URLs", () => {
         test("should display both errors with consistent HTTP URLs", async ({ page }) => {
@@ -34,7 +37,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
                 // Should not contain file:// protocol
                 expect(fileText).not.toContain("file://");
                 // Should either be relative path or HTTP URL
-                expect(fileText).toMatch(/^(\.|http:\/\/localhost:5173\/)/);
+                expect(fileText).toMatch(RELATIVE_OR_HTTP_URL_REGEX);
             }
         });
 
@@ -87,7 +90,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             const fileLink = page.locator("#__v_o__filelink");
             const fileText = await fileLink.textContent();
 
-            expect(fileText).toMatch(/^\./);
+            expect(fileText).toMatch(RELATIVE_PATH_REGEX);
         });
 
         test("should handle malformed stack traces gracefully", async ({ page }) => {
@@ -114,7 +117,7 @@ test.describe("Cause Chain Error URL Consistency", () => {
             if (fileText) {
                 expect(fileText).not.toContain("file://");
                 // Should either be relative path starting with . or HTTP URL
-                expect(fileText).toMatch(/^(\.|http:\/\/localhost:5173\/)/);
+                expect(fileText).toMatch(RELATIVE_OR_HTTP_URL_REGEX);
             }
         });
     });

@@ -1,4 +1,3 @@
-/* eslint-disable vitest/require-mock-type-parameters */
 // Mock all dependencies first
 import { readFile } from "node:fs/promises";
 
@@ -53,7 +52,7 @@ vi.mock(import("../../../../../../shared/utils/find-language-based-on-extension"
 vi.mock(import("../../../../../../shared/utils/get-highlighter"));
 vi.mock(import("../../module-finder"));
 vi.mock(import("../../normalize-id-candidates"));
-vi.mock(import("../../position-aligner"));
+vi.mock(import("../../realign-original-position"));
 vi.mock(import("../../source-map-resolver"));
 vi.mock(import("../../stack-trace-utils"), () => {
     return {
@@ -86,7 +85,7 @@ vi.mock(import("../../stack-trace-utils"), () => {
 });
 
 // Mock the vite-error-adapter module
-const mockExtractLocationFromViteError = vi.fn((message, server) => {
+const mockExtractLocationFromViteError = vi.fn((message, _server) => {
     // Handle undefined, null, or non-string message
     if (!message || typeof message !== "string") {
         return null;
@@ -313,7 +312,7 @@ src/components/Test.vue
         it("should handle errors without message", async () => {
             expect.assertions(1);
 
-            const error = new Error();
+            const error = new Error("no message");
 
             error.name = "CustomError";
 
@@ -613,7 +612,7 @@ Final line`);
             const error = new Error("Deep stack");
             let stack = "Error: Deep stack\n";
 
-            for (let index = 0; index < 100; index++) {
+            for (let index = 0; index < 100; index += 1) {
                 stack += `    at method${index} (/path/to/file${index}.js:${index * 10}:${index * 5})\n`;
             }
 
@@ -3047,7 +3046,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(result).toEqual({
+                expect(result).toStrictEqual({
                     compiledSourceText: undefined,
                     originalSourceText: undefined,
                 });
@@ -3176,7 +3175,7 @@ Final line`);
 
                 const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
 
-                expect(result).toEqual({
+                expect(result).toStrictEqual({
                     compiledSourceText: undefined,
                     originalSourceText: undefined,
                 });
@@ -3225,7 +3224,7 @@ Final line`);
     });
 
     describe(remapStackToOriginal, () => {
-        const mockServer = {
+        const remapMockServer = {
             // Mock server object
         } as unknown as ViteDevServer;
 
@@ -3237,7 +3236,7 @@ Final line`);
             it("should return original stack for empty input", async () => {
                 expect.assertions(1);
 
-                const result = await remapStackToOriginal(mockServer, "");
+                const result = await remapStackToOriginal(remapMockServer, "");
 
                 // Empty input returns empty string (early return for well-formed stacks)
                 expect(result).toBe("");
@@ -3247,7 +3246,7 @@ Final line`);
                 expect.assertions(1);
 
                 const stack = "Error: Something went wrong\n    at someFunction (unknown:0:0)";
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expectTypeOf(result).toBeString();
 
@@ -3262,7 +3261,7 @@ Final line`);
     at anonymous (<anonymous>:1:1)
     at Object.eval (eval:1:1)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 // The function processes and formats stack frames
                 expectTypeOf(result).toBeString();
@@ -3275,7 +3274,7 @@ Final line`);
     at Component (/src/App.tsx:0:0)
     at render (/src/App.tsx:-1:-1)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expectTypeOf(result).toBeString();
 
@@ -3288,7 +3287,7 @@ Final line`);
                 const stack = `Error: Test error
     at Component (/src/App.tsx:10:5)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expect(result).toContain("Component");
                 expect(result).toContain("/src/App.tsx:10:5");
@@ -3301,7 +3300,7 @@ Final line`);
     at Component (/src/App.tsx:10:5)
     at render (/src/utils/render.ts:25:12)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expectTypeOf(result).toBeString();
 
@@ -3314,7 +3313,7 @@ Final line`);
                 const stack = `Error: Test error
     at Component (/src/App.tsx:10:5)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expect(result).toContain("/src/App.tsx:10:5"); // Original location preserved
             });
@@ -3325,7 +3324,7 @@ Final line`);
                 const stack = `Error: Test error
     at Component (/src/App.tsx:10:5)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expect(result).toContain("/src/App.tsx:10:5"); // Original location preserved
             });
@@ -3336,7 +3335,7 @@ Final line`);
                 const stack = `Error: Something went wrong
     at Component (/src/App.tsx:10:5)`;
 
-                const result = await remapStackToOriginal(mockServer, stack);
+                const result = await remapStackToOriginal(remapMockServer, stack);
 
                 expectTypeOf(result).toBeString();
 
@@ -3354,7 +3353,7 @@ Final line`);
                     name: "CustomError",
                 };
 
-                const result = await remapStackToOriginal(mockServer, stack, header);
+                const result = await remapStackToOriginal(remapMockServer, stack, header);
 
                 expectTypeOf(result).toBeString();
 
@@ -3371,7 +3370,7 @@ Final line`);
                     message: "Custom message",
                 };
 
-                const result = await remapStackToOriginal(mockServer, stack, header);
+                const result = await remapStackToOriginal(remapMockServer, stack, header);
 
                 expectTypeOf(result).toBeString();
             });

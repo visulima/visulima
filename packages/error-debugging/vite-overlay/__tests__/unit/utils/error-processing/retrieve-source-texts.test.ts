@@ -11,7 +11,7 @@ vi.mock(import("../source-map-utils"));
 
 describe(retrieveSourceTexts, () => {
     const mockServer = {
-        transformRequest: vi.fn(),
+        transformRequest: vi.fn<() => Promise<unknown>>(),
     } as unknown as ViteDevServer;
 
     const mockReadFile = vi.mocked(readFile);
@@ -24,13 +24,13 @@ describe(retrieveSourceTexts, () => {
         it("should return empty sources when module has no relevant data", async () => {
             expect.assertions(1);
 
-            const module_ = {};
+            const moduleItem = {};
             const filePath = "/src/App.tsx";
             const idCandidates = ["/src/App.tsx"];
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 compiledSourceText: undefined,
                 originalSourceText: undefined,
             });
@@ -39,7 +39,7 @@ describe(retrieveSourceTexts, () => {
         it("should handle modules with transform result", async () => {
             expect.assertions(1);
 
-            const module_ = {
+            const moduleItem = {
                 transformResult: {
                     code: "compiled code",
                 },
@@ -47,7 +47,7 @@ describe(retrieveSourceTexts, () => {
             const filePath = "/src/App.tsx";
             const idCandidates = ["/src/App.tsx"];
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(result.compiledSourceText).toBe("compiled code");
         });
@@ -55,7 +55,7 @@ describe(retrieveSourceTexts, () => {
         it("should retrieve sources via transform request", async () => {
             expect.assertions(2);
 
-            const module_ = {
+            const moduleItem = {
                 id: "/src/App.tsx",
             };
             const filePath = "/src/App.tsx";
@@ -67,7 +67,7 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockResolvedValue(mockTransformed);
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/App.tsx");
             expect(result.compiledSourceText).toBe("compiled code");
@@ -76,7 +76,7 @@ describe(retrieveSourceTexts, () => {
         it("should use module URL when id is not available", async () => {
             expect.assertions(2);
 
-            const module_ = {
+            const moduleItem = {
                 url: "/src/components/Button.tsx",
             };
             const filePath = "/src/components/Button.tsx";
@@ -88,7 +88,7 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockResolvedValue(mockTransformed);
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/components/Button.tsx");
             expect(result.compiledSourceText).toBe("button compiled code");
@@ -97,7 +97,7 @@ describe(retrieveSourceTexts, () => {
         it("should use first id candidate as fallback", async () => {
             expect.assertions(2);
 
-            const module_ = {};
+            const moduleItem = {};
             const filePath = "/src/utils/helpers.ts";
             const idCandidates = ["/src/utils/helpers.ts", "/src/utils/index.ts"];
 
@@ -107,7 +107,7 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockResolvedValue(mockTransformed);
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(mockServer.transformRequest).toHaveBeenCalledExactlyOnceWith("/src/utils/helpers.ts");
             expect(result.compiledSourceText).toBe("helpers compiled code");
@@ -116,7 +116,7 @@ describe(retrieveSourceTexts, () => {
         it("should fallback to module transform result code", async () => {
             expect.assertions(1);
 
-            const module_ = {
+            const moduleItem = {
                 transformResult: {
                     code: "transform result code",
                 },
@@ -126,7 +126,7 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockResolvedValue({});
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(result.compiledSourceText).toBe("transform result code");
         });
@@ -134,7 +134,7 @@ describe(retrieveSourceTexts, () => {
         it("should fallback to reading original file directly", async () => {
             expect.assertions(2);
 
-            const module_ = {
+            const moduleItem = {
                 file: "/home/project/src/App.tsx",
             };
             const filePath = "/src/App.tsx";
@@ -142,7 +142,7 @@ describe(retrieveSourceTexts, () => {
 
             mockReadFile.mockResolvedValue("file content from disk");
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(mockReadFile).toHaveBeenCalledExactlyOnceWith("/home/project/src/App.tsx", "utf8");
             expect(result.originalSourceText).toBe("file content from disk");
@@ -151,7 +151,7 @@ describe(retrieveSourceTexts, () => {
         it("should handle transform request errors gracefully", async () => {
             expect.assertions(1);
 
-            const module_ = {
+            const moduleItem = {
                 id: "/src/App.tsx",
             };
             const filePath = "/src/App.tsx";
@@ -159,9 +159,9 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockRejectedValue(new Error("Transform failed"));
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 compiledSourceText: undefined,
                 originalSourceText: undefined,
             });
@@ -170,7 +170,7 @@ describe(retrieveSourceTexts, () => {
         it("should handle file read errors gracefully", async () => {
             expect.assertions(1);
 
-            const module_ = {
+            const moduleItem = {
                 file: "/nonexistent/file.tsx",
             };
             const filePath = "/src/App.tsx";
@@ -178,7 +178,7 @@ describe(retrieveSourceTexts, () => {
 
             mockReadFile.mockRejectedValue(new Error("File not found"));
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             expect(result.originalSourceText).toBeUndefined();
         });
@@ -186,7 +186,7 @@ describe(retrieveSourceTexts, () => {
         it("should prioritize transform result over other sources", async () => {
             expect.assertions(1);
 
-            const module_ = {
+            const moduleItem = {
                 id: "/src/App.tsx",
                 transformResult: {
                     code: "transform compiled code",
@@ -201,7 +201,7 @@ describe(retrieveSourceTexts, () => {
 
             mockServer.transformRequest.mockResolvedValue(mockTransformed);
 
-            const result = await retrieveSourceTexts(mockServer, module_, filePath, idCandidates);
+            const result = await retrieveSourceTexts(mockServer, moduleItem, filePath, idCandidates);
 
             // Implementation prioritizes cached transform result for performance
             expect(result.compiledSourceText).toBe("transform compiled code");

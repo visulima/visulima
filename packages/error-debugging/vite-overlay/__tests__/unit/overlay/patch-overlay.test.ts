@@ -2,6 +2,11 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { patchOverlay } from "../../../src/overlay/patch-overlay";
 
+const BALLOON_GROUP_REGEX = /id=["\\]__v_o__balloon_group["\\]/;
+const BALLOON_POSITION_REGEX = /data-balloon-position=.*top-left/;
+const CUSTOM_ICON_SRC_REGEX = /src=.*\/custom-icon\.svg/;
+const ANY_CHAR_REGEX = /./;
+
 // Mock the dependencies
 vi.mock(import("../../../../../../shared/utils/editors"), () => {
     return {
@@ -73,8 +78,10 @@ class ErrorOverlay {
 
         expect(() => patchOverlay("", true)).not.toThrowError();
         // patchOverlay expects a string, so null/undefined should cause an error
-        expect(() => patchOverlay(null as any, true)).toThrowError();
-        expect(() => patchOverlay(undefined as any, true)).toThrowError();
+
+        expect(() => patchOverlay(null as any, true)).toThrowError(ANY_CHAR_REGEX);
+
+        expect(() => patchOverlay(undefined as any, true)).toThrowError(ANY_CHAR_REGEX);
     });
 
     it("should preserve existing code structure when replacing", () => {
@@ -116,7 +123,7 @@ var ErrorOverlay = class {
             const result = patchOverlay(inputCode, false);
 
             // Check that the balloon group HTML is not present (balloon ID may appear in runtime.js)
-            expect(result).not.toMatch(/id=["\\]__v_o__balloon_group["\\]/);
+            expect(result).not.toMatch(BALLOON_GROUP_REGEX);
         });
 
         it("should include balloon config when provided", () => {
@@ -136,9 +143,9 @@ var ErrorOverlay = class {
             const result = patchOverlay(inputCode, true, balloonConfig);
 
             // Check that the balloon HTML is generated with the position
-            expect(result).toMatch(/data-balloon-position=.*top-left/);
+            expect(result).toMatch(BALLOON_POSITION_REGEX);
             // Check that the icon is included
-            expect(result).toMatch(/src=.*\/custom-icon\.svg/);
+            expect(result).toMatch(CUSTOM_ICON_SRC_REGEX);
         });
 
         it("should exclude balloon when enabled is false", () => {
@@ -152,7 +159,7 @@ var ErrorOverlay = class {
             const result = patchOverlay(inputCode, true, balloonConfig);
 
             // Check that the balloon group HTML is not present (balloon ID may appear in runtime.js)
-            expect(result).not.toMatch(/id=["\\]__v_o__balloon_group["\\]/);
+            expect(result).not.toMatch(BALLOON_GROUP_REGEX);
         });
 
         it("should include custom icon when provided", () => {
@@ -167,7 +174,7 @@ var ErrorOverlay = class {
 
             expect(result).toContain("__v_o__balloon");
             // Check for icon src (quotes may be escaped in JSON-stringified HTML)
-            expect(result).toMatch(/src=.*\/custom-icon\.svg/);
+            expect(result).toMatch(CUSTOM_ICON_SRC_REGEX);
         });
 
         it("should include custom styles when provided", () => {

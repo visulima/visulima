@@ -7,9 +7,19 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable func-names */
 /* eslint-disable no-plusplus */
+/* eslint-disable unused-imports/no-unused-vars */
+/* eslint-disable sonarjs/no-nested-functions */
+/* eslint-disable no-console */
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+
+// Module-scope static regexes
+const RE_LEADING_SLASH = /^\//;
+const RE_HTTP_LINK = /^https?:\/\//i;
+const RE_FS_PREFIX = /^\/@fs\//;
+// eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
+const RE_STACK_AT_FRAME = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/;
 
 /**
  * Custom HTML element that displays error overlays in the browser.
@@ -247,7 +257,7 @@ class ErrorOverlay extends HTMLElement {
      * @private
      * @param {Element} element - The element to add the listener to
      * @param {string} event - The event type
-     * @param {Function} handler - The event handler
+     * @param {(event: Event) => void} handler - The event handler
      * @param {object} options - Event listener options
      */
     _addEventListener(element, event, handler, options = {}) {
@@ -343,7 +353,7 @@ class ErrorOverlay extends HTMLElement {
         const rootPath = this.__v_oPayload?.rootPath || "";
 
         if (rootPath && filePath.startsWith(rootPath)) {
-            return filePath.slice(rootPath.length).replace(/^\//, "");
+            return filePath.slice(rootPath.length).replace(RE_LEADING_SLASH, "");
         }
 
         return filePath;
@@ -378,68 +388,6 @@ class ErrorOverlay extends HTMLElement {
             hideElement("#__v_o__body_loader");
             showElement("#__v_o__overlay");
         }, ErrorOverlay.LOADING_DELAY);
-    }
-
-    /**
-     * Updates the balloon count to show the total number of errors in history.
-     * @private
-     * @param {boolean} animate - Whether to animate the count change
-     */
-    _updateBalloonCount(animate = false) {
-        const { balloonCount, balloonText, balloonGroup } = this.__elements || {};
-
-        if (!balloonCount) {
-            return;
-        }
-
-        const totalErrors = this.__v_oHistory.length;
-        const currentNum = Number.parseInt(balloonCount.style.getPropertyValue("--num") || "0", 10);
-
-        // Animate if count increased and animation is requested
-        if (animate && totalErrors > currentNum && currentNum > 0) {
-            // Set start and end values for animation
-            balloonCount.style.setProperty("--num-start", currentNum.toString());
-            balloonCount.style.setProperty("--num-end", totalErrors.toString());
-
-            // Remove animation class to reset
-            balloonCount.classList.remove("animate-count-up");
-
-            // Force reflow to ensure animation restarts
-            void balloonCount.offsetWidth;
-
-            // Trigger animation
-            balloonCount.classList.add("animate-count-up");
-
-            // Clean up after animation completes
-            balloonCount.addEventListener(
-                "animationend",
-                () => {
-                    balloonCount.style.setProperty("--num", totalErrors.toString());
-                    balloonCount.style.removeProperty("--num-start");
-                    balloonCount.style.removeProperty("--num-end");
-                    balloonCount.classList.remove("animate-count-up");
-                },
-                { once: true },
-            );
-        } else {
-            // No animation, just update the number directly
-            balloonCount.style.setProperty("--num", totalErrors.toString());
-        }
-
-        if (balloonText) {
-            balloonText.textContent = totalErrors === 1 ? "Error" : "Errors";
-        }
-
-        // Show balloon if there are errors and it's not dismissed
-        if (balloonGroup) {
-            if (totalErrors > 0 && !this.__v_oBalloonDismissed) {
-                balloonGroup.classList.add("inline-flex");
-                balloonGroup.classList.remove("hidden");
-            } else {
-                balloonGroup.classList.remove("inline-flex");
-                balloonGroup.classList.add("hidden");
-            }
-        }
     }
 
     /**
@@ -590,21 +538,25 @@ class ErrorOverlay extends HTMLElement {
      * @private
      */
     _initializeFocusTrap() {
-        const FOCUSABLE_SELECTORS = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const FOCUSABLE_SELECTORS
+            = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])";
 
         this._addEventListener(this.root, "keydown", (event) => {
-            if (event.key !== "Tab") return;
+            if (event.key !== "Tab")
+                return;
 
             const root = this.__elements?.root;
 
-            if (!root || root.classList.contains("hidden")) return;
+            if (!root || root.classList.contains("hidden"))
+                return;
 
-            const focusable = Array.from(this.root.querySelectorAll(FOCUSABLE_SELECTORS));
+            const focusable = [...this.root.querySelectorAll(FOCUSABLE_SELECTORS)];
 
-            if (focusable.length === 0) return;
+            if (focusable.length === 0)
+                return;
 
             const first = focusable[0];
-            const last = focusable[focusable.length - 1];
+            const last = focusable.at(-1);
             const active = this.root.activeElement;
 
             if (event.shiftKey) {
@@ -683,7 +635,7 @@ class ErrorOverlay extends HTMLElement {
                     const column = currentError && currentError.originalFileColumn;
 
                     if (fullPath) {
-                        const isHttpLink = /^https?:\/\//i.test(fullPath);
+                        const isHttpLink = RE_HTTP_LINK.test(fullPath);
                         let displayPath = fullPath;
 
                         if (!isHttpLink && this.__v_oPayload.rootPath && fullPath.startsWith(this.__v_oPayload.rootPath)) {
@@ -694,7 +646,10 @@ class ErrorOverlay extends HTMLElement {
                             }
                         }
 
-                        fileElement.textContent = isHttpLink ? fullPath : `.${displayPath}${line ? `:${line}` : ""}`;
+                        const linesSuffix = line ? `:${line}` : "";
+
+                        fileElement.textContent = isHttpLink ? fullPath : `.${displayPath}${linesSuffix}`;
+
                         const editor = localStorage.getItem("__v-o__editor");
 
                         // Remove any existing event listeners
@@ -747,20 +702,20 @@ class ErrorOverlay extends HTMLElement {
                             .replaceAll(">", "&gt;");
 
                     const normalizePath = (path) => {
-                        if (/^https?:\/\//i.test(path)) {
+                        if (RE_HTTP_LINK.test(path)) {
                             const u = new URL(path);
 
                             path = u.pathname || "";
                         }
 
                         path = decodeURIComponent(path);
-                        path = String(path || "").replace(/^\/@fs\//, "/");
+                        path = String(path || "").replace(RE_FS_PREFIX, "/");
 
                         return path;
                     };
 
                     const fmt = (line) => {
-                        const m = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/.exec(line);
+                        const m = RE_STACK_AT_FRAME.exec(line);
 
                         if (!m) {
                             return `<div class="frame">${escape(line)}</div>`;
@@ -776,7 +731,10 @@ class ErrorOverlay extends HTMLElement {
 
                         return `<div class="frame"><span class="muted">at</span> ${functionHtml}<button type="button" class="stack-link text-left underline bg-transparent border-none cursor-pointer text-[var(--ono-v-text)] hover:text-[var(--ono-v-text-muted)]" data-file="${escape(displayPath)}" data-line="${ln}" data-column="${col}">${escape(display)}</button></div>`;
                     };
-                    const html = stackText.split("\n").map(fmt).join("");
+                    const html = stackText
+                        .split("\n")
+                        .map((l) => fmt(l))
+                        .join("");
 
                     stackElement.innerHTML = html;
                     stackElement.querySelectorAll(".stack-link").forEach((button) => {
@@ -898,11 +856,8 @@ class ErrorOverlay extends HTMLElement {
                     renderCode("original");
                     updateRawStack("original");
 
-                    if (originalButton)
-                        originalButton.classList.add("active");
-
-                    if (compiledButton)
-                        compiledButton.classList.remove("active");
+                    originalButton.classList.add("active");
+                    compiledButton?.classList.remove("active");
                 });
             }
 
@@ -915,11 +870,8 @@ class ErrorOverlay extends HTMLElement {
                     renderCode("compiled");
                     updateRawStack("compiled");
 
-                    if (compiledButton)
-                        compiledButton.classList.add("active");
-
-                    if (originalButton)
-                        originalButton.classList.remove("active");
+                    compiledButton.classList.add("active");
+                    originalButton?.classList.remove("active");
                 });
             }
         };
@@ -1357,13 +1309,6 @@ class ErrorOverlay extends HTMLElement {
         }
     }
 
-    /**
-     * Saves balloon state and position to localStorage
-     * @private
-     * @param {string} key - The state key ('overlay' or 'position')
-     * @param {string} value - The state value
-     */
-
     _saveBalloonState(key, value) {
         try {
             const item = localStorage.getItem("__v-o__balloon");
@@ -1376,6 +1321,13 @@ class ErrorOverlay extends HTMLElement {
             // Fail silently if localStorage is not available
         }
     }
+
+    /**
+     * Saves balloon state and position to localStorage
+     * @private
+     * @param {string} key - The state key ('overlay' or 'position')
+     * @param {string} value - The state value
+     */
 
     /**
      * Toggles the history mode on/off.
@@ -1438,6 +1390,69 @@ class ErrorOverlay extends HTMLElement {
 
             if (timeElement) {
                 timeElement.classList.add("hidden");
+            }
+        }
+    }
+
+    /**
+     * Updates the balloon count to show the total number of errors in history.
+     * @private
+     * @param {boolean} animate - Whether to animate the count change
+     */
+    _updateBalloonCount(animate = false) {
+        const { balloonCount, balloonGroup, balloonText } = this.__elements || {};
+
+        if (!balloonCount) {
+            return;
+        }
+
+        const totalErrors = this.__v_oHistory.length;
+        const currentNumber = Number.parseInt(balloonCount.style.getPropertyValue("--num") || "0", 10);
+
+        // Animate if count increased and animation is requested
+        if (animate && totalErrors > currentNumber && currentNumber > 0) {
+            // Set start and end values for animation
+            balloonCount.style.setProperty("--num-start", currentNumber.toString());
+            balloonCount.style.setProperty("--num-end", totalErrors.toString());
+
+            // Remove animation class to reset
+            balloonCount.classList.remove("animate-count-up");
+
+            // Force reflow to ensure animation restarts
+            // eslint-disable-next-line no-void, sonarjs/void-use
+            void balloonCount.offsetWidth;
+
+            // Trigger animation
+            balloonCount.classList.add("animate-count-up");
+
+            // Clean up after animation completes
+            balloonCount.addEventListener(
+                "animationend",
+                () => {
+                    balloonCount.style.setProperty("--num", totalErrors.toString());
+                    balloonCount.style.removeProperty("--num-start");
+                    balloonCount.style.removeProperty("--num-end");
+                    balloonCount.classList.remove("animate-count-up");
+                },
+                { once: true },
+            );
+        } else {
+            // No animation, just update the number directly
+            balloonCount.style.setProperty("--num", totalErrors.toString());
+        }
+
+        if (balloonText) {
+            balloonText.textContent = totalErrors === 1 ? "Error" : "Errors";
+        }
+
+        // Show balloon if there are errors and it's not dismissed
+        if (balloonGroup) {
+            if (totalErrors > 0 && !this.__v_oBalloonDismissed) {
+                balloonGroup.classList.add("inline-flex");
+                balloonGroup.classList.remove("hidden");
+            } else {
+                balloonGroup.classList.remove("inline-flex");
+                balloonGroup.classList.add("hidden");
             }
         }
     }

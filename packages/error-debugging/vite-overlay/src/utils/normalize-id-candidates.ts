@@ -1,11 +1,12 @@
 const HTTP_URL_REGEX = /^https?:\/\//;
+const FS_PREFIX_RE = /^\/@fs\//;
 
 const generateUrlCandidates = (urlString: string): string[] => {
     const url = new URL(urlString);
     const { pathname } = url;
     const search = url.search || "";
 
-    const candidates = [pathname + search, pathname, pathname.replace(/^\/@fs\//, ""), decodeURIComponent(pathname + search), decodeURIComponent(pathname)];
+    const candidates = [pathname + search, pathname, pathname.replace(FS_PREFIX_RE, ""), decodeURIComponent(pathname + search), decodeURIComponent(pathname)];
 
     return [...new Set(candidates)].filter(Boolean);
 };
@@ -37,6 +38,7 @@ export const normalizeIdCandidates = (filePath: string): string[] => {
 
         return [...new Set(candidates)].filter(Boolean);
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn(`Failed to normalize path "${filePath}":`, error);
 
         return [];

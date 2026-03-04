@@ -14,7 +14,7 @@ const ERROR_CONSTRUCTOR_PATTERNS = [
 
 /**
  * Escapes special regex characters in a string.
- * @param str The string to escape
+ * @param string_ The string to escape
  * @returns The escaped string safe for use in regex
  */
 const escapeRegex = (string_: string): string => string_.replaceAll(REGEX_SPECIAL_CHARS_REGEX, String.raw`\$&`);
@@ -89,18 +89,22 @@ const checkTemplateLiteralMatch = (line: string, targetMessage: string): boolean
 // Dynamic error patterns for extracting specific information
 const DYNAMIC_ERROR_PATTERNS = [
     /Failed to resolve import ["']([^"']+)["'](?:\s+from ["']([^"']+)["'])?/,
+    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
     /(.+?)\s+from line \d+/,
+    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
     /(.+?)\s+is not defined/,
+    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
     /(.+?)\s+is not a function/,
+    // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
     /Cannot read properties of (.+?)\s+\(reading (.+?)\)/,
 ] as const;
 
 /**
  * Finds dynamic error patterns and extracts relevant information.
  * @param errorMessage The error message to analyze
- * @returns The match result if found, null otherwise
+ * @returns The match result if found, undefined otherwise
  */
-const findDynamicErrorMatch = (errorMessage: string): RegExpMatchArray | null => {
+const findDynamicErrorMatch = (errorMessage: string): RegExpMatchArray | undefined => {
     for (const pattern of DYNAMIC_ERROR_PATTERNS) {
         const match = errorMessage.match(pattern);
 
@@ -109,17 +113,17 @@ const findDynamicErrorMatch = (errorMessage: string): RegExpMatchArray | null =>
         }
     }
 
-    return null;
+    return undefined;
 };
 
 /**
  * Finds the best error constructor pattern match in a line.
  * @param line The line to search in
- * @returns Object with match details or null if not found
+ * @returns Object with match details or undefined if not found
  */
 const findBestErrorConstructor = (line: string) => {
-    let bestMatch: RegExpMatchArray | null = null;
-    let bestPattern: RegExp | null = null;
+    let bestMatch: RegExpMatchArray | undefined;
+    let bestPattern: RegExp | undefined;
 
     for (const pattern of ERROR_CONSTRUCTOR_PATTERNS) {
         const match = line.match(pattern);
@@ -143,7 +147,7 @@ const findBestErrorConstructor = (line: string) => {
  * @returns The calculated column position
  */
 const calculateActualColumn = (match: RegExpMatchArray, pattern: RegExp): number => {
-    let actualColumn = match.index!;
+    let actualColumn = match.index ?? 0;
 
     if (pattern.source.includes("throw new") && match[0].startsWith("throw new")) {
         const newIndex = match[0].indexOf("new");
@@ -161,11 +165,11 @@ const calculateActualColumn = (match: RegExpMatchArray, pattern: RegExp): number
  * @param sourceCode The source code to search in
  * @param errorMessage The error message to locate
  * @param occurrenceIndex The index of occurrence to find (default: 0)
- * @returns The line and column location of the error, or null if not found
+ * @returns The line and column location of the error, or undefined if not found
  */
-const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurrenceIndex: number = 0): { column: number; line: number } | null => {
+const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurrenceIndex: number = 0): { column: number; line: number } | undefined => {
     if (!sourceCode || !errorMessage) {
-        return null;
+        return undefined;
     }
 
     const lines = sourceCode.split("\n");
@@ -174,29 +178,29 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
 
     /**
      * Processes lines with error constructors to find the error location.
-     * @param lines Array of source code lines
-     * @param errorMessage The error message to find
-     * @param occurrenceIndex Which occurrence to find
-     * @returns The location if found, null otherwise
+     * @param sourceLines Array of source code lines
+     * @param targetMessage The error message to find
+     * @param targetOccurrenceIndex Which occurrence to find
+     * @returns The location if found, undefined otherwise
      */
-    const processErrorConstructorLines = (lines: string[], errorMessage: string, occurrenceIndex: number) => {
+    const processErrorConstructorLines = (sourceLines: string[], targetMessage: string, targetOccurrenceIndex: number) => {
         let foundCount = 0;
 
-        for (const [lineIndex, line] of lines.entries()) {
+        for (const [lineIndex, line] of sourceLines.entries()) {
             if (!line) {
                 continue;
             }
 
-            const hasErrorMessage = line.includes(errorMessage) || checkTemplateLiteralMatch(line, errorMessage);
+            const hasErrorMessage = line.includes(targetMessage) || checkTemplateLiteralMatch(line, targetMessage);
             const hasErrorConstructor = ERROR_CONSTRUCTOR_PATTERNS.some((pattern) => pattern.test(line));
 
             if (hasErrorMessage && hasErrorConstructor) {
                 const { bestMatch, bestPattern } = findBestErrorConstructor(line);
 
                 if (bestMatch && bestPattern) {
-                    foundCount++;
+                    foundCount += 1;
 
-                    if (foundCount > occurrenceIndex) {
+                    if (foundCount > targetOccurrenceIndex) {
                         return {
                             column: calculateActualColumn(bestMatch, bestPattern),
                             line: lineIndex + 1,
@@ -206,7 +210,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
             }
         }
 
-        return null;
+        return undefined;
     };
 
     // First pass: Look for lines with both error message and constructor
@@ -218,13 +222,13 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
 
     /**
      * Adds specific patterns based on dynamic error match.
-     * @param dynamicMatch The dynamic error match result
-     * @param errorMessage The original error message
-     * @param errorPatterns The array to add patterns to
+     * @param dynMatch The dynamic error match result
+     * @param origMessage The original error message
+     * @param patterns The array to add patterns to
      */
-    const addDynamicPatterns = (dynamicMatch: RegExpMatchArray, errorMessage: string, errorPatterns: string[]) => {
-        if (dynamicMatch[0].includes("Failed to resolve import")) {
-            const importPath = dynamicMatch[1];
+    const addDynamicPatterns = (dynMatch: RegExpMatchArray, origMessage: string, patterns: string[]) => {
+        if (dynMatch[0].includes("Failed to resolve import")) {
+            const importPath = dynMatch[1];
 
             if (!importPath) {
                 return;
@@ -232,35 +236,35 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
 
             const escapedPath = escapeRegex(importPath);
 
-            errorPatterns.unshift(`import.*from ["']${escapedPath}["']`, `import.*["']${escapedPath}["']`, importPath);
-        } else if (dynamicMatch[0].includes("is not defined")) {
-            const variableName = dynamicMatch[1];
+            patterns.unshift(`import.*from ["']${escapedPath}["']`, `import.*["']${escapedPath}["']`, importPath);
+        } else if (dynMatch[0].includes("is not defined")) {
+            const variableName = dynMatch[1];
 
             if (!variableName) {
                 return;
             }
 
-            errorPatterns.unshift(variableName, `{${variableName}}`, `src={${variableName}}`, `${variableName}.`, `=${variableName}`);
-        } else if (dynamicMatch[0].includes("Cannot read properties")) {
-            const objectName = dynamicMatch[1];
-            const propertyName = dynamicMatch[2];
+            patterns.unshift(variableName, `{${variableName}}`, `src={${variableName}}`, `${variableName}.`, `=${variableName}`);
+        } else if (dynMatch[0].includes("Cannot read properties")) {
+            const objectName = dynMatch[1];
+            const propertyName = dynMatch[2];
 
             if (!propertyName) {
                 return;
             }
 
-            errorPatterns.unshift(propertyName, `${objectName}.${propertyName}`, `${objectName}?.${propertyName}`, `${objectName}[${propertyName}]`);
+            patterns.unshift(propertyName, `${objectName}.${propertyName}`, `${objectName}?.${propertyName}`, `${objectName}[${propertyName}]`);
         } else {
-            const baseMessage = dynamicMatch[1];
+            const baseMessage = dynMatch[1];
 
             if (!baseMessage) {
                 return;
             }
 
-            const escapedMessage = escapeRegex(errorMessage);
+            const escapedMessage = escapeRegex(origMessage);
             const escapedBase = escapeRegex(baseMessage);
 
-            errorPatterns.unshift(
+            patterns.unshift(
                 `new Error(\`${escapedBase}`,
                 `throw new Error(\`${escapedBase}`,
                 `new Error("${escapedBase}`,
@@ -284,25 +288,25 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
 
     /**
      * Processes template literal lines for error location.
-     * @param lines Array of source code lines
-     * @param errorMessage The error message to find
-     * @param occurrenceIndex Which occurrence to find
-     * @returns The location if found, null otherwise
+     * @param sourceLines Array of source code lines
+     * @param targetMessage The error message to find
+     * @param targetOccurrenceIndex Which occurrence to find
+     * @returns The location if found, undefined otherwise
      */
-    const processTemplateLiteralLines = (lines: string[], errorMessage: string, occurrenceIndex: number) => {
+    const processTemplateLiteralLines = (sourceLines: string[], targetMessage: string, targetOccurrenceIndex: number) => {
         let foundCount = 0;
 
-        for (const [lineIndex, line] of lines.entries()) {
-            if (!line || !checkTemplateLiteralMatch(line, errorMessage)) {
+        for (const [lineIndex, line] of sourceLines.entries()) {
+            if (!line || !checkTemplateLiteralMatch(line, targetMessage)) {
                 continue;
             }
 
             const { bestMatch, bestPattern } = findBestErrorConstructor(line);
 
             if (bestMatch && bestPattern) {
-                foundCount++;
+                foundCount += 1;
 
-                if (foundCount > occurrenceIndex) {
+                if (foundCount > targetOccurrenceIndex) {
                     return {
                         column: calculateActualColumn(bestMatch, bestPattern),
                         line: lineIndex + 1,
@@ -311,96 +315,96 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
             }
         }
 
-        return null;
+        return undefined;
+    };
+
+    /**
+     * Calculates column position for pattern-based matches.
+     * @param patternIndex The index where the pattern was found in the source line
+     * @param matchedPattern The regex pattern that was matched
+     * @param sourceLine The source line text being analyzed
+     * @param dynMatch Dynamic error match result from template literal processing
+     * @returns The calculated column position
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    const calculatePatternColumn = (patternIndex: number, matchedPattern: string, sourceLine: string, dynMatch: RegExpMatchArray | undefined): number => {
+        if (!dynMatch) {
+            return patternIndex + 1;
+        }
+
+        if (dynMatch[0].includes("Failed to resolve import")) {
+            const importPath = dynMatch[1];
+
+            if (sourceLine.includes(`"${importPath}"`) || sourceLine.includes(`'${importPath}'`)) {
+                const quoteChar = sourceLine.includes(`"${importPath}"`) ? "\"" : "'";
+
+                return sourceLine.indexOf(`${quoteChar}${importPath}${quoteChar}`) + 1;
+            }
+        } else if (dynMatch[0].includes("is not defined")) {
+            const variableName = dynMatch[1];
+
+            if (variableName && matchedPattern === variableName) {
+                return patternIndex + 1;
+            }
+
+            if (variableName && matchedPattern.includes(variableName)) {
+                return patternIndex + matchedPattern.indexOf(variableName) + 1;
+            }
+        } else if (dynMatch[0].includes("Cannot read properties")) {
+            const propertyName = dynMatch[2];
+
+            if (propertyName && matchedPattern.includes(propertyName)) {
+                return patternIndex + matchedPattern.indexOf(propertyName) + 1;
+            }
+        } else if (matchedPattern.includes("new Error(")) {
+            return sourceLine.indexOf("new Error(") + 1;
+        }
+
+        return patternIndex + 1;
     };
 
     /**
      * Processes general pattern matching lines.
-     * @param lines Array of source code lines
-     * @param errorPatterns Array of patterns to search for
-     * @param dynamicMatch Dynamic error match result
-     * @param errorMessage Original error message
-     * @param occurrenceIndex Which occurrence to find
-     * @returns The location if found, null otherwise
+     * @param sourceLines Array of source code lines
+     * @param patternsList Array of patterns to search for
+     * @param dynMatch Dynamic error match result
+     * @param targetOccurrenceIndex Which occurrence to find
+     * @returns The location if found, undefined otherwise
      */
-    const processPatternLines = (lines: string[], errorPatterns: string[], dynamicMatch: RegExpMatchArray | null, occurrenceIndex: number) => {
+    const processPatternLines = (sourceLines: string[], patternsList: string[], dynMatch: RegExpMatchArray | undefined, targetOccurrenceIndex: number) => {
         let foundCount = 0;
 
-        for (const [lineIndex, line] of lines.entries()) {
+        for (const [lineIndex, line] of sourceLines.entries()) {
             if (!line) {
                 continue;
             }
 
             let bestPatternIndex = -1;
-            let bestPattern: string | null = null;
+            let bestMatchedPattern: string | undefined;
 
             // Find the best matching pattern
-            for (const pattern of errorPatterns) {
-                const patternIndex = line.indexOf(pattern);
+            for (const pat of patternsList) {
+                const patternIndex = line.indexOf(pat);
 
                 if (patternIndex !== -1 && (bestPatternIndex === -1 || patternIndex < bestPatternIndex)) {
                     bestPatternIndex = patternIndex;
-                    bestPattern = pattern;
+                    bestMatchedPattern = pat;
                 }
             }
 
-            if (bestPatternIndex !== -1 && bestPattern) {
-                foundCount++;
+            if (bestPatternIndex !== -1 && bestMatchedPattern) {
+                foundCount += 1;
 
-                if (foundCount > occurrenceIndex) {
+                if (foundCount > targetOccurrenceIndex) {
                     return {
-                        column: calculatePatternColumn(bestPatternIndex, bestPattern, line, dynamicMatch),
+                        column: calculatePatternColumn(bestPatternIndex, bestMatchedPattern, line, dynMatch),
                         line: lineIndex + 1,
                     };
                 }
             }
         }
 
-        return null;
-    };
-
-    /**
-     * Calculates column position for pattern-based matches.
-     * @param patternIndex The index where the pattern was found
-     * @param pattern The matched pattern
-     * @param line The source line
-     * @param dynamicMatch Dynamic error match result
-     * @returns The calculated column position
-     */
-    const calculatePatternColumn = (patternIndex: number, pattern: string, line: string, dynamicMatch: RegExpMatchArray | null): number => {
-        if (!dynamicMatch) {
-            return patternIndex + 1;
-        }
-
-        if (dynamicMatch[0].includes("Failed to resolve import")) {
-            const importPath = dynamicMatch[1];
-
-            if (line.includes(`"${importPath}"`) || line.includes(`'${importPath}'`)) {
-                const quoteChar = line.includes(`"${importPath}"`) ? "\"" : "'";
-
-                return line.indexOf(`${quoteChar}${importPath}${quoteChar}`) + 1;
-            }
-        } else if (dynamicMatch[0].includes("is not defined")) {
-            const variableName = dynamicMatch[1];
-
-            if (variableName && pattern === variableName) {
-                return patternIndex + 1;
-            }
-
-            if (variableName && pattern.includes(variableName)) {
-                return patternIndex + pattern.indexOf(variableName) + 1;
-            }
-        } else if (dynamicMatch[0].includes("Cannot read properties")) {
-            const propertyName = dynamicMatch[2];
-
-            if (propertyName && pattern.includes(propertyName)) {
-                return patternIndex + pattern.indexOf(propertyName) + 1;
-            }
-        } else if (pattern.includes("new Error(")) {
-            return line.indexOf("new Error(") + 1;
-        }
-
-        return patternIndex + 1;
+        return undefined;
     };
 
     // Second pass: Look for template literal matches

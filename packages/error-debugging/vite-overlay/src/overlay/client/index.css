@@ -47,69 +47,103 @@
     --tw-contrast: initial: ;
 }
 
-/* ono Theme Color Variables - Available for use in Tailwind classes */
+/* ─── Brand palette ─────────────────────────────────────────────────────── */
 :host {
-    --ono-v-white-smoke: #f5f5f5;
-    --ono-v-red-orange: #ff4628;
-    --ono-v-charcoal-black: #202020;
-
-    /* Semantic tokens for a cleaner, modern UI */
-    --ono-v-bg: var(--ono-v-white-smoke);
-    --ono-v-surface: #ffffff;
-    --ono-v-surface-muted: #fafafa;
-    --ono-v-border: rgba(185, 200, 215, 0.5);
-    --ono-v-hover-overlay: rgba(32, 32, 32, 0.05);
-
-    --ono-v-success: #2ea043;
-    --ono-v-success-bg: rgb(214, 238, 209);
-    /* Neutral/chip tokens */
-    --ono-v-neutral: #6e7681;
-    --ono-v-neutral-bg: rgba(110, 118, 129, 0.18);
-    --ono-v-chip-bg: rgba(110, 118, 129, 0.14);
-    --ono-v-chip-text: var(--ono-v-text);
-
-    --ono-v-radius-md: 0.5rem;
-    --ono-v-radius-lg: 0.75rem;
-    --ono-v-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
-    --ono-v-elevation-2: 0 10px 25px -5px rgba(32, 32, 32, 0.1), 0 8px 10px -6px rgba(32, 32, 32, 0.1);
-
-    /* Accessible text/link tokens */
-    --ono-v-text: #111827; /* gray-900 */
-    --ono-v-text-muted: #374151; /* gray-700 */
-    --ono-v-link: #c4311d; /* slightly darker red-orange for contrast */
-    --ono-v-muted-on-surface: #374151; /* alias for convenience */
-    --ono-v-on-accent: #ffffff; /* text on red-orange */
-    --ono-v-dialog-border-width: 1px;
-    --ono-v-dialog-radius: 12px;
-    --ono-v-dialog-max-width: 960px;
-    --ono-v-dialog-row-padding: 16px;
-    --ono-v-dialog-padding: 12px;
-    --ono-v-dialog-notch-height: 42px;
+    --brand-violet: #7c3aed;
+    --brand-violet-light: #c4b5fd;
+    --brand-white: #ffffff;
+    --brand-frost: #f2f2f2;
+    --brand-silver: #d8d8d8;
+    --brand-graphite: #6b6b6b;
+    --brand-iron: #3c3c3c;
+    --brand-charcoal: #212121;
+    --brand-black: #000000;
 }
 
-/* Dark mode semantic mapping */
+/* ─── Design tokens — light mode (identical to dev-toolbar) ─────────────── */
+:host {
+    /* Core zinc + violet palette */
+    --color-background: #f2f2f2; /* brand-frost */
+    --color-foreground: #18181b; /* zinc-900 */
+    --color-card: #ffffff;
+    --color-accent: #e4e4e7; /* zinc-200 — sidebar/header chrome */
+    --color-muted: #e4e4e7; /* zinc-200 */
+    --color-muted-foreground: #52525b; /* zinc-600 */
+    --color-primary: #7c3aed; /* violet-600 */
+    --color-primary-foreground: #ffffff;
+    --color-border: #d4d4d8; /* zinc-300 */
+    --color-ring: #71717a; /* zinc-500 */
+    --color-destructive: oklch(0.55 0.22 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-success: oklch(0.48 0.18 155);
+    --color-success-foreground: oklch(0.38 0.17 155);
+    --color-warning: oklch(0.58 0.18 65);
+    --color-info: oklch(0.45 0.2 240);
+
+    /* Semantic aliases — ono-v-* mapped to dev-toolbar palette */
+    --ono-v-bg: var(--color-background);
+    --ono-v-surface: var(--color-card);
+    --ono-v-surface-muted: var(--color-accent); /* header/footer chrome */
+    --ono-v-border: var(--color-border);
+    --ono-v-text: var(--color-foreground);
+    --ono-v-text-muted: var(--color-muted-foreground);
+    --ono-v-primary: var(--color-primary);
+    --ono-v-red-orange: var(--color-destructive); /* error accent — kept for JS querySelector compat */
+    --ono-v-link: var(--color-primary);
+    --ono-v-chip-bg: var(--color-muted);
+    --ono-v-chip-text: var(--color-foreground);
+    --ono-v-hover-overlay: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+    --ono-v-on-accent: var(--color-primary-foreground);
+    --ono-v-neutral: var(--color-muted-foreground);
+    --ono-v-neutral-bg: var(--color-muted);
+    --ono-v-success: var(--color-success);
+    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+/* ─── Dark mode — layered zinc-950 palette, identical to dev-toolbar ────── */
 .dark {
-    --ono-v-bg: #161b22;
-    --ono-v-surface: #0d1117;
-    --ono-v-surface-muted: #0f141b;
-    --ono-v-border: rgba(48, 54, 61, 0.6);
-    --ono-v-text: #c9d1d9; /* github dark fg */
-    --ono-v-text-muted: #8b949e; /* github dark muted fg */
-    --ono-v-link: #ff6a52; /* keep ono accent */
-    --ono-v-muted-on-surface: #8b949e;
-    --ono-v-hover-overlay: rgba(240, 246, 252, 0.06);
-    --ono-v-on-accent: #ffffff;
+    --color-background: #212121; /* zinc-950 */
+    --color-foreground: #fafafa; /* zinc-50 */
+    --color-card: #18181b; /* zinc-900 */
+    --color-accent: #18181b; /* zinc-900 — same as card in dark */
+    --color-muted: #27272a; /* zinc-800 */
+    --color-muted-foreground: #a1a1aa; /* zinc-400 */
+    --color-primary: #c4b5fd; /* violet-300 */
+    --color-primary-foreground: #09090b;
+    --color-border: oklch(1 0 0 / 10%); /* white hairline */
+    --color-ring: #71717a;
+    --color-destructive: oklch(0.65 0.2 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-success: oklch(0.65 0.17 155);
+    --color-success-foreground: oklch(0.78 0.15 155);
+    --color-warning: oklch(0.78 0.16 65);
+    --color-info: oklch(0.62 0.2 240);
 
-    --ono-v-success: #2ea043;
-    --ono-v-success-bg: rgba(46, 160, 67, 0.2);
-    /* Neutral/chip tokens for dark */
-    --ono-v-neutral: #6e7681;
-    --ono-v-neutral-bg: rgba(110, 118, 129, 0.25);
-    --ono-v-chip-bg: rgba(110, 118, 129, 0.2);
-    --ono-v-chip-text: var(--ono-v-text);
+    /* ─── Resolve --ono-v-* aliases directly in dark context ──────────────
+     * The aliases on :host are resolved eagerly against :host's own cascade,
+     * so var(--color-card) on :host locks to #ffffff before dark mode fires.
+     * Redeclaring them here forces resolution inside #__v_o__root.dark where
+     * all --color-* are already the dark values above.                       */
+    --ono-v-bg: var(--color-background);
+    --ono-v-surface: var(--color-card);
+    --ono-v-surface-muted: var(--color-accent);
+    --ono-v-border: var(--color-border);
+    --ono-v-text: var(--color-foreground);
+    --ono-v-text-muted: var(--color-muted-foreground);
+    --ono-v-primary: var(--color-primary);
+    --ono-v-red-orange: var(--color-destructive);
+    --ono-v-link: var(--color-primary);
+    --ono-v-chip-bg: var(--color-muted);
+    --ono-v-chip-text: var(--color-foreground);
+    --ono-v-hover-overlay: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    --ono-v-on-accent: var(--color-primary-foreground);
+    --ono-v-neutral: var(--color-muted-foreground);
+    --ono-v-neutral-bg: var(--color-muted);
+    --ono-v-success: var(--color-success);
+    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
 }
 
-/* Respect reduced motion preferences */
+/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -127,43 +161,52 @@
         cursor: pointer;
     }
 
-    body {
-        background-color: var(--ono-v-bg);
+    /* JetBrains Mono → Geist Mono → system monospace — matches dev-toolbar */
+    body,
+    :host {
+        background-color: transparent;
         color: var(--ono-v-text);
+        font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+        font-feature-settings:
+            "kern" 1,
+            "liga" 1,
+            "calt" 1,
+            "zero" 1;
+        font-size: 13px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
     }
+
     pre,
     code {
-        color: var(--ono-v-text);
-    }
-    .text-muted {
-        color: var(--ono-v-text-muted);
+        font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+        font-feature-settings:
+            "kern" 1,
+            "liga" 1,
+            "calt" 1,
+            "zero" 1;
     }
 
     a {
         color: var(--ono-v-link);
     }
+
     a:hover {
         text-decoration: underline;
     }
 
     ::selection {
-        background: color-mix(in srgb, var(--ono-v-red-orange) 20%, transparent);
+        background: color-mix(in srgb, var(--ono-v-primary) 20%, transparent);
     }
 
     kbd {
         background-color: var(--ono-v-chip-bg);
         color: var(--ono-v-chip-text);
-        border-radius: 0.375rem;
+        border-radius: 0;
         padding: 0.125rem 0.375rem;
-        font:
-            0.75rem ui-monospace,
-            SFMono-Regular,
-            Menlo,
-            Monaco,
-            Consolas,
-            "Liberation Mono",
-            "Courier New",
-            monospace;
+        font-family: inherit;
+        font-size: 0.75rem;
     }
 
     hr {
@@ -194,7 +237,11 @@
     }
 }
 
-/* Consistent focus outline for interactive elements */
+:host {
+    --ono-v-dialog-max-width: 960px;
+}
+
+/* Focus ring — violet primary matching dev-toolbar */
 button:focus-visible,
 [role="tab"]:focus-visible,
 summary:focus-visible,
@@ -203,20 +250,16 @@ input:focus-visible,
 textarea:focus-visible,
 [data-open-in-editor]:focus-visible,
 .js-clipboard:focus-visible {
-    outline: 2px solid var(--ono-v-red-orange);
+    outline: 1px solid var(--ono-v-primary);
     outline-offset: 2px;
 }
 
-.lucide {
-    @apply size-4;
-}
-
+/* Icon mask system — identical to dev-toolbar */
 .dui {
     display: inline-block;
     width: 1rem;
     height: 1rem;
     background-color: currentColor;
-    /* Explicit mask properties for broader browser support */
     -webkit-mask-image: var(--icon);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-position: center;
@@ -225,13 +268,14 @@ textarea:focus-visible,
     mask-repeat: no-repeat;
     mask-position: center;
     mask-size: contain;
+    flex-shrink: 0;
 }
 
-/* Ensure hidden overrides .dui display */
 .dui.hidden {
     display: none !important;
 }
 
+/* Shiki syntax highlighting */
 .shiki {
     @apply max-h-[300px] max-w-full overflow-auto pb-4 break-words [&_pre]:max-w-full [&_pre]:overflow-auto;
 }
@@ -240,7 +284,6 @@ textarea:focus-visible,
 .dark .shiki span {
     color: var(--shiki-dark) !important;
     background-color: var(--shiki-dark-bg) !important;
-    /* Optional, if you also want font styles */
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
@@ -289,19 +332,28 @@ textarea:focus-visible,
     background-color: currentColor;
 }
 
+/* Skeleton loader — animated sweep matching dev-toolbar pulse */
 .v-o-skeleton {
-    background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 25%, transparent 50%, rgba(0, 0, 0, 0.08) 75%);
+    background: linear-gradient(90deg, var(--color-muted) 25%, color-mix(in srgb, var(--color-muted) 40%, transparent) 50%, var(--color-muted) 75%);
     background-size: 200% 100%;
-}
-.dark .v-o-skeleton {
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, transparent 50%, rgba(255, 255, 255, 0.1) 75%);
+    animation: v-o-skeleton-sweep 1.8s ease-in-out infinite;
 }
 
-/* Accordion arrow animation */
-#__v_o__stacktrace summary svg {
+@keyframes v-o-skeleton-sweep {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Accordion arrow on stack trace summary — rotates the .dui icon */
+#__v_o__stacktrace summary .dui {
     transition: transform 0.2s ease;
 }
-#__v_o__stacktrace[open] summary svg {
+
+#__v_o__stacktrace[open] summary .dui {
     transform: rotate(90deg);
 }
 
@@ -310,80 +362,38 @@ textarea:focus-visible,
     overflow: hidden;
 }
 
-/* Custom scrollbar design for the main overlay */
-#__v_o__root {
-    /* Webkit browsers (Chrome, Safari, Edge) */
+/* Hide balloon while the error panel is visible — it's only useful when dismissed */
+#__v_o__root:not(.hidden) ~ #__v_o__balloon_group {
+    display: none !important;
+}
+
+/* ─── Scrollbar — thin 5px matching dev-toolbar ───────────────────────── */
+.devtools-content-scroll {
     scrollbar-width: thin;
-    scrollbar-color: var(--ono-v-border) transparent;
+    scrollbar-color: var(--color-border) transparent;
 }
 
-/* Webkit scrollbar styling */
-#__v_o__root::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+.devtools-content-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
 }
 
-#__v_o__root::-webkit-scrollbar-track {
-    background: var(--ono-v-surface-muted);
-    border-radius: 4px;
+.devtools-content-scroll::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-#__v_o__root::-webkit-scrollbar-thumb {
-    background: var(--ono-v-border);
-    border-radius: 4px;
-    border: 1px solid var(--ono-v-surface-muted);
+.devtools-content-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
 }
 
-#__v_o__root::-webkit-scrollbar-thumb:hover {
-    background: var(--ono-v-neutral);
+.devtools-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
 }
 
-#__v_o__root::-webkit-scrollbar-thumb:active {
-    background: var(--ono-v-link);
-}
-
-/* Corner where horizontal and vertical scrollbars meet */
-#__v_o__root::-webkit-scrollbar-corner {
-    background: var(--ono-v-surface-muted);
-}
-
-/* Dark mode scrollbar styling */
-.dark #__v_o__root {
-    scrollbar-color: rgba(110, 118, 129, 0.6) transparent;
-}
-
-.dark #__v_o__root::-webkit-scrollbar-track {
-    background: rgba(15, 20, 27, 0.8);
-}
-
-.dark #__v_o__root::-webkit-scrollbar-thumb {
-    background: rgba(110, 118, 129, 0.6);
-    border-color: rgba(15, 20, 27, 0.8);
-}
-
-.dark #__v_o__root::-webkit-scrollbar-thumb:hover {
-    background: rgba(110, 118, 129, 0.6);
-}
-
-.dark #__v_o__root::-webkit-scrollbar-thumb:active {
-    background: var(--ono-v-red-orange);
-}
-
-.dark #__v_o__root::-webkit-scrollbar-corner {
-    background: rgba(15, 20, 27, 0.8);
-}
-
-/* Enable pointer events for scroll navigation */
-#__v_o__root {
-    pointer-events: auto;
-}
-
-/* Prevent text selection during scroll navigation */
+/* History mode grab cursor */
 #__v_o__root.scrolling-history {
     user-select: none;
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     cursor: grab;
 }
 
@@ -391,7 +401,7 @@ textarea:focus-visible,
     cursor: grabbing;
 }
 
-/* Balloon count animation using CSS custom properties and counters */
+/* Balloon count animation — CSS counter trick */
 @property --num {
     syntax: "<integer>";
     initial-value: 0;
@@ -399,15 +409,12 @@ textarea:focus-visible,
 }
 
 #__v_o__balloon_count {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding: 0 0.375rem;
     counter-reset: num var(--num);
+    font-size: 13px;
     font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: white;
 }
 
 #__v_o__balloon_count::after {
@@ -424,5 +431,54 @@ textarea:focus-visible,
     }
     to {
         --num: var(--num-end);
+    }
+}
+
+/* ─── Balloon signal indicator ─────────────────────────────────────────── */
+.v-o-signal-dot {
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    position: relative;
+    flex-shrink: 0;
+    animation: v-o-signal-dot 2.6s ease-in-out infinite;
+}
+
+.v-o-signal-dot::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    animation: v-o-signal-ring 2.6s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes v-o-signal-dot {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    45% {
+        transform: scale(0.65);
+        opacity: 0.4;
+    }
+}
+
+@keyframes v-o-signal-ring {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    65% {
+        transform: scale(2.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(2.8);
+        opacity: 0;
     }
 }

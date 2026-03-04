@@ -2,6 +2,12 @@ import { expect, test } from "@playwright/test";
 
 import { getErrorNavigation, getOverlayHeader, waitForErrorOverlay, waitForErrorTestPage } from "./utils/test-helpers";
 
+const TS_FILE_PATH_REGEX = /\.tsx?:\d+/;
+const VITE_BUILD_DIR_REGEX = /\.vite\//;
+const TSR_SPLIT_REGEX = /tsr-split/;
+const API_FETCH_NETWORK_ERROR_REGEX = /(API|Fetch|Network|error)/i;
+const AT_FUNCTION_NAME_REGEX = /at\s+\w+/;
+
 test.describe("Functional Error Overlay Test", () => {
     test.beforeEach(async ({ page }) => {
         // Start with homepage to test the initial error
@@ -74,11 +80,11 @@ test.describe("Functional Error Overlay Test", () => {
         const header = await getOverlayHeader(page);
 
         // Should show original source path, not compiled
-        expect(header.filePath).toMatch(/\.tsx?:\d+/);
+        expect(header.filePath).toMatch(TS_FILE_PATH_REGEX);
         // Should not contain compiled/bundled paths - check for common compiled indicators
         expect(header.filePath).not.toContain("node_modules");
-        expect(header.filePath).not.toMatch(/\.vite\//); // Should not be in .vite build directory
-        expect(header.filePath).not.toMatch(/tsr-split/); // Should not have Vite's split chunk indicator
+        expect(header.filePath).not.toMatch(VITE_BUILD_DIR_REGEX); // Should not be in .vite build directory
+        expect(header.filePath).not.toMatch(TSR_SPLIT_REGEX); // Should not have Vite's split chunk indicator
     });
 
     test("should be able to close the overlay", async ({ page }) => {
@@ -177,7 +183,7 @@ test.describe("Functional Error Overlay Test", () => {
 
         // Should contain some error message
         expect(headingText?.length).toBeGreaterThan(0);
-        expect(headingText).toMatch(/(API|Fetch|Network|error)/i);
+        expect(headingText).toMatch(API_FETCH_NETWORK_ERROR_REGEX);
     });
 
     test("should handle complex nested error", async ({ page }) => {
@@ -224,8 +230,8 @@ test.describe("Functional Error Overlay Test", () => {
         expect(stackContent).not.toContain("<unknown>:0:0");
 
         // Verify stack trace contains actual file information
-        expect(stackContent).toMatch(/\.tsx?:\d+/);
-        expect(stackContent).toMatch(/at\s+\w+/); // Should have "at functionName" format
+        expect(stackContent).toMatch(TS_FILE_PATH_REGEX);
+        expect(stackContent).toMatch(AT_FUNCTION_NAME_REGEX); // Should have "at functionName" format
 
         // Verify it contains the error function name
         expect(stackContent).toContain("triggerSimpleError");

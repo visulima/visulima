@@ -5,7 +5,7 @@ import type { BalloonConfig } from "../types";
  * Generates the client-side script for error interception and reporting.
  * @param mode The current Vite mode (development/production)
  * @param forwardedConsoleMethods Array of console method names to forward
- * @param balloonConfig Balloon configuration options (optional)
+ * @param _balloonConfig Balloon configuration options (optional)
  * @returns The client-side JavaScript code as a string
  */
 const generateClientScript = (mode: string, forwardedConsoleMethods: string[], _balloonConfig?: BalloonConfig): string => {

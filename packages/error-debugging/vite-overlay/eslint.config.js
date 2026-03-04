@@ -28,4 +28,22 @@ export default createConfig(
             "vitest/require-hook": "off",
         },
     },
+    {
+        files: ["./__tests__/**"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+            "no-secrets/no-secrets": "off",
+            "unicorn/no-null": "off",
+            "vitest/prefer-expect-assertions": "off",
+            "vitest/require-mock-type-parameters": "off",
+        },
+    },
+    {
+        files: ["./__tests__/unit/**"],
+        rules: {
+            "@typescript-eslint/naming-convention": "off",
+            "no-extend-native": "off",
+            "no-underscore-dangle": "off",
+        },
+    },
 );

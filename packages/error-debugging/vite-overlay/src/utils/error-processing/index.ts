@@ -9,7 +9,7 @@ import type { ESBuildMessage } from "../esbuild-error";
 import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error";
 import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
-import realignOriginalPosition from "../position-aligner";
+import realignOriginalPosition from "../realign-original-position";
 import resolveOriginalLocation from "../resolve-original-location";
 import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace";
 import parseVueCompilationError from "./parse-vue-compilation-error";
@@ -19,6 +19,21 @@ import retrieveSourceTexts from "./retrieve-source-texts";
 import shikiDiffTransformer from "./shiki-diff-transformer";
 import addQueryToUrl from "./utils/add-query-to-url";
 import extractQueryFromHttpUrl from "./utils/extract-query-from-http-url";
+
+const HTML_SPECIAL_CHARS_RE = /[&<>"']/g;
+const HTTP_ORIGIN_RE = /^https?:\/\/[^/]+/;
+const LEADING_SLASH_RE = /^\//;
+
+const HTML_ENTITIES: Record<string, string> = {
+    "\"": "&quot;",
+    "&": "&amp;",
+    "'": "&#39;",
+    "<": "&lt;",
+    ">": "&gt;",
+};
+
+// Escape HTML for plain text rendering
+const escapeHtml = (text: string): string => text.replaceAll(HTML_SPECIAL_CHARS_RE, (char) => HTML_ENTITIES[char] || char);
 
 /**
  * Extracts individual errors from an error object, handling ESBuild error arrays.
@@ -50,8 +65,7 @@ const extractIndividualErrors = (error: Error): Error[] => {
 const extractLocationFromStack = (error: Error) => {
     const traces = parseStacktrace(error, { frameLimit: 10 });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const httpTrace = traces?.find((trace: any) => trace?.file?.startsWith("http"));
+    const httpTrace = traces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
     const trace = httpTrace || traces?.[0];
 
     return {
@@ -63,10 +77,10 @@ const extractLocationFromStack = (error: Error) => {
 
 /**
  * Resolves original source location information using source maps and module resolution.
- * @param server The Vite dev server instance
- * @param sourceFilePath The source file path
- * @param compiledFileColumn The column in the compiled file
- * @param compiledFileLine The line in the compiled file
+ * @param server The Vite dev server instance used for module resolution
+ * @param sourceFilePath The original source file path to resolve
+ * @param compiledFileColumn The column number in the compiled output file
+ * @param compiledFileLine The line number in the compiled output file
  * @param vueErrorInfo Optional Vue-specific error information
  * @param errorMessage Optional error message for better resolution
  * @param errorIndex Index of the error in case of multiple errors
@@ -82,6 +96,7 @@ const resolveOriginalLocationInfo = async (
     errorMessage?: string,
     errorIndex: number = 0,
     compiledFilePath?: string,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     const filePath = vueErrorInfo?.originalFilePath || sourceFilePath;
     const fileLine = vueErrorInfo?.line ?? compiledFileLine;
@@ -105,18 +120,19 @@ const resolveOriginalLocationInfo = async (
 
                 resolvedOriginalFilePath = resolvedFilePath.startsWith("/") ? resolvedFilePath : `${serverRoot}/${resolvedFilePath}`;
             } catch {
+                // eslint-disable-next-line no-console
                 console.warn("Failed to parse HTTP URL:", filePath);
             }
         }
 
         const idCandidates = normalizeIdCandidates(resolvedFilePath);
 
-        const module_ = findModuleForPath(server, idCandidates);
+        const foundModule = findModuleForPath(server, idCandidates);
 
-        if (module_) {
+        if (foundModule) {
             try {
                 const mapFilePath = sourceFilePath || compiledFilePath || resolvedFilePath;
-                const resolved = await resolveOriginalLocation(server, module_, mapFilePath, fileLine, fileColumn, errorMessage, errorIndex);
+                const resolved = await resolveOriginalLocation(server, foundModule, mapFilePath, fileLine, fileColumn, errorMessage, errorIndex);
                 const finalFilePath = resolvedOriginalFilePath || resolved.originalFilePath;
 
                 return {
@@ -125,7 +141,8 @@ const resolveOriginalLocationInfo = async (
                     originalFilePath: finalFilePath,
                 };
             } catch {
-                console.warn("⚠️ Source map resolution failed, using estimation");
+                // eslint-disable-next-line no-console
+                console.warn("Source map resolution failed, using estimation");
             }
         }
 
@@ -209,20 +226,6 @@ const generateSyntaxHighlightedFrames = async (
     const hlLangOriginal = findLanguageBasedOnExtension(originalFilePath);
     const hlLangCompiled = findLanguageBasedOnExtension(compiledFilePath) || hlLangOriginal;
 
-    // Escape HTML for plain text rendering
-    const escapeHtml = (text: string): string =>
-        text.replaceAll(/[&<>"']/g, (char) => {
-            const entities: Record<string, string> = {
-                '"': "&quot;",
-                "&": "&amp;",
-                "'": "&#39;",
-                "<": "&lt;",
-                ">": "&gt;",
-            };
-
-            return entities[char] || char;
-        });
-
     // Handle plain text files - skip shiki and return plain HTML
     if (hlLangOriginal === "text" && originalSnippet && originalSnippet.trim()) {
         originalCodeFrameContent = `<pre class="shiki"><code>${escapeHtml(originalSnippet)}</code></pre>`;
@@ -290,8 +293,8 @@ const buildExtendedErrorData = async (
     const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
-    const isReactHydrationError =
-        framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
+    const isReactHydrationError
+        = framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
 
     let causeQuery = "";
 
@@ -299,8 +302,7 @@ const buildExtendedErrorData = async (
         for (const allError of allErrors.slice(1)) {
             const causeStack = allError.stack || "";
             const causeTraces = parseStacktrace({ stack: causeStack } as Error, { frameLimit: 10 });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const causeHttpTrace = causeTraces?.find((trace: any) => trace?.file?.startsWith("http"));
+            const causeHttpTrace = causeTraces?.find((trace: { file?: string }) => trace?.file?.startsWith("http"));
 
             if (causeHttpTrace?.file) {
                 causeQuery = extractQueryFromHttpUrl(causeHttpTrace.file);
@@ -317,9 +319,9 @@ const buildExtendedErrorData = async (
     const originalStack = await remapStackToOriginal(server, cleanedStack, { message: cleanMessage, name: primaryError.name });
 
     // For cause errors, prioritize viteErrorData location over stack extraction
-    let compiledColumn = 0;
-    let compiledFilePath = "";
-    let compiledLine = 0;
+    let compiledColumn: number;
+    let compiledFilePath: string;
+    let compiledLine: number;
 
     if (viteErrorData?.file && viteErrorData?.line && viteErrorData?.column) {
         compiledColumn = viteErrorData.column;
@@ -367,19 +369,6 @@ const buildExtendedErrorData = async (
 
             // Skip shiki for text files
             if (langName === "text") {
-                const escapeHtml = (text: string): string =>
-                    text.replaceAll(/[&<>"']/g, (char) => {
-                        const entities: Record<string, string> = {
-                            '"': "&quot;",
-                            "&": "&amp;",
-                            "'": "&#39;",
-                            "<": "&lt;",
-                            ">": "&gt;",
-                        };
-
-                        return entities[char] || char;
-                    });
-
                 return {
                     errorCount: 1,
                     fixPrompt: aiPrompt({
@@ -436,14 +425,14 @@ const buildExtendedErrorData = async (
 
     if (!viteErrorData?.file && primaryError.stack) {
         const traces = parseStacktrace(primaryError, { frameLimit: 10 });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         const sourceTrace = traces?.find(
-            (trace: any) =>
-                trace?.file &&
-                !trace.file.startsWith("http") &&
-                !trace.file.includes("node_modules") &&
-                !trace.file.includes(".vite") &&
-                trace.file.includes(".tsx"),
+            (trace: { file?: string }) =>
+                trace?.file
+                && !trace.file.startsWith("http")
+                && !trace.file.includes("node_modules")
+                && !trace.file.includes(".vite")
+                && trace.file.includes(".tsx"),
         );
 
         if (sourceTrace?.file) {
@@ -471,6 +460,7 @@ const buildExtendedErrorData = async (
     let compiledSourceText: string | undefined;
 
     try {
+        // eslint-disable-next-line promise/no-promise-in-callback
         const [compiledModule, originalModule] = await Promise.all([
             findModuleForPath(server, normalizeIdCandidates(compiledFilePath)),
             findModuleForPath(server, normalizeIdCandidates(originalFilePath)),
@@ -481,11 +471,11 @@ const buildExtendedErrorData = async (
         }
 
         const compiledFilePathForRetrieval = compiledFilePath.startsWith("http")
-            ? compiledFilePath.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "")
+            ? compiledFilePath.replace(HTTP_ORIGIN_RE, "").replace(LEADING_SLASH_RE, "")
             : compiledFilePath;
 
         const originalFilePathForRetrieval = originalFilePath.startsWith("http")
-            ? originalFilePath.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "")
+            ? originalFilePath.replace(HTTP_ORIGIN_RE, "").replace(LEADING_SLASH_RE, "")
             : originalFilePath;
 
         const moduleForCompiledSource = compiledModule || originalModule;
@@ -498,24 +488,30 @@ const buildExtendedErrorData = async (
             const sourceMap = originalModule.transformResult.map;
 
             try {
-                const originalContent = (sourceMap as any).sourcesContent?.[0];
+                const originalContent = (sourceMap as { sourcesContent?: (string | null)[] }).sourcesContent?.[0];
 
                 if (originalContent) {
                     originalSourceText = originalContent;
                 }
-            } catch (error: any) {
-                console.warn("Failed to get original source from source map:", error);
+            } catch (innerError: unknown) {
+                // eslint-disable-next-line no-console
+                console.warn("Failed to get original source from source map:", innerError);
             }
         }
 
-        const [compiledSourceResult, originalSourceResult] = await Promise.all([
-            !compiledSourceText && compiledModule
+        const emptyResult = { compiledSourceText: undefined, originalSourceText: undefined };
+        const compiledTask
+            = !compiledSourceText && compiledModule
                 ? retrieveSourceTexts(server, compiledModule, compiledFilePathForRetrieval, normalizeIdCandidates(compiledFilePathForRetrieval))
-                : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
-            !originalSourceText && originalModule
+                // eslint-disable-next-line promise/no-promise-in-callback
+                : Promise.resolve(emptyResult);
+        const originalTask
+            = !originalSourceText && originalModule
                 ? retrieveSourceTexts(server, originalModule, originalFilePathForRetrieval, normalizeIdCandidates(originalFilePathForRetrieval))
-                : Promise.resolve({ compiledSourceText: undefined, originalSourceText: undefined }),
-        ]);
+                // eslint-disable-next-line promise/no-promise-in-callback
+                : Promise.resolve(emptyResult);
+        // eslint-disable-next-line promise/no-promise-in-callback
+        const [compiledSourceResult, originalSourceResult] = await Promise.all([compiledTask, originalTask]);
 
         if (!compiledSourceText && compiledSourceResult.compiledSourceText) {
             ({ compiledSourceText } = compiledSourceResult);
@@ -561,21 +557,21 @@ const buildExtendedErrorData = async (
                 const columnIndex = Math.max(0, compiledColumn - 1);
                 const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
 
-                const hasErrorPattern =
-                    textAtLocation.has("new Error(") ||
-                    textAtLocation.has("throw new Error") ||
-                    textAtLocation.has("throw ") ||
-                    textAtLocation.has(errorMessage.slice(0, 20));
+                const hasErrorPattern
+                    = textAtLocation.has("new Error(")
+                        || textAtLocation.has("throw new Error")
+                        || textAtLocation.has("throw ")
+                        || textAtLocation.has(errorMessage.slice(0, 20));
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
-                    const isCompiledFramework =
-                        originalFilePath.includes(".svelte") ||
-                        originalFilePath.includes(".vue") ||
-                        originalFilePath.includes(".astro") ||
-                        compiledFilePath.includes(".js") ||
-                        compiledFilePath.includes(".ts");
+                    const isCompiledFramework
+                        = originalFilePath.includes(".svelte")
+                            || originalFilePath.includes(".vue")
+                            || originalFilePath.includes(".astro")
+                            || compiledFilePath.includes(".js")
+                            || compiledFilePath.includes(".ts");
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;
@@ -595,13 +591,15 @@ const buildExtendedErrorData = async (
 
             try {
                 compiledSnippet = codeFrame(compiledSourceText, { start: { column: targetColumn, line: targetLine } }, { showGutter: false });
-            } catch (error: any) {
-                console.warn("Compiled codeFrame failed:", error);
+            } catch (frameError: unknown) {
+                // eslint-disable-next-line no-console
+                console.warn("Compiled codeFrame failed:", frameError);
                 compiledSnippet = compiledSourceText?.slice(0, 500) || "";
             }
         }
-    } catch (error: any) {
-        console.warn("Source retrieval failed:", error);
+    } catch (retrievalError: unknown) {
+        // eslint-disable-next-line no-console
+        console.warn("Source retrieval failed:", retrievalError);
     }
 
     const { compiledCodeFrameContent, originalCodeFrameContent } = await generateSyntaxHighlightedFrames(

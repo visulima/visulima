@@ -33,7 +33,6 @@ export default defineConfig({
             sitemap: {
                 host: "https://localhost:3000",
             },
-            customViteReactPlugin: true,
         }),
         viteReact(),
     ],

@@ -61,11 +61,13 @@ test.describe("Balloon Customization", () => {
         await waitForErrorTestPage(page);
 
         // Check if API exists
+        // eslint-disable-next-line no-underscore-dangle
         const apiExists = await page.evaluate(() => globalThis.__visulima_overlay__ !== undefined);
 
         expect(apiExists).toBe(true);
 
         // Check if sendError method exists
+        // eslint-disable-next-line no-underscore-dangle
         const hasSendError = await page.evaluate(() => typeof globalThis.__visulima_overlay__?.sendError === "function");
 
         expect(hasSendError).toBe(true);
@@ -85,6 +87,7 @@ test.describe("Balloon Customization", () => {
 
         // Use API to open
         await page.evaluate(() => {
+            // eslint-disable-next-line no-underscore-dangle
             globalThis.__visulima_overlay__?.open();
         });
 
@@ -97,6 +100,7 @@ test.describe("Balloon Customization", () => {
 
         // Use API to close
         await page.evaluate(() => {
+            // eslint-disable-next-line no-underscore-dangle
             globalThis.__visulima_overlay__?.close();
         });
 
@@ -115,6 +119,7 @@ test.describe("Balloon Customization", () => {
         await waitForErrorOverlay(page, 15_000);
 
         // Check getInstance
+        // eslint-disable-next-line no-underscore-dangle
         const instance = await page.evaluate(() => globalThis.__visulima_overlay__?.getInstance());
 
         expect(instance).not.toBeNull();
@@ -177,6 +182,7 @@ test.describe("Balloon Customization", () => {
         await page.evaluate(() => {
             const error = new Error("Test error sent via API");
 
+            // eslint-disable-next-line no-underscore-dangle
             globalThis.__visulima_overlay__?.sendError(error);
         });
 

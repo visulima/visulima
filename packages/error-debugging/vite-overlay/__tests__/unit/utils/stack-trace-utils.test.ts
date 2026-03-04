@@ -1,5 +1,3 @@
-/* eslint-disable no-secrets/no-secrets */
-
 import { describe, expect, it } from "vitest";
 
 import { cleanErrorStack, isValidStackFrame } from "../../../src/utils/stack-trace";
