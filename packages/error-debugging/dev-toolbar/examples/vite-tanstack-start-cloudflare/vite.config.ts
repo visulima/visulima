@@ -27,6 +27,7 @@ export default defineConfig({
                 timeline: true,
                 assets: true,
                 inspector: true,
+                a11y: true,
             },
             defaultVisible: true,
             placement: "bottom-center",
