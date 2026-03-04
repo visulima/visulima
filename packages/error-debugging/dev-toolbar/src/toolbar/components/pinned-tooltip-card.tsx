@@ -1,11 +1,12 @@
 /** @jsxImportSource preact */
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
+// eslint-disable-next-line import/no-extraneous-dependencies
 import pinOffIcon from "lucide-static/icons/pin-off.svg?data-uri&encoding=css";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
 import Icon from "../../ui/components/icon";
-import { clsx } from "clsx";
 import type { PinnedTooltip } from "../context/index";
 import { createServerHelpers } from "../helpers";
 

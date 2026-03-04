@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
-import type { ComponentChildren } from "preact";
-
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { clsx } from "clsx";
+import type { ComponentChildren } from "preact";
 
 interface IconProps {
     class?: string;

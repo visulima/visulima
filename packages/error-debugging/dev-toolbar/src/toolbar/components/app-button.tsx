@@ -1,9 +1,10 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useRef } from "preact/hooks";
 
 import type { DevToolbarAppState } from "../../types/index";
-import { clsx } from "clsx";
 import { useToolbarContext } from "../context/index";
 import { useApps } from "../hooks/index";
 

@@ -1,11 +1,12 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 
 import type { CoreWebVitals, CwvRating, LongTask, MemoryInfo, PerformanceSnapshot } from "../../performance/monitor";
 import { getCwvRating, performanceMonitor } from "../../performance/monitor";
 import type { AppComponentProps } from "../../types/app";
-import { clsx } from "clsx";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

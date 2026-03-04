@@ -1,9 +1,9 @@
 /** @jsxImportSource preact */
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { clsx } from "clsx";
 import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";
 import { useContext, useState } from "preact/hooks";
-
-import { clsx } from "clsx";
 
 interface TabsContextValue {
     onValueChange: (v: string) => void;
