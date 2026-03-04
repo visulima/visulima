@@ -1,27 +1,218 @@
 import type { ViteDevServer } from "vite";
 
+type PluginInfo = {
+    enforce?: "post" | "pre";
+    name: string;
+};
+
+/** Alias entry with find always normalized to string (RegExp serialized as "/pattern/flags") */
+type AliasEntry = { find: string; replacement: string };
+
+type ViteConfigSnapshot = {
+    base: string;
+    build: {
+        assetsDir?: string;
+        assetsInlineLimit?: number;
+        chunkSizeWarningLimit?: number;
+        cssCodeSplit?: boolean;
+        emptyOutDir?: boolean | null;
+        minify?: "esbuild" | "terser" | boolean;
+        outDir?: string;
+        reportCompressedSize?: boolean;
+        sourcemap?: "hidden" | "inline" | boolean;
+        target?: false | string | string[];
+    };
+    cacheDir: string;
+    css: {
+        devSourcemap?: boolean;
+        preprocessors: string[];
+    };
+    define?: Record<string, unknown>;
+    env?: Record<string, string>;
+    envDir?: string;
+    envPrefix?: string | string[];
+    esbuild?: {
+        jsx?: string;
+        jsxFactory?: string;
+        jsxFragment?: string;
+        jsxImportSource?: string;
+        target?: string | string[];
+    };
+    mode: string;
+    optimizeDeps: {
+        exclude?: string[];
+        include?: string[];
+    };
+    plugins: PluginInfo[];
+    publicDir: string;
+    resolve: {
+        alias?: AliasEntry[] | Record<string, string>;  // always string keys/finds
+        conditions?: string[];
+        dedupe?: string[];
+        extensions?: string[];
+        mainFields?: string[];
+        preserveSymlinks?: boolean;
+    };
+    root: string;
+    server: {
+        cors?: boolean;
+        hmrEnabled?: boolean;
+        hmrPort?: number;
+        host?: boolean | string;
+        https?: boolean;
+        middlewareMode?: boolean | string;
+        open?: boolean | string;
+        origin?: string;
+        port?: number;
+        proxy?: string[];
+        strictPort?: boolean;
+    };
+    ssr?: {
+        external?: string[];
+        noExternal?: boolean | string[];
+        target?: string;
+    };
+};
+
 /**
  * Gets Vite configuration from the dev server.
  * @param server Vite dev server instance.
- * @returns Vite config object.
+ * @returns Vite config snapshot with the most useful fields.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getViteConfig = async (server: ViteDevServer): Promise<Record<string, any>> => {
+
+const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot> => {
+    const { config } = server;
+
+    // Collect plugin info safely (filter out falsy entries and entries without a name)
+    const plugins: PluginInfo[] = [];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const p of (config.plugins as any[]).filter((entry: any) => Boolean(entry?.name))) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        plugins.push({ enforce: (p as any)?.enforce, name: (p as any).name as string });
+    }
+
+    // Normalize alias: RegExp `find` values don't serialize over JSON (become {}).
+    // Convert them to their string representation "/pattern/flags".
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let aliasNormalized: AliasEntry[] | Record<string, string> | undefined;
+    const rawAlias = config.resolve?.alias;
+
+    if (Array.isArray(rawAlias)) {
+        aliasNormalized = rawAlias
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .filter((entry: any) => entry != null && (entry.find != null || entry.replacement != null))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((entry: any) => ({
+                find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
+                replacement: String(entry.replacement ?? ""),
+            }));
+    } else if (rawAlias != null && typeof rawAlias === "object") {
+        aliasNormalized = Object.fromEntries(
+            Object.entries(rawAlias as Record<string, string>).map(([k, v]) => [k, String(v)]),
+        );
+    }
+
+    // Collect proxy route keys without leaking target URLs
+    const proxyKeys = config.server?.proxy ? Object.keys(config.server.proxy) : undefined;
+
+    // HMR settings
+    const hmrRaw = config.server?.hmr;
+    const hmrEnabled = hmrRaw !== false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hmrPort = typeof hmrRaw === "object" && hmrRaw !== null ? (hmrRaw as any).port : undefined;
+
+    // SSR noExternal
+    const ssrNoExternal = config.ssr?.noExternal;
+    let ssrNoExternalNormalized: boolean | string[] | undefined;
+
+    if (typeof ssrNoExternal === "boolean") {
+        ssrNoExternalNormalized = ssrNoExternal;
+    } else if (Array.isArray(ssrNoExternal)) {
+        ssrNoExternalNormalized = ssrNoExternal as string[];
+    }
+
     return {
-        base: server.config.base,
+        base: config.base,
         build: {
-            outDir: server.config.build?.outDir,
+            assetsDir: config.build?.assetsDir,
+            assetsInlineLimit: typeof config.build?.assetsInlineLimit === "number" ? config.build.assetsInlineLimit : undefined,
+            chunkSizeWarningLimit: config.build?.chunkSizeWarningLimit,
+            cssCodeSplit: config.build?.cssCodeSplit,
+            emptyOutDir: config.build?.emptyOutDir,
+            minify: config.build?.minify,
+            outDir: config.build?.outDir,
+            reportCompressedSize: config.build?.reportCompressedSize,
+            sourcemap: config.build?.sourcemap,
+            target: config.build?.target,
         },
-        mode: server.config.mode,
+        cacheDir: config.cacheDir,
+        css: {
+            devSourcemap: config.css?.devSourcemap,
+            preprocessors: config.css?.preprocessorOptions ? Object.keys(config.css.preprocessorOptions) : [],
+        },
+        define: config.define,
+        env: config.env,
+        envDir: typeof config.envDir === "string" ? config.envDir : undefined,
+        envPrefix: config.envPrefix,
+        esbuild: config.esbuild
+            ? {
+                jsx: config.esbuild.jsx as string | undefined,
+                jsxFactory: config.esbuild.jsxFactory,
+                jsxFragment: config.esbuild.jsxFragment,
+                jsxImportSource: config.esbuild.jsxImportSource,
+                target: config.esbuild.target as string | string[] | undefined,
+            }
+            : undefined,
+        mode: config.mode,
+        optimizeDeps: {
+            exclude: config.optimizeDeps?.exclude,
+            include: config.optimizeDeps?.include,
+        },
+        plugins,
+        publicDir: config.publicDir,
         resolve: {
-            alias: server.config.resolve.alias,
+            alias: aliasNormalized,
+            conditions: config.resolve?.conditions,
+            dedupe: config.resolve?.dedupe,
+            extensions: config.resolve?.extensions,
+            mainFields: config.resolve?.mainFields,
+            preserveSymlinks: config.resolve?.preserveSymlinks,
         },
-        root: server.config.root,
+        root: config.root,
         server: {
-            host: server.config.server?.host,
-            https: server.config.server?.https,
-            port: server.config.server?.port,
+            cors: config.server?.cors === undefined ? undefined : Boolean(config.server.cors),
+            hmrEnabled,
+            hmrPort,
+            host: config.server?.host,
+            https: config.server?.https !== undefined,
+            // middlewareMode can be boolean or an object — normalise to boolean
+            middlewareMode: ((): boolean | undefined => {
+                if (config.server?.middlewareMode === undefined) {
+                    return undefined;
+                }
+
+                if (typeof config.server.middlewareMode === "object") {
+                    return true;
+                }
+
+                return Boolean(config.server.middlewareMode);
+            })(),
+            open: config.server?.open,
+            origin: config.server?.origin,
+            port: config.server?.port,
+            proxy: proxyKeys,
+            strictPort: config.server?.strictPort,
         },
+        ssr:
+            config.ssr === undefined
+                ? undefined
+                : {
+                    // external can be string[] | true — normalise to string[] only
+                    external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
+                    noExternal: ssrNoExternalNormalized,
+                    target: config.ssr?.target,
+                },
     };
 };
 
