@@ -105,7 +105,17 @@ devToolbar({
 
 ### axe-core Dependency
 
-axe-core is a runtime dependency of `@visulima/dev-toolbar`. It is dynamically imported inside the scan function, so it does **not** add to your bundle size — axe-core is only loaded when the user triggers a scan in development mode.
+`axe-core` is an **optional peer dependency** — you must install it separately:
+
+```sh
+pnpm add -D axe-core
+# or
+npm install --save-dev axe-core
+# or
+yarn add -D axe-core
+```
+
+axe-core is dynamically imported inside the scan function, so it does **not** add to your bundle size — it is only loaded when the user triggers a scan in development mode. If axe-core is not installed, the panel displays an error message when a scan is attempted.
 
 <Callout type="info">axe-core runs entirely in the browser. No data leaves your machine. The scan reads the live DOM and reports violations locally.</Callout>
 
