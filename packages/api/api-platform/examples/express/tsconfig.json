@@ -8,7 +8,10 @@
         "forceConsistentCasingInFileNames": true,
         "strict": false,
         "skipLibCheck": true,
-        "rootDir": "./",
-        "outDir": "./dist"
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@visulima/api-platform": ["../../dist/index-server.d.ts"]
+        }
     }
 }

@@ -4,7 +4,8 @@ import { swaggerHandler } from "@visulima/api-platform";
 
 const PORT = process.env.PORT || 3002;
 
-const app = express();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const app = express() as any;
 
 // Initializing the cors middleware
 // You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
