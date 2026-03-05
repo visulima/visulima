@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Visulima
+Copyright (c) 2026 visulima
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2026 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -210,7 +210,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -244,7 +244,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2026 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -278,7 +278,7 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > > MIT License
 > > >
-> > > Copyright (c) 2025 visulima
+> > > Copyright (c) 2026 visulima
 > > >
 > > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > > of this software and associated documentation files (the "Software"), to deal
@@ -505,7 +505,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -640,7 +640,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -674,7 +674,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -708,7 +708,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2026 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -850,7 +850,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -884,7 +884,7 @@ Repository: git+https://github.com/visulima/visulima.git
 >
 > > MIT License
 > >
-> > Copyright (c) 2025 visulima
+> > Copyright (c) 2026 visulima
 > >
 > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > of this software and associated documentation files (the "Software"), to deal
@@ -918,7 +918,7 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > > MIT License
 > > >
-> > > Copyright (c) 2025 visulima
+> > > Copyright (c) 2026 visulima
 > > >
 > > > Permission is hereby granted, free of charge, to any person obtaining a copy
 > > > of this software and associated documentation files (the "Software"), to deal
@@ -1145,7 +1145,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 > MIT License
 >
-> Copyright (c) 2025 visulima
+> Copyright (c) 2026 visulima
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
