@@ -46,7 +46,7 @@ type ViteConfigSnapshot = {
     plugins: PluginInfo[];
     publicDir: string;
     resolve: {
-        alias?: AliasEntry[] | Record<string, string>;  // always string keys/finds
+        alias?: AliasEntry[] | Record<string, string>; // always string keys/finds
         conditions?: string[];
         dedupe?: string[];
         extensions?: string[];
@@ -74,6 +74,44 @@ type ViteConfigSnapshot = {
     };
 };
 
+// Normalize alias: RegExp `find` values don't serialize over JSON (become {}).
+// Convert them to their string representation "/pattern/flags".
+const normalizeAlias = (rawAlias: unknown): AliasEntry[] | Record<string, string> | undefined => {
+    if (Array.isArray(rawAlias)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (rawAlias as any[])
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((entry: any) => {
+                return {
+                    find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
+                    replacement: String(entry.replacement ?? ""),
+                };
+            });
+    }
+
+    if (rawAlias !== undefined && rawAlias !== null && typeof rawAlias === "object") {
+        return Object.fromEntries(
+            Object.entries(rawAlias as Record<string, string>).map(([k, v]) => [k, String(v)]),
+        );
+    }
+
+    return undefined;
+};
+
+const normalizeSsrNoExternal = (value: unknown): boolean | string[] | undefined => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+
+    if (Array.isArray(value)) {
+        return value as string[];
+    }
+
+    return undefined;
+};
+
 /**
  * Gets Vite configuration from the dev server.
  * @param server Vite dev server instance.
@@ -92,26 +130,7 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
         plugins.push({ enforce: (p as any)?.enforce, name: (p as any).name as string });
     }
 
-    // Normalize alias: RegExp `find` values don't serialize over JSON (become {}).
-    // Convert them to their string representation "/pattern/flags".
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let aliasNormalized: AliasEntry[] | Record<string, string> | undefined;
-    const rawAlias = config.resolve?.alias;
-
-    if (Array.isArray(rawAlias)) {
-        aliasNormalized = rawAlias
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((entry: any) => entry != null && (entry.find != null || entry.replacement != null))
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((entry: any) => ({
-                find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
-                replacement: String(entry.replacement ?? ""),
-            }));
-    } else if (rawAlias != null && typeof rawAlias === "object") {
-        aliasNormalized = Object.fromEntries(
-            Object.entries(rawAlias as Record<string, string>).map(([k, v]) => [k, String(v)]),
-        );
-    }
+    const aliasNormalized = normalizeAlias(config.resolve?.alias);
 
     // Collect proxy route keys without leaking target URLs
     const proxyKeys = config.server?.proxy ? Object.keys(config.server.proxy) : undefined;
@@ -122,15 +141,7 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hmrPort = typeof hmrRaw === "object" && hmrRaw !== null ? (hmrRaw as any).port : undefined;
 
-    // SSR noExternal
-    const ssrNoExternal = config.ssr?.noExternal;
-    let ssrNoExternalNormalized: boolean | string[] | undefined;
-
-    if (typeof ssrNoExternal === "boolean") {
-        ssrNoExternalNormalized = ssrNoExternal;
-    } else if (Array.isArray(ssrNoExternal)) {
-        ssrNoExternalNormalized = ssrNoExternal as string[];
-    }
+    const ssrNoExternalNormalized = normalizeSsrNoExternal(config.ssr?.noExternal);
 
     return {
         base: config.base,
