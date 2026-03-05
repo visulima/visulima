@@ -10,8 +10,6 @@ packages:
   - '!packages/tooling/package/__fixtures__/workspaces/**'
   - '!packages/storage/storage/src/adapter/nuxt'
   - apps/**
-  - examples/**
-  - examples/uploads/**
   - packages/**
   - shared/**
   - packages/terminal/boxen/__bench__
