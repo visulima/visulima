@@ -1,5 +1,5 @@
 {
-    "name": "node_example_colorize",
+    "name": "colorize_node_example",
     "version": "1.0.0",
     "private": true,
     "type": "module",
