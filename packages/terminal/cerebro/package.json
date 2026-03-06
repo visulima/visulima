@@ -137,7 +137,7 @@
         "@visulima/command-line-args": "2.0.0-alpha.3",
         "@visulima/error": "6.0.0-alpha.3",
         "@visulima/find-cache-dir": "3.0.0-alpha.3",
-        "@visulima/packem": "2.0.0-alpha.46",
+        "@visulima/packem": "2.0.0-alpha.54",
         "@visulima/pail": "4.0.0-alpha.5",
         "@visulima/path": "3.0.0-alpha.4",
         "@visulima/string": "3.0.0-alpha.5",
