@@ -1,3 +1,34 @@
+## @visulima/cerebro [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.5...@visulima/cerebro@3.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **cerebro:** update packem to 2.0.0-alpha.54 ([bcc08fd](https://github.com/visulima/visulima/commit/bcc08fdf6eed77b84bdff0fe40dd4fe7dd74a463))
+
+### Documentation
+
+* **cerebro,prisma-dmmf-transformer,jsdoc-open-api:** add comprehensive Fumadocs documentation ([891b308](https://github.com/visulima/visulima/commit/891b308a34bca2765a4a97ea450648d20d90e0cf))
+
+### Miscellaneous Chores
+
+* **cerebro:** update dependencies ([a276082](https://github.com/visulima/visulima/commit/a27608237e7dd33bed639101147f7ee36f1cdaec))
+* **cerebro:** update dependencies ([60f2a71](https://github.com/visulima/visulima/commit/60f2a717e23220c394a31fde456291e42348fddd))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.6
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.6
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.4
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.4
+* **@visulima/pail:** upgraded to 4.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+* **@visulima/string:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/cerebro [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.4...@visulima/cerebro@3.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
