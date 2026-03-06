@@ -1,3 +1,30 @@
+## @visulima/error [6.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.4...@visulima/error@6.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **error:** update packem to 2.0.0-alpha.54 ([bd3a938](https://github.com/visulima/visulima/commit/bd3a938b9465147803d06a82018b539ed4c121c8))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Styles
+
+* **error:** format LICENSE.md ([ea3bdd3](https://github.com/visulima/visulima/commit/ea3bdd34bfd46cbf02a0293ce407d6732e4d2263))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **error:** update dependencies ([4d22f31](https://github.com/visulima/visulima/commit/4d22f315f164ccaa50c88dcb7d0dd85b58bfbf5a))
+* move top-level examples into their respective packages ([3bf7105](https://github.com/visulima/visulima/commit/3bf7105a56db6383ae65d5e28dea9a2c18af791a))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/error [6.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.3...@visulima/error@6.0.0-alpha.4) (2026-01-17)
 
 ### ⚠ BREAKING CHANGES
