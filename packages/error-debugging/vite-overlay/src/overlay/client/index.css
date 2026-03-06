@@ -384,8 +384,9 @@ select#editor-selector {
     overflow: hidden;
 }
 
-/* Hide balloon while the error panel is visible — it's only useful when dismissed */
-#__v_o__root:not(.hidden) ~ #__v_o__balloon_group {
+/* Hide balloon while the error panel is visible for server errors only.
+   Client errors (e.g. hydration) keep the balloon visible alongside the overlay. */
+#__v_o__root:not(.hidden)[data-error-type="server"] ~ #__v_o__balloon_group {
     display: none !important;
 }
 
