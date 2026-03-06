@@ -1,3 +1,14 @@
+## @visulima/storage-client [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.6...@visulima/storage-client@1.0.0-alpha.7) (2026-03-06)
+
+### Bug Fixes
+
+* **storage-client:** update packem to 2.0.0-alpha.54 ([98984dd](https://github.com/visulima/visulima/commit/98984dd6f3c9d7b007a4ae723d80f27cd1cce1cc))
+
+### Miscellaneous Chores
+
+* **storage-client:** update dependencies ([df3b47d](https://github.com/visulima/visulima/commit/df3b47dc7d961dd242b460384cbb26f91048548f))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/storage-client [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.5...@visulima/storage-client@1.0.0-alpha.6) (2026-02-16)
 
 ### Bug Fixes
