@@ -1,3 +1,27 @@
+## @visulima/find-cache-dir [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.3...@visulima/find-cache-dir@3.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **find-cache-dir:** update packem to 2.0.0-alpha.54 ([9758ef7](https://github.com/visulima/visulima/commit/9758ef7f7e5bfbaf718e088c4bbc40230565bc33))
+
+### Documentation
+
+* **bytes,deep-clone,ansi,fmt,find-cache-dir:** add comprehensive Fumadocs documentation ([dfe0116](https://github.com/visulima/visulima/commit/dfe0116ebd26fe38f94f77b8ed4dadc3ff45ba91))
+
+### Miscellaneous Chores
+
+* **filesystem:** update dependencies ([d1a4591](https://github.com/visulima/visulima/commit/d1a45917ba9547a1d7f1b6f62d85ab99bc059dd4))
+* **find-cache-dir:** update dependencies ([37e44e9](https://github.com/visulima/visulima/commit/37e44e9a8e6d863fcab47643d89698705c91863b))
+* **find-cache-dir:** update dependencies ([1c49caa](https://github.com/visulima/visulima/commit/1c49caad9b06ec7b76dee642782f14bcf129cfad))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/find-cache-dir [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.2...@visulima/find-cache-dir@3.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
