@@ -1,3 +1,21 @@
+## @visulima/health-check [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.4...@visulima/health-check@4.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **health-check:** update packem to 2.0.0-alpha.54 ([e424965](https://github.com/visulima/visulima/commit/e424965736783b8357da7b28c42f34e0d6d76b44))
+
+### Documentation
+
+* **crud,health-check,pagination:** add comprehensive Fumadocs documentation ([1fc3748](https://github.com/visulima/visulima/commit/1fc3748b2d9b1ef2332b5d38cb6dd2c7c1f78589))
+
+### Miscellaneous Chores
+
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* **health-check:** update dependencies ([1f52d81](https://github.com/visulima/visulima/commit/1f52d810a17d20c21881d28defb7a03771c02c98))
+* **health-check:** update dependencies ([7203dc8](https://github.com/visulima/visulima/commit/7203dc8540ba396631986afbcf01300164825438))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/health-check [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.3...@visulima/health-check@4.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
