@@ -1,3 +1,21 @@
+## @visulima/humanizer [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.5...@visulima/humanizer@3.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **humanizer:** update packem to 2.0.0-alpha.54 ([f38a2ba](https://github.com/visulima/visulima/commit/f38a2baf3067292f65ded370fa2194bab518ee3c))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **humanizer:** update dependencies ([70c666e](https://github.com/visulima/visulima/commit/70c666ee1f7dcf5cf6a7fde56b2763ea3f037dd7))
+* **humanizer:** update dependencies ([d536412](https://github.com/visulima/visulima/commit/d5364126592f69e4ac06af6f692842aa9c971c82))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/humanizer [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.4...@visulima/humanizer@3.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
