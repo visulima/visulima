@@ -1,3 +1,20 @@
+## @visulima/pagination [5.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.5...@visulima/pagination@5.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **pagination:** update packem to 2.0.0-alpha.54 ([6fd896e](https://github.com/visulima/visulima/commit/6fd896ed94b501df1ec85baff72015e5d8112540))
+
+### Documentation
+
+* **crud,health-check,pagination:** add comprehensive Fumadocs documentation ([1fc3748](https://github.com/visulima/visulima/commit/1fc3748b2d9b1ef2332b5d38cb6dd2c7c1f78589))
+
+### Miscellaneous Chores
+
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* **pagination:** update dependencies ([b47aee3](https://github.com/visulima/visulima/commit/b47aee327e28ba302f7c60cfc3cae3db5b2a101f))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/pagination [5.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.4...@visulima/pagination@5.0.0-alpha.5) (2026-01-17)
 
 ### Bug Fixes
