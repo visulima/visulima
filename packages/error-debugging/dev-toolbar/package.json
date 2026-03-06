@@ -144,7 +144,7 @@
         "@types/babel__generator": "^7.27.0",
         "@types/babel__traverse": "^7.28.0",
         "@types/node": "25.3.3",
-        "@visulima/packem": "2.0.0-alpha.51",
+        "@visulima/packem": "2.0.0-alpha.54",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
         "axe-core": "^4.11.1",
