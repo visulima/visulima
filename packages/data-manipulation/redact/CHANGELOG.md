@@ -1,3 +1,21 @@
+## @visulima/redact [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.4...@visulima/redact@3.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **redact:** update packem to 2.0.0-alpha.54 ([907513d](https://github.com/visulima/visulima/commit/907513de0e9de9432952e75963c8fe75dddad311))
+
+### Documentation
+
+* **object,redact,colorize,path,fs:** add comprehensive Fumadocs documentation ([19c3840](https://github.com/visulima/visulima/commit/19c384041db855e1c2de41ce2067458b39737565))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **redact:** update dependencies ([086ae76](https://github.com/visulima/visulima/commit/086ae76701847f1d844b1cc5d79307d5c5d5136e))
+* **redact:** update dependencies ([4459c4c](https://github.com/visulima/visulima/commit/4459c4ca74e21beab42ce81b7c4928d542ccbcdc))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/redact [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.3...@visulima/redact@3.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
