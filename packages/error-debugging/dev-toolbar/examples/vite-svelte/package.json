@@ -14,7 +14,7 @@
         "@tsconfig/svelte": "^5.0.8",
         "@visulima/dev-toolbar": "workspace:*",
         "@visulima/vite-overlay": "workspace:*",
-        "svelte": "^5.53.6",
+        "svelte": "^5.53.7",
         "svelte-check": "^4.4.4",
         "typescript": "~5.9.3",
         "vite": "^7.3.1"
