@@ -1,3 +1,25 @@
+## @visulima/vite-overlay [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.7...@visulima/vite-overlay@2.0.0-alpha.8) (2026-03-06)
+
+### Bug Fixes
+
+* **vite-overlay:** fix formatting and minor code style issues ([ec96733](https://github.com/visulima/visulima/commit/ec9673362fdf82ff4dacaf03aeb1c59250cd4eb0))
+* **vite-overlay:** replace rolldown-vite alias with vite@8 beta ([0596412](https://github.com/visulima/visulima/commit/0596412d437625183db5909d3b3ad1328293d8ef))
+* **vite-overlay:** resolve ESLint errors and expand braceless if statements ([f837bcd](https://github.com/visulima/visulima/commit/f837bcd2a1a743290b63e7471d843a953fd75b54))
+* **vite-overlay:** show balloon button alongside overlay for client errors ([6b9d8d4](https://github.com/visulima/visulima/commit/6b9d8d414ef1d21ab5ccee5f5a5aebb544d6f2c2))
+* **vite-overlay:** update packem to 2.0.0-alpha.54 ([73b70e3](https://github.com/visulima/visulima/commit/73b70e398cda6ee38aed18fa798bd2198b732024))
+
+### Miscellaneous Chores
+
+* **vite-overlay:** regenerate tanstack hydration example route tree ([11ceaa0](https://github.com/visulima/visulima/commit/11ceaa09ded9ff1223f99646b477b00ceeffea40))
+* **vite-overlay:** update dependencies ([53e7915](https://github.com/visulima/visulima/commit/53e7915ce97385edce947318aac47602bb11c905))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/vite-overlay [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.6...@visulima/vite-overlay@2.0.0-alpha.7) (2026-03-04)
 
 ### Bug Fixes
