@@ -1,3 +1,28 @@
+## @visulima/boxen [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.5...@visulima/boxen@3.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **boxen:** update packem to 2.0.0-alpha.54 ([3d70a31](https://github.com/visulima/visulima/commit/3d70a315c440175171399546afa78ca0cdb4e13c))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+
+### Miscellaneous Chores
+
+* **boxen:** update dependencies ([7853ee6](https://github.com/visulima/visulima/commit/7853ee64c78974efe7097fc03fc11a60381c1cb6))
+* **boxen:** update dependencies ([90b472d](https://github.com/visulima/visulima/commit/90b472dca27b89cd20d2aafe2d36a35ce1f33bc9))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+* **@visulima/string:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/boxen [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.4...@visulima/boxen@3.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
