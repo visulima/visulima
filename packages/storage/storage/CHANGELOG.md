@@ -1,3 +1,28 @@
+## @visulima/storage [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.6...@visulima/storage@1.0.0-alpha.7) (2026-03-06)
+
+### Bug Fixes
+
+* **storage:** update packem to 2.0.0-alpha.54 ([a65ad87](https://github.com/visulima/visulima/commit/a65ad877ac5804a0c1354331a380fbcceddf261f))
+
+### Miscellaneous Chores
+
+* **storage:** update dependencies ([19b3d5c](https://github.com/visulima/visulima/commit/19b3d5c5fd1e535fbbb1419a827e5c4c0b35fa77))
+* **storage:** update dependencies ([f591768](https://github.com/visulima/visulima/commit/f591768de337c1b201191e4b78dd7e3fb79ca42b))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **storage:** replace SuperHeaders with native Headers ([68546c5](https://github.com/visulima/visulima/commit/68546c52bedad5c1338d571ad9a2034cc9f49b53))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.6
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/storage [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.5...@visulima/storage@1.0.0-alpha.6) (2026-01-17)
 
 ### Miscellaneous Chores
