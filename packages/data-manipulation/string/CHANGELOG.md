@@ -1,3 +1,22 @@
+## @visulima/string [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.5...@visulima/string@3.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **string:** update packem to 2.0.0-alpha.54 ([f144f53](https://github.com/visulima/visulima/commit/f144f53ffeddc9baf9dad5624f400ff4c90418a8))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **string:** update dependencies ([6282b31](https://github.com/visulima/visulima/commit/6282b310839ce1154133fe56468e9d52fc2feb91))
+* **string:** update dependencies ([6ff101d](https://github.com/visulima/visulima/commit/6ff101df82e17d1673e47f1195e662b8eff4e04a))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+
 ## @visulima/string [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.4...@visulima/string@3.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
