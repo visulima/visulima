@@ -1,3 +1,27 @@
+## @visulima/tabular [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.5...@visulima/tabular@4.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **tabular:** update packem to 2.0.0-alpha.54 ([1ee5965](https://github.com/visulima/visulima/commit/1ee5965bacd3c8df040eb4605e57d2c23fab34a3))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+
+### Miscellaneous Chores
+
+* **tabular:** update dependencies ([333549a](https://github.com/visulima/visulima/commit/333549aa68f8b9a217b3214959e1c4f97e6759fb))
+* **tabular:** update dependencies ([ca03869](https://github.com/visulima/visulima/commit/ca03869a6a6141be5d40022da0f0685ca444f094))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+* **@visulima/string:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/tabular [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.4...@visulima/tabular@4.0.0-alpha.5) (2025-12-27)
 
 ### Bug Fixes
