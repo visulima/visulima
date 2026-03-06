@@ -302,7 +302,7 @@
         "@types/nodemailer": "^7.0.11",
         "@visulima/error": "6.0.0-alpha.3",
         "@visulima/fs": "5.0.0-alpha.3",
-        "@visulima/packem": "2.0.0-alpha.46",
+        "@visulima/packem": "2.0.0-alpha.54",
         "@visulima/path": "3.0.0-alpha.4",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
