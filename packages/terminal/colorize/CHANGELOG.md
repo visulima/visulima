@@ -1,3 +1,28 @@
+## @visulima/colorize [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.4...@visulima/colorize@2.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **colorize:** update packem to 2.0.0-alpha.54 ([61e248b](https://github.com/visulima/visulima/commit/61e248be63d5e3ad069aae06d5f0a76e5ca58600))
+
+### Documentation
+
+* **object,redact,colorize,path,fs:** add comprehensive Fumadocs documentation ([19c3840](https://github.com/visulima/visulima/commit/19c384041db855e1c2de41ce2067458b39737565))
+
+### Miscellaneous Chores
+
+* **colorize:** update dependencies ([9da1353](https://github.com/visulima/visulima/commit/9da1353fc7c6c61b511ceb2988f5ae2a6a598d45))
+* **colorize:** update dependencies ([1d995c9](https://github.com/visulima/visulima/commit/1d995c97607a5c95ac208758e957a62180e27072))
+* move top-level examples into their respective packages ([3bf7105](https://github.com/visulima/visulima/commit/3bf7105a56db6383ae65d5e28dea9a2c18af791a))
+* moved examples ([bb07290](https://github.com/visulima/visulima/commit/bb07290fba65a83aaad8f0ef62d1c244d1610002))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/colorize [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.3...@visulima/colorize@2.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
