@@ -1,5 +1,4 @@
 {
-  "private": true,
-  "name": "@foo/test-bad"
-  invalid json syntax here
+  "name": "@foo/test-bad",
+  "private": true
 }
