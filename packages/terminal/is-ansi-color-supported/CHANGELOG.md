@@ -1,3 +1,21 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.4...@visulima/is-ansi-color-supported@3.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** update packem to 2.0.0-alpha.54 ([1ca2c4c](https://github.com/visulima/visulima/commit/1ca2c4c8b8f316a6e77aad1f8569ec4b9dae51b0))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+
+### Miscellaneous Chores
+
+* **is-ansi-color-supported:** update dependencies ([624b623](https://github.com/visulima/visulima/commit/624b623b5aec3d7b159a2779553e5dd8667e9ff9))
+* **is-ansi-color-supported:** update dependencies ([92c254e](https://github.com/visulima/visulima/commit/92c254e8773e1b5b8daaa50e206a1330f4de2c90))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.3...@visulima/is-ansi-color-supported@3.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
