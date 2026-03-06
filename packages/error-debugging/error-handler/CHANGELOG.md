@@ -1,3 +1,26 @@
+## @visulima/error-handler [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.6...@visulima/error-handler@2.0.0-alpha.7) (2026-03-06)
+
+### Bug Fixes
+
+* **error-handler:** update packem to 2.0.0-alpha.54 ([03aad29](https://github.com/visulima/visulima/commit/03aad29df5527fa431ad01b561ea296d6f1cf622))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **error-handler:** update dependencies ([306a3b8](https://github.com/visulima/visulima/commit/306a3b89dedbe6e50ff1978e3635ddea99e527e4))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.6
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+
 ## @visulima/error-handler [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.5...@visulima/error-handler@2.0.0-alpha.6) (2026-01-17)
 
 ### Miscellaneous Chores
