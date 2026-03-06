@@ -1,3 +1,20 @@
+## @visulima/iso-locale [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.2...@visulima/iso-locale@1.0.0-alpha.3) (2026-03-06)
+
+### Bug Fixes
+
+* **iso-locale:** update packem to 2.0.0-alpha.54 ([17ce847](https://github.com/visulima/visulima/commit/17ce8479d65e21f26da08674cedadfd69bf8fbeb))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **iso-locale:** update dependencies ([78c7b5e](https://github.com/visulima/visulima/commit/78c7b5e3528c2ec4a32cab44449c5840664fa94d))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/iso-locale [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.1...@visulima/iso-locale@1.0.0-alpha.2) (2026-01-17)
 
 ### Bug Fixes
