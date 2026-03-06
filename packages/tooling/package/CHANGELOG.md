@@ -1,3 +1,32 @@
+## @visulima/package [5.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.3...@visulima/package@5.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **package:** update packem to 2.0.0-alpha.54 ([e5b3249](https://github.com/visulima/visulima/commit/e5b3249026a425b7a42443f66a08f8f68c3d62e4))
+* **package:** use intentionally malformed JSON in bad workspace fixture ([a6680e7](https://github.com/visulima/visulima/commit/a6680e7a97aeae643c26b69bc5eb6c64c28de278))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+
+### Miscellaneous Chores
+
+* **package:** update dependencies ([d89cde6](https://github.com/visulima/visulima/commit/d89cde6792e9036d0690cfaf9b771e26b24faac8))
+* **package:** update dependencies ([4b62cf8](https://github.com/visulima/visulima/commit/4b62cf85e6ef4deac4ef01c8a7e15bcf49ecbe80))
+* **tooling:** update dependencies ([7f6f9d3](https://github.com/visulima/visulima/commit/7f6f9d3c41b170c53659ab34b79ceb23e4e9660a))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Tests
+
+* **package:** fix broken JSON test fixture ([46141d6](https://github.com/visulima/visulima/commit/46141d6472d8de20512109200a12e79c48ddc33c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/package [5.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.2...@visulima/package@5.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
