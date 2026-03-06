@@ -6,6 +6,27 @@ const config = defineConfig({ typescript: { extensions: ["cts", "ts", "mts", "ts
 
 // Exclude Playwright e2e spec files from being run through vitest.
 // These files use Playwright's test.describe() which is incompatible with vitest.
+// Exclude __fixtures__ directories from sort-package-json — they may contain
+// intentionally malformed JSON used by tests.
+const FIXTURES_PATH_PATTERN = /__fixtures__[/\\]/;
+const originalPkgHandler = config["**/package.json"];
+
+if (originalPkgHandler) {
+    config["**/package.json"] = (files) => {
+        const filtered = files.filter((f) => !FIXTURES_PATH_PATTERN.test(f));
+
+        if (filtered.length === 0) {
+            return [];
+        }
+
+        if (Array.isArray(originalPkgHandler)) {
+            return originalPkgHandler.map((cmd) => `${cmd} ${filtered.join(" ")}`);
+        }
+
+        return originalPkgHandler(filtered);
+    };
+}
+
 const E2E_PATH_PATTERN = /__tests__[/\\]e2e[/\\]/;
 
 const withE2eFilter = (originalHandler) => (files) => {
