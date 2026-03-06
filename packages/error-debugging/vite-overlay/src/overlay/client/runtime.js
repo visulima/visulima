@@ -1031,8 +1031,10 @@ class ErrorOverlay extends HTMLElement {
                 rootElement.classList.remove("dark");
         }
 
-        if (rootElement)
+        if (rootElement) {
             rootElement.classList.remove("hidden");
+            rootElement.setAttribute("data-error-type", this.__v_oPayload.errorType);
+        }
 
         const themeButtons = this.root.querySelectorAll("[data-v-o-theme-click-value]");
 
@@ -1239,6 +1241,13 @@ class ErrorOverlay extends HTMLElement {
         const historyEntry = this.__v_oHistory[index];
 
         this.__v_oPayload = historyEntry.payload;
+
+        // Update error type attribute for CSS balloon visibility rules
+        const rootElement = this.__elements?.root;
+
+        if (rootElement) {
+            rootElement.setAttribute("data-error-type", this.__v_oPayload.errorType || "client");
+        }
 
         // Re-render the main overlay with the current error
         this._updateOverlayWithHistoryError();
@@ -1573,6 +1582,13 @@ class ErrorOverlay extends HTMLElement {
             this.root.classList.remove("hidden");
 
             this._saveBalloonState("overlay", "open");
+        }
+
+        // Update error type attribute for CSS balloon visibility rules
+        const rootElement = this.__elements?.root;
+
+        if (rootElement) {
+            rootElement.setAttribute("data-error-type", this.__v_oPayload.errorType || "client");
         }
 
         // Show balloon and clear dismissed state when new error occurs
