@@ -6,13 +6,13 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@oclif/core": "^4.8.0",
+        "@oclif/core": "^4.8.3",
         "@visulima/cerebro": "workspace:*",
-        "cac": "^6.7.14",
+        "cac": "^7.0.0",
         "cleye": "^2.2.1",
         "commander": "^14.0.3",
-        "gunshi": "^0.28.0",
-        "meow": "^14.0.0",
+        "gunshi": "^0.29.2",
+        "meow": "^14.1.0",
         "yargs": "^18.0.0"
     },
     "devDependencies": {
