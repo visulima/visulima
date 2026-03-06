@@ -1,3 +1,17 @@
+## @visulima/connect [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.4...@visulima/connect@4.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **connect:** update packem to 2.0.0-alpha.54 ([840996e](https://github.com/visulima/visulima/commit/840996e2d727531c4bf9b27b5f10d709740b0280))
+
+### Miscellaneous Chores
+
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* **connect:** update dependencies ([02fa39c](https://github.com/visulima/visulima/commit/02fa39cba26804aa95eef0a69e08bc7d365ff282))
+* **connect:** update dependencies ([bd628b3](https://github.com/visulima/visulima/commit/bd628b38c9b2bc0f6fed5af5f19d4dbace9f7c21))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/connect [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.3...@visulima/connect@4.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
