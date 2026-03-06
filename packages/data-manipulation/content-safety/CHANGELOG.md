@@ -1,3 +1,14 @@
+## @visulima/content-safety [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.1...@visulima/content-safety@1.0.0-alpha.2) (2026-03-06)
+
+### Bug Fixes
+
+* **content-safety:** update packem to 2.0.0-alpha.54 ([98d017b](https://github.com/visulima/visulima/commit/98d017b23b169e5a95c4484dbee7ab2882261cd9))
+
+### Miscellaneous Chores
+
+* **content-safety:** update dependencies ([b38153c](https://github.com/visulima/visulima/commit/b38153cfe8dccfff6c1ac0f5dc183cc41baadf75))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/content-safety 1.0.0-alpha.1 (2026-02-16)
 
 ### Features
