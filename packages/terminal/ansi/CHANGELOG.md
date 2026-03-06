@@ -1,3 +1,27 @@
+## @visulima/ansi [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.4...@visulima/ansi@4.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **ansi:** update packem to 2.0.0-alpha.54 ([8dad6cb](https://github.com/visulima/visulima/commit/8dad6cb820ef0b5748755fe907959fd2830d9f2b))
+
+### Documentation
+
+* **bytes,deep-clone,ansi,fmt,find-cache-dir:** add comprehensive Fumadocs documentation ([dfe0116](https://github.com/visulima/visulima/commit/dfe0116ebd26fe38f94f77b8ed4dadc3ff45ba91))
+
+### Miscellaneous Chores
+
+* **ansi:** update dependencies ([f5cd15a](https://github.com/visulima/visulima/commit/f5cd15ac4f5ca57a614208eb9fc5a9e4e336e2b4))
+* **ansi:** update dependencies ([0af3c28](https://github.com/visulima/visulima/commit/0af3c28ef5bf36f6c3672da94c39ff228ba886b0))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/ansi [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.3...@visulima/ansi@4.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
