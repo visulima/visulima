@@ -1,3 +1,15 @@
+## @visulima/ono [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.5...@visulima/ono@2.0.0-alpha.6) (2026-03-06)
+
+### Bug Fixes
+
+* **ono:** update packem to 2.0.0-alpha.54 ([e3bf220](https://github.com/visulima/visulima/commit/e3bf220c8813bb04a1d5061c62e1897010f5340b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/ono [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.4...@visulima/ono@2.0.0-alpha.5) (2026-01-17)
 
 
