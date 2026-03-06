@@ -1,3 +1,26 @@
+## @visulima/inspector [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.3...@visulima/inspector@2.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **inspector:** update packem to 2.0.0-alpha.54 ([2075696](https://github.com/visulima/visulima/commit/2075696cd1c5e2cfb93602b207b957aa5ac40ad9))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **inspector:** update dependencies ([0a86797](https://github.com/visulima/visulima/commit/0a86797d2bd8b6be42a0f7670994ba569ad626e2))
+* **inspector:** update dependencies ([117ba51](https://github.com/visulima/visulima/commit/117ba51bae94b5443c01a48d979ce11850f4b5ac))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+
 ## @visulima/inspector [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.2...@visulima/inspector@2.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
