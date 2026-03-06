@@ -96,7 +96,7 @@
         "@arethetypeswrong/cli": "^0.18.2",
         "@types/node": "25.3.3",
         "@visulima/colorize": "2.0.0-alpha.4",
-        "@visulima/packem": "2.0.0-alpha.46",
+        "@visulima/packem": "2.0.0-alpha.54",
         "@visulima/path": "3.0.0-alpha.4",
         "@visulima/string": "3.0.0-alpha.5",
         "@vitest/coverage-v8": "^4.0.18",
