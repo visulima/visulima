@@ -41,9 +41,14 @@
         "cjk",
         "typescript"
     ],
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    "homepage": "https://visulima.com/packages/content-safety",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/data-manipulation/content-safety"
     },
     "funding": [
         {
@@ -55,8 +60,11 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "homepage": "https://visulima.com/packages/content-safety",
     "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "sideEffects": false,
     "type": "module",
     "exports": {
@@ -71,14 +79,6 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/data-manipulation/content-safety"
-    },
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
-    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -97,21 +97,21 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
-        "@anolilab/eslint-config": "^21.0.0",
+        "@anolilab/eslint-config": "^22.0.2",
         "@anolilab/semantic-release-pnpm": "5.0.0",
         "@anolilab/semantic-release-preset": "13.1.1",
         "@arethetypeswrong/cli": "^0.18.2",
         "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
         "@total-typescript/ts-reset": "^0.6.1",
-        "@types/node": "25.2.3",
+        "@types/node": "25.3.3",
         "@visulima/packem": "2.0.0-alpha.40",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
-        "conventional-changelog-conventionalcommits": "9.1.0",
+        "conventional-changelog-conventionalcommits": "9.3.0",
         "esbuild": "^0.27.3",
-        "eslint": "10.0.0",
+        "eslint": "10.0.2",
         "prettier": "^3.8.1",
-        "publint": "^0.3.17",
+        "publint": "^0.3.18",
         "rimraf": "^6.1.3",
         "secretlint": "11.3.1",
         "semantic-release": "^25.0.3",
