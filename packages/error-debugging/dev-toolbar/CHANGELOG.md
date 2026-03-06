@@ -1,3 +1,50 @@
+## @visulima/dev-toolbar [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.4...@visulima/dev-toolbar@1.0.0-alpha.5) (2026-03-06)
+
+### Features
+
+* **dev-toolbar:** add assets app export and make axe-core an optional peer dependency ([812bc8d](https://github.com/visulima/visulima/commit/812bc8d45ef760862d43f59665e1f86c7d4a5008))
+* **dev-toolbar:** add singleton guard, SEO JSON-LD validation, editor preference, and tests ([7584425](https://github.com/visulima/visulima/commit/758442518f8390b1faa0fd553d7ed1aaa4d9c037))
+* **dev-toolbar:** implement iframe app rendering and custom app registration ([a1585a8](https://github.com/visulima/visulima/commit/a1585a8bd3624ae13b40fa386cd66b62c29ca08f))
+* **dev-toolbar:** keep inspector active after element click and fix UX issues ([8f7e88a](https://github.com/visulima/visulima/commit/8f7e88a874f6412a15bf2adde9ddd95948b07c22))
+* **dev-toolbar:** overhaul vite config app UI with env masking and improved layout ([7cfee9d](https://github.com/visulima/visulima/commit/7cfee9da5957fb9ffbcc940d9948909c4677efb6))
+* **dev-toolbar:** redesign vite config app with tabbed interface ([087df63](https://github.com/visulima/visulima/commit/087df630dc378933e54d1587d40c99f19fca0df0))
+* **dev-toolbar:** remove more overflow app ([cd3f369](https://github.com/visulima/visulima/commit/cd3f369c176c598d2e9a2bcdef194b7d457d343f))
+
+### Bug Fixes
+
+* **dev-toolbar:** move removePopupOutsideHandler declaration before first use ([d734a84](https://github.com/visulima/visulima/commit/d734a847b7f0b4574f081b9b78b2fce3d2b0e698))
+* **dev-toolbar:** resolve all ESLint errors across src files ([165b471](https://github.com/visulima/visulima/commit/165b471c95099bff76ba78d054664e79cfcdcb9a))
+* **dev-toolbar:** resolve ESLint errors in test files and config ([ea7e46c](https://github.com/visulima/visulima/commit/ea7e46c13db73431738a8f75febb847f3e7e530b))
+* **dev-toolbar:** resolve ESLint errors in vite-config app and RPC function ([fedce68](https://github.com/visulima/visulima/commit/fedce686ca59ba5d5b82cd10abfffa8d91a738c1))
+* **dev-toolbar:** split single-line mock factories to satisfy max-statements-per-line ([025b972](https://github.com/visulima/visulima/commit/025b9722b6e854cf1ae53694597e64c63493f730))
+* **dev-toolbar:** update packem to 2.0.0-alpha.54 ([f9779c9](https://github.com/visulima/visulima/commit/f9779c9e8dc7637db3bfef341cb66233469f653f))
+* removed old test ([bfa9e78](https://github.com/visulima/visulima/commit/bfa9e784b2e183ed481d432290070ee554b357ac))
+
+### Performance Improvements
+
+* **dev-toolbar:** replace tailwind-merge with clsx in cn() utility ([6c4740c](https://github.com/visulima/visulima/commit/6c4740c8ce890d955cecbf634dada65fd8a99769))
+
+### Documentation
+
+* **dev-toolbar:** add assets app documentation ([bea25b9](https://github.com/visulima/visulima/commit/bea25b96f7f7dbb2f3952b6c04d38d032569760d))
+* **dev-toolbar:** add iframe app documentation and remove more app references ([03dab85](https://github.com/visulima/visulima/commit/03dab85a92c5ee27b18db018c9dc263a1a3f1ea4))
+* **dev-toolbar:** add vite-overlay integration guide ([8f6f25a](https://github.com/visulima/visulima/commit/8f6f25aae43f0c32380ede56a93915897a4a939f))
+* **dev-toolbar:** update a11y docs to reflect optional axe-core peer dependency ([50396e8](https://github.com/visulima/visulima/commit/50396e8b18c56e716d119a468fa0b1219e789dff))
+* **dev-toolbar:** update built-in app docs for opt-in defaults and add SEO structured data section ([e95050a](https://github.com/visulima/visulima/commit/e95050aa419fe1a85664ccd5c88a3967de70b113))
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** enable a11y in tanstack-start-cloudflare example and fix LICENSE whitespace ([e02cd3e](https://github.com/visulima/visulima/commit/e02cd3edf2426c709d8247cc77f999f56315438e))
+* **dev-toolbar:** update dependencies ([1be313b](https://github.com/visulima/visulima/commit/1be313bf37cd32739ddbb275e1af58dcf029e9a1))
+* **dev-toolbar:** update examples to enable assets and inspector apps ([b3dc74d](https://github.com/visulima/visulima/commit/b3dc74d999acbfe4ee564a141dea47cf5ea2f71a))
+* update dependencies and fix vite-react-rolldown example ([8811909](https://github.com/visulima/visulima/commit/8811909e90877b0041e4b08cdd797d58749464e9))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **dev-toolbar:** replace cn wrapper with direct clsx imports ([6ac069b](https://github.com/visulima/visulima/commit/6ac069bf0f2e772f0a5626a47d9034b824a5b23a))
+* **dev-toolbar:** replace cn() wrapper with clsx() directly ([e774b36](https://github.com/visulima/visulima/commit/e774b367f9270dd9e43fcf0b7147a8cd23a1734a))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.3...@visulima/dev-toolbar@1.0.0-alpha.4) (2026-03-04)
 
 ### Bug Fixes
