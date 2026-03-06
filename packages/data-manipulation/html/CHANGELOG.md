@@ -1,3 +1,21 @@
+## @visulima/html [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.3...@visulima/html@1.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **html:** update packem to 2.0.0-alpha.54 ([ad2ebac](https://github.com/visulima/visulima/commit/ad2ebac46d076866b9b9653948273935013b5724))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+
+### Miscellaneous Chores
+
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **html:** update dependencies ([bfcd109](https://github.com/visulima/visulima/commit/bfcd1097249502c8a0219a5008941d854bf01c5d))
+* **html:** update dependencies ([2d1ca24](https://github.com/visulima/visulima/commit/2d1ca2493ab702a4210f0f60acd25cbefe6a1699))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/html [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.2...@visulima/html@1.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
