@@ -1,3 +1,27 @@
+## @visulima/tsconfig [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.3...@visulima/tsconfig@3.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **tsconfig:** update packem to 2.0.0-alpha.54 ([2f9b2ae](https://github.com/visulima/visulima/commit/2f9b2aea84a455f65ec6d682231876d5c5070159))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+
+### Miscellaneous Chores
+
+* **tooling:** update dependencies ([7f6f9d3](https://github.com/visulima/visulima/commit/7f6f9d3c41b170c53659ab34b79ceb23e4e9660a))
+* **tsconfig:** update dependencies ([3388495](https://github.com/visulima/visulima/commit/3388495a99235637506dc8b2958e26b625db36f1))
+* **tsconfig:** update dependencies ([7697d4b](https://github.com/visulima/visulima/commit/7697d4b4fa7153ab4a6bb93af68e35da7946df89))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/tsconfig [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.2...@visulima/tsconfig@3.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
