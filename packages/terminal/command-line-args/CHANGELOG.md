@@ -1,3 +1,26 @@
+## @visulima/command-line-args [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.3...@visulima/command-line-args@2.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **command-line-args:** update packem to 2.0.0-alpha.54 ([28d090d](https://github.com/visulima/visulima/commit/28d090d3944951ec9de7ee2d8f579f6785607f9f))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+
+### Miscellaneous Chores
+
+* **command-line-args:** update dependencies ([5f8ae63](https://github.com/visulima/visulima/commit/5f8ae6341e8ed6a1ef189cb5c3aa16fb3df45b66))
+* **command-line-args:** update dependencies ([246e9b9](https://github.com/visulima/visulima/commit/246e9b9e96e29cc36981f3e6e00dafd9a6ab3443))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+
 ## @visulima/command-line-args [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.2...@visulima/command-line-args@2.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
