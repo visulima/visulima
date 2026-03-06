@@ -60,6 +60,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache-prefix: "semantic-release"
+                  run-signatures-audit: false
 
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
