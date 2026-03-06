@@ -236,7 +236,7 @@
         "@visulima/error": "6.0.0-alpha.3",
         "@visulima/fmt": "2.0.0-alpha.4",
         "@visulima/inspector": "2.0.0-alpha.3",
-        "@visulima/packem": "2.0.0-alpha.46",
+        "@visulima/packem": "2.0.0-alpha.54",
         "@visulima/redact": "3.0.0-alpha.4",
         "@visulima/string": "3.0.0-alpha.5",
         "@vitest/coverage-v8": "^4.0.18",
