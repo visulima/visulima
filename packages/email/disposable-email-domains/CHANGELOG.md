@@ -1,3 +1,28 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.8...@visulima/disposable-email-domains@1.0.0-alpha.9) (2026-03-06)
+
+### Bug Fixes
+
+* **disposable-email-domains:** update packem to 2.0.0-alpha.54 ([3ac3346](https://github.com/visulima/visulima/commit/3ac3346a0f70b6856323e83d488770a49fbb00b2))
+* update email list ([a4e175e](https://github.com/visulima/visulima/commit/a4e175efcbc6e2e56362844c704d0c558885c9d1))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+* **disposable-email-domains:** update domain statistics ([0ce9ced](https://github.com/visulima/visulima/commit/0ce9ced5c7b4af9ca0a2d508a13b74e353633ea9))
+
+### Miscellaneous Chores
+
+* **disposable-email-domains:** update dependencies ([0780035](https://github.com/visulima/visulima/commit/0780035155ddd6cf875da166880b2e10734f63e4))
+* **disposable-email-domains:** update domain stats in README ([8ed76c3](https://github.com/visulima/visulima/commit/8ed76c3108d0bdafb21c9ff538122c95e0145b2d))
+* **email:** update dependencies ([0250461](https://github.com/visulima/visulima/commit/02504619e8e7ec6ef8e05f323674705656cde7de))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.6
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.7...@visulima/disposable-email-domains@1.0.0-alpha.8) (2026-01-17)
 
 ### Bug Fixes
