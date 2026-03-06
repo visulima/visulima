@@ -1,3 +1,21 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.4...@visulima/prisma-dmmf-transformer@3.0.0-alpha.5) (2026-03-06)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** update packem to 2.0.0-alpha.54 ([334cd5e](https://github.com/visulima/visulima/commit/334cd5ed90092fd43c517138bc2df7f9a24c0e76))
+
+### Documentation
+
+* **cerebro,prisma-dmmf-transformer,jsdoc-open-api:** add comprehensive Fumadocs documentation ([891b308](https://github.com/visulima/visulima/commit/891b308a34bca2765a4a97ea450648d20d90e0cf))
+
+### Miscellaneous Chores
+
+* **prisma-dmmf-transformer:** update dependencies ([c8fbc33](https://github.com/visulima/visulima/commit/c8fbc33f44f8404fae6acaa75503d83e1f2dd8da))
+* **prisma-dmmf-transformer:** update dependencies ([7f26f35](https://github.com/visulima/visulima/commit/7f26f35539c936903d85d791acd95574ac242112))
+* **tooling:** update dependencies ([7f6f9d3](https://github.com/visulima/visulima/commit/7f6f9d3c41b170c53659ab34b79ceb23e4e9660a))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.3...@visulima/prisma-dmmf-transformer@3.0.0-alpha.4) (2025-12-27)
 
 ### Bug Fixes
