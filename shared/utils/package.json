@@ -5,10 +5,10 @@
         "@visulima/error": "workspace:*"
     },
     "devDependencies": {
-        "@shikijs/langs": "^3.22.0",
-        "@shikijs/themes": "^3.22.0",
+        "@shikijs/langs": "^4.0.1",
+        "@shikijs/themes": "^4.0.1",
         "@visulima/boxen": "workspace:*",
-        "shiki": "^3.22.0",
+        "shiki": "^4.0.1",
         "typescript": "^5.9.3"
     }
 }
