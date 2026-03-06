@@ -1,3 +1,22 @@
+## @visulima/crud [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.5...@visulima/crud@3.0.0-alpha.6) (2026-03-06)
+
+### Documentation
+
+* **crud,health-check,pagination:** add comprehensive Fumadocs documentation ([1fc3748](https://github.com/visulima/visulima/commit/1fc3748b2d9b1ef2332b5d38cb6dd2c7c1f78589))
+
+### Miscellaneous Chores
+
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* **crud:** update dependencies ([fb5851e](https://github.com/visulima/visulima/commit/fb5851eae39c0be9ba96a80dadec376cc2ecdb17))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.6
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/crud [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.4...@visulima/crud@3.0.0-alpha.5) (2026-01-17)
 
 ### Miscellaneous Chores
