@@ -1,3 +1,24 @@
+## @visulima/email [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.9...@visulima/email@1.0.0-alpha.10) (2026-03-06)
+
+### Bug Fixes
+
+* **email:** update packem to 2.0.0-alpha.54 ([857a650](https://github.com/visulima/visulima/commit/857a650aea408e49c11f36ebe6e3a7f2e3560c82))
+
+### Miscellaneous Chores
+
+* **email:** update dependencies ([07a300d](https://github.com/visulima/visulima/commit/07a300dcb01259457a41ef3aaf8dd8038d7074ff))
+* **email:** update dependencies ([0250461](https://github.com/visulima/visulima/commit/02504619e8e7ec6ef8e05f323674705656cde7de))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.9
+* **@visulima/error:** upgraded to 6.0.0-alpha.5
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/email [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.8...@visulima/email@1.0.0-alpha.9) (2026-01-17)
 
 ### Bug Fixes
