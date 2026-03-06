@@ -1,3 +1,22 @@
+## @visulima/api-platform [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.4...@visulima/api-platform@4.0.0-alpha.5) (2026-03-06)
+
+### Miscellaneous Chores
+
+* **api-platform:** update dependencies ([da57fe3](https://github.com/visulima/visulima/commit/da57fe35fa242e43d1990c7bb8a887d23c3b1ea1))
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* move top-level examples into their respective packages ([3bf7105](https://github.com/visulima/visulima/commit/3bf7105a56db6383ae65d5e28dea9a2c18af791a))
+* moved examples ([bb07290](https://github.com/visulima/visulima/commit/bb07290fba65a83aaad8f0ef62d1c244d1610002))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.5
+* **@visulima/fs:** upgraded to 5.0.0-alpha.4
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+* **@visulima/crud:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/api-platform [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.3...@visulima/api-platform@4.0.0-alpha.4) (2026-01-17)
 
 ### Miscellaneous Chores
