@@ -1,3 +1,26 @@
+## @visulima/source-map [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.3...@visulima/source-map@3.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **source-map:** update packem to 2.0.0-alpha.54 ([b18abf9](https://github.com/visulima/visulima/commit/b18abf9866e8ee1f4622b15e5290d90d1baf02ed))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **source-map:** update dependencies ([607bef6](https://github.com/visulima/visulima/commit/607bef66893cde90ae6bda8e6559326d76b5f919))
+* **source-map:** update dependencies ([3f232b2](https://github.com/visulima/visulima/commit/3f232b2cca39aac871729caff0c505fe7570c90b))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.5
+
 ## @visulima/source-map [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.2...@visulima/source-map@3.0.0-alpha.3) (2025-12-27)
 
 ### Bug Fixes
