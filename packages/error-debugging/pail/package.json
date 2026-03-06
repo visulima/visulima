@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.0.0-alpha.5",
+    "version": "4.0.0-alpha.6",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "ansi",
@@ -220,7 +220,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.0.0-alpha.4",
+        "@visulima/colorize": "2.0.0-alpha.5",
         "type-fest": "^5.4.4"
     },
     "devDependencies": {
@@ -233,12 +233,12 @@
         "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "25.3.3",
-        "@visulima/error": "6.0.0-alpha.3",
-        "@visulima/fmt": "2.0.0-alpha.4",
-        "@visulima/inspector": "2.0.0-alpha.3",
+        "@visulima/error": "6.0.0-alpha.5",
+        "@visulima/fmt": "2.0.0-alpha.5",
+        "@visulima/inspector": "2.0.0-alpha.4",
         "@visulima/packem": "2.0.0-alpha.54",
-        "@visulima/redact": "3.0.0-alpha.4",
-        "@visulima/string": "3.0.0-alpha.5",
+        "@visulima/redact": "3.0.0-alpha.5",
+        "@visulima/string": "3.0.0-alpha.6",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
         "cli-spinners": "3.4.0",
@@ -258,7 +258,7 @@
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.9",
-        "@visulima/redact": "3.0.0-alpha.4",
+        "@visulima/redact": "3.0.0-alpha.5",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
