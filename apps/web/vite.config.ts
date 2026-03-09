@@ -7,7 +7,8 @@ import { defineConfig } from "vite";
 import { imagetools } from "vite-imagetools";
 import svgr from "vite-plugin-svgr";
 import tsConfigPaths from "vite-tsconfig-paths";
-import errorOverlay from "@visulima/vite-overlay";
+import viteOverlay from "@visulima/vite-overlay";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
 
 const FumadocsDeps = ["fumadocs-core", "fumadocs-ui"];
 
@@ -34,7 +35,21 @@ export default defineConfig({
         exclude: ["scripts/*"],
     },
     plugins: [
-        errorOverlay({}),
+        viteOverlay({ showBallonButton: false }),
+        devToolbar({
+            // TanStack Start SSR renders HTML server-side, bypassing Vite's
+            // transformIndexHtml. Use appendTo to inject via the module graph instead.
+            //appendTo: /router\.tsx$/,
+            apps: {
+                settings: true,
+                timeline: true,
+                assets: true,
+                inspector: true,
+                a11y: true,
+            },
+            defaultVisible: true,
+            placement: "bottom-center",
+        }),
         mdx(await import("./source.config")),
         tsConfigPaths({
             projects: ["./tsconfig.json"],

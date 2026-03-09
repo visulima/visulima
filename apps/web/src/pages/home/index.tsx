@@ -14,8 +14,8 @@ const Home: FC = () => (
     <>
         <MainHero />
         <WhyVisulima />
-        <Packages />
         <WorksWhereYouWork />
+        <Packages />
         <Rules />
         <OpenSource />
         <Github />

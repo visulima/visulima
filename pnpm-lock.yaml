@@ -9,9 +9,6 @@ catalogs:
     '@tailwindcss/vite':
       specifier: 4.2.1
       version: 4.2.1
-    '@visulima/vite-overlay':
-      specifier: ^1.3.7
-      version: 1.3.7
     '@vitejs/plugin-react':
       specifier: 5.1.4
       version: 5.1.4
@@ -819,9 +816,12 @@ importers:
       '@types/three':
         specifier: catalog:types
         version: 0.183.1
+      '@visulima/dev-toolbar':
+        specifier: workspace:*
+        version: link:../../packages/error-debugging/dev-toolbar
       '@visulima/vite-overlay':
-        specifier: catalog:build
-        version: 1.3.7(ai@5.0.107(zod@4.3.6))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        specifier: workspace:*
+        version: link:../../packages/error-debugging/vite-overlay
       '@vitest/ui':
         specifier: catalog:test
         version: 4.0.18(vitest@4.0.18)
@@ -13103,6 +13103,7 @@ packages:
     resolution: {integrity: sha512-V7hlOQoBXgqLSa4ai9S0LGOO7cKTqRu5dh0T83xfE+VqZQmDkuRm956ooJ2/M8y62kWIxS2VEfePnEoB74x6fg==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/cli@4.0.2':
     resolution: {integrity: sha512-1aj4yHpsYQ6ETF3/Pjz6FlejYIknnpzAV4YZJhgBm858b+6OtjmJK2LRJYF4UG/S+ijuHeUe2jyR1orXYfob+w==}
 =======
@@ -13110,6 +13111,8 @@ packages:
     resolution: {integrity: sha512-YF7wrx3ZLXdMnlBpuuN/O0JGGTejk6BEvw4HK7rPHTzdLRxXVHuishpj5bHZe3WEkmcD2JXSy3iNhYxsSnMi8A==}
     hasBin: true
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/cli@4.0.1':
     resolution: {integrity: sha512-p9qUNCXIwbeCBwRKu8yGHsuur933T+LLEiKnyjhtHHuQ98NpKHQf9wDamvs6LATiH63kjymwKMNOo8s75MmGUg==}
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
@@ -13120,12 +13123,15 @@ packages:
     resolution: {integrity: sha512-vju0lY9r27jJfOY4Z7+Rt/nIOjzJpZ3y+nYpqtUZInVoXQ/TJZcfGnNOGnKjFdVZb8qexiCuSlZRKcGfhhTTZQ==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/core@4.0.2':
     resolution: {integrity: sha512-hxT0YF4ExEqB8G/qFdtJvpmHXBYJ2lWW7qTHDarVkIudPFE6iCIrqdgWxGn5s+ppkGXI0aEGlibI0PAyzP3zlw==}
 =======
   '@shikijs/core@3.15.0':
     resolution: {integrity: sha512-8TOG6yG557q+fMsSVa8nkEDOZNTSxjbbR8l6lF2gyr6Np+jrPlslqDxQkN6rMXCECQ3isNPZAGszAfYoJOPGlg==}
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/core@4.0.1':
     resolution: {integrity: sha512-vWvqi9JNgz1dRL9Nvog5wtx7RuNkf7MEPl2mU/cyUUxJeH1CAr3t+81h8zO8zs7DK6cKLMoU9TvukWIDjP4Lzg==}
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
@@ -13139,12 +13145,15 @@ packages:
     resolution: {integrity: sha512-iNEZv4IrLYPv64Q6k7EPpOCE/nuvGiKl7zxdq0WFuRPF5PAE9PRo2JGq/d8crLusM59BRemJ4eOqrFrC4wiQ+A==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/engine-javascript@4.0.2':
     resolution: {integrity: sha512-7PW0Nm49DcoUIQEXlJhNNBHyoGMjalRETTCcjMqEaMoJRLljy1Bi/EGV3/qLBgLKQejdspiiYuHGQW6dX94Nag==}
 =======
   '@shikijs/engine-javascript@3.15.0':
     resolution: {integrity: sha512-ZedbOFpopibdLmvTz2sJPJgns8Xvyabe2QbmqMTz07kt1pTzfEvKZc5IqPVO/XFiEbbNyaOpjPBkkr1vlwS+qg==}
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/engine-javascript@4.0.1':
     resolution: {integrity: sha512-DJK9NiwtGYqMuKCRO4Ip0FKNDQpmaiS+K5bFjJ7DWFn4zHueDWgaUG8kAofkrnXF6zPPYYQY7J5FYVW9MbZyBg==}
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
@@ -13156,9 +13165,6 @@ packages:
 
   '@shikijs/engine-oniguruma@1.29.2':
     resolution: {integrity: sha512-7iiOx3SG8+g1MnlzZVDYiaeHe7Ez2Kf2HrJzdmGwkRisT7r4rak0e655AcM/tF9JG/kg5fMNYlLLKglbN7gBqA==}
-
-  '@shikijs/engine-oniguruma@3.15.0':
-    resolution: {integrity: sha512-HnqFsV11skAHvOArMZdLBZZApRSYS4LSztk2K3016Y9VCyZISnlYUYsL2hzlS7tPqKHvNqmI5JSUJZprXloMvA==}
 
   '@shikijs/engine-oniguruma@3.22.0':
     resolution: {integrity: sha512-DyXsOG0vGtNtl7ygvabHd7Mt5EY8gCNqR9Y7Lpbbd/PbJvgWrqaKzH1JW6H6qFkuUa8aCxoiYVv8/YfFljiQxA==}
@@ -13173,9 +13179,6 @@ packages:
 
   '@shikijs/langs@1.29.2':
     resolution: {integrity: sha512-FIBA7N3LZ+223U7cJDUYd5shmciFQlYkFXlkKVaHsCPgfVLiO+e12FmQE6Tf9vuyEsFe3dIl8qGWKXgEHL9wmQ==}
-
-  '@shikijs/langs@3.15.0':
-    resolution: {integrity: sha512-WpRvEFvkVvO65uKYW4Rzxs+IG0gToyM8SARQMtGGsH4GDMNZrr60qdggXrFOsdfOVssG/QQGEl3FnJ3EZ+8w8A==}
 
   '@shikijs/langs@3.22.0':
     resolution: {integrity: sha512-x/42TfhWmp6H00T6uwVrdTJGKgNdFbrEdhaDwSR5fd5zhQ1Q46bHq9EO61SCEWJR0HY7z2HNDMaBZp8JRmKiIA==}
@@ -13208,9 +13211,6 @@ packages:
   '@shikijs/themes@1.29.2':
     resolution: {integrity: sha512-i9TNZlsq4uoyqSbluIcZkmPL9Bfi3djVxRnofUHwvx/h6SRW3cwgBC5SML7vsDcWyukY0eCzVN980rqP6qNl9g==}
 
-  '@shikijs/themes@3.15.0':
-    resolution: {integrity: sha512-8ow2zWb1IDvCKjYb0KiLNrK4offFdkfNVPXb1OZykpLCzRU6j+efkY+Y7VQjNlNFXonSw+4AOdGYtmqykDbRiQ==}
-
   '@shikijs/themes@3.22.0':
     resolution: {integrity: sha512-o+tlOKqsr6FE4+mYJG08tfCFDS+3CG20HbldXeVoyP+cYSUxDhrFf3GPjE60U55iOkkjbpY2uC3It/eeja35/g==}
 
@@ -13234,9 +13234,6 @@ packages:
 
   '@shikijs/types@1.29.2':
     resolution: {integrity: sha512-VJjK0eIijTZf0QSTODEXCqinjBn0joAHQ+aPSBzrv4O2d/QSbsMw+ZeSRx03kV34Hy7NzUvV/7NqfYGRLrASmw==}
-
-  '@shikijs/types@3.15.0':
-    resolution: {integrity: sha512-BnP+y/EQnhihgHy4oIAN+6FFtmfTekwOLsQbRw9hOKwqgNy8Bdsjq8B05oAt/ZgvIWWFrshV71ytOrlPfYjIJw==}
 
   '@shikijs/types@3.22.0':
     resolution: {integrity: sha512-491iAekgKDBFE67z70Ok5a8KBMsQ2IJwOWw3us/7ffQkIBCyOQfm/aNwVMBUriP02QshIfgHCBSIYAl3u2eWjg==}
@@ -15957,6 +15954,7 @@ packages:
     engines: {node: '>=20.19 <=25.*'}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   '@visulima/error@5.0.6':
     resolution: {integrity: sha512-vaRd8YkxgOfQBjDjkp78mvjim0Upe9ZPxczaZ1IazfIdQkWvm7hAbfeCYMhfDHpHhG5fKjdhdvuRxTDE9SMn9g==}
@@ -15968,6 +15966,8 @@ packages:
       ai:
         optional: true
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@visulima/error@6.0.0-alpha.3':
     resolution: {integrity: sha512-mXknm8TGhgK7MhXQ4jEZO9VvtKUyVYB0/SrFSL+DdiCq8r3Ic3iSN7BNWDAvn9soO2jaHbtVVoa9LSbGphYQMw==}
     engines: {node: '>=22.13 <=25.x'}
@@ -16295,12 +16295,6 @@ packages:
   '@visulima/tsconfig@2.1.3':
     resolution: {integrity: sha512-q53VQIgT67MxxUciKn/3faiYUw4yC8jseA0xaVu00yuQIb6a15SHx/sgEathNropsyaUdDgzwlOH+L3de8Fs8g==}
     engines: {node: '>=20.19 <=25.x'}
-
-  '@visulima/vite-overlay@1.3.7':
-    resolution: {integrity: sha512-Uewn/pppf3GSQnu1hhCN9vYfjpzQ0SaMMYXytnhIm+Qdr6JscwKPUsAUKrgoABz+xzEGJWBOLDOVhibc5LG8YA==}
-    engines: {node: '>=20.19 <=25.x'}
-    peerDependencies:
-      vite: '>=7.1.11'
 
   '@vitejs/devtools-kit@0.0.0-alpha.32':
     resolution: {integrity: sha512-FPqCXXY+yPUMZ3bP54cgyqJX4TCCmmOywlxi7rl67T9B6/e9bR01VNbVdquVeFoBhC3rukyGrPRwro+raRCuDQ==}
@@ -26385,12 +26379,15 @@ packages:
     resolution: {integrity: sha512-njXuliz/cP+67jU2hukkxCNuH1yUi4QfdZZY+sMr5PPrIyXSu5iTb/qYC4BiWWB0vZ+7TbdvYUCeL23zpwCfbg==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   shiki@4.0.2:
     resolution: {integrity: sha512-eAVKTMedR5ckPo4xne/PjYQYrU3qx78gtJZ+sHlXEg5IHhhoQhMfZVzetTYuaJS0L2Ef3AcCRzCHV8T0WI6nIQ==}
 =======
   shiki@3.15.0:
     resolution: {integrity: sha512-kLdkY6iV3dYbtPwS9KXU7mjfmDm25f5m0IPNFnaXO7TBPcvbUOY72PYXSuSqDzwp+vlH/d7MXpHlKO/x+QoLXw==}
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   shiki@4.0.1:
     resolution: {integrity: sha512-EkAEhDTN5WhpoQFXFw79OHIrSAfHhlImeCdSyg4u4XvrpxKEmdo/9x/HWSowujAnUrFsGOwWiE58a6GVentMnQ==}
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
@@ -36950,6 +36947,7 @@ snapshots:
       toposource: 1.2.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/cli@4.0.2':
 =======
   '@shikijs/cli@3.15.0':
@@ -36959,6 +36957,8 @@ snapshots:
       cac: 6.7.14
       shiki: 3.15.0
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/cli@4.0.1':
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
     dependencies:
@@ -36977,6 +36977,7 @@ snapshots:
       hast-util-to-html: 9.0.5
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/core@4.0.2':
 =======
   '@shikijs/core@3.15.0':
@@ -36986,6 +36987,8 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/core@4.0.1':
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
     dependencies:
@@ -37010,6 +37013,7 @@ snapshots:
       oniguruma-to-es: 2.3.0
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@shikijs/engine-javascript@4.0.2':
 =======
   '@shikijs/engine-javascript@3.15.0':
@@ -37018,6 +37022,8 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 4.3.4
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@shikijs/engine-javascript@4.0.1':
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
     dependencies:
@@ -37034,11 +37040,6 @@ snapshots:
   '@shikijs/engine-oniguruma@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
-      '@shikijs/vscode-textmate': 10.0.2
-
-  '@shikijs/engine-oniguruma@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
       '@shikijs/vscode-textmate': 10.0.2
 
   '@shikijs/engine-oniguruma@3.22.0':
@@ -37059,10 +37060,6 @@ snapshots:
   '@shikijs/langs@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
-
-  '@shikijs/langs@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
 
   '@shikijs/langs@3.22.0':
     dependencies:
@@ -37105,10 +37102,6 @@ snapshots:
     dependencies:
       '@shikijs/types': 1.29.2
 
-  '@shikijs/themes@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
-
   '@shikijs/themes@3.22.0':
     dependencies:
       '@shikijs/types': 3.22.0
@@ -37136,11 +37129,6 @@ snapshots:
       - supports-color
 
   '@shikijs/types@1.29.2':
-    dependencies:
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-
-  '@shikijs/types@3.15.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -41525,11 +41513,14 @@ snapshots:
   '@visulima/css-style-inject@1.0.0-alpha.15': {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   '@visulima/error@5.0.6(ai@5.0.107(zod@4.3.6))':
     optionalDependencies:
       ai: 5.0.107(zod@4.3.6)
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   '@visulima/error@6.0.0-alpha.3(ai@5.0.107(zod@4.3.6))':
     optionalDependencies:
       ai: 5.0.107(zod@4.3.6)
@@ -41909,19 +41900,6 @@ snapshots:
       resolve-pkg-maps: 1.0.0
     transitivePeerDependencies:
       - yaml
-
-  '@visulima/vite-overlay@1.3.7(ai@5.0.107(zod@4.3.6))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      '@shikijs/cli': 3.15.0
-      '@shikijs/langs': 3.15.0
-      '@shikijs/themes': 3.15.0
-      '@visulima/error': 5.0.6(ai@5.0.107(zod@4.3.6))
-      fastest-levenshtein: 1.0.16
-      shiki: 3.15.0
-      vite: 7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-    transitivePeerDependencies:
-      - ai
 
   '@vitejs/devtools-kit@0.0.0-alpha.32(typescript@5.9.3)(vite@8.0.0-beta.16)(ws@8.19.0)':
     dependencies:
@@ -45465,10 +45443,14 @@ snapshots:
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0):
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
+=======
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
@@ -47285,7 +47267,7 @@ snapshots:
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.2
       '@types/estree': 1.0.8
-      ajv: 6.14.0
+      ajv: 8.18.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
       debug: 4.4.3(supports-color@8.1.1)
@@ -56462,6 +56444,7 @@ snapshots:
       '@types/hast': 3.0.4
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   shiki@4.0.2:
 =======
   shiki@3.15.0:
@@ -56475,6 +56458,8 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
+=======
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
   shiki@4.0.1:
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)
     dependencies:
@@ -56834,11 +56819,15 @@ snapshots:
     dependencies:
       eslint: 8.57.0
 <<<<<<< HEAD
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
 =======
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0)
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+>>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.2(jiti@2.6.1))
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)

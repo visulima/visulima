@@ -113,18 +113,17 @@ const Footer: FC = () => (
         </div>
 
         <div className="border-t border-white/[0.06] py-12">
-            <div className="container mx-auto flex flex-col items-center justify-center gap-8">
-                <span className="text-sm text-white/30">Built by</span>
-                <a className="h-full w-full cursor-pointer" href="https://anolilab.com?ref=visulima" rel="noopener noreferrer" target="_blank">
+            <div className="container mx-auto flex flex-col items-center justify-center gap-6">
+                <span className="font-mono text-xs tracking-wider text-white/25 uppercase">Built by</span>
+                <a className="h-full w-full cursor-pointer transition-opacity duration-300 hover:opacity-80" href="https://anolilab.com?ref=visulima" rel="noopener noreferrer" target="_blank">
                     <AnolilabText className="fill-white" />
                 </a>
             </div>
         </div>
 
         <div className="relative container mx-auto text-white">
-            <div className="flex items-center justify-center border-b border-white/[0.06] py-12 text-xs text-white/30">
+            <div className="flex flex-col items-center justify-between gap-4 border-b border-white/[0.06] py-12 text-xs text-white/25 sm:flex-row">
                 <span>Copyright &copy; 2022-present Visulima & Visulima Contributors</span>
-                <div className="grow" />
                 <span>Code: MIT License. Visual Design & Branding: All Rights Reserved (CC BY-NC-ND 4.0).</span>
             </div>
             <div className="absolute inset-0 z-10" style={{ maskImage: "radial-gradient(85% 100% at 50% 100%, white, transparent 72.5%)" }}>

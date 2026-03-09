@@ -1,24 +1,37 @@
-import { Star } from "lucide-react";
+import { GitFork, Heart, Star } from "lucide-react";
 
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 import HighlightLink from "@/components/ui/highlight-link";
 
+const StatBadge = ({ icon: Icon, label }: { icon: typeof Star; label: string }) => (
+    <div className="flex items-center gap-2 border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500">
+        <Icon className="h-4 w-4 text-gray-400" />
+        <span>{label}</span>
+    </div>
+);
+
 const OpenSource = () => (
-    <Section classes={{ childrenWrapper: "items-end", root: "pb-[240px]" }}>
+    <Section classes={{ childrenWrapper: "items-end", root: "pb-[240px]" }} mode="light">
         <div className="col-span-2">
             <SectionTitle
                 description={
-                    <span className="flex flex-col gap-4">
-                        <span className="text-white/60">
+                    <span className="flex flex-col gap-6">
+                        <span>
                             At Visulima, we believe every line of code tells a story. By combining elegant syntax with intuitive design, we empower developers to
                             create with confidence and joy.
                         </span>
-                        <span className="text-white/40">
+                        <span className="text-gray-400">
                             Our philosophy is simple: great tools lead to great creations, and development should always inspire — not frustrate.
                         </span>
+                        <div className="flex flex-wrap gap-3 pt-4">
+                            <StatBadge icon={Star} label="MIT Licensed" />
+                            <StatBadge icon={GitFork} label="40+ Packages" />
+                            <StatBadge icon={Heart} label="Community Driven" />
+                        </div>
                     </span>
                 }
+                mode="light"
                 prefix="Open Source"
                 title="Proudly OpenSource."
             />

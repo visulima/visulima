@@ -5,9 +5,9 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 
 const GuidelineItem = ({ children, color, title }: { children: React.ReactNode; color: string; title: string }) => (
-    <div className="group flex flex-col gap-4">
-        <h3 className={`-ml-[1px] border-l-2 ${color} px-10 text-lg font-bold text-white`}>{title}</h3>
-        <p className="px-10 text-sm leading-relaxed text-white/50">{children}</p>
+    <div className="group relative flex flex-col gap-4 rounded-lg py-6 transition-all duration-300 hover:bg-white/[0.02]">
+        <h3 className={`-ml-[1px] border-l-2 ${color} px-10 text-lg font-bold text-white transition-colors duration-300`}>{title}</h3>
+        <p className="px-10 text-sm leading-relaxed text-white/40 transition-colors duration-300 group-hover:text-white/60">{children}</p>
     </div>
 );
 

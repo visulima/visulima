@@ -5,14 +5,8 @@ import { NotFound } from "@/pages/not-found";
 
 import { routeTree } from "./routeTree.gen";
 
-declare module "@tanstack/react-router" {
-    interface Register {
-        router: ReturnType<typeof createRouter>;
-    }
-}
-
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/explicit-module-boundary-types
-export const createRouter = () =>
+export const getRouter = () =>
     createTanStackRouter({
         defaultErrorComponent: DefaultCatchBoundary,
         defaultNotFoundComponent: NotFound,

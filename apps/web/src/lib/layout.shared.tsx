@@ -5,5 +5,8 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: 'Tanstack Start',
     },
+    themeSwitch: {
+      enabled: false,
+    },
   };
 }

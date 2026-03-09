@@ -6,7 +6,8 @@ import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
-import { Book, Handshake, Home, Logs, Menu, Package, ScrollText, Search, Signature, Terminal } from "lucide-react";
+import { Book, Handshake, Home, Logs, Menu, Moon, Package, ScrollText, Search, Signature, Sun, Terminal } from "lucide-react";
+import { useTheme } from "next-themes";
 import type { ComponentPropsWithoutRef, ElementRef, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 
@@ -269,6 +270,32 @@ const SearchButton = () => {
     );
 };
 
+const ThemeToggle = () => {
+    const { resolvedTheme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return <div className="size-8" />;
+    }
+
+    return (
+        <button
+            aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+            className="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-[var(--nav-text-color)]/10 text-[var(--nav-text-color)]/70 transition-colors hover:bg-white/[0.06] hover:text-[var(--nav-text-color)]"
+            onClick={() => {
+                setTheme(resolvedTheme === "dark" ? "light" : "dark");
+            }}
+            type="button"
+        >
+            {resolvedTheme === "dark" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
+        </button>
+    );
+};
+
 const Navbar = () => {
     const { pathname } = useLocation();
     const navReference = useRef(null);
@@ -307,7 +334,7 @@ const Navbar = () => {
 
     return (
         <div
-            className={cn("flex fixed top-0 left-0 right-0 z-20 lg:container gap-8 transition-all duration-300", { "top-5": scrolled })}
+            className={cn("flex fixed top-0 z-20 w-full gap-8 transition-all duration-300", { "top-5": scrolled })}
             data-theme="dark"
             ref={navReference}
         >
@@ -356,6 +383,7 @@ const Navbar = () => {
                     ))}
                 </NavigationMenuList>
                 <SearchButton />
+                <ThemeToggle />
                 <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
                     <TwitterLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Follow us on X" />
                 </a>

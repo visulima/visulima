@@ -43,10 +43,10 @@ const deployIcons = [
 ];
 
 const IconGrid = ({ icons, setSelectedFramework }: { icons: { icon: any; label: string }[]; setSelectedFramework: (framework: string | null) => void }) => (
-    <ul className="flex gap-1">
+    <ul className="flex flex-wrap gap-2">
         {icons.map(({ icon: Icon, label }) => (
             <li
-                className="flex h-[48px] w-[48px] place-content-center place-items-center rounded-lg border border-white/[0.06] bg-white/[0.03] p-2 transition-all duration-200 hover:border-sky-sapphire/30 hover:bg-sky-sapphire/[0.06]"
+                className="group/icon relative flex h-12 w-12 cursor-default place-content-center place-items-center border border-gray-200 bg-gray-50 p-2 transition-all duration-300 hover:border-sky-sapphire/40 hover:bg-sky-sapphire/[0.06] hover:shadow-[0_0_20px_-4px] hover:shadow-sky-sapphire/20"
                 key={label}
                 onMouseEnter={() => {
                     setSelectedFramework(label);
@@ -55,8 +55,10 @@ const IconGrid = ({ icons, setSelectedFramework }: { icons: { icon: any; label: 
                     setSelectedFramework(null);
                 }}
             >
-                <span className="sr-only">{label}</span>
-                <Icon aria-hidden="true" className="h-24 w-24 max-w-none text-white/60 transition-colors hover:text-white" size={24} />
+                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 px-2 py-0.5 text-xs text-white opacity-0 transition-opacity duration-200 group-hover/icon:opacity-100">
+                    {label}
+                </span>
+                <Icon aria-hidden="true" className="h-24 w-24 max-w-none text-gray-400 transition-colors duration-300 group-hover/icon:text-gray-900" size={24} />
             </li>
         ))}
     </ul>
@@ -67,13 +69,13 @@ const WorksWhereYouWork: FC = () => {
     const [selectedDeploy, setSelectedDeploy] = useState<string | null>(null);
 
     return (
-        <Section>
-            <SectionTitle classes={{ root: "col-span-2" }} prefix="Works" title="Works where you work" />
+        <Section mode="light">
+            <SectionTitle classes={{ root: "col-span-2" }} mode="light" prefix="Works" title="Works where you work" />
             <div className="col-span-4 mt-24 grid gap-y-24 lg:grid-cols-2 lg:gap-x-32 relative">
                 <section>
                     <h2 className="mb-6 text-4xl font-semibold">
                         Develop, connect, and launch using the tools you love
-                        <span className="relative -top-1.5 left-2 inline-block rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-sm text-white">
+                        <span className="relative -top-1.5 left-2 inline-block border border-gray-200 bg-gray-50 px-3 py-1 font-mono text-sm text-gray-900">
                             {selectedFramework || (
                                 <>
                                     {`$\{`}
@@ -83,10 +85,10 @@ const WorksWhereYouWork: FC = () => {
                             )}
                         </span>
                     </h2>
-                    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
+                    <div className="border border-gray-200 bg-white p-6">
                         <IconGrid icons={frameworkIcons} setSelectedFramework={setSelectedFramework} />
                     </div>
-                    <p className="mt-4 text-sm text-white/40">...or whichever one is coming next.</p>
+                    <p className="mt-4 text-sm text-gray-400">...or whichever one is coming next.</p>
                 </section>
                 <svg
                     className="absolute bottom-18 left-1/2 hidden w-[134px] -translate-x-1/2 lg:block fill-sky-sapphire/40"
@@ -103,12 +105,12 @@ const WorksWhereYouWork: FC = () => {
                 </svg>
                 <section className="lg:mt-24">
                     <h2 className="mb-4 text-4xl font-semibold">Our packages use web standards to run anywhere</h2>
-                    <p className="mt-4 mb-6 text-sm text-white/40">...and it comes in other flavors too.</p>
+                    <p className="mt-4 mb-6 text-sm text-gray-400">...and it comes in other flavors too.</p>
 
-                    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
+                    <div className="border border-gray-200 bg-white p-6">
                         <IconGrid icons={deployIcons} setSelectedFramework={setSelectedDeploy} />
 
-                        <p className="mt-4 flex items-end font-mono text-sm text-white/60">
+                        <p className="mt-4 flex items-end font-mono text-sm text-gray-500">
                             Deploy modern apps and APIs{" "}
                             {selectedDeploy ? (
                                 <span className="text-sky-sapphire ml-2 font-medium">{`with ${selectedDeploy}`}</span>
