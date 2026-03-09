@@ -1,0 +1,494 @@
+---
+title: Sending Mail
+description: Learn different ways to send emails with @visulima/email
+---
+
+# Sending Mail
+
+This guide covers the different ways to send emails with @visulima/email.
+
+## Using the Message Builder
+
+The most common way to send emails is using the fluent message builder API:
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>").text("Hello World");
+
+const result = await mail.send(message);
+```
+
+### Chaining Methods
+
+The message builder supports method chaining for a fluent API:
+
+```typescript
+const message = new MailMessage()
+    .to("user@example.com")
+    .cc("cc@example.com")
+    .bcc("bcc@example.com")
+    .from("sender@example.com")
+    .replyTo("reply@example.com")
+    .subject("Hello")
+    .html("<h1>Hello World</h1>")
+    .text("Hello World");
+
+const result = await mail.send(message);
+```
+
+### Multiple Recipients
+
+You can send to multiple recipients:
+
+```typescript
+const message = new MailMessage().to(["user1@example.com", "user2@example.com"]).from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+Or use the `EmailAddress` format:
+
+```typescript
+const message = new MailMessage()
+    .to([
+        { email: "user1@example.com", name: "User 1" },
+        { email: "user2@example.com", name: "User 2" },
+    ])
+    .from({ email: "sender@example.com", name: "Sender" })
+    .subject("Hello")
+    .html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Direct Email Sending
+
+You can also send emails directly using `EmailOptions`:
+
+```typescript
+import type { EmailOptions } from "@visulima/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const emailOptions: EmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello World</h1>",
+    text: "Hello World",
+};
+
+const result = await mail.send(emailOptions);
+```
+
+## Creating Draft Emails
+
+You can create draft emails in EML (RFC 822) format without sending them. This is useful for previewing, saving for later, or testing email content. The `draft()` method returns the email as an EML string with an `X-Unsent: 1` header automatically added.
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { writeFile } from "fs/promises";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// Create a draft from MailMessage
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+const eml = await mail.draft(message);
+
+// Save draft to file
+await writeFile("draft.eml", eml);
+
+// Or preview the draft
+console.log("Draft EML:", eml);
+```
+
+### Using Drafts with EmailOptions
+
+You can also create drafts from `EmailOptions`:
+
+```typescript
+const eml = await mail.draft({
+    to: "user@example.com",
+    from: "sender@example.com",
+    subject: "Hello",
+    html: "<h1>Hello World</h1>",
+});
+
+// Save draft to database or file system
+await saveDraftToFile("draft.eml", eml);
+```
+
+### Drafts with Global Configuration
+
+Drafts automatically apply global configuration (default from, reply-to, headers):
+
+```typescript
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }))
+    .setFrom({ email: "noreply@example.com" })
+    .setHeaders({ "X-App-Name": "MyApp" });
+
+const message = new MailMessage().to("user@example.com").subject("Hello").html("<h1>Hello</h1>");
+
+// Draft will include the global from address and headers
+const eml = await mail.draft(message);
+// The EML will include "X-App-Name": "MyApp" and "X-Unsent": "1" headers
+```
+
+### Serving Drafts as Downloads
+
+You can serve drafts as downloadable EML files (similar to Symfony):
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+// In your HTTP handler (e.g., Express, Fastify, etc.)
+app.get("/draft/:id", async (req, res) => {
+    const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
+
+    const eml = await mail.draft(message);
+
+    res.setHeader("Content-Type", "message/rfc822");
+    res.setHeader("Content-Disposition", 'attachment; filename="draft.eml"');
+    res.send(eml);
+});
+```
+
+### Important Notes
+
+- Drafts are created in EML (RFC 822) format with the `X-Unsent: 1` header automatically added
+- The `draft()` method returns a string (EML format) that can be saved to a file or database
+- EML files can be opened by most email clients (Outlook, Thunderbird, Apple Mail, etc.)
+- The EML format is useful for archiving, previewing, or sharing draft emails
+
+## Handling Results
+
+All sending methods return a `Result<EmailResult>` object:
+
+```typescript
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>");
+const result = await mail.send(message);
+
+if (result.success) {
+    console.log("Email sent:", result.data?.messageId);
+    console.log("Provider:", result.data?.provider);
+    console.log("Timestamp:", result.data?.timestamp);
+} else {
+    console.error("Failed to send email:", result.error);
+}
+```
+
+## Error Handling
+
+Always check the result and handle errors appropriately:
+
+```typescript
+try {
+    const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello</h1>");
+    const result = await mail.send(message);
+
+    if (!result.success) {
+        // Handle provider-specific errors
+        if (result.error instanceof Error) {
+            console.error("Error:", result.error.message);
+        }
+        // Retry logic, fallback provider, etc.
+    }
+} catch (error) {
+    // Handle unexpected errors
+    console.error("Unexpected error:", error);
+}
+```
+
+## Validating Email Addresses
+
+Before sending emails, you can validate email addresses to ensure they're valid and not from disposable email services.
+
+### Basic Email Validation
+
+```typescript
+import { validateEmail } from "@visulima/email/validation/validate-email";
+
+const email = "user@example.com";
+
+if (!validateEmail(email)) {
+    throw new Error("Invalid email address");
+}
+
+// Proceed with sending
+const message = new MailMessage().to(email).from("sender@example.com").subject("Hello").html("<h1>Hello</h1>");
+await mail.send(message);
+```
+
+### Disposable Email Detection
+
+To prevent sending emails to disposable/temporary email addresses, use the disposable email detection utility:
+
+**Use it before sending:**
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+
+const recipientEmail = "user@mailinator.com";
+
+// Check if email is disposable
+if (isDisposableEmail(recipientEmail)) {
+    throw new Error("Disposable email addresses are not allowed");
+}
+
+// Send email if validation passes
+const message = new MailMessage().to(recipientEmail).from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+const result = await mail.send(message);
+```
+
+### Validating Multiple Recipients
+
+When sending to multiple recipients, validate all addresses:
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
+import { validateEmail } from "@visulima/email/validation/validate-email";
+import { MailMessage } from "@visulima/email";
+
+const recipients = ["user1@example.com", "user2@mailinator.com", "user3@example.com"];
+
+// Filter out invalid and disposable emails
+const validRecipients = recipients.filter((email) => {
+    return validateEmail(email) && !isDisposableEmail(email);
+});
+
+if (validRecipients.length === 0) {
+    throw new Error("No valid recipients");
+}
+
+// Send to valid recipients only
+const message = new MailMessage().to(validRecipients).from("sender@example.com").subject("Hello").html("<h1>Hello</h1>");
+await mail.send(message);
+```
+
+### Custom Disposable Domains
+
+You can also add custom disposable domains to check:
+
+```typescript
+import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
+
+const customDisposableDomains = new Set(["my-disposable.com", "test-temp.com"]);
+
+if (isDisposableEmail("user@my-disposable.com", customDisposableDomains)) {
+    throw new Error("Disposable email addresses are not allowed");
+}
+```
+
+### Role Account Detection
+
+Detect if an email address is a role account (non-personal email addresses like `noreply@`, `support@`, `admin@`, etc.):
+
+```typescript
+import { isRoleAccount } from "@visulima/email/validation/role-accounts";
+
+if (isRoleAccount("noreply@example.com")) {
+    console.log("This is a role account (non-personal)");
+}
+
+// With custom role prefixes
+const customPrefixes = new Set(["custom-role", "my-role"]);
+if (isRoleAccount("custom-role@example.com", customPrefixes)) {
+    console.log("Custom role account detected");
+}
+```
+
+### MX Record Checking
+
+Verify that a domain has valid MX (Mail Exchange) records before sending:
+
+```typescript
+import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+
+const domain = "example.com";
+
+// Without cache
+const mxResult = await checkMxRecords(domain);
+
+// With cache (recommended for better performance)
+const cache = new InMemoryCache();
+const mxResultCached = await checkMxRecords(domain, {
+    cache,
+    ttl: 5 * 60 * 1000, // Cache for 5 minutes
+});
+
+if (!mxResultCached.valid) {
+    throw new Error(`Domain ${domain} has no valid MX records`);
+}
+
+console.log("MX records found:", mxResultCached.records);
+```
+
+### SMTP Verification
+
+Verify if an email address exists by connecting to the mail server:
+
+```typescript
+import { verifySmtp } from "@visulima/email/validation/verify-smtp";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
+
+// Create separate caches for MX records and SMTP results
+const mxCache = new InMemoryCache<MxCheckResult>();
+const smtpCache = new InMemoryCache<SmtpVerificationResult>();
+
+const result = await verifySmtp("user@example.com", {
+    timeout: 5000,
+    fromEmail: "test@example.com",
+    port: 25,
+    cache: mxCache, // Optional: cache MX records
+    smtpCache, // Optional: cache SMTP verification results
+    ttl: 5 * 60 * 1000, // Cache for 5 minutes
+});
+
+if (result.valid) {
+    console.log("Email address exists");
+} else {
+    console.error("Verification failed:", result.error);
+}
+```
+
+**Note:** Many mail servers block SMTP verification to prevent email harvesting. This method may not work for all domains and should be used with caution.
+
+### Comprehensive Email Verification
+
+Use the comprehensive verification function to check multiple aspects of an email address:
+
+```typescript
+import { verifyEmail } from "@visulima/email/validation/verify-email";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
+
+// Create separate caches for MX records and SMTP results
+const mxCache = new InMemoryCache<MxCheckResult>();
+const smtpCache = new InMemoryCache<SmtpVerificationResult>();
+
+const result = await verifyEmail("user@example.com", {
+    checkDisposable: true,
+    checkRoleAccount: true,
+    checkMx: true,
+    checkSmtp: false, // Optional: many servers block SMTP verification
+    cache: mxCache, // Optional: cache MX records
+    smtpCache, // Optional: cache SMTP verification results
+});
+
+if (result.valid) {
+    console.log("Email passed all checks");
+} else {
+    console.error("Validation errors:", result.errors);
+    console.warn("Warnings:", result.warnings);
+}
+
+// Access individual check results
+if (result.disposable) {
+    console.warn("Email is from a disposable service");
+}
+
+if (result.roleAccount) {
+    console.warn("Email appears to be a role account");
+}
+
+if (result.mxValid === false) {
+    console.error("Domain has no valid MX records");
+}
+```
+
+### Complete Validation Example
+
+Here's a complete example combining all validation checks:
+
+```typescript
+import { createMail, MailMessage } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { InMemoryCache } from "@visulima/email/utils/cache";
+import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
+import { verifyEmail } from "@visulima/email/validation/verify-email";
+
+const mail = createMail(resendProvider({ apiKey: "re_xxx" }));
+// Reuse cache instances across requests
+const mxCache = new InMemoryCache<MxCheckResult>();
+const smtpCache = new InMemoryCache<SmtpVerificationResult>();
+
+const validateAndSend = async (recipientEmail: string) => {
+    // Comprehensive verification with caching
+    const verification = await verifyEmail(recipientEmail, {
+        checkDisposable: true,
+        checkRoleAccount: true,
+        checkMx: true,
+        checkSmtp: false,
+        cache: mxCache, // Cache MX records
+        smtpCache, // Cache SMTP verification results
+    });
+
+    if (!verification.valid) {
+        const errors = verification.errors.join(", ");
+        throw new Error(`Email validation failed: ${errors}`);
+    }
+
+    if (verification.warnings.length > 0) {
+        console.warn("Email warnings:", verification.warnings);
+    }
+
+    // Send email
+    const message = new MailMessage().to(recipientEmail).from("sender@example.com").subject("Welcome").html("<h1>Welcome!</h1>");
+    const result = await mail.send(message);
+
+    if (!result.success) {
+        throw result.error;
+    }
+
+    return result.data;
+};
+
+// Use the validation function
+try {
+    const emailResult = await validateAndSend("user@example.com");
+    console.log("Email sent:", emailResult?.messageId);
+} catch (error) {
+    console.error("Failed to send email:", error);
+}
+```
+
+### Normalizing Email Aliases
+
+Some email providers support aliases that point to the same mailbox. Normalize emails to their canonical form to prevent duplicate accounts:
+
+```typescript
+import { normalizeEmailAliases } from "@visulima/email/utils/normalize-email-aliases";
+
+// Gmail: removes dots and plus aliases
+const normalized = normalizeEmailAliases("example+test@gmail.com");
+// Returns: "example@gmail.com"
+
+// Use before storing in database or checking for duplicates
+const userEmail = normalizeEmailAliases("user.name+tag@gmail.com");
+// Store "username@gmail.com" instead of "user.name+tag@gmail.com"
+```
+
+**Supported Providers:**
+
+- **Gmail**: Removes dots (`.`) and plus aliases (`+`)
+- **Yahoo, Outlook, Hotmail, Live, MSN, iCloud, ProtonMail, Zoho, FastMail, Mail.com, GMX**: Removes plus aliases (`+`) only, dots are preserved
+
+## Next Steps
+
+- [Building Messages](/docs/package/email/mail-messages/building-messages) - Learn more about the message builder
+- [Attachments](/docs/package/email/mail-messages/attachments) - Add attachments to your emails

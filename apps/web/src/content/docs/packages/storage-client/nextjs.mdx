@@ -1,0 +1,261 @@
+---
+title: Next.js
+description: Use the storage client with Next.js App Router
+---
+
+# Next.js
+
+Use `@visulima/storage-client` with Next.js App Router for file uploads with server-side rendering support.
+
+## Installation
+
+```bash
+npm install @visulima/storage-client @tanstack/react-query react next
+```
+
+## Setup QueryClient Provider
+
+Create a providers component:
+
+```tsx
+// app/providers.tsx
+"use client";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactNode, useState } from "react";
+
+export function Providers({ children }: { children: ReactNode }) {
+    const [queryClient] = useState(() => new QueryClient());
+
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+}
+```
+
+Use it in your root layout:
+
+```tsx
+// app/layout.tsx
+import { Providers } from "./providers";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+            <body>
+                <Providers>{children}</Providers>
+            </body>
+        </html>
+    );
+}
+```
+
+## Client Component Example
+
+Create a client component for uploads:
+
+```tsx
+// app/page.tsx
+"use client";
+
+import { useUpload } from "@visulima/storage-client/react";
+import { useRef, useState } from "react";
+
+export default function Home() {
+    const [file, setFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { error, isUploading, progress, result, upload } = useUpload({
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
+        onSuccess: (result) => {
+            console.log("Upload successful:", result);
+            setFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        },
+        onError: (error) => {
+            console.error("Upload error:", error);
+        },
+    });
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        setFile(selectedFile || null);
+    };
+
+    const handleUpload = async () => {
+        if (file) {
+            try {
+                await upload(file);
+            } catch (error_) {
+                console.error("Upload failed:", error_);
+            }
+        }
+    };
+
+    return (
+        <main>
+            <h1>Storage Client - Next.js Example</h1>
+            <div style={{ marginTop: "2rem" }}>
+                <input disabled={isUploading} onChange={handleFileChange} ref={fileInputRef} type="file" />
+                <button disabled={!file || isUploading} onClick={handleUpload} style={{ marginLeft: "1rem" }}>
+                    {isUploading ? "Uploading..." : "Upload"}
+                </button>
+            </div>
+            {isUploading && (
+                <div style={{ marginTop: "1rem" }}>
+                    <div>
+                        Progress:
+                        {progress}%
+                    </div>
+                    <progress max={100} value={progress} />
+                </div>
+            )}
+            {error && (
+                <div style={{ color: "red", marginTop: "1rem" }}>
+                    Error:
+                    {error.message}
+                </div>
+            )}
+            {result && (
+                <div style={{ color: "green", marginTop: "1rem" }}>
+                    Upload complete! File:
+                    {result.filename}
+                </div>
+            )}
+        </main>
+    );
+}
+```
+
+## API Routes Setup
+
+Set up upload endpoints using `@visulima/storage`:
+
+```tsx
+// app/api/upload/multipart/route.ts
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { storage } from "@/lib/storage";
+
+const handler = createHandler({ storage, type: "multipart" });
+
+export const POST = handler;
+export const DELETE = handler;
+export const GET = handler;
+export const OPTIONS = handler;
+```
+
+```tsx
+// app/api/upload/tus/route.ts
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { storage } from "@/lib/storage";
+
+const handler = createHandler({ storage, type: "tus" });
+
+export const POST = handler;
+export const PATCH = handler;
+export const HEAD = handler;
+export const OPTIONS = handler;
+```
+
+```tsx
+// app/api/upload/tus/[id]/route.ts
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { storage } from "@/lib/storage";
+
+const handler = createHandler({ storage, type: "tus" });
+
+export const PATCH = handler;
+export const HEAD = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
+```
+
+```tsx
+// app/api/upload/rest/route.ts
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { storage } from "@/lib/storage";
+
+const handler = createHandler({ storage, type: "rest" });
+
+export const POST = handler;
+export const OPTIONS = handler;
+```
+
+```tsx
+// app/api/upload/rest/[id]/route.ts
+import { createHandler } from "@visulima/storage/handler/http/nextjs";
+import { storage } from "@/lib/storage";
+
+const handler = createHandler({ storage, type: "rest" });
+
+export const PUT = handler;
+export const OPTIONS = handler;
+```
+
+## Storage Configuration
+
+Create a storage instance:
+
+```tsx
+// lib/storage.ts
+import { DiskStorage } from "@visulima/storage";
+
+export const storage = new DiskStorage({
+    directory: "./uploads",
+});
+```
+
+## Server Actions (Alternative)
+
+You can also use Server Actions for uploads:
+
+```tsx
+// app/actions.ts
+"use server";
+
+import { storage } from "@/lib/storage";
+
+export async function uploadFile(formData: FormData) {
+    const file = formData.get("file") as File;
+    if (!file) {
+        throw new Error("No file provided");
+    }
+
+    const buffer = await file.arrayBuffer();
+    const id = await storage.put(file.name, Buffer.from(buffer), {
+        contentType: file.type,
+    });
+
+    return { id, filename: file.name };
+}
+```
+
+## Environment Variables
+
+Configure storage backend via environment variables:
+
+```bash
+# .env.local
+UPLOAD_DIR=./uploads
+S3_BUCKET=my-bucket
+S3_REGION=us-east-1
+```
+
+## TypeScript Configuration
+
+Ensure your `tsconfig.json` includes the necessary paths:
+
+```json
+{
+    "compilerOptions": {
+        "paths": {
+            "@/*": ["./*"]
+        }
+    }
+}
+```
+
+## Next Steps
+
+- [React Guide](/docs/package/storage-client/react) - Learn React-specific features
+- [API Reference](/docs/package/storage-client/api) - Complete API documentation

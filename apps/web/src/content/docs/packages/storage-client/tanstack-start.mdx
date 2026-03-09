@@ -1,0 +1,222 @@
+---
+title: TanStack Start
+description: Use the storage client with TanStack Start
+---
+
+# TanStack Start
+
+Use `@visulima/storage-client` with TanStack Start for full-stack React applications with file uploads.
+
+## Installation
+
+```bash
+npm install @visulima/storage-client @tanstack/react-query @tanstack/react-router
+```
+
+## Setup QueryClient
+
+TanStack Start includes QueryClient setup. Ensure it's configured in your root route:
+
+```tsx
+// src/routes/__root.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
+
+const queryClient = new QueryClient();
+
+export const Route = createRootRoute({
+    component: () => (
+        <QueryClientProvider client={queryClient}>
+            <Outlet />
+        </QueryClientProvider>
+    ),
+});
+```
+
+## Upload Component
+
+Create an upload page using React Router:
+
+```tsx
+// src/routes/index.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import type { UploadResult } from "@visulima/storage-client/react";
+import { useUpload } from "@visulima/storage-client/react";
+import { useRef, useState } from "react";
+
+const Home = () => {
+    const [file, setFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { error, isUploading, progress, reset, result, upload } = useUpload({
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
+        onError: (error_: Error) => console.error("Upload error:", error_),
+        onProgress: (p: number) => console.log("Upload progress:", p),
+        onSuccess: (res: UploadResult) => {
+            console.log("Upload successful:", res);
+            setFile(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        },
+    });
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        setFile(selectedFile || null);
+    };
+
+    const handleUpload = async () => {
+        if (file) {
+            try {
+                await upload(file);
+            } catch (error_) {
+                console.error("Upload failed:", error_);
+            }
+        }
+    };
+
+    const handleReset = () => {
+        reset();
+        setFile(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    return (
+        <div style={{ margin: "0 auto", maxWidth: "800px", padding: "2rem" }}>
+            <h1>File Upload Example</h1>
+            <p>Upload files using @visulima/storage-client with TanStack Start</p>
+
+            <div style={{ marginTop: "2rem" }}>
+                <input disabled={isUploading} onChange={handleFileChange} ref={fileInputRef} type="file" />
+                <button disabled={!file || isUploading} onClick={handleUpload} style={{ marginLeft: "1rem", padding: "0.5rem 1rem" }}>
+                    {isUploading ? `Uploading... ${progress}%` : "Upload"}
+                </button>
+                <button disabled={isUploading} onClick={handleReset} style={{ marginLeft: "0.5rem", padding: "0.5rem 1rem" }}>
+                    Reset
+                </button>
+            </div>
+
+            {isUploading && (
+                <div style={{ marginTop: "1rem" }}>
+                    <div>
+                        Progress:
+                        {progress}%
+                    </div>
+                    <progress max={100} style={{ maxWidth: "400px", width: "100%" }} value={progress} />
+                </div>
+            )}
+
+            {error && (
+                <div
+                    style={{
+                        backgroundColor: "#fee",
+                        borderRadius: "4px",
+                        color: "#c33",
+                        marginTop: "1rem",
+                        padding: "1rem",
+                    }}
+                >
+                    Error:
+                    {error.message}
+                </div>
+            )}
+
+            {result && (
+                <div
+                    style={{
+                        backgroundColor: "#efe",
+                        borderRadius: "4px",
+                        color: "#3c3",
+                        marginTop: "1rem",
+                        padding: "1rem",
+                    }}
+                >
+                    <div>Upload complete!</div>
+                    <div>
+                        File ID:
+                        {result.id}
+                    </div>
+                    {result.filename && (
+                        <div>
+                            Filename:
+                            {result.filename}
+                        </div>
+                    )}
+                    {result.url && (
+                        <div>
+                            URL:{" "}
+                            <a href={result.url} rel="noopener noreferrer" target="_blank">
+                                {result.url}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export const Route = createFileRoute("/")({
+    component: Home,
+});
+```
+
+## API Routes
+
+Set up upload API routes:
+
+```tsx
+// src/routes/api.upload.multipart.ts
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "@/lib/storage";
+
+const multipart = createHandler({ storage, type: "multipart" });
+
+export async function POST(request: Request) {
+    return multipart.fetch(request);
+}
+
+export async function DELETE(request: Request) {
+    return multipart.fetch(request);
+}
+
+export async function GET(request: Request) {
+    return multipart.fetch(request);
+}
+
+export async function OPTIONS(request: Request) {
+    return multipart.fetch(request);
+}
+```
+
+## Storage Configuration
+
+```tsx
+// src/lib/storage.ts
+import { DiskStorage } from "@visulima/storage";
+
+export const storage = new DiskStorage({
+    directory: "./uploads",
+});
+```
+
+## TypeScript Configuration
+
+Ensure your routes are properly typed:
+
+```tsx
+// src/routes/__root.tsx
+import { createRootRoute } from "@tanstack/react-router";
+
+export const Route = createRootRoute({
+    component: () => <Outlet />,
+});
+```
+
+## Next Steps
+
+- [React Guide](/docs/package/storage-client/react) - Learn React-specific features
+- [API Reference](/docs/package/storage-client/api) - Complete API documentation

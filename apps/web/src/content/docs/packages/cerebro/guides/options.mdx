@@ -1,0 +1,700 @@
+# Options & Arguments
+
+Options (flags) and arguments are how users provide input to your commands.
+
+## Options
+
+Options are named parameters passed with `--option` or `-o` syntax.
+
+### Basic Options
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            description: "Build for production",
+        },
+    ],
+    execute: ({ options }) => {
+        console.log(options.production); // true or false
+    },
+});
+```
+
+Usage:
+
+```bash
+cli build --production  # options.production = true
+cli build              # options.production = false
+```
+
+### Option Types
+
+#### Boolean Options
+
+```typescript
+{
+  name: "verbose",
+  type: Boolean,
+  description: "Enable verbose output"
+}
+```
+
+#### String Options
+
+```typescript
+{
+  name: "output",
+  type: String,
+  description: "Output directory"
+}
+```
+
+Usage: `cli build --output dist`
+
+#### Number Options
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  description: "Server port"
+}
+```
+
+Usage: `cli serve --port 3000`
+
+#### Array Options
+
+Options can accept multiple values:
+
+```typescript
+{
+  name: "files",
+  type: String, // Will be an array
+  multiple: true,
+  description: "Files to process"
+}
+```
+
+Usage: `cli process --files file1.txt --files file2.txt`
+
+### Aliases
+
+Provide short aliases for options:
+
+```typescript
+{
+  name: "output",
+  alias: "o",
+  type: String,
+  description: "Output directory"
+}
+```
+
+Usage:
+
+```bash
+cli build --output dist
+cli build -o dist  # Same as above
+```
+
+### Default Values
+
+Set default values for options:
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  defaultValue: 3000,
+  description: "Server port"
+}
+```
+
+```typescript
+execute: ({ options }) => {
+    console.log(options.port); // 3000 if not provided
+};
+```
+
+### Required Options
+
+Make options mandatory:
+
+```typescript
+{
+  name: "config",
+  type: String,
+  required: true,
+  description: "Configuration file path"
+}
+```
+
+If not provided, Cerebro will throw an error with a helpful message.
+
+### Negatable Options
+
+Boolean options can be negated with `--no-` prefix:
+
+```typescript
+{
+  name: "color",
+  type: Boolean,
+  defaultValue: true,
+  description: "Enable colored output"
+}
+```
+
+Usage:
+
+```bash
+cli build --color        # options.color = true
+cli build --no-color     # options.color = false
+cli build                # options.color = true (default)
+```
+
+### Conflicting Options
+
+Prevent certain options from being used together:
+
+```typescript
+cli.addCommand({
+    name: "serve",
+    options: [
+        {
+            name: "http",
+            type: Boolean,
+            conflicts: "https",
+            description: "Use HTTP",
+        },
+        {
+            name: "https",
+            type: Boolean,
+            conflicts: "http",
+            description: "Use HTTPS",
+        },
+    ],
+    execute: () => {},
+});
+```
+
+Using both will throw an error:
+
+```bash
+cli serve --http --https  # Error: Options "http" and "https" cannot be used together
+```
+
+### Implied Options
+
+Automatically set other options when one is used:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            implies: { minify: true, sourcemap: false },
+            description: "Build for production",
+        },
+        {
+            name: "minify",
+            type: Boolean,
+            description: "Minify output",
+        },
+        {
+            name: "sourcemap",
+            type: Boolean,
+            description: "Generate source maps",
+        },
+    ],
+    execute: ({ options }) => {
+        // If --production is used, minify=true and sourcemap=false automatically
+    },
+});
+```
+
+### Boolean Options
+
+Boolean options are simple flags that are either present (true) or absent (false):
+
+```typescript
+{
+  name: "watch",
+  type: Boolean,
+  description: "Watch for changes"
+}
+```
+
+Usage:
+
+```bash
+cli build --watch  # options.watch = true
+cli build          # options.watch = false
+```
+
+Note: If you need an option that can accept values, use a `String` type instead:
+
+```typescript
+{
+  name: "watch",
+  type: String,
+  description: "Watch mode (e.g., 'port' or 'file')"
+}
+```
+
+### Hidden Options
+
+Hide options from help output:
+
+```typescript
+{
+  name: "debug",
+  type: Boolean,
+  hidden: true, // Won't appear in help
+  description: "Enable debug mode"
+}
+```
+
+### Type Labels
+
+Customize the type label shown in help:
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  typeLabel: "<port>", // Instead of <number>
+  description: "Server port"
+}
+```
+
+## Positional Arguments
+
+Positional arguments are provided without option names:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "source",
+        type: String,
+        description: "Source file",
+    },
+    execute: ({ argument }) => {
+        const source = argument[0];
+        console.log(`Copying ${source}...`);
+    },
+});
+```
+
+Usage: `cli copy file.txt`
+
+### Multiple Arguments
+
+Arguments accept multiple values:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "files",
+        type: String,
+        description: "Files to copy",
+    },
+    execute: ({ argument }) => {
+        // argument is an array
+        argument.forEach((file) => {
+            console.log(`Copying ${file}...`);
+        });
+    },
+});
+```
+
+Usage: `cli copy file1.txt file2.txt file3.txt`
+
+### Argument Default Values
+
+```typescript
+argument: {
+  name: "name",
+  type: String,
+  defaultValue: "World",
+  description: "Name to greet"
+}
+```
+
+### Argument Types
+
+Arguments support the same types as options:
+
+- `String` - Text values
+- `Number` - Numeric values
+- `Boolean` - Boolean values (rare for arguments)
+
+## Accessing Options and Arguments
+
+In your command's `execute` function:
+
+```typescript
+execute: ({ options, argument }) => {
+    // Options
+    const isProduction = options.production;
+    const outputDir = options.output || "dist";
+
+    // Arguments
+    const fileName = argument[0];
+    const allFiles = argument; // Array of all arguments
+};
+```
+
+## Complete Example
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    argument: {
+        name: "target",
+        type: String,
+        defaultValue: "production",
+        description: "Deployment target",
+    },
+    options: [
+        {
+            name: "env",
+            alias: "e",
+            type: String,
+            required: true,
+            description: "Environment name",
+        },
+        {
+            name: "force",
+            alias: "f",
+            type: Boolean,
+            defaultValue: false,
+            description: "Force deployment",
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Perform a dry run",
+        },
+        {
+            name: "services",
+            type: String,
+            multiple: true,
+            description: "Services to deploy",
+        },
+    ],
+    execute: ({ argument, options }) => {
+        const target = argument[0];
+        const env = options.env;
+        const force = options.force;
+        const services = options.services || [];
+
+        console.log(`Deploying to ${target} (${env})`);
+        if (force) {
+            console.log("Force mode enabled");
+        }
+        if (services.length > 0) {
+            console.log(`Services: ${services.join(", ")}`);
+        }
+    },
+});
+```
+
+Usage examples:
+
+```bash
+# Basic usage
+cli deploy staging --env production
+
+# With multiple services
+cli deploy --env production --services api --services worker
+
+# Force deployment
+cli deploy --env production --force
+
+# Dry run
+cli deploy --env production --dry-run
+```
+
+## Environment Variables
+
+Environment variables provide a way to configure commands without passing values on the command line. They're useful for:
+
+- Configuration that doesn't change frequently
+- Sensitive values that shouldn't appear in command history
+- CI/CD pipelines and automation
+- Default settings that can be overridden by options
+
+### Defining Environment Variables
+
+Add an `env` array to your command definition, similar to `options`:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for authentication",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 5000,
+            description: "Request timeout in milliseconds",
+        },
+        {
+            name: "VERBOSE",
+            type: Boolean,
+            defaultValue: false,
+            description: "Enable verbose logging",
+        },
+    ],
+    execute: ({ env }) => {
+        const apiKey = env.apiKey; // camelCase: API_KEY → apiKey
+        const timeout = env.timeout; // 5000 if not set
+        const verbose = env.verbose; // false if not set
+    },
+});
+```
+
+### Environment Variable Types
+
+Environment variables support the same types as options:
+
+#### String Environment Variables
+
+```typescript
+{
+    name: "API_URL",
+    type: String,
+    description: "API endpoint URL"
+}
+```
+
+Usage: `API_URL=https://api.example.com cli build`
+
+#### Number Environment Variables
+
+```typescript
+{
+    name: "PORT",
+    type: Number,
+    defaultValue: 3000,
+    description: "Server port"
+}
+```
+
+Usage: `PORT=8080 cli serve`
+
+The value is parsed as an integer. Invalid values will use the default if provided.
+
+#### Boolean Environment Variables
+
+```typescript
+{
+    name: "ENABLE_CACHE",
+    type: Boolean,
+    defaultValue: false,
+    description: "Enable caching"
+}
+```
+
+Boolean values are case-insensitive and accept:
+
+- `true`, `1`, `yes`, `on` → `true`
+- `false`, `0`, `no`, `off`, or any other value → `false`
+
+Usage:
+
+```bash
+ENABLE_CACHE=true cli build
+ENABLE_CACHE=1 cli build
+ENABLE_CACHE=yes cli build
+```
+
+### Default Values
+
+Set default values that are used when the environment variable is not set:
+
+```typescript
+{
+    name: "LOG_LEVEL",
+    type: String,
+    defaultValue: "info",
+    description: "Logging level"
+}
+```
+
+```typescript
+execute: ({ env }) => {
+    // env.logLevel will be "info" if LOG_LEVEL is not set
+    console.log(env.logLevel);
+};
+```
+
+### Hidden Environment Variables
+
+Hide environment variables from help output:
+
+```typescript
+{
+    name: "SECRET_KEY",
+    type: String,
+    hidden: true, // Won't appear in help
+    description: "Secret key for encryption"
+}
+```
+
+### CamelCase Conversion
+
+Environment variable names are automatically converted to camelCase:
+
+- `API_KEY` → `env.apiKey`
+- `LOG_LEVEL` → `env.logLevel`
+- `ENABLE_SSL` → `env.enableSsl`
+
+### Accessing Environment Variables
+
+Access environment variables through the `env` property in your command's `execute` function:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    env: [
+        {
+            name: "DEPLOY_ENV",
+            type: String,
+            defaultValue: "staging",
+            description: "Deployment environment",
+        },
+        {
+            name: "FORCE_DEPLOY",
+            type: Boolean,
+            defaultValue: false,
+            description: "Force deployment without confirmation",
+        },
+    ],
+    execute: ({ env, options }) => {
+        const deployEnv = env.deployEnv; // "staging" if not set
+        const forceDeploy = env.forceDeploy; // false if not set
+
+        // Can combine with options
+        const finalEnv = options.env || env.deployEnv;
+    },
+});
+```
+
+### Complete Example
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "NODE_ENV",
+            type: String,
+            defaultValue: "development",
+            description: "Node.js environment",
+        },
+        {
+            name: "BUILD_TIMEOUT",
+            type: Number,
+            defaultValue: 30000,
+            description: "Build timeout in milliseconds",
+        },
+        {
+            name: "ENABLE_SOURCEMAPS",
+            type: Boolean,
+            defaultValue: true,
+            description: "Generate source maps",
+        },
+    ],
+    options: [
+        {
+            name: "output",
+            type: String,
+            description: "Output directory",
+        },
+    ],
+    execute: ({ env, options }) => {
+        const nodeEnv = env.nodeEnv; // "development" or value from NODE_ENV
+        const timeout = env.buildTimeout; // 30000 or value from BUILD_TIMEOUT
+        const sourcemaps = env.enableSourcemaps; // true or value from ENABLE_SOURCEMAPS
+        const output = options.output || "dist";
+
+        console.log(`Building for ${nodeEnv} with timeout ${timeout}ms`);
+        if (sourcemaps) {
+            console.log("Source maps enabled");
+        }
+    },
+});
+```
+
+Usage examples:
+
+```bash
+# Using defaults
+cli build
+
+# Override with environment variables
+NODE_ENV=production BUILD_TIMEOUT=60000 cli build
+
+# Combine with options
+ENABLE_SOURCEMAPS=false cli build --output build
+
+# Boolean values
+ENABLE_SOURCEMAPS=1 cli build  # true
+ENABLE_SOURCEMAPS=0 cli build  # false
+```
+
+### Environment Variables in Help
+
+Environment variables are automatically displayed in the help output:
+
+```bash
+cli help build
+```
+
+Output includes an "Environment Variables" section showing:
+
+- Variable name
+- Description
+- Default value (if set)
+
+Hidden environment variables are excluded from help output.
+
+## Global Options
+
+Cerebro provides built-in global options available to all commands:
+
+- `--help, -h` - Show help
+- `--version, -V` - Show version
+- `--verbose, -v` - Verbose output
+- `--debug` - Debug output
+- `--quiet, -q` - Quiet output
+- `--no-color` - Disable colored output
+- `--color` - Force colored output
+
+These don't need to be defined in your commands.
+
+## Global Environment Variables
+
+Cerebro also provides built-in global environment variables:
+
+- `CEREBRO_OUTPUT_LEVEL` - Controls verbosity level (16=quiet, 32=normal, 64=verbose, 128=debug)
+- `CEREBRO_MIN_NODE_VERSION` - Overrides minimum Node.js version check
+- `NO_UPDATE_NOTIFIER` - Disables update notifier check
+- `NODE_ENV` - Standard Node.js environment variable
+- `DEBUG` - Enables debug output (same as --debug flag)
+
+These are available to all commands and appear in the general help output.

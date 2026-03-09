@@ -1,0 +1,191 @@
+# Toolbox: Parameters
+
+The toolbox provides access to command parameters including arguments, options, and the original argv.
+
+## Arguments
+
+Positional arguments passed to the command:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "files",
+        type: String,
+    },
+    execute: ({ argument }) => {
+        // argument is an array of strings
+        argument.forEach((file) => {
+            console.log(`Copying ${file}...`);
+        });
+    },
+});
+```
+
+Usage: `cli copy file1.txt file2.txt`
+
+- `argument[0]` - First argument
+- `argument[1]` - Second argument
+- `argument` - Array of all arguments
+
+## Options
+
+Parsed command-line options:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        { name: "production", type: Boolean },
+        { name: "output", type: String },
+    ],
+    execute: ({ options }) => {
+        const isProduction = options.production; // boolean
+        const outputDir = options.output; // string | undefined
+    },
+});
+```
+
+Options are:
+
+- Type-safe based on option definitions
+- Camel-cased automatically (`--output-dir` → `options.outputDir`)
+- Include default values if set
+- Validated before execution
+
+## Environment Variables
+
+Type-safe access to environment variables defined in your command:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 5000,
+            description: "Timeout in ms",
+        },
+        {
+            name: "VERBOSE",
+            type: Boolean,
+            defaultValue: false,
+            description: "Enable verbose output",
+        },
+    ],
+    execute: ({ env }) => {
+        const apiKey = env.apiKey; // string | undefined
+        const timeout = env.timeout; // number (5000 if not set)
+        const verbose = env.verbose; // boolean (false if not set)
+    },
+});
+```
+
+Environment variables are:
+
+- Type-safe based on their type definitions
+- Automatically converted to camelCase (`API_KEY` → `apiKey`)
+- Include default values if not set
+- Transformed according to their type (String, Number, Boolean)
+
+### Boolean Environment Variables
+
+Boolean environment variables accept multiple truthy values (case-insensitive):
+
+- `true`, `1`, `yes`, `on` → `true`
+- Any other value → `false`
+
+```bash
+VERBOSE=true cli build    # env.verbose = true
+VERBOSE=1 cli build      # env.verbose = true
+VERBOSE=yes cli build    # env.verbose = true
+VERBOSE=false cli build  # env.verbose = false
+```
+
+## Argv
+
+Original command-line arguments:
+
+```typescript
+execute: ({ argv }) => {
+    // Raw argv as parsed by command-line-args
+    console.log(argv);
+};
+```
+
+Use `argv` when you need:
+
+- Raw argument values
+- Unknown options handling
+- Low-level argument access
+
+## Accessing Parameters
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    argument: {
+        name: "target",
+        type: String,
+    },
+    options: [
+        { name: "env", type: String, required: true },
+        { name: "force", type: Boolean },
+    ],
+    env: [
+        {
+            name: "API_KEY",
+            type: String,
+            description: "API key for deployment",
+        },
+        {
+            name: "TIMEOUT",
+            type: Number,
+            defaultValue: 30000,
+            description: "Deployment timeout",
+        },
+    ],
+    execute: ({ argument, options, env, argv }) => {
+        const target = argument[0]; // Positional argument
+        const envName = options.env; // Option value
+        const force = options.force || false; // Option with default
+        const apiKey = env.apiKey; // Environment variable
+        const timeout = env.timeout; // Environment variable with default
+
+        // Access raw argv if needed
+        console.log("Raw argv:", argv);
+    },
+});
+```
+
+## Type Safety
+
+With TypeScript, you get full type safety:
+
+```typescript
+interface DeployOptions {
+    env: string;
+    force: boolean;
+    dryRun?: boolean;
+}
+
+cli.addCommand({
+    name: "deploy",
+    options: [
+        { name: "env", type: String, required: true },
+        { name: "force", type: Boolean },
+        { name: "dry-run", type: Boolean },
+    ],
+    execute: ({ options }: { options: DeployOptions }) => {
+        // TypeScript knows the structure
+        const env: string = options.env; // ✅
+        const force: boolean = options.force; // ✅
+    },
+});
+```

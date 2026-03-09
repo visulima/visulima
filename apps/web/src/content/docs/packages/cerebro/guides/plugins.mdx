@@ -1,0 +1,254 @@
+# Plugins
+
+Plugins extend Cerebro's functionality by hooking into the command lifecycle and extending the toolbox.
+
+## What are Plugins?
+
+Plugins allow you to:
+
+- Add functionality to the toolbox (like file system operations, HTTP clients, etc.)
+- Hook into command lifecycle (before/after execution)
+- Handle errors globally
+- Share code across commands
+
+## Basic Plugin
+
+A plugin requires a `name` and can have lifecycle hooks:
+
+```typescript
+cli.addPlugin({
+    name: "my-plugin",
+    description: "My custom plugin",
+    execute: (toolbox) => {
+        // Extend toolbox
+        toolbox.myFeature = () => {
+            console.log("My feature!");
+        };
+    },
+});
+```
+
+## Plugin Lifecycle
+
+Plugins have access to several lifecycle hooks:
+
+### Init Hook
+
+Called once during plugin initialization, before any commands run:
+
+```typescript
+cli.addPlugin({
+    name: "database",
+    init: async ({ cli, cwd, logger }) => {
+        // Initialize database connection
+        logger.info("Database plugin initialized");
+    },
+});
+```
+
+### Execute Hook
+
+Called during command execution to extend the toolbox:
+
+```typescript
+cli.addPlugin({
+    name: "filesystem",
+    execute: (toolbox) => {
+        // Add file system utilities to toolbox
+        toolbox.fs = {
+            readFile: async (path: string) => {
+                // Implementation
+            },
+            writeFile: async (path: string, content: string) => {
+                // Implementation
+            },
+        };
+    },
+});
+```
+
+Then use in commands:
+
+```typescript
+cli.addCommand({
+    name: "read",
+    execute: async ({ fs }) => {
+        const content = await fs.readFile("file.txt");
+        console.log(content);
+    },
+});
+```
+
+### BeforeCommand Hook
+
+Called before each command executes:
+
+```typescript
+cli.addPlugin({
+    name: "analytics",
+    beforeCommand: async (toolbox) => {
+        console.log(`Executing command: ${toolbox.commandName}`);
+        // Track command usage
+    },
+});
+```
+
+### AfterCommand Hook
+
+Called after successful command execution:
+
+```typescript
+cli.addPlugin({
+    name: "cleanup",
+    afterCommand: async (toolbox, result) => {
+        // Cleanup resources
+        console.log("Command completed:", result);
+    },
+});
+```
+
+### OnError Hook
+
+Called when an error occurs:
+
+```typescript
+cli.addPlugin({
+    name: "error-handler",
+    onError: async (error, toolbox) => {
+        // Custom error handling
+        console.error(`Error in ${toolbox.commandName}:`, error.message);
+
+        // Send to error tracking service
+        await sendToErrorTracking(error, toolbox);
+    },
+});
+```
+
+## Plugin Dependencies
+
+Plugins can depend on other plugins:
+
+```typescript
+cli.addPlugin({
+    name: "advanced-fs",
+    dependencies: ["filesystem"], // Requires filesystem plugin
+    execute: (toolbox) => {
+        // Extend filesystem plugin
+        toolbox.fs.copy = async (src, dest) => {
+            // Implementation
+        };
+    },
+});
+```
+
+Dependencies are loaded in the correct order automatically.
+
+## Complete Plugin Example
+
+```typescript
+cli.addPlugin({
+    name: "http-client",
+    version: "1.0.0",
+    description: "HTTP client utilities",
+    dependencies: ["logger"],
+
+    init: async ({ logger }) => {
+        logger.info("HTTP client plugin initialized");
+    },
+
+    execute: (toolbox) => {
+        toolbox.http = {
+            get: async (url: string) => {
+                const response = await fetch(url);
+                return response.json();
+            },
+            post: async (url: string, data: unknown) => {
+                const response = await fetch(url, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                });
+                return response.json();
+            },
+        };
+    },
+
+    beforeCommand: async (toolbox) => {
+        toolbox.logger.debug(`Preparing HTTP client for ${toolbox.commandName}`);
+    },
+
+    afterCommand: async (toolbox, result) => {
+        toolbox.logger.debug(`Command ${toolbox.commandName} completed`);
+    },
+
+    onError: async (error, toolbox) => {
+        toolbox.logger.error(`HTTP error in ${toolbox.commandName}:`, error);
+    },
+});
+```
+
+Usage in commands:
+
+```typescript
+cli.addCommand({
+    name: "fetch",
+    execute: async ({ http, logger }) => {
+        const data = await http.get("https://api.example.com/data");
+        logger.info("Data fetched:", data);
+    },
+});
+```
+
+## Built-in Plugins
+
+Cerebro includes a built-in logger plugin that adds logging to the toolbox:
+
+```typescript
+execute: ({ logger }) => {
+    logger.info("Info message");
+    logger.error("Error message");
+    logger.warn("Warning message");
+    logger.debug("Debug message");
+};
+```
+
+## TypeScript Support
+
+Extend the toolbox type for type safety:
+
+```typescript
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: () => void;
+            fs: {
+                readFile: (path: string) => Promise<string>;
+            };
+        }
+    }
+}
+```
+
+Now TypeScript will provide autocomplete and type checking:
+
+```typescript
+execute: ({ myFeature, fs }) => {
+    myFeature(); // TypeScript knows this exists
+    const content = await fs.readFile("file.txt"); // TypeScript knows the signature
+};
+```
+
+## Best Practices
+
+1. **Keep plugins focused** - Each plugin should have a single responsibility
+2. **Use dependencies** - If your plugin extends another, declare it as a dependency
+3. **Handle errors** - Use `onError` hook for error handling, not `execute`
+4. **Initialize resources in `init`** - Set up connections, load configs, etc.
+5. **Extend toolbox in `execute`** - Add utilities to toolbox here
+6. **Document your plugin** - Always include description and version
+
+## Plugin vs Command
+
+- **Plugins** - Extend functionality, add to toolbox, lifecycle hooks
+- **Commands** - User-facing actions, invoked via CLI
+
+Use plugins for reusable functionality, commands for user actions.

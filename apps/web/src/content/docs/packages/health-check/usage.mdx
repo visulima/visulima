@@ -1,0 +1,38 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Basic Health Check
+
+```typescript
+import { createHealthCheck } from "@visulima/health-check";
+
+const health = createHealthCheck();
+app.get("/health", health.handler());
+```
+
+## Custom Checks
+
+```typescript
+const health = createHealthCheck({
+    checks: {
+        database: async () => {
+            await db.ping();
+            return { status: "ok" };
+        },
+        api: async () => {
+            const res = await fetch("https://api.example.com/ping");
+            return { status: res.ok ? "ok" : "error" };
+        },
+    },
+});
+```
+
+## Kubernetes Probes
+
+```typescript
+app.get("/health", health.liveness());
+app.get("/ready", health.readiness());
+```

@@ -1,0 +1,206 @@
+# API: Types
+
+TypeScript type definitions for Cerebro.
+
+## Core Types
+
+### Cli
+
+Main CLI class interface:
+
+```typescript
+interface Cli {
+    addCommand(command: Command): this;
+    addPlugin(plugin: Plugin): this;
+    run(options?: CliRunOptions): Promise<void>;
+    runCommand(commandName: string, options?: RunCommandOptions): Promise<unknown>;
+    setDefaultCommand(commandName: string): this;
+    setCommandSection(section: CommandSection): this;
+    getCliName(): string;
+    getCommands(): Map<string, Command>;
+    getCwd(): string;
+    getPackageName(): string | undefined;
+    getPackageVersion(): string | undefined;
+    getPluginManager(): PluginManager;
+    dispose(): void;
+}
+```
+
+### Command
+
+Command definition:
+
+```typescript
+interface Command<O extends OptionDefinition = OptionDefinition, TContext extends Toolbox = Toolbox> {
+    name: string;
+    execute: (toolbox: TContext) => Promise<void> | void;
+    description?: string;
+    alias?: string | string[];
+    argument?: ArgumentDefinition;
+    options?: OptionDefinition[];
+    hidden?: boolean;
+    group?: string;
+    examples?: string[] | string[][];
+    usage?: Content[];
+    file?: string;
+    commandPath?: string[];
+}
+```
+
+### Plugin
+
+Plugin definition:
+
+```typescript
+interface Plugin {
+    name: string;
+    description?: string;
+    version?: string;
+    dependencies?: string[];
+    init?: (context: PluginContext) => Promise<void> | void;
+    execute?: (toolbox: Toolbox) => Promise<void> | void;
+    beforeCommand?: (toolbox: Toolbox) => Promise<void> | void;
+    afterCommand?: (toolbox: Toolbox, result: unknown) => Promise<void> | void;
+    onError?: (error: Error, toolbox: Toolbox) => Promise<void> | void;
+}
+```
+
+### Toolbox
+
+Command execution context:
+
+```typescript
+interface Toolbox<T extends Console = Console> extends Cerebro.ExtensionOverrides {
+    argument: string[];
+    argv: Record<string, any>;
+    command: Command;
+    commandName: string;
+    logger: T;
+    options: Options;
+    runtime: Cli;
+}
+```
+
+## Option Types
+
+### OptionDefinition
+
+```typescript
+interface OptionDefinition<T> {
+    name: string;
+    alias?: string | string[];
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    required?: boolean;
+    multiple?: boolean;
+    lazyMultiple?: boolean;
+    conflicts?: string | string[];
+    implies?: Record<string, any>;
+    hidden?: boolean;
+    typeLabel?: string;
+    group?: string;
+}
+```
+
+### ArgumentDefinition
+
+```typescript
+interface ArgumentDefinition<T = any> {
+    name: string;
+    type?: TypeConstructor<T>;
+    description?: string;
+    defaultValue?: T;
+    typeLabel?: string;
+}
+```
+
+## Configuration Types
+
+### CliOptions
+
+```typescript
+interface CliOptions<T extends Console = Console> {
+    argv?: ReadonlyArray<string>;
+    cwd?: string;
+    logger?: T;
+    packageName?: string;
+    packageVersion?: string;
+}
+```
+
+### CliRunOptions
+
+```typescript
+interface CliRunOptions {
+    shouldExitProcess?: boolean;
+    autoDispose?: boolean;
+    [key: string]: any;
+}
+```
+
+### RunCommandOptions
+
+```typescript
+interface RunCommandOptions {
+    argv?: string[];
+    [key: string]: any;
+}
+```
+
+### CommandSection
+
+```typescript
+interface CommandSection {
+    header?: string;
+    footer?: string;
+}
+```
+
+## Verbosity Levels
+
+```typescript
+type VERBOSITY_LEVEL = 16 | 32 | 64 | 128 | 256;
+
+const VERBOSITY_QUIET = 16;
+const VERBOSITY_NORMAL = 32;
+const VERBOSITY_VERBOSE = 64;
+const VERBOSITY_DEBUG = 128;
+```
+
+## Extending Types
+
+### Extending Toolbox
+
+```typescript
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: () => void;
+            api: {
+                get: (url: string) => Promise<unknown>;
+            };
+        }
+    }
+}
+```
+
+## Type Exports
+
+All types are exported from the main package:
+
+```typescript
+import type {
+    Cli,
+    CliOptions,
+    CliRunOptions,
+    RunCommandOptions,
+    Command,
+    OptionDefinition,
+    ArgumentDefinition,
+    Plugin,
+    PluginContext,
+    Toolbox,
+    VERBOSITY_LEVEL,
+} from "@visulima/cerebro";
+```

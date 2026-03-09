@@ -1,0 +1,518 @@
+# Modern Frameworks (Fetch API)
+
+Use Visulima upload with modern frameworks that support the Web Fetch API, including Hono, Cloudflare Workers, Deno, Bun, and other Web API environments.
+
+## Installation
+
+```sh
+npm install @visulima/storage
+```
+
+```sh
+yarn add @visulima/storage
+```
+
+```sh
+pnpm add @visulima/storage
+```
+
+## Overview
+
+Modern frameworks that use the Web Fetch API can take advantage of the `fetch()` method, which provides native Web API Request/Response support without conversion layers.
+
+## Handler Import Paths
+
+Visulima Storage provides framework-specific import paths for convenience:
+
+- **`@visulima/storage/handler/http/fetch`** - Generic Web API (works everywhere)
+- **`@visulima/storage/handler/http/hono`** - Hono framework (includes `createStorageHandler` helper)
+- **`@visulima/storage/handler/http/bun`** - Bun runtime (alias for fetch)
+- **`@visulima/storage/handler/http/cloudflare`** - Cloudflare Workers (alias for fetch)
+- **`@visulima/storage/handler/http/deno`** - Deno runtime (alias for fetch)
+- **`@visulima/storage/handler/http/edge`** - Edge runtimes (Vercel, Netlify) (alias for fetch)
+
+> **Note**: Most framework-specific paths are aliases to `./handler/http/fetch`. The Hono path (`/handler/http/hono`) provides an additional `createStorageHandler` function that automatically registers routes. Use the framework-specific path for clarity, or use the generic `fetch` path - both work identically.
+
+## Choosing the Right Handler
+
+- **Multipart**: Use for traditional web form uploads (`multipart/form-data`)
+- **REST**: Use for direct binary uploads, API-first applications, or when you need PUT support
+- **TUS**: Use for large files, unreliable networks, or when you need resumable uploads
+
+## Hono
+
+Hono is a fast, lightweight web framework for Node runtimes and Web API environments.
+
+### Recommended: Using `createStorageHandler` (Automatic Route Registration)
+
+The easiest way to use Visulima Storage with Hono is to use the `createStorageHandler` function, which automatically registers all required routes for you:
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+// Register handlers - routes are automatically registered!
+createStorageHandler(app, {
+    path: "/files",
+    storage,
+    type: "multipart",
+});
+
+createStorageHandler(app, {
+    path: "/files-rest",
+    storage,
+    type: "rest",
+});
+
+createStorageHandler(app, {
+    path: "/files-tus",
+    storage,
+    type: "tus",
+});
+```
+
+This automatically registers:
+
+- **Multipart**: `POST /files`, `GET /files/:id?/:metadata?`, `DELETE /files/:id`, `OPTIONS /files`
+- **REST**: `POST /files-rest`, `PUT /files-rest/:id`, `PATCH /files-rest/:id`, `GET /files-rest/:id?`, `HEAD /files-rest/:id`, `DELETE /files-rest/:id?`, `OPTIONS /files-rest`
+- **TUS**: All methods on `/files-tus` and `/files-tus/:id` (POST, PATCH, HEAD, GET, DELETE, OPTIONS)
+
+### With Media Transformers
+
+You can also pass media transformers to enable image/video/audio transformations:
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { createStorageHandler } from "@visulima/storage/handler/http/hono";
+import { MediaTransformer } from "@visulima/storage/transformer";
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+
+const mediaTransformer = new MediaTransformer(storage, {
+    ImageTransformer,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+createStorageHandler(app, {
+    path: "/files",
+    storage,
+    mediaTransformer,
+    type: "multipart",
+});
+```
+
+### Manual Route Registration (Advanced)
+
+If you need more control over route registration, you can manually register routes:
+
+```ts
+import { Hono } from "hono";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const app = new Hono();
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// File upload endpoint
+app.post("/upload", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "Upload failed" }, 500);
+    }
+});
+
+// File listing endpoint
+app.get("/files", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "Failed to list files" }, 500);
+    }
+});
+
+// File download endpoint
+app.get("/files/:id", async (c) => {
+    try {
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        return c.json({ error: "File not found" }, 404);
+    }
+});
+
+export default app;
+```
+
+## Cloudflare Workers
+
+Cloudflare Workers do not provide a writable filesystem. `DiskStorage` is not supported. Use a remote/object storage adapter suitable for Workers (e.g., R2) or proxy uploads to a Node server using supported adapters (S3, GCS, Azure, local disk). When running Hono on Workers, prefer storage backends that operate over HTTP APIs instead of local disk.
+
+### Using Framework-Specific Import
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/cloudflare";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+});
+
+const multipart = new Multipart({ storage });
+
+export default {
+    async fetch(request: Request): Promise<Response> {
+        return await multipart.fetch(request);
+    },
+};
+```
+
+### Using Generic Fetch Import
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+```
+
+## Deno
+
+Deno provides native TypeScript support and Web API compatibility.
+
+### Using Framework-Specific Import
+
+```ts
+import { DiskStorage } from "npm:@visulima/storage";
+import { Multipart } from "npm:@visulima/storage/handler/http/deno";
+```
+
+### Using Generic Fetch Import
+
+```ts
+import { DiskStorage } from "npm:@visulima/storage";
+import { Multipart } from "npm:@visulima/storage/handler/http/fetch";
+
+// Initialize storage and handler
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// HTTP server
+Deno.serve(async (request: Request) => {
+    const url = new URL(request.url);
+
+    try {
+        // Route requests
+        if (url.pathname === "/upload" && request.method === "POST") {
+            return await multipart.fetch(request);
+        }
+
+        if (url.pathname === "/files" && request.method === "GET") {
+            return await multipart.fetch(request);
+        }
+
+        if (url.pathname.startsWith("/files/") && request.method === "GET") {
+            return await multipart.fetch(request);
+        }
+
+        return new Response("Not found", { status: 404 });
+    } catch (error) {
+        console.error("Request error:", error);
+        return Response.json({ error: "Internal server error" }, { status: 500 });
+    }
+});
+```
+
+## Bun
+
+Bun is a fast JavaScript runtime with Web API support.
+
+### Using Framework-Specific Import
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/bun";
+```
+
+### Using Generic Fetch Import
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+// Initialize storage and handler
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// HTTP server
+const server = Bun.serve({
+    port: 3000,
+    async fetch(request: Request): Promise<Response> {
+        const url = new URL(request.url);
+
+        try {
+            // Route requests
+            if (url.pathname === "/upload" && request.method === "POST") {
+                return await multipart.fetch(request);
+            }
+
+            if (url.pathname === "/files" && request.method === "GET") {
+                return await multipart.fetch(request);
+            }
+
+            if (url.pathname.startsWith("/files/") && request.method === "GET") {
+                return await multipart.fetch(request);
+            }
+
+            return new Response("Not found", { status: 404 });
+        } catch (error) {
+            console.error("Request error:", error);
+            return Response.json({ error: "Internal server error" }, { status: 500 });
+        }
+    },
+});
+
+console.log(`Server running on port ${server.port}`);
+```
+
+## REST Handler (Direct Binary Uploads)
+
+The REST handler provides a clean REST API for direct binary file uploads:
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Rest } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const rest = new Rest({ storage });
+
+// Upload file with raw binary data
+app.post("/files", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Create or update file (requires ID in URL)
+app.put("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Delete single file
+app.delete("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+
+// Batch delete multiple files
+app.delete("/files", async (c) => {
+    const url = new URL(c.req.url);
+    // Delete via query parameter: ?ids=id1,id2,id3
+    // Or via JSON body: { "ids": ["id1", "id2"] }
+    return await rest.fetch(c.req.raw);
+});
+
+// Get file metadata
+app.head("/files/:id", async (c) => {
+    return await rest.fetch(c.req.raw);
+});
+```
+
+### REST Handler Features
+
+- **Direct binary uploads**: Upload raw binary data without multipart encoding
+- **PUT support**: Create or update files with PUT method
+- **Batch delete**: Delete multiple files in one request
+- **RESTful API**: Clean REST interface for file operations
+
+## TUS Protocol Support
+
+The `fetch` method also supports TUS resumable uploads:
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Tus } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const tus = new Tus({ storage });
+
+// TUS endpoints
+app.post("/upload/tus", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.patch("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+
+app.head("/upload/tus/:id", async (c) => {
+    return await tus.fetch(c.req.raw);
+});
+```
+
+## Image Transformations
+
+Combine with image transformations for on-demand processing:
+
+```ts
+import { LRUCache } from "lru-cache";
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+import ImageTransformer from "@visulima/storage/transformer/image";
+
+const storage = new DiskStorage({ directory: "./uploads" });
+const multipart = new Multipart({ storage });
+
+// Initialize cache for transformed images
+const cache = new LRUCache({
+    max: 1000, // Maximum number of cached items
+    ttl: 3600000, // 1 hour in milliseconds
+});
+
+const imageTransformer = new ImageTransformer(storage, {
+    cache,
+    maxImageSize: 10 * 1024 * 1024, // 10MB
+});
+
+// Upload endpoint
+app.post("/upload", async (c) => {
+    return await multipart.fetch(c.req.raw);
+});
+
+// Image transformation endpoint (resize + optional format)
+app.get("/images/:id", async (c) => {
+    const { id } = c.req.param();
+    const url = new URL(c.req.url);
+
+    // Get transformation parameters
+    const width = url.searchParams.get("width");
+    const height = url.searchParams.get("height");
+    const fit = url.searchParams.get("fit") || "cover";
+    const quality = url.searchParams.get("quality") || "80";
+    const format = url.searchParams.get("format") || undefined;
+
+    try {
+        let result;
+
+        if (width || height) {
+            result = await imageTransformer.resize(id, {
+                width: width ? Number(width) : undefined,
+                height: height ? Number(height) : undefined,
+                fit: fit as "cover" | "contain" | "fill" | "inside" | "outside",
+                quality: quality ? Number(quality) : undefined,
+            });
+        } else {
+            // No resize options provided; fall back to format conversion if requested
+            result = await imageTransformer.convertFormat(id, (format || "jpeg") as any, {
+                quality: quality ? Number(quality) : undefined,
+            });
+        }
+
+        return new Response(result.buffer, {
+            headers: {
+                "Content-Type": `image/${result.format}`,
+                "Cache-Control": "public, max-age=3600",
+            },
+        });
+    } catch (error) {
+        return c.json({ error: "Image transformation failed" }, 500);
+    }
+});
+```
+
+## Error Handling
+
+Handle errors consistently across frameworks:
+
+```ts
+app.use("*", async (c) => {
+    try {
+        // Your route handlers here
+        return await multipart.fetch(c.req.raw);
+    } catch (error) {
+        console.error("Request error:", error);
+
+        // Return appropriate error response
+        return c.json(
+            {
+                error: "Request failed",
+                message: error instanceof Error ? error.message : "Unknown error",
+            },
+            500,
+        );
+    }
+});
+```
+
+## Configuration
+
+Configure storage and upload options:
+
+```ts
+import { DiskStorage } from "@visulima/storage";
+import { Multipart } from "@visulima/storage/handler/http/fetch";
+
+const storage = new DiskStorage({
+    directory: "./uploads",
+    expiration: { maxAge: "7d" }, // Files expire in 7 days
+});
+
+const multipart = new Multipart({
+    storage,
+    // Additional multipart options can be configured here
+});
+```
+
+## OpenAPI (Swagger)
+
+If you expose HTTP endpoints, you can generate OpenAPI specs for both multipart (XHR) and TUS routes and serve Swagger UI. See the Hono example for combining `xhrOpenApiSpec` and `tusOpenApiSpec` and mounting `/openapi.json`.
+
+## Performance Tips
+
+1. **Initialize once**: Create storage and handler instances outside request handlers
+2. **Use appropriate storage**: Choose storage backends based on your deployment environment
+3. **Enable caching**: For image transformations, enable caching for better performance
+4. **Handle large files**: Configure appropriate limits for your use case
+5. **Monitor errors**: Log and monitor upload errors for debugging
+
+## Edge Functions
+
+For Vercel Edge Functions and Netlify Edge Functions, use the edge-specific import path:
+
+```ts
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { Multipart } from "@visulima/storage/handler/http/edge";
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    region: "us-east-1",
+});
+
+const multipart = new Multipart({ storage });
+
+export const config = {
+    runtime: "edge",
+};
+
+export default async function handler(request: Request) {
+    return await multipart.fetch(request);
+}
+```
+
+## Supported Frameworks
+
+The `fetch` method works with any framework or runtime that supports the Web Fetch API:
+
+- **Hono** - Lightweight web framework (use `/handler/http/hono`)
+- **Cloudflare Workers** - Serverless functions (use `/handler/http/cloudflare`)
+- **Deno** - Secure runtime (use `/handler/http/deno`)
+- **Bun** - Fast JavaScript runtime (use `/handler/http/bun`)
+- **Next.js 15+** - With Web API support (use `/handler/http/fetch` or `/handler/http/edge`)
+- **Vercel Edge Functions** - Serverless edge functions (use `/handler/http/edge`)
+- **Netlify Edge Functions** - Serverless edge functions (use `/handler/http/edge`)
+- **Any Web API compatible environment** (use `/handler/http/fetch`)
+
+> **Tip**: While all framework-specific paths work identically, using the appropriate path makes your code more self-documenting and helps with IDE autocomplete and type checking.

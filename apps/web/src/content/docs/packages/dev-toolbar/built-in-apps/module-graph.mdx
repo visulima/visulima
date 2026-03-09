@@ -1,0 +1,88 @@
+---
+title: Module Graph
+description: Browse and filter Vite's live module dependency graph — see which files import which, find unused modules, and identify heavy dependency chains.
+---
+
+**App ID:** `dev-toolbar:module-graph`
+
+The Module Graph app queries Vite's server-side module graph via RPC and presents it as a filterable, searchable list. Each module entry shows its file extension, URL, and importer count. Click any module to see a detail pane with the full list of files that import it.
+
+## Features
+
+- **Live graph** — fetches the current state of Vite's module graph on open
+- **Full-text search** — filter modules by URL or file extension
+- **Extension badges** — colour-coded by file type (`.ts`, `.tsx`, `.vue`, `.css`, etc.)
+- **Importer count** — see at a glance how many modules depend on each file
+- **Importer list** — click a module to see all files that import it
+- **Refresh** — re-fetch the graph without reloading the page
+
+## Using the Panel
+
+### Browsing the Module List
+
+On open the panel fetches all modules currently tracked by Vite and displays them as a scrollable list. Each row shows:
+
+- **Extension badge** — colour-coded pill (`.ts` = blue, `.css` = purple, `.json` = yellow, `.vue` = green, etc.)
+- **Module URL** — the Vite-resolved path, truncated with monospace font
+- **Importer count** — a small badge showing `N↑` where N is the number of modules that import this one. Modules with no importers are entry points.
+
+### Filtering
+
+Type in the search box to filter modules by URL substring or extension. The counter on the right shows `filtered / total`. The filter is case-insensitive.
+
+```
+Filter modules…   [  42 / 318  ]
+```
+
+### Module Detail
+
+Click any module row to open the detail pane on the right:
+
+| Field           | Description                                     |
+| --------------- | ----------------------------------------------- |
+| **URL**         | Full resolved URL                               |
+| **Type**        | File extension badge                            |
+| **Importers**   | Number of modules that import this one          |
+| **Imported by** | List of importer URLs (monospace, one per line) |
+
+Click the same row again (or press the `✕` button) to close the detail pane.
+
+### Refreshing
+
+Click **Refresh** in the header to re-fetch the module graph from Vite. This is useful after HMR updates that add or remove modules.
+
+### Error State
+
+If the RPC call fails (e.g. the Vite server is temporarily unavailable), an error message is shown with a **Retry** button.
+
+## Extension Colour Reference
+
+| Extension     | Colour  |
+| ------------- | ------- |
+| `.ts`, `.tsx` | Blue    |
+| `.js`, `.jsx` | Green   |
+| `.vue`        | Emerald |
+| `.css`        | Purple  |
+| `.json`       | Yellow  |
+| `.svg`        | Orange  |
+| Other         | Grey    |
+
+## Configuration
+
+### Enable via Plugin
+
+The Module Graph app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        moduleGraph: true,
+    },
+});
+```
+
+## Notes
+
+- The module graph data comes from Vite's server-side `ModuleGraph` via an RPC call. It reflects modules that have been loaded or imported at least once since the dev server started.
+- Large projects may have hundreds of modules. Use the search filter to narrow results.
+- Virtual modules (those with `\0` or `?` in their IDs) are included in the list.

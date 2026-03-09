@@ -1,0 +1,202 @@
+---
+title: "Quick Start"
+description: "Get started with @visulima/colorize in 5 minutes."
+---
+
+# Quick Start
+
+Learn the essentials of **@visulima/colorize** in 5 minutes.
+
+## Installation
+
+```bash npm2yarn
+npm install @visulima/colorize
+```
+
+## Basic Colors
+
+Use named color imports for the simplest syntax:
+
+```typescript
+import { red, green, blue, yellow } from "@visulima/colorize";
+
+console.log(red("Error message"));
+// Output: Error message (in red)
+
+console.log(green("Success message"));
+// Output: Success message (in green)
+
+console.log(blue("Information"));
+// Output: Information (in blue)
+
+console.log(yellow("Warning"));
+// Output: Warning (in yellow)
+```
+
+## Template Literals
+
+Use template literal syntax for cleaner code:
+
+```typescript
+import { red, green, cyan } from "@visulima/colorize";
+
+console.log(red`Error: File not found`);
+console.log(green`Build completed successfully`);
+console.log(cyan`Server running on port 3000`);
+```
+
+## Styles and Modifiers
+
+Chain styles together for combined effects:
+
+```typescript
+import { red, green, bold, italic, underline } from "@visulima/colorize";
+
+console.log(red.bold`Bold error`);
+console.log(green.italic`Italic success`);
+console.log(underline.cyan`Underlined info`);
+
+// Multiple styles
+console.log(bold.underline.red`Important error`);
+```
+
+## Nested Styling
+
+Nest colors within each other for complex output:
+
+```typescript
+import { red, blue, green } from "@visulima/colorize";
+
+console.log(red`Error in ${blue`file.js`} at line ${green`42`}`);
+// Output: Error in file.js at line 42 (with different colors)
+```
+
+## Background Colors
+
+Apply background colors using `bg` prefix:
+
+```typescript
+import { bgRed, bgGreen, bgBlue, white, black } from "@visulima/colorize";
+
+console.log(white.bgRed`Error`);
+console.log(black.bgGreen`Success`);
+console.log(white.bgBlue`Info`);
+```
+
+## TrueColor (RGB/HEX)
+
+Use custom colors with hex or RGB values:
+
+```typescript
+import { hex, rgb } from "@visulima/colorize";
+
+// Hex colors
+console.log(hex("#FF6B6B")`Custom red`);
+console.log(hex("#4ECDC4")`Custom teal`);
+
+// RGB colors
+console.log(rgb(255, 107, 107)`Custom red`);
+console.log(rgb(78, 205, 196)`Custom teal`);
+
+// With background
+import { bgHex, bgRgb } from "@visulima/colorize";
+
+console.log(bgHex("#FF6B6B")`Red background`);
+console.log(bgRgb(78, 205, 196)`Teal background`);
+```
+
+## Combining Everything
+
+Mix colors, styles, and nesting for rich terminal output:
+
+```typescript
+import { bold, red, green, blue, hex } from "@visulima/colorize";
+
+const success = green.bold`✓`;
+const error = red.bold`✗`;
+const info = blue`ℹ`;
+
+console.log(`${success} Build completed`);
+console.log(`${error} Tests failed`);
+console.log(`${info} ${blue`Server`} started on port ${hex("#FFB800")`3000`}`);
+```
+
+## Strip ANSI Codes
+
+Remove colors from strings when needed:
+
+```typescript
+import colorize, { red } from "@visulima/colorize";
+
+const coloredText = red`Error message`;
+const plainText = colorize.strip(coloredText);
+
+console.log(coloredText); // Output: Error message (colored)
+console.log(plainText); // Output: Error message (plain)
+```
+
+## Default Import
+
+Use the default import for Chalk-compatible syntax:
+
+```typescript
+import colorize from "@visulima/colorize";
+
+console.log(colorize.red.bold("Bold red text"));
+console.log(colorize.green("Green text"));
+console.log(colorize.hex("#FF6B6B")("Custom color"));
+```
+
+## Common Patterns
+
+### Log Levels
+
+```typescript
+import { gray, cyan, yellow, red, bold } from "@visulima/colorize";
+
+const log = {
+    debug: (msg: string) => console.log(gray(`[DEBUG] ${msg}`)),
+    info: (msg: string) => console.log(cyan(`[INFO] ${msg}`)),
+    warn: (msg: string) => console.log(yellow(`[WARN] ${msg}`)),
+    error: (msg: string) => console.log(red.bold(`[ERROR] ${msg}`)),
+};
+
+log.debug("Debugging application");
+log.info("Server started");
+log.warn("High memory usage");
+log.error("Connection failed");
+```
+
+### Status Messages
+
+```typescript
+import { green, red, blue } from "@visulima/colorize";
+
+console.log(green`✓ All tests passed`);
+console.log(red`✗ 2 tests failed`);
+console.log(blue`→ Running tests...`);
+```
+
+### File Operations
+
+```typescript
+import { green, red, yellow } from "@visulima/colorize";
+
+console.log(green`Created: ${yellow`src/index.ts`}`);
+console.log(red`Deleted: ${yellow`dist/old.js`}`);
+console.log(blue`Modified: ${yellow`package.json`}`);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Basic Usage" href="/usage/basic">
+        Explore all base colors and styles
+    </Card>
+    <Card title="Advanced Features" href="/usage/advanced">
+        Learn about gradients and 256 colors
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

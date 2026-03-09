@@ -1,0 +1,553 @@
+# Commands
+
+Commands are the core building blocks of your CLI. They define what actions users can perform.
+
+## Basic Command
+
+A command requires at minimum a `name` and an `execute` function:
+
+```typescript
+cli.addCommand({
+    name: "hello",
+    execute: ({ logger }) => {
+        logger.info("Hello, world!");
+    },
+});
+```
+
+## Command Properties
+
+### Name
+
+The command name is used to invoke the command:
+
+```typescript
+cli.addCommand({
+    name: "build", // Command invoked as: cli build
+    execute: () => {},
+});
+```
+
+### Description
+
+A short description displayed in help output:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    description: "Build the project for production",
+    execute: () => {},
+});
+```
+
+### Aliases
+
+Provide alternative names for your command:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    alias: "b", // Can use: cli b
+    // or multiple aliases:
+    // alias: ["b", "compile"],
+    execute: () => {},
+});
+```
+
+### Hidden Commands
+
+Hide commands from help output but still allow execution:
+
+```typescript
+cli.addCommand({
+    name: "internal",
+    hidden: true, // Won't appear in help
+    execute: () => {},
+});
+```
+
+### Grouped Commands
+
+Organize commands into groups for better help organization:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    group: "Build", // Groups commands in help output
+    execute: () => {},
+});
+
+cli.addCommand({
+    name: "test",
+    group: "Build",
+    execute: () => {},
+});
+```
+
+### Examples
+
+Provide usage examples for your command:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    examples: ["deploy --env production", "deploy --env staging --dry-run"],
+    execute: () => {},
+});
+```
+
+## Command Execution
+
+The `execute` function receives a `toolbox` object with all available resources:
+
+```typescript
+cli.addCommand({
+    name: "example",
+    execute: ({
+        argument, // Positional arguments
+        options, // Parsed options
+        logger, // Logger instance
+        runtime, // CLI runtime (for calling other commands)
+        command, // Command definition
+        commandName, // Command name
+        argv, // Original argv
+    }) => {
+        // Your command logic
+    },
+});
+```
+
+### Async Commands
+
+Commands can be async:
+
+```typescript
+cli.addCommand({
+    name: "fetch",
+    execute: async ({ logger }) => {
+        const data = await fetch("https://api.example.com/data");
+        logger.info("Data fetched!");
+    },
+});
+```
+
+## Positional Arguments
+
+Define positional arguments using the `argument` property:
+
+```typescript
+cli.addCommand({
+    name: "greet",
+    argument: {
+        name: "name",
+        type: String,
+        description: "Name to greet",
+        defaultValue: "World",
+    },
+    execute: ({ argument }) => {
+        const name = argument[0]; // Access first argument
+        console.log(`Hello, ${name}!`);
+    },
+});
+```
+
+Usage:
+
+```bash
+cli greet Alice  # argument[0] = "Alice"
+cli greet        # argument[0] = "World" (default)
+```
+
+### Multiple Arguments
+
+Arguments accept multiple values by default:
+
+```typescript
+cli.addCommand({
+    name: "copy",
+    argument: {
+        name: "files",
+        type: String,
+        description: "Files to copy",
+    },
+    execute: ({ argument }) => {
+        // argument is an array of all provided values
+        argument.forEach((file) => {
+            console.log(`Copying ${file}...`);
+        });
+    },
+});
+```
+
+Usage:
+
+```bash
+cli copy file1.txt file2.txt file3.txt
+# argument = ["file1.txt", "file2.txt", "file3.txt"]
+```
+
+## Options
+
+Commands can accept options (flags):
+
+```typescript
+cli.addCommand({
+    name: "build",
+    options: [
+        {
+            name: "production",
+            type: Boolean,
+            description: "Build for production",
+        },
+        {
+            name: "output",
+            alias: "o",
+            type: String,
+            description: "Output directory",
+        },
+    ],
+    execute: ({ options }) => {
+        if (options.production) {
+            console.log("Building for production...");
+        }
+        console.log(`Output: ${options.output || "dist"}`);
+    },
+});
+```
+
+Usage:
+
+```bash
+cli build --production --output build
+cli build -o build --production
+```
+
+See the [Options Guide](/docs/cerebro/guides/options) for detailed option configuration.
+
+## Nested Commands
+
+Cerebro supports nested commands (subcommands) using the `commandPath` property. This allows you to create hierarchical command structures like `cli deploy staging` or `cli db migrate up`.
+
+### Basic Nested Commands
+
+Create nested commands by specifying a `commandPath` array:
+
+```typescript
+// Parent command path: ["deploy"]
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    description: "Deploy to staging environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to staging...");
+    },
+});
+
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    execute: ({ logger }) => {
+        logger.info("Deploying to production...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli deploy staging
+cli deploy production
+```
+
+### Multi-Level Nested Commands
+
+You can nest commands multiple levels deep:
+
+```typescript
+cli.addCommand({
+    name: "up",
+    commandPath: ["db", "migrate"],
+    description: "Run database migrations",
+    execute: ({ logger }) => {
+        logger.info("Running migrations...");
+    },
+});
+
+cli.addCommand({
+    name: "down",
+    commandPath: ["db", "migrate"],
+    description: "Rollback database migrations",
+    execute: ({ logger }) => {
+        logger.info("Rolling back migrations...");
+    },
+});
+
+cli.addCommand({
+    name: "status",
+    commandPath: ["db", "migrate"],
+    description: "Show migration status",
+    execute: ({ logger }) => {
+        logger.info("Migration status...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli db migrate up
+cli db migrate down
+cli db migrate status
+```
+
+### Nested Commands with Options
+
+Nested commands support all the same features as flat commands, including options:
+
+```typescript
+cli.addCommand({
+    name: "production",
+    commandPath: ["deploy"],
+    description: "Deploy to production environment",
+    options: [
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Show what would be deployed without deploying",
+        },
+        {
+            name: "tag",
+            alias: "t",
+            type: String,
+            description: "Deployment tag",
+        },
+    ],
+    execute: ({ options, logger }) => {
+        if (options["dry-run"]) {
+            logger.info("Dry run: Would deploy to production");
+            return;
+        }
+
+        logger.info(`Deploying to production with tag: ${options.tag || "latest"}`);
+    },
+});
+```
+
+Usage:
+
+```bash
+cli deploy production --dry-run
+cli deploy production --tag v1.0.0
+cli deploy production -t v1.0.0 --dry-run
+```
+
+### Flat and Nested Commands Together
+
+You can mix flat and nested commands in the same CLI:
+
+```typescript
+// Flat command
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    execute: ({ logger }) => {
+        logger.info("Building...");
+    },
+});
+
+// Nested command with same name (different path)
+cli.addCommand({
+    name: "build",
+    commandPath: ["docker"],
+    description: "Build Docker image",
+    execute: ({ logger }) => {
+        logger.info("Building Docker image...");
+    },
+});
+```
+
+Usage:
+
+```bash
+cli build              # Runs flat "build" command
+cli docker build       # Runs nested "docker build" command
+```
+
+### Calling Nested Commands Programmatically
+
+Use `runtime.runCommand()` with the full command path:
+
+```typescript
+cli.addCommand({
+    name: "deploy-all",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Deploying to all environments...");
+
+        // Call nested commands programmatically
+        await runtime.runCommand("deploy staging");
+        await runtime.runCommand("deploy production");
+    },
+});
+```
+
+You can also call nested commands from within other nested commands:
+
+```typescript
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"],
+    execute: async ({ runtime, logger }) => {
+        logger.info("Preparing staging deployment...");
+        await runtime.runCommand("build", { argv: ["--production"] });
+        logger.info("Deploying to staging...");
+    },
+});
+```
+
+### Help Output
+
+Nested commands are automatically displayed in help with their full path:
+
+```bash
+cli help
+```
+
+Output will show:
+
+```
+Available Commands
+  deploy staging       Deploy to staging environment
+  deploy production    Deploy to production environment
+  db migrate up        Run database migrations
+  db migrate down     Rollback database migrations
+```
+
+### Command Path Validation
+
+Command path segments are validated the same way as command names:
+
+- Must start with a letter
+- Can contain letters, numbers, hyphens, and underscores
+- Cannot contain spaces or special characters
+
+```typescript
+// ✅ Valid
+cli.addCommand({
+    name: "staging",
+    commandPath: ["deploy"], // Valid
+    execute: () => {},
+});
+
+// ❌ Invalid - path segment must start with a letter
+cli.addCommand({
+    name: "test",
+    commandPath: ["-invalid"], // Will throw error
+    execute: () => {},
+});
+```
+
+## Calling Other Commands
+
+Commands can call other commands programmatically:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Building...");
+        await runtime.runCommand("build", {
+            argv: ["--production"],
+        });
+
+        logger.info("Testing...");
+        await runtime.runCommand("test");
+
+        logger.info("Deploying...");
+    },
+});
+```
+
+The `runCommand` method allows you to:
+
+- Pass arguments via `argv` array
+- Merge additional options
+- Get return values from commands
+- Call nested commands using full path (e.g., `"deploy staging"`)
+
+```typescript
+const result = await runtime.runCommand("build", {
+    argv: ["--production"],
+    customOption: "value",
+});
+
+// Call nested commands
+await runtime.runCommand("deploy staging");
+await runtime.runCommand("db migrate up");
+```
+
+## Error Handling
+
+Commands can throw errors which are caught by Cerebro's error handling:
+
+```typescript
+cli.addCommand({
+    name: "process",
+    execute: ({ options }) => {
+        if (!options.file) {
+            throw new Error("File option is required");
+        }
+        // Process file...
+    },
+});
+```
+
+Errors are automatically handled and displayed to the user. See [Plugins Guide](/docs/cerebro/guides/plugins) for custom error handling.
+
+## Complete Example
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    alias: "d",
+    description: "Deploy the application",
+    group: "Deployment",
+    examples: ["deploy --env production", "deploy --env staging --dry-run"],
+    argument: {
+        name: "target",
+        type: String,
+        description: "Deployment target",
+        defaultValue: "production",
+    },
+    options: [
+        {
+            name: "env",
+            alias: "e",
+            type: String,
+            description: "Environment",
+            required: true,
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            description: "Perform a dry run",
+        },
+    ],
+    execute: async ({ argument, options, logger, runtime }) => {
+        const target = argument[0];
+
+        logger.info(`Deploying to ${target} environment...`);
+
+        if (options.dryRun) {
+            logger.info("Dry run mode - no changes will be made");
+            return;
+        }
+
+        // Build first
+        await runtime.runCommand("build", { argv: ["--production"] });
+
+        // Deploy
+        logger.info("Deployment complete!");
+    },
+});
+```

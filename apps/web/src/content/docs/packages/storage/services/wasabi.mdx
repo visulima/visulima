@@ -1,0 +1,82 @@
+# Wasabi
+
+## Overview
+
+Wasabi is an S3-compatible cloud storage service with predictable pricing and no egress fees. It provides high-performance storage for applications.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Wasabi is S3-compatible, so use the S3Storage with Wasabi endpoint:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { wasabi } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = wasabi({
+    accessKeyId: process.env.WASABI_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.WASABI_SECRET_ACCESS_KEY!,
+    region: process.env.WASABI_REGION || "us-east-1",
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.WASABI_ACCESS_KEY_ID = "your-access-key";
+process.env.WASABI_SECRET_ACCESS_KEY = "your-secret-key";
+process.env.WASABI_REGION = "us-east-1";
+
+const clientConfig = wasabi(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = wasabi({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    region: "us-east-1",
+});
+```
+
+## Regions
+
+Wasabi regions:
+
+- `us-east-1` - US East (N. Virginia)
+- `us-west-1` - US West (Oregon)
+- `eu-central-1` - EU Central (Amsterdam)
+- `eu-west-1` - EU West (London)
+- `ap-northeast-1` - Asia Pacific (Tokyo)
+
+## Features
+
+- **Predictable Pricing**: No egress fees, simple pricing model
+- **S3-Compatible**: Full S3 API compatibility
+- **High Performance**: Fast upload and download speeds
+- **Global Regions**: Multiple regions worldwide
+
+## Best Practices
+
+1. **Choose appropriate region** - Select region closest to your users
+2. **Monitor usage** - Track storage usage in Wasabi dashboard
+3. **Use lifecycle policies** - Automatically manage file lifecycle
+4. **Configure CORS** - Set up CORS for web applications
+5. **Enable versioning** - Use Wasabi versioning for important files

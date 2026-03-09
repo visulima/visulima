@@ -1,0 +1,30 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Error Wrapping
+
+```typescript
+import { ono } from "@visulima/ono";
+
+try {
+    await fetchData();
+} catch (err) {
+    throw ono(err, "Failed to fetch data");
+}
+```
+
+## Type-Specific Errors
+
+```typescript
+throw ono.type("TypeError", "Expected string");
+throw ono.range("RangeError", "Value out of bounds");
+```
+
+## With Formatting
+
+```typescript
+throw ono("User %s has %d errors", username, errorCount);
+```
