@@ -1,31 +1,11 @@
 {
-    "title": "@visulima/colorize",
-    "pages": [
-        "index",
-        "installation",
-        "quick-start",
-        "---Usage---",
-        {
-            "title": "Basic Usage",
-            "href": "/usage/basic"
-        },
-        {
-            "title": "Advanced Features",
-            "href": "/usage/advanced"
-        },
-        {
-            "title": "Real-World Examples",
-            "href": "/usage/examples"
-        },
-        "---API Reference---",
-        {
-            "title": "API Documentation",
-            "href": "/api"
-        },
-        "---Help---",
-        {
-            "title": "Troubleshooting",
-            "href": "/troubleshooting"
-        }
-    ]
+  "title": "@visulima/colorize",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Usage---",
+    "---API Reference---",
+    "---Help---"
+  ]
 }

@@ -1,4 +1,9 @@
 {
-    "title": "Custom Apps",
-    "pages": ["creating-apps", "app-api", "rpc", "global-api"]
+  "title": "Custom Apps",
+  "pages": [
+    "creating-apps",
+    "app-api",
+    "rpc",
+    "global-api"
+  ]
 }

@@ -4,6 +4,13 @@ import bgStones from "@/assets/images/bg-stones.png";
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 
+const GuidelineItem = ({ children, color, title }: { children: React.ReactNode; color: string; title: string }) => (
+    <div className="group flex flex-col gap-4">
+        <h3 className={`-ml-[1px] border-l-2 ${color} px-10 text-lg font-bold text-white`}>{title}</h3>
+        <p className="px-10 text-sm leading-relaxed text-white/50">{children}</p>
+    </div>
+);
+
 const GuidelineSection: FC = () => (
     <div className="bg-coal bg-bottom-left bg-no-repeat" style={{ backgroundImage: `url(${bgStones})` }}>
         <Section mode="dark" patternColor="royal-amethyst" patternPosition="top">
@@ -16,58 +23,37 @@ const GuidelineSection: FC = () => (
                 />
             </div>
             <div className="hidden lg:col-span-1 lg:block" />
-            <div className="col-span-1 flex flex-col gap-20 text-white lg:mt-24">
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Make it simple and enjoyable</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        At Visulima, we believe coding should be as enjoyable as it is productive. Our Node.js packages are designed with simplicity and
-                        elegance, ensuring that every line of code feels intuitive and creative.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Provide robust testing</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        Reliability is at the core of everything we build. Each package is backed by a comprehensive test suite to guarantee seamless
-                        performance in every environment, saving you time and building trust in production.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Be adaptable</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        We understand that every project is unique. That’s why our packages are modular and extensible, with customizable functions, hooks, and
-                        configurations that allow you to adapt them to your exact requirements.
-                    </p>
-                </div>
+            <div className="col-span-1 flex flex-col gap-16 lg:mt-24">
+                <GuidelineItem color="border-sky-sapphire" title="Make it simple and enjoyable">
+                    At Visulima, we believe coding should be as enjoyable as it is productive. Our Node.js packages are designed with simplicity and elegance,
+                    ensuring that every line of code feels intuitive and creative.
+                </GuidelineItem>
+                <GuidelineItem color="border-crimson-energy" title="Provide robust testing">
+                    Reliability is at the core of everything we build. Each package is backed by a comprehensive test suite to guarantee seamless performance in
+                    every environment, saving you time and building trust in production.
+                </GuidelineItem>
+                <GuidelineItem color="border-royal-amethyst" title="Be adaptable">
+                    We understand that every project is unique. That's why our packages are modular and extensible, with customizable functions, hooks, and
+                    configurations that allow you to adapt them to your exact requirements.
+                </GuidelineItem>
             </div>
-            <div className="col-span-1 mt-20 flex flex-col gap-20 text-white md:mt-0">
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Craft clear documentation</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        Great tools deserve great documentation. We invest in creating clear, detailed guides so you can quickly understand how to use our
-                        packages and unlock their full potential.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Write clean and readable code</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        Code should speak for itself. We write clean, readable code with thoughtfully named variables and functions, making collaboration easier
-                        and maintenance a breeze.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Focus on a small, polished scope</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        Less is more. Our packages are intentionally focused on delivering one polished feature, ensuring simplicity, efficiency, and
-                        reliability for your projects without unnecessary complexity.
-                    </p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="border-l-lime -ml-[1px] border-l px-10 text-lg font-bold">Stay current</h3>
-                    <p className="px-10 text-base/6 text-gray-300">
-                        The Node.js ecosystem evolves fast, and so do we. Our team ensures every package stays compatible with the latest updates and
-                        frameworks, so your projects always remain cutting-edge.
-                    </p>
-                </div>
+            <div className="col-span-1 mt-20 flex flex-col gap-16 md:mt-0">
+                <GuidelineItem color="border-sky-sapphire" title="Craft clear documentation">
+                    Great tools deserve great documentation. We invest in creating clear, detailed guides so you can quickly understand how to use our packages and
+                    unlock their full potential.
+                </GuidelineItem>
+                <GuidelineItem color="border-crimson-energy" title="Write clean and readable code">
+                    Code should speak for itself. We write clean, readable code with thoughtfully named variables and functions, making collaboration easier and
+                    maintenance a breeze.
+                </GuidelineItem>
+                <GuidelineItem color="border-royal-amethyst" title="Focus on a small, polished scope">
+                    Less is more. Our packages are intentionally focused on delivering one polished feature, ensuring simplicity, efficiency, and reliability for your
+                    projects without unnecessary complexity.
+                </GuidelineItem>
+                <GuidelineItem color="border-sky-sapphire" title="Stay current">
+                    The Node.js ecosystem evolves fast, and so do we. Our team ensures every package stays compatible with the latest updates and frameworks, so your
+                    projects always remain cutting-edge.
+                </GuidelineItem>
             </div>
         </Section>
     </div>

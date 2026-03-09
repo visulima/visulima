@@ -27,7 +27,7 @@ import { ReactNode, useState } from "react";
 export function Providers({ children }: { children: ReactNode }) {
     const [queryClient] = useState(() => new QueryClient());
 
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return {children};
 }
 ```
 
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="en">
             <body>
-                <Providers>{children}</Providers>
+                {children}
             </body>
         </html>
     );

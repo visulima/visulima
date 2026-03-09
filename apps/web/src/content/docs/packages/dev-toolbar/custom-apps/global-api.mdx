@@ -7,7 +7,7 @@ import { Callout } from "fumadocs-ui/components/callout";
 
 The global API is available at `window.__VISULIMA_DEVTOOLS__` during development. It provides programmatic control over every aspect of the toolbar — useful for integration testing, browser console debugging, and runtime app registration.
 
-<Callout type="warn">The global API is only available in development mode. Always guard calls with an existence check.</Callout>
+The global API is only available in development mode. Always guard calls with an existence check.
 
 ```ts
 const api = (window as any).__VISULIMA_DEVTOOLS__;

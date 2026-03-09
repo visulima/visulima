@@ -46,7 +46,7 @@ const IconGrid = ({ icons, setSelectedFramework }: { icons: { icon: any; label: 
     <ul className="flex gap-1">
         {icons.map(({ icon: Icon, label }) => (
             <li
-                className="flex h-[45px] w-[45px] place-content-center place-items-center bg-white p-2 transition-colors"
+                className="flex h-[48px] w-[48px] place-content-center place-items-center rounded-lg border border-white/[0.06] bg-white/[0.03] p-2 transition-all duration-200 hover:border-sky-sapphire/30 hover:bg-sky-sapphire/[0.06]"
                 key={label}
                 onMouseEnter={() => {
                     setSelectedFramework(label);
@@ -56,7 +56,7 @@ const IconGrid = ({ icons, setSelectedFramework }: { icons: { icon: any; label: 
                 }}
             >
                 <span className="sr-only">{label}</span>
-                <Icon aria-hidden="true" className="text-coal h-24 w-24 max-w-none" size={24} />
+                <Icon aria-hidden="true" className="h-24 w-24 max-w-none text-white/60 transition-colors hover:text-white" size={24} />
             </li>
         ))}
     </ul>
@@ -73,23 +73,23 @@ const WorksWhereYouWork: FC = () => {
                 <section>
                     <h2 className="mb-6 text-4xl font-semibold">
                         Develop, connect, and launch using the tools you love
-                        <span className="dark:bg-coal relative -top-1.5 left-2 inline-block bg-gray-50 p-2 font-mono text-sm text-white">
+                        <span className="relative -top-1.5 left-2 inline-block rounded-md border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-sm text-white">
                             {selectedFramework || (
                                 <>
                                     {`$\{`}
-                                    <span className="text-sky-sapphire bg-gray-800">your_favorite_framework</span>
+                                    <span className="text-sky-sapphire">your_favorite_framework</span>
                                     {`}`}
                                 </>
                             )}
                         </span>
                     </h2>
-                    <div className="bg-coal p-6">
+                    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
                         <IconGrid icons={frameworkIcons} setSelectedFramework={setSelectedFramework} />
                     </div>
-                    <p className="bg-coal mt-6 w-fit px-2 text-white">…or whichever one is coming next.</p>
+                    <p className="mt-4 text-sm text-white/40">...or whichever one is coming next.</p>
                 </section>
                 <svg
-                    className="absolute bottom-18 left-1/2 hidden w-[134px] -translate-x-1/2 lg:block fill-sky-sapphire"
+                    className="absolute bottom-18 left-1/2 hidden w-[134px] -translate-x-1/2 lg:block fill-sky-sapphire/40"
                     fill="none"
                     height="151"
                     viewBox="0 0 132 151"
@@ -102,20 +102,19 @@ const WorksWhereYouWork: FC = () => {
                     />
                 </svg>
                 <section className="lg:mt-24">
-                    <h2 className="mb-4 text-4xl font-semibold">Our packages uses web standards to run anywhere</h2>
-                    <p className="bg-coal mt-6 mb-6 w-fit px-2 text-white">…and it comes in other flavors too.</p>
+                    <h2 className="mb-4 text-4xl font-semibold">Our packages use web standards to run anywhere</h2>
+                    <p className="mt-4 mb-6 text-sm text-white/40">...and it comes in other flavors too.</p>
 
-                    <div className="bg-coal p-6">
+                    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-6">
                         <IconGrid icons={deployIcons} setSelectedFramework={setSelectedDeploy} />
 
-                        <p className="mt-4 flex items-end font-mono text-sm text-white">
-                            Deploy modern, apps and APIs{" "}
+                        <p className="mt-4 flex items-end font-mono text-sm text-white/60">
+                            Deploy modern apps and APIs{" "}
                             {selectedDeploy ? (
-                                <span className="text-sky-sapphire ml-2">{`with ${selectedDeploy}`}</span>
+                                <span className="text-sky-sapphire ml-2 font-medium">{`with ${selectedDeploy}`}</span>
                             ) : (
-                                <span className="text-sky-sapphire ml-2 bg-gray-800">anywhere</span>
+                                <span className="text-sky-sapphire ml-2">anywhere</span>
                             )}
-                            <span className="h-5 w-fit bg-white pr-2" />
                         </p>
                     </div>
                 </section>

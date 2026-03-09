@@ -12,10 +12,10 @@ import HighlightLink from "@/components/ui/highlight-link";
 import OssLight from "@/components/ui/svgs/oss-lights";
 
 type TanstackLink = { title: string; to: string };
-type ExternalLink = { href: string; title: string };
+type ExternalLinkType = { href: string; title: string };
 
 const Menus: {
-    links: (ExternalLink | TanstackLink)[];
+    links: (ExternalLinkType | TanstackLink)[];
     title: string;
 }[] = [
     {
@@ -87,17 +87,22 @@ const Footer: FC = () => (
         <div className="relative container mx-auto grid grid-cols-2 gap-y-8 p-0 sm:grid-cols-3 md:grid-cols-4">
             <LineGrid mode="dark" />
 
-            {Menus.map((menu, index) => (
-                <div className="relative z-10 flex flex-col space-y-4 border-t border-t-white/10 py-24" key={menu.title}>
-                    <h2 className="mb-2 font-medium uppercase opacity-50">{menu.title}</h2>
+            {Menus.map((menu) => (
+                <div className="relative z-10 flex flex-col space-y-4 border-t border-t-white/[0.06] py-24" key={menu.title}>
+                    <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-white/30">{menu.title}</h2>
                     <div className="flex flex-col space-y-2 text-sm">
-                        {menu.links.map((link: TanstackLink | ExternalLink) =>
-                            (link as ExternalLink).href ? (
-                                <a href={(link as ExternalLink).href} key={link.title} rel="noopener noreferrer">
+                        {menu.links.map((link: TanstackLink | ExternalLinkType) =>
+                            (link as ExternalLinkType).href ? (
+                                <a
+                                    className="text-white/50 transition-colors hover:text-white"
+                                    href={(link as ExternalLinkType).href}
+                                    key={link.title}
+                                    rel="noopener noreferrer"
+                                >
                                     {link.title}
                                 </a>
                             ) : (
-                                <Link key={link.title} to={(link as TanstackLink).to}>
+                                <Link className="text-white/50 transition-colors hover:text-white" key={link.title} to={(link as TanstackLink).to}>
                                     {link.title}
                                 </Link>
                             ),
@@ -107,9 +112,9 @@ const Footer: FC = () => (
             ))}
         </div>
 
-        <div className="border-t border-b py-12">
+        <div className="border-t border-white/[0.06] py-12">
             <div className="container mx-auto flex flex-col items-center justify-center gap-8">
-                <span>Build by</span>
+                <span className="text-sm text-white/30">Built by</span>
                 <a className="h-full w-full cursor-pointer" href="https://anolilab.com?ref=visulima" rel="noopener noreferrer" target="_blank">
                     <AnolilabText className="fill-white" />
                 </a>
@@ -117,8 +122,8 @@ const Footer: FC = () => (
         </div>
 
         <div className="relative container mx-auto text-white">
-            <div className="flex items-center justify-center border-b py-12 text-sm">
-                <span>Copyright © 2022-present Visulima & Visulima Contributors</span>
+            <div className="flex items-center justify-center border-b border-white/[0.06] py-12 text-xs text-white/30">
+                <span>Copyright &copy; 2022-present Visulima & Visulima Contributors</span>
                 <div className="grow" />
                 <span>Code: MIT License. Visual Design & Branding: All Rights Reserved (CC BY-NC-ND 4.0).</span>
             </div>
@@ -129,7 +134,7 @@ const Footer: FC = () => (
                     flickerChance={0.1}
                     gridGap={2}
                     height={117}
-                    maxOpacity={0.5}
+                    maxOpacity={0.3}
                     squareSize={2}
                 />
             </div>

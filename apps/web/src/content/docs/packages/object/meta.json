@@ -3,14 +3,6 @@
   "pages": [
     "index",
     "installation",
-    "---Documentation---",
-    {
-      "title": "Usage Guide",
-      "href": "/usage"
-    },
-    {
-      "title": "API Reference",
-      "href": "/api"
-    }
+    "---Documentation---"
   ]
 }

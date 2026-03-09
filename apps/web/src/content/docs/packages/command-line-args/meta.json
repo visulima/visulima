@@ -1,12 +1,10 @@
 {
-    "title": "@visulima/command-line-args",
-    "pages": [
-        "index",
-        "installation",
-        "quick-start",
-        "---Getting Started---",
-        { "title": "Usage Guide", "href": "/usage" },
-        "---API Reference---",
-        { "title": "API Documentation", "href": "/api" }
-    ]
+  "title": "@visulima/command-line-args",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Getting Started---",
+    "---API Reference---"
+  ]
 }

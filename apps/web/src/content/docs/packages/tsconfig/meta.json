@@ -1,11 +1,9 @@
 {
-    "title": "@visulima/tsconfig",
-    "pages": [
-        "index",
-        "installation",
-        "---Getting Started---",
-        { "title": "Usage", "href": "/usage" },
-        "---API Reference---",
-        { "title": "API", "href": "/api" }
-    ]
+  "title": "@visulima/tsconfig",
+  "pages": [
+    "index",
+    "installation",
+    "---Getting Started---",
+    "---API Reference---"
+  ]
 }

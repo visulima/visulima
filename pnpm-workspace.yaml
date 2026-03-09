@@ -1,152 +1,150 @@
 catalogs:
   build:
-    '@tailwindcss/vite': 4.1.17
+    '@tailwindcss/vite': 4.2.1
     '@visulima/vite-overlay': ^1.3.7
-    '@vitejs/plugin-react': ^5.1.1
+    '@vitejs/plugin-react': 5.1.4
     unplugin-fonts: 1.4.0
     vite: 7.3.1
-    vite-imagetools: ^9.0.2
+    vite-imagetools: 10.0.0
     vite-plugin-svgr: 4.5.0
-    vite-tsconfig-paths: 5.1.4
+    vite-tsconfig-paths: 6.1.1
   cli:
-    semantic-release: 25.0.2
-    taze: 19.9.0
+    semantic-release: 25.0.3
+    taze: 19.10.0
   dev:
-    '@babel/core': 7.28.5
+    '@babel/core': 7.29.0
     audit-ci: 7.1.0
-    happy-dom: 20.0.10
+    happy-dom: 20.8.3
     is-ci: ^4.1.0
-    sort-package-json: 3.4.0
+    sort-package-json: 3.6.1
   frontend:
-    '@fuma-comment/react': ^1.3.1
+    '@fuma-comment/react': 1.4.1
     '@radix-ui/react-presence': ^1.1.5
     '@radix-ui/react-slot': ^1.2.4
-    '@react-three/fiber': ^9.4.0
-    '@tanstack/react-router': 1.139.3
-    '@tanstack/react-router-devtools': 1.139.3
-    '@tanstack/react-start': 1.139.3
-    '@tanstack/react-virtual': ^3.13.12
-    '@unpic/react': 1.0.1
+    '@react-three/fiber': 9.5.0
+    '@tanstack/react-router': 1.166.3
+    '@tanstack/react-router-devtools': 1.166.3
+    '@tanstack/react-start': 1.166.3
+    '@tanstack/react-virtual': 3.13.21
+    '@unpic/react': 1.0.2
     '@vidstack/react': 1.12.13
     babel-plugin-react-compiler: 19.1.0-rc.3
-    fumadocs-ui: ^16.1.0
-    motion: 12.23.24
+    fumadocs-ui: 16.6.12
+    motion: 12.35.2
     radix-ui: ^1.4.3
-    react: 19.2.0
+    react: 19.2.4
     react-compiler-runtime: 19.1.0-rc.3
-    react-dom: 19.2.0
+    react-dom: 19.2.4
     react-hook-inview: 4.5.1
-    react-remove-scroll: ^2.7.1
-    three: 0.181.2
+    react-remove-scroll: 2.7.2
+    three: 0.183.2
   icons:
-    '@icons-pack/react-simple-icons': 13.8.0
+    '@icons-pack/react-simple-icons': 13.12.0
     '@radix-ui/react-icons': 1.3.2
-    lucide-react: 0.554.0
+    lucide-react: 0.577.0
     media-icons: 1.1.5
     react-icon-cloud: 4.1.7
   lint:
-    '@anolilab/eslint-config': 16.4.4
-    '@anolilab/prettier-config': ^6.0.8
-    '@eslint-react/eslint-plugin': ^2.3.7
-    '@secretlint/secretlint-rule-preset-recommend': 11.2.5
-    '@tanstack/eslint-plugin-router': ^1.139.0
-    eslint: 9.39.1
+    '@anolilab/eslint-config': 22.0.2
+    '@anolilab/prettier-config': 9.1.1
+    '@eslint-react/eslint-plugin': 2.13.0
+    '@secretlint/secretlint-rule-preset-recommend': 11.3.1
+    '@tanstack/eslint-plugin-router': 1.161.4
+    eslint: 10.0.3
     eslint-plugin-jsx-a11y: ^6.10.2
     eslint-plugin-react: ^7.37.5
     eslint-plugin-react-compiler: 19.1.0-rc.2
     eslint-plugin-react-hooks: ^7.0.1
     eslint-plugin-react-perf: ^3.3.3
-    eslint-plugin-react-refresh: ^0.4.24
-    eslint-plugin-react-you-might-not-need-an-effect: ^0.7.0
-    eslint-plugin-testing-library: ^7.13.5
+    eslint-plugin-react-refresh: 0.5.2
+    eslint-plugin-react-you-might-not-need-an-effect: 0.9.2
+    eslint-plugin-testing-library: 7.16.0
     eslint-plugin-validate-jsx-nesting: ^0.1.1
-    eslint-plugin-zod: ^1.4.0
+    eslint-plugin-zod: 3.4.0
     husky: ^9.1.7
-    prettier: 3.6.2
-    secretlint: 11.2.5
+    prettier: 3.8.1
+    secretlint: 11.3.1
   node:
     fast-glob: ^3.3.3
-    rimraf: 6.1.2
+    rimraf: 6.1.3
   prod:
-    '@fumadocs/mdx-remote': 1.4.3
+    '@fumadocs/mdx-remote': 1.4.6
     '@octokit/rest': ^22.0.1
     class-variance-authority: 0.7.1
     clsx: 2.1.1
     cmdk: ^1.1.1
     date-fns: ^4.1.0
-    fumadocs-core: ^16.1.0
-    fumadocs-mdx: ^14.0.3
-    fumadocs-twoslash: ^3.1.10
+    fumadocs-core: 16.6.12
+    fumadocs-mdx: 14.2.9
+    fumadocs-twoslash: 3.1.14
     gray-matter: ^4.0.3
     next-themes: ^0.4.6
-    posthog-js: ^1.298.0
-    tailwind-merge: 3.4.0
+    posthog-js: 1.359.1
+    tailwind-merge: 3.5.0
   style:
     '@tailwindcss/typography': 0.5.19
-    tailwindcss: 4.1.17
+    tailwindcss: 4.2.1
     tailwindcss-animate: 1.0.7
   syntax:
-    shiki: 3.15.0
+    shiki: 4.0.2
   test:
     '@testing-library/jest-dom': 6.9.1
-    '@testing-library/react': 16.3.0
-    '@vitest/ui': 4.0.13
-    vitest: 4.0.13
+    '@testing-library/react': 16.3.2
+    '@vitest/ui': 4.0.18
+    vitest: 4.0.18
   tsc:
     typescript: 5.9.3
   types:
-    '@types/node': 24.10.1
-    '@types/react': 19.2.7
+    '@types/node': 25.3.5
+    '@types/react': 19.2.14
     '@types/react-dom': 19.2.3
-    '@types/three': 0.181.0
+    '@types/three': 0.183.1
   utils:
     embla-carousel-react: 8.6.0
     use-count-up: 3.0.1
-    zod: ^4.1.13
-
+    zod: 4.3.6
 packages:
-  - '!**/__test__/**'
-  - '!**/__tests__/**'
-  - '!packages/api/api-platform/__fixtures__/**'
-  - '!packages/error-debugging/error/__fixtures__/**'
-  - '!packages/tooling/jsdoc-open-api/__fixtures__/**'
-  - '!packages/tooling/package/__fixtures__/package-json/**'
-  - '!packages/tooling/package/__fixtures__/read-tsconfig/**'
-  - '!packages/tooling/package/__fixtures__/which-package-manager/**'
-  - '!packages/tooling/package/__fixtures__/workspaces/**'
-  - '!packages/storage/storage/src/adapter/nuxt'
-  - apps/**
-  - packages/**
-  - shared/**
-  - packages/terminal/boxen/__bench__
-  - packages/terminal/colorize/__bench__
-  - packages/data-manipulation/deep-clone/__bench__
-  - packages/terminal/fmt/__bench__
-  - packages/error-debugging/inspector/__bench__
-  - packages/error-debugging/pail/__bench__
-  - packages/data-manipulation/string/__bench__
-  - packages/terminal/tabular/__bench__
-  - packages/filesystem/fs/__bench__
-  - packages/data-manipulation/redact/__bench__
-  - packages/terminal/command-line-args/__bench__
-  - packages/terminal/cerebro/__bench__
-  - packages/terminal/colorize/__fixtures__/package/cjs
-  - packages/terminal/colorize/__fixtures__/package/mjs
-  - packages/terminal/cerebro/__fixtures__/package/cjs
-  - packages/terminal/cerebro/__fixtures__/package/mjs
-  - packages/tooling/package/__fixtures__/package/cjs
-  - packages/tooling/package/__fixtures__/package/mjs
-  - packages/error-debugging/pail/__fixtures__/package/cjs
-  - packages/error-debugging/pail/__fixtures__/package/mjs
-  - packages/terminal/boxen/__fixtures__/package/cjs
-  - packages/terminal/boxen/__fixtures__/package/mjs
-  - packages/filesystem/path/__fixtures__/package/cjs
-  - packages/filesystem/path/__fixtures__/package/mjs
-  - packages/data-manipulation/redact/__fixtures__/package/cjs
-  - packages/data-manipulation/redact/__fixtures__/package/mjs
-  - packages/tooling/tsconfig/__fixtures__/package/cjs
-  - packages/tooling/tsconfig/__fixtures__/package/mjs
-
+  - "!**/__test__/**"
+  - "!**/__tests__/**"
+  - "!packages/api/api-platform/__fixtures__/**"
+  - "!packages/error-debugging/error/__fixtures__/**"
+  - "!packages/tooling/jsdoc-open-api/__fixtures__/**"
+  - "!packages/tooling/package/__fixtures__/package-json/**"
+  - "!packages/tooling/package/__fixtures__/read-tsconfig/**"
+  - "!packages/tooling/package/__fixtures__/which-package-manager/**"
+  - "!packages/tooling/package/__fixtures__/workspaces/**"
+  - "!packages/storage/storage/src/adapter/nuxt"
+  - "apps/**"
+  - "packages/**"
+  - "shared/**"
+  - "packages/terminal/boxen/__bench__"
+  - "packages/terminal/colorize/__bench__"
+  - "packages/data-manipulation/deep-clone/__bench__"
+  - "packages/terminal/fmt/__bench__"
+  - "packages/error-debugging/inspector/__bench__"
+  - "packages/error-debugging/pail/__bench__"
+  - "packages/data-manipulation/string/__bench__"
+  - "packages/terminal/tabular/__bench__"
+  - "packages/filesystem/fs/__bench__"
+  - "packages/data-manipulation/redact/__bench__"
+  - "packages/terminal/command-line-args/__bench__"
+  - "packages/terminal/cerebro/__bench__"
+  - "packages/terminal/colorize/__fixtures__/package/cjs"
+  - "packages/terminal/colorize/__fixtures__/package/mjs"
+  - "packages/terminal/cerebro/__fixtures__/package/cjs"
+  - "packages/terminal/cerebro/__fixtures__/package/mjs"
+  - "packages/tooling/package/__fixtures__/package/cjs"
+  - "packages/tooling/package/__fixtures__/package/mjs"
+  - "packages/error-debugging/pail/__fixtures__/package/cjs"
+  - "packages/error-debugging/pail/__fixtures__/package/mjs"
+  - "packages/terminal/boxen/__fixtures__/package/cjs"
+  - "packages/terminal/boxen/__fixtures__/package/mjs"
+  - "packages/filesystem/path/__fixtures__/package/cjs"
+  - "packages/filesystem/path/__fixtures__/package/mjs"
+  - "packages/data-manipulation/redact/__fixtures__/package/cjs"
+  - "packages/data-manipulation/redact/__fixtures__/package/mjs"
+  - "packages/tooling/tsconfig/__fixtures__/package/cjs"
+  - "packages/tooling/tsconfig/__fixtures__/package/mjs"
 auditConfig:
   ignoreCves:
     - GHSA-45h5-66jx-r2wf

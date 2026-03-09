@@ -1,3 +1,7 @@
+---
+title: "Describing Parameters"
+---
+
 ## Describing Parameters
 
 Parameters are defined with `@pathParam`, `@queryParam`, `@headerParam`, `@cookieParam` or `@paramComponent`.

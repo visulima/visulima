@@ -75,9 +75,9 @@ export function createMyLibrary(options: Options): MyLibrary {
 
 ## Full Step-by-Step Guide
 
-<Steps>
 
-<Step>
+
+
 
 ### Create the Devtools Panel Component
 
@@ -110,9 +110,9 @@ const MyLibraryPanel = (_props: AppComponentProps): ComponentChildren => {
 export default MyLibraryPanel;
 ```
 
-</Step>
 
-<Step>
+
+
 
 ### (Optional) Create a Tooltip
 
@@ -145,9 +145,9 @@ const MyLibraryTooltip = (_props: AppComponentProps): ComponentChildren => {
 export default MyLibraryTooltip;
 ```
 
-</Step>
 
-<Step>
+
+
 
 ### Register with the Hook
 
@@ -192,9 +192,9 @@ export function installDevtools(instance: MyLibrary): void {
 }
 ```
 
-</Step>
 
-<Step>
+
+
 
 ### Call from Your Library Entry Point
 
@@ -212,9 +212,9 @@ export function createMyLibrary(options: Options): MyLibrary {
 }
 ```
 
-</Step>
 
-</Steps>
+
+
 
 ---
 
@@ -300,9 +300,9 @@ declare global {
 }
 ```
 
-<Callout type="info">
+
     The hook is initialized before user code runs. The toolbar script is injected into `<head>` with `prepend` priority. Even so, calls before `devtools:init` are safely buffered and replayed.
-</Callout>
+
 
 ---
 

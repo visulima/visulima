@@ -1,3 +1,7 @@
+---
+title: "Describing Responses"
+---
+
 ## Describing Responses
 
 An API specification needs to specify the `responses` for all API operations.

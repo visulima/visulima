@@ -1,4 +1,3 @@
-import { clsx } from "clsx";
 import { ChartNoAxesCombined, Cog, Lock, Puzzle, Shield, Timer } from "lucide-react";
 
 import Section from "@/components/sections/section";
@@ -9,14 +8,14 @@ import { BentoGrid, BentoSpotlightCard } from "@/components/ui/bento";
 const WhyVisulima = () => {
     const features = [
         {
-            className: "lg:row-start-2 lg:row-end-2 lg:col-start-1 lg:col-end-3 bg-background border-r border-t border-dotted",
+            className: "lg:row-start-2 lg:row-end-2 lg:col-start-1 lg:col-end-3 border-r border-t border-white/[0.06]",
             description:
                 "Save time and reduce engineering overhead by leveraging Visulima's ready-to-use solutions. Our tools let you ship faster without sacrificing quality, ensuring your team stays ahead of deadlines and focused on innovation.",
             Icon: Timer,
             name: "Accelerate Delivery",
             revealColors: [
-                [255, 0, 0],
-                [255, 99, 71],
+                [0, 122, 204],
+                [56, 189, 248],
             ],
         },
         {
@@ -26,8 +25,8 @@ const WhyVisulima = () => {
             Icon: Lock,
             name: "Security at the Core",
             revealColors: [
-                [0, 0, 255],
-                [70, 130, 180],
+                [0, 122, 204],
+                [56, 189, 248],
             ],
         },
         {
@@ -37,19 +36,19 @@ const WhyVisulima = () => {
             Icon: Puzzle,
             name: "Flexible, Seamless Adoption",
             revealColors: [
-                [255, 255, 0],
-                [255, 215, 0],
+                [204, 50, 50],
+                [248, 113, 113],
             ],
         },
         {
-            className: "lg:col-start-3 lg:row-start-1 bg-background border-r border-b border-dotted",
+            className: "lg:col-start-3 lg:row-start-1 border-r border-b border-white/[0.06]",
             description:
                 "Visulima tools have been rigorously tested in real-world scenarios to deliver consistent, dependable performance. You can trust them to handle even your most complex and demanding use cases with ease.",
             Icon: Shield,
             name: "Proven Reliability",
             revealColors: [
-                [0, 255, 0],
-                [34, 139, 34],
+                [128, 71, 153],
+                [168, 85, 247],
             ],
         },
         {
@@ -58,6 +57,10 @@ const WhyVisulima = () => {
                 "Our platform evolves rapidly, driven by a vibrant developer community and a commitment to innovation. With Visulima, you gain access to cutting-edge solutions that stay ahead of industry trends.",
             Icon: ChartNoAxesCombined,
             name: "Always Improving",
+            revealColors: [
+                [128, 71, 153],
+                [168, 85, 247],
+            ],
         },
         {
             className: "lg:row-start-2 lg:col-start-4",
@@ -66,8 +69,8 @@ const WhyVisulima = () => {
             Icon: Cog,
             name: "Effortless Integration",
             revealColors: [
-                [135, 206, 235],
-                [176, 224, 230],
+                [0, 122, 204],
+                [56, 189, 248],
             ],
         },
     ];
@@ -76,7 +79,7 @@ const WhyVisulima = () => {
         <div className="bg-background relative">
             <Section
                 classes={{
-                    lineGrid: "border-dotted",
+                    lineGrid: "border-dotted border-white/[0.06]",
                     pattern: "inset-y-10",
                 }}
                 mode="dark"
@@ -91,7 +94,7 @@ const WhyVisulima = () => {
                     />
                 </div>
                 <div className="col-span-4">
-                    <BentoGrid className="border-y border-dotted">
+                    <BentoGrid className="border-y border-white/[0.06]">
                         {features.map((feature) => (
                             <BentoSpotlightCard key={feature.name} {...feature} className={feature.className} />
                         ))}

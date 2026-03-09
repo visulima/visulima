@@ -12,6 +12,73 @@ const PACKAGES_DIR = path.join(ROOT_DIR, "packages");
 const DEST_DIR = path.join(__dirname, "..", "src", "content", "docs", "packages");
 
 /**
+ * Sanitizes meta.json pages array to only contain strings,
+ * since fumadocs-mdx does not support object entries.
+ */
+async function sanitizeMetaJson(filePath) {
+    const content = await fs.readFile(filePath, "utf-8");
+    const meta = JSON.parse(content);
+
+    if (Array.isArray(meta.pages)) {
+        meta.pages = meta.pages.filter((entry) => typeof entry === "string");
+    }
+
+    await fs.writeFile(filePath, JSON.stringify(meta, null, 2) + "\n");
+}
+
+/**
+ * Ensures MDX files have valid frontmatter with a title,
+ * and strips incompatible imports (e.g., nextra-theme-docs).
+ */
+async function sanitizeMdx(filePath) {
+    let content = await fs.readFile(filePath, "utf-8");
+
+    // 1. Strip import statements referencing unavailable modules
+    content = content.replace(/^import\s+.*from\s+['"]@visulima\/nextra-theme-docs.*['"];?\s*$/gm, "");
+
+    // 2. Strip corrupted LLM artifacts (fullwidth pipe characters, tool call markers)
+    content = content.replace(/<｜[^｜]*｜>/g, "");
+
+    // 3. Strip undefined JSX components from nextra-theme-docs FIRST (before escaping)
+    const nextraComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider";
+    const wrapperRegex = new RegExp(`<(${nextraComponents})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "g");
+    const selfClosingRegex = new RegExp(`<(${nextraComponents})\\b[^>]*\\/>`, "g");
+
+    for (let i = 0; i < 5; i++) {
+        content = content.replace(wrapperRegex, "$2");
+    }
+    content = content.replace(selfClosingRegex, "");
+
+    // 4. Escape ALL angle brackets outside code blocks that aren't standard HTML tags.
+    // This prevents MDX from interpreting TypeScript generics, comparison operators,
+    // and other non-HTML angle brackets as JSX.
+    const codeBlockRegex = /(```[\s\S]*?```|`[^`]+`)/g;
+    const parts = content.split(codeBlockRegex);
+
+    const safeHtmlTags = "div|span|a|p|ul|ol|li|h[1-6]|br|hr|img|code|pre|em|strong|b|i|u|table|thead|tbody|tfoot|tr|td|th|details|summary|blockquote|section|nav|footer|header|main|aside|figure|figcaption|dl|dt|dd|sup|sub|del|ins|mark|small|abbr|cite|dfn|kbd|samp|var|wbr|!--";
+    const safeTagRegex = new RegExp(`<(?!\\/?(?:${safeHtmlTags})[\\s>/])`, "g");
+
+    content = parts
+        .map((part, i) => {
+            if (i % 2 === 1) return part; // code block - don't modify
+            return part.replace(safeTagRegex, "\\<");
+        })
+        .join("");
+
+    // 5. Add frontmatter if missing
+    if (!content.startsWith("---")) {
+        const basename = path.basename(filePath, path.extname(filePath));
+        const title = basename
+            .replace(/[-_]/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+
+        content = `---\ntitle: "${title}"\n---\n\n` + content;
+    }
+
+    await fs.writeFile(filePath, content);
+}
+
+/**
  * Recursively copies a directory.
  */
 async function copyDirectory(src, dest) {
@@ -27,6 +94,12 @@ async function copyDirectory(src, dest) {
             await copyDirectory(srcPath, destPath);
         } else {
             await fs.copyFile(srcPath, destPath);
+
+            if (entry.name === "meta.json") {
+                await sanitizeMetaJson(destPath);
+            } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+                await sanitizeMdx(destPath);
+            }
         }
     }
 }

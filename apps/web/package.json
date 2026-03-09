@@ -109,6 +109,8 @@
     "vite-tsconfig-paths": "catalog:build",
     "vitest": "catalog:test"
   },
+  "peerDependencies": {},
+  "optionalDependencies": {},
   "engines": {
     "node": "22.*"
   }

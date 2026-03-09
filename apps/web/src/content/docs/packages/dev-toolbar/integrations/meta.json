@@ -1,4 +1,7 @@
 {
-    "title": "Integrations",
-    "pages": ["library-integration", "vite-overlay"]
+  "title": "Integrations",
+  "pages": [
+    "library-integration",
+    "vite-overlay"
+  ]
 }

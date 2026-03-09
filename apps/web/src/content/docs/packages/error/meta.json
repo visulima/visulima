@@ -1,26 +1,10 @@
 {
-    "title": "@visulima/error",
-    "pages": [
-        "index",
-        "installation",
-        "quick-start",
-        "---Guides---",
-        {
-            "title": "Custom Errors",
-            "href": "/guides/custom-errors"
-        },
-        {
-            "title": "Code Frames",
-            "href": "/guides/code-frames"
-        },
-        "---API Reference---",
-        {
-            "title": "VisulimaError",
-            "href": "/api/visulima-error"
-        },
-        {
-            "title": "Code Frame",
-            "href": "/api/code-frame"
-        }
-    ]
+  "title": "@visulima/error",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "---Guides---",
+    "---API Reference---"
+  ]
 }

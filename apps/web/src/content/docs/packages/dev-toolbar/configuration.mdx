@@ -98,10 +98,10 @@ devToolbar({
 });
 ```
 
-<Callout type="warn">
+
     Only set `appendTo` if you understand exactly what it does. The toolbar import is prepended to the matching module's source code at transform time. Make
     sure the target module is executed in the browser (not server-only code).
-</Callout>
+
 
 ---
 
@@ -202,10 +202,10 @@ devToolbar({
 });
 ```
 
-<Callout type="info">
+
     Source injection reads the unmodified on-disk file so that both SSR and client builds emit identical `data-vdt-source` values. This prevents React hydration
     mismatches in SSR frameworks such as TanStack Start.
-</Callout>
+
 
 ---
 
@@ -277,10 +277,10 @@ devToolbar({
 });
 ```
 
-<Callout type="info">
+
     Leave this at `true` for all standard use cases. Only set it to `false` if you intentionally ship the toolbar in non-development builds (e.g. internal
     staging environments where Vite builds instead of serving).
-</Callout>
+
 
 ---
 

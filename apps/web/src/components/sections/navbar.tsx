@@ -5,8 +5,8 @@ import GitHubLogoIcon from "@icons-pack/react-simple-icons/icons/SiGithub.mjs";
 import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
-import { LargeSearchToggle } from "fumadocs-ui/components/layout/search-toggle";
-import { Book, Handshake, Home, Logs, Menu, Package, ScrollText, Signature, Terminal } from "lucide-react";
+import { useSearchContext } from "fumadocs-ui/contexts/search";
+import { Book, Handshake, Home, Logs, Menu, Package, ScrollText, Search, Signature, Terminal } from "lucide-react";
 import type { ComponentPropsWithoutRef, ElementRef, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
 
@@ -249,6 +249,26 @@ const Logo = ({ pathname }: { pathname: string }) => {
     );
 };
 
+const SearchButton = () => {
+    const { setOpenSearch } = useSearchContext();
+
+    return (
+        <button
+            className="flex h-8 w-64 cursor-pointer items-center gap-2 rounded-lg border border-[var(--nav-text-color)]/10 bg-white/[0.04] px-3 text-sm text-[var(--nav-text-color)]/50 transition-colors hover:border-[var(--nav-text-color)]/20 hover:bg-white/[0.06]"
+            onClick={() => {
+                setOpenSearch(true);
+            }}
+            type="button"
+        >
+            <Search className="size-3.5" />
+            <span>Search...</span>
+            <kbd className="ml-auto rounded border border-[var(--nav-text-color)]/10 px-1.5 py-0.5 text-xs text-[var(--nav-text-color)]/30">
+                /
+            </kbd>
+        </button>
+    );
+};
+
 const Navbar = () => {
     const { pathname } = useLocation();
     const navReference = useRef(null);
@@ -335,7 +355,7 @@ const Navbar = () => {
                         </NavigationMenuItem>
                     ))}
                 </NavigationMenuList>
-                <LargeSearchToggle className="bg-ivory h-8 cursor-pointer rounded-[9px] transition duration-200 ease-linear w-64 border-[var(--nav-text-color)]/20" />
+                <SearchButton />
                 <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
                     <TwitterLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Follow us on X" />
                 </a>
