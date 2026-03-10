@@ -160,7 +160,7 @@ export const MultiSelect = ({
                     ref={ref}
                     {...properties}
                     className={cn(
-                        "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
+                        "flex w-full p-1 border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
                         className,
                     )}
                     key={selectedValues.join(",")}
@@ -254,8 +254,8 @@ export const MultiSelect = ({
                             <CommandItem className="cursor-pointer" key="all" onSelect={toggleAll}>
                                 <div
                                     className={cn(
-                                        "mr-2 flex size-4 items-center justify-center rounded-sm border border-primary",
-                                        selectedValues.length === options.length ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible",
+                                        "mr-2 flex size-4 items-center justify-center border border-white/20",
+                                        selectedValues.length === options.length ? "bg-white/20 text-white" : "opacity-50 [&_svg]:invisible",
                                     )}
                                 >
                                     <CheckIcon className="size-4" />
@@ -275,8 +275,8 @@ export const MultiSelect = ({
                                     >
                                         <div
                                             className={cn(
-                                                "mr-2 flex size-4 items-center justify-center rounded-sm border border-primary",
-                                                isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible",
+                                                "mr-2 flex size-4 items-center justify-center border border-white/20",
+                                                isSelected ? "bg-white/20 text-white" : "opacity-50 [&_svg]:invisible",
                                             )}
                                         >
                                             <CheckIcon className="size-4" />
