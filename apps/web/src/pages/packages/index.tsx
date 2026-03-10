@@ -42,7 +42,7 @@ const PackageCard: FC<{ pkg: PackageInfo; weeklyDownloads: number }> = ({ pkg, w
     return (
         <Link
             className={cn(
-                "group relative flex flex-col gap-4 border border-white/6 bg-gradient-to-br from-transparent via-transparent to-transparent p-6 transition-all duration-300",
+                "group relative flex h-full flex-col gap-4 border-y border-white/6 bg-gradient-to-br from-transparent via-transparent to-transparent p-6 transition-all duration-300",
                 styles.border,
                 styles.hover,
             )}
@@ -159,11 +159,10 @@ const PackagesListing: FC = () => {
                         <span className="inline-block h-px w-6 bg-gradient-to-r from-sky-sapphire/60 to-transparent" />
                         Open Source
                     </span>
-                    <h1 className="mt-5 text-wrap-balance text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
-                        The Complete Toolkit.
-                    </h1>
+                    <h1 className="mt-5 text-wrap-balance text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">The Complete Toolkit.</h1>
                     <p className="mt-6 max-w-2xl text-lg leading-relaxed text-gray-500 sm:text-xl">
-                        From blazing-fast bundlers to intuitive CLI builders, explore the full collection of packages crafted for elegance, simplicity, and power.
+                        From blazing-fast bundlers to intuitive CLI builders, explore the full collection of packages crafted for elegance, simplicity, and
+                        power.
                     </p>
                 </div>
 
@@ -174,11 +173,8 @@ const PackagesListing: FC = () => {
                     {totalWeeklyDownloads > 0 && <StatBlock label="Weekly Downloads" value={formatNumber(totalWeeklyDownloads)} />}
                 </div>
 
-                {/* Divider */}
-                <div className="col-span-full mt-16 h-px bg-gradient-to-r from-gray-200 via-gray-200 to-transparent" />
-
                 {/* Filter bar */}
-                <div className="col-span-full flex flex-col gap-6 py-8 sm:flex-row sm:items-center sm:justify-between">
+                <div className="col-span-full flex flex-col gap-6 py-8 sm:flex-row sm:items-center sm:justify-between border-t bg-ivory border-gray-200 mt-12">
                     <CategoryFilter active={activeCategory} mode="light" onChange={setActiveCategory} />
                     <div className="relative">
                         <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-300" />
@@ -195,7 +191,7 @@ const PackagesListing: FC = () => {
 
             {/* ── Package Grid (dark) ── */}
             <div className="bg-background">
-                <Section classes={{ childrenWrapper: "grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3", root: "pt-0 pb-0" }} gridLength={0} mode="dark">
+                <Section classes={{ childrenWrapper: "grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3 items-stretch" }} gridLength={3} mode="dark">
                     {filteredPackages.map((pkg) => (
                         <PackageCard key={pkg.slug} pkg={pkg} weeklyDownloads={stats?.weeklyDownloads[pkg.slug] ?? 0} />
                     ))}
@@ -215,29 +211,28 @@ const PackagesListing: FC = () => {
                         </div>
                     )}
                 </Section>
-
-                {/* ── CTA ── */}
-                <Section classes={{ root: "pb-20" }} mode="dark">
-                    <div className="col-span-1 hidden lg:block" />
-                    <div className="col-span-2 flex flex-col gap-10">
-                        <SectionTitle
-                            classes={{ root: "text-center" }}
-                            description="Can't find what you're looking for? All Visulima packages are open source and built to work together. Check the documentation or join the community to get started."
-                            mode="dark"
-                            position="center"
-                            title="Build with confidence."
-                        />
-                        <div className="flex flex-col gap-0 sm:flex-row">
-                            <HighlightLink className="-ml-px w-full border-r-0" icon={<ChevronRight />} mode="dark" to="/docs">
-                                Documentation
-                            </HighlightLink>
-                            <HighlightLink className="-ml-px w-full border-r-0" icon={<Package />} mode="dark" to="/">
-                                Home
-                            </HighlightLink>
-                        </div>
-                    </div>
-                </Section>
             </div>
+
+            <Section classes={{ root: "pb-20" }} mode="light">
+                <div className="col-span-1 hidden lg:block" />
+                <div className="col-span-2 flex flex-col gap-10">
+                    <SectionTitle
+                        classes={{ root: "text-center" }}
+                        description="Can't find what you're looking for? All Visulima packages are open source and built to work together. Check the documentation or join the community to get started."
+                        mode="light"
+                        position="center"
+                        title="Build with confidence."
+                    />
+                    <div className="flex flex-col gap-0 sm:flex-row">
+                        <HighlightLink className="-ml-px w-full border-r-0" icon={<ChevronRight />} mode="light" to="/docs">
+                            Documentation
+                        </HighlightLink>
+                        <HighlightLink className="-ml-px w-full border-r-0" icon={<Package />} mode="light" to="/">
+                            Home
+                        </HighlightLink>
+                    </div>
+                </div>
+            </Section>
         </>
     );
 };
