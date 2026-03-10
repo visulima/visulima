@@ -1,9 +1,8 @@
 @import "tailwindcss";
-@plugin '@tailwindcss/typography';
 
 @plugin 'tailwindcss-animate';
 
-@import "fumadocs-ui/css/vitepress.css";
+@import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -218,6 +217,11 @@
     }
 }
 
+#nd-sidebar {
+    background-color: hsl(0 0% 5%);
+    border-color: transparent;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -236,8 +240,13 @@ html {
 
 /* Glow pulse for emphasis elements */
 @keyframes glow-pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.8;
+    }
 }
 
 .animate-glow-pulse {

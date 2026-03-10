@@ -215,9 +215,6 @@ catalogs:
       specifier: 3.5.0
       version: 3.5.0
   style:
-    '@tailwindcss/typography':
-      specifier: 0.5.19
-      version: 0.5.19
     tailwindcss:
       specifier: 4.2.1
       version: 4.2.1
@@ -789,9 +786,6 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 11.3.1
-      '@tailwindcss/typography':
-        specifier: catalog:style
-        version: 0.5.19(tailwindcss@4.2.1)
       '@tailwindcss/vite':
         specifier: catalog:build
         version: 4.2.1(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
@@ -45444,6 +45438,7 @@ snapshots:
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 =======
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0):
@@ -45451,6 +45446,9 @@ snapshots:
 =======
   eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
 >>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
+=======
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0):
+>>>>>>> 6a9fddaf5 (feat(web): improve docs page with forced dark mode, clerk TOC, and neutral theme)
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
@@ -56820,6 +56818,7 @@ snapshots:
       eslint: 8.57.0
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
@@ -56828,6 +56827,9 @@ snapshots:
 =======
       eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
 >>>>>>> 4a7834ac3 (feat(web): improve landing page design and add LLM docs endpoints)
+=======
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.2(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0)
+>>>>>>> 6a9fddaf5 (feat(web): improve docs page with forced dark mode, clerk TOC, and neutral theme)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.0.2(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.56.1(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.2(jiti@2.6.1))
 >>>>>>> 5ea34ea0e (feat(web): add visulima website app to monorepo)

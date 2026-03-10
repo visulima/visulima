@@ -46,7 +46,7 @@ const RootDocument: FC<PropsWithChildren> = ({ children }) => (
                     </defs>
                 </svg>
 
-                <RootProvider search={{ enabled: true }} theme={{ enabled: true, defaultTheme: "dark" }}>
+                <RootProvider search={{ enabled: true }} theme={{ enabled: true, defaultTheme: "dark", forcedTheme: "dark" }}>
                     <Navbar />
                     <main className="relative">{children}</main>
                 </RootProvider>

@@ -72,7 +72,6 @@
         "@babel/core": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@tailwindcss/typography": "catalog:style",
         "@tailwindcss/vite": "catalog:build",
         "@tanstack/eslint-plugin-router": "catalog:lint",
         "@testing-library/jest-dom": "catalog:test",
