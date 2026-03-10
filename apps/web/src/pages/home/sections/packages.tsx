@@ -14,6 +14,13 @@ import HighlightLink from "@/components/ui/highlight-link";
 import ImageZoom from "@/components/ui/image-zoom";
 import WordRotate from "@/components/ui/word-rotate";
 
+const CSS_EXTENSIONS = [".css", "", ".sass", "", ".less", "", ".scss", "", ".pcss", "", ".sss"];
+const JS_EXTENSIONS = ["", ".js", ".ts", "", ".cts", "", ".mts"];
+const JSX_EXTENSIONS = [".jsx", "", ".tsx"];
+const ASSET_EXTENSIONS = ["", ".jpg", ".png", "", ".svg", "", ".webp"];
+const OUTPUT_CJS_MJS = [".cjs", ".mjs"];
+const OUTPUT_DTS = [".d.ts", ".d.mts", ".d.cts"];
+
 const FeatureCard = ({ accentColor, children, title, className }: { accentColor: string; children: React.ReactNode; title: string; className?: string }) => (
     <div className={cn(`group/feature relative flex w-full flex-col gap-4 px-8 pt-8 pb-10 transition-all duration-300 hover:bg-white/[0.02]`, className)}>
         <div className={`absolute top-0 left-8 right-8 h-px ${accentColor} opacity-0 transition-opacity duration-500 group-hover/feature:opacity-100`} />
@@ -43,7 +50,7 @@ const PackemSection = () => {
                 <div className="relative overflow-hidden border border-white/6 bg-gradient-to-br from-sky-sapphire/[0.08] via-transparent to-transparent">
                     <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sky-sapphire/60 to-transparent" />
                     <div className="flex flex-row">
-                        <div className="w-full px-8 pt-8 pb-14">
+                        <div className="w-full bg-sky-sapphire/[0.06] px-8 pt-8 pb-14">
                             <div className="relative flex h-64 w-full items-center justify-center overflow-hidden" ref={containerReference}>
                                 <div className="flex size-full max-w-lg flex-row items-stretch justify-between gap-10">
                                     <div className="flex flex-col justify-center gap-2">
@@ -51,25 +58,25 @@ const PackemSection = () => {
                                             <WordRotate
                                                 className="-mt-2 w-16 text-white/70"
                                                 duration={3500}
-                                                words={[".css", "", ".sass", "", ".less", "", ".scss", "", ".pcss", "", ".sss"]}
+                                                words={CSS_EXTENSIONS}
                                             />
                                         </div>
                                         <div className="h-32" ref={input2Reference}>
                                             <WordRotate
                                                 className="-mt-2 w-16 text-white/70"
                                                 duration={3000}
-                                                words={["", ".js", ".ts", "", ".cts", "", ".mts"]}
+                                                words={JS_EXTENSIONS}
                                             />
                                         </div>
                                         <div className="h-32" ref={input3Reference}>
-                                            <WordRotate className="-mt-2 w-16 text-white/70" duration={4000} words={[".jsx", "", ".tsx"]} />
+                                            <WordRotate className="-mt-2 w-16 text-white/70" duration={4000} words={JSX_EXTENSIONS} />
                                         </div>
                                         <div className="h-32" ref={input4Reference} />
                                         <div className="h-32" ref={input5Reference}>
                                             <WordRotate
                                                 className="-mt-2 w-16 text-white/70"
                                                 duration={4000}
-                                                words={["", ".jpg", ".png", "", ".svg", "", ".webp"]}
+                                                words={ASSET_EXTENSIONS}
                                             />
                                         </div>
                                         <div className="h-32" ref={input6Reference} />
@@ -81,10 +88,10 @@ const PackemSection = () => {
                                         <div ref={outputReference}>
                                             <div className="relative flex flex-col gap-5">
                                                 <span>
-                                                    <WordRotate className="-mt-2 text-white/70" duration={2500} words={[".cjs", ".mjs"]} />
+                                                    <WordRotate className="-mt-2 text-white/70" duration={2500} words={OUTPUT_CJS_MJS} />
                                                 </span>
                                                 <span className="w-14">
-                                                    <WordRotate className="-mt-2 text-white/70" duration={3000} words={[".d.ts", ".d.mts", ".d.cts"]} />
+                                                    <WordRotate className="-mt-2 text-white/70" duration={3000} words={OUTPUT_DTS} />
                                                 </span>
                                             </div>
                                         </div>
@@ -137,7 +144,7 @@ const PackemSection = () => {
                         </div>
                         <div className="z-10 flex w-full flex-col gap-4 px-8 pt-8 pb-14">
                             <div className="flex items-center gap-3">
-                                <span className="inline-block rounded-full bg-sky-sapphire/20 px-3 py-1 font-mono text-xs font-medium text-sky-sapphire">
+                                <span className="inline-block bg-sky-sapphire/20 px-3 py-1 font-mono text-xs font-medium text-sky-sapphire">
                                     Bundler
                                 </span>
                             </div>
@@ -152,7 +159,7 @@ const PackemSection = () => {
                             <div className="mt-auto pt-6">
                                 <Link
                                     className="group/link inline-flex items-center gap-2 text-sm font-medium text-sky-sapphire transition-colors hover:text-white"
-                                    to="/docs/package/packem"
+                                    to="/packages/packem"
                                 >
                                     <span>Explore Packem</span>
                                     <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
@@ -197,7 +204,7 @@ const PailSection = () => (
                 <div className="flex flex-row">
                     <div className="z-10 flex w-full flex-col gap-4 p-8">
                         <div className="flex items-center gap-3">
-                            <span className="inline-block rounded-full bg-crimson-energy/20 px-3 py-1 font-mono text-xs font-medium text-crimson-energy">
+                            <span className="inline-block bg-crimson-energy/20 px-3 py-1 font-mono text-xs font-medium text-crimson-energy">
                                 Logger
                             </span>
                         </div>
@@ -209,14 +216,14 @@ const PailSection = () => (
                         <div className="mt-auto pt-6">
                             <Link
                                 className="group/link inline-flex items-center gap-2 text-sm font-medium text-crimson-energy transition-colors hover:text-white"
-                                to="/docs/package/pail"
+                                to="/packages/pail"
                             >
                                 <span>Explore Pail</span>
                                 <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
                             </Link>
                         </div>
                     </div>
-                    <div className="w-full px-4 py-8 text-white">
+                    <div className="w-full bg-crimson-energy/[0.06] px-4 py-8 text-white">
                         <Code
                             code={`import { pail } from "@visulima/pail";
 
@@ -269,12 +276,12 @@ const CerebroSection = () => (
             <div className="relative overflow-hidden border border-white/6 bg-gradient-to-br from-royal-amethyst/[0.08] via-transparent to-transparent">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-royal-amethyst/60 to-transparent" />
                 <div className="flex flex-row">
-                    <div className="w-full px-4 py-8 text-white">
+                    <div className="w-full bg-royal-amethyst/[0.06] px-4 py-8 text-white">
                         <ImageZoom alt="Cerebro" layout="fixed" src={cerebro_cli_output} />
                     </div>
                     <div className="z-10 flex w-full flex-col gap-4 p-8">
                         <div className="flex items-center gap-3">
-                            <span className="inline-block rounded-full bg-royal-amethyst/20 px-3 py-1 font-mono text-xs font-medium text-royal-amethyst">
+                            <span className="inline-block bg-royal-amethyst/20 px-3 py-1 font-mono text-xs font-medium text-royal-amethyst">
                                 CLI Framework
                             </span>
                         </div>
@@ -286,7 +293,7 @@ const CerebroSection = () => (
                         <div className="mt-auto pt-6">
                             <Link
                                 className="group/link inline-flex items-center gap-2 text-sm font-medium text-royal-amethyst transition-colors hover:text-white"
-                                to="/docs/package/cerebro"
+                                to="/packages/cerebro"
                             >
                                 <span>Explore Cerebro</span>
                                 <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" />
@@ -331,7 +338,7 @@ const Packages: FC = () => (
             />
             <div className="hidden lg:col-span-1 lg:block" />
             <div className="col-span-1">
-                <HighlightLink className="-ml-px w-[calc(100%+1px)] border-r-0" icon={<ChevronRight />} mode="dark" target="_blank" to="/packages">
+                <HighlightLink className="-ml-px w-[calc(100%+1px)] border-r-0" icon={<ChevronRight />} mode="dark" to="/packages">
                     Explore Packages
                 </HighlightLink>
             </div>
@@ -348,7 +355,7 @@ const Packages: FC = () => (
                     position="center"
                     title="Define, design, deploy what's next for the web"
                 />
-                <HighlightLink className="-ml-[2px] w-[calc(100%+1px)] border-r-0" icon={<ChevronRight />} mode="dark" target="_blank" to="/packages">
+                <HighlightLink className="-ml-[2px] w-[calc(100%+1px)] border-r-0" icon={<ChevronRight />} mode="dark" to="/packages">
                     Start Building
                 </HighlightLink>
             </div>

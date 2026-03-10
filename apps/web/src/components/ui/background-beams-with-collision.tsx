@@ -6,62 +6,62 @@ import { forwardRef, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+const beams = [
+    {
+        delay: 2,
+        duration: 7,
+        initialX: 10,
+        repeatDelay: 3,
+        translateX: 10,
+    },
+    {
+        delay: 4,
+        duration: 3,
+        initialX: 600,
+        repeatDelay: 3,
+        translateX: 600,
+    },
+    {
+        className: "h-6",
+        duration: 7,
+        initialX: 100,
+        repeatDelay: 7,
+        translateX: 100,
+    },
+    {
+        delay: 4,
+        duration: 5,
+        initialX: 400,
+        repeatDelay: 14,
+        translateX: 400,
+    },
+    {
+        className: "h-20",
+        duration: 11,
+        initialX: 800,
+        repeatDelay: 2,
+        translateX: 800,
+    },
+    {
+        className: "h-12",
+        duration: 4,
+        initialX: 1000,
+        repeatDelay: 2,
+        translateX: 1000,
+    },
+    {
+        className: "h-6",
+        delay: 2,
+        duration: 6,
+        initialX: 1200,
+        repeatDelay: 4,
+        translateX: 1200,
+    },
+];
+
 export const BackgroundBeamsWithCollision = ({ children, className }: { children: ReactNode; className?: string }) => {
     const containerReference = useRef<HTMLDivElement>(null);
     const parentReference = useRef<HTMLDivElement>(null);
-
-    const beams = [
-        {
-            delay: 2,
-            duration: 7,
-            initialX: 10,
-            repeatDelay: 3,
-            translateX: 10,
-        },
-        {
-            delay: 4,
-            duration: 3,
-            initialX: 600,
-            repeatDelay: 3,
-            translateX: 600,
-        },
-        {
-            className: "h-6",
-            duration: 7,
-            initialX: 100,
-            repeatDelay: 7,
-            translateX: 100,
-        },
-        {
-            delay: 4,
-            duration: 5,
-            initialX: 400,
-            repeatDelay: 14,
-            translateX: 400,
-        },
-        {
-            className: "h-20",
-            duration: 11,
-            initialX: 800,
-            repeatDelay: 2,
-            translateX: 800,
-        },
-        {
-            className: "h-12",
-            duration: 4,
-            initialX: 1000,
-            repeatDelay: 2,
-            translateX: 1000,
-        },
-        {
-            className: "h-6",
-            delay: 2,
-            duration: 6,
-            initialX: 1200,
-            repeatDelay: 4,
-            translateX: 1200,
-        },
-    ];
 
     return (
         <div
@@ -121,6 +121,8 @@ const CollisionMechanism = ({
     const [cycleCollisionDetected, setCycleCollisionDetected] = useState(false);
 
     useEffect(() => {
+        let rafId: number;
+
         const checkCollision = () => {
             if (beamReference.current && containerRef.current && parentRef.current && !cycleCollisionDetected) {
                 const beamRect = beamReference.current.getBoundingClientRect();
@@ -139,14 +141,17 @@ const CollisionMechanism = ({
                         detected: true,
                     });
                     setCycleCollisionDetected(true);
+                    return;
                 }
             }
+
+            rafId = requestAnimationFrame(checkCollision);
         };
 
-        const animationInterval = setInterval(checkCollision, 50);
+        rafId = requestAnimationFrame(checkCollision);
 
         return () => {
-            clearInterval(animationInterval);
+            cancelAnimationFrame(rafId);
         };
     }, [cycleCollisionDetected, containerRef]);
 

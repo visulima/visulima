@@ -16,6 +16,8 @@ import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
 import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PackagesIndexRouteImport } from './routes/packages/index'
+import { Route as PackagesSlugRouteImport } from './routes/packages/$slug'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as LlmsDotmdxDocsSplatRouteImport } from './routes/llms[.]mdx.docs.$'
@@ -55,6 +57,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PackagesIndexRoute = PackagesIndexRouteImport.update({
+  id: '/packages/',
+  path: '/packages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PackagesSlugRoute = PackagesSlugRouteImport.update({
+  id: '/packages/$slug',
+  path: '/packages/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
   id: '/docs/$',
   path: '/docs/$',
@@ -81,6 +93,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/packages/$slug': typeof PackagesSlugRoute
+  '/packages/': typeof PackagesIndexRoute
   '/llms.mdx/docs/$': typeof LlmsDotmdxDocsSplatRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +107,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/packages/$slug': typeof PackagesSlugRoute
+  '/packages': typeof PackagesIndexRoute
   '/llms.mdx/docs/$': typeof LlmsDotmdxDocsSplatRoute
 }
 export interface FileRoutesById {
@@ -106,6 +122,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
+  '/packages/$slug': typeof PackagesSlugRoute
+  '/packages/': typeof PackagesIndexRoute
   '/llms.mdx/docs/$': typeof LlmsDotmdxDocsSplatRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +138,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/search'
     | '/docs/$'
+    | '/packages/$slug'
+    | '/packages/'
     | '/llms.mdx/docs/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +152,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/search'
     | '/docs/$'
+    | '/packages/$slug'
+    | '/packages'
     | '/llms.mdx/docs/$'
   id:
     | '__root__'
@@ -144,6 +166,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/search'
     | '/docs/$'
+    | '/packages/$slug'
+    | '/packages/'
     | '/llms.mdx/docs/$'
   fileRoutesById: FileRoutesById
 }
@@ -157,6 +181,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiSearchRoute: typeof ApiSearchRoute
   DocsSplatRoute: typeof DocsSplatRoute
+  PackagesSlugRoute: typeof PackagesSlugRoute
+  PackagesIndexRoute: typeof PackagesIndexRoute
   LlmsDotmdxDocsSplatRoute: typeof LlmsDotmdxDocsSplatRoute
 }
 
@@ -211,6 +237,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/packages/': {
+      id: '/packages/'
+      path: '/packages'
+      fullPath: '/packages/'
+      preLoaderRoute: typeof PackagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packages/$slug': {
+      id: '/packages/$slug'
+      path: '/packages/$slug'
+      fullPath: '/packages/$slug'
+      preLoaderRoute: typeof PackagesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/$': {
       id: '/docs/$'
       path: '/docs/$'
@@ -245,6 +285,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiSearchRoute: ApiSearchRoute,
   DocsSplatRoute: DocsSplatRoute,
+  PackagesSlugRoute: PackagesSlugRoute,
+  PackagesIndexRoute: PackagesIndexRoute,
   LlmsDotmdxDocsSplatRoute: LlmsDotmdxDocsSplatRoute,
 }
 export const routeTree = rootRouteImport

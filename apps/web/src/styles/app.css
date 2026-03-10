@@ -19,6 +19,8 @@
     --animate-border-shine: border-shine var(--duration) infinite linear;
     --animate-gradient: gradient 8s linear infinite;
     --animate-shiny-text: shiny-text 8s infinite;
+    --animate-scroll-left: scroll-left 45s linear infinite;
+    --animate-scroll-right: scroll-right 60s linear infinite;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -102,6 +104,24 @@
         }
         100% {
             transform: translateX(200px);
+        }
+    }
+
+    @keyframes scroll-left {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    @keyframes scroll-right {
+        from {
+            transform: translateX(-50%);
+        }
+        to {
+            transform: translateX(0);
         }
     }
 }
@@ -238,6 +258,12 @@ html {
 
 .animate-fade-up {
     animation: fade-up 0.6s ease-out both;
+}
+
+/* Skip layout/paint for off-screen sections */
+.content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
 }
 
 .no-visible-scrollbar {

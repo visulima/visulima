@@ -36,19 +36,19 @@ const menu = [
                 navItems: [
                     {
                         description: "A fast and modern bundler for Node.js and TypeScript.",
-                        href: "/docs/package/packem",
+                        href: "/packages/packem",
                         icon: <Package className="size-6" />,
                         title: "Packem",
                     },
                     {
                         description: "Highly configurable Logger for Node.js, Edge and Browser.",
-                        href: "/docs/package/pail",
+                        href: "/packages/pail",
                         icon: <Logs className="size-6" />,
                         title: "Pail",
                     },
                     {
                         description: "Cerebro is a cli framework, that lets you build awesome cli's in Node.js and Typescript.",
-                        href: "/docs/package/cerebro",
+                        href: "/packages/cerebro",
                         icon: <Terminal className="size-6" />,
                         title: "Cerebro",
                     },
@@ -57,7 +57,7 @@ const menu = [
             },
             {
                 description: "Access all the tools you need to craft incredible experiences.",
-                href: "/solutions",
+                href: "/packages",
                 icon: <Package className="size-6" />,
                 title: "More",
             },
@@ -192,21 +192,24 @@ ListItem.displayName = "ListItem";
 const Logo = ({ pathname }: { pathname: string }) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    const handleOutsideClick = (e) => {
-        // Check if the click is outside the menu
-        if (!e.target.closest(".logo-context-menu")) {
-            setIsOpen(false);
-
-            document.removeEventListener("click", handleOutsideClick);
+    useEffect(() => {
+        if (!isOpen) {
+            return;
         }
-    };
+
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (!(e.target as HTMLElement).closest(".logo-context-menu")) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener("click", handleOutsideClick);
+        return () => document.removeEventListener("click", handleOutsideClick);
+    }, [isOpen]);
 
     const handleContextMenu = (e: ReactMouseEvent) => {
         e.preventDefault();
         setIsOpen(true);
-
-        // Add an event listener to handle clicks outside the menu
-        document.addEventListener("click", handleOutsideClick);
     };
 
     const itemClass =
@@ -303,24 +306,35 @@ const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
+        let ticking = false;
+
         const handleScroll = () => {
-            const sections = document.querySelectorAll("section[data-nav-theme]");
-
-            let currentTheme = "dark"; // default
-
-            sections.forEach((section) => {
-                const rect = section.getBoundingClientRect();
-
-                if (rect.top <= 0 && rect.bottom > 0) {
-                    currentTheme = section.dataset.navTheme;
-                }
-            });
-
-            if (navReference.current) {
-                navReference.current.dataset.theme = currentTheme;
+            if (ticking) {
+                return;
             }
 
-            setScrolled(window.scrollY > 10);
+            ticking = true;
+
+            requestAnimationFrame(() => {
+                const sections = document.querySelectorAll("section[data-nav-theme]");
+
+                let currentTheme = "dark"; // default
+
+                for (const section of sections) {
+                    const rect = section.getBoundingClientRect();
+
+                    if (rect.top <= 0 && rect.bottom > 0) {
+                        currentTheme = (section as HTMLElement).dataset.navTheme ?? "dark";
+                    }
+                }
+
+                if (navReference.current) {
+                    navReference.current.dataset.theme = currentTheme;
+                }
+
+                setScrolled(window.scrollY > 10);
+                ticking = false;
+            });
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });

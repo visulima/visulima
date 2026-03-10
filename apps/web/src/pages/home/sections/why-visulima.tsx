@@ -5,9 +5,8 @@ import SectionSeparator from "@/components/sections/section-separator";
 import SectionTitle from "@/components/sections/section-title";
 import { BentoGrid, BentoSpotlightCard } from "@/components/ui/bento";
 
-const WhyVisulima = () => {
-    const features = [
-        {
+const features = [
+    {
             className: "lg:row-start-2 lg:row-end-2 lg:col-start-1 lg:col-end-3 border-r border-t border-white/[0.06]",
             description:
                 "Save time and reduce engineering overhead by leveraging Visulima's ready-to-use solutions. Our tools let you ship faster without sacrificing quality, ensuring your team stays ahead of deadlines and focused on innovation.",
@@ -72,9 +71,10 @@ const WhyVisulima = () => {
                 [0, 122, 204],
                 [56, 189, 248],
             ],
-        },
-    ];
+    },
+];
 
+const WhyVisulima = () => {
     return (
         <div className="grain-overlay bg-background relative">
             <Section

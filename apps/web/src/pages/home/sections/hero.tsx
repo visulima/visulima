@@ -11,7 +11,7 @@ const MainHero: FC = () => {
     const textContent = (
         <>
             <BlurIn component="div" duration={2}>
-                <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-xs font-medium text-white/60 backdrop-blur-sm">
+                <span className="mb-6 inline-flex items-center gap-2 border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-xs font-medium text-white/60 backdrop-blur-sm">
                     <span className="relative flex h-2 w-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-sapphire opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-sapphire" />
@@ -39,14 +39,14 @@ const MainHero: FC = () => {
         <BlurIn component="div" duration={3.2}>
             <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
                 <Link
-                    className="group relative inline-flex items-center gap-3 rounded-full bg-sky-sapphire px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-sapphire/25 transition-all duration-300 hover:bg-sky-sapphire/90 hover:shadow-sky-sapphire/40"
+                    className="group relative inline-flex items-center gap-3 bg-sky-sapphire px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-sapphire/25 transition-all duration-300 hover:bg-sky-sapphire/90 hover:shadow-sky-sapphire/40"
                     to="/docs/"
                 >
                     <span>Get started</span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </Link>
                 <Link
-                    className="group inline-flex items-center gap-2 rounded-full bg-white/[0.06] px-5 py-3 text-sm font-medium text-white/80 ring-1 ring-white/[0.08] backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.1] hover:text-white hover:ring-white/[0.16]"
+                    className="group inline-flex items-center gap-2 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white/80 ring-1 ring-white/[0.08] backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.1] hover:text-white hover:ring-white/[0.16]"
                     to="/docs/"
                 >
                     <BookOpen className="h-4 w-4 text-white/50" />
@@ -58,7 +58,7 @@ const MainHero: FC = () => {
 
     const installSnippet = (
         <BlurIn component="div" duration={3.6}>
-            <div className="mt-8 inline-flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-2.5 font-mono text-sm text-white/40 backdrop-blur-sm">
+            <div className="mt-8 inline-flex items-center gap-1 border border-white/[0.06] bg-white/[0.03] px-4 py-2.5 font-mono text-sm text-white/40 backdrop-blur-sm">
                 <span className="text-sky-sapphire/60">$</span>
                 <span className="ml-2">pnpm add @visulima/</span>
                 <WordRotate

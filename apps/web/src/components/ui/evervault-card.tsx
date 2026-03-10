@@ -56,10 +56,6 @@ const EvervaultCard: FC<PropsWithChildren<{ classes?: { innerCircle?: ClassValue
 
         mouseX.set(clientX - left);
         mouseY.set(clientY - top);
-
-        const string_ = generateRandomString(1500);
-
-        setRandomString(string_);
     }
 
     return (

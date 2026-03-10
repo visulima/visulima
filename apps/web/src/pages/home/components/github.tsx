@@ -6,15 +6,15 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 import OssChip from "@/components/ui/svgs/oss-chips";
 
 const GitHub = () => (
-    <div className="grain-overlay relative bg-black">
+    <div className="relative bg-black">
         <SectionSeparator bgColor="bg-black" fillColor="fill-black" position="top" />
-        <div className="relative z-10 mx-auto flex flex-col items-center justify-center overflow-hidden py-24 md:px-8">
+        <div className="relative z-10 mx-auto flex flex-col items-center justify-center overflow-hidden py-20 md:px-8">
             <div className="relative flex items-center justify-center">
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                    viewport={{ amount: 0.3, once: true }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                    viewport={{ amount: 0.5, once: true }}
+                    whileInView={{ opacity: 1 }}
                 >
                     <img alt="GitHub logo" className="w-[600px] dark:block" src={GitHubSvg} />
                     <div className="absolute top-[150px] left-[-50px] -z-50 lg:top-[400px] lg:left-[150px] lg:h-[400px] lg:w-[1000px]">

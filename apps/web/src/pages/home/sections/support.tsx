@@ -4,6 +4,8 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 import FlickeringGrid from "@/components/ui/flickering-grid";
 
+const GoodFirstIssueBanner = <FlickeringGrid className="ml-0.5 w-full" color="green" flickerChance={0.1} gridGap={2} height={45} maxOpacity={0.3} squareSize={2} />;
+
 const SupportCard = ({
     accentColor,
     banner,
@@ -27,7 +29,9 @@ const SupportCard = ({
     linkText?: string;
     title: string;
 }) => (
-    <div className={`group relative col-span-2 overflow-hidden border-y border-gray-200 bg-white transition-all duration-300 hover:bg-gray-50 ${className ?? ""}`}>
+    <div
+        className={`group relative col-span-2 overflow-hidden border-y border-gray-200 bg-ivory transition-all duration-300 hover:bg-gray-50 ${className ?? ""}`}
+    >
         {banner}
         <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent ${accentColor} to-transparent`} />
         <div className="flex flex-col gap-4 p-8">
@@ -63,8 +67,8 @@ const SupportSection = () => (
                     description={
                         <span className="flex flex-col gap-4">
                             <span>
-                                Community is the heart of open source. The success of our packages wouldn't be possible without the incredible contributions of users,
-                                testers, and developers who collaborate with us every day.
+                                Community is the heart of open source. The success of our packages wouldn't be possible without the incredible contributions of
+                                users, testers, and developers who collaborate with us every day.
                             </span>
                             <span className="text-gray-400">
                                 Want to get involved? Here are some tips on how you can make a meaningful impact on our open source projects.
@@ -80,8 +84,8 @@ const SupportSection = () => (
         <Section classes={{ root: "pt-20" }} mode="light">
             {/* Card 1 — left */}
             <SupportCard accentColor="via-sky-sapphire/30" className="mr-px" icon={BookOpen} iconColor="text-sky-sapphire/70" title="Ready to help us out?">
-                Be sure to check out the package's contribution guidelines first. They'll walk you through the process on how to properly submit an issue or pull
-                request to our repositories.
+                Be sure to check out the package's contribution guidelines first. They'll walk you through the process on how to properly submit an issue or
+                pull request to our repositories.
             </SupportCard>
             <div className="hidden lg:col-span-2 lg:block" />
 
@@ -95,7 +99,7 @@ const SupportSection = () => (
             {/* Card 3 — left */}
             <SupportCard
                 accentColor="via-emerald-500/30"
-                banner={<FlickeringGrid className="ml-0.5 w-full" color="green" flickerChance={0.1} gridGap={2} height={45} maxOpacity={0.3} squareSize={2} />}
+                banner={GoodFirstIssueBanner}
                 className="mr-px"
                 href="https://github.com/issues?q=is%3Aopen+is%3Aissue+user%3Avisulima+is%3Apublic+label%3A%22good+first+issue%22%2C%22help+wanted%22+"
                 icon={CircleDot}
