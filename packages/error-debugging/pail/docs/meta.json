@@ -9,7 +9,7 @@
         },
         {
             "title": "Usage",
-            "pages": ["usage/basic", "usage/scoped", "usage/custom-types", "usage/timers", "usage/interactive", "usage/object-tree"]
+            "pages": ["usage/basic", "usage/scoped", "usage/custom-types", "usage/timers", "usage/interactive", "usage/object-tree", "usage/error-handling"]
         },
         "configuration",
         "api",
