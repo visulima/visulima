@@ -114,6 +114,18 @@
             "types": "./dist/processor/opentelemetry-processor.d.ts",
             "default": "./dist/processor/opentelemetry-processor.js"
         },
+        "./processor/sampling": {
+            "types": "./dist/processor/sampling-processor.d.ts",
+            "default": "./dist/processor/sampling-processor.js"
+        },
+        "./processor/environment": {
+            "types": "./dist/processor/environment-processor.d.ts",
+            "default": "./dist/processor/environment-processor.js"
+        },
+        "./error": {
+            "types": "./dist/error.d.ts",
+            "default": "./dist/error.js"
+        },
         "./reporter/file": {
             "types": "./dist/reporter/file/json-file-reporter.d.ts",
             "default": "./dist/reporter/file/json-file-reporter.js"

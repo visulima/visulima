@@ -55,6 +55,8 @@ export const createPail = <T extends string = string, L extends string = string>
 export const pail: PailBrowserType<string, string> = createPail();
 
 export type { PailBrowserType as Pail } from "./pail.browser";
+export type { PailErrorOptions } from "./error";
+export { createPailError, PailError } from "./error";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,

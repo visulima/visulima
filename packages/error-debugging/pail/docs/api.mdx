@@ -483,6 +483,85 @@ const multiSpinner = logger.createMultiSpinner();
 const spinner1 = multiSpinner.create("Loading 1");
 ```
 
+## Error Classes
+
+### `PailError`
+
+Self-documenting error class with structured context fields.
+
+**Constructor:**
+
+```typescript
+new PailError(options: PailErrorOptions | string);
+```
+
+**Properties:**
+
+- `message` - Error message
+- `status` - HTTP status code (default: `500`)
+- `why` - Human-readable explanation of why the error occurred
+- `fix` - Suggested fix or remediation steps
+- `link` - URL to documentation or issue tracker
+- `cause` - Original error that caused this error
+
+**Methods:**
+
+- `toJSON()` - Returns a plain object representation
+- `toString()` - Returns a formatted string representation
+
+**Example:**
+
+```typescript
+import { PailError } from "@visulima/pail";
+
+throw new PailError({
+    message: "Database connection failed",
+    why: "The connection pool is exhausted",
+    fix: "Increase the pool size in your database config or check for connection leaks",
+    link: "https://docs.example.com/db-pool",
+    status: 503,
+    cause: originalError,
+});
+```
+
+### `createPailError(options)`
+
+Factory function that creates a `PailError` instance.
+
+**Parameters:**
+
+- `options` - `PailErrorOptions | string` - Error options or message string
+
+**Returns:** `PailError` instance
+
+**Example:**
+
+```typescript
+import { createPailError } from "@visulima/pail";
+
+const error = createPailError({
+    message: "API rate limit exceeded",
+    why: "Too many requests in the current time window",
+    fix: "Implement exponential backoff or reduce request frequency",
+    status: 429,
+});
+```
+
+### `PailErrorOptions`
+
+Options for creating a PailError.
+
+```typescript
+interface PailErrorOptions {
+    message: string;
+    cause?: unknown;
+    fix?: string;
+    link?: string;
+    status?: number;
+    why?: string;
+}
+```
+
 ## Types
 
 ### `ConstructorOptions<T, L>`
