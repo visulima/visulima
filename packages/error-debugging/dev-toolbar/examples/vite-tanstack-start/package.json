@@ -9,9 +9,9 @@
         "start": "vite start"
     },
     "dependencies": {
-        "@tanstack/react-router": "1.166.2",
-        "@tanstack/react-router-devtools": "1.166.2",
-        "@tanstack/react-start": "1.166.2",
+        "@tanstack/react-router": "1.166.7",
+        "@tanstack/react-router-devtools": "1.166.7",
+        "@tanstack/react-start": "1.166.8",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
         "redaxios": "^0.5.1",
@@ -19,7 +19,7 @@
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.2.1",
-        "@types/node": "^25.3.3",
+        "@types/node": "^25.4.0",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@visulima/dev-toolbar": "workspace:*",

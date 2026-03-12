@@ -123,7 +123,7 @@
         "@babel/traverse": "^7.29.0",
         "@floating-ui/dom": "^1.7.6",
         "launch-editor": "^2.13.1",
-        "preact": "^10.28.4"
+        "preact": "^10.29.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^22.0.2",
@@ -133,7 +133,7 @@
         "@babel/core": "^7.29.0",
         "@babel/preset-react": "^7.28.5",
         "@babel/types": "^7.29.0",
-        "@eslint/css": "0.14.1",
+        "@eslint/css": "1.0.0",
         "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
         "@tailwindcss/node": "^4.2.1",
         "@tailwindcss/oxide": "^4.2.1",
@@ -143,7 +143,7 @@
         "@types/babel__core": "^7.20.5",
         "@types/babel__generator": "^7.27.0",
         "@types/babel__traverse": "^7.28.0",
-        "@types/node": "25.3.3",
+        "@types/node": "25.4.0",
         "@visulima/packem": "2.0.0-alpha.54",
         "@vitest/coverage-v8": "^4.0.18",
         "@vitest/ui": "^4.0.18",
@@ -151,9 +151,9 @@
         "babel-plugin-transform-hook-names": "^1.0.2",
         "clsx": "^2.1.1",
         "conventional-changelog-conventionalcommits": "9.3.0",
-        "cssnano": "7.1.2",
+        "cssnano": "7.1.3",
         "esbuild": "^0.27.3",
-        "eslint": "10.0.2",
+        "eslint": "10.0.3",
         "jsdom": "^28.1.0",
         "lucide-static": "^0.577.0",
         "prettier": "^3.8.1",
