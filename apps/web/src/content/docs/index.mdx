@@ -1,32 +1,64 @@
 ---
-title: Hello World
-description: |
-    Your first `document`
-    You'll love it!
+title: Getting Started
+description: Visulima is a comprehensive TypeScript developer platform — production-ready packages for CLI tools, file I/O, error handling, APIs, and more.
+icon: Rocket
 ---
 
-Hey there! Fumadocs is a docs framework built for Next.js, but do you know it also works on Tanstack Start?
+import { Cards, Card } from "fumadocs-ui/components/card";
 
-## Heading
+# Welcome to Visulima
 
-Hello World!
+Visulima is a collection of **40+ production-ready TypeScript packages** that solve real problems — from building CLI tools and bundling libraries, to handling errors, working with file systems, and creating APIs.
 
-<Cards>
-    <Card title="Learn more about Tanstack Start" href="https://tanstack.com/start" />
-    <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
-</Cards>
+Every package is:
+- **TypeScript-first** with full type safety
+- **Zero or minimal dependencies** where possible
+- **Cross-runtime** — Node.js, Bun, Deno, and Edge support
+- **Well-tested** and maintained in a single monorepo
 
-### CodeBlock
+## Quick Start
 
-```ts
-console.log("Hello World");
+Install any package with your preferred package manager:
+
+```bash tab="pnpm"
+pnpm add @visulima/<package-name>
 ```
 
-#### Table
+```bash tab="npm"
+npm install @visulima/<package-name>
+```
 
-| Head                            | Description                         |
-| ------------------------------- | ----------------------------------- |
-| `hello`                         | Hello World                         |
-| very **important**              | Hey                                 |
-| _Surprisingly_                  | Fumadocs                            |
-| very long text that looks weird | hello world hello world hello world |
+```bash tab="yarn"
+yarn add @visulima/<package-name>
+```
+
+```bash tab="bun"
+bun add @visulima/<package-name>
+```
+
+## Popular Packages
+
+<Cards>
+    <Card title="Cerebro" description="Extensible CLI framework" href="/docs/packages/cerebro" />
+    <Card title="Pail" description="Configurable logger for Node.js, Edge and Browser" href="/docs/packages/pail" />
+    <Card title="FS" description="Human-friendly file system utilities" href="/docs/packages/fs" />
+    <Card title="Error" description="Enhanced error handling with AI-powered solutions" href="/docs/packages/error" />
+    <Card title="String" description="Comprehensive string manipulation" href="/docs/packages/string" />
+</Cards>
+
+## Browse by Category
+
+<Cards>
+    <Card title="CLI & Terminal" description="Build command-line tools, format output, and manage colors" href="/docs/packages#cli--terminal" />
+    <Card title="Data & Utilities" description="String manipulation, object utilities, deep cloning, and more" href="/docs/packages#data" />
+    <Card title="File System" description="File I/O, path handling, config parsing, and caching" href="/docs/packages#file-system" />
+    <Card title="API & Web" description="REST APIs, pagination, OpenAPI generation, and HTML utilities" href="/docs/packages#api--web" />
+    <Card title="Error Handling" description="Error parsing, source maps, debugging overlays, and inspection" href="/docs/packages#error-handling" />
+    <Card title="Dev Tools" description="Dev toolbar, Prisma tools, and bundling" href="/docs/packages#dev-tools" />
+</Cards>
+
+## Project Links
+
+- [GitHub Repository](https://github.com/visulima/visulima) — Source code, issues, and contributions
+- [Changelog](/changelog) — Release history and breaking changes
+- [All Packages](/docs/packages) — Full package directory with descriptions
