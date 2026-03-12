@@ -319,6 +319,13 @@
         "vitest": "^4.0.18"
     },
     "packageManager": "pnpm@10.30.3",
+    "pnpm": {
+        "overrides": {
+            "simple-git": ">=3.32.3",
+            "express-rate-limit": ">=8.2.2",
+            "tar": ">=7.5.11"
+        }
+    },
     "engines": {
         "node": ">=22.13 <=25.x"
     }

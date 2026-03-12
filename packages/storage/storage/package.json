@@ -206,7 +206,7 @@
         "@remix-run/multipart-parser": "^0.14.2",
         "@sindresorhus/fnv1a": "3.1.0",
         "@visulima/pagination": "5.0.0-alpha.6",
-        "file-type": "21.3.0",
+        "file-type": "21.3.1",
         "lru-cache": "^11.2.6",
         "mime": "^4.1.0",
         "nanoid": "5.1.6",
