@@ -19,12 +19,12 @@
         "@types/react-dom": "^19.2.3",
         "@visulima/vite-overlay": "workspace:*",
         "@vitejs/plugin-react-swc": "^4.2.3",
-        "eslint": "^10.0.2",
+        "eslint": "^10.0.3",
         "eslint-plugin-react-hooks": "^7.0.1",
         "eslint-plugin-react-refresh": "^0.5.2",
         "globals": "^17.4.0",
         "typescript": "~5.9.3",
-        "typescript-eslint": "^8.56.1",
+        "typescript-eslint": "^8.57.0",
         "vite": "^7.3.1"
     }
 }
