@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import sendWithRetry from "../../../../../src/reporter/http/utils/retry";
 
+const BODY_UNUSABLE_OR_ISE_REGEX = /Body is unusable|Internal Server Error/;
+
 // Mock fetch globally
 const mockFetch = vi.fn();
 
@@ -70,7 +72,7 @@ describe(sendWithRetry, () => {
 
         await vi.runAllTimersAsync();
 
-        await expect(promise).rejects.toThrow("Network error");
+        await expect(promise).rejects.toThrowError("Network error");
         expect(mockFetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
     });
 
@@ -147,7 +149,7 @@ describe(sendWithRetry, () => {
             // Ignore errors
         });
 
-        await expect(promise).rejects.toThrow("HTTP 404");
+        await expect(promise).rejects.toThrowError("HTTP 404");
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("HTTP 404") }));
     });
 
@@ -230,7 +232,7 @@ describe(sendWithRetry, () => {
 
         await vi.runAllTimersAsync();
 
-        await expect(promise).rejects.toThrow("Network error");
+        await expect(promise).rejects.toThrowError("Network error");
         expect(mockFetch).toHaveBeenCalledTimes(3);
     });
 
@@ -258,7 +260,7 @@ describe(sendWithRetry, () => {
             // Ignore errors
         });
 
-        await expect(promise).rejects.toThrow("HTTP 429");
+        await expect(promise).rejects.toThrowError("HTTP 429");
         expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining("HTTP 429") }));
     });
 
@@ -343,7 +345,7 @@ describe(sendWithRetry, () => {
 
         await vi.runAllTimersAsync();
 
-        await expect(promise).rejects.toThrow(/Body is unusable|Internal Server Error/);
+        await expect(promise).rejects.toThrowError(BODY_UNUSABLE_OR_ISE_REGEX);
         expect(mockFetch).toHaveBeenCalledTimes(3); // Initial + 2 retries
         expect(onError).toHaveBeenCalledWith(expect.any(Error));
     });

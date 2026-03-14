@@ -24,7 +24,8 @@ import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
 
-const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
+const PAIL_DIST_REGEX = /[\\/]pail[\\/]dist/;
+const pailFileFilter = (line: string) => !PAIL_DIST_REGEX.test(line);
 
 export type SimpleReporterOptions = PrettyStyleOptions & {
     error: Partial<Omit<RenderErrorOptions, "color | prefix | indentation">>;

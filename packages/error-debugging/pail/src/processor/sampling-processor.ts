@@ -1,4 +1,4 @@
-import type { ExtendedRfc5424LogLevels, Meta, Processor } from "../types";
+import type { Meta, Processor } from "../types";
 
 /**
  * Head sampling configuration.
@@ -16,7 +16,7 @@ import type { ExtendedRfc5424LogLevels, Meta, Processor } from "../types";
  * };
  * ```
  */
-export type HeadSamplingConfig = Partial<Record<string, number>>;
+type HeadSamplingConfig = Partial<Record<string, number>>;
 
 /**
  * Tail sampling condition function.
@@ -26,12 +26,12 @@ export type HeadSamplingConfig = Partial<Record<string, number>>;
  * important logs based on their content (e.g., errors, slow operations).
  * @template L - The log level type
  */
-export type TailSamplingCondition<L extends string = string> = (meta: Readonly<Meta<L>>) => boolean;
+type TailSamplingCondition<L extends string = string> = (meta: Readonly<Meta<L>>) => boolean;
 
 /**
  * Sampling processor configuration options.
  */
-export interface SamplingProcessorOptions<L extends string = string> {
+interface SamplingProcessorOptions<L extends string = string> {
     /**
      * Head sampling rates per log level.
      *
@@ -120,18 +120,10 @@ class SamplingProcessor<L extends string = string> implements Processor<L> {
     public process(meta: Meta<L>): Meta<L> {
         const level = meta.type.level as string;
 
-        // Check head sampling
-        if (this.#shouldDrop(level)) {
-            // Check tail sampling - can override head sampling
-            if (this.#shouldForceKeep(meta)) {
-                return meta;
-            }
-
-            // Mark as dropped
-            // eslint-disable-next-line no-param-reassign
-            (meta as Meta<L> & { __dropped?: boolean }).__dropped = true;
-
-            return meta;
+        // Check head sampling — if not dropped, or if tail sampling overrides, return as-is
+        if (this.#shouldDrop(level) && !this.#shouldForceKeep(meta)) {
+            // Mark as dropped using a new object to avoid param reassign
+            return { ...meta, dropped: true } as Meta<L> & { dropped: boolean };
         }
 
         return meta;
@@ -158,6 +150,7 @@ class SamplingProcessor<L extends string = string> implements Processor<L> {
             return false;
         }
 
+        // eslint-disable-next-line sonarjs/pseudo-random
         return Math.random() * 100 >= rate;
     }
 
@@ -177,3 +170,4 @@ class SamplingProcessor<L extends string = string> implements Processor<L> {
 }
 
 export default SamplingProcessor;
+export type { HeadSamplingConfig, SamplingProcessorOptions, TailSamplingCondition };

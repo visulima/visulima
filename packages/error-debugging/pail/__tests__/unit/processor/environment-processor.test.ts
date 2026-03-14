@@ -230,8 +230,8 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env).toBeDefined();
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.service).toBe("test-service");
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage).toBeDefined();
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.service).toBe("test-service");
         });
 
         it("should use overrides over detected values", () => {
@@ -246,7 +246,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.environment).toBe("custom");
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.environment).toBe("custom");
         });
 
         it("should not overwrite detected values when overrides contain explicit undefined", () => {
@@ -261,7 +261,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.environment).toBe("production");
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.environment).toBe("production");
         });
 
         it("should exclude PID by default", () => {
@@ -271,7 +271,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.pid).toBeUndefined();
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.pid).toBeUndefined();
         });
 
         it("should include PID when requested", () => {
@@ -281,7 +281,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.pid).toBe(process.pid);
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.pid).toBe(process.pid);
         });
 
         it("should preserve pid override even when includePid is false", () => {
@@ -295,7 +295,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.pid).toBe(9999);
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.pid).toBe(9999);
         });
 
         it("should exclude hostname by default", () => {
@@ -306,7 +306,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.hostname).toBeUndefined();
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.hostname).toBeUndefined();
         });
 
         it("should include hostname when requested", () => {
@@ -317,7 +317,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.hostname).toBe("server-01");
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.hostname).toBe("server-01");
         });
 
         it("should preserve hostname override even when includeHostname is false", () => {
@@ -331,7 +331,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env?.hostname).toBe("custom-host");
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage?.hostname).toBe("custom-host");
         });
 
         it("should return environment info via getEnvironmentInfo", () => {
@@ -373,13 +373,14 @@ describe("environmentProcessor", () => {
 
             const meta1 = createMeta();
             const result1 = processor.process(meta1);
-            const env1 = (result1 as Meta<string> & { __env?: Record<string, unknown> }).__env;
+            const env1 = (result1 as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage;
 
             const meta2 = createMeta();
             const result2 = processor.process(meta2);
-            const env2 = (result2 as Meta<string> & { __env?: Record<string, unknown> }).__env;
+            const env2 = (result2 as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage;
 
             // Mutate the first record's env
+            // eslint-disable-next-line vitest/no-conditional-in-test
             if (env1) {
                 env1.service = "mutated";
             }
@@ -396,7 +397,7 @@ describe("environmentProcessor", () => {
             const meta = createMeta();
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __env?: Record<string, unknown> }).__env).toBeDefined();
+            expect((result as Meta<string> & { envStorage?: Record<string, unknown> }).envStorage).toBeDefined();
         });
     });
 });

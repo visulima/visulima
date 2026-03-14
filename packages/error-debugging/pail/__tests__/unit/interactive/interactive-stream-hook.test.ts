@@ -28,7 +28,7 @@ describe("hook", (): void => {
         hook.write("line 3");
 
         expect(stream._stack).toStrictEqual(["line 1", eraseLines(2), "line 3"]);
-        expect(callback.mock.calls).toHaveLength(1);
+        expect(callback).toHaveBeenCalledTimes(1);
     });
 
     it("write (Buffers)", (): void => {
@@ -38,7 +38,7 @@ describe("hook", (): void => {
         stream.write(Buffer.from("line 5", "utf8"), callback);
         stream.write(new Uint8Array(Buffer.from("line 6", "utf8")), callback);
 
-        expect(callback.mock.calls).toHaveLength(4);
+        expect(callback).toHaveBeenCalledTimes(4);
     });
 
     it("deactivate", (): void => {

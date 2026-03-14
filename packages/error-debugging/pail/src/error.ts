@@ -5,7 +5,7 @@
  * that provide actionable context for debugging, particularly useful
  * for AI-assisted log analysis.
  */
-export interface PailErrorOptions {
+interface PailErrorOptions {
     /** The root cause of this error */
     cause?: unknown;
     /** A suggested resolution or steps to fix the issue */
@@ -70,15 +70,15 @@ class PailError extends Error {
     public readonly link: string | undefined;
 
     public constructor(options: PailErrorOptions | string) {
-        const opts = typeof options === "string" ? { message: options } : options;
+        const resolvedOptions = typeof options === "string" ? { message: options } : options;
 
-        super(opts.message, opts.cause !== undefined ? { cause: opts.cause } : undefined);
+        super(resolvedOptions.message, resolvedOptions.cause === undefined ? undefined : { cause: resolvedOptions.cause });
 
         this.name = "PailError";
-        this.status = opts.status ?? 500;
-        this.why = opts.why;
-        this.fix = opts.fix;
-        this.link = opts.link;
+        this.status = resolvedOptions.status ?? 500;
+        this.why = resolvedOptions.why;
+        this.fix = resolvedOptions.fix;
+        this.link = resolvedOptions.link;
     }
 
     /**
@@ -170,3 +170,4 @@ class PailError extends Error {
 const createPailError = (options: PailErrorOptions | string): PailError => new PailError(options);
 
 export { createPailError, PailError };
+export type { PailErrorOptions };

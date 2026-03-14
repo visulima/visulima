@@ -1,8 +1,6 @@
 import type { format, FormatterFunction, Options } from "@visulima/fmt";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { build } from "@visulima/fmt";
-import type { stringify } from "safe-stable-stringify";
-
 import type { Meta, StringifyAwareProcessor } from "../types";
 
 /**
@@ -31,7 +29,7 @@ import type { Meta, StringifyAwareProcessor } from "../types";
  */
 class MessageFormatterProcessor<L extends string = string> implements StringifyAwareProcessor<L> {
     /** Custom stringify function for object serialization */
-    #stringify: typeof stringify | undefined;
+    #stringify: typeof JSON.stringify | undefined;
 
     /** Custom formatters for message interpolation */
     readonly #formatters: Record<string, FormatterFunction> | undefined;
@@ -49,7 +47,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
      * Sets the stringify function for object serialization.
      * @param function_ The stringify function to use for serializing objects
      */
-    public setStringify(function_: typeof stringify): void {
+    public setStringify(function_: typeof JSON.stringify): void {
         this.#stringify = function_;
     }
 
@@ -65,7 +63,7 @@ class MessageFormatterProcessor<L extends string = string> implements StringifyA
         const formatter = build({
             formatters: this.#formatters,
             stringify: (value: unknown) => {
-                const stringified = (this.#stringify as typeof stringify)(value);
+                const stringified = (this.#stringify as typeof JSON.stringify)(value);
 
                 if (stringified === undefined) {
                     // eslint-disable-next-line no-console
