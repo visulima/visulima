@@ -118,6 +118,8 @@ export type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload, ProgressB
 export { getBarChar, MultiProgressBar, ProgressBar } from "./progress-bar";
 export type { SpinnerIcons, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./spinner";
 export { MultiSpinner, Spinner } from "./spinner";
+export type { PailErrorOptions } from "./error";
+export { createPailError, PailError } from "./error";
 export type {
     ConstructorOptions,
     DefaultLoggerTypes,

@@ -263,15 +263,15 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             const logLevelString = logLevel as string;
             const messageString = logData.message as string | undefined;
 
-            const payloadTemplate = {
+            const payloadTemplate: { data?: Record<string, unknown>; logLevel: string; message: string } = {
                 logLevel: logLevelString,
                 message: messageString ?? "",
             };
 
             if (logData.data) {
-                payloadTemplate["data"] = logData.data;
+                payloadTemplate["data"] = logData.data as Record<string, unknown>;
             } else if (logData.context) {
-                payloadTemplate["data"] = logData.context;
+                payloadTemplate["data"] = logData.context as Record<string, unknown>;
             } else {
                 // Include all other fields as data
                 const rest = { ...logData };
@@ -312,9 +312,9 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
                 this.addToBatch(payload, logEntrySize);
             } else {
                 // Send immediately
-                this.sendPayload(payload).catch((error) => {
+                this.sendPayload(payload).catch((error: unknown) => {
                     if (this.onError) {
-                        this.onError(error);
+                        this.onError(error as Error);
                     }
                 });
             }
@@ -377,7 +377,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         this.currentBatchSize = 0;
 
         for (let i = 0; i < this.batchQueue.length; i += 1) {
-            const payload = this.batchQueue[i];
+            const payload = this.batchQueue[i] as string;
             const payloadSize
                 = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
 

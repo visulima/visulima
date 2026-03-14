@@ -24,7 +24,8 @@ import formatLabel from "../utils/format-label";
 import type { PrettyStyleOptions } from "./abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "./abstract-pretty-reporter";
 
-const pailFileFilter = (line: string) => !/[\\/]pail[\\/]dist/.test(line);
+const PAIL_DIST_REGEX = /[\\/]pail[\\/]dist/;
+const pailFileFilter = (line: string) => !PAIL_DIST_REGEX.test(line);
 
 /**
  * Options for configuring the Server Pretty Reporter.
