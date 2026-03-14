@@ -29,7 +29,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("informational");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should drop all logs when rate is 0", () => {
@@ -41,7 +41,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("debug");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBe(true);
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBe(true);
         });
 
         it("should keep all logs when rate is 100", () => {
@@ -53,7 +53,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("error");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should keep logs for levels not specified in head config", () => {
@@ -65,7 +65,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("error");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should sample logs at specified rate", () => {
@@ -76,17 +76,14 @@ describe("samplingProcessor", () => {
             });
 
             let kept = 0;
-            let dropped = 0;
             const iterations = 10_000;
 
-            for (let index = 0; index < iterations; index++) {
+            for (let index = 0; index < iterations; index += 1) {
                 const meta = createMeta("informational");
                 const result = processor.process(meta);
 
-                if ((result as Meta<string> & { __dropped?: boolean }).__dropped) {
-                    dropped++;
-                } else {
-                    kept++;
+                if (!(result as Meta<string> & { dropped?: boolean }).dropped) {
+                    kept += 1;
                 }
             }
 
@@ -106,7 +103,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("debug");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBe(true);
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBe(true);
         });
 
         it("should keep all logs when rate exceeds 100", () => {
@@ -118,7 +115,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("debug");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
     });
 
@@ -134,7 +131,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("informational", { error: new Error("test") });
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should not force-keep when no tail conditions match", () => {
@@ -148,7 +145,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("informational");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBe(true);
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBe(true);
         });
 
         it("should support multiple tail conditions", () => {
@@ -165,7 +162,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("informational", { scope: ["payment"] });
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should not apply tail sampling when head sampling keeps the log", () => {
@@ -199,12 +196,12 @@ describe("samplingProcessor", () => {
             const debugMeta = createMeta("debug");
             const debugResult = processor.process(debugMeta);
 
-            expect((debugResult as Meta<string> & { __dropped?: boolean }).__dropped).toBe(true);
+            expect((debugResult as Meta<string> & { dropped?: boolean }).dropped).toBe(true);
 
             const errorMeta = createMeta("error");
             const errorResult = processor.process(errorMeta);
 
-            expect((errorResult as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((errorResult as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
 
         it("should default to keeping everything with empty options", () => {
@@ -214,7 +211,7 @@ describe("samplingProcessor", () => {
             const meta = createMeta("debug");
             const result = processor.process(meta);
 
-            expect((result as Meta<string> & { __dropped?: boolean }).__dropped).toBeUndefined();
+            expect((result as Meta<string> & { dropped?: boolean }).dropped).toBeUndefined();
         });
     });
 });

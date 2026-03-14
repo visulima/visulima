@@ -206,6 +206,34 @@
             "types": "./dist/object-tree.d.ts",
             "default": "./dist/object-tree.js"
         },
+        "./wide-event": {
+            "types": "./dist/wide-event.d.ts",
+            "default": "./dist/wide-event.js"
+        },
+        "./middleware/express": {
+            "types": "./dist/middleware/express.d.ts",
+            "default": "./dist/middleware/express.js"
+        },
+        "./middleware/fastify": {
+            "types": "./dist/middleware/fastify.d.ts",
+            "default": "./dist/middleware/fastify.js"
+        },
+        "./middleware/hono": {
+            "types": "./dist/middleware/hono.d.ts",
+            "default": "./dist/middleware/hono.js"
+        },
+        "./middleware/elysia": {
+            "types": "./dist/middleware/elysia.d.ts",
+            "default": "./dist/middleware/elysia.js"
+        },
+        "./middleware/sveltekit": {
+            "types": "./dist/middleware/sveltekit.d.ts",
+            "default": "./dist/middleware/sveltekit.js"
+        },
+        "./middleware/next": {
+            "types": "./dist/middleware/next/handler.d.ts",
+            "default": "./dist/middleware/next/handler.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -270,14 +298,38 @@
     },
     "peerDependencies": {
         "@opentelemetry/api": "^1.9",
+        "@sveltejs/kit": ">=2.0",
         "@visulima/redact": "3.0.0-alpha.5",
+        "elysia": ">=1.0",
+        "express": ">=4.0",
+        "fastify": ">=4.0",
+        "hono": ">=4.0",
+        "next": ">=14.0",
         "rotating-file-stream": "^3.2.7"
     },
     "peerDependenciesMeta": {
         "@opentelemetry/api": {
             "optional": true
         },
+        "@sveltejs/kit": {
+            "optional": true
+        },
         "@visulima/redact": {
+            "optional": true
+        },
+        "elysia": {
+            "optional": true
+        },
+        "express": {
+            "optional": true
+        },
+        "fastify": {
+            "optional": true
+        },
+        "hono": {
+            "optional": true
+        },
+        "next": {
             "optional": true
         },
         "rotating-file-stream": {

@@ -5,7 +5,7 @@ import type { Options } from "@visulima/inspector";
 const defaultInspectorConfig: Partial<Options> = {
     indent: 2,
     quoteStyle: "single",
-    stylize: (string_: string, style): string => {
+    stylize: (string_: string, style: string): string => {
         const styles: Record<string, ColorizeType> = {
             bigint: yellow,
             boolean: yellow,

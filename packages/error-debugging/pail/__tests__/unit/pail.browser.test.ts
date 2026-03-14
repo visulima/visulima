@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PailBrowser } from "../../src/pail.browser";
 import RawReporter from "../../src/reporter/raw/raw-reporter.browser";
 
+/* eslint-disable sonarjs/slow-regex */
+const MS_REGEX = /(.*) ms/;
+const TIMER_RUN_REGEX = /Timer run for: (.*)ms/;
+/* eslint-enable sonarjs/slow-regex */
+
 describe("pailBrowserImpl", () => {
     it("should log different types of messages correctly", () => {
         expect.assertions(2);
@@ -106,9 +111,8 @@ describe("pailBrowserImpl", () => {
         logger.timeEnd("testTimer");
 
         expect(consoleSpy).toHaveBeenCalledWith("Initialized timer...");
-        // eslint-disable-next-line sonarjs/slow-regex
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/(.*) ms/), "Intermediate log");
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/Timer run for: (.*)ms/));
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(MS_REGEX), "Intermediate log");
+        expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(TIMER_RUN_REGEX));
 
         consoleSpy.mockRestore();
     });

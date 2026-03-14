@@ -206,9 +206,7 @@ describe("pailError", () => {
             });
             const result = error.toString();
 
-            expect(result).toBe(
-                "PailError [500]: test\n  Why: because\n  Fix: fix it\n  Link: https://example.com\n  Cause: root",
-            );
+            expect(result).toBe("PailError [500]: test\n  Why: because\n  Fix: fix it\n  Link: https://example.com\n  Cause: root");
         });
 
         it("should handle non-Error cause in toString", () => {

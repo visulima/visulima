@@ -6,7 +6,7 @@ import type { Meta, Processor } from "../types";
  * Contains runtime environment details that are automatically detected
  * from environment variables and process information.
  */
-export interface EnvironmentInfo {
+interface EnvironmentInfo {
     /** Git commit hash or short SHA */
     commit?: string;
     /** Runtime environment (e.g., "production", "development", "test") */
@@ -26,12 +26,11 @@ export interface EnvironmentInfo {
 /**
  * Environment processor configuration options.
  */
-export interface EnvironmentProcessorOptions {
+interface EnvironmentProcessorOptions {
     /**
-     * Static environment info to use instead of or in addition to auto-detection.
-     * Values provided here take precedence over auto-detected values.
+     * Whether to include the hostname. Defaults to false.
      */
-    overrides?: Partial<EnvironmentInfo>;
+    includeHostname?: boolean;
 
     /**
      * Whether to include the process ID. Defaults to false.
@@ -39,9 +38,10 @@ export interface EnvironmentProcessorOptions {
     includePid?: boolean;
 
     /**
-     * Whether to include the hostname. Defaults to false.
+     * Static environment info to use instead of or in addition to auto-detection.
+     * Values provided here take precedence over auto-detected values.
      */
-    includeHostname?: boolean;
+    overrides?: Partial<EnvironmentInfo>;
 }
 
 /**
@@ -59,14 +59,36 @@ const detectEnvironment = (): EnvironmentInfo => {
     }
 
     const { env } = process;
-    const info: EnvironmentInfo = {};
-
-    // Environment / Node env
-    info.environment = env.NODE_ENV || env.ENVIRONMENT || env.APP_ENV || undefined;
-
-    // Service name - check common platform variables (including GCP Cloud Run / App Engine)
-    info.service
-        = env.SERVICE_NAME
+    const info: EnvironmentInfo = {
+        // Commit hash
+        commit:
+            env.COMMIT_SHA
+            || env.GIT_COMMIT
+            || env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
+            || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
+            || env.RENDER_GIT_COMMIT?.slice(0, 7)
+            || env.HEROKU_SLUG_COMMIT?.slice(0, 7)
+            || env.CF_PAGES_COMMIT_SHA?.slice(0, 7)
+            || undefined,
+        // Environment / Node env
+        environment: env.NODE_ENV || env.ENVIRONMENT || env.APP_ENV || undefined,
+        // Hostname
+        hostname: env.HOSTNAME || env.HOST || undefined,
+        // PID
+        pid: process.pid,
+        // Region (including GCP Cloud Functions FUNCTION_REGION and GOOGLE_CLOUD_REGION)
+        region:
+            env.AWS_REGION
+            || env.VERCEL_REGION
+            || env.FLY_REGION
+            || env.RENDER_REGION
+            || env.CF_REGION
+            || env.GOOGLE_CLOUD_REGION // GCP general
+            || env.FUNCTION_REGION // GCP Cloud Functions
+            || undefined,
+        // Service name - check common platform variables (including GCP Cloud Run / App Engine)
+        service:
+            env.SERVICE_NAME
             || env.APP_NAME
             || env.K_SERVICE // GCP Cloud Run
             || env.GAE_SERVICE // GCP App Engine
@@ -76,45 +98,17 @@ const detectEnvironment = (): EnvironmentInfo => {
             || env.RAILWAY_SERVICE_NAME
             || env.RENDER_SERVICE_NAME
             || env.HEROKU_APP_NAME
-            || undefined;
-
-    // Version (including GCP Cloud Run K_REVISION and App Engine GAE_VERSION)
-    info.version
-        = env.APP_VERSION
+            || undefined,
+        // Version (including GCP Cloud Run K_REVISION and App Engine GAE_VERSION)
+        version:
+            env.APP_VERSION
             || env.npm_package_version
             || env.K_REVISION // GCP Cloud Run revision
             || env.GAE_VERSION // GCP App Engine version
             || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
             || env.RENDER_GIT_COMMIT?.slice(0, 7)
-            || undefined;
-
-    // Commit hash
-    info.commit
-        = env.COMMIT_SHA
-            || env.GIT_COMMIT
-            || env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7)
-            || env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7)
-            || env.RENDER_GIT_COMMIT?.slice(0, 7)
-            || env.HEROKU_SLUG_COMMIT?.slice(0, 7)
-            || env.CF_PAGES_COMMIT_SHA?.slice(0, 7)
-            || undefined;
-
-    // Region (including GCP Cloud Functions FUNCTION_REGION and GOOGLE_CLOUD_REGION)
-    info.region
-        = env.AWS_REGION
-            || env.VERCEL_REGION
-            || env.FLY_REGION
-            || env.RENDER_REGION
-            || env.CF_REGION
-            || env.GOOGLE_CLOUD_REGION // GCP general
-            || env.FUNCTION_REGION // GCP Cloud Functions
-            || undefined;
-
-    // Hostname
-    info.hostname = env.HOSTNAME || env.HOST || undefined;
-
-    // PID
-    info.pid = process.pid;
+            || undefined,
+    };
 
     // Clean up undefined values
     return Object.fromEntries(Object.entries(info).filter(([, v]) => v !== undefined)) as EnvironmentInfo;
@@ -210,9 +204,9 @@ class EnvironmentProcessor<L extends string = string> implements Processor<L> {
      */
     public process(meta: Meta<L>): Meta<L> {
         // Shallow clone to prevent mutations from leaking across log records
-        (meta as Meta<L> & { __env?: EnvironmentInfo }).__env = { ...this.#envInfo };
+        const enriched: Meta<L> & { envStorage?: EnvironmentInfo } = { ...meta, envStorage: { ...this.#envInfo } };
 
-        return meta;
+        return enriched;
     }
 
     /**
@@ -229,3 +223,4 @@ class EnvironmentProcessor<L extends string = string> implements Processor<L> {
 
 export { detectEnvironment };
 export default EnvironmentProcessor;
+export type { EnvironmentInfo, EnvironmentProcessorOptions };
