@@ -54,26 +54,26 @@ pnpm add @visulima/disposable-email-domains
 
 | Repository | Domains | Success | Performance |
 |------------|---------|---------|-------------|
-| kslr/disposable-email-domains | 116.755 | ✅ | 0.47s (1.7 MB) |
-| FGRibreau/mailchecker | 55.902 | ✅ | 0.43s (838.8 KB) |
-| wesbos/burner-email-providers | 27.284 | ✅ | 0.20s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.23s (401.7 KB) |
-| disposable/disposable-email-domains | 26.455 | ✅ | 0.29s (369.8 KB) |
-| sublime-security/static-files | 10.523 | ✅ | 0.24s (144.0 KB) |
-| 7c/fakefilter | 9.344 | ✅ | 0.20s (131.8 KB) |
+| kslr/disposable-email-domains | 117.858 | ✅ | 0.37s (1.7 MB) |
+| FGRibreau/mailchecker | 55.911 | ✅ | 0.47s (838.9 KB) |
+| wesbos/burner-email-providers | 27.284 | ✅ | 0.40s (388.1 KB) |
+| groundcat/disposable-email-domain-list | 27.120 | ✅ | 0.19s (401.7 KB) |
+| disposable/disposable-email-domains | 26.469 | ✅ | 0.23s (370.0 KB) |
+| sublime-security/static-files | 10.523 | ✅ | 0.26s (144.0 KB) |
+| 7c/fakefilter | 9.322 | ✅ | 0.15s (131.4 KB) |
 | disposable-email-domains/disposable-email-domains | 5.197 | ✅ | 0.22s (65.9 KB) |
-| willwhite/freemail | 4.462 | ✅ | 0.34s (61.8 KB) |
-| eser/sanitizer-svc | 3.855 | ✅ | 0.25s (48.9 KB) |
+| willwhite/freemail | 4.462 | ✅ | 0.35s (61.8 KB) |
+| eser/sanitizer-svc | 3.855 | ✅ | 0.26s (48.9 KB) |
 | unkn0w/disposable-email-domain-list | 3.617 | ✅ | 0.16s (45.8 KB) |
-| MattKetmo/EmailChecker | 2.515 | ✅ | 0.16s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.22s (15.4 KB) |
-| jespernissen/disposable-maildomain-list | 1.011 | ✅ | 0.16s (13.0 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.23s (234 B) |
+| MattKetmo/EmailChecker | 2.515 | ✅ | 0.18s (32.4 KB) |
+| GeroldSetz/emailondeck.com-domains | 1.121 | ✅ | 0.21s (15.4 KB) |
+| jespernissen/disposable-maildomain-list | 1.011 | ✅ | 0.15s (13.0 KB) |
+| TheDahoom/disposable-email | 18 | ✅ | 0.25s (234 B) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-03-06T11:18:28.341Z_
+_Last updated: 2026-03-12T15:14:24.679Z_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 

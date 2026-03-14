@@ -291,18 +291,18 @@
         "@anolilab/multi-semantic-release": "^4.1.1",
         "@anolilab/prettier-config": "^9.1.1",
         "@anolilab/textlint-config": "^12.1.2",
-        "@commitlint/cli": "^20.4.3",
-        "@commitlint/config-conventional": "^20.4.3",
+        "@commitlint/cli": "^20.4.4",
+        "@commitlint/config-conventional": "^20.4.4",
         "@octokit/rest": "^22.0.1",
         "@secretlint/secretlint-rule-preset-recommend": "^11.3.1",
-        "@types/node": "25.3.3",
+        "@types/node": "25.4.0",
         "browserslist-config-anolilab": "^8.0.0",
         "commitizen": "^4.3.1",
         "core-js": "^3.48.0",
         "cross-env": "^10.1.0",
         "husky": "^9.1.7",
         "is-ci": "^4.1.0",
-        "lint-staged": "^16.3.2",
+        "lint-staged": "^16.3.3",
         "nx": "22.5.4",
         "pkg-pr-new": "^0.0.65",
         "plop": "^4.0.5",
@@ -318,7 +318,7 @@
         "typescript": "5.9.3",
         "vitest": "^4.0.18"
     },
-    "packageManager": "pnpm@10.30.3",
+    "packageManager": "pnpm@10.32.1",
     "engines": {
         "node": ">=22.13 <=25.x"
     }

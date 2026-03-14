@@ -63,6 +63,8 @@ If you're upgrading from an earlier version of pail, check out our [Migration Gu
 - ESM‑only with tree‑shaking support (Node.js ≥ 20.19)
 - Supports circular structures
 - Fast and powerful, see the [benchmarks](__bench__/README.md)
+- [Wide events](#wide-events) — accumulate context across an operation and emit once
+- [Framework middleware](#framework-middleware) for Express, Fastify, Hono, Elysia, SvelteKit, and Next.js
 
 ## Install
 
@@ -1063,6 +1065,327 @@ When a log entry exceeds `maxLogSize`, a `LogSizeError` is thrown. When a batch 
 | `onDebug`                | `(entry: Record<string, unknown>) => void` | `undefined`          | Debug callback for log entries                |
 | `onDebugRequestResponse` | `(reqRes: {...}) => void`                  | `undefined`          | Debug callback for HTTP requests/responses    |
 | `payloadTemplate`        | `(data: {...}) => string`                  | `undefined`          | Custom payload formatter                      |
+
+## Wide Events
+
+Wide events let you accumulate structured context throughout an operation and emit a single, comprehensive log event at the end — instead of scattering multiple log calls.
+
+Inspired by [Charity Majors' wide events](https://charity.wtf/2019/02/05/logs-vs-structured-events/) pattern.
+
+### Basic Usage
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { createWideEvent } from "@visulima/pail/wide-event";
+
+const logger = createPail();
+
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+ev.set({ user: { id: 1, plan: "pro" } });
+ev.info("Validated cart", { itemCount: 3 });
+ev.set({ cart: { id: 42, items: 3, total: 9999 } });
+ev.info("Payment processed");
+ev.finish({ status: 200 });
+
+// Emits a single structured log:
+// {
+//   event: "api.checkout",
+//   timestamp: "2026-03-14T10:23:45.612Z",
+//   duration: "127ms",
+//   duration_ms: 127,
+//   status: 200,
+//   user: { id: 1, plan: "pro" },
+//   cart: { id: 42, items: 3, total: 9999 },
+//   requestLogs: [
+//     { level: "info", message: "Validated cart", context: { itemCount: 3 }, timestamp: "..." },
+//     { level: "info", message: "Payment processed", timestamp: "..." }
+//   ]
+// }
+```
+
+### Auto-Emit with Explicit Resource Management
+
+Wide events implement `Disposable` for use with TC39 Explicit Resource Management (`using`):
+
+```typescript
+{
+    using ev = createWideEvent({ pail: logger, name: "api.checkout" });
+    ev.set({ user: { id: 1 } });
+    // auto-emits when scope exits
+}
+```
+
+### Typed Data Shape
+
+```typescript
+interface CheckoutData {
+    user: { id: number; plan: string };
+    cart: { items: number; total: number };
+}
+
+const ev = createWideEvent<CheckoutData>({ pail: logger, name: "api.checkout" });
+ev.set({ user: { id: 1, plan: "pro" } }); // fully typed
+```
+
+### Level Escalation
+
+The event level auto-escalates based on lifecycle log entries. If you call `warn()` or `error()`, the final emission uses the highest severity:
+
+```typescript
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+ev.info("Cart validated"); // level stays "info"
+ev.warn("Rate limit approaching"); // level escalates to "warn"
+ev.info("Payment processed"); // level stays "warn" (no de-escalation)
+ev.finish({ status: 200 }); // emits at "warn" level
+```
+
+### Error Handling
+
+```typescript
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+try {
+    await processPayment();
+} catch (error) {
+    ev.error("Payment failed", error);
+    ev.finish({ status: 500, error });
+    // Emits with serialized error (name, message, stack, status, cause chain)
+}
+```
+
+### Options
+
+| Option     | Type          | Default  | Description                       |
+| ---------- | ------------- | -------- | --------------------------------- |
+| `name`     | `string`      | required | Event name, e.g. `"api.checkout"` |
+| `pail`     | Pail instance | required | The pail logger to emit through   |
+| `service`  | `string`      | —        | Service name override             |
+| `type`     | `string`      | `"info"` | Base log type (may be escalated)  |
+| `autoEmit` | `boolean`     | `true`   | Auto-emit on `Symbol.dispose`     |
+
+### Methods
+
+| Method                   | Description                                   |
+| ------------------------ | --------------------------------------------- |
+| `set(data)`              | Deep-merge partial data into the event        |
+| `info(msg, ctx?)`        | Record an info-level lifecycle entry          |
+| `warn(msg, ctx?)`        | Record a warn-level entry (escalates level)   |
+| `error(msg, err?, ctx?)` | Record an error-level entry (escalates level) |
+| `debug(msg, ctx?)`       | Record a debug-level entry                    |
+| `setError(error)`        | Attach an error (escalates to "error")        |
+| `setStatus(code)`        | Set HTTP status code                          |
+| `finish(opts?)`          | Set status/error and emit                     |
+| `emit(typeOverride?)`    | Emit the event (only fires once)              |
+| `getData()`              | Get read-only snapshot of accumulated data    |
+| `getLevel()`             | Get current severity level                    |
+| `getRequestLogs()`       | Get read-only lifecycle log entries           |
+
+## Framework Middleware
+
+Pail provides first-class middleware/plugin adapters for popular web frameworks. Each adapter creates a request-scoped [Wide Event](#wide-events) that:
+
+- Accumulates context throughout the request lifecycle
+- Auto-emits a single structured log when the response completes or an error occurs
+- Is accessible via `req.log` / `request.log` / `context.log` and `useLogger()`
+- Supports route inclusion/exclusion via glob patterns
+- Supports per-route service name overrides
+
+### Shared Options
+
+All middleware adapters accept these options:
+
+| Option    | Type                           | Description                         |
+| --------- | ------------------------------ | ----------------------------------- |
+| `pail`    | Pail instance                  | The pail logger (required)          |
+| `service` | `string`                       | Default service name                |
+| `include` | `string[]`                     | Glob patterns for paths to include  |
+| `exclude` | `string[]`                     | Glob patterns for paths to exclude  |
+| `routes`  | `Record<string, { service? }>` | Per-route config (first match wins) |
+
+### Express
+
+```typescript
+import express from "express";
+import { createPail } from "@visulima/pail";
+import { pailMiddleware, useLogger } from "@visulima/pail/middleware/express";
+
+const app = express();
+const logger = createPail();
+
+app.use(pailMiddleware({ pail: logger }));
+
+app.get("/api/users", (req, res) => {
+    req.log.set({ user: { id: 1 } });
+    req.log.info("Fetched user list");
+    // or from anywhere in the async call stack:
+    // useLogger().set({ user: { id: 1 } });
+    res.json({ ok: true });
+});
+```
+
+**Exports:** `pailMiddleware`, `useLogger`, `PailRequest`, `PailResponse`, `PailNextFunction`, `PailExpressMiddleware`, `WideEvent`
+
+### Fastify
+
+```typescript
+import Fastify from "fastify";
+import { createPail } from "@visulima/pail";
+import { pailPlugin, useLogger } from "@visulima/pail/middleware/fastify";
+
+const app = Fastify();
+const logger = createPail();
+
+pailPlugin(app, { pail: logger });
+
+app.get("/api/users", async (request, reply) => {
+    request.log.set({ user: { id: 1 } });
+    return { ok: true };
+});
+```
+
+**Exports:** `pailPlugin`, `useLogger`, `PailFastifyRequest`, `PailFastifyReply`, `PailFastifyInstance`, `WideEvent`
+
+### Hono
+
+```typescript
+import { Hono } from "hono";
+import { createPail } from "@visulima/pail";
+import { pailMiddleware, useLogger } from "@visulima/pail/middleware/hono";
+
+const app = new Hono();
+const logger = createPail();
+
+app.use("*", pailMiddleware({ pail: logger }));
+
+app.get("/api/users", (c) => {
+    const log = useLogger(c);
+    log.set({ user: { id: 1 } });
+    return c.json({ ok: true });
+});
+```
+
+> **Note:** Hono's `useLogger()` takes the context `c` as an argument (the logger is stored on the context, not in AsyncLocalStorage).
+
+**Exports:** `pailMiddleware`, `useLogger`, `PailHonoContext`, `PailHonoNext`, `PailHonoMiddleware`, `WideEvent`
+
+### Elysia
+
+```typescript
+import { Elysia } from "elysia";
+import { createPail } from "@visulima/pail";
+import { pailPlugin, useLogger } from "@visulima/pail/middleware/elysia";
+
+const logger = createPail();
+const app = new Elysia();
+
+pailPlugin(app, { pail: logger });
+
+app.get("/api/users", ({ log }) => {
+    log.set({ user: { id: 1 } });
+    return { ok: true };
+});
+```
+
+**Exports:** `pailPlugin`, `useLogger`, `PailElysiaInstance`, `WideEvent`
+
+### SvelteKit
+
+```typescript
+// src/hooks.server.ts
+import { createPail } from "@visulima/pail";
+import { createPailHooks, useLogger } from "@visulima/pail/middleware/sveltekit";
+
+const logger = createPail();
+const { handle, handleError } = createPailHooks({ pail: logger });
+
+export { handle, handleError };
+```
+
+```typescript
+// In a load function or action:
+import { useLogger } from "@visulima/pail/middleware/sveltekit";
+
+export const load = async (event) => {
+    event.locals.log.set({ user: { id: 1 } });
+    // or from anywhere in the async call stack:
+    // useLogger().set({ user: { id: 1 } });
+};
+```
+
+**Exports:** `pailHandle`, `pailHandleError`, `createPailHooks`, `useLogger`, `PailSvelteKitEvent`, `PailSvelteKitHandle`, `PailSvelteKitHandleError`, `WideEvent`
+
+### Next.js
+
+Next.js integration uses two parts: an edge middleware for request ID injection and a handler wrapper for wide event logging.
+
+```typescript
+// middleware.ts
+import { NextResponse } from "next/server";
+import { pailMiddleware } from "@visulima/pail/middleware/next";
+
+export default pailMiddleware(NextResponse, {
+    exclude: ["/_next/**", "/favicon.ico"],
+});
+```
+
+```typescript
+// lib/pail.ts
+import { createPail } from "@visulima/pail";
+import { createWithPail } from "@visulima/pail/middleware/next";
+
+const logger = createPail();
+export const withPail = createWithPail({ pail: logger });
+```
+
+```typescript
+// app/api/users/route.ts
+import { withPail } from "@/lib/pail";
+import { useLogger } from "@visulima/pail/middleware/next";
+
+export const GET = withPail(async (request: Request) => {
+    const log = useLogger();
+    log.set({ user: { id: 1 } });
+    return Response.json({ ok: true });
+});
+```
+
+**Exports:** `pailMiddleware`, `createWithPail`, `useLogger`, `WideEvent`
+
+### Route Configuration
+
+All adapters support glob-based route configuration:
+
+```typescript
+pailMiddleware({
+    pail: logger,
+    service: "api-gateway",
+    exclude: ["/health", "/metrics", "/_next/**"],
+    include: ["/api/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+        "/api/payments/**": { service: "payments-service" },
+    },
+});
+```
+
+- **Exclusions take precedence** over inclusions
+- **Glob patterns** support `*` (any non-`/`), `**` (any including `/`), and `?` (single char)
+- **Route service overrides** apply to the first matching pattern
+
+### Sensitive Header Filtering
+
+All adapters automatically filter sensitive headers before logging:
+
+| Filtered Headers      |
+| --------------------- |
+| `authorization`       |
+| `cookie`              |
+| `set-cookie`          |
+| `x-api-key`           |
+| `x-auth-token`        |
+| `proxy-authorization` |
 
 ## Integrations
 

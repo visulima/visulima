@@ -120,8 +120,8 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ stderr: null as unknown as NodeJS.WriteStream, stdout: null as unknown as NodeJS.WriteStream });
 
-        expect(() => pailServer.wrapStd()).not.toThrow();
-        expect(() => pailServer.restoreStd()).not.toThrow();
+        expect(() => pailServer.wrapStd()).not.toThrowError();
+        expect(() => pailServer.restoreStd()).not.toThrowError();
     });
 
     it("should handle empty or invalid scope names", () => {
@@ -129,8 +129,8 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ stderr, stdout });
 
-        expect(() => pailServer.scope()).toThrow("No scope name was defined.");
-        expect(() => pailServer.scope("validScope")).not.toThrow();
+        expect(() => pailServer.scope()).toThrowError("No scope name was defined.");
+        expect(() => pailServer.scope("validScope")).not.toThrowError();
     });
 
     it("should handle logging with circular references in objects", () => {
@@ -142,7 +142,7 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ stderr, stdout });
 
-        expect(() => pailServer.log(circularObject)).not.toThrow();
+        expect(() => pailServer.log(circularObject)).not.toThrowError();
     });
 
     it("should group messages correctly", () => {
@@ -439,7 +439,7 @@ describe("interactive mode validation", () => {
 
         const pailServer = new PailServer({ interactive: false, stderr, stdout });
 
-        expect(() => pailServer.createSpinner()).toThrow("Interactive mode is not enabled");
+        expect(() => pailServer.createSpinner()).toThrowError("Interactive mode is not enabled");
     });
 
     it("should throw when creating progress bar without interactive mode", () => {
@@ -447,7 +447,7 @@ describe("interactive mode validation", () => {
 
         const pailServer = new PailServer({ interactive: false, stderr, stdout });
 
-        expect(() => pailServer.createProgressBar({ total: 100 })).toThrow("Interactive mode is not enabled");
+        expect(() => pailServer.createProgressBar({ total: 100 })).toThrowError("Interactive mode is not enabled");
     });
 
     it("should throw when creating multi-spinner without interactive mode", () => {
@@ -455,7 +455,7 @@ describe("interactive mode validation", () => {
 
         const pailServer = new PailServer({ interactive: false, stderr, stdout });
 
-        expect(() => pailServer.createMultiSpinner()).toThrow("Interactive mode is not enabled");
+        expect(() => pailServer.createMultiSpinner()).toThrowError("Interactive mode is not enabled");
     });
 
     it("should throw when creating multi-progress-bar without interactive mode", () => {
@@ -463,7 +463,7 @@ describe("interactive mode validation", () => {
 
         const pailServer = new PailServer({ interactive: false, stderr, stdout });
 
-        expect(() => pailServer.createMultiProgressBar()).toThrow("Interactive mode is not enabled");
+        expect(() => pailServer.createMultiProgressBar()).toThrowError("Interactive mode is not enabled");
     });
 
     it("should accept empty options for spinner (parity with progress bar)", () => {

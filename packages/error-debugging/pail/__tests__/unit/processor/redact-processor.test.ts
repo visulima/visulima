@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import RedactProcessor from "../../../src/processor/redact-processor";
 import type { Meta } from "../../../src/types";
 
+const SENSITIVE_PATTERN = /sensitive/;
+
 describe("redactProcessor", () => {
     it("should use default standardRules when no rules are provided and redact sensitive information in meta.message", () => {
         expect.assertions(1);
@@ -40,7 +42,7 @@ describe("redactProcessor", () => {
     it("should use provided rules and options for redaction", () => {
         expect.assertions(1);
 
-        const rules = [{ key: "redact", pattern: /sensitive/, replacement: "[REDACTED]" }];
+        const rules = [{ key: "redact", pattern: SENSITIVE_PATTERN, replacement: "[REDACTED]" }];
 
         const processor = new RedactProcessor(rules, { exclude: [] });
         const meta = { message: "Sensitive data" } as Meta<string>;
