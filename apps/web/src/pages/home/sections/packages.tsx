@@ -10,9 +10,6 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 import HighlightLink from "@/components/ui/highlight-link";
 
-/* ─────────────────────────────────────────────
-   Shared
-   ───────────────────────────────────────────── */
 
 const FeatureCard = ({ accentColor, children, title, className }: { accentColor: string; children: React.ReactNode; title: string; className?: string }) => (
     <div className={cn("group/feature relative flex w-full flex-col gap-4 px-8 pt-8 pb-10 transition-all duration-300 hover:bg-white/[0.02]", className)}>
@@ -24,9 +21,6 @@ const FeatureCard = ({ accentColor, children, title, className }: { accentColor:
     </div>
 );
 
-/* ─────────────────────────────────────────────
-   Packem — Live Build Terminal
-   ───────────────────────────────────────────── */
 
 interface BuildStep {
     type: "cmd" | "info" | "entry" | "chunk" | "total" | "done";
@@ -120,7 +114,7 @@ const PackemTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-            {/* Terminal chrome */}
+
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -129,7 +123,7 @@ const PackemTerminal = () => {
                 </div>
                 <span className="font-mono text-[10px] tracking-wider text-white/20 uppercase">packem — build</span>
             </div>
-            {/* Build output */}
+
             <div className="flex-1 overflow-hidden px-4 py-3 font-mono text-xs leading-6">
                 <AnimatePresence mode="popLayout">
                     {sequence.slice(0, visibleSteps).map((step, i) => (
@@ -160,7 +154,7 @@ const PackemTerminal = () => {
                         </motion.div>
                     ))}
                 </AnimatePresence>
-                {/* Blinking cursor */}
+
                 {visibleSteps < sequence.length && (
                     <motion.span
                         className="inline-block h-3.5 w-1.5 translate-y-0.5 bg-sky-sapphire/60"
@@ -180,12 +174,12 @@ const PackemSection = () => (
             <div className="relative overflow-hidden border-b border-white/6 bg-gradient-to-br from-sky-sapphire/[0.08] via-transparent to-transparent">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sky-sapphire/60 to-transparent" />
                 <div className="grid grid-cols-2">
-                    {/* ── Live Build Terminal ── */}
+
                     <div className="min-h-120 bg-sky-sapphire/[0.04]">
                         <PackemTerminal />
                     </div>
 
-                    {/* ── Description ── */}
+
                     <div className="z-10 flex w-full flex-col gap-4 px-8 pt-8 pb-14 border-l border-white/6">
                         <div className="flex items-center gap-3">
                             <span className="inline-block bg-sky-sapphire/20 px-3 py-1 font-mono text-xs font-medium text-sky-sapphire">Bundler</span>
@@ -210,7 +204,7 @@ const PackemSection = () => (
                     </div>
                 </div>
             </div>
-            {/* Feature cards */}
+
             <div className="grid grid-cols-2 border-x border-white/6">
                 <FeatureCard accentColor="bg-sky-sapphire/40" title="Tree Shaking">
                     Packem supports tree-shaking both ES modules and CommonJS out of the box. It statically analyzes imports and exports, removing everything
@@ -236,9 +230,6 @@ const PackemSection = () => (
     </Section>
 );
 
-/* ─────────────────────────────────────────────
-   Pail — Live Logger Terminal
-   ───────────────────────────────────────────── */
 
 const LOG_LINES = [
     { level: "success", prefix: "  ✔", text: "Operation successful", color: "text-emerald-400" },
@@ -271,7 +262,7 @@ const PailTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-            {/* Terminal chrome */}
+
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -280,7 +271,7 @@ const PailTerminal = () => {
                 </div>
                 <span className="font-mono text-[10px] tracking-wider text-white/20 uppercase">pail — terminal</span>
             </div>
-            {/* Log output */}
+
             <div className="flex-1 overflow-hidden px-4 py-3 font-mono text-xs leading-6">
                 <AnimatePresence mode="popLayout">
                     {LOG_LINES.slice(0, visibleLines).map((line, i) => (
@@ -298,7 +289,7 @@ const PailTerminal = () => {
                         </motion.div>
                     ))}
                 </AnimatePresence>
-                {/* Blinking cursor */}
+
                 <motion.span
                     className="inline-block h-3.5 w-1.5 translate-y-0.5 bg-crimson-energy/60"
                     animate={{ opacity: [1, 0] }}
@@ -334,13 +325,13 @@ const PailSection = () => (
                             </Link>
                         </div>
                     </div>
-                    {/* ── Live Terminal ── */}
+
                     <div className="min-h-80 w-full border-l border-white/6 bg-crimson-energy/[0.04]">
                         <PailTerminal />
                     </div>
                 </div>
             </div>
-            {/* Feature cards */}
+
             <div className="grid grid-cols-2 border-x border-white/6">
                 <FeatureCard accentColor="bg-crimson-energy/40" title="Effortless Logging, Minimal Syntax">
                     Get started instantly with Pail's intuitive design. Whether you're debugging or tracking processes, the minimal syntax ensures your focus
@@ -365,9 +356,6 @@ const PailSection = () => (
     </Section>
 );
 
-/* ─────────────────────────────────────────────
-   Cerebro — CLI Simulation
-   ───────────────────────────────────────────── */
 
 const CLI_SEQUENCE = [
     {
@@ -453,7 +441,7 @@ const CerebroTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-            {/* Terminal chrome */}
+
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -462,9 +450,9 @@ const CerebroTerminal = () => {
                 </div>
                 <span className="font-mono text-[10px] tracking-wider text-white/20 uppercase">cerebro — cli</span>
             </div>
-            {/* CLI content */}
+
             <div className="flex-1 overflow-hidden px-4 py-3 font-mono text-xs leading-6">
-                {/* Command line */}
+
                 <div className="flex flex-wrap">
                     <span className="text-royal-amethyst/60">$</span>
                     <span className="ml-2 text-white/80">{typedCommand}</span>
@@ -478,7 +466,7 @@ const CerebroTerminal = () => {
                     )}
                 </div>
 
-                {/* Output lines */}
+
                 <AnimatePresence>
                     {(phase === "output" || phase === "done") &&
                         seq.output.slice(0, outputIndex).map((line, i) => (
@@ -505,7 +493,7 @@ const CerebroSection = () => (
             <div className="relative overflow-hidden border border-white/6 bg-gradient-to-br from-royal-amethyst/[0.08] via-transparent to-transparent">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-royal-amethyst/60 to-transparent" />
                 <div className="grid grid-cols-2">
-                    {/* ── CLI Simulation ── */}
+
                     <div className="min-h-80 w-full bg-royal-amethyst/[0.04]">
                         <CerebroTerminal />
                     </div>
@@ -530,7 +518,7 @@ const CerebroSection = () => (
                     </div>
                 </div>
             </div>
-            {/* Feature cards */}
+
             <div className="grid grid-cols-2 border-x border-white/6">
                 <FeatureCard accentColor="bg-royal-amethyst/40" title="Flag and Argument Parsing">
                     Custom flag parser built from years of experimentation — flexible enough for easy, predictable UX without compromising type safety for the
@@ -555,9 +543,6 @@ const CerebroSection = () => (
     </Section>
 );
 
-/* ─────────────────────────────────────────────
-   Main Export
-   ───────────────────────────────────────────── */
 
 const Packages: FC = () => (
     <div className="bg-background">

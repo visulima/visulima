@@ -59,6 +59,8 @@
     --color-crimson-energy: var(--crimson-energy);
     --color-royal-amethyst: var(--royal-amethyst);
 
+    --color-dark-coal: hsl(0 0% 5%);
+
     @keyframes button-shine {
         from {
             background-position: 200% 0;
@@ -218,7 +220,7 @@
 }
 
 #nd-sidebar {
-    background-color: hsl(0 0% 5%);
+    background-color: var(--color-dark-coal);
     border-color: transparent;
 }
 

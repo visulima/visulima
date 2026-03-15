@@ -12,21 +12,17 @@ import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
     build: {
-        assetsInlineLimit: 4096, // Inline small assets as base64
-        // Increase chunk size limit for better compression
+        assetsInlineLimit: 4096,
         chunkSizeWarningLimit: 1000,
-        // Enable advanced minification
         cssCodeSplit: true,
         cssMinify: "lightningcss",
         minify: "esbuild",
-        reportCompressedSize: true, // Faster builds
-        sourcemap: false, // Disable in production for smaller builds
+        reportCompressedSize: true,
+        sourcemap: false,
         target: "esnext",
     },
     esbuild: {
-        // Remove console logs in production
         drop: process.env.NODE_ENV === "production" ? ["console", "debugger"] : [],
-        // Tree shaking improvements
         treeShaking: true,
     },
     optimizeDeps: {
@@ -35,9 +31,6 @@ export default defineConfig({
     plugins: [
         viteOverlay({ showBallonButton: false }),
         devToolbar({
-            // TanStack Start SSR renders HTML server-side, bypassing Vite's
-            // transformIndexHtml. Use appendTo to inject via the module graph instead.
-            // appendTo: /router\.tsx$/,
             apps: {
                 a11y: true,
                 assets: true,
@@ -54,9 +47,7 @@ export default defineConfig({
         }),
         tailwindcss(),
         svgr({
-            // Optimize SVG imports
             svgrOptions: {
-                // plugins: ["@svgr/plugin-svgo", "@svgr/plugin-jsx"],
                 svgoConfig: {
                     floatPrecision: 2,
                 },
@@ -111,7 +102,6 @@ export default defineConfig({
         },
     },
     ssr: {
-        // Optimize SSR performance
         optimizeDeps: {
             exclude: ["fumadocs-ui", "fumadocs-core", "@fumadocs/mdx-remote"],
             include: ["react", "react-dom"],

@@ -9,9 +9,6 @@ import { getStats } from "@/server/stats";
 
 const ALL_PACKAGES = "all";
 
-/* ─────────────────────────────────────────────
-   Animated number — counts up on scroll
-   ───────────────────────────────────────────── */
 const AnimatedNumber = ({ className, suffix = "", value }: { className?: string; suffix?: string; value: number }) => {
     const [current, setCurrent] = useState(0);
     const ref = useRef<HTMLSpanElement>(null);
@@ -63,9 +60,6 @@ const AnimatedNumber = ({ className, suffix = "", value }: { className?: string;
     );
 };
 
-/* ─────────────────────────────────────────────
-   SVG download chart with real data
-   ───────────────────────────────────────────── */
 const CHART_VIEW_WIDTH = 500;
 const CHART_VIEW_HEIGHT = 250;
 const CHART_PAD_TOP = 10;
@@ -115,19 +109,19 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
                     </linearGradient>
                 </defs>
 
-                {/* Grid lines */}
+
                 {GRID_FRACTIONS.map((fraction) => {
                     const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
                     return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
                 })}
 
-                {/* Area fill */}
+
                 <path d={areaPath} fill="url(#chart-gradient)" />
 
-                {/* Line */}
+
                 <path d={linePath} fill="none" stroke="hsl(258 80% 55%)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
-                {/* Latest point pulse */}
+
                 {lastPoint && (
                     <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill="hsl(258 80% 55%)" r="4" />
                 )}
@@ -140,9 +134,6 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   Package dropdown selector
-   ───────────────────────────────────────────── */
 const PackageDropdown: FC<{
     onChange: (value: string) => void;
     packages: string[];
@@ -206,9 +197,6 @@ const PackageDropdown: FC<{
     );
 };
 
-/* ─────────────────────────────────────────────
-   Hook — calls the cached server function
-   ───────────────────────────────────────────── */
 const INITIAL_STATS: DownloadStats = {
     contributors: 0,
     monthlyChart: {},
@@ -236,9 +224,6 @@ const useDownloadStats = (): DownloadStats => {
     return stats;
 };
 
-/* ─────────────────────────────────────────────
-   Helpers to aggregate stats
-   ───────────────────────────────────────────── */
 const sumValues = (record: Record<string, number>): number => {
     let total = 0;
 
@@ -267,9 +252,6 @@ const aggregateMonthlyChart = (chart: Record<string, MonthlyDataPoint[]>): Month
         .map((month) => ({ downloads: byMonth[month], month }));
 };
 
-/* ═════════════════════════════════════════════
-   DOWNLOADS SECTION
-   ═════════════════════════════════════════════ */
 const Downloads: FC = () => {
     const stats = useDownloadStats();
     const [selectedPackage, setSelectedPackage] = useState(ALL_PACKAGES);
@@ -301,22 +283,22 @@ const Downloads: FC = () => {
     }, [selectedPackage, stats.weeklyDownloads]);
 
     return (
-        <Section classes={{ root: "pb-0" }} gridLength={2} mode="light" patternColor="ivory" patternPosition="top">
-            {/* Heading */}
+        <Section classes={{ root: "pb-0" }} gridLength={2} mode="light">
+
             <div className="col-span-full">
                 <h3 className="max-w-lg text-balance text-2xl font-bold tracking-tight text-gray-900 lg:text-3xl">Trusted by developers worldwide</h3>
             </div>
 
-            {/* Total downloads + chart */}
+
             <div className="col-span-full mt-10 border-t border-gray-200">
                 <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-2 md:divide-x md:divide-y-0">
-                    {/* Left — total */}
+
                     <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
                         <span className="flex items-center gap-2 text-sm text-gray-500">Total downloads</span>
                         <AnimatedNumber className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl" suffix="+" value={totalDownloads} />
                     </div>
 
-                    {/* Right — chart with dropdown */}
+
                     <div className="relative flex flex-col aspect-[5/3]">
                         <div className="absolute top-4 left-6 z-20 md:left-10">
                             <PackageDropdown onChange={setSelectedPackage} packages={packages} value={selectedPackage} />
@@ -328,7 +310,7 @@ const Downloads: FC = () => {
                 </div>
             </div>
 
-            {/* Stats row */}
+
             <div className="col-span-full border-t border-b border-gray-200">
                 <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-4 md:divide-x md:divide-y-0">
                     <div className="col-span-2 flex flex-col gap-2 p-6 md:p-10">

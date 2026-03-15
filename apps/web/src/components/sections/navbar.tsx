@@ -6,7 +6,7 @@ import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
-import { Book, Handshake, Home, Logs, Menu, Moon, Package, ScrollText, Search, Signature, Sun, Terminal } from "lucide-react";
+import { AlertTriangle, Book, Bug, FileCode, FolderOpen, Handshake, Home, Layers, Logs, Menu, Moon, Package, Palette, ScrollText, Search, Shield, Signature, Sun, Terminal, Wrench } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { ComponentPropsWithoutRef, ElementRef, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -29,7 +29,7 @@ import { Button } from "../ui/button";
 const menu = [
     {
         classes: {
-            root: "md:grid-cols-2 [&>li:nth-last-child(-n+2)]:border-b-0",
+            root: "md:grid-cols-3 [&>li:last-child]:border-b-0 [&>li:last-child]:col-span-full",
         },
         navItems: [
             {
@@ -41,25 +41,71 @@ const menu = [
                         title: "Packem",
                     },
                     {
-                        description: "Highly configurable Logger for Node.js, Edge and Browser.",
+                        description: "Highly configurable logger for Node.js, Edge and Browser.",
                         href: "/packages/pail",
                         icon: <Logs className="size-6" />,
                         title: "Pail",
                     },
                     {
-                        description: "Cerebro is a cli framework, that lets you build awesome cli's in Node.js and Typescript.",
+                        description: "Extensible CLI framework for building command-line apps.",
                         href: "/packages/cerebro",
                         icon: <Terminal className="size-6" />,
                         title: "Cerebro",
                     },
                 ],
-                title: "Packages",
+                title: "CLI & Terminal",
             },
             {
-                description: "Access all the tools you need to craft incredible experiences.",
+                navItems: [
+                    {
+                        description: "Human-friendly file system utilities with async/sync APIs.",
+                        href: "/docs/packages/fs",
+                        icon: <FolderOpen className="size-6" />,
+                        title: "FS",
+                    },
+                    {
+                        description: "Enhanced errors with stacktrace parsing and code frames.",
+                        href: "/docs/packages/error",
+                        icon: <Bug className="size-6" />,
+                        title: "Error",
+                    },
+                    {
+                        description: "Better errors with chaining, formatted messages, and types.",
+                        href: "/docs/packages/ono",
+                        icon: <AlertTriangle className="size-6" />,
+                        title: "Ono",
+                    },
+                ],
+                title: "Utilities",
+            },
+            {
+                navItems: [
+                    {
+                        description: "Vite dev toolbar with accessibility and perf monitoring.",
+                        href: "/docs/packages/dev-toolbar",
+                        icon: <Wrench className="size-6" />,
+                        title: "Dev Toolbar",
+                    },
+                    {
+                        description: "Error overlay for Vite with enhanced stack traces.",
+                        href: "/docs/packages/vite-overlay",
+                        icon: <Layers className="size-6" />,
+                        title: "Vite Overlay",
+                    },
+                    {
+                        description: "GDPR-compliant data redaction and anonymization.",
+                        href: "/docs/packages/redact",
+                        icon: <Shield className="size-6" />,
+                        title: "Redact",
+                    },
+                ],
+                title: "Dev Tools",
+            },
+            {
+                description: "Browse all 40+ packages across every category.",
                 href: "/packages",
                 icon: <Package className="size-6" />,
-                title: "More",
+                title: "All Packages",
             },
         ],
         navTitle: "Open Source",

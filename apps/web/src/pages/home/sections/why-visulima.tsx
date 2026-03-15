@@ -76,7 +76,7 @@ const features = [
 
 const WhyVisulima = () => {
     return (
-        <div className="grain-overlay bg-background relative">
+        <div className="bg-background relative">
             <Section
                 classes={{
                     lineGrid: "border-dotted border-white/[0.06]",

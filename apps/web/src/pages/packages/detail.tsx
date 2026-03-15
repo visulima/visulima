@@ -241,9 +241,9 @@ const PackageDetail: FC = () => {
 
     return (
         <>
-            {/* ── Hero ── */}
+
             <Section classes={{ childrenWrapper: "gap-y-0", root: "pt-36 pb-0" }} mode="light" patternColor={accent.patternColor} patternPosition="bottom">
-                {/* Breadcrumb row */}
+
                 <div className="col-span-full mb-10 flex items-center gap-3">
                     <Link className="font-mono text-sm text-gray-400 transition-colors hover:text-gray-600" to="/packages">
                         Packages
@@ -252,13 +252,13 @@ const PackageDetail: FC = () => {
                     <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-medium", accent.badgeLight)}>{pkg.category}</span>
                 </div>
 
-                {/* Title + description */}
+
                 <div className="col-span-3">
                     <h1 className="text-wrap-balance text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">{pkg.name}</h1>
                     <p className="mt-6 max-w-2xl text-lg leading-relaxed text-gray-500 sm:text-xl">{pkg.description}</p>
                 </div>
 
-                {/* Right column: install + links */}
+
                 <div className="col-span-1 flex flex-col items-end justify-end gap-6">
                     <div className="flex items-center gap-3">
                         <a
@@ -286,7 +286,7 @@ const PackageDetail: FC = () => {
                     </div>
                 </div>
 
-                {/* Install bar */}
+
                 <div className="col-span-full mt-10 border-t border-gray-200 pt-10">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="relative w-full md:w-6/12">
@@ -303,7 +303,7 @@ const PackageDetail: FC = () => {
                     </div>
                 </div>
 
-                {/* Stats row */}
+
                 <div className="col-span-full border-t border-gray-200 mt-10">
                     <div className="grid grid-cols-2 divide-x divide-gray-200 sm:grid-cols-4">
                         <div className="flex flex-col gap-1 py-8 pr-6">
@@ -333,7 +333,7 @@ const PackageDetail: FC = () => {
                 </div>
             </Section>
 
-            {/* ── Features ── */}
+
             <Section mode="light" patternColor={accent.patternColor} patternPosition="bottom">
                 <div className="col-span-full">
                     <h2 className="mb-8 flex items-center gap-2 font-mono text-sm tracking-wider text-gray-400 uppercase">
@@ -365,7 +365,7 @@ const PackageDetail: FC = () => {
                 </div>
             </Section>
 
-            {/* ── Download Stats ── */}
+
             <div className="bg-background">
                 <Section mode="dark" patternColor="ivory">
                     <div className="col-span-full">
@@ -398,7 +398,7 @@ const PackageDetail: FC = () => {
                 </Section>
             </div>
 
-            {/* ── CTA ── */}
+
             <Section mode="light">
                 <div className="col-span-4 flex flex-col gap-16">
                     <SectionTitle

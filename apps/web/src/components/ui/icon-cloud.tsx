@@ -27,7 +27,6 @@ export const cloudProps: Omit<ICloud, "children"> = {
         tooltip: "native",
         tooltipDelay: 0,
         wheelZoom: false,
-        // dragControl: false,
     },
 };
 

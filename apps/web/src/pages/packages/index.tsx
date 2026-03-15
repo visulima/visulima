@@ -151,9 +151,9 @@ const PackagesListing: FC = () => {
 
     return (
         <>
-            {/* ── Light Hero ── */}
+
             <Section classes={{ childrenWrapper: "gap-y-0", root: "pt-36 pb-0" }} mode="light" patternColor="sky-sapphire" patternPosition="bottom">
-                {/* Title area */}
+
                 <div className="col-span-3">
                     <span className="flex items-center gap-2 font-mono text-sm tracking-wider text-gray-400 uppercase">
                         <span className="inline-block h-px w-6 bg-gradient-to-r from-sky-sapphire/60 to-transparent" />
@@ -166,14 +166,14 @@ const PackagesListing: FC = () => {
                     </p>
                 </div>
 
-                {/* Stats column */}
+
                 <div className="col-span-1 flex flex-col items-end justify-end gap-8">
                     <StatBlock label="Packages" value={packages.length.toString()} />
                     <StatBlock label="Categories" value={categoryCount.toString()} />
                     {totalWeeklyDownloads > 0 && <StatBlock label="Weekly Downloads" value={formatNumber(totalWeeklyDownloads)} />}
                 </div>
 
-                {/* Filter bar */}
+
                 <div className="col-span-full flex flex-col gap-6 py-8 sm:flex-row sm:items-center sm:justify-between border-t bg-ivory border-gray-200 mt-12">
                     <CategoryFilter active={activeCategory} mode="light" onChange={setActiveCategory} />
                     <div className="relative">
@@ -189,7 +189,7 @@ const PackagesListing: FC = () => {
                 </div>
             </Section>
 
-            {/* ── Package Grid (dark) ── */}
+
             <div className="bg-background">
                 <Section classes={{ childrenWrapper: "grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3 items-stretch" }} gridLength={3} mode="dark">
                     {filteredPackages.map((pkg) => (

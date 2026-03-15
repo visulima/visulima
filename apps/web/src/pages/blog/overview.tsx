@@ -286,7 +286,7 @@ const Overview = () => {
                                     </PaginationItem>
                                 ))}
 
-                                {/* Show ellipsis if the last numbered link is not the last page */}
+
                                 {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages ? (
                                     <PaginationItem>
                                         <PaginationEllipsis />
