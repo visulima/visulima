@@ -1,132 +1,426 @@
-/* eslint-disable no-secrets/no-secrets */
+"use client";
+
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowRight, ChevronRight, Package, Play } from "lucide-react";
 import type { FC } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import BlurIn from "@/components/ui/blur-in";
-import Breakpoint from "@/components/ui/breakpoint";
+import { cn } from "@/lib/utils";
+import Section from "@/components/sections/section";
 import WordRotate from "@/components/ui/word-rotate";
+import background from "@/assets/images/background_hero.jpg";
 
-const MainHero: FC = () => {
-    const textContent = (
-        <>
-            <BlurIn component="div" duration={2}>
-                <span className="mb-6 inline-flex items-center gap-2 border border-white/[0.08] bg-white/[0.04] px-4 py-1.5 text-xs font-medium text-white/60 backdrop-blur-sm">
-                    <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-sapphire opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-sapphire" />
-                    </span>
-                    40+ packages &middot; MIT Licensed
-                </span>
-            </BlurIn>
-            <BlurIn
-                className="text-wrap-balance text-4xl font-bold tracking-tight text-white sm:text-center sm:text-6xl md:text-7xl lg:text-[5.25rem] lg:leading-[1.05]"
-                component="h1"
-                duration={2.5}
-            >
-                Build better software,{" "}
-                <span className="bg-gradient-to-r from-sky-sapphire via-royal-amethyst to-crimson-energy bg-clip-text text-transparent">
-                    ship faster.
-                </span>
-            </BlurIn>
-            <BlurIn className="mt-6 max-w-2xl text-base leading-relaxed text-white/50 sm:mx-auto sm:text-center sm:text-lg" component="p" duration={3}>
-                Production-ready Node.js &amp; TypeScript libraries. From bundlers to loggers, CLI frameworks to storage — everything you need to go from idea to deploy.
-            </BlurIn>
-        </>
+interface PackageDemo {
+    code: string[];
+    label: string;
+    output: { color?: string; delay: number; text: string }[];
+    pkg: string;
+}
+
+const packageDemos: PackageDemo[] = [
+    {
+        code: [
+            'import { createPail } from "@visulima/pail";',
+            "",
+            "const logger = createPail({",
+            '  scope: "api",',
+            "  throttle: 200,",
+            "});",
+            "",
+            'logger.info("Server started on :3000");',
+        ],
+        label: "pail",
+        output: [
+            { delay: 80, text: "" },
+            { color: "text-emerald-400/80", delay: 200, text: "  \u25cf info  Server started on :3000" },
+            { color: "text-emerald-400/80", delay: 300, text: "  \u25cf info  Database connected" },
+            { color: "text-yellow-400/70", delay: 400, text: "  \u25cf warn  Rate limiter active (200ms)" },
+            { color: "text-emerald-400/80", delay: 200, text: "  \u25cf info  Ready for connections" },
+        ],
+        pkg: "@visulima/pail",
+    },
+    {
+        code: [
+            'import { readJsonSync } from "@visulima/fs";',
+            'import { join } from "@visulima/path";',
+            "",
+            "const config = readJsonSync(",
+            '  join(root, "config.json"),',
+            ");",
+            "",
+            "console.log(config);",
+        ],
+        label: "fs",
+        output: [
+            { delay: 80, text: "" },
+            { color: "text-white/45", delay: 200, text: "  {" },
+            { color: "text-white/45", delay: 100, text: '    name: "my-app",' },
+            { color: "text-white/45", delay: 100, text: '    version: "1.0.0",' },
+            { color: "text-white/45", delay: 100, text: "    port: 3000," },
+            { color: "text-white/45", delay: 100, text: "  }" },
+        ],
+        pkg: "@visulima/fs",
+    },
+    {
+        code: [
+            'import { redact } from "@visulima/redact";',
+            "",
+            "const safe = redact(userData, [",
+            '  "password",',
+            '  "ssn",',
+            '  "token",',
+            "]);",
+            "console.log(safe);",
+        ],
+        label: "redact",
+        output: [
+            { delay: 80, text: "" },
+            { color: "text-white/45", delay: 150, text: "  {" },
+            { color: "text-white/45", delay: 100, text: '    name: "Alice",' },
+            { color: "text-emerald-400/80", delay: 100, text: '    password: "[REDACTED]",' },
+            { color: "text-emerald-400/80", delay: 100, text: '    ssn: "[REDACTED]",' },
+            { color: "text-white/45", delay: 100, text: '    email: "alice@example.com"' },
+            { color: "text-white/45", delay: 100, text: "  }" },
+        ],
+        pkg: "@visulima/redact",
+    },
+    {
+        code: [
+            'import { isDisposableEmail }',
+            '  from "@visulima/disposable-email-domains";',
+            "",
+            'const a = isDisposableEmail("hi@mailinator.com");',
+            'const b = isDisposableEmail("hi@gmail.com");',
+            "",
+            "console.log(a, b);",
+        ],
+        label: "email",
+        output: [
+            { delay: 80, text: "" },
+            { color: "text-crimson-energy/80", delay: 200, text: "  true   \u2190 mailinator.com (disposable)" },
+            { color: "text-emerald-400/80", delay: 200, text: "  false  \u2190 gmail.com (safe)" },
+        ],
+        pkg: "@visulima/disposable-email-domains",
+    },
+];
+
+const CodeLine: FC<{ content: string }> = ({ content }) => {
+    if (!content.trim()) {
+        return <span>{"\u00A0"}</span>;
+    }
+
+    return (
+        <span>
+            {content.split(/(\s+)/).map((segment, index) => {
+                if (/^\s+$/.test(segment)) return <span key={index}>{segment}</span>;
+                if (!segment) return null;
+
+                const isKeyword = /^(import|from|const|await|export|async|function|type)$/.test(segment);
+                const isString = /^["'`]/.test(segment);
+                const isPunctuation = /^[{}()\[\];,=>:]+$/.test(segment);
+                const isNumber = /^\d+$/.test(segment);
+                const isBoolean = /^(true|false|null|undefined)$/.test(segment);
+
+                let colorClass = "text-white/55";
+                if (isKeyword) colorClass = "text-crimson-energy/70";
+                else if (isString) colorClass = "text-sky-sapphire/75";
+                else if (isPunctuation) colorClass = "text-white/20";
+                else if (isNumber || isBoolean) colorClass = "text-sky-sapphire/60";
+
+                return <span className={colorClass} key={index}>{segment}</span>;
+            })}
+        </span>
+    );
+};
+
+const PackageShowcase: FC = () => {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [visibleLines, setVisibleLines] = useState(0);
+    const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+    const demo = packageDemos[activeIndex];
+
+    const clearTimeouts = useCallback(() => {
+        timeoutsRef.current.forEach(clearTimeout);
+        timeoutsRef.current = [];
+    }, []);
+
+    const revealOutput = useCallback(
+        (index: number) => {
+            clearTimeouts();
+            setVisibleLines(0);
+
+            const d = packageDemos[index];
+            if (!d) return;
+
+            const reveal = (lineIdx: number) => {
+                if (lineIdx <= d.output.length) {
+                    setVisibleLines(lineIdx);
+                    if (lineIdx < d.output.length) {
+                        const delay = d.output[lineIdx].delay ?? 100;
+                        const id = setTimeout(() => { reveal(lineIdx + 1); }, delay);
+                        timeoutsRef.current.push(id);
+                    }
+                }
+            };
+
+            const id = setTimeout(() => { reveal(0); }, 400);
+            timeoutsRef.current.push(id);
+        },
+        [clearTimeouts],
     );
 
-    const ctas = (
-        <BlurIn component="div" duration={3.2}>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-                <Link
-                    className="group relative inline-flex items-center gap-3 bg-sky-sapphire px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-sapphire/25 transition-all duration-300 hover:bg-sky-sapphire/90 hover:shadow-sky-sapphire/40"
-                    to="/docs/"
-                >
-                    <span>Get started</span>
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                    className="group inline-flex items-center gap-2 bg-white/[0.06] px-5 py-3 text-sm font-medium text-white/80 ring-1 ring-white/[0.08] backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.1] hover:text-white hover:ring-white/[0.16]"
-                    to="/docs/"
-                >
-                    <BookOpen className="h-4 w-4 text-white/50" />
-                    <span>Browse packages</span>
-                </Link>
-            </div>
-        </BlurIn>
-    );
+    useEffect(() => {
+        revealOutput(activeIndex);
+        return clearTimeouts;
+    }, [activeIndex, revealOutput, clearTimeouts]);
 
-    const installSnippet = (
-        <BlurIn component="div" duration={3.6}>
-            <div className="mt-8 inline-flex items-center gap-1 border border-white/[0.06] bg-white/[0.03] px-4 py-2.5 font-mono text-sm text-white/40 backdrop-blur-sm">
-                <span className="text-sky-sapphire/60">$</span>
-                <span className="ml-2">pnpm add @visulima/</span>
-                <WordRotate
-                    className="text-white/70"
-                    duration={2200}
-                    framerProps={{
-                        animate: { opacity: 1, y: 0 },
-                        exit: { opacity: 0, y: -12 },
-                        initial: { opacity: 0, y: 12 },
-                        transition: { duration: 0.2, ease: "easeOut" },
-                    }}
-                    words={["packem", "pail", "cerebro", "fs", "path", "redact", "colorize", "boxen", "fmt", "deep-clone"]}
-                />
-            </div>
-        </BlurIn>
-    );
+    return (
+        <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="relative w-full py-5 pl-10"
+            initial={{ opacity: 0, y: 30 }}
+            transition={{ delay: 1, duration: 0.8, ease: "easeOut" }}
+            style={{ backgroundImage: `url(${background})` }}
+        >
+            <div className="relative overflow-hidden h-120 bg-[hsl(220_12%_5%)]">
+                <div className="relative">
+                    <div className="px-5 pt-5 pb-4">
+                        <div className="mb-4 flex items-center justify-between">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="flex items-center gap-2"
+                                    exit={{ opacity: 0, x: -5 }}
+                                    initial={{ opacity: 0, x: 5 }}
+                                    key={demo.pkg}
+                                    transition={{ duration: 0.15 }}
+                                >
+                                    <span className="font-mono text-xs font-medium text-white/40">
+                                        {demo.pkg}
+                                    </span>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
 
-    const mobile = (
-        <div className="relative h-screen w-full">
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/90 z-[1]" />
-            <div className="absolute top-0 z-[2] flex h-full w-full flex-col items-center justify-center px-6">
-                <div className="text-center">{textContent}</div>
-                {ctas}
-                {installSnippet}
-            </div>
-            <img
-                alt="fancy background"
-                className="h-full w-full object-cover object-center"
-                src="https://res.cloudinary.com/anolilab/video/upload/ac_none/v1749136422/visulima/slywtsotc6ayuxx5gxok.jpg"
-            />
-        </div>
-    );
-    const desktop = (
-        <div className="relative h-screen">
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80 z-[1]" />
-            <video
-                autoPlay
-                className="mx-auto h-full w-full object-cover object-top"
-                loop
-                muted
-                playsInline
-                poster="https://res.cloudinary.com/anolilab/video/upload/ac_none/v1749136422/visulima/slywtsotc6ayuxx5gxok.jpg"
-            >
-                <source
-                    src="https://res.cloudinary.com/anolilab/video/upload/ac_none,b_rgb:000000,e_accelerate:0,so_1/v1749136422/visulima/slywtsotc6ayuxx5gxok.webm"
-                    type="video/webm"
-                />
-                <source
-                    src="https://res.cloudinary.com/anolilab/video/upload/ac_none,b_rgb:000000,e_accelerate:0,so_1/v1749136422/visulima/slywtsotc6ayuxx5gxok.mp4"
-                    type="video/mp4"
-                />
-                <img
-                    alt="Your browser does not support the <video> tag"
-                    className="h-full w-full"
-                    src="https://res.cloudinary.com/anolilab/video/upload/ac_none/v1749136422/visulima/slywtsotc6ayuxx5gxok.jpg"
-                />
-            </video>
-            <div className="absolute top-0 right-0 bottom-0 left-0 z-[2] container mx-auto">
-                <div className="relative flex h-screen w-full flex-col items-center justify-center text-center">
-                    {textContent}
-                    {ctas}
-                    {installSnippet}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                animate={{ opacity: 1 }}
+                                className="font-mono text-[13px] leading-[1.8]"
+                                exit={{ opacity: 0 }}
+                                initial={{ opacity: 0 }}
+                                key={activeIndex}
+                                transition={{ duration: 0.12 }}
+                            >
+                                {demo.code.map((line, index) => (
+                                    <div className="flex" key={index}>
+                                        <span className="mr-4 w-4 shrink-0 text-right text-white/[0.08] select-none">
+                                            {index + 1}
+                                        </span>
+                                        <CodeLine content={line} />
+                                    </div>
+                                ))}
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    <div className="mx-3 mb-3 overflow-hidden bg-black/30">
+                        <div className="flex items-center gap-2 px-4 pt-3 pb-1">
+                            <Play className="h-2.5 w-2.5 fill-emerald-400/60 text-emerald-400/60" />
+                            <span className="font-mono text-[10px] font-medium tracking-wider text-emerald-400/40 uppercase">
+                                Output
+                            </span>
+                        </div>
+
+                        <div className="min-h-[90px] px-4 pt-1 pb-3 font-mono text-[13px] leading-relaxed">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    initial={{ opacity: 0 }}
+                                    key={activeIndex}
+                                    transition={{ duration: 0.1 }}
+                                >
+                                    {demo.output.map((line, index) => {
+                                        if (index >= visibleLines) return null;
+                                        return (
+                                            <div key={`${activeIndex}-${index}`}>
+                                                <span className={line.color ?? "text-white/30"}>
+                                                    {line.text || "\u00A0"}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
 
-    return <Breakpoint breakpoint="md" desktop={desktop} mobile={mobile} />;
+            <div className="mt-4 flex justify-center">
+                <div className="inline-flex items-center gap-1 border border-white/20 bg-white/10 px-1.5 py-1 backdrop-blur-xl">
+                    {packageDemos.map((d, index) => (
+                        <button
+                            className={cn(
+                                "px-4 py-1.5 font-mono text-xs transition-all duration-200 cursor-pointer",
+                                index === activeIndex
+                                    ? "bg-white/10 text-white/70"
+                                    : "text-white hover:text-white/80",
+                            )}
+                            key={d.label}
+                            onClick={() => { setActiveIndex(index); }}
+                            type="button"
+                        >
+                            {d.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        </motion.div>
+    );
 };
+
+const packageTicker = [
+    { name: "packem" }, { name: "pail" }, { name: "cerebro" }, { name: "fs" },
+    { name: "path" }, { name: "redact" }, { name: "colorize" }, { name: "boxen" },
+    { name: "fmt" }, { name: "deep-clone" }, { name: "humanizer" }, { name: "error" },
+    { name: "crud" }, { name: "inspector" },
+];
+
+const PackageTicker: FC = () => {
+    const doubled = [...packageTicker, ...packageTicker];
+
+    return (
+        <motion.div
+            animate={{ opacity: 1 }}
+            className="absolute inset-x-0 bottom-0 z-20 overflow-hidden border-y border-white/[0.04] bg-coal/80 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            transition={{ delay: 2.5, duration: 1 }}
+        >
+            <div className="flex animate-scroll-left whitespace-nowrap py-3">
+                {doubled.map((pkg, index) => (
+                    <span
+                        className="mx-4 inline-flex items-center gap-2 font-mono text-xs text-white/20 transition-colors hover:text-white/40"
+                        key={`${pkg.name}-${index}`}
+                    >
+                        <Package className="h-3 w-3" />
+                        @visulima/{pkg.name}
+                    </span>
+                ))}
+            </div>
+        </motion.div>
+    );
+};
+
+const MainHero: FC = () => (
+    <div className="relative bg-background">
+    <Section
+        classes={{
+            root: "h-screen",
+            childrenWrapper: "!grid-cols-1 lg:!grid-cols-2 items-center gap-12 md:gap-0",
+        }}
+        gridLength={2}
+        mode="dark"
+    >
+        <div>
+            <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 flex items-center gap-5"
+                initial={{ opacity: 0, y: 10 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+            >
+                {[
+                    { label: "Packages", value: "40+" },
+                    { label: "License", value: "MIT" },
+                    { label: "TypeScript", value: "100%" },
+                ].map((stat, index) => (
+                    <div className="flex items-center gap-2" key={stat.label}>
+                        {index > 0 && <span className="mr-3 h-3 w-px bg-white/[0.08]" />}
+                        <span className="font-mono text-sm font-semibold text-white/70">{stat.value}</span>
+                        <span className="font-mono text-xs text-white/25">{stat.label}</span>
+                    </div>
+                ))}
+            </motion.div>
+
+            <motion.h1
+                animate={{ opacity: 1, y: 0 }}
+                className="text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
+                initial={{ opacity: 0, y: 20 }}
+                transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
+            >
+                <span className="flex items-baseline gap-3">
+                    <WordRotate
+                        className="inline-block bg-gradient-to-r from-sky-sapphire via-royal-amethyst to-crimson-energy bg-clip-text text-transparent"
+                        duration={2800}
+                        framerProps={{
+                            animate: { opacity: 1, y: 0 },
+                            exit: { opacity: 0, y: -20 },
+                            initial: { opacity: 0, y: 20 },
+                            transition: { duration: 0.3, ease: "easeOut" },
+                        }}
+                        words={["Bundle.", "Log.", "Parse.", "Build.", "Ship."]}
+                    />
+                </span>
+                <span className="mt-1 block text-white/90">One ecosystem,</span>
+                <span className="block text-white/90">zero friction.</span>
+            </motion.h1>
+
+            <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-8 flex flex-wrap gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                transition={{ delay: 0.9, duration: 0.5, ease: "easeOut" }}
+            >
+                {["Bundling", "Logging", "CLI", "File System", "Error Handling", "API", "Data Utils", "Storage"].map(
+                    (cat, index) => (
+                        <motion.span
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="border border-white/[0.06] bg-white/[0.02] px-3 py-1 font-mono text-xs text-white/30 transition-colors hover:border-white/[0.12] hover:text-white/50"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            key={cat}
+                            transition={{ delay: 1 + index * 0.05, duration: 0.3 }}
+                        >
+                            {cat}
+                        </motion.span>
+                    ),
+                )}
+            </motion.div>
+
+            <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-10 flex flex-wrap items-center gap-5"
+                initial={{ opacity: 0, y: 15 }}
+                transition={{ delay: 1.2, duration: 0.6, ease: "easeOut" }}
+            >
+                <Link
+                    className="group relative inline-flex items-center gap-3 overflow-hidden border border-white/[0.15] bg-white px-7 py-3.5 text-sm font-semibold text-coal transition-all duration-300 hover:bg-white/90"
+                    to="/docs/$"
+                >
+                    <span>Get started</span>
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                        style={{
+                            background: "linear-gradient(135deg, transparent 40%, hsla(210,100%,45%,0.08), hsla(282,44%,47%,0.08))",
+                        }}
+                    />
+                </Link>
+                <Link
+                    className="group inline-flex items-center gap-2 border border-white/[0.08] bg-white/[0.03] px-6 py-3.5 text-sm font-medium text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white/80"
+                    to="/packages"
+                >
+                    <span>Browse packages</span>
+                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                </Link>
+            </motion.div>
+        </div>
+
+        <PackageShowcase />
+    </Section>
+    <PackageTicker />
+</div>
+);
 
 export default MainHero;

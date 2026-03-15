@@ -460,7 +460,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: ^22.0.2
-        version: 22.0.2(a0d709b3f63b61c9b22d52f9ca1bf31d)
+        version: 22.0.2(dfb66d70596ec4f4c26e8d14032d535a)
       '@anolilab/prettier-config':
         specifier: ^9.1.1
         version: 9.1.1(prettier@3.8.1)
@@ -631,7 +631,7 @@ importers:
         version: 1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: catalog:frontend
-        version: 1.166.3(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.3(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/react-virtual':
         specifier: catalog:frontend
         version: 3.13.21(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -740,7 +740,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 22.0.2(07847eed5bb7e6914fe3f72e57113c1b)
+        version: 22.0.2(4e74d0b37cb599bdd8714ec0cabe1517)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -1529,7 +1529,7 @@ importers:
         version: 25.4.0
       '@types/webpack':
         specifier: ^5.28.5
-        version: 5.28.5(@swc/core@1.15.11)
+        version: 5.28.5(@swc/core@1.15.11)(esbuild@0.27.3)
       '@visulima/fs':
         specifier: 5.0.0-alpha.3
         version: 5.0.0-alpha.3(yaml@2.8.2)
@@ -1581,7 +1581,7 @@ importers:
         version: 14.0.3
       webpack:
         specifier: ^5.105.4
-        version: 5.105.4(@swc/core@1.15.11)
+        version: 5.105.4(@swc/core@1.15.11)(esbuild@0.27.3)
 
   packages/api/jsdoc-open-api/__fixtures__: {}
 
@@ -3045,7 +3045,7 @@ importers:
         version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-plugin':
         specifier: ^1.166.7
-        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -3091,7 +3091,7 @@ importers:
         version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: 1.166.8
-        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -3152,7 +3152,7 @@ importers:
         version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: 1.166.8
-        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -4383,7 +4383,7 @@ importers:
         version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-plugin':
         specifier: ^1.166.7
-        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -4438,7 +4438,7 @@ importers:
         version: 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@tanstack/router-core@1.166.7)(csstype@3.2.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: 1.166.2
-        version: 1.166.2(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.2(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -5318,10 +5318,10 @@ importers:
         version: 1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start':
         specifier: ^1.166.8
-        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/router-plugin':
         specifier: ^1.166.7
-        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+        version: 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -28710,92 +28710,6 @@ snapshots:
       - conventional-commits-parser
       - typescript
 
-  '@anolilab/eslint-config@22.0.2(07847eed5bb7e6914fe3f72e57113c1b)':
-    dependencies:
-      '@e18e/eslint-plugin': 0.2.0(eslint@10.0.3(jiti@2.6.1))
-      '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.0.3(jiti@2.6.1))
-      '@eslint/compat': 2.0.2(eslint@10.0.3(jiti@2.6.1))
-      '@eslint/js': 10.0.1(eslint@10.0.3(jiti@2.6.1))
-      '@eslint/markdown': 7.5.1
-      '@html-eslint/eslint-plugin': 0.56.0(eslint@10.0.3(jiti@2.6.1))(jiti@2.6.1)
-      '@html-eslint/parser': 0.56.0(jiti@2.6.1)
-      '@stylistic/eslint-plugin': 5.9.0(eslint@10.0.3(jiti@2.6.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/types': 8.56.0
-      '@visulima/fs': 4.1.0(yaml@2.8.2)
-      '@visulima/package': 4.1.7(@types/node@25.3.5)
-      '@visulima/tsconfig': 2.1.3(yaml@2.8.2)
-      '@vitest/eslint-plugin': 1.6.9(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.18)
-      confusing-browser-globals: 1.0.11
-      eslint: 10.0.3(jiti@2.6.1)
-      eslint-config-flat-gitignore: 2.2.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-flat-config-utils: 2.1.4
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint@10.0.3(jiti@2.6.1))
-      eslint-merge-processors: 2.0.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-antfu: 3.2.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-compat: 6.2.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-es-x: 9.4.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-html: 8.1.4
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-jsdoc: 61.7.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-jsonc: 2.21.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-n: 17.24.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.0.3(jiti@2.6.1))(typescript-eslint@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-perfectionist: 4.15.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-pnpm: 1.5.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-promise: 7.2.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-regexp: 2.10.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-sonarjs: 3.0.7(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-toml: 0.13.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-unicorn: 62.0.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-yml: 1.19.1(eslint@10.0.3(jiti@2.6.1))
-      globals: 17.3.0
-      jsonc-eslint-parser: 3.1.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.4
-      toml-eslint-parser: 1.0.3
-      typescript-eslint: 8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      yaml-eslint-parser: 2.0.0
-    optionalDependencies:
-      '@eslint-react/eslint-plugin': 2.13.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      '@eslint/css': 0.14.1
-      '@tanstack/eslint-plugin-query': 5.91.4(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      '@tanstack/eslint-plugin-router': 1.161.4(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-playwright: 2.9.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react: 7.37.5(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react-hooks: 7.0.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react-perf: 3.3.3(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react-refresh: 0.5.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-testing-library: 7.16.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 3.4.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(zod@4.3.6)
-      tailwind-csstree: 0.1.4
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - jiti
-      - oxlint
-      - supports-color
-      - vitest
-      - yaml
-
   '@anolilab/eslint-config@22.0.2(0b052cda0c11aa62e2ee5c2b3a610e74)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.0.3(jiti@2.6.1))
@@ -29136,6 +29050,92 @@ snapshots:
       - vitest
       - yaml
 
+  '@anolilab/eslint-config@22.0.2(4e74d0b37cb599bdd8714ec0cabe1517)':
+    dependencies:
+      '@e18e/eslint-plugin': 0.2.0(eslint@10.0.3(jiti@2.6.1))
+      '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.0.3(jiti@2.6.1))
+      '@eslint/compat': 2.0.2(eslint@10.0.3(jiti@2.6.1))
+      '@eslint/js': 10.0.1(eslint@10.0.3(jiti@2.6.1))
+      '@eslint/markdown': 7.5.1
+      '@html-eslint/eslint-plugin': 0.56.0(eslint@10.0.3(jiti@2.6.1))(jiti@2.6.1)
+      '@html-eslint/parser': 0.56.0(jiti@2.6.1)
+      '@stylistic/eslint-plugin': 5.9.0(eslint@10.0.3(jiti@2.6.1))
+      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/types': 8.56.0
+      '@visulima/fs': 4.1.0(yaml@2.8.2)
+      '@visulima/package': 4.1.7(@types/node@25.3.5)
+      '@visulima/tsconfig': 2.1.3(yaml@2.8.2)
+      '@vitest/eslint-plugin': 1.6.9(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.18)
+      confusing-browser-globals: 1.0.11
+      eslint: 10.0.3(jiti@2.6.1)
+      eslint-config-flat-gitignore: 2.2.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-flat-config-utils: 2.1.4
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))
+      eslint-merge-processors: 2.0.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-antfu: 3.2.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-compat: 6.2.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-es-x: 9.4.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-html: 8.1.4
+      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-jsdoc: 61.7.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-jsonc: 2.21.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-n: 17.24.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.0.3(jiti@2.6.1))(typescript-eslint@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
+      eslint-plugin-no-only-tests: 3.3.0
+      eslint-plugin-no-secrets: 2.2.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-perfectionist: 4.15.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-pnpm: 1.5.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-promise: 7.2.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-regexp: 2.10.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-security: 3.0.1
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-sonarjs: 3.0.7(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-toml: 0.13.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-unicorn: 62.0.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-yml: 1.19.1(eslint@10.0.3(jiti@2.6.1))
+      globals: 17.3.0
+      jsonc-eslint-parser: 3.1.0
+      parse-gitignore: 2.0.0
+      semver: 7.7.4
+      toml-eslint-parser: 1.0.3
+      typescript-eslint: 8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      yaml-eslint-parser: 2.0.0
+    optionalDependencies:
+      '@eslint-react/eslint-plugin': 2.13.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      '@eslint/css': 0.14.1
+      '@tanstack/eslint-plugin-query': 5.91.4(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      '@tanstack/eslint-plugin-router': 1.161.4(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-playwright: 2.9.0(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react: 7.37.5(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react-hooks: 7.0.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react-perf: 3.3.3(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react-refresh: 0.5.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-testing-library: 7.16.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
+      eslint-plugin-zod: 3.4.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(zod@4.3.6)
+      tailwind-csstree: 0.1.4
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@eslint/json'
+      - '@types/node'
+      - '@typescript-eslint/eslint-plugin'
+      - '@typescript-eslint/utils'
+      - eslint-plugin-import
+      - jiti
+      - oxlint
+      - supports-color
+      - vitest
+      - yaml
+
   '@anolilab/eslint-config@22.0.2(714f57008aa8bceef2d133b5e2d8da06)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.0.3(jiti@2.6.1))
@@ -29306,7 +29306,7 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/eslint-config@22.0.2(a0d709b3f63b61c9b22d52f9ca1bf31d)':
+  '@anolilab/eslint-config@22.0.2(dfb66d70596ec4f4c26e8d14032d535a)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.0.3(jiti@2.6.1))
       '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.0.3(jiti@2.6.1))
@@ -29328,7 +29328,7 @@ snapshots:
       eslint-config-flat-gitignore: 2.2.1(eslint@10.0.3(jiti@2.6.1))
       eslint-flat-config-utils: 2.1.4
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))
+      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint@10.0.3(jiti@2.6.1))
       eslint-merge-processors: 2.0.0(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-antfu: 3.2.2(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-compat: 6.2.0(eslint@10.0.3(jiti@2.6.1))
@@ -29352,7 +29352,7 @@ snapshots:
       eslint-plugin-sonarjs: 3.0.7(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-toml: 0.13.1(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-unicorn: 62.0.0(eslint@10.0.3(jiti@2.6.1))
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.56.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-yml: 1.19.1(eslint@10.0.3(jiti@2.6.1))
       globals: 17.3.0
       jsonc-eslint-parser: 3.1.0
@@ -37231,14 +37231,14 @@ snapshots:
     transitivePeerDependencies:
       - crossws
 
-  '@tanstack/react-start@1.166.2(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/react-start@1.166.2(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@tanstack/react-router': 1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-client': 1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-server': 1.166.2(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.2
-      '@tanstack/start-plugin-core': 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/start-plugin-core': 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/start-server-core': 1.166.2(crossws@0.4.4(srvx@0.11.9))
       pathe: 2.0.3
       react: 19.2.4
@@ -37251,14 +37251,14 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/react-start@1.166.3(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/react-start@1.166.3(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@tanstack/react-router': 1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-client': 1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-server': 1.166.3(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.2
-      '@tanstack/start-plugin-core': 1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/start-plugin-core': 1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/start-server-core': 1.166.2(crossws@0.4.4(srvx@0.11.9))
       pathe: 2.0.3
       react: 19.2.4
@@ -37271,14 +37271,14 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/react-start@1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/react-start@1.166.8(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@tanstack/react-router': 1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-client': 1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-start-server': 1.166.7(crossws@0.4.4(srvx@0.11.9))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.7
-      '@tanstack/start-plugin-core': 1.166.8(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/start-plugin-core': 1.166.8(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/start-server-core': 1.166.7(crossws@0.4.4(srvx@0.11.9))
       pathe: 2.0.3
       react: 19.2.4
@@ -37368,7 +37368,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/router-plugin@1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.29.0)
@@ -37387,11 +37387,11 @@ snapshots:
       '@tanstack/react-router': 1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       vite: 7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      webpack: 5.105.4(@swc/core@1.15.11)
+      webpack: 5.105.4(@swc/core@1.15.11)(esbuild@0.27.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/router-plugin@1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.29.0)
@@ -37410,11 +37410,11 @@ snapshots:
       '@tanstack/react-router': 1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       vite: 7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      webpack: 5.105.4(@swc/core@1.15.11)
+      webpack: 5.105.4(@swc/core@1.15.11)(esbuild@0.27.3)
     transitivePeerDependencies:
       - supports-color
 
-  '@tanstack/router-plugin@1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/router-plugin@1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/core': 7.29.0
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.29.0)
@@ -37433,7 +37433,7 @@ snapshots:
       '@tanstack/react-router': 1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       vite: 7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-solid: 2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      webpack: 5.105.4(@swc/core@1.15.11)
+      webpack: 5.105.4(@swc/core@1.15.11)(esbuild@0.27.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -37492,7 +37492,7 @@ snapshots:
 
   '@tanstack/start-fn-stubs@1.161.4': {}
 
-  '@tanstack/start-plugin-core@1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/start-plugin-core@1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.0
@@ -37500,7 +37500,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.166.2
       '@tanstack/router-generator': 1.166.2
-      '@tanstack/router-plugin': 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/router-plugin': 1.166.2(@tanstack/react-router@1.166.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.2
       '@tanstack/start-server-core': 1.166.2(crossws@0.4.4(srvx@0.11.9))
@@ -37524,7 +37524,7 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-plugin-core@1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/start-plugin-core@1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.0
@@ -37532,7 +37532,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.166.2
       '@tanstack/router-generator': 1.166.2
-      '@tanstack/router-plugin': 1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/router-plugin': 1.166.3(@tanstack/react-router@1.166.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.2
       '@tanstack/start-server-core': 1.166.2(crossws@0.4.4(srvx@0.11.9))
@@ -37556,7 +37556,7 @@ snapshots:
       - vite-plugin-solid
       - webpack
 
-  '@tanstack/start-plugin-core@1.166.8(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))':
+  '@tanstack/start-plugin-core@1.166.8(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(crossws@0.4.4(srvx@0.11.9))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))':
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/core': 7.29.0
@@ -37564,7 +37564,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.40
       '@tanstack/router-core': 1.166.7
       '@tanstack/router-generator': 1.166.7
-      '@tanstack/router-plugin': 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11))
+      '@tanstack/router-plugin': 1.166.7(@tanstack/react-router@1.166.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(vite-plugin-solid@2.11.10(@testing-library/jest-dom@6.9.1)(solid-js@1.9.11)(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)))(vite@7.3.1(@types/node@25.4.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3))
       '@tanstack/router-utils': 1.161.4
       '@tanstack/start-client-core': 1.166.7
       '@tanstack/start-server-core': 1.166.7(crossws@0.4.4(srvx@0.11.9))
@@ -38766,17 +38766,6 @@ snapshots:
     dependencies:
       '@types/node': 25.4.0
 
-  '@types/webpack@5.28.5(@swc/core@1.15.11)':
-    dependencies:
-      '@types/node': 25.4.0
-      tapable: 2.3.0
-      webpack: 5.105.4(@swc/core@1.15.11)
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
-      - webpack-cli
-
   '@types/webpack@5.28.5(@swc/core@1.15.11)(esbuild@0.27.3)':
     dependencies:
       '@types/node': 25.4.0
@@ -39889,7 +39878,7 @@ snapshots:
       eslint: 10.0.3(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.4.0)(@vitest/ui@4.0.18)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.4.0)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitest/ui@4.0.18)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -39991,7 +39980,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.4.0)(@vitest/ui@4.0.18)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.4.0)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitest/ui@4.0.18)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -43012,7 +43001,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.3(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
@@ -43951,7 +43940,7 @@ snapshots:
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.2
       '@types/estree': 1.0.8
-      ajv: 6.14.0
+      ajv: 8.18.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
       debug: 4.4.3(supports-color@8.1.1)
@@ -53269,7 +53258,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.0.3(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.0.3(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.3(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
@@ -53928,16 +53917,6 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.15.11
       esbuild: 0.27.3
-
-  terser-webpack-plugin@5.3.17(@swc/core@1.15.11)(webpack@5.105.4(@swc/core@1.15.11)):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      jest-worker: 27.5.1
-      schema-utils: 4.3.3
-      terser: 5.46.0
-      webpack: 5.105.4(@swc/core@1.15.11)
-    optionalDependencies:
-      '@swc/core': 1.15.11
 
   terser@5.46.0:
     dependencies:
@@ -55991,38 +55970,6 @@ snapshots:
   webpack-sources@3.3.4: {}
 
   webpack-virtual-modules@0.6.2: {}
-
-  webpack@5.105.4(@swc/core@1.15.11):
-    dependencies:
-      '@types/eslint-scope': 3.7.7
-      '@types/estree': 1.0.8
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      acorn: 8.16.0
-      acorn-import-phases: 1.0.4(acorn@8.16.0)
-      browserslist: 4.28.1
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.20.0
-      es-module-lexer: 2.0.0
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.11
-      json-parse-even-better-errors: 2.3.1
-      loader-runner: 4.3.1
-      mime-types: 2.1.35
-      neo-async: 2.6.2
-      schema-utils: 4.3.3
-      tapable: 2.3.0
-      terser-webpack-plugin: 5.3.17(@swc/core@1.15.11)(webpack@5.105.4(@swc/core@1.15.11))
-      watchpack: 2.5.1
-      webpack-sources: 3.3.4
-    transitivePeerDependencies:
-      - '@swc/core'
-      - esbuild
-      - uglify-js
 
   webpack@5.105.4(@swc/core@1.15.11)(esbuild@0.27.3):
     dependencies:
