@@ -13,6 +13,8 @@ import SiRemix from "@icons-pack/react-simple-icons/icons/SiRemix.mjs";
 import SiTypescript from "@icons-pack/react-simple-icons/icons/SiTypescript.mjs";
 import SiVercel from "@icons-pack/react-simple-icons/icons/SiVercel.mjs";
 import SiVite from "@icons-pack/react-simple-icons/icons/SiVite.mjs";
+import { motion } from "motion/react";
+import { ArrowRight } from "lucide-react";
 import type { FC } from "react";
 import { useState } from "react";
 
@@ -20,21 +22,21 @@ import TanstackStartLogo from "@/assets/tanstack-start.svg?react";
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 
-const frameworkIcons = [
+const frameworks = [
     { icon: SiNextdotjs, label: "Next.js" },
     { icon: SiReact, label: "React" },
     { icon: SiVite, label: "Vite" },
-    { icon: TanstackStartLogo, label: "Tanstack Start" },
+    { icon: TanstackStartLogo, label: "TanStack" },
     { icon: SiAstro, label: "Astro" },
     { icon: SiRemix, label: "Remix" },
     { icon: SiBun, label: "Bun" },
     { icon: SiExpress, label: "Express" },
-    { icon: SiTypescript, label: "Typescript" },
-    { icon: SiNestjs, label: "Nest" },
-    { icon: SiNodedotjs, label: "Node" },
+    { icon: SiTypescript, label: "TypeScript" },
+    { icon: SiNestjs, label: "NestJS" },
+    { icon: SiNodedotjs, label: "Node.js" },
 ];
 
-const deployIcons = [
+const platforms = [
     { icon: SiVercel, label: "Vercel" },
     { icon: SiNetlify, label: "Netlify" },
     { icon: SiCloudflare, label: "Cloudflare" },
@@ -42,87 +44,94 @@ const deployIcons = [
     { icon: SiGooglecloud, label: "Google Cloud" },
 ];
 
-const IconGrid = ({ icons, setSelectedFramework }: { icons: { icon: any; label: string }[]; setSelectedFramework: (framework: string | null) => void }) => (
-    <ul className="flex flex-wrap gap-2">
-        {icons.map(({ icon: Icon, label }) => (
-            <li
-                className="group/icon relative flex h-12 w-12 cursor-default place-content-center place-items-center border border-gray-200 bg-gray-50 p-2 transition-all duration-300 hover:border-sky-sapphire/40 hover:bg-sky-sapphire/[0.06] hover:shadow-[0_0_20px_-4px] hover:shadow-sky-sapphire/20"
-                key={label}
-                onMouseEnter={() => {
-                    setSelectedFramework(label);
-                }}
-                onMouseLeave={() => {
-                    setSelectedFramework(null);
-                }}
-            >
-                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-gray-900 px-2 py-0.5 text-xs text-white opacity-0 transition-opacity duration-200 group-hover/icon:opacity-100">
-                    {label}
-                </span>
-                <Icon aria-hidden="true" className="h-24 w-24 max-w-none text-gray-400 transition-colors duration-300 group-hover/icon:text-gray-900" size={24} />
-            </li>
-        ))}
-    </ul>
-);
-
-const WorksWhereYouWork: FC = () => {
-    const [selectedFramework, setSelectedFramework] = useState<string | null>(null);
-    const [selectedDeploy, setSelectedDeploy] = useState<string | null>(null);
+const IconTile: FC<{ icon: any; label: string; index: number }> = ({ icon: Icon, label, index }) => {
+    const [hovered, setHovered] = useState(false);
 
     return (
-        <Section mode="light">
-            <SectionTitle classes={{ root: "col-span-2" }} mode="light" prefix="Works" title="Works where you work" />
-            <div className="col-span-4 mt-24 grid gap-y-24 lg:grid-cols-2 lg:gap-x-32 relative">
-                <section>
-                    <h2 className="mb-6 text-4xl font-semibold">
-                        Develop, connect, and launch using the tools you love
-                        <span className="relative -top-1.5 left-2 inline-block border border-gray-200 bg-gray-50 px-3 py-1 font-mono text-sm text-gray-900">
-                            {selectedFramework || (
-                                <>
-                                    {`$\{`}
-                                    <span className="text-sky-sapphire">your_favorite_framework</span>
-                                    {`}`}
-                                </>
-                            )}
-                        </span>
-                    </h2>
-                    <div className="border border-gray-200 bg-white p-6">
-                        <IconGrid icons={frameworkIcons} setSelectedFramework={setSelectedFramework} />
-                    </div>
-                    <p className="mt-4 text-sm text-gray-400">...or whichever one is coming next.</p>
-                </section>
-                <svg
-                    className="absolute bottom-18 left-1/2 hidden w-[134px] -translate-x-1/2 lg:block fill-sky-sapphire/40"
-                    fill="none"
-                    height="151"
-                    viewBox="0 0 132 151"
-                    width="132"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        d="M0.666667 6C0.666667 8.94552 3.05448 11.3333 6 11.3333C8.94552 11.3333 11.3333 8.94552 11.3333 6C11.3333 3.05448 8.94552 0.666667 6 0.666667C3.05448 0.666667 0.666667 3.05448 0.666667 6ZM66.249 6H67.249V5H66.249V6ZM66.249 145H65.249V146H66.249V145ZM120.667 145C120.667 147.946 123.054 150.333 126 150.333C128.946 150.333 131.333 147.946 131.333 145C131.333 142.054 128.946 139.667 126 139.667C123.054 139.667 120.667 142.054 120.667 145ZM6 6V7H66.249V6V5H6V6ZM66.249 6H65.249V145H66.249H67.249V6H66.249ZM66.249 145V146H126V145V144H66.249V145Z"
-                        fill="current-color"
-                    />
-                </svg>
-                <section className="lg:mt-24">
-                    <h2 className="mb-4 text-4xl font-semibold">Our packages use web standards to run anywhere</h2>
-                    <p className="mt-4 mb-6 text-sm text-gray-400">...and it comes in other flavors too.</p>
-
-                    <div className="border border-gray-200 bg-white p-6">
-                        <IconGrid icons={deployIcons} setSelectedFramework={setSelectedDeploy} />
-
-                        <p className="mt-4 flex items-end font-mono text-sm text-gray-500">
-                            Deploy modern apps and APIs{" "}
-                            {selectedDeploy ? (
-                                <span className="text-sky-sapphire ml-2 font-medium">{`with ${selectedDeploy}`}</span>
-                            ) : (
-                                <span className="text-sky-sapphire ml-2">anywhere</span>
-                            )}
-                        </p>
-                    </div>
-                </section>
-            </div>
-        </Section>
+        <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="group relative flex flex-col items-center gap-3 border border-gray-200 bg-gray-50 p-5 transition-all duration-300 hover:border-sky-sapphire/40 hover:bg-sky-sapphire/[0.04]"
+            initial={{ opacity: 0, y: 10 }}
+            onMouseEnter={() => { setHovered(true); }}
+            onMouseLeave={() => { setHovered(false); }}
+            transition={{ delay: 0.8 + index * 0.04, duration: 0.4 }}
+        >
+            <Icon
+                aria-hidden="true"
+                className="h-6 w-6 text-gray-400 transition-colors duration-300 group-hover:text-gray-800"
+                size={24}
+            />
+            <span className="font-mono text-[10px] text-gray-400 transition-colors duration-300 group-hover:text-gray-600">
+                {label}
+            </span>
+            {hovered && (
+                <motion.div
+                    animate={{ scaleX: 1 }}
+                    className="absolute -bottom-px left-0 right-0 h-px bg-sky-sapphire/50"
+                    initial={{ scaleX: 0 }}
+                    transition={{ duration: 0.2 }}
+                />
+            )}
+        </motion.div>
     );
 };
+
+const WorksWhereYouWork: FC = () => (
+    <div className="bg-white">
+    <Section mode="light">
+        <SectionTitle
+            mode="light"
+            prefix="Compatibility"
+            title="Works where you work."
+        />
+
+        <div className="col-span-4 mt-16">
+            <div className="grid gap-px lg:grid-cols-2">
+                <div className="border-y border-gray-200 bg-white p-8 mr-0.5">
+                    <div className="mb-6 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Frameworks</h3>
+                        <span className="border border-gray-200 bg-gray-50 px-3 py-1 font-mono text-xs text-gray-500">
+                            ${"{"}
+                            <span className="text-sky-sapphire">any</span>
+                            {"}"}
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-px sm:grid-cols-6">
+                        {frameworks.map((fw, index) => (
+                            <IconTile icon={fw.icon} index={index} key={fw.label} label={fw.label} />
+                        ))}
+                        <div className="flex items-center justify-center border border-gray-200 bg-gray-50 p-5 font-mono text-xs text-gray-300">
+                            +more
+                        </div>
+                    </div>
+                </div>
+
+                <div className="border-y border-gray-200 bg-white p-8">
+                    <div className="mb-6 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Deploy anywhere</h3>
+                        <div className="flex items-center gap-1.5 font-mono text-xs text-emerald-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            web standards
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-px sm:grid-cols-5">
+                        {platforms.map((pl, index) => (
+                            <IconTile icon={pl.icon} index={index + frameworks.length} key={pl.label} label={pl.label} />
+                        ))}
+                    </div>
+
+                    <div className="mt-6 flex items-center gap-2 border-t border-gray-100 pt-6">
+                        <ArrowRight className="h-3.5 w-3.5 text-gray-300" />
+                        <span className="font-mono text-xs text-gray-400">
+                            Our packages use web standards — they run on any platform that supports Node.js or WinterCG.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Section></div>
+);
 
 export default WorksWhereYouWork;
