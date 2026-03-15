@@ -7,26 +7,26 @@ import { Callout } from "fumadocs-ui/components/callout";
 import { Step, Steps } from "fumadocs-ui/components/steps";
 import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
+<Steps>
 
-
-
+<Step>
 
 ## Install
 
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="pnpm">```bash pnpm add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="yarn">```bash yarn add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="bun">```bash bun add -d @visulima/dev-toolbar ```</Tab>
+</Tabs>
 
-    ```bash npm install -D @visulima/dev-toolbar ```
-    ```bash pnpm add -D @visulima/dev-toolbar ```
-    ```bash yarn add -D @visulima/dev-toolbar ```
-    ```bash bun add -d @visulima/dev-toolbar ```
-
-
-
+<Callout type="info">
     The package is a development-only tool. It is automatically excluded from production builds — the Vite plugin no-ops when `command !== 'serve'`.
+</Callout>
 
+</Step>
 
-
-
-
+<Step>
 
 ## Add the Vite Plugin
 
@@ -43,9 +43,9 @@ export default defineConfig({
 
 That's it. Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
 
+</Step>
 
-
-
+<Step>
 
 ## Open the Toolbar
 
@@ -56,9 +56,9 @@ A small pill appears at the bottom-center of your page. Click any app icon to op
 | Toggle toolbar open/close | `Alt`+`Shift`+`D` |
 | Close active app / panel  | `Escape`          |
 
+</Step>
 
-
-
+</Steps>
 
 ## Minimal Configuration
 
@@ -122,7 +122,7 @@ export default defineConfig({
 });
 ```
 
-
+<Callout type="info">
     Because TanStack Start renders on the server, any `window.__DEV_TOOLBAR_HOOK__` calls must be placed inside a `useEffect` to ensure they only run in the browser:
 
     ```tsx
@@ -133,7 +133,7 @@ export default defineConfig({
     }, []);
     ```
 
-
+</Callout>
 
 ### Other SSR / Non-HTML Setups
 
@@ -147,8 +147,8 @@ devToolbar({
 
 ## Framework Examples
 
-
-    
+<Tabs items={["React", "Vue", "Svelte", "Vanilla", "TanStack Start"]}>
+    <Tab value="React">
         ```ts title="vite.config.ts"
         import { defineConfig } from "vite";
         import react from "@vitejs/plugin-react";
@@ -161,8 +161,8 @@ devToolbar({
             ],
         });
         ```
-    
-    
+    </Tab>
+    <Tab value="Vue">
         ```ts title="vite.config.ts"
         import { defineConfig } from "vite";
         import vue from "@vitejs/plugin-vue";
@@ -175,8 +175,8 @@ devToolbar({
             ],
         });
         ```
-    
-    
+    </Tab>
+    <Tab value="Svelte">
         ```ts title="vite.config.ts"
         import { defineConfig } from "vite";
         import { svelte } from "@sveltejs/vite-plugin-svelte";
@@ -189,8 +189,8 @@ devToolbar({
             ],
         });
         ```
-    
-    
+    </Tab>
+    <Tab value="Vanilla">
         ```ts title="vite.config.ts"
         import { defineConfig } from "vite";
         import { devToolbar } from "@visulima/dev-toolbar/vite";
@@ -201,8 +201,8 @@ devToolbar({
             ],
         });
         ```
-    
-    
+    </Tab>
+    <Tab value="TanStack Start">
         ```ts title="vite.config.ts"
         import { tanstackStart } from "@tanstack/react-start/plugin/vite";
         import { devToolbar } from "@visulima/dev-toolbar/vite";
@@ -223,9 +223,9 @@ devToolbar({
             ],
         });
         ```
-    
+    </Tab>
 
-
+</Tabs>
 
 ## Next Steps
 

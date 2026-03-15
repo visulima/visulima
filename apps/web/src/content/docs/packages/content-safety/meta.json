@@ -1,9 +1,12 @@
 {
-  "title": "@visulima/content-safety",
+  "title": "Content Safety",
   "pages": [
     "index",
     "installation",
     "---Getting Started---",
-    "---API Reference---"
+    "usage",
+    "languages",
+    "---API Reference---",
+    "api"
   ]
 }

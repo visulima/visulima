@@ -1,9 +1,11 @@
 {
-  "title": "@visulima/pagination",
+  "title": "Pagination",
   "pages": [
     "index",
     "installation",
     "---Getting Started---",
-    "---API Reference---"
+    "usage",
+    "---API Reference---",
+    "api"
   ]
 }

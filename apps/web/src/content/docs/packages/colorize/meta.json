@@ -1,11 +1,13 @@
 {
-  "title": "@visulima/colorize",
+  "title": "Colorize",
   "pages": [
     "index",
     "installation",
     "quick-start",
-    "---Usage---",
+    "usage",
     "---API Reference---",
-    "---Help---"
+    "api",
+    "---Help---",
+    "troubleshooting"
   ]
 }

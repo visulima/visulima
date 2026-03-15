@@ -1,9 +1,11 @@
 {
-  "title": "@visulima/fmt",
+  "title": "Fmt",
   "pages": [
     "index",
     "installation",
     "---Getting Started---",
-    "---API Reference---"
+    "usage",
+    "---API Reference---",
+    "api"
   ]
 }

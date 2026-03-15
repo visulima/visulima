@@ -1,12 +1,13 @@
 {
-  "title": "@visulima/cerebro",
+  "title": "Cerebro",
   "pages": [
     "index",
     "installation",
     "quick-start",
-    "---Concepts---",
-    "---Guides---",
-    "---API Reference---",
+    "concepts",
+    "guides",
+    "toolbox",
+    "api",
     "configuration",
     "troubleshooting"
   ]

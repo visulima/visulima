@@ -239,6 +239,8 @@ import { JsonReporter } from "@visulima/pail/reporter/json";
 import { JsonFileReporter } from "@visulima/pail/reporter/file";
 import RedactProcessor from "@visulima/pail/processor/redact";
 import CallerProcessor from "@visulima/pail/processor/caller";
+import SamplingProcessor from "@visulima/pail/processor/sampling";
+import EnvironmentProcessor from "@visulima/pail/processor/environment";
 
 const logger = createPail({
     logLevel: process.env.PAIL_LOG_LEVEL || "info",
@@ -264,8 +266,52 @@ const logger = createPail({
             ],
             { exclude: [] }, // Optional options
         ),
+        // Sample debug logs at 10%, keep all errors
+        new SamplingProcessor({
+            debug: 10,
+            trace: 5,
+        }),
+        // Auto-detect runtime environment
+        new EnvironmentProcessor({
+            includePid: true,
+            includeHostname: true,
+        }),
     ],
 });
+```
+
+## Self-Documenting Errors
+
+```typescript
+import { createPail, PailError, createPailError } from "@visulima/pail";
+
+const logger = createPail();
+
+// Throw errors with actionable context
+try {
+    const config = loadConfig();
+} catch (error) {
+    throw new PailError({
+        message: "Failed to load configuration",
+        why: "The config file is missing or malformed",
+        fix: "Create a config.json file in the project root, or set the CONFIG_PATH environment variable",
+        link: "https://docs.example.com/configuration",
+        status: 500,
+        cause: error,
+    });
+}
+
+// Use the factory function for convenience
+const error = createPailError({
+    message: "API rate limit exceeded",
+    why: "Too many requests in the current time window",
+    fix: "Implement exponential backoff or reduce request frequency",
+    status: 429,
+});
+
+// PailError serializes cleanly to JSON
+logger.error(error);
+// JSON output includes why, fix, link fields for easy debugging
 ```
 
 ## React Component Logger
@@ -350,5 +396,5 @@ export const enableTestLogging = () => {
 
 ## Related
 
-- [Basic Usage](/docs/package/pail/usage/basic) - Basic logging operations
-- [Configuration](/docs/package/pail/configuration) - Configuration options
+- [Basic Usage](/docs/packages/pail/usage/basic) - Basic logging operations
+- [Configuration](/docs/packages/pail/configuration) - Configuration options

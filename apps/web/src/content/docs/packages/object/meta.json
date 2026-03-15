@@ -1,8 +1,10 @@
 {
-  "title": "@visulima/object",
+  "title": "Object",
   "pages": [
     "index",
     "installation",
-    "---Documentation---"
+    "---Documentation---",
+    "usage",
+    "api"
   ]
 }

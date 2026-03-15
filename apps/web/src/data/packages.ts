@@ -272,6 +272,16 @@ export const packages: PackageInfo[] = [
     {
         accentColor: categoryColors["API & Web"]!,
         category: "API & Web",
+        description: "Minimal router and middleware layer for Next.js, Micro, Vercel, or Node.js http/http2 with support for zod validation.",
+        docsPath: "/docs/packages/connect",
+        features: ["Middleware chaining", "Zod validation", "Next.js and Vercel support", "HTTP/2 compatible"],
+        name: "Connect",
+        npmName: "@visulima/connect",
+        slug: "connect",
+    },
+    {
+        accentColor: categoryColors["API & Web"]!,
+        category: "API & Web",
         description: "Comprehensive CRUD library for building RESTful APIs with Prisma.",
         docsPath: "/docs/packages/crud",
         features: ["Prisma integration", "Auto-generated endpoints", "Validation", "Filtering and sorting"],
@@ -428,6 +438,26 @@ export const packages: PackageInfo[] = [
         name: "Email",
         npmName: "@visulima/email",
         slug: "email",
+    },
+    {
+        accentColor: categoryColors["File System"]!,
+        category: "File System",
+        description: "Store files in a web-accessible location via a simplified API with support for S3, Azure, GCS, and local filesystem backends.",
+        docsPath: "/docs/packages/storage",
+        features: ["S3, Azure, GCS backends", "Image scaling and rotation", "Local filesystem support", "Simplified upload API"],
+        name: "Storage",
+        npmName: "@visulima/storage",
+        slug: "storage",
+    },
+    {
+        accentColor: categoryColors["File System"]!,
+        category: "File System",
+        description: "Simple and easy file upload client library for React, Vue, Solid, and Svelte.",
+        docsPath: "/docs/packages/storage-client",
+        features: ["React support", "Vue support", "Solid and Svelte support", "Easy file uploads"],
+        name: "Storage Client",
+        npmName: "@visulima/storage-client",
+        slug: "storage-client",
     },
 ];
 

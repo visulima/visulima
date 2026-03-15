@@ -1,10 +1,12 @@
 {
-  "title": "@visulima/boxen",
+  "title": "Boxen",
   "pages": [
     "index",
     "installation",
     "quick-start",
     "---Getting Started---",
-    "---API Reference---"
+    "usage",
+    "---API Reference---",
+    "api"
   ]
 }

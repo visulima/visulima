@@ -38,15 +38,15 @@ const Menus: {
     {
         links: [
             {
-                href: "#",
+                href: "https://github.com/visulima",
                 title: "GitHub",
             },
             {
-                href: "#",
+                href: "https://discord.gg/visulima",
                 title: "Discord",
             },
             {
-                href: "#",
+                href: "https://x.com/visulima",
                 title: "Twitter",
             },
         ],
@@ -67,17 +67,17 @@ const Footer: FC = () => (
         <div className="relative container mx-auto grid grid-cols-2 gap-y-8 p-0 sm:grid-cols-3 md:grid-cols-4">
             <LineGrid mode="dark" />
 
-            <HighlightLink className="border-0" mode="dark" to="#">
+            <HighlightLink className="border-0" href="https://x.com/visaborned" mode="dark" rel="noopener noreferrer" target="_blank">
                 <TwitterLogoIcon />
                 <span className="grow">Twitter (X)</span>
                 <ExternalLink />
             </HighlightLink>
-            <HighlightLink className="border-0" mode="dark" to="#">
+            <HighlightLink className="border-0" href="https://github.com/visulima" mode="dark" rel="noopener noreferrer" target="_blank">
                 <GitHubLogoIcon />
                 <span className="grow">GitHub</span>
                 <ExternalLink />
             </HighlightLink>
-            <HighlightLink className="border-0" mode="dark" to="#">
+            <HighlightLink className="border-0" href="https://discord.gg/visulima" mode="dark" rel="noopener noreferrer" target="_blank">
                 <DiscordLogoIcon />
                 <span className="grow">Discord</span>
                 <ExternalLink />
@@ -115,7 +115,12 @@ const Footer: FC = () => (
         <div className="border-t border-white/[0.06] py-12">
             <div className="container mx-auto flex flex-col items-center justify-center gap-6">
                 <span className="font-mono text-xs tracking-wider text-white/25 uppercase">Built by</span>
-                <a className="h-full w-full cursor-pointer transition-opacity duration-300 hover:opacity-80" href="https://anolilab.com?ref=visulima" rel="noopener noreferrer" target="_blank">
+                <a
+                    className="h-full w-full cursor-pointer transition-opacity duration-300 hover:opacity-80"
+                    href="https://anolilab.com?ref=visulima"
+                    rel="noopener noreferrer"
+                    target="_blank"
+                >
                     <AnolilabText className="fill-white" />
                 </a>
             </div>

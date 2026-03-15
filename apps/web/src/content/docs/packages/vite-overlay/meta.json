@@ -1,9 +1,11 @@
 {
-  "title": "@visulima/vite-overlay",
+  "title": "Vite Overlay",
   "pages": [
     "index",
     "installation",
     "---Getting Started---",
-    "---API Reference---"
+    "usage",
+    "---API Reference---",
+    "api"
   ]
 }

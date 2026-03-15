@@ -1,11 +1,11 @@
 {
-  "title": "@visulima/jsdoc-open-api",
+  "title": "Jsdoc Open Api",
   "pages": [
     "index",
     "installation",
     "quick-start",
-    "---Concepts---",
-    "---API Reference---",
+    "concepts",
+    "api",
     "configuration",
     "troubleshooting"
   ]

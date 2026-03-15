@@ -1,12 +1,13 @@
 {
-  "title": "@visulima/humanizer",
+  "title": "Humanizer",
   "pages": [
     "index",
     "installation",
     "quick-start",
-    "---Concepts---",
-    "---Usage---",
+    "concepts",
+    "usage",
     "---Configuration---",
-    "---API Reference---"
+    "configuration",
+    "api"
   ]
 }

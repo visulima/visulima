@@ -1,5 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import viteOverlay from "@visulima/vite-overlay";
 import react from "@vitejs/plugin-react";
 import mdx from "fumadocs-mdx/vite";
 import Unfonts from "unplugin-fonts/vite";
@@ -7,10 +9,6 @@ import { defineConfig } from "vite";
 import { imagetools } from "vite-imagetools";
 import svgr from "vite-plugin-svgr";
 import tsConfigPaths from "vite-tsconfig-paths";
-import viteOverlay from "@visulima/vite-overlay";
-import { devToolbar } from "@visulima/dev-toolbar/vite";
-
-const FumadocsDeps = ["fumadocs-core", "fumadocs-ui"];
 
 export default defineConfig({
     build: {
@@ -39,13 +37,13 @@ export default defineConfig({
         devToolbar({
             // TanStack Start SSR renders HTML server-side, bypassing Vite's
             // transformIndexHtml. Use appendTo to inject via the module graph instead.
-            //appendTo: /router\.tsx$/,
+            // appendTo: /router\.tsx$/,
             apps: {
-                settings: true,
-                timeline: true,
+                a11y: true,
                 assets: true,
                 inspector: true,
-                a11y: true,
+                settings: true,
+                timeline: true,
             },
             defaultVisible: true,
             placement: "bottom-center",
@@ -90,14 +88,13 @@ export default defineConfig({
 
                 return url.searchParams;
             },
-        }) as any,
+        }),
         tanstackStart({
             prerender: {
                 crawlLinks: false,
                 enabled: false,
             },
-            target: "netlify",
-        } as any),
+        }),
         react({
             babel: {
                 plugins: [["babel-plugin-react-compiler", { target: "19" }]],

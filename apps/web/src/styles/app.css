@@ -222,6 +222,10 @@
     border-color: transparent;
 }
 
+#nd-subnav > div {
+    border-bottom: 0;
+}
+
 html {
     scroll-behavior: smooth;
 }

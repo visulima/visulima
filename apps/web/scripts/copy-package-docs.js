@@ -12,15 +12,59 @@ const PACKAGES_DIR = path.join(ROOT_DIR, "packages");
 const DEST_DIR = path.join(__dirname, "..", "src", "content", "docs", "packages");
 
 /**
- * Sanitizes meta.json pages array to only contain strings,
- * since fumadocs-mdx does not support object entries.
+ * Category display names and order for the packages sidebar.
+ */
+const CATEGORY_CONFIG = {
+    "cli-terminal": { title: "CLI & Terminal", packages: ["cerebro", "pail", "command-line-args", "boxen", "tabular", "ansi", "colorize", "is-ansi-color-supported", "fmt"] },
+    "data-manipulation": { title: "Data & Utilities", packages: ["string", "object", "deep-clone", "bytes", "humanizer", "redact", "content-safety"] },
+    "filesystem": { title: "File System", packages: ["fs", "path", "find-cache-dir", "package", "tsconfig", "storage", "storage-client"] },
+    "api": { title: "API & Web", packages: ["api-platform", "crud", "html", "pagination", "health-check", "jsdoc-open-api"] },
+    "error-debugging": { title: "Error Handling", packages: ["error", "error-handler", "ono", "source-map", "inspector", "vite-overlay"] },
+    "email": { title: "Internationalization & Communication", packages: ["iso-locale", "disposable-email-domains", "email"] },
+    "dev-tools": { title: "Dev Tools", packages: ["dev-toolbar", "prisma-dmmf-transformer"] },
+};
+
+/**
+ * Sanitizes meta.json pages array for fumadocs compatibility.
+ * Converts object entries (e.g. { title: "Section", pages: [...] }) into
+ * fumadocs-native separator + folder reference format.
  */
 async function sanitizeMetaJson(filePath) {
     const content = await fs.readFile(filePath, "utf-8");
     const meta = JSON.parse(content);
 
     if (Array.isArray(meta.pages)) {
-        meta.pages = meta.pages.filter((entry) => typeof entry === "string");
+        const newPages = [];
+
+        for (const entry of meta.pages) {
+            if (typeof entry === "string") {
+                newPages.push(entry);
+            } else if (typeof entry === "object" && entry !== null && entry.title) {
+                // Convert { title: "Section", pages: [...] } to separator + folder reference
+                newPages.push(`---${entry.title}---`);
+
+                if (Array.isArray(entry.pages)) {
+                    // Extract the folder name from the first page path (e.g., "concepts/log-levels" -> "concepts")
+                    const folders = new Set();
+
+                    for (const page of entry.pages) {
+                        const parts = page.split("/");
+
+                        if (parts.length > 1) {
+                            folders.add(parts[0]);
+                        } else {
+                            newPages.push(page);
+                        }
+                    }
+
+                    for (const folder of folders) {
+                        newPages.push(folder);
+                    }
+                }
+            }
+        }
+
+        meta.pages = newPages;
     }
 
     await fs.writeFile(filePath, JSON.stringify(meta, null, 2) + "\n");
@@ -40,14 +84,19 @@ async function sanitizeMdx(filePath) {
     content = content.replace(/<｜[^｜]*｜>/g, "");
 
     // 3. Strip undefined JSX components from nextra-theme-docs FIRST (before escaping)
-    const nextraComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider";
-    const wrapperRegex = new RegExp(`<(${nextraComponents})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "g");
-    const selfClosingRegex = new RegExp(`<(${nextraComponents})\\b[^>]*\\/>`, "g");
+    // Skip stripping if the file imports from fumadocs-ui (these components are valid there)
+    const hasFumadocsImport = /^import\s+.*from\s+['"]fumadocs-ui\//m.test(content);
 
-    for (let i = 0; i < 5; i++) {
-        content = content.replace(wrapperRegex, "$2");
+    if (!hasFumadocsImport) {
+        const nextraComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider";
+        const wrapperRegex = new RegExp(`<(${nextraComponents})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "g");
+        const selfClosingRegex = new RegExp(`<(${nextraComponents})\\b[^>]*\\/>`, "g");
+
+        for (let i = 0; i < 5; i++) {
+            content = content.replace(wrapperRegex, "$2");
+        }
+        content = content.replace(selfClosingRegex, "");
     }
-    content = content.replace(selfClosingRegex, "");
 
     // 4. Escape ALL angle brackets outside code blocks that aren't standard HTML tags.
     // This prevents MDX from interpreting TypeScript generics, comparison operators,
@@ -55,7 +104,8 @@ async function sanitizeMdx(filePath) {
     const codeBlockRegex = /(```[\s\S]*?```|`[^`]+`)/g;
     const parts = content.split(codeBlockRegex);
 
-    const safeHtmlTags = "div|span|a|p|ul|ol|li|h[1-6]|br|hr|img|code|pre|em|strong|b|i|u|table|thead|tbody|tfoot|tr|td|th|details|summary|blockquote|section|nav|footer|header|main|aside|figure|figcaption|dl|dt|dd|sup|sub|del|ins|mark|small|abbr|cite|dfn|kbd|samp|var|wbr|!--";
+    const fumadocsComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|Files|Folder|File|DocsCategory|CodeBlockTabs|CodeBlockTabsList|CodeBlockTabsTrigger|CodeBlockTab|Accordions|Accordion|TypeTable|AutoTypeTable|ImageZoom";
+    const safeHtmlTags = `div|span|a|p|ul|ol|li|h[1-6]|br|hr|img|code|pre|em|strong|b|i|u|table|thead|tbody|tfoot|tr|td|th|details|summary|blockquote|section|nav|footer|header|main|aside|figure|figcaption|dl|dt|dd|sup|sub|del|ins|mark|small|abbr|cite|dfn|kbd|samp|var|wbr|!--|${fumadocsComponents}`;
     const safeTagRegex = new RegExp(`<(?!\\/?(?:${safeHtmlTags})[\\s>/])`, "g");
 
     content = parts
@@ -79,7 +129,7 @@ async function sanitizeMdx(filePath) {
 }
 
 /**
- * Recursively copies a directory.
+ * Recursively copies a directory, skipping Nextra-style _meta files.
  */
 async function copyDirectory(src, dest) {
     await fs.mkdir(dest, { recursive: true });
@@ -89,6 +139,11 @@ async function copyDirectory(src, dest) {
     for (const entry of entries) {
         const srcPath = path.join(src, entry.name);
         const destPath = path.join(dest, entry.name);
+
+        // Skip Nextra-style meta files (fumadocs uses meta.json)
+        if (entry.name.startsWith("_meta")) {
+            continue;
+        }
 
         if (entry.isDirectory()) {
             await copyDirectory(srcPath, destPath);
@@ -152,6 +207,53 @@ async function main() {
     }
 
     console.log(`\nCopied docs from ${copied} packages into src/content/docs/packages/`);
+
+    // Generate root packages/meta.json with categorized sidebar navigation
+    const copiedPackages = await fs.readdir(DEST_DIR, { withFileTypes: true });
+    const availablePackages = new Set(copiedPackages.filter((d) => d.isDirectory()).map((d) => d.name));
+
+    const pages = [];
+
+    for (const config of Object.values(CATEGORY_CONFIG)) {
+        const categoryPackages = config.packages.filter((pkg) => availablePackages.has(pkg));
+
+        if (categoryPackages.length === 0) {
+            continue;
+        }
+
+        pages.push(`---${config.title}---`);
+        pages.push(...categoryPackages);
+
+        // Remove from available set to track uncategorized packages
+        for (const pkg of categoryPackages) {
+            availablePackages.delete(pkg);
+        }
+    }
+
+    // Add any uncategorized packages at the end
+    if (availablePackages.size > 0) {
+        pages.push("---Other---");
+        pages.push(...[...availablePackages].sort());
+    }
+
+    const rootMeta = {
+        title: "Packages",
+        pages: ["index", ...pages],
+    };
+
+    await fs.writeFile(path.join(DEST_DIR, "meta.json"), JSON.stringify(rootMeta, null, 4) + "\n");
+    console.log("Generated packages/meta.json with categorized navigation");
+
+    // Copy the static packages index page
+    const indexSrc = path.join(__dirname, "..", "src", "content", "docs-static", "packages-index.mdx");
+
+    try {
+        await fs.stat(indexSrc);
+        await fs.copyFile(indexSrc, path.join(DEST_DIR, "index.mdx"));
+        console.log("Copied packages/index.mdx from static source");
+    } catch {
+        console.log("Warning: docs-static/packages-index.mdx not found, skipping index generation");
+    }
 }
 
 main().catch((error) => {

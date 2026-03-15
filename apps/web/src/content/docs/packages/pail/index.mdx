@@ -3,38 +3,26 @@ title: Introduction
 description: Get started with Pail, a highly configurable logging library for Node.js, Edge, and Browser
 ---
 
-# Pail
+import { Cards, Card } from "fumadocs-ui/components/card";
+import { Callout } from "fumadocs-ui/components/callout";
 
-**Highly configurable Logger for Node.js, Edge and Browser**
+Pail is a powerful, flexible logging library for Node.js, Edge, and Browser environments. It gives you structured logging with pretty or JSON output, scoped loggers, built-in timers, and a pluggable processor/reporter architecture — all with full TypeScript support.
 
-Pail is a powerful, flexible logging library built on top of modern JavaScript foundations. It provides a comprehensive logging solution with support for multiple log levels, custom types, processors, reporters, and advanced features like throttling, scoping, timers, and interactive terminal UIs.
+## Features at a Glance
 
-## Why Pail?
-
-- **Easy to use** - Simple API that feels natural
-- **Hackable to the core** - Fully extensible with custom processors and reporters
-- **Integrated timers** - Built-in performance timing utilities
-- **Custom pluggable processors and reporters** - Extend functionality easily
-- **TypeScript support** - Full type safety out of the box
-- **Interactive and regular modes** - Support for progress bars, multi-progress bars, spinners, multi-spinners, and interactive manager
-- **Object tree rendering** - Utility function to visualize objects as ASCII trees
-- **Secrets & sensitive information filtering** - Built-in redaction support
-- **Filename, date and timestamp support** - Rich metadata tracking
-- **Scoped loggers and timers** - Organize logs by context
-- **Scaled logging levels mechanism** - RFC 5424 compliant
-- **String interpolation support** - Format messages like console.log
-- **Object and error interpolation** - Rich error handling
-- **Stack trace and pretty errors** - Beautiful error formatting
-- **Simple and minimal syntax** - Intuitive API design
-- **Spam prevention by throttling logs** - Avoid log flooding
-- **Browser and Server support** - Universal logging solution
-- **Redirect console and stdout/stderr** - Easy integration
-- **Pretty or JSON output** - Multiple output formats
-- **ESM-only with tree-shaking support** - Modern JavaScript (Node.js ≥ 20.19)
-- **Supports circular structures** - Robust object serialization
-- **Fast and powerful** - Optimized for performance
+- **Structured and pretty output** — JSON, formatted console, simple text, and rotating file reporters
+- **Pluggable architecture** — Custom processors and reporters to fit any workflow
+- **Scoped loggers and timers** — Organize logs by context with built-in performance timing
+- **Interactive terminal UI** — Progress bars, spinners, and interactive managers
+- **Production-ready** — Log sampling, throttling, sensitive data redaction, and environment detection
+- **Wide events and framework middleware** — Request-scoped logging for Express, Fastify, Hono, Elysia, SvelteKit, and Next.js
+- **Cross-platform** — Works in Node.js, Bun, Edge runtimes, and browsers (ESM-only, Node.js ≥ 20.19)
 
 ## Quick Start
+
+```npm
+npm i @visulima/pail
+```
 
 ```typescript
 import { pail } from "@visulima/pail";
@@ -43,62 +31,24 @@ pail.success("Operation successful");
 pail.debug("Hello", "from", "L59");
 pail.pending("Write release notes for %s", "1.2.0");
 pail.critical(new Error("Unable to acquire lock"));
-pail.watch("Recursively watching build directory...");
-pail.complete({
-    prefix: "[task]",
-    message: "Fix issue #59",
-    suffix: "(@prisis)",
-});
-```
-
-## Installation
-
-```bash
-npm install @visulima/pail
-```
-
-```bash
-yarn add @visulima/pail
-```
-
-```bash
-pnpm add @visulima/pail
 ```
 
 ## Core Concepts
 
-Pail is built around three core concepts:
+Pail is built around three pillars: **log levels** following [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424) (extended with `trace`), **reporters** that write to different destinations (console, files, JSON), and **processors** that enrich or transform log metadata before it reaches reporters.
 
-### Log Levels
-
-Pail adheres to the log levels defined in [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424) extended with `trace` level. This means you can use log levels to filter out messages that are not important to you.
-
-### Reporters
-
-Reporters are responsible for writing log messages to various destinations (console, files, etc.). Pail comes with built-in reporters:
-
-- `JsonReporter` - Structured JSON output
-- `PrettyReporter` - Beautiful formatted console output
-- `SimpleReporter` - Simple formatted output (server only)
-- `FileReporter` - Write logs to rotating files (server only)
-
-### Processors
-
-Processors modify or enhance log metadata before it reaches reporters. Built-in processors include:
-
-- `CallerProcessor` - Adds caller information (file, line, column)
-- `RedactProcessor` - Redacts sensitive information
-- `MessageFormatterProcessor` - Formats messages with string interpolation
-- `ErrorProcessor` - Serializes errors with cause chains
-
-## Comparison with Other Libraries
-
-Wondering how Pail compares to Pino, Winston, Consola, or other logging libraries? Check out our [comparison guide](/docs/package/pail/comparison) to see which library fits your needs.
+<Callout title="Extensible by design">
+    Every part of the pipeline — from message formatting to output — can be replaced or extended with your own processors and reporters. See the [Processors guide](/docs/packages/pail/concepts/processors) to get started.
+</Callout>
 
 ## What's Next?
 
-- [Installation Guide](/docs/package/pail/installation) - Learn how to install and set up Pail
-- [Basic Usage](/docs/package/pail/usage/basic) - Start logging with simple examples
-- [Comparison](/docs/package/pail/comparison) - See how Pail compares to alternatives
-- [Configuration](/docs/package/pail/configuration) - Customize Pail to your needs
-- [API Reference](/docs/package/pail/api) - Complete API documentation
+<Cards>
+    <Card title="Installation" description="Set up Pail in your project" href="/docs/packages/pail/installation" />
+    <Card title="Basic Usage" description="Start logging with simple examples" href="/docs/packages/pail/usage/basic" />
+    <Card title="Wide Events" description="Structured request-scoped logging" href="/docs/packages/pail/usage/wide-events" />
+    <Card title="Framework Middleware" description="Auto-logging for Express, Fastify, Hono, and more" href="/docs/packages/pail/middleware/overview" />
+    <Card title="Configuration" description="Customize Pail to your needs" href="/docs/packages/pail/configuration" />
+    <Card title="Comparison" description="How Pail compares to Pino, Winston, Consola" href="/docs/packages/pail/comparison" />
+    <Card title="API Reference" description="Complete API documentation" href="/docs/packages/pail/api" />
+</Cards>

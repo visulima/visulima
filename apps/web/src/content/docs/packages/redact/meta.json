@@ -1,8 +1,10 @@
 {
-  "title": "@visulima/redact",
+  "title": "Redact",
   "pages": [
     "index",
     "installation",
-    "---Documentation---"
+    "---Documentation---",
+    "usage",
+    "api"
   ]
 }

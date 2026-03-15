@@ -29,9 +29,9 @@ Because the detection is automatic there is nothing to configure — just instal
 
 ## Installation
 
+<Steps>
 
-
-
+<Step>
 
 ### Install both packages
 
@@ -39,9 +39,9 @@ Because the detection is automatic there is nothing to configure — just instal
 pnpm add -D @visulima/dev-toolbar @visulima/vite-overlay
 ```
 
+</Step>
 
-
-
+<Step>
 
 ### Configure your Vite config
 
@@ -65,13 +65,13 @@ export default defineConfig({
 });
 ```
 
-
+<Callout type="info">
   Plugin order does not matter. The toolbar detects vite-overlay at runtime via the shared globals, not at build time.
+</Callout>
 
+</Step>
 
-
-
-
+</Steps>
 
 ---
 

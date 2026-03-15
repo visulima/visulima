@@ -1,12 +1,12 @@
 {
-  "title": "@visulima/prisma-dmmf-transformer",
+  "title": "Prisma Dmmf Transformer",
   "pages": [
     "index",
     "installation",
     "quick-start",
-    "---Concepts---",
-    "---Usage---",
-    "---API Reference---",
+    "concepts",
+    "usage",
+    "api",
     "configuration",
     "troubleshooting"
   ]

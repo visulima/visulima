@@ -181,9 +181,9 @@ Under the hood, the RPC layer uses Vite's HMR WebSocket channel:
 2. The Vite plugin receives the message, calls the matching server function, and serializes the result
 3. The result is sent back over the WebSocket and resolves the promise on the client
 
-
+<Callout type="info">
     RPC calls only work during development with an active Vite dev server. In production builds, the toolbar and its RPC layer are not present.
-
+</Callout>
 
 ## Error Handling
 

@@ -1,16 +1,10 @@
 {
-  "title": "@visulima/redact",
-  "pages": [
-    "index",
-    "installation",
-    "---Documentation---",
-    {
-      "title": "Usage Guide",
-      "href": "/usage"
-    },
-    {
-      "title": "API Reference",
-      "href": "/api"
-    }
-  ]
+    "title": "Redact",
+    "pages": [
+        "index",
+        "installation",
+        "---Documentation---",
+        "usage",
+        "api"
+    ]
 }
