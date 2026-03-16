@@ -1,3 +1,14 @@
+## @visulima/error-handler [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.7...@visulima/error-handler@2.0.0-alpha.8) (2026-03-16)
+
+### Bug Fixes
+
+* resolve 5 audit vulnerabilities (simple-git, express-rate-limit, tar, file-type, hono) ([2986d77](https://github.com/visulima/visulima/commit/2986d770746afd3223a074dc1a1a0040cca56e61))
+
+### Miscellaneous Chores
+
+* **error-handler:** update dependencies ([7423461](https://github.com/visulima/visulima/commit/742346112111d015094b7db7e759e422acaf52d5))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/error-handler [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.6...@visulima/error-handler@2.0.0-alpha.7) (2026-03-06)
 
 ### Bug Fixes
