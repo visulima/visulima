@@ -1,0 +1,68 @@
+---
+title: Inspector
+description: Click any element on the page to jump directly to its JSX source in your editor.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+The Inspector app lets you click any element on the rendered page and immediately open the corresponding JSX source file in your editor at the exact line and column.
+
+## How it works
+
+1. Open the toolbar and activate the **Inspector** app (the cursor icon).
+2. Hover over any element — a label shows the component name and source location (`file:line:col`).
+3. Click the element — a popup appears with:
+    - **Open in editor** — jumps to the JSX source in your configured editor
+    - **Copy HTML** — copies the element's outer HTML to the clipboard
+    - **Copy path** — copies the `file:line:col` source path
+
+## JSX source injection
+
+The Inspector relies on `data-vdt-source` attributes that are injected into every JSX opening element at build time by the `inject-source` Vite plugin (part of `@visulima/dev-toolbar/vite`).
+
+Source injection is **enabled by default** in development mode and is skipped entirely in production builds.
+
+Configure it via the [`injectSource`](/docs/dev-toolbar/configuration#injectsource) plugin option:
+
+```ts
+devToolbar({
+    injectSource: {
+        enabled: true,
+        ignore: {
+            files: ["**/generated/**"],
+            components: ["StrictMode"],
+        },
+    },
+});
+```
+
+<Callout type="info">
+    Source injection reads the original file from disk before transforming, so both SSR and client builds produce identical `data-vdt-source` values. This
+    prevents React hydration mismatches in SSR frameworks.
+</Callout>
+
+## Configuring the editor
+
+By default, `launch-editor` auto-detects the running editor (WebStorm, VS Code, etc.) from the OS process list.
+
+**Per-user override (Settings app):** open the Settings app and choose your editor from the **"Preferred editor"** dropdown. The selection is saved to `localStorage` and takes priority over the plugin-level default.
+
+**Project-level default:** set the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option in your Vite config — this seeds the initial value for all users who haven't made a personal selection:
+
+```ts
+devToolbar({
+    editor: "webstorm",
+});
+```
+
+## Enabling the Inspector
+
+The Inspector is disabled by default. Enable it in your Vite config:
+
+```ts
+devToolbar({
+    apps: {
+        inspector: true,
+    },
+});
+```

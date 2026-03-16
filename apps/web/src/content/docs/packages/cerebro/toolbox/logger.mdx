@@ -1,0 +1,128 @@
+---
+title: "Logger"
+---
+
+# Toolbox: Logger
+
+The `logger` provides methods for outputting messages at different log levels.
+
+## Basic Usage
+
+```typescript
+cli.addCommand({
+    name: "example",
+    execute: ({ logger }) => {
+        logger.info("Information message");
+        logger.error("Error message");
+        logger.warn("Warning message");
+        logger.debug("Debug message");
+    },
+});
+```
+
+## Log Levels
+
+### Info
+
+General information messages:
+
+```typescript
+logger.info("Building project...");
+logger.info("Files processed:", fileCount);
+```
+
+### Error
+
+Error messages:
+
+```typescript
+logger.error("Failed to build");
+logger.error("Error details:", error);
+```
+
+### Warn
+
+Warning messages:
+
+```typescript
+logger.warn("Deprecated option used");
+logger.warn("This feature will be removed in v2.0");
+```
+
+### Debug
+
+Debug messages (only shown with `--debug` flag):
+
+```typescript
+logger.debug("Processing file:", fileName);
+logger.debug("Options:", options);
+```
+
+## Logging Objects
+
+Logger methods accept multiple arguments:
+
+```typescript
+logger.info("User:", user.name, "Age:", user.age);
+logger.error("Error:", error.message, error.stack);
+```
+
+## Verbosity Control
+
+Log levels are controlled by verbosity flags:
+
+```bash
+cli command              # Shows info, warn, error
+cli command --verbose    # Shows debug too
+cli command --debug      # Shows all debug messages
+cli command --quiet      # Minimal output
+```
+
+## Custom Logger
+
+Provide a custom logger when creating the CLI:
+
+```typescript
+const customLogger = {
+    info: (...args) => console.log("[INFO]", ...args),
+    error: (...args) => console.error("[ERROR]", ...args),
+    warn: (...args) => console.warn("[WARN]", ...args),
+    debug: (...args) => {
+        if (process.env.DEBUG) {
+            console.debug("[DEBUG]", ...args);
+        }
+    },
+};
+
+const cli = new Cerebro("my-app", {
+    logger: customLogger,
+});
+```
+
+## Conditional Logging
+
+Use log levels appropriately:
+
+```typescript
+execute: ({ logger, options }) => {
+    if (options.verbose) {
+        logger.debug("Detailed processing information");
+    }
+
+    logger.info("Starting operation...");
+
+    try {
+        // Operation
+    } catch (error) {
+        logger.error("Operation failed:", error);
+    }
+};
+```
+
+## Best Practices
+
+1. **Use appropriate levels** - info for normal output, error for errors
+2. **Don't overuse debug** - Reserve for troubleshooting
+3. **Include context** - Log relevant information
+4. **Format consistently** - Use consistent message formats
+5. **Respect verbosity** - Don't force output in quiet mode

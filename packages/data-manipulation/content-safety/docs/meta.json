@@ -1,21 +1,12 @@
 {
-    "title": "@visulima/content-safety",
+    "title": "Content Safety",
     "pages": [
         "index",
         "installation",
         "---Getting Started---",
-        {
-            "title": "Usage Guide",
-            "href": "/usage"
-        },
-        {
-            "title": "Supported Languages",
-            "href": "/languages"
-        },
+        "usage",
+        "languages",
         "---API Reference---",
-        {
-            "title": "API Documentation",
-            "href": "/api"
-        }
+        "api"
     ]
 }

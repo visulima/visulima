@@ -1,0 +1,163 @@
+---
+title: Next.js
+description: Request-scoped wide event logging for Next.js route handlers and server actions
+---
+
+# Next.js Integration
+
+The Next.js adapter has two parts:
+
+1. **Edge middleware** (`pailMiddleware`) — Sets `x-request-id` and `x-pail-start` headers
+2. **Handler wrapper** (`createWithPail`) — Creates wide events for route handlers and server actions
+
+## Setup
+
+### 1. Edge Middleware (optional but recommended)
+
+```typescript
+// middleware.ts
+import { NextResponse } from "next/server";
+import { pailMiddleware } from "@visulima/pail/middleware/next";
+
+export default pailMiddleware(NextResponse, {
+    exclude: ["/_next/**", "/favicon.ico"],
+});
+
+export const config = {
+    matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+The edge middleware:
+
+- Generates or propagates `x-request-id`
+- Sets `x-pail-start` timestamp for downstream duration calculation
+- Skips excluded routes
+
+### 2. Handler Wrapper
+
+```typescript
+// lib/pail.ts
+import { createPail } from "@visulima/pail";
+import { createWithPail } from "@visulima/pail/middleware/next";
+
+const logger = createPail();
+export const withPail = createWithPail({ pail: logger });
+```
+
+## Route Handlers
+
+Wrap your route handlers with `withPail`:
+
+```typescript
+// app/api/users/route.ts
+import { withPail } from "@/lib/pail";
+import { useLogger } from "@visulima/pail/middleware/next";
+
+export const GET = withPail(async (request: Request) => {
+    const log = useLogger();
+    log.set({ user: { id: 1 } });
+    log.info("Fetched user list");
+    return Response.json({ ok: true });
+});
+
+export const POST = withPail(async (request: Request) => {
+    const log = useLogger();
+    const body = await request.json();
+    log.set({ action: "create", body });
+    return Response.json({ created: true }, { status: 201 });
+});
+```
+
+## Server Actions
+
+`withPail` also works with server actions:
+
+```typescript
+// app/actions.ts
+"use server";
+
+import { withPail } from "@/lib/pail";
+import { useLogger } from "@visulima/pail/middleware/next";
+
+export const createUser = withPail(async (formData: FormData) => {
+    const log = useLogger();
+    const name = formData.get("name");
+    log.set({ action: "createUser", name });
+    // ...
+});
+```
+
+> **Note:** When the first argument is not a `Request` object, the wide event uses `"UNKNOWN"` method and `"/"` path.
+
+## Accessing the Logger
+
+### Via `useLogger()`
+
+Access the logger from anywhere in the async call stack:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/next";
+
+async function fetchUser(id: number) {
+    const log = useLogger();
+    log.set({ user: { id } });
+    log.info("Querying database");
+    // ...
+}
+```
+
+## How It Works
+
+### `createWithPail` wrapper
+
+1. Extracts method, path, headers, and request ID from the `Request` argument (if present)
+2. Creates a `WideEvent` via `createMiddlewareLogger()`
+3. Runs the handler inside `AsyncLocalStorage.run()` so `useLogger()` works
+4. On success: emits with the `Response.status` (or 200 for non-Response returns)
+5. On error: emits with the error, extracts `status`/`statusCode` from error, then re-throws
+
+### Request ID propagation
+
+If the edge middleware ran first, the `x-request-id` header is already set on the request. The handler wrapper picks it up and uses it for the wide event, ensuring consistent request IDs across edge and server.
+
+## Route Configuration
+
+```typescript
+// lib/pail.ts
+export const withPail = createWithPail({
+    pail: logger,
+    service: "web-app",
+    exclude: ["/health"],
+    include: ["/api/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+    },
+});
+```
+
+## Error Handling
+
+Errors are captured with their status code and re-thrown:
+
+```typescript
+export const GET = withPail(async () => {
+    const error = new Error("Not found");
+    (error as any).status = 404;
+    throw error;
+    // Wide event emits with { status: 404, error: { ... } }
+});
+```
+
+The wrapper checks for `error.status` and `error.statusCode` properties, defaulting to 500.
+
+## Exported Types
+
+| Export                      | Description                              |
+| --------------------------- | ---------------------------------------- |
+| `pailMiddleware`            | Edge middleware factory                  |
+| `createWithPail`            | Handler wrapper factory                  |
+| `useLogger`                 | Retrieve logger from `AsyncLocalStorage` |
+| `PailNextMiddlewareOptions` | Options for the edge middleware          |
+| `NextPailOptions`           | Options for `createWithPail()`           |
+| `WideEvent`                 | Re-exported `WideEvent` class            |

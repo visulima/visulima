@@ -1,17 +1,11 @@
 {
-  "title": "@visulima/bytes",
-  "pages": [
-    "index",
-    "installation",
-    "---Getting Started---",
-    {
-      "title": "Usage Guide",
-      "href": "/usage"
-    },
-    "---API Reference---",
-    {
-      "title": "API Documentation",
-      "href": "/api"
-    }
-  ]
+    "title": "Bytes",
+    "pages": [
+        "index",
+        "installation",
+        "---Getting Started---",
+        "usage",
+        "---API Reference---",
+        "api"
+    ]
 }

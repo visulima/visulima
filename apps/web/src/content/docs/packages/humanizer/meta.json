@@ -1,0 +1,13 @@
+{
+  "title": "Humanizer",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "concepts",
+    "usage",
+    "---Configuration---",
+    "configuration",
+    "api"
+  ]
+}

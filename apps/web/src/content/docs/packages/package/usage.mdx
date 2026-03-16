@@ -1,0 +1,59 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Find Monorepo Root
+
+```typescript
+import { findMonorepoRoot } from "@visulima/package";
+
+const result = await findMonorepoRoot();
+// => { path: '/path/to/monorepo', strategy: 'pnpm' }
+```
+
+Detects: pnpm, npm, yarn, Lerna, Turborepo
+
+## Find Package Root
+
+```typescript
+import { findPackageRoot } from "@visulima/package";
+
+const result = await findPackageRoot();
+// => { path: '/path/to/package', strategy: 'package' }
+```
+
+## Find and Parse Package.json
+
+```typescript
+import { findPackageJson } from "@visulima/package";
+
+// Supports package.json, package.yaml, package.json5
+const result = await findPackageJson();
+console.log(result.packageJson.name);
+
+// With options
+const result2 = await findPackageJson("/path", {
+    yaml: true,
+    json5: true,
+    resolveCatalog: true, // Resolve pnpm catalog
+});
+```
+
+## Read Package.json
+
+```typescript
+import { readPackageJson } from "@visulima/package";
+
+const pkg = await readPackageJson("/path/to/package.json");
+```
+
+## Detect Package Manager
+
+```typescript
+import { detectPackageManager } from "@visulima/package";
+
+const pm = await detectPackageManager();
+console.log(pm); // "pnpm" | "npm" | "yarn"
+```

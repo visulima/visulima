@@ -1,0 +1,18 @@
+{
+  "title": "String",
+  "pages": [
+    "index",
+    "installation",
+    "---Getting Started---",
+    "case-conversion",
+    "string-manipulation",
+    "slugification",
+    "string-width",
+    "string-similarity",
+    "---Advanced---",
+    "testing",
+    "typescript",
+    "---API Reference---",
+    "api"
+  ]
+}

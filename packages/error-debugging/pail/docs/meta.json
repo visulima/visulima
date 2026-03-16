@@ -1,37 +1,13 @@
 {
+    "title": "Pail",
     "pages": [
         "index",
         "installation",
         "comparison",
-        {
-            "title": "Concepts",
-            "pages": ["concepts/log-levels", "concepts/reporters", "concepts/processors"]
-        },
-        {
-            "title": "Usage",
-            "pages": [
-                "usage/basic",
-                "usage/scoped",
-                "usage/custom-types",
-                "usage/timers",
-                "usage/interactive",
-                "usage/object-tree",
-                "usage/error-handling",
-                "usage/wide-events"
-            ]
-        },
-        {
-            "title": "Middleware",
-            "pages": [
-                "middleware/overview",
-                "middleware/express",
-                "middleware/fastify",
-                "middleware/hono",
-                "middleware/elysia",
-                "middleware/sveltekit",
-                "middleware/nextjs"
-            ]
-        },
+        "concepts",
+        "usage",
+        "middleware",
+        "---Reference---",
         "configuration",
         "api",
         "examples",

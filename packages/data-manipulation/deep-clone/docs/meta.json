@@ -1,17 +1,11 @@
 {
-  "title": "@visulima/deep-clone",
-  "pages": [
-    "index",
-    "installation",
-    "---Getting Started---",
-    {
-      "title": "Usage Guide",
-      "href": "/usage"
-    },
-    "---API Reference---",
-    {
-      "title": "API Documentation",
-      "href": "/api"
-    }
-  ]
+    "title": "Deep Clone",
+    "pages": [
+        "index",
+        "installation",
+        "---Getting Started---",
+        "usage",
+        "---API Reference---",
+        "api"
+    ]
 }

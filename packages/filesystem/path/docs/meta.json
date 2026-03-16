@@ -1,17 +1,11 @@
 {
-    "title": "@visulima/path",
+    "title": "Path",
     "pages": [
         "index",
         "installation",
         "---Getting Started---",
-        {
-            "title": "Usage Guide",
-            "href": "/usage"
-        },
+        "usage",
         "---API Reference---",
-        {
-            "title": "API Documentation",
-            "href": "/api"
-        }
+        "api"
     ]
 }

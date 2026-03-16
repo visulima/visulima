@@ -1,0 +1,104 @@
+---
+title: Elysia
+description: Request-scoped wide event logging plugin for Elysia
+---
+
+# Elysia Plugin
+
+The Elysia adapter uses `derive` to inject a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) into every handler's context. The event auto-emits on response or error.
+
+## Setup
+
+```typescript
+import { Elysia } from "elysia";
+import { createPail } from "@visulima/pail";
+import { pailPlugin } from "@visulima/pail/middleware/elysia";
+
+const logger = createPail();
+const app = new Elysia();
+
+pailPlugin(app, { pail: logger });
+
+app.listen(3000);
+```
+
+## Accessing the Logger
+
+### Via `context.log` (auto-injected)
+
+The `log` property is injected into every handler context via Elysia's `derive`:
+
+```typescript
+app.get("/api/users", ({ log }) => {
+    log.set({ user: { id: 1 } });
+    log.info("Fetched user list");
+    return { ok: true };
+});
+```
+
+### Via `useLogger()`
+
+Access the logger from anywhere in the async call stack using `AsyncLocalStorage`:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/elysia";
+
+async function fetchUser(id: number) {
+    const log = useLogger();
+    log.set({ user: { id } });
+    log.info("Querying database");
+    // ...
+}
+```
+
+## How It Works
+
+The plugin registers three Elysia hooks (all with `as: "global"`):
+
+1. **`derive`** — Creates a `WideEvent`, stores it in `AsyncLocalStorage` via `enterWith()`, and returns `{ log: logger }` to inject into context
+2. **`onAfterHandle`** — Emits the event with the response status (defaults to 200)
+3. **`onError`** — Emits the event with the error
+
+A `WeakSet` tracks emitted requests to prevent double-emission if both hooks fire.
+
+## Error Handling
+
+Errors are automatically captured by the `onError` hook:
+
+```typescript
+app.get("/api/fail", ({ log }) => {
+    log.set({ user: { id: 1 } });
+    throw new Error("Something went wrong");
+    // Wide event emits with error via onError hook
+});
+```
+
+## Route Configuration
+
+```typescript
+pailPlugin(app, {
+    pail: logger,
+    service: "api-gateway",
+    exclude: ["/health", "/metrics"],
+    include: ["/api/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+    },
+});
+```
+
+## TypeScript
+
+```typescript
+import type { PailElysiaInstance } from "@visulima/pail/middleware/elysia";
+```
+
+## Exported Types
+
+| Export                | Description                               |
+| --------------------- | ----------------------------------------- |
+| `pailPlugin`          | Register the plugin on an Elysia instance |
+| `useLogger`           | Retrieve logger from `AsyncLocalStorage`  |
+| `PailElysiaInstance`  | Elysia instance type with derive/hook API |
+| `ElysiaPluginOptions` | Options type for `pailPlugin()`           |
+| `WideEvent`           | Re-exported `WideEvent` class             |

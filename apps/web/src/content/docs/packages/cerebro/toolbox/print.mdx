@@ -1,0 +1,74 @@
+---
+title: "Print"
+---
+
+# Toolbox: Print
+
+The `logger` provides print methods for formatted output (if using a logger that supports it, like Pail).
+
+## Basic Printing
+
+```typescript
+execute: ({ logger }) => {
+    logger.info("Info message");
+    logger.error("Error message");
+    logger.warn("Warning message");
+    logger.debug("Debug message");
+};
+```
+
+## Custom Print Methods
+
+Some loggers (like Pail) provide additional print methods:
+
+```typescript
+execute: ({ logger }) => {
+    // If using Pail logger
+    if (logger.success) {
+        logger.success("Operation successful!");
+    }
+
+    if (logger.table) {
+        logger.table([
+            { name: "Alice", age: 30 },
+            { name: "Bob", age: 25 },
+        ]);
+    }
+};
+```
+
+## Raw Output
+
+Some loggers support raw output:
+
+```typescript
+execute: ({ logger }) => {
+    if (logger.raw) {
+        logger.raw("Raw output without formatting");
+    }
+};
+```
+
+## Using Pail Logger
+
+For enhanced printing capabilities, use the Pail logger:
+
+```typescript
+import { pail } from "@visulima/pail";
+
+const cli = new Cerebro("my-app", {
+    logger: pail({
+        // Pail configuration
+    }),
+});
+```
+
+Pail provides:
+
+- Colored output
+- Tables
+- Success/error formatting
+- Progress bars
+- And more
+
+See [Pail documentation](https://github.com/visulima/visulima/tree/main/packages/pail) for details.

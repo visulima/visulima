@@ -1,0 +1,101 @@
+---
+title: Fastify
+description: Request-scoped wide event logging plugin for Fastify
+---
+
+# Fastify Plugin
+
+The Fastify adapter registers lifecycle hooks that attach a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) to every request. The event auto-emits on response or error.
+
+## Setup
+
+```typescript
+import Fastify from "fastify";
+import { createPail } from "@visulima/pail";
+import { pailPlugin } from "@visulima/pail/middleware/fastify";
+
+const app = Fastify();
+const logger = createPail();
+
+pailPlugin(app, { pail: logger });
+
+app.listen({ port: 3000 });
+```
+
+## Accessing the Logger
+
+### Via `request.log`
+
+```typescript
+app.get("/api/users", async (request, reply) => {
+    request.log.set({ user: { id: 1 } });
+    request.log.info("Fetched user list");
+    return { ok: true };
+});
+```
+
+### Via `useLogger()`
+
+Access the logger from anywhere in the async call stack:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/fastify";
+
+async function fetchUser(id: number) {
+    const log = useLogger();
+    log.set({ user: { id } });
+    log.info("Querying database");
+    // ...
+}
+```
+
+## How It Works
+
+The plugin registers three Fastify hooks:
+
+1. **`onRequest`** — Creates a `WideEvent`, attaches it to `request.log`, and enters `AsyncLocalStorage` context
+2. **`onResponse`** — Emits the event with the response status code
+3. **`onError`** — Emits the event with the error (prevents double-emit if both fire)
+
+If the route is excluded, the `onRequest` hook calls `done()` immediately and no logger is attached.
+
+## Request ID
+
+The plugin reads `x-request-id` from incoming headers. If not present, it generates a UUID. The request ID is included in the emitted wide event.
+
+## Route Configuration
+
+```typescript
+pailPlugin(app, {
+    pail: logger,
+    service: "api-gateway",
+    exclude: ["/health", "/metrics"],
+    include: ["/api/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+    },
+});
+```
+
+## TypeScript
+
+```typescript
+import type { PailFastifyRequest, PailFastifyReply } from "@visulima/pail/middleware/fastify";
+
+app.get("/api/users", async (request: PailFastifyRequest, reply: PailFastifyReply) => {
+    request.log?.set({ user: { id: 1 } });
+    return { ok: true };
+});
+```
+
+## Exported Types
+
+| Export                 | Description                                  |
+| ---------------------- | -------------------------------------------- |
+| `pailPlugin`           | Register the plugin on a Fastify instance    |
+| `useLogger`            | Retrieve logger from `AsyncLocalStorage`     |
+| `PailFastifyRequest`   | Fastify request with `log?: WideEvent`       |
+| `PailFastifyReply`     | Fastify reply type                           |
+| `PailFastifyInstance`  | Fastify instance type with hook registration |
+| `FastifyPluginOptions` | Options type for `pailPlugin()`              |
+| `WideEvent`            | Re-exported `WideEvent` class                |

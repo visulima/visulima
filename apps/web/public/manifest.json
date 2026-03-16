@@ -1,0 +1,16 @@
+{
+    "name": "Visulima",
+    "short_name": "Visulima",
+    "description": "High-quality, modular TypeScript packages for Node.js, browsers, and edge runtimes.",
+    "start_url": "/",
+    "display": "browser",
+    "background_color": "#0a0a0a",
+    "theme_color": "#4F46E5",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

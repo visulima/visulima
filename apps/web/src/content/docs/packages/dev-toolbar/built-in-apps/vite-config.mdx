@@ -1,0 +1,77 @@
+---
+title: Vite Config
+description: Inspect the fully resolved Vite configuration from the browser — no need to console.log or read config files manually.
+---
+
+**App ID:** `dev-toolbar:vite-config`
+
+The Vite Config app fetches the resolved (post-plugin) Vite configuration from the dev server via RPC and displays it as collapsible, copyable JSON sections. The configuration shown is what Vite actually uses after all plugins and merges have been applied — the same object you would get from `resolvedConfig` in a plugin's `configResolved` hook.
+
+## Features
+
+- **Resolved config** — shows the final merged configuration, not your raw `vite.config.ts`
+- **Collapsible sections** — Server, Build, and Resolve/Alias sections are independently expandable
+- **Copy to clipboard** — each section has a one-click copy button
+- **Header badges** — quick-glance `mode`, `root`, and `base` values
+- **Refresh** — re-fetch without page reload
+
+## Panel Layout
+
+### Header Badges
+
+The top of the panel shows key configuration values at a glance:
+
+- **Mode badge** — `development` or `production` (uppercase, primary colour)
+- **Root path** — the absolute path to the project root
+- **Base** — the public base URL, if set to something other than `/`
+
+### Config Sections
+
+The resolved config is split into three collapsible sections:
+
+| Section             | Contents                                                        |
+| ------------------- | --------------------------------------------------------------- |
+| **Server**          | Dev server options: host, port, proxy, HMR settings, CORS, etc. |
+| **Build**           | Build options: outDir, target, minify, rollupOptions, etc.      |
+| **Resolve / Alias** | Module resolution: alias map, extensions, conditions, etc.      |
+
+Each section shows the raw JSON value for that config key. Click the section header to expand/collapse. Click **Copy** to copy the JSON to the clipboard.
+
+### Refresh
+
+Click **Refresh** in the panel header to re-fetch the config. This is useful after plugin changes that trigger a config reload.
+
+## Configuration
+
+### Disable via Plugin
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        viteConfig: false,
+    },
+});
+```
+
+## What's Included
+
+The data comes from Vite's `resolvedConfig` object. The toolbar fetches a serialized subset containing:
+
+```ts
+{
+    mode: string;
+    root: string;
+    base: string;
+    server: ResolvedServerOptions;
+    build: ResolvedBuildOptions;
+    resolve: ResolvedConfig["resolve"];
+}
+```
+
+Functions, plugins, and non-serializable values are omitted from the JSON output.
+
+## Notes
+
+- The config is fetched fresh on each panel open (or manual refresh). It is not cached.
+- The RPC call goes to Vite's development server, so the panel requires an active Vite dev server — it does not work in production builds.
+- Sensitive values like environment variables are only shown if they are part of the Vite config object itself (i.e. defined in `vite.config.ts`). `.env` file values are not surfaced.

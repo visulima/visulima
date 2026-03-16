@@ -1,44 +1,13 @@
 {
-    "title": "@visulima/humanizer",
+    "title": "Humanizer",
     "pages": [
         "index",
         "installation",
         "quick-start",
-        "---Concepts---",
-        {
-            "title": "Localization",
-            "href": "/concepts/localization"
-        },
-        {
-            "title": "Unit Systems",
-            "href": "/concepts/unit-systems"
-        },
-        "---Usage---",
-        {
-            "title": "Bytes",
-            "href": "/usage/bytes"
-        },
-        {
-            "title": "Duration",
-            "href": "/usage/duration"
-        },
+        "concepts",
+        "usage",
         "---Configuration---",
-        {
-            "title": "Configuration Options",
-            "href": "/configuration"
-        },
-        "---API Reference---",
-        {
-            "title": "Bytes API",
-            "href": "/api/bytes"
-        },
-        {
-            "title": "Duration API",
-            "href": "/api/duration"
-        },
-        {
-            "title": "TypeScript Types",
-            "href": "/api/types"
-        }
+        "configuration",
+        "api"
     ]
 }

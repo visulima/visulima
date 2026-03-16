@@ -1,0 +1,68 @@
+---
+title: Introduction
+description: "Error overlay for Vite with enhanced stack traces and source maps"
+---
+
+# @visulima/vite-overlay
+
+Enhanced error overlay for Vite with beautiful stack traces, source map support, and better error formatting.
+
+## Key Features
+
+- **Enhanced Stack Traces** - Clear, readable error stacks with source map resolution
+- **Source Map Support** - Accurate file locations pointing to your original source files
+- **Cause Chain Display** - Full error cause chains rendered in the overlay
+- **Solution Suggestions** - Actionable hints to help resolve common errors
+- **Balloon Notification** - Compact floating badge when the overlay is dismissed
+- **SSR Error Enhancement** - Improved server-side error display with file context
+- **Framework Detection** - Automatic React and Vue error formatting
+- **Dark/Light Mode** - Follows system theme preference
+
+## Installation
+
+```bash npm2yarn
+npm install @visulima/vite-overlay
+```
+
+## Basic Usage
+
+```typescript
+// vite.config.ts
+import { defineConfig } from "vite";
+import visulimaViteOverlay from "@visulima/vite-overlay";
+
+export default defineConfig({
+    plugins: [visulimaViteOverlay()],
+});
+```
+
+## Configuration
+
+```typescript
+visulimaViteOverlay({
+    // Forward client runtime errors to the terminal (default: true)
+    forwardConsole: true,
+
+    // Console methods to intercept (default: ["error"])
+    forwardedConsoleMethods: ["error", "warn"],
+
+    // Overlay UI customization
+    overlay: {
+        balloon: {
+            // Show/hide the floating balloon button (default: true)
+            enabled: true,
+            // Balloon position (default: "bottom-right")
+            position: "bottom-right",
+            // Custom inline style for the balloon
+            style: "",
+            // Custom SVG icon for the balloon
+            icon: "",
+        },
+        // Inject custom CSS into the overlay
+        customCSS: "",
+    },
+
+    // Custom solution finders
+    solutionFinders: [],
+});
+```

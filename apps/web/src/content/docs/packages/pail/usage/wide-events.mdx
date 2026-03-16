@@ -1,0 +1,252 @@
+---
+title: Wide Events
+description: Accumulate structured context across an operation and emit a single comprehensive log event
+---
+
+# Wide Events
+
+Wide events let you accumulate structured context throughout an operation and emit a single, comprehensive log event at the end — instead of scattering multiple log calls across your code.
+
+This pattern is inspired by [Charity Majors' wide events](https://charity.wtf/2019/02/05/logs-vs-structured-events/) approach to observability: instead of many small log lines, you build up one rich event per request or operation.
+
+## Why Wide Events?
+
+Traditional logging looks like this:
+
+```typescript
+logger.info("Request started", { method: "POST", path: "/api/checkout" });
+logger.info("User validated", { userId: 1 });
+logger.info("Cart fetched", { items: 3, total: 9999 });
+logger.info("Payment processed", { provider: "stripe" });
+logger.info("Request completed", { status: 200, duration: "127ms" });
+```
+
+That's 5 log lines for one request — hard to correlate, expensive to store, and easy to miss context. With wide events:
+
+```typescript
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+ev.set({ user: { id: 1 } });
+ev.info("User validated");
+ev.set({ cart: { items: 3, total: 9999 } });
+ev.info("Payment processed", { provider: "stripe" });
+ev.finish({ status: 200 });
+// One log line with ALL the context
+```
+
+## Basic Usage
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { createWideEvent } from "@visulima/pail/wide-event";
+
+const logger = createPail();
+
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+ev.set({ user: { id: 1, plan: "pro" } });
+ev.info("Validated cart", { itemCount: 3 });
+ev.set({ cart: { id: 42, items: 3, total: 9999 } });
+ev.info("Payment processed");
+ev.finish({ status: 200 });
+```
+
+This emits a single structured log:
+
+```json
+{
+    "event": "api.checkout",
+    "timestamp": "2026-03-14T10:23:45.612Z",
+    "duration": "127ms",
+    "duration_ms": 127,
+    "status": 200,
+    "user": { "id": 1, "plan": "pro" },
+    "cart": { "id": 42, "items": 3, "total": 9999 },
+    "requestLogs": [
+        { "level": "info", "message": "Validated cart", "context": { "itemCount": 3 }, "timestamp": "..." },
+        { "level": "info", "message": "Payment processed", "timestamp": "..." }
+    ]
+}
+```
+
+## Accumulating Context with `set()`
+
+Call `set()` as many times as you like. Data is deep-merged:
+
+```typescript
+ev.set({ user: { id: 1 } });
+ev.set({ user: { plan: "pro" } });
+// data = { user: { id: 1, plan: "pro" } }
+```
+
+Arrays are replaced, not concatenated:
+
+```typescript
+ev.set({ tags: ["a", "b"] });
+ev.set({ tags: ["c"] });
+// data = { tags: ["c"] }
+```
+
+## Lifecycle Logging
+
+Record what happened during the operation with `info()`, `warn()`, `error()`, and `debug()`:
+
+```typescript
+ev.info("Cart validated", { itemCount: 3 });
+ev.warn("Rate limit approaching", { remaining: 5 });
+ev.error("Payment retry needed", new Error("timeout"));
+ev.debug("Cache miss for user profile");
+```
+
+Each entry is recorded with a timestamp and included in the `requestLogs` array of the emitted event.
+
+## Level Escalation
+
+The event's severity level auto-escalates and never de-escalates:
+
+```typescript
+const ev = createWideEvent({ pail: logger, name: "api.checkout" });
+
+ev.getLevel(); // "info" (default)
+ev.info("Step 1"); // still "info"
+ev.warn("Rate limit approaching"); // escalates to "warn"
+ev.info("Step 3"); // stays "warn"
+ev.error("Payment failed"); // escalates to "error"
+ev.warn("Another warning"); // stays "error"
+```
+
+The final emission uses the escalated level to determine which pail log type to use.
+
+## Error Handling
+
+Attach errors to be serialized in the emitted event:
+
+```typescript
+// Via error() lifecycle method
+ev.error("Payment failed", new Error("connection timeout"));
+
+// Via setError()
+ev.setError(new Error("connection timeout"));
+
+// Via finish()
+ev.finish({ status: 500, error: new Error("connection timeout") });
+```
+
+Errors are serialized with `name`, `message`, `stack`, `status`/`statusCode`, `data`, and the full `cause` chain.
+
+## Finishing and Emitting
+
+### `finish()` — for HTTP contexts
+
+```typescript
+ev.finish({ status: 200 });
+ev.finish({ status: 500, error: new Error("DB timeout") });
+ev.finish(); // emit without status or error
+```
+
+### `emit()` — direct emission
+
+```typescript
+ev.emit(); // emit with auto-detected type
+ev.emit("warn"); // override the log type
+```
+
+Both `finish()` and `emit()` are idempotent — only the first call emits.
+
+## Auto-Emit with Explicit Resource Management
+
+Wide events implement `Disposable` for use with TC39 Explicit Resource Management:
+
+```typescript
+{
+    using ev = createWideEvent({ pail: logger, name: "api.checkout" });
+    ev.set({ user: { id: 1 } });
+    // auto-emits when scope exits
+}
+```
+
+Disable auto-emit if you want manual control:
+
+```typescript
+const ev = createWideEvent({ pail: logger, name: "api.checkout", autoEmit: false });
+// won't emit on dispose — you must call finish() or emit()
+```
+
+## Typed Data Shape
+
+For type-safe context accumulation, provide a type parameter:
+
+```typescript
+interface CheckoutData {
+    user: { id: number; plan: string };
+    cart: { items: number; total: number };
+}
+
+const ev = createWideEvent<CheckoutData>({ pail: logger, name: "api.checkout" });
+
+ev.set({ user: { id: 1, plan: "pro" } }); // typed
+ev.set({ cart: { items: 3 } }); // partial is fine
+```
+
+## Chaining
+
+All mutating methods return `this` for chaining:
+
+```typescript
+createWideEvent({ pail: logger, name: "api.checkout" })
+    .set({ user: { id: 1 } })
+    .info("User validated")
+    .set({ cart: { items: 3 } })
+    .info("Cart validated", { total: 9999 })
+    .setStatus(200)
+    .emit();
+```
+
+## Service Name
+
+Tag events with a service name for multi-service architectures:
+
+```typescript
+const ev = createWideEvent({
+    pail: logger,
+    name: "api.checkout",
+    service: "checkout-service",
+});
+// emitted event includes { service: "checkout-service" }
+```
+
+## Options Reference
+
+| Option     | Type          | Default  | Description                                |
+| ---------- | ------------- | -------- | ------------------------------------------ |
+| `name`     | `string`      | required | Event name, e.g. `"api.checkout"`          |
+| `pail`     | Pail instance | required | The pail logger to emit through            |
+| `service`  | `string`      | —        | Service name included in the emitted event |
+| `type`     | `string`      | `"info"` | Base log type (may be escalated)           |
+| `autoEmit` | `boolean`     | `true`   | Auto-emit on `Symbol.dispose`              |
+
+## Methods Reference
+
+| Method                   | Returns    | Description                            |
+| ------------------------ | ---------- | -------------------------------------- |
+| `set(data)`              | `this`     | Deep-merge partial data into the event |
+| `info(msg, ctx?)`        | `this`     | Record an info-level lifecycle entry   |
+| `warn(msg, ctx?)`        | `this`     | Record a warn-level entry; escalates   |
+| `error(msg, err?, ctx?)` | `this`     | Record an error-level entry; escalates |
+| `debug(msg, ctx?)`       | `this`     | Record a debug-level entry             |
+| `setError(error)`        | `this`     | Attach an error; escalates to "error"  |
+| `setStatus(code)`        | `this`     | Set HTTP status code                   |
+| `finish(opts?)`          | `void`     | Set status/error and emit (once)       |
+| `emit(typeOverride?)`    | `void`     | Emit the event directly (once)         |
+| `getData()`              | `Readonly` | Get snapshot of accumulated data       |
+| `getLevel()`             | `string`   | Get current severity level             |
+| `getRequestLogs()`       | `readonly` | Get lifecycle log entries              |
+
+## Next Steps
+
+- [Express Middleware](/docs/packages/pail/middleware/express) — Use wide events in Express apps
+- [Fastify Plugin](/docs/packages/pail/middleware/fastify) — Use wide events in Fastify apps
+- [Hono Middleware](/docs/packages/pail/middleware/hono) — Use wide events in Hono apps
+- [Elysia Plugin](/docs/packages/pail/middleware/elysia) — Use wide events in Elysia apps
+- [SvelteKit Hooks](/docs/packages/pail/middleware/sveltekit) — Use wide events in SvelteKit apps
+- [Next.js Integration](/docs/packages/pail/middleware/nextjs) — Use wide events in Next.js apps

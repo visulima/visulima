@@ -1,42 +1,18 @@
 {
-    "title": "@visulima/string",
+    "title": "String",
     "pages": [
         "index",
         "installation",
         "---Getting Started---",
-        {
-            "title": "Case Conversion",
-            "href": "/case-conversion"
-        },
-        {
-            "title": "String Manipulation",
-            "href": "/string-manipulation"
-        },
-        {
-            "title": "Slugification",
-            "href": "/slugification"
-        },
-        {
-            "title": "String Width",
-            "href": "/string-width"
-        },
-        {
-            "title": "String Similarity",
-            "href": "/string-similarity"
-        },
+        "case-conversion",
+        "string-manipulation",
+        "slugification",
+        "string-width",
+        "string-similarity",
         "---Advanced---",
-        {
-            "title": "Testing Utilities",
-            "href": "/testing"
-        },
-        {
-            "title": "TypeScript Types",
-            "href": "/typescript"
-        },
+        "testing",
+        "typescript",
         "---API Reference---",
-        {
-            "title": "API Overview",
-            "href": "/api"
-        }
+        "api"
     ]
 }

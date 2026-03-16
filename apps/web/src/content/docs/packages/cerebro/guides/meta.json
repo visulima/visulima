@@ -1,0 +1,12 @@
+{
+  "title": "Guides",
+  "pages": [
+    "building-cli",
+    "commands",
+    "options",
+    "plugins",
+    "using-plugins",
+    "advanced",
+    "comparison"
+  ]
+}

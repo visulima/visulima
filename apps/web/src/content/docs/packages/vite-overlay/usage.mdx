@@ -1,0 +1,28 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Vite Plugin
+
+```typescript
+// vite.config.ts
+import { viteOverlay } from "@visulima/vite-overlay";
+
+export default {
+    plugins: [viteOverlay()],
+};
+```
+
+## Custom Error Display
+
+```typescript
+import { showError } from "@visulima/vite-overlay";
+
+try {
+    // code
+} catch (error) {
+    showError(error);
+}
+```

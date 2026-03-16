@@ -1,11 +1,11 @@
 {
-    "title": "@visulima/crud",
+    "title": "Crud",
     "pages": [
         "index",
         "installation",
         "---Getting Started---",
-        { "title": "Usage", "href": "/usage" },
+        "usage",
         "---API Reference---",
-        { "title": "API", "href": "/api" }
+        "api"
     ]
 }

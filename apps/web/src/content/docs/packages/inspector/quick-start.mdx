@@ -1,0 +1,27 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Basic Inspection
+
+```typescript
+import { inspect } from "@visulima/inspector";
+
+const data = {
+    user: { name: "John", age: 30 },
+    items: [1, 2, 3],
+};
+
+console.log(inspect(data));
+```
+
+## With Options
+
+```typescript
+console.log(inspect(data, {
+    depth: 3,
+    colors: true,
+}));
+```
