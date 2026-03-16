@@ -26,7 +26,7 @@ export default defineConfig({
         treeShaking: true,
     },
     optimizeDeps: {
-        exclude: ["scripts/*"],
+        exclude: ["scripts/*", "@fumadocs/mdx-remote", "@fumadocs/mdx-remote/client"],
     },
     plugins: [
         viteOverlay({ showBallonButton: false }),

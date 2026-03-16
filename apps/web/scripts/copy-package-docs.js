@@ -256,7 +256,29 @@ async function main() {
     }
 }
 
-main().catch((error) => {
+/**
+ * Copies root-level markdown files (e.g. CODE_OF_CONDUCT.md) into
+ * apps/web/src/content/ so they can be compiled as MDX at build time.
+ */
+async function copyRootMarkdown() {
+    const contentDir = path.join(__dirname, "..", "src", "content");
+    await fs.mkdir(contentDir, { recursive: true });
+
+    const files = [
+        { src: path.join(ROOT_DIR, ".github", "CODE_OF_CONDUCT.md"), dest: path.join(contentDir, "code-of-conduct.md") },
+    ];
+
+    for (const { src, dest } of files) {
+        try {
+            await fs.copyFile(src, dest);
+            console.log(`Copied ${path.relative(ROOT_DIR, src)} → ${path.relative(path.join(__dirname, ".."), dest)}`);
+        } catch {
+            console.warn(`Warning: ${path.relative(ROOT_DIR, src)} not found, skipping`);
+        }
+    }
+}
+
+Promise.all([main(), copyRootMarkdown()]).catch((error) => {
     console.error("Fatal error:", error);
     process.exit(1);
 });

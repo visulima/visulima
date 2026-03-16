@@ -21,19 +21,19 @@ const Menus: {
     {
         links: [
             {
-                title: "Terms",
-                to: "/terms",
-            },
-            {
-                title: "Privacy",
+                title: "Privacy Policy",
                 to: "/privacy",
             },
             {
                 title: "Code of Conduct",
                 to: "/code-of-conduct",
             },
+            {
+                title: "Imprint",
+                to: "/imprint",
+            },
         ],
-        title: "Support",
+        title: "Legal",
     },
     {
         links: [

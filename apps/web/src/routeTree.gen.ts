@@ -9,11 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as LlmsFullDottxtRouteImport } from './routes/llms-full[.]txt'
+import { Route as ImprintRouteImport } from './routes/imprint'
 import { Route as CodeOfConductRouteImport } from './routes/code-of-conduct'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as BrandRouteImport } from './routes/brand'
@@ -25,11 +25,6 @@ import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as ApiOgRouteImport } from './routes/api/og'
 import { Route as LlmsDotmdxDocsSplatRouteImport } from './routes/llms[.]mdx.docs.$'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -48,6 +43,11 @@ const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
 const LlmsFullDottxtRoute = LlmsFullDottxtRouteImport.update({
   id: '/llms-full.txt',
   path: '/llms-full.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImprintRoute = ImprintRouteImport.update({
+  id: '/imprint',
+  path: '/imprint',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodeOfConductRoute = CodeOfConductRouteImport.update({
@@ -106,11 +106,11 @@ export interface FileRoutesByFullPath {
   '/brand': typeof BrandRoute
   '/changelog': typeof ChangelogRoute
   '/code-of-conduct': typeof CodeOfConductRoute
+  '/imprint': typeof ImprintRoute
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
   '/api/og': typeof ApiOgRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
@@ -123,11 +123,11 @@ export interface FileRoutesByTo {
   '/brand': typeof BrandRoute
   '/changelog': typeof ChangelogRoute
   '/code-of-conduct': typeof CodeOfConductRoute
+  '/imprint': typeof ImprintRoute
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
   '/api/og': typeof ApiOgRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
@@ -141,11 +141,11 @@ export interface FileRoutesById {
   '/brand': typeof BrandRoute
   '/changelog': typeof ChangelogRoute
   '/code-of-conduct': typeof CodeOfConductRoute
+  '/imprint': typeof ImprintRoute
   '/llms-full.txt': typeof LlmsFullDottxtRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
   '/api/og': typeof ApiOgRoute
   '/api/search': typeof ApiSearchRoute
   '/docs/$': typeof DocsSplatRoute
@@ -160,11 +160,11 @@ export interface FileRouteTypes {
     | '/brand'
     | '/changelog'
     | '/code-of-conduct'
+    | '/imprint'
     | '/llms-full.txt'
     | '/llms.txt'
     | '/privacy'
     | '/sitemap.xml'
-    | '/terms'
     | '/api/og'
     | '/api/search'
     | '/docs/$'
@@ -177,11 +177,11 @@ export interface FileRouteTypes {
     | '/brand'
     | '/changelog'
     | '/code-of-conduct'
+    | '/imprint'
     | '/llms-full.txt'
     | '/llms.txt'
     | '/privacy'
     | '/sitemap.xml'
-    | '/terms'
     | '/api/og'
     | '/api/search'
     | '/docs/$'
@@ -194,11 +194,11 @@ export interface FileRouteTypes {
     | '/brand'
     | '/changelog'
     | '/code-of-conduct'
+    | '/imprint'
     | '/llms-full.txt'
     | '/llms.txt'
     | '/privacy'
     | '/sitemap.xml'
-    | '/terms'
     | '/api/og'
     | '/api/search'
     | '/docs/$'
@@ -212,11 +212,11 @@ export interface RootRouteChildren {
   BrandRoute: typeof BrandRoute
   ChangelogRoute: typeof ChangelogRoute
   CodeOfConductRoute: typeof CodeOfConductRoute
+  ImprintRoute: typeof ImprintRoute
   LlmsFullDottxtRoute: typeof LlmsFullDottxtRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TermsRoute: typeof TermsRoute
   ApiOgRoute: typeof ApiOgRoute
   ApiSearchRoute: typeof ApiSearchRoute
   DocsSplatRoute: typeof DocsSplatRoute
@@ -227,13 +227,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -260,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/llms-full.txt'
       fullPath: '/llms-full.txt'
       preLoaderRoute: typeof LlmsFullDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/imprint': {
+      id: '/imprint'
+      path: '/imprint'
+      fullPath: '/imprint'
+      preLoaderRoute: typeof ImprintRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/code-of-conduct': {
@@ -340,11 +340,11 @@ const rootRouteChildren: RootRouteChildren = {
   BrandRoute: BrandRoute,
   ChangelogRoute: ChangelogRoute,
   CodeOfConductRoute: CodeOfConductRoute,
+  ImprintRoute: ImprintRoute,
   LlmsFullDottxtRoute: LlmsFullDottxtRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TermsRoute: TermsRoute,
   ApiOgRoute: ApiOgRoute,
   ApiSearchRoute: ApiSearchRoute,
   DocsSplatRoute: DocsSplatRoute,
