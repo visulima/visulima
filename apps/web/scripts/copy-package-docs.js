@@ -194,8 +194,11 @@ async function main() {
                 if (!stat.isDirectory()) {
                     continue;
                 }
-            } catch {
-                continue;
+            } catch (err) {
+                if (err.code === "ENOENT") {
+                    continue;
+                }
+                throw err;
             }
 
             const destPath = path.join(DEST_DIR, pkg.name);

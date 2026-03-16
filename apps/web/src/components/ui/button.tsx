@@ -71,9 +71,9 @@ const Button = ({
     const Comp = asChild ? Slot.Slot : "button";
 
     return (
-        <Comp className={cn(buttonVariants({ className, size, variant }))} ref={ref} {...properties}>
+        <Comp className={cn(buttonVariants({ className, size, variant }), Icon && "group")} ref={ref} {...properties}>
             {Icon && iconPlacement === "left" && (
-                <div className="w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-100 group-hover:pr-2 group-hover:opacity-100">
+                <div className="w-0 translate-x-[0%] pr-0 opacity-0 transition-all duration-200 group-hover:w-5 group-hover:translate-x-full group-hover:pr-2 group-hover:opacity-100">
                     <Icon />
                 </div>
             )}

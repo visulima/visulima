@@ -51,7 +51,7 @@ const Overview = () => {
     const { includeCategories, pageIndex = 1 } = routeApi.useSearch();
 
     // Sort blogs by publishedAt date, handling undefined dates (they go to the end)
-    const sortedBlogs = [...allBlogs].sort((a, b) => {
+    const sortedBlogs = allBlogs.toSorted((a, b) => {
         const dateA = a.data.publishedAt ? new Date(a.data.publishedAt) : null;
         const dateB = b.data.publishedAt ? new Date(b.data.publishedAt) : null;
 

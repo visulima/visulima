@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import type { FC, RefObject } from "react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export const AnimatedBeam: FC<AnimatedBeamProperties> = ({
     containerRef,
     curvature = 0,
     delay = 0,
-    duration = Math.random() * 3 + 4,
+    duration: durationProp,
     endXOffset = 0,
     endYOffset = 0,
     fromRef,
@@ -46,6 +46,8 @@ export const AnimatedBeam: FC<AnimatedBeamProperties> = ({
     toRef,
 }) => {
     const id = useId();
+    const stableDuration = useRef(Math.random() * 3 + 4);
+    const duration = durationProp ?? stableDuration.current;
     const [pathD, setPathD] = useState("");
     const [svgDimensions, setSvgDimensions] = useState({ height: 0, width: 0 });
 
@@ -88,23 +90,29 @@ export const AnimatedBeam: FC<AnimatedBeamProperties> = ({
             }
         };
 
-        // Initialize ResizeObserver
-        const resizeObserver = new ResizeObserver((entries) => {
-            // For all entries, recalculate the path
-            for (const entry of entries) updatePath();
+        const resizeObserver = new ResizeObserver(() => {
+            updatePath();
         });
 
-        // Observe the container element
         if (containerRef.current) {
             resizeObserver.observe(containerRef.current);
         }
+        if (fromRef.current) {
+            resizeObserver.observe(fromRef.current);
+        }
+        if (toRef.current) {
+            resizeObserver.observe(toRef.current);
+        }
 
-        // Call the updatePath initially to set the initial path
+        window.addEventListener("resize", updatePath);
+        window.addEventListener("scroll", updatePath, { passive: true });
+
         updatePath();
 
-        // Clean up the observer on component unmount
         return () => {
             resizeObserver.disconnect();
+            window.removeEventListener("resize", updatePath);
+            window.removeEventListener("scroll", updatePath);
         };
     }, [containerRef, fromRef, toRef, curvature, startXOffset, startYOffset, endXOffset, endYOffset]);
 

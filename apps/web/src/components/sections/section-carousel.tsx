@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { FC, PropsWithChildren } from "react";
-import { forwardRef } from "react";
 
 import LineGrid from "@/components/sections/line-grid";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,7 @@ const CarouselNext = ({
     variant = "outline",
     ...properties
 }: React.ComponentProps<typeof Button> & { ref?: React.RefObject<HTMLButtonElement | null> }) => {
-    const { canScrollNext, orientation, scrollNext } = useCarousel();
+    const { canScrollNext, scrollNext } = useCarousel();
 
     return (
         <Button className={cn("h-8 w-8", className)} disabled={!canScrollNext} onClick={scrollNext} ref={ref} size={size} variant={variant} {...properties}>

@@ -2,10 +2,11 @@ import { Link, useLoaderData } from "@tanstack/react-router";
 import { Check, ChevronRight, Copy, Download, ExternalLink, Terminal } from "lucide-react";
 import { motion } from "motion/react";
 import type { FC } from "react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
+import AnimatedNumber from "@/components/ui/animated/animated-number";
 import JsonLd from "@/components/seo/json-ld";
 import HighlightLink from "@/components/ui/highlight-link";
 import type { AccentColor } from "@/data/packages";
@@ -130,12 +131,15 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
 
     return (
         <div className="relative h-full w-full">
-            <motion.svg
+            <motion.div
                 className="absolute inset-0 h-full w-full"
                 animate={{ opacity: 1 }}
                 initial={{ opacity: 0 }}
-                preserveAspectRatio="none"
                 transition={{ duration: 1.5 }}
+            >
+            <svg
+                className="h-full w-full"
+                preserveAspectRatio="none"
                 viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}
             >
                 <defs>
@@ -153,10 +157,9 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
                 <path d={areaPath} fill={`url(#${id})`} />
                 <path d={linePath} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
-                {lastPoint && (
-                    <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill={color} r="4" />
-                )}
-            </motion.svg>
+                {lastPoint && <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill={color} r="4" />}
+            </svg>
+            </motion.div>
             <div className="absolute right-4 bottom-1 left-4 flex justify-between">
                 <span className="font-mono text-xs text-gray-400">{formatMonth(firstMonth)}</span>
                 <span className="font-mono text-xs text-gray-400">Today</span>
@@ -164,57 +167,6 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
         </div>
     );
 });
-
-const AnimatedNumber: FC<{ className?: string; suffix?: string; value: number }> = ({ className, suffix = "", value }) => {
-    const [current, setCurrent] = useState(0);
-    const ref = useRef<HTMLSpanElement>(null);
-    const hasAnimated = useRef(false);
-
-    useEffect(() => {
-        if (hasAnimated.current || value === 0) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry?.isIntersecting && !hasAnimated.current) {
-                    hasAnimated.current = true;
-                    const duration = 2000;
-                    const startTime = performance.now();
-
-                    const animate = (now: number) => {
-                        const elapsed = now - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const eased = 1 - (1 - progress) ** 3;
-
-                        setCurrent(Math.floor(eased * value));
-
-                        if (progress < 1) {
-                            requestAnimationFrame(animate);
-                        }
-                    };
-
-                    requestAnimationFrame(animate);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.3 },
-        );
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => observer.disconnect();
-    }, [value]);
-
-    return (
-        <span className={className} ref={ref}>
-            {current.toLocaleString("en-US")}
-            {suffix}
-        </span>
-    );
-};
 
 const PackageDetail: FC = () => {
     const { pkg } = useLoaderData({ from: "/packages/$slug" });
@@ -259,7 +211,6 @@ const PackageDetail: FC = () => {
             />
 
             <Section classes={{ childrenWrapper: "gap-y-0", root: "pt-36 pb-0" }} mode="light" patternColor={accent.patternColor} patternPosition="bottom">
-
                 <div className="col-span-full mb-10 flex items-center gap-3">
                     <Link className="font-mono text-sm text-gray-400 transition-colors hover:text-gray-600" to="/packages">
                         Packages
@@ -268,12 +219,10 @@ const PackageDetail: FC = () => {
                     <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-medium", accent.badgeLight)}>{pkg.category}</span>
                 </div>
 
-
                 <div className="col-span-3">
                     <h1 className="text-wrap-balance text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">{pkg.name}</h1>
                     <p className="mt-6 max-w-2xl text-lg leading-relaxed text-gray-500 sm:text-xl">{pkg.description}</p>
                 </div>
-
 
                 <div className="col-span-1 flex flex-col items-end justify-end gap-6">
                     <div className="flex items-center gap-3">
@@ -302,7 +251,6 @@ const PackageDetail: FC = () => {
                     </div>
                 </div>
 
-
                 <div className="col-span-full mt-10 border-t border-gray-200 pt-10">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <div className="relative w-full md:w-6/12">
@@ -318,7 +266,6 @@ const PackageDetail: FC = () => {
                         </HighlightLink>
                     </div>
                 </div>
-
 
                 <div className="col-span-full border-t border-gray-200 mt-10">
                     <div className="grid grid-cols-2 divide-x divide-gray-200 sm:grid-cols-4">
@@ -349,7 +296,6 @@ const PackageDetail: FC = () => {
                 </div>
             </Section>
 
-
             <Section mode="light" patternColor={accent.patternColor} patternPosition="bottom">
                 <div className="col-span-full">
                     <h2 className="mb-8 flex items-center gap-2 font-mono text-sm tracking-wider text-gray-400 uppercase">
@@ -362,8 +308,8 @@ const PackageDetail: FC = () => {
                         <div
                             key={feature}
                             className={cn(
-                                "group/feature relative flex items-center gap-4 px-0 py-6 transition-all duration-300 bg-ivory",
-                                index % 2 !== 0 && "sm:border-l sm:border-gray-200 sm:pl-8",
+                                "group/feature relative flex items-center gap-4 px-0 py-6 transition-all duration-300 bg-ivory sm:pl-8",
+                                index % 2 !== 1 && "sm:border-r sm:border-gray-200",
                                 index >= 2 && "border-t border-gray-200",
                             )}
                         >
@@ -380,7 +326,6 @@ const PackageDetail: FC = () => {
                     ))}
                 </div>
             </Section>
-
 
             <div className="bg-background">
                 <Section mode="dark" patternColor="ivory">
@@ -413,7 +358,6 @@ const PackageDetail: FC = () => {
                     </div>
                 </Section>
             </div>
-
 
             <Section mode="light">
                 <div className="col-span-4 flex flex-col gap-16">

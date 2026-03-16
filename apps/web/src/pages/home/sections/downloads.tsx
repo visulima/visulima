@@ -4,61 +4,11 @@ import type { FC } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Section from "@/components/sections/section";
+import AnimatedNumber from "@/components/ui/animated/animated-number";
 import type { DownloadStats, MonthlyDataPoint } from "@/server/stats";
 import { getStats } from "@/server/stats";
 
 const ALL_PACKAGES = "all";
-
-const AnimatedNumber = ({ className, suffix = "", value }: { className?: string; suffix?: string; value: number }) => {
-    const [current, setCurrent] = useState(0);
-    const ref = useRef<HTMLSpanElement>(null);
-    const hasAnimated = useRef(false);
-
-    useEffect(() => {
-        if (hasAnimated.current || value === 0) {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry?.isIntersecting && !hasAnimated.current) {
-                    hasAnimated.current = true;
-                    const duration = 2000;
-                    const startTime = performance.now();
-
-                    const animate = (now: number) => {
-                        const elapsed = now - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const eased = 1 - (1 - progress) ** 3;
-
-                        setCurrent(Math.floor(eased * value));
-
-                        if (progress < 1) {
-                            requestAnimationFrame(animate);
-                        }
-                    };
-
-                    requestAnimationFrame(animate);
-                    observer.disconnect();
-                }
-            },
-            { threshold: 0.3 },
-        );
-
-        if (ref.current) {
-            observer.observe(ref.current);
-        }
-
-        return () => observer.disconnect();
-    }, [value]);
-
-    return (
-        <span className={className} ref={ref}>
-            {current.toLocaleString("en-US")}
-            {suffix}
-        </span>
-    );
-};
 
 const CHART_VIEW_WIDTH = 500;
 const CHART_VIEW_HEIGHT = 250;
@@ -94,12 +44,15 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
 
     return (
         <div className="relative h-full w-full">
-            <motion.svg
+            <motion.div
                 className="absolute inset-0 h-full w-full"
                 animate={{ opacity: 1 }}
                 initial={{ opacity: 0 }}
-                preserveAspectRatio="none"
                 transition={{ duration: 1.5 }}
+            >
+            <svg
+                className="h-full w-full"
+                preserveAspectRatio="none"
                 viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}
             >
                 <defs>
@@ -125,7 +78,8 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
                 {lastPoint && (
                     <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill="hsl(258 80% 55%)" r="4" />
                 )}
-            </motion.svg>
+            </svg>
+            </motion.div>
             <div className="absolute right-6 bottom-3 left-6 flex justify-between md:right-10 md:left-10">
                 <span className="font-mono text-sm text-gray-400">{formatMonth(firstMonth)}</span>
                 <span className="font-mono text-sm text-gray-400">Today</span>
@@ -248,7 +202,7 @@ const aggregateMonthlyChart = (chart: Record<string, MonthlyDataPoint[]>): Month
     }
 
     return Object.keys(byMonth)
-        .sort()
+        .toSorted()
         .map((month) => ({ downloads: byMonth[month], month }));
 };
 
@@ -256,7 +210,7 @@ const Downloads: FC = () => {
     const stats = useDownloadStats();
     const [selectedPackage, setSelectedPackage] = useState(ALL_PACKAGES);
 
-    const packages = useMemo(() => Object.keys(stats.totalDownloads).sort(), [stats.totalDownloads]);
+    const packages = useMemo(() => Object.keys(stats.totalDownloads).toSorted(), [stats.totalDownloads]);
 
     const chartData = useMemo(() => {
         if (selectedPackage === ALL_PACKAGES) {

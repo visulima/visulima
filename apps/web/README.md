@@ -4,7 +4,7 @@ This project is the official documentation, blog, and informational website for 
 
 ## Developed and Designed by Anolilab
 
-![GitHub-Mark-Light](.github/assets/anolilab_text_dark.svg#gh-dark-mode-only)![GitHub-Mark-Dark](.github/assets/anolilab_text.svg#gh-light-mode-only)
+![GitHub-Mark-Light](../../.github/assets/anolilab_text_dark.svg#gh-dark-mode-only)![GitHub-Mark-Dark](../../.github/assets/anolilab_text.svg#gh-light-mode-only)
 
 Visulima.com is proudly developed and designed by [Anolilab](https://anolilab.com). Anolilab delivers high-performance websites, web applications, AI solutions, and custom software with a focus on modern technology and user experience.
 
@@ -20,8 +20,8 @@ Ensure you have [Node.js](https://nodejs.org/) (preferably a recent LTS version)
 
     ```bash
     # Replace with your repository's URL if applicable
-    git clone git@github.com:visulima/visulima.com.git visulima.com
-    cd visulima.com
+    git clone git@github.com:visulima/visulima.git visulima
+    cd visulima
     ```
 
     If you already have the project files, navigate to the project directory.
@@ -76,11 +76,11 @@ The Visulima community can be found on [GitHub Discussions](https://github.com/v
 
 To chat with other community members you can join the [Visulima Discord](https://chat.visulima.com).
 
-Our [Code of Conduct](https://github.com/visulima/visulima.com/blob/main/.github/CODE_OF_CONDUCT.md) applies to all Visulima community channels.
+Our [Code of Conduct](https://github.com/visulima/visulima/blob/main/.github/CODE_OF_CONDUCT.md) applies to all Visulima community channels.
 
 ## Contributing
 
-We welcome contributions to Visulima.com! Please see our [contributing.md](https://github.com/visulima/visulima.com/blob/main/.github/CONTRIBUTING.md) for detailed guidelines and the development process.
+We welcome contributions to Visulima.com! Please see our [contributing.md](https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md) for detailed guidelines and the development process.
 
 ### Good First Issues
 

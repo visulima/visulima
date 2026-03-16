@@ -89,6 +89,8 @@ export const BentoSpotlightCard = ({
         mouseY.set(clientY - top);
     }
 
+    const maskImage = useMotionTemplate`radial-gradient(${radius}px circle at ${mouseX}px ${mouseY}px, white, transparent 80%)`;
+
     const [isHovering, setIsHovering] = useState(false);
     const handleMouseEnter = () => {
         setIsHovering(true);
@@ -100,7 +102,6 @@ export const BentoSpotlightCard = ({
     return (
         <div
             className={cn("group/spotlight group relative col-span-4 flex flex-col justify-between overflow-hidden", "transform-gpu", className)}
-            key={name}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onMouseMove={handleMouseMove}
@@ -109,13 +110,7 @@ export const BentoSpotlightCard = ({
                 className="pointer-events-none absolute -inset-px z-0 rounded-md opacity-0 transition duration-300 group-hover/spotlight:opacity-100"
                 style={{
                     backgroundColor: color,
-                    maskImage: useMotionTemplate`
-            radial-gradient(
-              ${radius}px circle at ${mouseX}px ${mouseY}px,
-              white,
-              transparent 80%
-            )
-          `,
+                    maskImage,
                 }}
             >
                 {isHovering && (

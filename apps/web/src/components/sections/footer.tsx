@@ -42,7 +42,7 @@ const Menus: {
                 title: "GitHub",
             },
             {
-                href: "https://discord.gg/visulima",
+                href: "https://discord.gg/TtFJY8xkFK",
                 title: "Discord",
             },
             {
@@ -51,10 +51,6 @@ const Menus: {
             },
         ],
         title: "Community",
-    },
-    {
-        links: [],
-        title: "",
     },
 ];
 
@@ -77,7 +73,7 @@ const Footer: FC = () => (
                 <span className="grow">GitHub</span>
                 <ExternalLink />
             </HighlightLink>
-            <HighlightLink className="border-0" href="https://discord.gg/visulima" mode="dark" rel="noopener noreferrer" target="_blank">
+            <HighlightLink className="border-0" href="https://discord.gg/TtFJY8xkFK" mode="dark" rel="noopener noreferrer" target="_blank">
                 <DiscordLogoIcon />
                 <span className="grow">Discord</span>
                 <ExternalLink />

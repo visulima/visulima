@@ -1,8 +1,6 @@
 import type { FC, ReactNode } from "react";
 import { useEffect, useLayoutEffect, useState } from "react";
 
-import useWindowSize from "@/hooks/use-window-size";
-
 const screens = {
     "2xl": "1536px",
     lg: "1024px",

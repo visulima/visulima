@@ -59,19 +59,19 @@ const menu = [
                 navItems: [
                     {
                         description: "Human-friendly file system utilities with async/sync APIs.",
-                        href: "/docs/packages/fs",
+                        href: "/packages/fs",
                         icon: <FolderOpen className="size-6" />,
                         title: "FS",
                     },
                     {
                         description: "Enhanced errors with stacktrace parsing and code frames.",
-                        href: "/docs/packages/error",
+                        href: "/packages/error",
                         icon: <Bug className="size-6" />,
                         title: "Error",
                     },
                     {
                         description: "Better errors with chaining, formatted messages, and types.",
-                        href: "/docs/packages/ono",
+                        href: "/packages/ono",
                         icon: <AlertTriangle className="size-6" />,
                         title: "Ono",
                     },
@@ -82,19 +82,19 @@ const menu = [
                 navItems: [
                     {
                         description: "Vite dev toolbar with accessibility and perf monitoring.",
-                        href: "/docs/packages/dev-toolbar",
+                        href: "/packages/dev-toolbar",
                         icon: <Wrench className="size-6" />,
                         title: "Dev Toolbar",
                     },
                     {
                         description: "Error overlay for Vite with enhanced stack traces.",
-                        href: "/docs/packages/vite-overlay",
+                        href: "/packages/vite-overlay",
                         icon: <Layers className="size-6" />,
                         title: "Vite Overlay",
                     },
                     {
                         description: "GDPR-compliant data redaction and anonymization.",
-                        href: "/docs/packages/redact",
+                        href: "/packages/redact",
                         icon: <Shield className="size-6" />,
                         title: "Redact",
                     },
@@ -142,7 +142,7 @@ const menu = [
                     },
                     {
                         description: "Join developers building with Visulima",
-                        href: "https://discord.gg/h2BGyR7h",
+                        href: "https://discord.gg/TtFJY8xkFK",
                         icon: <Handshake className="size-6" />,
                         title: "The Visulima Community",
                     },
@@ -159,14 +159,14 @@ const menu = [
         navItems: [
             {
                 description: "Community Support, Q&A, General Chat, Networking",
-                href: "https://discord.gg/h2BGyR7h",
-                icon: <DiscordLogoIcon className="size-" />,
+                href: "https://discord.gg/TtFJY8xkFK",
+                icon: <DiscordLogoIcon className="size-6" />,
                 title: "Discord",
             },
             {
                 description: "Bug Reports, Feature Requests, Source Code",
                 href: "https://github.com/visulima",
-                icon: <GitHubLogoIcon className="size-" />,
+                icon: <GitHubLogoIcon className="size-6" />,
                 title: "GitHub",
             },
             {
@@ -444,13 +444,13 @@ const Navbar = () => {
                 </NavigationMenuList>
                 <SearchButton />
                 <ThemeToggle />
-                <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
+                <a className="text-white transition-colors hover:text-white/80" href="https://x.com/visaborned" rel="noreferrer" target="_blank">
                     <TwitterLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Follow us on X" />
                 </a>
                 <a className="text-white transition-colors hover:text-white/80" href="https://github.com/visulima/visulima" rel="noreferrer" target="_blank">
                     <GitHubLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Star us on GitHub" />
                 </a>
-                <a className="text-white transition-colors hover:text-white/80" href="" target="_blank">
+                <a className="text-white transition-colors hover:text-white/80" href="https://discord.gg/TtFJY8xkFK" rel="noreferrer" target="_blank">
                     <DiscordLogoIcon className="size-4 fill-[var(--nav-text-color)]" title="Join our Discord" />
                 </a>
                 {!pathname.startsWith("/docs") && (

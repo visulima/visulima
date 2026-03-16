@@ -2,7 +2,7 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 
 const Community = () => (
-    <div className="">
+    <div>
         <Section>
             <SectionTitle
                 classes={{
@@ -14,10 +14,11 @@ const Community = () => (
                 title="Join the community"
             />
 
-            <div className="h-56">test</div>
-            <div className="h-56">Find us on the feed</div>
-            <div className="h-56">Join our community</div>
-            <div className="h-56">Find us on the feed</div>
+            {/* TODO: Replace placeholders with real community content */}
+            <div className="h-56" aria-label="Community content placeholder">test</div>
+            <div className="h-56" aria-label="Social feed placeholder">Find us on the feed</div>
+            <div className="h-56" aria-label="Community join placeholder">Join our community</div>
+            <div className="h-56" aria-label="Social feed placeholder">Find us on the feed</div>
         </Section>
     </div>
 );

@@ -126,7 +126,7 @@ const PackagesListing: FC = () => {
         return Object.values(stats.weeklyDownloads).reduce((sum, v) => sum + v, 0);
     }, [stats]);
 
-    const categoryCount = useMemo(() => categories.length - 1, []); // minus "All"
+    const categoryCount = categories.length - 1; // minus "All"
 
     const filteredPackages = useMemo(() => {
         let result: PackageInfo[] = packages;

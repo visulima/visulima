@@ -5,8 +5,7 @@ import { memo } from "react";
 
 import { cn } from "@/lib/utils";
 
-export const BackgroundBeams = memo(({ className }: { className?: string }) => {
-    const paths = [
+const paths = [
         "M-380 -189C-380 -189 -312 216 152 343C616 470 684 875 684 875",
         "M-373 -197C-373 -197 -305 208 159 335C623 462 691 867 691 867",
         "M-366 -205C-366 -205 -298 200 166 327C630 454 698 859 698 859",
@@ -57,13 +56,22 @@ export const BackgroundBeams = memo(({ className }: { className?: string }) => {
         "M-51 -565C-51 -565 17 -160 481 -33C945 94 1013 499 1013 499",
         "M-44 -573C-44 -573 24 -168 488 -41C952 86 1020 491 1020 491",
         "M-37 -581C-37 -581 31 -176 495 -49C959 78 1027 483 1027 483",
-    ];
+];
 
+const gradientConfigs = paths.map(() => ({
+    delay: Math.random() * 10,
+    duration: Math.random() * 10 + 10,
+    y2End: `${93 + Math.random() * 8}%`,
+}));
+
+export const BackgroundBeams = memo(({ className }: { className?: string }) => {
     return (
         <div className={cn("absolute inset-0 flex h-full w-full items-center justify-center [mask-size:40px] [mask-repeat:no-repeat]", className)}>
             <svg
+                aria-hidden="true"
                 className="pointer-events-none absolute z-0 h-full w-full"
                 fill="none"
+                focusable="false"
                 height="100%"
                 viewBox="0 0 696 316"
                 width="100%"
@@ -86,7 +94,7 @@ export const BackgroundBeams = memo(({ className }: { className?: string }) => {
                                 x1: ["0%", "100%"],
                                 x2: ["0%", "95%"],
                                 y1: ["0%", "100%"],
-                                y2: ["0%", `${93 + Math.random() * 8}%`],
+                                y2: ["0%", gradientConfigs[index].y2End],
                             }}
                             id={`linearGradient-${index}`}
                             initial={{
@@ -97,8 +105,8 @@ export const BackgroundBeams = memo(({ className }: { className?: string }) => {
                             }}
                             key={`gradient-${index}`}
                             transition={{
-                                delay: Math.random() * 10,
-                                duration: Math.random() * 10 + 10,
+                                delay: gradientConfigs[index].delay,
+                                duration: gradientConfigs[index].duration,
                                 ease: "easeInOut",
                                 repeat: Infinity,
                             }}

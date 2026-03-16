@@ -2,7 +2,14 @@ const { execFileSync } = require("node:child_process");
 const { env, exit } = require("node:process");
 
 const getChangedFiles = () => {
-    const diffOutput = execFileSync("git", ["diff", "HEAD^", "HEAD", "--name-only"]);
+    let diffOutput;
+
+    try {
+        diffOutput = execFileSync("git", ["diff", "HEAD^", "HEAD", "--name-only"]);
+    } catch {
+        // Fallback for shallow clones or initial commits where HEAD^ doesn't exist
+        diffOutput = execFileSync("git", ["show", "--name-only", "--pretty=", "HEAD"]);
+    }
 
     return diffOutput.toString().split("\n").filter(Boolean);
 };
