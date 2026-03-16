@@ -1,3 +1,15 @@
+## @visulima/cerebro [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.6...@visulima/cerebro@3.0.0-alpha.7) (2026-03-16)
+
+### Miscellaneous Chores
+
+* **cerebro:** update dependencies ([401f0bf](https://github.com/visulima/visulima/commit/401f0bf2bab395ac191e48cded78fa354970b245))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/pail:** upgraded to 4.0.0-alpha.7
+
 ## @visulima/cerebro [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.5...@visulima/cerebro@3.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
