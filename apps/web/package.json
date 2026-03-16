@@ -47,7 +47,7 @@
         "fumadocs-ui": "catalog:frontend",
         "gray-matter": "catalog:prod",
         "lucide-react": "catalog:icons",
-        "lucide-static": "^0.554.0",
+        "lucide-static": "^0.577.0",
         "media-icons": "catalog:icons",
         "motion": "catalog:frontend",
         "next-themes": "catalog:prod",
