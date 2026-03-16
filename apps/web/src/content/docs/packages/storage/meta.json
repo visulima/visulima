@@ -1,0 +1,20 @@
+{
+  "title": "Storage",
+  "pages": [
+    "introduction",
+    "framework",
+    "services",
+    "---Features---",
+    "retry-mechanism",
+    "caching",
+    "chunked-uploads",
+    "tus-handler",
+    "transformers",
+    "batch-operations",
+    "error-handling",
+    "observability",
+    "openapi",
+    "custom-storage",
+    "authenticated-file-uploads"
+  ]
+}

@@ -2,7 +2,7 @@ import { defineConfig } from "@anolilab/lint-staged-config";
 
 // Examples are standalone apps requiring their own `pnpm install` before
 // type-checking works; exclude them from lint-staged TypeScript checks.
-const config = defineConfig({ typescript: { extensions: ["cts", "ts", "mts", "tsx", "ctsx"], exclude: ["/examples/"] } });
+const config = defineConfig({ typescript: { extensions: ["cts", "ts", "mts", "tsx", "ctsx"], exclude: ["/examples/", "/apps/web/"] } });
 
 // Exclude Playwright e2e spec files from being run through vitest.
 // These files use Playwright's test.describe() which is incompatible with vitest.

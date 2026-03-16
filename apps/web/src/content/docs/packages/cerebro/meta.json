@@ -1,0 +1,14 @@
+{
+  "title": "Cerebro",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "concepts",
+    "guides",
+    "toolbox",
+    "api",
+    "configuration",
+    "troubleshooting"
+  ]
+}

@@ -1,0 +1,161 @@
+---
+title: Timezones
+description: Working with IANA timezone identifiers and country-timezone mappings.
+---
+
+# Timezones
+
+@visulima/iso-locale provides comprehensive IANA timezone database mappings, allowing you to find timezones for countries and countries for timezones.
+
+## Getting Timezones
+
+### By Country
+
+```typescript
+import { getTimezonesByCountry, getPrimaryTimezone } from "@visulima/iso-locale";
+
+// Get all timezones for a country
+const timezones = getTimezonesByCountry("US");
+console.log(timezones);
+// ["America/New_York", "America/Los_Angeles", "America/Chicago", ...]
+
+// Get primary timezone (first in list)
+const primary = getPrimaryTimezone("US");
+console.log(primary); // "America/Adak"
+```
+
+### Single Timezone Countries
+
+```typescript
+import { getTimezonesByCountry } from "@visulima/iso-locale";
+
+getTimezonesByCountry("GB"); // ["Europe/London"]
+getTimezonesByCountry("FR"); // ["Europe/Paris"]
+getTimezonesByCountry("JP"); // ["Asia/Tokyo"]
+```
+
+### Multi-Timezone Countries
+
+```typescript
+import { getTimezonesByCountry } from "@visulima/iso-locale";
+
+// United States has many timezones
+getTimezonesByCountry("US").length; // 29 timezones
+
+// Canada has many timezones
+getTimezonesByCountry("CA").length; // 27 timezones
+
+// Australia has multiple timezones
+getTimezonesByCountry("AU");
+// ["Australia/Adelaide", "Australia/Brisbane", "Australia/Sydney", ...]
+
+// Russia has many timezones
+getTimezonesByCountry("RU").length; // 26 timezones
+```
+
+## Finding Countries by Timezone
+
+```typescript
+import { getCountriesForTimezone } from "@visulima/iso-locale";
+
+// Find countries using a specific timezone
+const countries = getCountriesForTimezone("Europe/London");
+console.log(countries); // ["GB", ...]
+
+const countries2 = getCountriesForTimezone("America/New_York");
+console.log(countries2); // ["US"]
+```
+
+## All Timezones
+
+```typescript
+import { all as timezonesAll } from "@visulima/iso-locale";
+
+const allTimezones = timezonesAll();
+console.log(allTimezones.length); // 400+ timezones
+console.log(allTimezones);
+// ["Africa/Abidjan", "Africa/Accra", ...] (sorted)
+```
+
+## Validation
+
+```typescript
+import { isValidTimezone } from "@visulima/iso-locale";
+
+isValidTimezone("Europe/London"); // true
+isValidTimezone("America/New_York"); // true
+isValidTimezone("Invalid/Timezone"); // false
+```
+
+## Indexed Access
+
+For fast lookups, use the indexed map:
+
+```typescript
+import { timezonesByCountry } from "@visulima/iso-locale";
+
+const timezones = timezonesByCountry["US"];
+console.log(timezones); // readonly array of timezones
+```
+
+## Examples
+
+### Get Primary Timezone for Country
+
+```typescript
+import { getPrimaryTimezone } from "@visulima/iso-locale";
+
+function getCountryTimezone(countryCode: string) {
+    return getPrimaryTimezone(countryCode);
+}
+
+getCountryTimezone("US"); // "America/Adak"
+getCountryTimezone("GB"); // "Europe/London"
+```
+
+### Find Countries in Same Timezone
+
+```typescript
+import { getCountriesForTimezone, getTimezonesByCountry } from "@visulima/iso-locale";
+
+function getCountriesInSameTimezone(countryCode: string) {
+    const timezones = getTimezonesByCountry(countryCode);
+    if (timezones.length === 0) return [];
+
+    // Get countries for the primary timezone
+    return getCountriesForTimezone(timezones[0]);
+}
+```
+
+### Validate Timezone Before Use
+
+```typescript
+import { isValidTimezone } from "@visulima/iso-locale";
+
+function safeTimezoneOperation(timezone: string) {
+    if (!isValidTimezone(timezone)) {
+        throw new Error(`Invalid timezone: ${timezone}`);
+    }
+
+    // Use timezone with date libraries like date-fns, dayjs, etc.
+    // Example with date-fns-tz:
+    // import { zonedTimeToUtc } from "date-fns-tz";
+    // return zonedTimeToUtc(new Date(), timezone);
+}
+```
+
+### List All Countries with Timezones
+
+```typescript
+import { getCountriesWithTimezones } from "@visulima/iso-locale";
+
+const countries = getCountriesWithTimezones();
+console.log(countries.length); // 200+ countries
+```
+
+## Next Steps
+
+- [Countries](/docs/countries) - Working with country data
+- [Regions](/docs/regions) - Working with regional data
+- [Locale & BCP 47](/docs/locale) - Working with locales
+- [API Reference](/docs/api) - Complete API documentation

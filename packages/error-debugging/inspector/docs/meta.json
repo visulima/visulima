@@ -1,12 +1,12 @@
 {
-    "title": "@visulima/inspector",
+    "title": "Inspector",
     "pages": [
         "index",
         "installation",
         "quick-start",
         "---Getting Started---",
-        { "title": "Usage", "href": "/usage" },
+        "usage",
         "---API Reference---",
-        { "title": "API", "href": "/api" }
+        "api"
     ]
 }

@@ -1,0 +1,9 @@
+{
+    "title": "Framework Integration",
+    "pages": [
+        "express",
+        "nextjs",
+        "nuxt",
+        "modern"
+    ]
+}

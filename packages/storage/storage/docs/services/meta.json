@@ -1,0 +1,18 @@
+{
+    "title": "Storage Services",
+    "pages": [
+        "amazon-s3",
+        "aws-light",
+        "azure",
+        "backblaze-b2",
+        "cloudflare-r2",
+        "digital-ocean-spaces",
+        "google-cloud-storage",
+        "local-disk",
+        "minio",
+        "netlify-blob",
+        "tigris",
+        "vercel-blob",
+        "wasabi"
+    ]
+}
