@@ -2,12 +2,15 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/notebook";
 import { createServerFn } from "@tanstack/react-start";
 import { source } from "@/lib/docs-source";
+import { createSeoHead } from "@/lib/seo";
+import JsonLd from "@/components/seo/json-ld";
 import type * as PageTree from "fumadocs-core/page-tree";
 import { useMemo } from "react";
 import browserCollections from "fumadocs-mdx:collections/browser";
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 
+import { NotFound } from "../../pages/not-found";
 import SupportSection from "../../pages/home/sections/support";
 
 export const Route = createFileRoute("/docs/$")({
@@ -15,8 +18,26 @@ export const Route = createFileRoute("/docs/$")({
     loader: async ({ params }) => {
         const slugs = params._splat?.split("/") ?? [];
         const data = await serverLoader({ data: slugs });
+        if (!data?.path) {
+            throw notFound();
+        }
         await clientLoader.preload(data.path);
-        return data;
+        return { ...data, slugs: slugs.join("/") };
+    },
+    notFoundComponent: (props) => <NotFound {...props}>The documentation page you're looking for doesn't exist or may have been moved.</NotFound>,
+    head: ({ loaderData }) => {
+        if (!loaderData?.title) {
+            return {};
+        }
+
+        return {
+            ...createSeoHead({
+                description: loaderData.description || `Documentation for ${loaderData.title} - Visulima`,
+                ogType: "article",
+                path: `/docs/${loaderData.slugs}`,
+                title: loaderData.title,
+            }),
+        };
     },
 });
 
@@ -27,17 +48,22 @@ const serverLoader = createServerFn({
     .handler(async ({ data: slugs }) => {
         const page = source.getPage(slugs);
         if (!page) {
-            throw notFound();
+            return null;
         }
 
+        const pageData = page.data as { description?: string; lastModified?: Date; title?: string };
+
         return {
-            tree: source.pageTree as object,
+            description: pageData.description ?? "",
+            lastModified: pageData.lastModified ? pageData.lastModified.toISOString() : null,
             path: page.path,
+            title: pageData.title ?? "",
+            tree: source.pageTree as object,
         };
     });
 
 const clientLoader = browserCollections.docs.createClientLoader({
-    component({ toc, frontmatter, default: MDX }: { toc: any; frontmatter: any; default: any }) {
+    component({ toc, frontmatter, lastModified, default: MDX }: { toc: any; frontmatter: any; lastModified?: string; default: any }) {
         return (
             <DocsPage
                 toc={toc}
@@ -59,6 +85,11 @@ const clientLoader = browserCollections.docs.createClientLoader({
             >
                 <DocsTitle>{frontmatter.title}</DocsTitle>
                 <DocsDescription>{frontmatter.description}</DocsDescription>
+                {lastModified ? (
+                    <p className="text-muted-foreground -mt-2 mb-6 text-sm">
+                        Last updated: <time dateTime={lastModified}>{new Date(lastModified).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}</time>
+                    </p>
+                ) : null}
                 <DocsBody>
                     <MDX
                         components={{
@@ -76,8 +107,42 @@ function Page() {
     const Content = clientLoader.getComponent(data.path);
     const tree = useMemo(() => transformPageTree(data.tree as PageTree.Folder), [data.tree]);
 
+    const articleJsonLd = useMemo(() => {
+        const jsonLd: Record<string, unknown> = {
+            "@type": "TechArticle",
+            author: { "@type": "Organization", name: "Visulima", url: "https://visulima.com" },
+            description: data.description,
+            headline: data.title,
+            publisher: { "@type": "Organization", logo: { "@type": "ImageObject", url: "https://visulima.com/favicon.svg" }, name: "Visulima" },
+            url: `https://visulima.com/docs/${data.slugs}`,
+        };
+        if (data.lastModified) {
+            jsonLd.dateModified = data.lastModified;
+        }
+        return jsonLd;
+    }, [data.title, data.description, data.slugs, data.lastModified]);
+
+    const breadcrumbItems = useMemo(() => {
+        const slugs = data.slugs.split("/").filter(Boolean);
+        const items = [
+            { "@type": "ListItem" as const, item: "https://visulima.com", name: "Home", position: 1 },
+            { "@type": "ListItem" as const, item: "https://visulima.com/docs", name: "Docs", position: 2 },
+        ];
+        slugs.forEach((slug, index) => {
+            items.push({
+                "@type": "ListItem" as const,
+                item: `https://visulima.com/docs/${slugs.slice(0, index + 1).join("/")}`,
+                name: slug.charAt(0).toUpperCase() + slug.slice(1).split("-").join(" "),
+                position: index + 3,
+            });
+        });
+        return items;
+    }, [data.slugs]);
+
     return (
         <>
+            <JsonLd data={articleJsonLd} />
+            <JsonLd data={{ "@type": "BreadcrumbList", itemListElement: breadcrumbItems }} />
             <DocsLayout
                 nav={{
                     enabled: false,

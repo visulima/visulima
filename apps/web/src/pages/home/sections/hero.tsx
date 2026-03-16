@@ -324,6 +324,11 @@ const MainHero: FC = () => (
         mode="dark"
     >
         <div>
+            <p className="sr-only">
+                Visulima is a collection of 40+ production-ready, MIT-licensed TypeScript packages for Node.js, Bun, Deno, and edge runtimes.
+                It includes Packem for bundling, Pail for logging, Cerebro for CLI tools, and utilities for file systems, error handling, APIs, data manipulation, and more.
+            </p>
+
             <motion.div
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-8 flex items-center gap-5"

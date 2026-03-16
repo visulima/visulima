@@ -6,6 +6,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
+import JsonLd from "@/components/seo/json-ld";
 import HighlightLink from "@/components/ui/highlight-link";
 import type { AccentColor } from "@/data/packages";
 import { cn, formatNumber } from "@/lib/utils";
@@ -241,6 +242,21 @@ const PackageDetail: FC = () => {
 
     return (
         <>
+            <JsonLd
+                data={{
+                    "@type": "SoftwareApplication",
+                    applicationCategory: "DeveloperApplication",
+                    author: { "@type": "Organization", name: "Visulima", url: "https://visulima.com" },
+                    description: pkg.description,
+                    ...(totalDownloads > 0 ? { downloadCount: totalDownloads } : {}),
+                    license: "https://opensource.org/licenses/MIT",
+                    name: pkg.name,
+                    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+                    operatingSystem: "Cross-platform",
+                    programmingLanguage: "TypeScript",
+                    url: `https://visulima.com/packages/${pkg.slug}`,
+                }}
+            />
 
             <Section classes={{ childrenWrapper: "gap-y-0", root: "pt-36 pb-0" }} mode="light" patternColor={accent.patternColor} patternPosition="bottom">
 

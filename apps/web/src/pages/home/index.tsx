@@ -2,6 +2,7 @@ import type { FC } from "react";
 
 import GitHub from "@/pages/home/components/github";
 import Downloads from "@/pages/home/sections/downloads";
+import FAQ from "@/pages/home/sections/faq";
 import MainHero from "@/pages/home/sections/hero";
 import OpenSource from "@/pages/home/sections/open-source";
 import Packages from "@/pages/home/sections/packages";
@@ -24,6 +25,9 @@ const Home: FC = () => (
             <OpenSource />
         </div>
         <GitHub />
+        <div className="content-auto">
+            <FAQ />
+        </div>
         <div className="content-auto">
             <Support />
         </div>

@@ -7,6 +7,7 @@ import { lazy, Suspense } from "react";
 
 import Footer from "@/components/sections/footer";
 import Navbar from "@/components/sections/navbar";
+import JsonLd from "@/components/seo/json-ld";
 import { NotFound } from "@/pages/not-found";
 import appCss from "@/styles/app.css?url";
 
@@ -25,6 +26,27 @@ const RootDocument: FC<PropsWithChildren> = ({ children }) => (
     <html lang="en" suppressHydrationWarning>
         <head>
             <HeadContent />
+            <JsonLd
+                data={{
+                    "@type": "Organization",
+                    logo: "https://visulima.com/favicon.svg",
+                    name: "Visulima",
+                    sameAs: ["https://github.com/visulima"],
+                    url: "https://visulima.com",
+                }}
+            />
+            <JsonLd
+                data={{
+                    "@type": "WebSite",
+                    name: "Visulima",
+                    potentialAction: {
+                        "@type": "SearchAction",
+                        "query-input": "required name=search_term_string",
+                        target: "https://visulima.com/docs?q={search_term_string}",
+                    },
+                    url: "https://visulima.com",
+                }}
+            />
         </head>
         <body>
             <div className="bg-ivory relative isolate font-sans antialiased">
@@ -76,6 +98,9 @@ export const Route = createRootRoute({
                     rel: "preload",
                     type: "image/jpeg",
                 },
+                { href: "/favicon.svg", rel: "icon", type: "image/svg+xml" },
+                { color: "#4F46E5", href: "/favicon.svg", rel: "mask-icon" },
+                { href: "/manifest.json", rel: "manifest" },
             ],
             meta: [
                 {
@@ -84,6 +109,10 @@ export const Route = createRootRoute({
                 {
                     content: "width=device-width, initial-scale=1",
                     name: "viewport",
+                },
+                {
+                    content: "#4F46E5",
+                    name: "theme-color",
                 },
             ],
         };

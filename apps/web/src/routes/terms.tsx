@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { createSeoHead } from "@/lib/seo";
+
 const RouteComponent = () => (
     <div className="bg-background border-b">
         <div className="container mx-auto prose prose-invert prose-no-margin py-32">
@@ -297,4 +299,11 @@ const RouteComponent = () => (
 
 export const Route = createFileRoute("/terms")({
     component: RouteComponent,
+    head: () => ({
+        ...createSeoHead({
+            description: "General terms and conditions for Visulima services and website usage.",
+            path: "/terms",
+            title: "Terms & Conditions",
+        }),
+    }),
 });

@@ -1,3 +1,28 @@
-<svg width="410" height="410" viewBox="0 0 410 410" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path fill-rule="evenodd" clip-rule="evenodd" d="M205 410C318.218 410 410 318.218 410 205C410 91.7816 318.218 0 205 0C91.7816 0 0 91.7816 0 205C0 318.218 91.7816 410 205 410ZM205 360C290.604 360 360 290.604 360 205C360 119.396 290.604 50 205 50C119.396 50 50 119.396 50 205C50 290.604 119.396 360 205 360Z" fill="#4F46E5" />
+<svg viewBox="0 0 248 291" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="a" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E53935">
+        <animate attributeName="stop-color" values="#E53935;#8E44AD;#0073E6;#E53935;" dur="20s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="0.5" stop-color="#8E44AD">
+        <animate attributeName="stop-color" values="#8E44AD;#0073E6;#E53935;#8E44AD;" dur="20s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="1" stop-color="#0073E6">
+        <animate attributeName="stop-color" values="#0073E6;#E53935;#8E44AD;#0073E6;" dur="15s" repeatCount="indefinite" />
+      </stop>
+      <animateTransform attributeName="gradientTransform" type="rotate" from="0 .5 .5" to="360 .5 .5" dur="10s" repeatCount="indefinite" />
+    </linearGradient>
+    <linearGradient id="overlayGradientA" x1="62" y1="42.2253" x2="62" y2="290.225" gradientUnits="userSpaceOnUse">
+      <stop offset="0.34" stop-opacity="0.5" />
+      <stop offset="1" stop-color="white" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="overlayGradientB" x1="186" y1="0" x2="186" y2="248" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0" />
+      <stop offset="0.695" stop-opacity="0.5" />
+    </linearGradient>
+  </defs>
+  <path d="M0 166.225C0 234.709 55.5167 290.225 124 290.225V42.2253C55.5167 42.2253 0 97.742 0 166.225Z M248 124C248 192.483 192.483 248 124 248V0C192.483 0 248 55.5167 248 124Z" fill="url(#a)" />
+  <path d="M0 166.225C0 234.709 55.5167 290.225 124 290.225V42.2253C55.5167 42.2253 0 97.742 0 166.225Z" fill="url(#overlayGradientA)" />
+  <path d="M248 124C248 192.483 192.483 248 124 248V0C192.483 0 248 55.5167 248 124Z" fill="url(#overlayGradientB)" />
+  <circle cx="124" cy="147" r="50" fill="white" />
 </svg>

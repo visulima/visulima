@@ -23,12 +23,12 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 
 const frameworks = [
-    { icon: SiNextdotjs, label: "Next.js" },
     { icon: SiReact, label: "React" },
     { icon: SiVite, label: "Vite" },
     { icon: TanstackStartLogo, label: "TanStack" },
     { icon: SiAstro, label: "Astro" },
     { icon: SiRemix, label: "Remix" },
+    { icon: SiNextdotjs, label: "Next.js" },
     { icon: SiBun, label: "Bun" },
     { icon: SiExpress, label: "Express" },
     { icon: SiTypescript, label: "TypeScript" },

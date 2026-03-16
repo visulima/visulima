@@ -4,6 +4,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 
+import { createSeoHead } from "@/lib/seo";
+
 const content = `# Contributor Covenant Code of Conduct
 
 ## Our Pledge
@@ -173,5 +175,12 @@ const RouteComponent = () => {
 
 export const Route = createFileRoute("/code-of-conduct")({
     component: RouteComponent,
+    head: () => ({
+        ...createSeoHead({
+            description: "Visulima community code of conduct based on the Contributor Covenant, outlining our standards for an inclusive and welcoming environment.",
+            path: "/code-of-conduct",
+            title: "Code of Conduct",
+        }),
+    }),
     loader: () => loader(),
 });
