@@ -45,12 +45,8 @@ const faqs = [
 ];
 
 const FaqItem: FC<{ answer: string; isOpen: boolean; onToggle: () => void; question: string }> = ({ answer, isOpen, onToggle, question }) => (
-    <div className="border-b border-white/[0.06]">
-        <button
-            className="flex w-full items-center justify-between py-6 text-left cursor-pointer"
-            onClick={onToggle}
-            type="button"
-        >
+    <div className="border-b border-white/[0.06] bg-coal">
+        <button className="flex w-full items-center justify-between py-6 text-left cursor-pointer" onClick={onToggle} type="button">
             <h3 className="text-base font-medium text-white/80">{question}</h3>
             <ChevronDown className={cn("h-5 w-5 shrink-0 text-white/30 transition-transform duration-200", isOpen && "rotate-180")} />
         </button>
@@ -85,7 +81,7 @@ const FAQ: FC = () => {
                     position="left"
                     title="Frequently Asked Questions"
                 />
-                <div className="col-span-2 lg:col-span-4">
+                <div className="col-span-2 lg:col-span-4 border-t mt-8">
                     {faqs.map((faq, index) => (
                         <FaqItem
                             answer={faq.answer}
