@@ -20,35 +20,37 @@ const Menus: {
 }[] = [
     {
         links: [
-            {
-                title: "Privacy Policy",
-                to: "/privacy",
-            },
-            {
-                title: "Code of Conduct",
-                to: "/code-of-conduct",
-            },
-            {
-                title: "Imprint",
-                to: "/imprint",
-            },
+            { title: "Boxen", to: "/packages/boxen" },
+            { title: "FS", to: "/packages/fs" },
+            { title: "Path", to: "/packages/path" },
+            { title: "Package", to: "/packages/package" },
+            { title: "Packem", to: "/packages/packem" },
+            { title: "Pail", to: "/packages/pail" },
+            { title: "All Packages", to: "/packages" },
+        ],
+        title: "Packages",
+    },
+    {
+        links: [
+            { title: "Documentation", to: "/docs" },
+            { title: "Blog", to: "/blog" },
+            { title: "Changelog", to: "/changelog" },
+        ],
+        title: "Developers",
+    },
+    {
+        links: [
+            { title: "Privacy Policy", to: "/privacy" },
+            { title: "Code of Conduct", to: "/code-of-conduct" },
+            { title: "Imprint", to: "/imprint" },
         ],
         title: "Legal",
     },
     {
         links: [
-            {
-                href: "https://github.com/visulima",
-                title: "GitHub",
-            },
-            {
-                href: "https://discord.gg/TtFJY8xkFK",
-                title: "Discord",
-            },
-            {
-                href: "https://x.com/visulima",
-                title: "Twitter",
-            },
+            { href: "https://github.com/visulima", title: "GitHub" },
+            { href: "https://discord.gg/TtFJY8xkFK", title: "Discord" },
+            { href: "https://x.com/visulima", title: "Twitter" },
         ],
         title: "Community",
     },

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execFileSync } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,9 +13,23 @@ const PACKAGES_DIR = path.join(ROOT_DIR, "packages");
 const DEST_DIR = path.join(__dirname, "..", "src", "content", "docs", "packages");
 
 /**
+ * External repos whose docs/ folder should be fetched and merged into the packages docs.
+ * Branch is determined by the current git branch: alpha → alpha, otherwise main.
+ */
+const EXTERNAL_DOCS = [
+    {
+        repo: "visulima/packem",
+        branches: { default: "alpha" },
+        docsPath: "docs",
+        destName: "packem",
+    },
+];
+
+/**
  * Category display names and order for the packages sidebar.
  */
 const CATEGORY_CONFIG = {
+    "bundler": { title: "Bundler", packages: ["packem"] },
     "cli-terminal": { title: "CLI & Terminal", packages: ["cerebro", "pail", "command-line-args", "boxen", "tabular", "ansi", "colorize", "is-ansi-color-supported", "fmt"] },
     "data-manipulation": { title: "Data & Utilities", packages: ["string", "object", "deep-clone", "bytes", "humanizer", "redact", "content-safety"] },
     "filesystem": { title: "File System", packages: ["fs", "path", "find-cache-dir", "package", "tsconfig", "storage", "storage-client"] },
@@ -80,7 +95,17 @@ async function sanitizeMdx(filePath) {
     // 1. Strip import statements referencing unavailable modules
     content = content.replace(/^import\s+.*from\s+['"]@visulima\/nextra-theme-docs.*['"];?\s*$/gm, "");
 
-    // 2. Strip corrupted LLM artifacts (fullwidth pipe characters, tool call markers)
+    // 1b. Strip relative component/utility imports (e.g., from external repo docs)
+    content = content.replace(/^import\s+.*from\s+['"]\.\.?\/(?:components|utils)\/.*['"];?\s*$/gm, "");
+
+    // 2. Strip custom div wrappers with className (non-standard, cause hydration mismatches)
+    content = content.replace(/<div\s+className="[^"]*">\s*\n?([\s\S]*?)\n?\s*<\/div>/g, "$1");
+
+    // 2b. Replace unsupported code block languages with supported alternatives
+    content = content.replace(/^```env$/gm, "```bash");
+    content = content.replace(/^```npm$/gm, "```bash");
+
+    // 3. Strip corrupted LLM artifacts (fullwidth pipe characters, tool call markers)
     content = content.replace(/<｜[^｜]*｜>/g, "");
 
     // 3. Strip undefined JSX components from nextra-theme-docs FIRST (before escaping)
@@ -88,7 +113,7 @@ async function sanitizeMdx(filePath) {
     const hasFumadocsImport = /^import\s+.*from\s+['"]fumadocs-ui\//m.test(content);
 
     if (!hasFumadocsImport) {
-        const nextraComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider";
+        const nextraComponents = "Callout|Tab|Tabs|TabItem|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider|Badge|FeatureCard|FeatureGrid|ApiCard|ComparisonTable";
         const wrapperRegex = new RegExp(`<(${nextraComponents})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "g");
         const selfClosingRegex = new RegExp(`<(${nextraComponents})\\b[^>]*\\/>`, "g");
 
@@ -115,7 +140,23 @@ async function sanitizeMdx(filePath) {
         })
         .join("");
 
-    // 5. Add frontmatter if missing
+    // 5. Quote frontmatter values containing YAML special characters (@, :, #, etc.)
+    if (content.startsWith("---")) {
+        const fmEnd = content.indexOf("---", 3);
+
+        if (fmEnd !== -1) {
+            const frontmatter = content.substring(3, fmEnd);
+            const fixedFm = frontmatter.replace(/^(\w[\w-]*):\s+(?!["'|>])(.+)$/gm, (match, key, value) => {
+                if (/[@:#{}[\],&*?|><!%`]/.test(value)) {
+                    return `${key}: "${value.replace(/"/g, '\\"')}"`;
+                }
+                return match;
+            });
+            content = `---${fixedFm}---${content.substring(fmEnd + 3)}`;
+        }
+    }
+
+    // 6. Add frontmatter if missing
     if (!content.startsWith("---")) {
         const basename = path.basename(filePath, path.extname(filePath));
         const title = basename
@@ -157,6 +198,61 @@ async function copyDirectory(src, dest) {
             }
         }
     }
+}
+
+/**
+ * Determines the branch to use for external repos based on the current git branch.
+ */
+function getCurrentBranch() {
+    try {
+        return execFileSync("git", ["branch", "--show-current"], { encoding: "utf-8" }).trim();
+    } catch {
+        return "main";
+    }
+}
+
+/**
+ * Fetches docs from an external GitHub repository via a shallow git clone.
+ */
+async function fetchExternalDocs({ repo, branches, docsPath, destName }) {
+    const currentBranch = getCurrentBranch();
+    const targetBranch = branches[currentBranch] || branches.default;
+
+    console.log(`  Fetching ${repo} docs (branch: ${targetBranch})...`);
+
+    const tmpDir = path.join(__dirname, "..", ".tmp-external-docs");
+    await fs.rm(tmpDir, { recursive: true, force: true });
+
+    const repoUrl = `https://github.com/${repo}.git`;
+    execFileSync("git", ["clone", "--depth", "1", "--branch", targetBranch, repoUrl, tmpDir], { stdio: "pipe" });
+
+    const srcDocsPath = path.join(tmpDir, docsPath);
+
+    try {
+        const stat = await fs.stat(srcDocsPath);
+
+        if (!stat.isDirectory()) {
+            throw new Error(`${docsPath} is not a directory in ${repo}`);
+        }
+    } catch (err) {
+        if (err.code === "ENOENT") {
+            console.warn(`  Warning: ${docsPath}/ not found in ${repo}@${targetBranch}, skipping`);
+            await fs.rm(tmpDir, { recursive: true, force: true });
+            return false;
+        }
+        throw err;
+    }
+
+    // Remove navigation.json (we generate our own meta.json)
+    await fs.rm(path.join(srcDocsPath, "navigation.json"), { force: true });
+
+    const destPath = path.join(DEST_DIR, destName);
+    await copyDirectory(srcDocsPath, destPath);
+
+    console.log(`  ${repo}/${docsPath} (${targetBranch}) → packages/${destName}`);
+
+    await fs.rm(tmpDir, { recursive: true, force: true });
+    return true;
 }
 
 /**
@@ -206,6 +302,19 @@ async function main() {
             await copyDirectory(docsPath, destPath);
             console.log(`  ${category.name}/${pkg.name}/docs → packages/${pkg.name}`);
             copied++;
+        }
+    }
+
+    // Fetch docs from external repositories
+    for (const external of EXTERNAL_DOCS) {
+        try {
+            const fetched = await fetchExternalDocs(external);
+
+            if (fetched) {
+                copied++;
+            }
+        } catch (error) {
+            console.warn(`  Warning: Failed to fetch docs from ${external.repo}: ${error.message}`);
         }
     }
 

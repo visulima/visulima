@@ -2,6 +2,8 @@
     "title": "Packages",
     "pages": [
         "index",
+        "---Bundler---",
+        "packem",
         "---CLI & Terminal---",
         "cerebro",
         "pail",
