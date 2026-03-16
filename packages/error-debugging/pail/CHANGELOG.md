@@ -1,3 +1,16 @@
+## @visulima/pail [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.6...@visulima/pail@4.0.0-alpha.7) (2026-03-16)
+
+### Features
+
+* **pail:** add self-documenting errors, sampling processor, and environment processor ([3ec79de](https://github.com/visulima/visulima/commit/3ec79de3034cee4d1514dc93e78da2d05df4f9a7))
+* **pail:** add wide events, framework middleware, tests, and docs ([6d1a4f3](https://github.com/visulima/visulima/commit/6d1a4f3ef4455da78371b8754cdbca9c939bc8b4))
+
+### Miscellaneous Chores
+
+* **pail:** update dependencies ([72b9561](https://github.com/visulima/visulima/commit/72b9561a3416a121198ea47cdcbe0202c0d8cbef))
+* remove exit 0 ([b6d2408](https://github.com/visulima/visulima/commit/b6d2408fab8b5299a5ae902021b229909c84f184))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/pail [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.5...@visulima/pail@4.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
