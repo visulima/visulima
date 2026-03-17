@@ -33,7 +33,6 @@ const Menus: {
     {
         links: [
             { title: "Documentation", to: "/docs" },
-            { title: "Blog", to: "/blog" },
             { title: "Changelog", to: "/changelog" },
         ],
         title: "Developers",
