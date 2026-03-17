@@ -121,8 +121,9 @@ describe("objects", () => {
 
         const symbolResult = "[ symbol, [] ]";
         const stringResult = "[ string, [] ]";
-        const falseResult
-            = "[ { inspect: [Function: function stringInspect() {\n        return \"string\";\n      }], [Symbol(nodejs.util.inspect.custom)]: [Function: function custom() {\n      return \"symbol\";\n    }] }, [] ]";
+        const stringInspectStr = object.inspect.toString();
+        const customStr = object[Symbol.for("nodejs.util.inspect.custom")].toString();
+        const falseResult = `[ { inspect: [Function: ${stringInspectStr}], [Symbol(nodejs.util.inspect.custom)]: [Function: ${customStr}] }, [] ]`;
 
         const symbolStringFallback = utilityInspect.custom ? symbolResult : stringResult;
 

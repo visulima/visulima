@@ -6,14 +6,14 @@ describe("functions", () => {
     it("returns the functions name wrapped in `[Function ]`", () => {
         expect.assertions(1);
         /* eslint-disable-next-line prefer-arrow-callback */
-        expect(inspect(function foo() {})).toBe("[Function: function foo() {\n    }]");
+        expect(inspect(function foo() {})).toBe(`[Function: ${function foo() {}.toString()}]`);
     });
 
     it("returns the `[Function]` if given anonymous function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,func-names */
-        expect(inspect(function () {})).toBe("[Function: function() {\n    }]");
+        expect(inspect(function () {})).toBe(`[Function: ${function () {}.toString()}]`);
     });
 
     it("returns the `[Function]` with the given body", () => {
@@ -116,14 +116,14 @@ describe("async functions", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback */
-        expect(inspect(async function foo() {})).toBe("[AsyncFunction: async function foo() {\n    }]");
+        expect(inspect(async function foo() {})).toBe(`[AsyncFunction: ${async function foo() {}.toString()}]`);
     });
 
     it("returns the `[AsyncFunction]` if given anonymous function", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback,func-names */
-        expect(inspect(async function () {})).toBe("[AsyncFunction: async function() {\n    }]");
+        expect(inspect(async function () {})).toBe(`[AsyncFunction: ${async function () {}.toString()}]`);
     });
 });
 
@@ -131,14 +131,14 @@ describe("generator functions", () => {
     it("returns the functions name wrapped in `[GeneratorFunction ]`", () => {
         expect.assertions(1);
 
-        expect(inspect(function* foo() {})).toBe("[GeneratorFunction: function* foo() {\n    }]");
+        expect(inspect(function* foo() {})).toBe(`[GeneratorFunction: ${function* foo() {}.toString()}]`);
     });
 
     it("returns the `[GeneratorFunction]` if given a generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line func-names
-        expect(inspect(function* () {})).toBe("[GeneratorFunction: function* () {\n    }]");
+        expect(inspect(function* () {})).toBe(`[GeneratorFunction: ${function* () {}.toString()}]`);
     });
 });
 
@@ -146,13 +146,13 @@ describe("async generator functions", () => {
     it("returns the functions name wrapped in `[AsyncGeneratorFunction ]`", () => {
         expect.assertions(1);
 
-        expect(inspect(async function* foo() {})).toBe("[AsyncGeneratorFunction: async function* foo() {\n    }]");
+        expect(inspect(async function* foo() {})).toBe(`[AsyncGeneratorFunction: ${async function* foo() {}.toString()}]`);
     });
 
     it("returns the `[AsyncGeneratorFunction]` if given a async generator function", () => {
         expect.assertions(1);
 
         // eslint-disable-next-line func-names
-        expect(inspect(async function* () {})).toBe("[AsyncGeneratorFunction: async function* () {\n    }]");
+        expect(inspect(async function* () {})).toBe(`[AsyncGeneratorFunction: ${async function* () {}.toString()}]`);
     });
 });

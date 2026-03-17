@@ -87,7 +87,8 @@ describe.runIf(globalThis.window === undefined)("colors", () => {
         expect.assertions(1);
 
         /* eslint-disable-next-line prefer-arrow-callback */
-        expect(inspect(function foo() {}, { colors: true, stylize })).toBe("\u001B[36m[Function: function foo() {\u001B[39m\n\u001B[36m    }]\u001B[39m");
+        const fnStr = function foo() {}.toString();
+        expect(inspect(function foo() {}, { colors: true, stylize })).toBe(`\u001B[36m[Function: ${fnStr}]\u001B[39m`);
     });
 
     it("should return a POSITIVE_INFINITY colorized if color is set to true", () => {
