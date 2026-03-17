@@ -67,8 +67,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/fs": "catalog:prod",
-        "@visulima/path": "catalog:prod",
+        "@visulima/fs": "workspace:*",
+        "@visulima/path": "workspace:*",
         "jsonc-parser": "catalog:prod",
         "resolve-pkg-maps": "catalog:prod",
         "type-fest": "catalog:prod"
