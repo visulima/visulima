@@ -10,21 +10,21 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
     },
     "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
+        "@eslint/js": "catalog:lint",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-react-swc": "^4.2.3",
-        "eslint": "^10.0.3",
-        "eslint-plugin-react-hooks": "^7.0.1",
-        "eslint-plugin-react-refresh": "^0.5.2",
-        "globals": "^17.4.0",
-        "typescript": "~5.9.3",
-        "typescript-eslint": "^8.57.0",
-        "vite": "^7.3.1"
+        "@vitejs/plugin-react-swc": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-react-hooks": "catalog:lint",
+        "eslint-plugin-react-refresh": "catalog:lint",
+        "globals": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "typescript-eslint": "catalog:lint",
+        "vite": "catalog:build"
     }
 }
