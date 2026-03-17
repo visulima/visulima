@@ -119,7 +119,7 @@
         "@types/lodash.mergewith": "catalog:types",
         "@types/node": "catalog:types",
         "@types/webpack": "catalog:types",
-        "@visulima/fs": "catalog:dev",
+        "@visulima/fs": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "cli-progress": "catalog:dev",
