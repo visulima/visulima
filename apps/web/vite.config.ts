@@ -2,10 +2,11 @@ import { createRequire } from "node:module";
 
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import mdx from "fumadocs-mdx/vite";
 import Unfonts from "unplugin-fonts/vite";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, UserConfig, type Plugin } from "vite";
 import { imagetools } from "vite-imagetools";
 import svgr from "vite-plugin-svgr";
 
@@ -27,6 +28,7 @@ export default defineConfig(async ({ mode }) => {
 
         if (devToolbarModule) {
             const { devToolbar } = devToolbarModule;
+
             plugins.push(
                 devToolbar({
                     apps: {
@@ -44,6 +46,7 @@ export default defineConfig(async ({ mode }) => {
 
         if (viteOverlayModule) {
             const viteOverlay = viteOverlayModule.default ?? viteOverlayModule;
+
             plugins.push(viteOverlay({ showBallonButton: false }));
         }
     }
@@ -109,11 +112,8 @@ export default defineConfig(async ({ mode }) => {
                     enabled: true,
                 },
             }),
-            react({
-                babel: {
-                    plugins: [["babel-plugin-react-compiler", { target: "19" }]],
-                },
-            }),
+            react(),
+            babel({ presets: [reactCompilerPreset({ target: "19" })] }),
         ],
         server: {
             proxy: {
@@ -130,5 +130,5 @@ export default defineConfig(async ({ mode }) => {
                 include: ["react", "react-dom"],
             },
         },
-    };
+    } as UserConfig;
 });
