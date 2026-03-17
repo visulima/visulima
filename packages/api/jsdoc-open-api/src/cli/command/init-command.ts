@@ -1,26 +1,25 @@
 import { existsSync, realpathSync, writeFileSync } from "node:fs";
 
-import readPkgUp from "read-pkg-up";
+import { findUpSync, readJsonSync } from "@visulima/fs";
 
-const initCommand = (configName: string, packageJsonPath = process.cwd()): void => {
+const initCommand = (configName: string, packageJsonPath: string = process.cwd()): void => {
     if (existsSync(configName)) {
         throw new Error("Config file already exists");
     }
 
-    const foundPackageJson = readPkgUp.sync({
+    const packagePath = findUpSync("package.json", {
         cwd: realpathSync(packageJsonPath),
     });
 
     let exportTemplate = "module.exports =";
 
-    if (foundPackageJson) {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { packageJson: package_, path: packagePath } = foundPackageJson;
+    if (packagePath) {
+        const packageJson = readJsonSync(packagePath) as { type?: string };
 
         // eslint-disable-next-line no-console
-        console.info(`Found package.json at "${packagePath as string}"`);
+        console.info(`Found package.json at "${packagePath}"`);
 
-        if (package_.type === "module") {
+        if (packageJson.type === "module") {
             // eslint-disable-next-line no-console
             console.info("Found package.json with type: module, using ES6 as export for the config file");
 
