@@ -81,8 +81,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/pagination": "catalog:prod",
-        "@visulima/prisma-dmmf-transformer": "catalog:backend",
+        "@visulima/pagination": "workspace:*",
+        "@visulima/prisma-dmmf-transformer": "workspace:*",
         "http-errors": "catalog:prod",
         "path-to-regexp": "catalog:prod"
     },
