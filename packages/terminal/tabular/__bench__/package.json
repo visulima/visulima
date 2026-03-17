@@ -4,11 +4,11 @@
         "test:bench": "vitest bench --run"
     },
     "devDependencies": {
-        "@types/cli-table": "0.3.4",
-        "@types/node": "25.4.0",
-        "cli-table": "^0.3.11",
-        "cli-table3": "^0.6.5",
-        "table": "^6.9.0",
-        "vitest": "^4.0.18"
+        "@types/cli-table": "catalog:types",
+        "@types/node": "catalog:types",
+        "cli-table": "catalog:dev",
+        "cli-table3": "catalog:dev",
+        "table": "catalog:dev",
+        "vitest": "catalog:test"
     }
 }
