@@ -28,6 +28,7 @@ export default defineConfig({
                 assets: true,
                 inspector: true,
                 a11y: true,
+                seo: true,
             },
             defaultVisible: true,
             placement: "bottom-center",
