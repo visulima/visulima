@@ -7,21 +7,21 @@
         "dev": "tsx index.ts"
     },
     "dependencies": {
-        "@aws-sdk/abort-controller": "^3.374.0",
-        "@aws-sdk/client-s3": "^3.1007.0",
-        "@aws-sdk/credential-providers": "^3.1007.0",
-        "@aws-sdk/s3-request-presigner": "^3.1007.0",
-        "@aws-sdk/types": "^3.973.5",
+        "@aws-sdk/abort-controller": "catalog:prod",
+        "@aws-sdk/client-s3": "catalog:prod",
+        "@aws-sdk/credential-providers": "catalog:prod",
+        "@aws-sdk/s3-request-presigner": "catalog:prod",
+        "@aws-sdk/types": "catalog:prod",
         "@visulima/storage": "workspace:*",
-        "aws-crt": "^1.29.1",
-        "cors": "2.8.6",
-        "dotenv": "^17.3.1",
-        "express": "^5.2.1",
-        "winston": "^3.19.0"
+        "aws-crt": "catalog:prod",
+        "cors": "catalog:prod",
+        "dotenv": "catalog:prod",
+        "express": "catalog:backend",
+        "winston": "catalog:prod"
     },
     "devDependencies": {
-        "@types/cors": "^2.8.19",
-        "@types/express": "^5.0.6",
-        "tsx": "4.21.0"
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "tsx": "catalog:dev"
     }
 }
