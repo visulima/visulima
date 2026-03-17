@@ -217,6 +217,56 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         configResolved(resolvedConfig) {
             config = resolvedConfig;
+
+            // Auto-detect SSR frameworks that bypass Vite's transformIndexHtml
+            // and switch to module-graph injection via appendTo.
+            if (!options.appendTo) {
+                const pluginNames = new Set(resolvedConfig.plugins.map((p) => p.name));
+
+                // TanStack Start renders HTML server-side, so transformIndexHtml
+                // never runs on the client. Inject via the router module instead.
+                if (pluginNames.has("tanstack-start-core:config") || pluginNames.has("tanstack-react-start:config")) {
+                    options.appendTo = /router\.tsx$/;
+                }
+            }
+
+            // The dev-toolbar UI is built on Preact and ships pre-compiled.
+            // Babel plugins — in particular the React Compiler preset — must not
+            // transform these files, because injecting react/compiler-runtime
+            // calls into Preact code crashes at runtime ("Invalid hook call").
+            const skipRe = /dev-toolbar[\\/]dist[\\/]|__visulima-dev-toolbar-resource/;
+
+            for (const plugin of resolvedConfig.plugins) {
+                if (!plugin.name.includes("babel")) {
+                    continue;
+                }
+
+                const hook = plugin.transform;
+
+                if (!hook) {
+                    continue;
+                }
+
+                const fn = typeof hook === "function" ? hook : typeof hook === "object" && "handler" in hook ? hook.handler : undefined;
+
+                if (typeof fn !== "function") {
+                    continue;
+                }
+
+                const wrapper = function (this: unknown, code: string, id: string, ...rest: unknown[]) {
+                    if (skipRe.test(id)) {
+                        return undefined;
+                    }
+
+                    return (fn as Function).call(this, code, id, ...rest);
+                };
+
+                if (typeof hook === "function") {
+                    (plugin as unknown as Record<string, unknown>).transform = wrapper;
+                } else {
+                    (hook as unknown as Record<string, unknown>).handler = wrapper;
+                }
+            }
         },
 
         configureServer(srv) {
