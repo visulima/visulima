@@ -106,7 +106,7 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "eslint-plugin-zod": "catalog:lint",
-        "express": "^4.22.1",
+        "express": "catalog:backend",
         "fastify": "catalog:backend",
         "isomorphic-fetch": "catalog:dev",
         "prettier": "catalog:lint",
@@ -118,7 +118,7 @@
         "zod": "catalog:utils"
     },
     "peerDependencies": {
-        "zod": "^3.22.5"
+        "zod": "catalog:utils"
     },
     "engines": {
         "node": ">=22.13 <=25.x"
