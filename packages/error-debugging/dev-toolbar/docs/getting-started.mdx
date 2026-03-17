@@ -96,12 +96,9 @@ export default defineConfig({
 SSR frameworks such as **TanStack Start**, **Nuxt**, and **SvelteKit** render the full HTML document server-side.
 Vite's `transformIndexHtml` hook — which the toolbar normally uses to inject its `<script>` — is never called on those server-rendered responses.
 
-Use the `appendTo` option instead. It injects the toolbar via the JavaScript module graph rather than the HTML pipeline.
-The `transform` hook that powers `appendTo` automatically skips SSR builds (`transformOptions.ssr === true`), so the import is only added to the client bundle.
+### TanStack Start (auto-detected)
 
-### TanStack Start
-
-Point `appendTo` at your router file, which is always part of the client bundle:
+The plugin automatically detects TanStack Start and injects the toolbar via the module graph (targeting `router.tsx`) — no extra configuration needed:
 
 ```ts title="vite.config.ts"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -113,11 +110,7 @@ export default defineConfig({
     plugins: [
         tanstackStart(),
         viteReact(),
-        devToolbar({
-            // transformIndexHtml is bypassed by TanStack Start SSR.
-            // appendTo injects via the module graph (client-only).
-            appendTo: /router\.tsx$/,
-        }),
+        devToolbar(),
     ],
 });
 ```
@@ -137,7 +130,10 @@ export default defineConfig({
 
 ### Other SSR / Non-HTML Setups
 
-For any project without a static `index.html` entry point, point `appendTo` at a module that is guaranteed to run client-side only:
+For any project without a static `index.html` entry point that is not auto-detected, use the `appendTo` option to inject the toolbar via the JavaScript module graph instead of the HTML pipeline.
+The `transform` hook that powers `appendTo` automatically skips SSR builds (`transformOptions.ssr === true`), so the import is only added to the client bundle.
+
+Point `appendTo` at a module that is guaranteed to run client-side only:
 
 ```ts title="vite.config.ts"
 devToolbar({
@@ -215,11 +211,8 @@ devToolbar({
                 tsConfigPaths({ projects: ["./tsconfig.json"] }),
                 tanstackStart(),
                 viteReact(),
-                devToolbar({
-                    // TanStack Start SSR bypasses transformIndexHtml.
-                    // appendTo injects via the module graph (client builds only).
-                    appendTo: /router\.tsx$/,
-                }),
+                // TanStack Start is auto-detected — no appendTo needed.
+                devToolbar(),
             ],
         });
         ```

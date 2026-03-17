@@ -69,7 +69,7 @@ devToolbar({
 
 ### `appendTo`
 
-**Type:** `string | RegExp` — **Default:** `''`
+**Type:** `string | RegExp` — **Default:** `''` (auto-detected for supported frameworks)
 
 Append the toolbar import to a specific module ID instead of injecting a `<script>` tag via `transformIndexHtml`.
 Use this whenever your project's HTML is not a static file that Vite can transform — most commonly with SSR frameworks.
@@ -82,21 +82,22 @@ devToolbar({
 });
 ```
 
+**Auto-detection**
+
+The plugin automatically detects supported SSR frameworks and sets `appendTo` for you:
+
+| Framework        | Detection                                       | Auto `appendTo`      |
+| ---------------- | ----------------------------------------------- | -------------------- |
+| TanStack Start   | `tanstack-start-core:config` or `tanstack-react-start:config` plugin present | `/router\.tsx$/` |
+
+If your framework is auto-detected, you do not need to set `appendTo` manually. An explicit `appendTo` value always takes precedence over auto-detection.
+
 **Why SSR frameworks need this**
 
 Frameworks like TanStack Start, Nuxt, and SvelteKit render the full HTML document on the server at request time.
 Vite's `transformIndexHtml` hook is only called when Vite itself serves an HTML file; server-rendered HTML bypasses it entirely.
 `appendTo` switches to module-graph injection instead: the toolbar import is prepended to the matched module during Vite's `transform` phase.
 Because that hook automatically skips SSR transforms (`transformOptions.ssr === true`), the import is added only to the **client** bundle — never to the server-side render.
-
-**TanStack Start example**
-
-```ts title="vite.config.ts"
-devToolbar({
-    // router.tsx is always part of the client bundle.
-    appendTo: /router\.tsx$/,
-});
-```
 
 <Callout type="warn">
     Only set `appendTo` if you understand exactly what it does. The toolbar import is prepended to the matching module's source code at transform time. Make
