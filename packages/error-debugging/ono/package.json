@@ -94,7 +94,7 @@
     },
     "dependencies": {
         "@shikijs/langs": "catalog:prod",
-        "@visulima/error": "catalog:prod",
+        "@visulima/error": "workspace:*",
         "isomorphic-dompurify": "catalog:prod",
         "launch-editor-middleware": "catalog:prod",
         "shiki": "catalog:syntax"
@@ -114,7 +114,7 @@
         "@types/http-errors": "catalog:types",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "catalog:dev",
+        "@visulima/path": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "cssnano": "catalog:dev",
         "esbuild": "catalog:build",
