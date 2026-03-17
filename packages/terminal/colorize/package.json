@@ -181,7 +181,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/is-ansi-color-supported": "catalog:prod"
+        "@visulima/is-ansi-color-supported": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
