@@ -41,6 +41,7 @@
         "@unpic/react": "catalog:frontend",
         "@vidstack/react": "catalog:frontend",
         "@vitejs/plugin-react": "catalog:build",
+        "babel-plugin-react-compiler": "catalog:frontend",
         "class-variance-authority": "catalog:prod",
         "clsx": "catalog:prod",
         "cmdk": "catalog:prod",
