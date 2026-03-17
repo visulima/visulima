@@ -9,9 +9,9 @@
         "start": "vite start"
     },
     "dependencies": {
-        "@tanstack/react-router": "1.166.2",
-        "@tanstack/react-router-devtools": "1.166.2",
-        "@tanstack/react-start": "1.166.2",
+        "@tanstack/react-router": "catalog:frontend",
+        "@tanstack/react-router-devtools": "catalog:frontend",
+        "@tanstack/react-start": "catalog:frontend",
         "react": "catalog:frontend",
         "react-dom": "catalog:frontend",
         "redaxios": "catalog:prod",

@@ -79,7 +79,7 @@
     "dependencies": {
         "@shikijs/cli": "catalog:prod",
         "@shikijs/langs": "catalog:prod",
-        "@visulima/error": "catalog:prod",
+        "@visulima/error": "workspace:*",
         "fastest-levenshtein": "catalog:prod",
         "shiki": "catalog:syntax"
     },
@@ -102,7 +102,7 @@
         "@types/hast": "catalog:types",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "catalog:dev",
+        "@visulima/path": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
