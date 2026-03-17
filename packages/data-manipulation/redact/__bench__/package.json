@@ -6,14 +6,14 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@qiwi/masker": "^2.0.1",
+        "@qiwi/masker": "catalog:prod",
         "@visulima/redact": "workspace:*",
-        "fast-redact": "^3.5.0",
-        "fast-unset": "^2.0.1",
-        "unset-value": "^2.0.1"
+        "fast-redact": "catalog:prod",
+        "fast-unset": "catalog:prod",
+        "unset-value": "catalog:prod"
     },
     "devDependencies": {
-        "typescript": "5.9.3",
-        "vitest": "^4.0.18"
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }
