@@ -6,18 +6,18 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@oclif/core": "^4.8.4",
+        "@oclif/core": "catalog:prod",
         "@visulima/cerebro": "workspace:*",
-        "cac": "^7.0.0",
-        "cleye": "^2.3.0",
-        "commander": "^14.0.3",
-        "gunshi": "^0.29.3",
-        "meow": "^14.1.0",
-        "yargs": "^18.0.0"
+        "cac": "catalog:prod",
+        "cleye": "catalog:prod",
+        "commander": "catalog:prod",
+        "gunshi": "catalog:prod",
+        "meow": "catalog:prod",
+        "yargs": "catalog:prod"
     },
     "devDependencies": {
-        "@types/yargs": "^17.0.35",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.18"
+        "@types/yargs": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }
