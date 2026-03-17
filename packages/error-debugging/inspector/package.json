@@ -97,7 +97,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/colorize": "catalog:dev",
+        "@visulima/colorize": "workspace:*",
         "@visulima/packem": "catalog:dev",
         "@vitest/browser": "catalog:test",
         "@vitest/coverage-v8": "catalog:test",
