@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { promises as fs } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -157,7 +157,14 @@ async function sanitizeMdx(filePath) {
         }
     }
 
-    // 6. Add frontmatter if missing
+    // 6. Strip .mdx/.md extensions from markdown links (they break URL routing)
+    content = content.replace(/(\[.*?\]\([^)]*?)\.mdx(\))/g, "$1$2");
+    content = content.replace(/(\[.*?\]\([^)]*?)\.md(\))/g, "$1$2");
+
+
+
+
+    // 7. Add frontmatter if missing
     if (!content.startsWith("---")) {
         const basename = path.basename(filePath, path.extname(filePath));
         const title = basename
@@ -250,10 +257,228 @@ async function fetchExternalDocs({ repo, branches, docsPath, destName }) {
     const destPath = path.join(DEST_DIR, destName);
     await copyDirectory(srcDocsPath, destPath);
 
+    // Rewrite absolute /docs/ links to include the package prefix
+    await rewriteDocsLinks(destPath, destName);
+
     console.log(`  ${repo}/${docsPath} (${targetBranch}) → packages/${destName}`);
 
     await fs.rm(tmpDir, { recursive: true, force: true });
     return true;
+}
+
+/**
+ * After all docs are copied, validate internal /docs/ links and convert
+ * broken links to plain text (keeping the label, removing the link).
+ */
+async function fixBrokenDocsLinks(dir, contentRoot) {
+    contentRoot = contentRoot || path.join(dir, "..");
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+            await fixBrokenDocsLinks(fullPath, contentRoot);
+        } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+            let content = await fs.readFile(fullPath, "utf-8");
+            let changed = false;
+
+            const updated = content.replace(
+                /\[([^\]]*)\]\(\/docs\/(.*?)\)/g,
+                (match, label, docPath) => {
+                    // Strip hash fragments and trailing slashes for resolution
+                    const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
+                    const resolved = path.join(contentRoot, cleanPath);
+
+                    // Check if the target exists as a file or directory with index
+                    const exists =
+                        existsSync(resolved + ".mdx") ||
+                        existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) ||
+                        existsSync(path.join(resolved, "index.md"));
+
+                    if (!exists) {
+                        changed = true;
+                        return label; // Convert to plain text
+                    }
+                    return match;
+                }
+            );
+
+            // Also strip absolute links to non-existent non-docs routes (e.g. /examples, /usage)
+            const final = updated.replace(
+                /\[([^\]]*)\]\(\/((?!docs\/|packages\/|brand|changelog|code-of-conduct|imprint|privacy|assets\/|https?:)[^)]*)\)/g,
+                (match, label, linkPath) => {
+                    // Check if it could be a valid static route
+                    const knownRoutes = new Set(["brand", "changelog", "code-of-conduct", "imprint", "privacy", "docs", "packages"]);
+                    const firstSegment = linkPath.split(/[/#]/)[0];
+                    if (knownRoutes.has(firstSegment)) {
+                        return match;
+                    }
+                    changed = true;
+                    return label;
+                }
+            );
+
+            if (changed) {
+                await fs.writeFile(fullPath, final);
+            }
+        }
+    }
+}
+
+/**
+ * Rewrites absolute /docs/ links and root-relative links in MDX files.
+ * - /docs/guide/foo → /docs/packages/{pkgName}/guide/foo
+ * - /usage/foo → /docs/packages/{pkgName}/usage/foo (if target exists in package docs)
+ */
+async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
+    pkgRoot = pkgRoot || destPath;
+    const entries = await fs.readdir(destPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(destPath, entry.name);
+
+        if (entry.isDirectory()) {
+            await rewriteDocsLinks(fullPath, pkgName, pkgRoot);
+        } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+            const original = await fs.readFile(fullPath, "utf-8");
+            let content = original;
+
+            // Rewrite /docs/ links
+            content = content.replace(
+                /(\[.*?\]\()\/docs\/(?!packages\/)(.*?\))/g,
+                (match, prefix, restPath) => {
+                    if (restPath.startsWith(`${pkgName}/`) || restPath.startsWith(`${pkgName})`)) {
+                        return `${prefix}/docs/packages/${restPath}`;
+                    }
+                    return `${prefix}/docs/packages/${pkgName}/${restPath}`;
+                }
+            );
+
+            // Rewrite root-relative links (e.g. /usage/foo, /usage#anchor) that match existing package docs
+            content = content.replace(
+                /(\[.*?\]\()\/(?!docs\/|assets\/|api\/og|packages\/|brand|changelog|code-of-conduct|imprint|privacy)([\w-]+(?:[/#][^)]*)?)\)/g,
+                (match, prefix, linkPath) => {
+                    const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
+                    const resolved = path.join(pkgRoot, cleanPath);
+
+                    if (existsSync(resolved + ".mdx") || existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) || existsSync(path.join(resolved, "index.md"))) {
+                        return `${prefix}/docs/packages/${pkgName}/${linkPath})`;
+                    }
+                    return match;
+                }
+            );
+
+            // Convert relative ./path links to absolute /docs/packages/{pkgName}/... paths
+            const fileDir = path.dirname(fullPath);
+            content = content.replace(
+                /(\[.*?\]\()\.\/([^)]+)\)/g,
+                (match, prefix, relPath) => {
+                    // Compute the absolute docs path from the file's directory
+                    const relToRoot = path.relative(pkgRoot, fileDir);
+                    const absPath = relToRoot ? `${relToRoot}/${relPath}` : relPath;
+                    return `${prefix}/docs/packages/${pkgName}/${absPath})`;
+                }
+            );
+
+            if (content !== original) {
+                await fs.writeFile(fullPath, content);
+            }
+        }
+    }
+}
+
+/**
+ * Generates a basic meta.json from the directory contents when none exists.
+ */
+async function generateMetaJson(destPath) {
+    const entries = await fs.readdir(destPath, { withFileTypes: true });
+    const pages = ["index"];
+
+    for (const entry of entries) {
+        if (entry.name === "meta.json" || entry.name === "index.mdx" || entry.name === "index.md") {
+            continue;
+        }
+
+        if (entry.isDirectory()) {
+            pages.push(entry.name);
+        } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
+            pages.push(path.basename(entry.name, path.extname(entry.name)));
+        }
+    }
+
+    const title = path.basename(destPath)
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    const meta = { title, pages };
+    await fs.writeFile(path.join(destPath, "meta.json"), JSON.stringify(meta, null, 2) + "\n");
+    console.log(`    Generated meta.json for ${path.basename(destPath)}`);
+}
+
+/**
+ * If a package docs folder has no index.mdx but has introduction.mdx,
+ * rename introduction.mdx → index.mdx and update meta.json accordingly.
+ */
+async function ensureIndexPage(destPath) {
+    const indexMdx = path.join(destPath, "index.mdx");
+    const indexMd = path.join(destPath, "index.md");
+    const introMdx = path.join(destPath, "introduction.mdx");
+
+    // Already has an index page
+    try {
+        await fs.stat(indexMdx);
+        return;
+    } catch {}
+    try {
+        await fs.stat(indexMd);
+        return;
+    } catch {}
+
+    // No index — check for introduction.mdx to rename
+    try {
+        await fs.stat(introMdx);
+    } catch {
+        return; // No introduction.mdx either, nothing to do
+    }
+
+    await fs.rename(introMdx, indexMdx);
+
+    // Update references to "introduction" in sibling MDX files
+    const siblings = await fs.readdir(destPath, { withFileTypes: true });
+    for (const sibling of siblings) {
+        if (!sibling.isFile() || (!sibling.name.endsWith(".mdx") && !sibling.name.endsWith(".md"))) {
+            continue;
+        }
+        const sibPath = path.join(destPath, sibling.name);
+        const sibContent = await fs.readFile(sibPath, "utf-8");
+        // Replace links like ./introduction, ../introduction, (introduction) with directory root
+        const updated = sibContent
+            .replace(/(\[.*?\]\()\.\.\/introduction\)/g, "$1../)")
+            .replace(/(\[.*?\]\()\.\/introduction\)/g, "$1./)")
+            .replace(/(\[.*?\]\()introduction\)/g, "$1./)");
+        if (updated !== sibContent) {
+            await fs.writeFile(sibPath, updated);
+        }
+    }
+
+    // Update meta.json: replace "introduction" with "index" in pages array
+    const metaPath = path.join(destPath, "meta.json");
+    try {
+        const metaContent = await fs.readFile(metaPath, "utf-8");
+        const meta = JSON.parse(metaContent);
+        if (Array.isArray(meta.pages)) {
+            meta.pages = meta.pages.map((p) => (p === "introduction" ? "index" : p));
+        }
+        await fs.writeFile(metaPath, JSON.stringify(meta, null, 2) + "\n");
+    } catch {
+        // No meta.json exists — generate one from the directory contents
+        await generateMetaJson(destPath);
+    }
+
+    console.log(`    Renamed introduction.mdx → index.mdx in ${path.basename(destPath)}`);
 }
 
 /**
@@ -307,6 +532,20 @@ async function main() {
             console.log(`  ${category.name}/${pkg.name}/docs → packages/${pkg.name}`);
             copied++;
 
+            // If no index.mdx exists but introduction.mdx does, rename it so fumadocs resolves the folder root
+            await ensureIndexPage(destPath);
+
+            // Rewrite absolute /docs/ links to include the package prefix
+            await rewriteDocsLinks(destPath, pkg.name);
+
+            // Ensure meta.json exists (generate if missing)
+            const metaPath = path.join(destPath, "meta.json");
+            try {
+                await fs.stat(metaPath);
+            } catch {
+                await generateMetaJson(destPath);
+            }
+
             // Copy __assets__ to public/assets/{package-name}/ if present
             const assetsPath = path.join(categoryPath, pkg.name, "__assets__");
 
@@ -349,6 +588,10 @@ async function main() {
     }
 
     console.log(`\nCopied docs from ${copied} packages into src/content/docs/packages/`);
+
+    // Validate and fix broken internal doc links
+    await fixBrokenDocsLinks(DEST_DIR);
+    console.log("Validated internal doc links (broken links converted to plain text)");
 
     // Generate root packages/meta.json with categorized sidebar navigation
     const copiedPackages = await fs.readdir(DEST_DIR, { withFileTypes: true });
