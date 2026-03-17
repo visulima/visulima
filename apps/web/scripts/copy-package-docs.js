@@ -11,6 +11,7 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..", "..", "..");
 const PACKAGES_DIR = path.join(ROOT_DIR, "packages");
 const DEST_DIR = path.join(__dirname, "..", "src", "content", "docs", "packages");
+const PUBLIC_ASSETS_DIR = path.join(__dirname, "..", "public", "assets");
 
 /**
  * External repos whose docs/ folder should be fetched and merged into the packages docs.
@@ -264,6 +265,9 @@ async function main() {
     await fs.rm(DEST_DIR, { recursive: true, force: true });
     await fs.mkdir(DEST_DIR, { recursive: true });
 
+    // Clean public assets from packages
+    await fs.rm(PUBLIC_ASSETS_DIR, { recursive: true, force: true });
+
     // Scan packages/{category}/{package}/docs
     const categories = await fs.readdir(PACKAGES_DIR, { withFileTypes: true });
 
@@ -302,6 +306,32 @@ async function main() {
             await copyDirectory(docsPath, destPath);
             console.log(`  ${category.name}/${pkg.name}/docs → packages/${pkg.name}`);
             copied++;
+
+            // Copy __assets__ to public/assets/{package-name}/ if present
+            const assetsPath = path.join(categoryPath, pkg.name, "__assets__");
+
+            try {
+                const assetsStat = await fs.stat(assetsPath);
+
+                if (assetsStat.isDirectory()) {
+                    const assetsDestPath = path.join(PUBLIC_ASSETS_DIR, pkg.name);
+                    await fs.mkdir(assetsDestPath, { recursive: true });
+
+                    const assetFiles = await fs.readdir(assetsPath, { withFileTypes: true });
+
+                    for (const asset of assetFiles) {
+                        if (asset.isFile()) {
+                            await fs.copyFile(path.join(assetsPath, asset.name), path.join(assetsDestPath, asset.name));
+                        }
+                    }
+
+                    console.log(`  ${category.name}/${pkg.name}/__assets__ → public/assets/${pkg.name}`);
+                }
+            } catch (err) {
+                if (err.code !== "ENOENT") {
+                    throw err;
+                }
+            }
         }
     }
 

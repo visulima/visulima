@@ -1,5 +1,6 @@
 .source
 .tmp-external-docs
 .tanstack/tmp
+public/assets
 
 !src/data
