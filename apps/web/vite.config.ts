@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -7,36 +9,43 @@ import { defineConfig, type Plugin } from "vite";
 import { imagetools } from "vite-imagetools";
 import svgr from "vite-plugin-svgr";
 
-type Awaitable<T> = Promise<T> | T;
-
-const interopDefault = async <T>(m: Awaitable<T>): Promise<T extends { default: infer U } ? U : T> => {
-    const resolved = await m;
-
-    return ((resolved as unknown as Record<string, unknown>)["default"] ?? resolved) as T extends { default: infer U } ? U : T;
+const tryRequire = (id: string) => {
+    try {
+        const require = createRequire(import.meta.url);
+        return require(id);
+    } catch {
+        return null;
+    }
 };
 
 export default defineConfig(async ({ mode }) => {
-    const plugins = [];
+    const plugins: Plugin[] = [];
 
-    const isDev = mode === "development";
+    if (mode === "development") {
+        const devToolbarModule = tryRequire("@visulima/dev-toolbar/vite");
+        const viteOverlayModule = tryRequire("@visulima/vite-overlay");
 
-    if (isDev) {
-        const [devToolbar, viteOverlay] = await Promise.all([interopDefault(import("@visulima/dev-toolbar/vite")), interopDefault(import("@visulima/vite-overlay"))]);
+        if (devToolbarModule) {
+            const { devToolbar } = devToolbarModule;
+            plugins.push(
+                devToolbar({
+                    apps: {
+                        a11y: true,
+                        assets: true,
+                        inspector: true,
+                        settings: true,
+                        timeline: true,
+                    },
+                    defaultVisible: true,
+                    placement: "bottom-center",
+                }),
+            );
+        }
 
-        plugins.push(
-            devToolbar.devToolbar({
-                apps: {
-                    a11y: true,
-                    assets: true,
-                    inspector: true,
-                    settings: true,
-                    timeline: true,
-                },
-                defaultVisible: true,
-                placement: "bottom-center",
-            }),
-        );
-        plugins.push(viteOverlay({ showBallonButton: false }));
+        if (viteOverlayModule) {
+            const viteOverlay = viteOverlayModule.default ?? viteOverlayModule;
+            plugins.push(viteOverlay({ showBallonButton: false }));
+        }
     }
 
     return {
