@@ -137,7 +137,12 @@ async function sanitizeMdx(filePath) {
     content = parts
         .map((part, i) => {
             if (i % 2 === 1) return part; // code block - don't modify
-            return part.replace(safeTagRegex, "\\<");
+            // Escape non-HTML angle brackets
+            let result = part.replace(safeTagRegex, "\\<");
+            // Strip .mdx/.md extensions from markdown links (they break URL routing)
+            result = result.replace(/(\[[^\]]*\]\([^)]*?)\.mdx(\))/g, "$1$2");
+            result = result.replace(/(\[[^\]]*\]\([^)]*?)\.md(\))/g, "$1$2");
+            return result;
         })
         .join("");
 
@@ -157,14 +162,7 @@ async function sanitizeMdx(filePath) {
         }
     }
 
-    // 6. Strip .mdx/.md extensions from markdown links (they break URL routing)
-    content = content.replace(/(\[.*?\]\([^)]*?)\.mdx(\))/g, "$1$2");
-    content = content.replace(/(\[.*?\]\([^)]*?)\.md(\))/g, "$1$2");
-
-
-
-
-    // 7. Add frontmatter if missing
+    // 6. Add frontmatter if missing
     if (!content.startsWith("---")) {
         const basename = path.basename(filePath, path.extname(filePath));
         const title = basename
