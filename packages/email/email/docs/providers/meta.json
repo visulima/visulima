@@ -1,4 +1,34 @@
 {
     "title": "Providers",
-    "pages": ["introduction"]
+    "pages": [
+        "introduction",
+        "aws-ses",
+        "resend",
+        "brevo",
+        "mailgun",
+        "mailjet",
+        "mailersend",
+        "mandrill",
+        "mailpace",
+        "mailtrap",
+        "postal",
+        "postmark",
+        "azure",
+        "infobip",
+        "scaleway",
+        "ahasend",
+        "mailomat",
+        "sweego",
+        "sendgrid",
+        "smtp",
+        "zeptomail",
+        "plunk",
+        "http",
+        "nodemailer",
+        "mock",
+        "failover",
+        "roundrobin",
+        "mailcrab",
+        "opentelemetry"
+    ]
 }
