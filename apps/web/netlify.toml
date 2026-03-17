@@ -1,5 +1,5 @@
 [build]
-  command = "pnpm build:web"
+  command = "pnpm run build:web"
   ignore = "node apps/web/scripts/netlify-ignore-command.cjs"
 
 [build.environment]

@@ -2,6 +2,9 @@
  * Pre-fetches npm download stats and GitHub stats at build time.
  * Writes results to src/data/stats.json so the app can read them without runtime API calls.
  *
+ * Supports incremental updates: reads existing stats.json and only fetches
+ * data from the last cached date to now, merging with previously cached data.
+ *
  * Output format:
  * {
  *   weeklyDownloads: { "packem": 328, ... },
@@ -15,7 +18,7 @@
  * Usage: node scripts/fetch-stats.js
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -71,7 +74,43 @@ const GITHUB_REPOS = ["visulima/visulima", "visulima/packem"];
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function fetchWithRetry(url, maxRetries = 5) {
+const loadCache = () => {
+    if (!existsSync(OUTPUT_PATH)) {
+        return null;
+    }
+
+    try {
+        const raw = readFileSync(OUTPUT_PATH, "utf-8");
+        const data = JSON.parse(raw);
+
+        if (data.fetchedAt && data.monthlyChart) {
+            return data;
+        }
+    } catch {
+        console.warn("  Could not parse existing stats.json, starting fresh.");
+    }
+
+    return null;
+};
+
+/**
+ * Returns the first day of the month of the last fetch (YYYY-MM-DD),
+ * so we re-fetch that (potentially partial) month plus any new months.
+ */
+const getCacheCutoffDate = (cache) => {
+    if (!cache?.fetchedAt) {
+        return null;
+    }
+
+    const lastFetched = new Date(cache.fetchedAt);
+    return `${lastFetched.toISOString().substring(0, 7)}-01`;
+};
+
+const toDateString = (date) => {
+    return date.toISOString().split("T")[0];
+};
+
+const fetchWithRetry = async (url, maxRetries = 5) => {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         try {
             const response = await fetch(url);
@@ -104,45 +143,30 @@ async function fetchWithRetry(url, maxRetries = 5) {
     }
 
     return null;
-}
+};
 
-async function fetchPackageDownloads(pkg, period) {
+const fetchPackageDownloads = async (pkg, period) => {
     const data = await fetchWithRetry(
         `https://api.npmjs.org/downloads/point/${period}/@visulima/${pkg}`,
     );
 
     return data?.downloads || 0;
-}
+};
 
 /**
  * Fetch daily download data for a package over a date range,
  * then aggregate into monthly totals for the chart.
+ *
+ * If a cutoffDate is provided, only fetches from that date to now.
  * npm API limits range queries to 18 months max.
  */
-async function fetchPackageMonthlyChart(pkg) {
+const fetchPackageMonthlyChart = async (pkg, cutoffDate) => {
     const now = new Date();
-    const monthlyData = [];
-
-    // Fetch in 18-month windows going back ~5 years
-    const windows = [];
-    let endDate = new Date(now);
-
-    for (let i = 0; i < 4; i++) {
-        const startDate = new Date(endDate);
-        startDate.setMonth(startDate.getMonth() - 17);
-
-        const start = startDate.toISOString().split("T")[0];
-        const end = endDate.toISOString().split("T")[0];
-        windows.push({ start, end });
-
-        endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() - 1);
-    }
-
-    // Fetch oldest first
-    windows.reverse();
-
     const dailyByMonth = {};
+
+    const windows = cutoffDate
+        ? buildWindows(new Date(cutoffDate), now)
+        : buildFullHistoryWindows(now);
 
     for (const { start, end } of windows) {
         await delay(1500);
@@ -152,7 +176,7 @@ async function fetchPackageMonthlyChart(pkg) {
 
         if (data?.downloads) {
             for (const day of data.downloads) {
-                const month = day.day.substring(0, 7); // "2024-01"
+                const month = day.day.substring(0, 7);
 
                 if (!dailyByMonth[month]) {
                     dailyByMonth[month] = 0;
@@ -163,20 +187,85 @@ async function fetchPackageMonthlyChart(pkg) {
         }
     }
 
-    // Convert to sorted array
-    for (const month of Object.keys(dailyByMonth).sort()) {
-        monthlyData.push({ month, downloads: dailyByMonth[month] });
+    return Object.keys(dailyByMonth)
+        .sort()
+        .map((month) => ({ month, downloads: dailyByMonth[month] }));
+};
+
+/**
+ * Build 18-month windows going back ~5 years from now (full history).
+ */
+const buildFullHistoryWindows = (now) => {
+    const windows = [];
+    let endDate = new Date(now);
+
+    for (let i = 0; i < 4; i++) {
+        const startDate = new Date(endDate);
+        startDate.setMonth(startDate.getMonth() - 17);
+
+        windows.push({ start: toDateString(startDate), end: toDateString(endDate) });
+
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() - 1);
     }
 
-    return monthlyData;
-}
+    windows.reverse();
+    return windows;
+};
 
-async function fetchRepoStars(repo) {
+/**
+ * Build 18-month windows covering the range [startDate, endDate].
+ */
+const buildWindows = (startDate, endDate) => {
+    const windows = [];
+    let cursor = new Date(startDate);
+
+    while (cursor < endDate) {
+        const windowEnd = new Date(cursor);
+        windowEnd.setMonth(windowEnd.getMonth() + 17);
+
+        const actualEnd = windowEnd > endDate ? endDate : windowEnd;
+
+        windows.push({
+            start: toDateString(cursor),
+            end: toDateString(actualEnd),
+        });
+
+        cursor = new Date(actualEnd);
+        cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return windows;
+};
+
+/**
+ * Merge cached monthly chart data with newly fetched data.
+ * New data overwrites cached months (since partial months get re-fetched).
+ */
+const mergeMonthlyChart = (cached, fresh) => {
+    const byMonth = {};
+
+    if (cached) {
+        for (const entry of cached) {
+            byMonth[entry.month] = entry.downloads;
+        }
+    }
+
+    for (const entry of fresh) {
+        byMonth[entry.month] = entry.downloads;
+    }
+
+    return Object.keys(byMonth)
+        .sort()
+        .map((month) => ({ month, downloads: byMonth[month] }));
+};
+
+const fetchRepoStars = async (repo) => {
     const data = await fetchWithRetry(`https://api.github.com/repos/${repo}`);
     return data?.stargazers_count || 0;
-}
+};
 
-async function fetchRepoContributors(repo) {
+const fetchRepoContributors = async (repo) => {
     try {
         const response = await fetch(
             `https://api.github.com/repos/${repo}/contributors?per_page=1&anon=true`,
@@ -204,9 +293,19 @@ async function fetchRepoContributors(repo) {
     }
 
     return 0;
-}
+};
 
-async function main() {
+const main = async () => {
+    const cache = loadCache();
+    const cutoffDate = getCacheCutoffDate(cache);
+
+    if (cache) {
+        console.log(`Found cached stats from ${cache.fetchedAt}`);
+        console.log(`Fetching incremental data from ${cutoffDate}...\n`);
+    } else {
+        console.log("No cache found, fetching all data from scratch...\n");
+    }
+
     console.log("Fetching npm download stats...\n");
 
     const weeklyDownloads = {};
@@ -214,17 +313,31 @@ async function main() {
     const monthlyChart = {};
 
     for (const pkg of PACKAGES) {
+        // Weekly downloads: always fetch fresh
         weeklyDownloads[pkg] = await fetchPackageDownloads(pkg, "last-week");
         await delay(1000);
+
+        // Total downloads: always fetch fresh (single cheap API call)
         totalDownloads[pkg] = await fetchPackageDownloads(pkg, "2015-01-01:2030-01-01");
         await delay(1000);
 
         console.log(`  ${pkg}: weekly=${weeklyDownloads[pkg]}, total=${totalDownloads[pkg]}`);
 
-        // Fetch monthly chart data
-        console.log(`    Fetching chart data...`);
-        monthlyChart[pkg] = await fetchPackageMonthlyChart(pkg);
-        console.log(`    ${monthlyChart[pkg].length} months of data`);
+        // Fetch monthly chart data (incremental if cache exists)
+        const cachedChart = cache?.monthlyChart?.[pkg];
+
+        if (cachedChart && cutoffDate) {
+            console.log(`    Fetching chart data from ${cutoffDate}...`);
+            const freshChart = await fetchPackageMonthlyChart(pkg, cutoffDate);
+            monthlyChart[pkg] = mergeMonthlyChart(cachedChart, freshChart);
+            console.log(
+                `    ${freshChart.length} new months fetched, ${monthlyChart[pkg].length} months total`,
+            );
+        } else {
+            console.log(`    Fetching full chart data...`);
+            monthlyChart[pkg] = await fetchPackageMonthlyChart(pkg, null);
+            console.log(`    ${monthlyChart[pkg].length} months of data`);
+        }
     }
 
     console.log("\nFetching GitHub stats...");
@@ -261,7 +374,7 @@ async function main() {
     console.log(`  Total:  ${totalSum.toLocaleString()}`);
     console.log(`  Stars:  ${stars}`);
     console.log(`  Contributors: ${contributors}`);
-}
+};
 
 main().catch((error) => {
     console.error("Failed to fetch stats:", error);

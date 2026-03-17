@@ -1145,8 +1145,8 @@ catalogs:
       specifier: ^1.0.16
       version: 1.0.16
     file-type:
-      specifier: 21.3.1
-      version: 21.3.1
+      specifier: 21.3.2
+      version: 21.3.2
     find-up:
       specifier: 8.0.0
       version: 8.0.0
@@ -1808,7 +1808,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/storybook:
     dependencies:
@@ -2139,10 +2139,10 @@ importers:
         specifier: catalog:types
         version: 0.183.1
       '@visulima/dev-toolbar':
-        specifier: workspace:*
+        specifier: 1.0.0-alpha.5
         version: link:../../packages/error-debugging/dev-toolbar
       '@visulima/vite-overlay':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.8
         version: link:../../packages/error-debugging/vite-overlay
       '@vitest/ui':
         specifier: catalog:test
@@ -2474,7 +2474,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       webpack:
         specifier: catalog:build
         version: 5.105.4(@swc/core@1.15.11)(esbuild@0.27.3)
@@ -2593,7 +2593,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       zod:
         specifier: catalog:utils
         version: 4.3.6
@@ -2726,7 +2726,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/api/health-check:
     dependencies:
@@ -2844,7 +2844,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/api/jsdoc-open-api:
     dependencies:
@@ -2932,7 +2932,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     optionalDependencies:
       cli-progress:
         specifier: catalog:optional
@@ -3007,7 +3007,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/bytes:
     devDependencies:
@@ -3076,7 +3076,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/content-safety:
     devDependencies:
@@ -3139,7 +3139,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/deep-clone:
     devDependencies:
@@ -3205,7 +3205,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/deep-clone/__bench__:
     dependencies:
@@ -3345,7 +3345,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/humanizer:
     devDependencies:
@@ -3417,7 +3417,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/humanizer/__fixtures__/package/cjs:
     dependencies:
@@ -3492,7 +3492,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/object:
     dependencies:
@@ -3574,7 +3574,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/redact:
     dependencies:
@@ -3644,7 +3644,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/redact/__bench__:
     dependencies:
@@ -3762,7 +3762,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/data-manipulation/string/__bench__:
     dependencies:
@@ -3897,7 +3897,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/email/email:
     dependencies:
@@ -4024,7 +4024,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/email/email/examples/nodemailer:
     dependencies:
@@ -4188,7 +4188,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/dev-toolbar/examples/vite:
     devDependencies:
@@ -4643,7 +4643,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/error-handler:
     dependencies:
@@ -4734,7 +4734,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/error-handler/examples/cli:
     dependencies:
@@ -4845,7 +4845,7 @@ importers:
         version: 1.1.1(typescript@5.9.3)
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       webdriverio:
         specifier: catalog:dev
         version: 9.25.0
@@ -5009,7 +5009,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/ono/examples/bun:
     dependencies:
@@ -5167,7 +5167,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/pail/__bench__:
     dependencies:
@@ -5344,7 +5344,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/error-debugging/vite-overlay:
     dependencies:
@@ -5957,7 +5957,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/filesystem/fs:
     dependencies:
@@ -6042,7 +6042,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       yaml:
         specifier: catalog:dev
         version: 2.8.2
@@ -6158,7 +6158,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       zeptomatch:
         specifier: catalog:dev
         version: 2.1.0
@@ -6188,7 +6188,7 @@ importers:
         version: link:../../api/pagination
       file-type:
         specifier: catalog:prod
-        version: 21.3.1
+        version: 21.3.2
       lru-cache:
         specifier: catalog:prod
         version: 11.2.6
@@ -6366,7 +6366,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/storage/storage-client:
     devDependencies:
@@ -6513,7 +6513,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       vue:
         specifier: '>=3.5.30'
         version: 3.5.30(typescript@5.9.3)
@@ -7224,7 +7224,7 @@ importers:
         version: 5.0.6
       ts-node-dev:
         specifier: catalog:dev
-        version: 2.0.0(@swc/core@1.15.11)(@types/node@25.3.5)(typescript@5.9.3)
+        version: 2.0.0(@swc/core@1.15.11)(@types/node@25.5.0)(typescript@5.9.3)
 
   packages/storage/storage/examples/hono:
     dependencies:
@@ -7350,7 +7350,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/ansi/__fixtures__/package/cjs:
     dependencies:
@@ -7431,7 +7431,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/boxen/__bench__:
     devDependencies:
@@ -7555,7 +7555,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/cerebro/__bench__:
     dependencies:
@@ -7730,7 +7730,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/colorize/__bench__:
     dependencies:
@@ -7908,7 +7908,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/command-line-args/__bench__:
     dependencies:
@@ -8020,7 +8020,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/is-ansi-color-supported:
     devDependencies:
@@ -8083,7 +8083,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/tabular:
     devDependencies:
@@ -8173,7 +8173,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/terminal/tabular/__bench__:
     devDependencies:
@@ -8194,7 +8194,7 @@ importers:
         version: 6.9.0
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tooling/package:
     dependencies:
@@ -8303,7 +8303,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       yarn:
         specifier: catalog:dev
         version: 1.22.22
@@ -8403,7 +8403,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tooling/tsconfig:
     dependencies:
@@ -8500,7 +8500,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tooling/tsconfig/__fixtures__/package/cjs:
     dependencies:
@@ -10407,7 +10407,7 @@ packages:
     resolution: {integrity: sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -14542,7 +14542,7 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3
       vite: '>=7.1.11'
     peerDependenciesMeta:
@@ -14563,7 +14563,7 @@ packages:
     resolution: {integrity: sha512-ou/d51QSdTyN26D7h6dSpusAKaZkAiGM55/AKYi+9AGZw7q85hElbjK3kEyzXHhLSnRISHOYzVge6x0jRZ7DXA==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       vite: '>=7.1.11'
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
@@ -20472,10 +20472,6 @@ packages:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
 
-  file-type@21.3.1:
-    resolution: {integrity: sha512-SrzXX46I/zsRDjTb82eucsGg0ODq2NpGDp4HcsFKApPy8P8vACjpJRDoGGMfEzhFC0ry61ajd7f72J3603anBA==}
-    engines: {node: '>=20'}
-
   file-type@21.3.2:
     resolution: {integrity: sha512-DLkUvGwep3poOV2wpzbHCOnSKGk1LzyXTv+aHFgN2VFl96wnp8YA9YjO2qPzg5PuL8q/SW9Pdi6WTkYOIh995w==}
     engines: {node: '>=20'}
@@ -24131,7 +24127,7 @@ packages:
     resolution: {integrity: sha512-cAg3J2ZboQnzSWGo6EH54BQwlrXbcJ3eDF70dy2T4tfXui0Cb+ryBr+5R6n5gqB5e1i6mbsfsqXq1LI6eMm3GQ==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -27464,7 +27460,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.6.0:
@@ -30638,7 +30634,7 @@ snapshots:
       lint-staged: 16.4.0
       prettier: 3.8.1
       secretlint: 11.3.1
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@types/node'
       - yaml
@@ -38760,7 +38756,7 @@ snapshots:
       svelte: 5.53.10
     optionalDependencies:
       vite: 8.0.0(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.3)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   '@testing-library/user-event@14.5.2(@testing-library/dom@10.4.0)':
     dependencies:
@@ -41045,7 +41041,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
       ws: 8.19.0
     transitivePeerDependencies:
       - bufferutil
@@ -41081,7 +41077,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     optionalDependencies:
       '@vitest/browser': 4.0.18(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(vite@8.0.0)(vitest@4.0.18)
 
@@ -41092,7 +41088,7 @@ snapshots:
       eslint: 10.0.3(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -41265,7 +41261,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@7.3.1(@types/node@25.3.5)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/utils@2.0.5':
     dependencies:
@@ -45244,7 +45240,7 @@ snapshots:
       '@humanwhocodes/module-importer': 1.0.1
       '@humanwhocodes/retry': 0.4.2
       '@types/estree': 1.0.8
-      ajv: 6.14.0
+      ajv: 8.18.0
       chalk: 4.1.2
       cross-spawn: 7.0.6
       debug: 4.4.3(supports-color@8.1.1)
@@ -45737,15 +45733,6 @@ snapshots:
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
-
-  file-type@21.3.1:
-    dependencies:
-      '@tokenizer/inflate': 0.4.1
-      strtok3: 10.3.4
-      token-types: 6.1.1
-      uint8array-extras: 1.5.0
-    transitivePeerDependencies:
-      - supports-color
 
   file-type@21.3.2:
     dependencies:
@@ -55656,7 +55643,7 @@ snapshots:
 
   ts-mixer@6.0.4: {}
 
-  ts-node-dev@2.0.0(@swc/core@1.15.11)(@types/node@25.3.5)(typescript@5.9.3):
+  ts-node-dev@2.0.0(@swc/core@1.15.11)(@types/node@25.5.0)(typescript@5.9.3):
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -55666,7 +55653,7 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@swc/core@1.15.11)(@types/node@25.3.5)(typescript@5.9.3)
+      ts-node: 10.9.2(@swc/core@1.15.11)(@types/node@25.5.0)(typescript@5.9.3)
       tsconfig: 7.0.0
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -55682,6 +55669,27 @@ snapshots:
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
       '@types/node': 25.3.5
+      acorn: 8.16.0
+      acorn-walk: 8.3.4
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 8.0.3
+      make-error: 1.3.6
+      typescript: 5.9.3
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    optionalDependencies:
+      '@swc/core': 1.15.11
+    optional: true
+
+  ts-node@10.9.2(@swc/core@1.15.11)(@types/node@25.5.0)(typescript@5.9.3):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.12
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 25.5.0
       acorn: 8.16.0
       acorn-walk: 8.3.4
       arg: 4.1.3
@@ -57184,7 +57192,7 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32)(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.3.5)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.1)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(@vitest/ui@4.0.18)(esbuild@0.27.3)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@28.1.0(@noble/hashes@1.8.0))(less@4.4.2)(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.18
       '@vitest/mocker': 4.0.18(msw@2.12.10(@types/node@25.3.5)(typescript@5.9.3))(vite@8.0.0)
