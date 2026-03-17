@@ -1,9 +1,12 @@
 {
-    "name": "package-cjs",
-    "private": true,
-    "description": "CommonJS version",
-    "type": "commonjs",
-    "dependencies": {
-        "@visulima/fs": "workspace:*"
-    }
+  "name": "package-cjs",
+  "private": true,
+  "description": "CommonJS version",
+  "type": "commonjs",
+  "dependencies": {
+    "@visulima/fs": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

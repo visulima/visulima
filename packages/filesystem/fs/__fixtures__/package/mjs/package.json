@@ -1,9 +1,12 @@
 {
-    "name": "package-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/fs": "workspace:*"
-    }
+  "name": "package-esm",
+  "private": true,
+  "description": "ESM version",
+  "type": "module",
+  "dependencies": {
+    "@visulima/fs": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

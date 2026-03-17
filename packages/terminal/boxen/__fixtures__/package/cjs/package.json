@@ -1,9 +1,12 @@
 {
-    "name": "boxen-cjs",
-    "private": true,
-    "description": "CommonJS version",
-    "type": "commonjs",
-    "dependencies": {
-        "@visulima/boxen": "workspace:*"
-    }
+  "name": "boxen-cjs",
+  "private": true,
+  "description": "CommonJS version",
+  "type": "commonjs",
+  "dependencies": {
+    "@visulima/boxen": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

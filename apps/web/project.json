@@ -4,12 +4,5 @@
     "sourceRoot": "web",
     "projectType": "application",
     "tags": ["web"],
-    "implicitDependencies": [
-        "filesystem/path",
-        "filesystem/fs",
-        "error-debugging/error",
-        "error-debugging/dev-toolbar",
-        "error-debugging/vite-overlay"
-    ]
+    "implicitDependencies": ["filesystem/path", "filesystem/fs", "error-debugging/error", "error-debugging/dev-toolbar", "error-debugging/vite-overlay"]
 }
-

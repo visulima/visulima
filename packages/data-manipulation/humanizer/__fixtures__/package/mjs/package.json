@@ -1,9 +1,12 @@
 {
-    "name": "humanizer-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/humanizer": "workspace:*"
-    }
+  "name": "humanizer-esm",
+  "private": true,
+  "description": "ESM version",
+  "type": "module",
+  "dependencies": {
+    "@visulima/humanizer": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

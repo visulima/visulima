@@ -1,9 +1,12 @@
 {
-    "name": "redact-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/redact": "workspace:*"
-    }
+  "name": "redact-esm",
+  "private": true,
+  "description": "ESM version",
+  "type": "module",
+  "dependencies": {
+    "@visulima/redact": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

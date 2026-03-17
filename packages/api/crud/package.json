@@ -1,149 +1,151 @@
 {
-    "name": "@visulima/crud",
-    "version": "3.0.0-alpha.6",
-    "description": "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
-    "keywords": [
-        "anolilab",
-        "visulima",
-        "api-platform",
-        "api",
-        "crud",
-        "prisma"
-    ],
-    "homepage": "https://www.visulima.com/docs/package/crud",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/api/crud"
+  "name": "@visulima/crud",
+  "version": "3.0.0-alpha.6",
+  "description": "A comprehensive CRUD library for building RESTful APIs with Prisma, providing automatic CRUD operations, filtering, sorting, and pagination.",
+  "keywords": [
+    "anolilab",
+    "visulima",
+    "api-platform",
+    "api",
+    "crud",
+    "prisma"
+  ],
+  "homepage": "https://www.visulima.com/docs/package/crud",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visulima/visulima.git",
+    "directory": "packages/api/crud"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/prisis"
     },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
+    {
+      "type": "consulting",
+      "url": "https://anolilab.com/support"
+    }
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Daniel Bannert",
+    "email": "d.bannert@anolilab.de"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
     },
-    "sideEffects": false,
-    "exports": {
-        ".": {
-            "require": {
-                "types": "./dist/index.d.ts",
-                "default": "./dist/index.js"
-            },
-            "import": {
-                "types": "./dist/index.d.mts",
-                "default": "./dist/index.mjs"
-            }
-        },
-        "./next": {
-            "require": {
-                "types": "./dist/next/index.d.ts",
-                "default": "./dist/next/index.js"
-            },
-            "import": {
-                "types": "./dist/next/index.d.mts",
-                "default": "./dist/next/index.mjs"
-            }
-        },
-        "./package.json": "./package.json"
+    "./next": {
+      "require": {
+        "types": "./dist/next/index.d.ts",
+        "default": "./dist/next/index.js"
+      },
+      "import": {
+        "types": "./dist/next/index.d.mts",
+        "default": "./dist/next/index.mjs"
+      }
     },
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
-    "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "scripts": {
-        "build": "cross-env NODE_ENV=development tsup",
-        "build:prod": "cross-env NODE_ENV=production tsup",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
-        "lint:eslint": "eslint . --cache --concurrency auto ",
-        "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
-        "lint:package-json": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
-    },
-    "dependencies": {
-        "@visulima/pagination": "workspace:*",
-        "@visulima/prisma-dmmf-transformer": "workspace:*",
-        "http-errors": "catalog:prod",
-        "path-to-regexp": "catalog:prod"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
-        "@eslint-react/eslint-plugin": "catalog:lint",
-        "@opentelemetry/api": "catalog:dev",
-        "@prisma/client": "catalog:backend",
-        "@testing-library/react": "catalog:test",
-        "@types/http-errors": "catalog:types",
-        "@types/json-schema": "catalog:types",
-        "@types/node": "catalog:types",
-        "@vitest/coverage-v8": "catalog:test",
-        "@vitest/ui": "catalog:test",
-        "conventional-changelog-conventionalcommits": "catalog:dev",
-        "cross-env": "catalog:dev",
-        "dot-prop": "catalog:dev",
-        "eslint": "catalog:lint",
-        "eslint-plugin-jsx-a11y": "catalog:lint",
-        "eslint-plugin-react": "catalog:lint",
-        "eslint-plugin-react-hooks": "catalog:lint",
-        "eslint-plugin-react-perf": "catalog:lint",
-        "eslint-plugin-react-refresh": "catalog:lint",
-        "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
-        "eslint-plugin-testing-library": "catalog:lint",
-        "eslint-plugin-validate-jsx-nesting": "catalog:lint",
-        "next": "catalog:dev",
-        "next-test-api-route-handler": "catalog:test",
-        "node-mocks-http": "catalog:dev",
-        "openapi-types": "catalog:dev",
-        "prettier": "catalog:lint",
-        "publint": "catalog:dev",
-        "react": "catalog:frontend",
-        "react-dom": "catalog:frontend",
-        "rimraf": "catalog:node",
-        "semantic-release": "catalog:cli",
-        "tsup": "catalog:build",
-        "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
-    },
-    "engines": {
-        "node": ">=22.13 <=25.x"
-    },
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
-    "optionalDependenciest": {
-        "next": ">=12.0 || >=13.0 || >=14.0 || >=15.0",
-        "@prisma/client": "^3.0.0 || ^4.0.0"
-    },
-    "sources": [
-        "src/index.ts",
-        "src/next/index.ts"
-    ]
+    "./package.json": "./package.json"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "cross-env NODE_ENV=development tsup",
+    "build:prod": "cross-env NODE_ENV=production tsup",
+    "clean": "rimraf node_modules dist .eslintcache",
+    "dev": "pnpm run build --watch",
+    "lint:eslint": "eslint . --cache --concurrency auto ",
+    "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
+    "lint:package-json": "publint --strict",
+    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+    "lint:types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui --coverage.enabled=true",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@visulima/pagination": "workspace:*",
+    "@visulima/prisma-dmmf-transformer": "workspace:*",
+    "http-errors": "catalog:prod",
+    "path-to-regexp": "catalog:prod"
+  },
+  "devDependencies": {
+    "@anolilab/eslint-config": "catalog:lint",
+    "@anolilab/prettier-config": "catalog:lint",
+    "@anolilab/semantic-release-pnpm": "catalog:dev",
+    "@anolilab/semantic-release-preset": "catalog:dev",
+    "@eslint-react/eslint-plugin": "catalog:lint",
+    "@opentelemetry/api": "catalog:dev",
+    "@prisma/client": "catalog:backend",
+    "@testing-library/react": "catalog:test",
+    "@types/http-errors": "catalog:types",
+    "@types/json-schema": "catalog:types",
+    "@types/node": "catalog:types",
+    "@vitest/coverage-v8": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "conventional-changelog-conventionalcommits": "catalog:dev",
+    "cross-env": "catalog:dev",
+    "dot-prop": "catalog:dev",
+    "eslint": "catalog:lint",
+    "eslint-plugin-jsx-a11y": "catalog:lint",
+    "eslint-plugin-react": "catalog:lint",
+    "eslint-plugin-react-hooks": "catalog:lint",
+    "eslint-plugin-react-perf": "catalog:lint",
+    "eslint-plugin-react-refresh": "catalog:lint",
+    "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
+    "eslint-plugin-testing-library": "catalog:lint",
+    "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+    "next": "catalog:dev",
+    "next-test-api-route-handler": "catalog:test",
+    "node-mocks-http": "catalog:dev",
+    "openapi-types": "catalog:dev",
+    "prettier": "catalog:lint",
+    "publint": "catalog:dev",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend",
+    "rimraf": "catalog:node",
+    "semantic-release": "catalog:cli",
+    "tsup": "catalog:build",
+    "typescript": "catalog:tsc",
+    "vitest": "catalog:test"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=22.13 <=25.x"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "optionalDependenciest": {
+    "next": ">=12.0 || >=13.0 || >=14.0 || >=15.0",
+    "@prisma/client": "^3.0.0 || ^4.0.0"
+  },
+  "sources": [
+    "src/index.ts",
+    "src/next/index.ts"
+  ]
 }

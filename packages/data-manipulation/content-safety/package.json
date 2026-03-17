@@ -1,128 +1,131 @@
 {
-    "name": "@visulima/content-safety",
-    "version": "1.0.0-alpha.2",
-    "description": "Content safety filtering with multi-language banned word detection. Supports 17 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.",
-    "keywords": [
-        "visulima",
-        "content-safety",
-        "content-moderation",
-        "profanity-filter",
-        "banned-words",
-        "word-filter",
-        "text-filter",
-        "moderation",
-        "safety",
-        "multilingual",
-        "multi-language",
-        "profanity",
-        "slurs",
-        "hate-speech",
-        "offensive-language",
-        "text-analysis",
-        "content-filter",
-        "word-boundary",
-        "regex",
-        "unicode",
-        "i18n",
-        "internationalization",
-        "arabic",
-        "chinese",
-        "english",
-        "french",
-        "german",
-        "hindi",
-        "italian",
-        "japanese",
-        "korean",
-        "polish",
-        "portuguese",
-        "russian",
-        "spanish",
-        "cjk",
-        "typescript"
-    ],
-    "homepage": "https://visulima.com/packages/content-safety",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
+  "name": "@visulima/content-safety",
+  "version": "1.0.0-alpha.2",
+  "description": "Content safety filtering with multi-language banned word detection. Supports 17 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.",
+  "keywords": [
+    "visulima",
+    "content-safety",
+    "content-moderation",
+    "profanity-filter",
+    "banned-words",
+    "word-filter",
+    "text-filter",
+    "moderation",
+    "safety",
+    "multilingual",
+    "multi-language",
+    "profanity",
+    "slurs",
+    "hate-speech",
+    "offensive-language",
+    "text-analysis",
+    "content-filter",
+    "word-boundary",
+    "regex",
+    "unicode",
+    "i18n",
+    "internationalization",
+    "arabic",
+    "chinese",
+    "english",
+    "french",
+    "german",
+    "hindi",
+    "italian",
+    "japanese",
+    "korean",
+    "polish",
+    "portuguese",
+    "russian",
+    "spanish",
+    "cjk",
+    "typescript"
+  ],
+  "homepage": "https://visulima.com/packages/content-safety",
+  "bugs": {
+    "url": "https://github.com/visulima/visulima/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visulima/visulima.git",
+    "directory": "packages/data-manipulation/content-safety"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/prisis"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/data-manipulation/content-safety"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "scripts": {
-        "build": "packem build --development",
-        "build:prod": "packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
-        "lint:attw": "attw --pack",
-        "lint:eslint": "eslint .",
-        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
-        "lint:package-json": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit --project tsconfig.json",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
-        "@arethetypeswrong/cli": "catalog:dev",
-        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@total-typescript/ts-reset": "catalog:dev",
-        "@types/node": "catalog:types",
-        "@visulima/packem": "catalog:dev",
-        "@vitest/coverage-v8": "catalog:test",
-        "@vitest/ui": "catalog:test",
-        "conventional-changelog-conventionalcommits": "catalog:dev",
-        "esbuild": "catalog:build",
-        "eslint": "catalog:lint",
-        "prettier": "catalog:lint",
-        "publint": "catalog:dev",
-        "rimraf": "catalog:node",
-        "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
-        "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
-    },
-    "engines": {
-        "node": ">=22.21 <=25.*"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
+    {
+      "type": "consulting",
+      "url": "https://anolilab.com/support"
     }
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Daniel Bannert",
+    "email": "d.bannert@anolilab.de"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "packem build --development",
+    "build:prod": "packem build --production",
+    "clean": "rimraf node_modules dist .eslintcache",
+    "dev": "pnpm run build --watch",
+    "lint:attw": "attw --pack",
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+    "lint:package-json": "publint --strict",
+    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+    "lint:types": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui --coverage.enabled=true",
+    "test:watch": "vitest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@anolilab/eslint-config": "catalog:lint",
+    "@anolilab/semantic-release-pnpm": "catalog:dev",
+    "@anolilab/semantic-release-preset": "catalog:dev",
+    "@arethetypeswrong/cli": "catalog:dev",
+    "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+    "@total-typescript/ts-reset": "catalog:dev",
+    "@types/node": "catalog:types",
+    "@visulima/packem": "catalog:dev",
+    "@vitest/coverage-v8": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "conventional-changelog-conventionalcommits": "catalog:dev",
+    "esbuild": "catalog:build",
+    "eslint": "catalog:lint",
+    "prettier": "catalog:lint",
+    "publint": "catalog:dev",
+    "rimraf": "catalog:node",
+    "secretlint": "catalog:lint",
+    "semantic-release": "catalog:cli",
+    "typescript": "catalog:tsc",
+    "vitest": "catalog:test"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=22.21 <=25.*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

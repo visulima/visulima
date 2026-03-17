@@ -1,9 +1,12 @@
 {
-    "name": "path-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/path": "workspace:*"
-    }
+  "name": "path-esm",
+  "private": true,
+  "description": "ESM version",
+  "type": "module",
+  "dependencies": {
+    "@visulima/path": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

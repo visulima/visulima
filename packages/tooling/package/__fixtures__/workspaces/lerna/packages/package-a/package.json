@@ -1,3 +1,7 @@
 {
-    "name": "package-a"
+  "name": "package-a",
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }
