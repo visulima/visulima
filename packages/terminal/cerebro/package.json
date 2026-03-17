@@ -120,8 +120,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "catalog:prod",
-        "@visulima/tabular": "catalog:prod",
+        "@visulima/colorize": "workspace:*",
+        "@visulima/tabular": "workspace:*",
         "fastest-levenshtein": "catalog:prod"
     },
     "devDependencies": {
@@ -133,14 +133,14 @@
         "@bomb.sh/tab": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/boxen": "catalog:dev",
-        "@visulima/command-line-args": "catalog:dev",
-        "@visulima/error": "catalog:dev",
-        "@visulima/find-cache-dir": "catalog:dev",
+        "@visulima/boxen": "workspace:*",
+        "@visulima/command-line-args": "workspace:*",
+        "@visulima/error": "workspace:*",
+        "@visulima/find-cache-dir": "workspace:*",
         "@visulima/packem": "catalog:dev",
-        "@visulima/pail": "catalog:dev",
-        "@visulima/path": "catalog:dev",
-        "@visulima/string": "catalog:dev",
+        "@visulima/pail": "workspace:*",
+        "@visulima/path": "workspace:*",
+        "@visulima/string": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "ci-info": "catalog:dev",
         "commander": "catalog:dev",
@@ -157,9 +157,9 @@
     },
     "peerDependencies": {
         "@bomb.sh/tab": "catalog:peer",
-        "@visulima/boxen": "catalog:peer",
-        "@visulima/find-cache-dir": "catalog:peer",
-        "@visulima/pail": "catalog:peer",
+        "@visulima/boxen": "workspace:*",
+        "@visulima/find-cache-dir": "workspace:*",
+        "@visulima/pail": "workspace:*",
         "github-slugger": "catalog:peer"
     },
     "peerDependenciesMeta": {
