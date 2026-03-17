@@ -10,17 +10,17 @@
     },
     "dependencies": {
         "@visulima/colorize": "workspace:*",
-        "next": "16.1.6",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "next": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
     },
     "devDependencies": {
-        "@types/node": "25.4.0",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
-        "eslint": "^10.0.3",
-        "eslint-config-next": "^16.1.6",
-        "postcss": "^8.5.8",
-        "typescript": "5.9.3"
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "eslint": "catalog:lint",
+        "eslint-config-next": "catalog:lint",
+        "postcss": "catalog:dev",
+        "typescript": "catalog:tsc"
     }
 }
