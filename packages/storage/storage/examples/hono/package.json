@@ -7,15 +7,15 @@
         "dev": "tsx index.ts"
     },
     "dependencies": {
-        "@hono/node-server": "^1.19.11",
-        "@hono/swagger-ui": "^0.6.1",
-        "@hono/zod-openapi": "^1.2.2",
+        "@hono/node-server": "catalog:backend",
+        "@hono/swagger-ui": "catalog:backend",
+        "@hono/zod-openapi": "catalog:backend",
         "@visulima/storage": "workspace:*",
-        "hono": "^4.12.7",
-        "sharp": "^0.34.5"
+        "hono": "catalog:backend",
+        "sharp": "catalog:prod"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "tsx": "^4.21.0"
+        "@types/node": "catalog:types",
+        "tsx": "catalog:dev"
     }
 }

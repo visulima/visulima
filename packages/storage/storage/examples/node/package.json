@@ -11,7 +11,7 @@
         "@visulima/storage": "workspace:*"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "tsx": "^4.21.0"
+        "@types/node": "catalog:types",
+        "tsx": "catalog:dev"
     }
 }
