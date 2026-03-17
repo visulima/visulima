@@ -9,12 +9,11 @@
         "lint": "eslint . --cache --concurrency auto",
         "preview": "vite preview"
     },
-    "dependencies": {},
     "devDependencies": {
         "@visulima/dev-toolbar": "workspace:*",
         "@visulima/vite-overlay": "workspace:*",
-        "preact": "^10.29.0",
-        "typescript": "~5.9.3",
-        "vite": "^7.3.1"
+        "preact": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
     }
 }
