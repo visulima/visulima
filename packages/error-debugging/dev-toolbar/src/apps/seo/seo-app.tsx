@@ -874,9 +874,216 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
     );
 };
 
+// ─── SERP preview ────────────────────────────────────────────────────────────
+
+/** Google typically truncates titles at ~60 characters. */
+const TITLE_MAX_CHARS = 60;
+/** Meta description is often trimmed at ~158 characters on desktop. */
+const DESCRIPTION_MAX_CHARS = 158;
+/** Approximate characters that fit in 3 lines at mobile width. */
+const DESCRIPTION_MOBILE_MAX_CHARS = 120;
+
+const ELLIPSIS = "...";
+
+interface SerpData {
+    description: string;
+    favicon: string | null;
+    siteName: string;
+    title: string;
+    url: string;
+}
+
+interface SerpOverflow {
+    descriptionOverflow: boolean;
+    descriptionOverflowMobile: boolean;
+    titleOverflow: boolean;
+}
+
+interface SerpCheck {
+    hasIssue: (data: SerpData, overflow: SerpOverflow) => boolean;
+    message: string;
+}
+
+interface SerpPreviewConfig {
+    extraChecks: SerpCheck[];
+    isMobile: boolean;
+    label: string;
+}
+
+const COMMON_CHECKS: SerpCheck[] = [
+    {
+        hasIssue: (data) => !data.favicon,
+        message: "No favicon or icon set on the page.",
+    },
+    {
+        hasIssue: (data) => !data.title.trim(),
+        message: "No title tag set on the page.",
+    },
+    {
+        hasIssue: (data) => !data.description.trim(),
+        message: "No meta description set on the page.",
+    },
+    {
+        hasIssue: (_, overflow) => overflow.titleOverflow,
+        message: "The title exceeds ~60 characters and may be truncated in search results.",
+    },
+];
+
+const SERP_PREVIEWS: SerpPreviewConfig[] = [
+    {
+        extraChecks: [
+            {
+                hasIssue: (_, overflow) => overflow.descriptionOverflow,
+                message: "The meta description exceeds ~158 characters and may be trimmed on desktop.",
+            },
+        ],
+        isMobile: false,
+        label: "Desktop preview",
+    },
+    {
+        extraChecks: [
+            {
+                hasIssue: (_, overflow) => overflow.descriptionOverflowMobile,
+                message: "Description exceeds the 3-line limit for mobile view (~120 characters).",
+            },
+        ],
+        isMobile: true,
+        label: "Mobile preview",
+    },
+];
+
+const truncateToChars = (text: string, maxChars: number): string => {
+    if (text.length <= maxChars) return text;
+    if (maxChars <= ELLIPSIS.length) return ELLIPSIS;
+
+    return text.slice(0, maxChars - ELLIPSIS.length) + ELLIPSIS;
+};
+
+const getSerpFromMeta = (meta: MetaTags): SerpData => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const siteName = meta.ogSiteName || (typeof window !== "undefined" ? window.location.hostname.replace(/^www\./, "") : "");
+
+    const linkTags = Array.from(document.head.querySelectorAll("link"));
+    const iconLink = linkTags.find((l) => l.getAttribute("rel")?.toLowerCase().split(/\s+/).includes("icon"));
+    let favicon: string | null = iconLink?.getAttribute("href") || null;
+
+    if (favicon && typeof window !== "undefined") {
+        try {
+            favicon = new URL(favicon, url).href;
+        } catch {
+            favicon = null;
+        }
+    }
+
+    return {
+        description: meta.description,
+        favicon,
+        siteName,
+        title: meta.title,
+        url,
+    };
+};
+
+const getSerpIssues = (data: SerpData, overflow: SerpOverflow, checks: SerpCheck[]): string[] =>
+    checks.filter((c) => c.hasIssue(data, overflow)).map((c) => c.message);
+
+const SerpSnippetPreview = ({
+    data,
+    displayDescription,
+    displayTitle,
+    isMobile,
+    issues,
+    label,
+}: {
+    data: SerpData;
+    displayDescription: string;
+    displayTitle: string;
+    isMobile: boolean;
+    issues: string[];
+    label: string;
+}): ComponentChildren => (
+    <div class="border border-border bg-card p-4 mb-4">
+        <p class="text-[0.7rem] font-semibold text-muted-foreground mb-3">{label}</p>
+
+        <div class={clsx("border border-border/50 bg-background p-4 font-sans", isMobile ? "max-w-[380px]" : "max-w-[600px]")}>
+            {/* Top row: favicon + site info */}
+            <div class="flex items-center gap-3 mb-2">
+                {data.favicon
+                    ? <img alt="favicon" class="size-7 rounded-full shrink-0 object-contain" src={data.favicon} />
+                    : <div class="size-7 rounded-full shrink-0 bg-foreground/10 flex items-center justify-center" />}
+                <div class="flex flex-col min-w-0">
+                    <span class="text-[0.875rem] text-foreground leading-snug">{data.siteName || data.url}</span>
+                    <span class="text-[0.75rem] text-muted-foreground leading-snug truncate">{data.url}</span>
+                </div>
+            </div>
+
+            {/* Title */}
+            <p class="text-[1.25rem] font-normal leading-snug mb-1 m-0" style={{ color: "var(--color-info, #1a0dab)" }}>
+                {displayTitle || "No title"}
+            </p>
+
+            {/* Description */}
+            <p class={clsx(
+                "text-[0.875rem] text-muted-foreground leading-relaxed m-0",
+                isMobile && "line-clamp-3",
+            )}>
+                {displayDescription || "No meta description."}
+            </p>
+        </div>
+
+        {/* Issues */}
+        {issues.length > 0 && (
+            <div class="mt-3">
+                <p class="text-[0.7rem] font-semibold text-destructive mb-1">Issues:</p>
+                <ul class="m-0 pl-5 list-disc">
+                    {issues.map((issue, i) => (
+                        <li class="text-[0.75rem] text-destructive/80 mt-0.5" key={i}>{issue}</li>
+                    ))}
+                </ul>
+            </div>
+        )}
+    </div>
+);
+
+const SerpPreview = ({ meta }: { meta: MetaTags }): ComponentChildren => {
+    const data = getSerpFromMeta(meta);
+    const titleText = data.title || "No title";
+    const descText = data.description || "No meta description.";
+    const displayTitle = truncateToChars(titleText, TITLE_MAX_CHARS);
+    const displayDescription = truncateToChars(descText, DESCRIPTION_MAX_CHARS);
+    const overflow: SerpOverflow = {
+        descriptionOverflow: descText.length > DESCRIPTION_MAX_CHARS,
+        descriptionOverflowMobile: descText.length > DESCRIPTION_MOBILE_MAX_CHARS,
+        titleOverflow: titleText.length > TITLE_MAX_CHARS,
+    };
+
+    return (
+        <div>
+            <p class="text-[0.7rem] text-muted-foreground mb-3 leading-relaxed">
+                See how your title tag and meta description may look in Google search results. Data is read from the current page.
+            </p>
+            {SERP_PREVIEWS.map((preview) => {
+                const issues = getSerpIssues(data, overflow, [...COMMON_CHECKS, ...preview.extraChecks]);
+
+                return (
+                    <SerpSnippetPreview
+                        data={data}
+                        displayDescription={preview.isMobile ? truncateToChars(descText, DESCRIPTION_MOBILE_MAX_CHARS) : displayDescription}
+                        displayTitle={displayTitle}
+                        isMobile={preview.isMobile}
+                        issues={issues}
+                        key={preview.label}
+                        label={preview.label}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
-type SeoTab = "jsonld" | "missing" | "preview" | "tags";
+type SeoTab = "jsonld" | "missing" | "preview" | "serp" | "tags";
 
 const SeoApp = (_props: AppComponentProps): ComponentChildren => {
     const [meta, setMeta] = useState<MetaTags | undefined>(undefined);
@@ -926,8 +1133,8 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Header */}
             <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border shrink-0">
                 <div class="flex items-center gap-0">
-                    {(["preview", "tags", "missing", "jsonld"] as const).map((tab) => {
-                        const LABELS: Record<SeoTab, string> = { jsonld: "Structured Data", missing: "Missing", preview: "Social Previews", tags: "Meta Tags" };
+                    {(["preview", "serp", "tags", "missing", "jsonld"] as const).map((tab) => {
+                        const LABELS: Record<SeoTab, string> = { jsonld: "Structured Data", missing: "Missing", preview: "Social Previews", serp: "SERP", tags: "Meta Tags" };
                         const label = LABELS[tab];
                         let badge: number | undefined;
 
@@ -980,6 +1187,13 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                         {PLATFORMS.map((platform) => (
                             <SocialPreview key={platform.id} meta={meta} platform={platform} />
                         ))}
+                    </div>
+                )}
+
+                {/* ── SERP Preview ─────────────────────────────────────────── */}
+                {activeTab === "serp" && (
+                    <div class="p-4">
+                        <SerpPreview meta={meta} />
                     </div>
                 )}
 

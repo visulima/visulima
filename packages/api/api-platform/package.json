@@ -141,10 +141,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "catalog:prod",
-        "@visulima/fs": "catalog:prod",
-        "@visulima/jsdoc-open-api": "catalog:prod",
-        "@visulima/path": "catalog:prod",
+        "@visulima/connect": "workspace:*",
+        "@visulima/fs": "workspace:*",
+        "@visulima/jsdoc-open-api": "workspace:*",
+        "@visulima/path": "workspace:*",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",
         "http-errors": "catalog:prod",
@@ -183,7 +183,7 @@
         "@types/react-dom": "catalog:types",
         "@types/swagger-ui-react": "catalog:types",
         "@types/webpack": "catalog:types",
-        "@visulima/crud": "catalog:dev",
+        "@visulima/crud": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "chalk": "catalog:dev",
@@ -232,7 +232,7 @@
     "peerDependencies": {
         "@hapi/hapi": "catalog:peer",
         "@koa/router": "catalog:backend",
-        "@visulima/crud": "catalog:peer",
+        "@visulima/crud": "workspace:*",
         "chalk": "catalog:peer",
         "commander": "catalog:peer",
         "cors": "catalog:peer",
@@ -247,7 +247,7 @@
         "swagger-ui-dist": "catalog:peer",
         "swagger-ui-react": "catalog:frontend",
         "webpack": "catalog:build",
-        "zod": "catalog:utils"
+        "zod": "^3"
     },
     "peerDependenciesMeta": {
         "@hapi/hapi": {
