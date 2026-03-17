@@ -1,6 +1,6 @@
 [build]
-  command = "pnpm build"
-  ignore = "node scripts/netlify-ignore-command.cjs"
+  command = "pnpm build:web"
+  ignore = "node apps/web/scripts/netlify-ignore-command.cjs"
 
 [build.environment]
   NODE_VERSION = "22"
