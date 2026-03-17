@@ -11,19 +11,19 @@
     },
     "dependencies": {
         "@visulima/storage-client": "workspace:*",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
     },
     "devDependencies": {
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
-        "@typescript-eslint/eslint-plugin": "^8.57.0",
-        "@typescript-eslint/parser": "^8.57.0",
-        "@vitejs/plugin-react": "^5.1.4",
-        "eslint": "^10.0.3",
-        "eslint-plugin-react-hooks": "^7.0.1",
-        "eslint-plugin-react-refresh": "^0.5.2",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1"
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@typescript-eslint/eslint-plugin": "catalog:lint",
+        "@typescript-eslint/parser": "catalog:lint",
+        "@vitejs/plugin-react": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-react-hooks": "catalog:lint",
+        "eslint-plugin-react-refresh": "catalog:lint",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
     }
 }
