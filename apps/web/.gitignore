@@ -1,2 +1,5 @@
 .source
 .tmp-external-docs
+.tanstack/tmp
+
+!src/data
