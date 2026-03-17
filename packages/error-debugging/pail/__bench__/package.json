@@ -5,20 +5,20 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@dynamicabot/signales": "^2.1.2",
-        "@ogma/logger": "3.4.0",
+        "@dynamicabot/signales": "catalog:prod",
+        "@ogma/logger": "catalog:prod",
         "@visulima/pail": "workspace:*",
-        "bunyan": "^1.8.15",
-        "consola": "^3.4.2",
-        "diary": "0.4.5",
-        "pino": "^10.3.1",
-        "roarr": "^7.21.4",
-        "rslog": "^2.0.1",
-        "tslog": "^4.10.2",
-        "winston": "^3.19.0"
+        "bunyan": "catalog:prod",
+        "consola": "catalog:prod",
+        "diary": "catalog:prod",
+        "pino": "catalog:prod",
+        "roarr": "catalog:prod",
+        "rslog": "catalog:prod",
+        "tslog": "catalog:prod",
+        "winston": "catalog:prod"
     },
     "devDependencies": {
-        "typescript": "5.9.3",
-        "vitest": "^4.0.18"
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }
