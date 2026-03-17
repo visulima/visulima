@@ -75,17 +75,17 @@ A response body can define:
 Objects can be defined in `components`:
 
 ```yaml
-components:
-    schemas:
-        User:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    description: The user ID.
-                username:
-                    type: string
-                    description: The user name.
+"components":
+    "schemas":
+        "User":
+            "type": "object"
+            "properties":
+                "id":
+                    "type": "integer"
+                    "description": "The user ID."
+                "username":
+                    "type": "string"
+                    "description": "The user name."
 ```
 
 And be used with:
@@ -125,17 +125,17 @@ In this case, you would use something like:
 ```
 
 ```yaml
-components:
-    schemas:
-        User:
-            type: object
-            properties:
-                username:
-                    type: string
-                avatar: # <-- image embedded into JSON
-                    type: string
-                    format: byte
-                    description: Base64-encoded contents of the avatar image
+"components":
+    "schemas":
+        "User":
+            "type": "object"
+            "properties":
+                "username":
+                    "type": "string"
+                "avatar": # <-- image embedded into JSON
+                    "type": "string"
+                    "format": "byte"
+                    "description": "Base64-encoded contents of the avatar image"
 ```
 
 ### Empty response body
@@ -185,16 +185,16 @@ You need to define the headers for each response individually.
 Examples can be defined in `components`:
 
 ```yaml
-components:
-    examples:
-        Jessica:
-            value:
-                id: 10
-                name: Jessica Smith
-        Ron:
-            value:
-                id: 11
-                name: Ron Stewart
+"components":
+    "examples":
+        "Jessica":
+            "value":
+                "id": 10
+                "name": "Jessica Smith"
+        "Ron":
+            "value":
+                "id": 11
+                "name": "Ron Stewart"
 ```
 
 And be used as:
@@ -244,32 +244,32 @@ Responses can be defined in `components` to be reused elsewhere.
 The following response definition:
 
 ```yaml
-components:
-    responses:
-        NotFound:
-            description: The specified resource was not found
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
-        Unauthorized:
-            description: Unauthorized
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Error"
-    schemas:
+"components":
+    "responses":
+        "NotFound":
+            "description": "The specified resource was not found"
+            "content":
+                "application/json":
+                    "schema":
+                        "$ref": "#/components/schemas/Error"
+        "Unauthorized":
+            "description": "Unauthorized"
+            "content":
+                "application/json":
+                    "schema":
+                        "$ref": "#/components/schemas/Error"
+    "schemas":
         # Schema for error response body
-        Error:
-            type: object
-            properties:
-                code:
-                    type: string
-                message:
-                    type: string
-            required:
-                - code
-                - message
+        "Error":
+            "type": "object"
+            "properties":
+                "code":
+                    "type": "string"
+                "message":
+                    "type": "string"
+            "required":
+                - "code"
+                - "message"
 ```
 
 Can be reused as:

@@ -85,15 +85,15 @@ This creates `.openapirc.js`:
 
 ```javascript
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "My API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: ["./src/routes/**/*.js"],
-  output: "./swagger.json",
+    sources: ["./src/routes/**/*.js"],
+    output: "./swagger.json",
 };
 ```
 
@@ -106,14 +106,14 @@ Verify your installation by generating a simple spec:
 import jsdocOpenApi from "@visulima/jsdoc-open-api";
 
 const spec = await jsdocOpenApi({
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Test API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Test API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: ["./src/**/*.js"],
+    sources: ["./src/**/*.js"],
 });
 
 console.log("Paths:", Object.keys(spec.paths || {}));

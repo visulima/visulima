@@ -13,16 +13,19 @@ Common issues and solutions when working with jsdoc-open-api.
 **Solutions**:
 
 1. Use npx:
+
 ```bash
 npx jsdoc-open-api generate src/
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install commander cli-progress
 ```
 
 3. Check optional dependencies installed:
+
 ```bash
 npm list commander cli-progress
 ```
@@ -34,6 +37,7 @@ npm list commander cli-progress
 **Causes**:
 
 1. **JSDoc comments missing `@openapi` tag:**
+
 ```javascript
 // ❌ Won't be parsed
 /**
@@ -52,16 +56,18 @@ export function getUsers() {}
 ```
 
 2. **Wrong file paths in sources:**
+
 ```javascript
 // Check your glob patterns
 {
-  sources: [
-    "./src/routes/**/*.js",  // Correct path?
-  ]
+    sources: [
+        "./src/routes/**/*.js", // Correct path?
+    ];
 }
 ```
 
 3. **Files not matching glob pattern:**
+
 ```bash
 # Test your glob patterns
 npx glob "./src/routes/**/*.js"
@@ -92,31 +98,36 @@ npx glob "./src/routes/**/*.js"
 **Solutions**:
 
 1. **Verify webpack dependency:**
+
 ```bash
 npm install webpack
 ```
 
 2. **Check plugin configuration:**
+
 ```javascript
 const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
 const path = require("path");
 
 new SwaggerCompilerPlugin(
-  path.join(__dirname, "public/swagger.json"),  // Absolute path
-  [path.join(__dirname, "src/**/*.js")],       // Absolute paths
-  { /* definition */ },
-  { verbose: true }  // Enable logging
-)
+    path.join(__dirname, "public/swagger.json"), // Absolute path
+    [path.join(__dirname, "src/**/*.js")], // Absolute paths
+    {
+        /* definition */
+    },
+    { verbose: true }, // Enable logging
+);
 ```
 
 3. **Server-side only in Next.js:**
+
 ```javascript
 webpack: (config, { isServer }) => {
-  if (!isServer) return config;  // Skip on client
-  
-  config.plugins.push(new SwaggerCompilerPlugin(/* ... */));
-  return config;
-}
+    if (!isServer) return config; // Skip on client
+
+    config.plugins.push(new SwaggerCompilerPlugin(/* ... */));
+    return config;
+};
 ```
 
 ## TypeScript Errors
@@ -202,37 +213,39 @@ npm install --save-dev @types/swagger-jsdoc openapi-types
 **Solutions**:
 
 1. **Limit source files:**
+
 ```javascript
 {
-  sources: [
-    "./src/routes/**/*.js",
-    "!./src/**/*.test.js",  // Exclude tests
-    "!./node_modules/**",   // Exclude node_modules
-  ]
+    sources: [
+        "./src/routes/**/*.js",
+        "!./src/**/*.test.js", // Exclude tests
+        "!./node_modules/**", // Exclude node_modules
+    ];
 }
 ```
 
 2. **Use specific paths:**
+
 ```javascript
 // ❌ Slow
-sources: ["./src/**/*.js"]
+sources: ["./src/**/*.js"];
 
 // ✅ Faster
-sources: [
-  "./src/routes/**/*.js",
-  "./src/controllers/**/*.js"
-]
+sources: ["./src/routes/**/*.js", "./src/controllers/**/*.js"];
 ```
 
 3. **Cache results:**
+
 ```javascript
 let cachedSpec = null;
 
 async function getSpec() {
-  if (!cachedSpec) {
-    cachedSpec = await jsdocOpenApi({ /* options */ });
-  }
-  return cachedSpec;
+    if (!cachedSpec) {
+        cachedSpec = await jsdocOpenApi({
+            /* options */
+        });
+    }
+    return cachedSpec;
 }
 ```
 
@@ -292,9 +305,11 @@ Programmatic:
 
 ```javascript
 const spec = await jsdocOpenApi({
-  definition: { /* ... */ },
-  sources: ["./src/**/*.js"],
-  verbose: true,  // Enable logging
+    definition: {
+        /* ... */
+    },
+    sources: ["./src/**/*.js"],
+    verbose: true, // Enable logging
 });
 ```
 
