@@ -8,22 +8,22 @@
         "preview": "vite preview"
     },
     "dependencies": {
-        "@tailwindcss/vite": "^4.2.1",
-        "@tanstack/react-router": "^1.166.7",
-        "@tanstack/react-router-devtools": "^1.166.7",
-        "@tanstack/router-plugin": "^1.166.7",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "tailwindcss": "^4.2.1"
+        "@tailwindcss/vite": "catalog:build",
+        "@tanstack/react-router": "catalog:frontend",
+        "@tanstack/react-router-devtools": "catalog:frontend",
+        "@tanstack/router-plugin": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "tailwindcss": "catalog:style"
     },
     "devDependencies": {
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
         "@visulima/dev-toolbar": "workspace:*",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-react": "^5.1.4",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1",
-        "web-vitals": "^5.1.0"
+        "@vitejs/plugin-react": "catalog:build",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "web-vitals": "catalog:dev"
     }
 }
