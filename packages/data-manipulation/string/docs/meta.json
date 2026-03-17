@@ -13,6 +13,9 @@
         "testing",
         "typescript",
         "---API Reference---",
-        "api"
+        "api",
+        "...api",
+        "---Examples---",
+        "examples"
     ]
 }
