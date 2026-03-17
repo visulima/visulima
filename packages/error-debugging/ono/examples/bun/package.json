@@ -12,6 +12,6 @@
         "@visulima/ono": "workspace:*"
     },
     "devDependencies": {
-        "bun-types": "latest"
+        "bun-types": "catalog:dev"
     }
 }
