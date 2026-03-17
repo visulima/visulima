@@ -55,15 +55,15 @@ Request bodies can be defined in `components` to be reused elsewhere.
 The following request body definition:
 
 ```yaml
-components:
-    requestBodies:
-        PetBody:
-            description: A JSON object containing pet information
-            required: true
-            content:
-                application/json:
-                    schema:
-                        $ref: "#/components/schemas/Pet"
+"components":
+    "requestBodies":
+        "PetBody":
+            "description": "A JSON object containing pet information"
+            "required": true
+            "content":
+                "application/json":
+                    "schema":
+                        "$ref": "#/components/schemas/Pet"
 ```
 
 Can be reused as:
@@ -117,18 +117,18 @@ name=Amy+Smith&fav_number=42
 Form data is defined in `components` and modeled using a `type: object` schema where the object properties represent the form fields:
 
 ```yaml
-components:
-    schemas:
-        Survey:
-            type: object
-            properties:
-                name: # <!--- form field name
-                    type: string
-                fav_number: # <!--- form field name
-                    type: integer
-            required:
-                - name
-                - fav_number
+"components":
+    "schemas":
+        "Survey":
+            "type": "object"
+            "properties":
+                "name": # <!--- form field name
+                    "type": "string"
+                "fav_number": # <!--- form field name
+                    "type": "integer"
+            "required":
+                - "name"
+                - "fav_number"
 ```
 
 It can be used with:

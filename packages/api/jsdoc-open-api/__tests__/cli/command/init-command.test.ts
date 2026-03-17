@@ -14,6 +14,13 @@ vi.mock(import("node:fs"), () => {
     };
 });
 
+vi.mock(import("@visulima/fs"), () => {
+    return {
+        findUpSync: vi.fn(),
+        readJsonSync: vi.fn(),
+    };
+});
+
 const isWin = process.platform === "win32";
 
 describe("init command", () => {
@@ -24,15 +31,18 @@ describe("init command", () => {
         vi.spyOn(console, "log");
 
         // Expect the function to throw an error
-        expect(() => initCommand("config.js")).toThrow("Config file already exists");
+        expect(() => initCommand("config.js")).toThrowError("Config file already exists");
     });
 
-    it("should create a new config file with the correct module.exports content", () => {
+    it("should create a new config file with the correct module.exports content", async () => {
         expect.assertions(1);
+
+        const { findUpSync } = await import("@visulima/fs");
 
         // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
+        vi.mocked(findUpSync).mockReturnValue(undefined);
 
         const writeFileSyncMock = vi.spyOn(fs, "writeFileSync");
 
@@ -79,23 +89,28 @@ describe("init command", () => {
         );
     });
 
-    it("should create a new config file with the correct export default content", () => {
+    it("should create a new config file with the correct export default content", async () => {
         expect.assertions(3);
+
+        const { findUpSync, readJsonSync } = await import("@visulima/fs");
+
+        const fixturePath = join(__dirname, "../../../", "__fixtures__");
+        const packageJsonPath = `${fixturePath}${isWin ? "\\" : "/"}package.json`;
 
         // Create a mock for the existsSync function to return false
         vi.spyOn(fs, "existsSync").mockReturnValue(false);
         vi.spyOn(console, "log");
 
-        const fixturePath = join(__dirname, "../../../", "__fixtures__");
-
         vi.spyOn(fs, "realpathSync").mockReturnValue(fixturePath);
+        vi.mocked(findUpSync).mockReturnValue(packageJsonPath);
+        vi.mocked(readJsonSync).mockReturnValue({ type: "module" });
 
         const consoleInfoMock = vi.spyOn(console, "info");
         const writeFileSyncMock = vi.spyOn(fs, "writeFileSync");
 
         initCommand("config.js");
 
-        expect(consoleInfoMock).toHaveBeenNthCalledWith(1, `Found package.json at "${fixturePath}${isWin ? "\\" : "/"}package.json"`);
+        expect(consoleInfoMock).toHaveBeenNthCalledWith(1, `Found package.json at "${packageJsonPath}"`);
         expect(consoleInfoMock).toHaveBeenNthCalledWith(2, "Found package.json with type: module, using ES6 as export for the config file");
         // Verify that the writeFileSync function was called with the correct arguments
         expect(writeFileSyncMock).toHaveBeenCalledWith(

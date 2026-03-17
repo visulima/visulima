@@ -12,42 +12,39 @@ Create `.openapirc.js` in your project root:
 
 ```javascript
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "My API",
-      version: "1.0.0",
-      description: "API documentation",
-      contact: {
-        name: "API Support",
-        email: "support@example.com",
-      },
-      license: {
-        name: "MIT",
-        url: "https://opensource.org/licenses/MIT",
-      },
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+            description: "API documentation",
+            contact: {
+                name: "API Support",
+                email: "support@example.com",
+            },
+            license: {
+                name: "MIT",
+                url: "https://opensource.org/licenses/MIT",
+            },
+        },
+        servers: [
+            {
+                url: "https://api.example.com/v1",
+                description: "Production server",
+            },
+            {
+                url: "https://staging-api.example.com/v1",
+                description: "Staging server",
+            },
+            {
+                url: "http://localhost:3000",
+                description: "Development server",
+            },
+        ],
     },
-    servers: [
-      {
-        url: "https://api.example.com/v1",
-        description: "Production server",
-      },
-      {
-        url: "https://staging-api.example.com/v1",
-        description: "Staging server",
-      },
-      {
-        url: "http://localhost:3000",
-        description: "Development server",
-      },
-    ],
-  },
-  sources: [
-    "./src/routes/**/*.js",
-    "./src/controllers/**/*.js",
-  ],
-  output: "./public/swagger.json",
-  verbose: false,
+    sources: ["./src/routes/**/*.js", "./src/controllers/**/*.js"],
+    output: "./public/swagger.json",
+    verbose: false,
 };
 ```
 
@@ -59,16 +56,16 @@ Pass options to the function:
 import jsdocOpenApi from "@visulima/jsdoc-open-api";
 
 const spec = await jsdocOpenApi({
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "My API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: ["./src/**/*.js"],
-  output: "./swagger.json",
-  verbose: true,
+    sources: ["./src/**/*.js"],
+    output: "./swagger.json",
+    verbose: true,
 });
 ```
 
@@ -193,21 +190,21 @@ Use environment variables:
 
 ```javascript
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "My API",
-      version: process.env.npm_package_version || "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: process.env.npm_package_version || "1.0.0",
+        },
+        servers: [
+            {
+                url: process.env.API_URL || "http://localhost:3000",
+            },
+        ],
     },
-    servers: [
-      {
-        url: process.env.API_URL || "http://localhost:3000",
-      },
-    ],
-  },
-  sources: ["./src/**/*.js"],
-  output: process.env.SWAGGER_OUTPUT || "./swagger.json",
-  verbose: process.env.VERBOSE === "true",
+    sources: ["./src/**/*.js"],
+    output: process.env.SWAGGER_OUTPUT || "./swagger.json",
+    verbose: process.env.VERBOSE === "true",
 };
 ```
 
@@ -218,19 +215,15 @@ For TypeScript projects:
 ```javascript
 // .openapirc.js
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "TypeScript API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "TypeScript API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: [
-    "./src/**/*.ts",
-    "!./src/**/*.test.ts",
-    "!./src/**/*.spec.ts",
-  ],
-  output: "./docs/api-spec.json",
+    sources: ["./src/**/*.ts", "!./src/**/*.test.ts", "!./src/**/*.spec.ts"],
+    output: "./docs/api-spec.json",
 };
 ```
 
@@ -241,39 +234,39 @@ Create environment-specific configs:
 ```javascript
 // config/openapi.prod.js
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Production API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Production API",
+            version: "1.0.0",
+        },
+        servers: [
+            {
+                url: "https://api.example.com",
+            },
+        ],
     },
-    servers: [
-      {
-        url: "https://api.example.com",
-      },
-    ],
-  },
-  sources: ["./dist/**/*.js"],
-  output: "./public/swagger.json",
+    sources: ["./dist/**/*.js"],
+    output: "./public/swagger.json",
 };
 
 // config/openapi.dev.js
 module.exports = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Development API",
-      version: "1.0.0-dev",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Development API",
+            version: "1.0.0-dev",
+        },
+        servers: [
+            {
+                url: "http://localhost:3000",
+            },
+        ],
     },
-    servers: [
-      {
-        url: "http://localhost:3000",
-      },
-    ],
-  },
-  sources: ["./src/**/*.ts"],
-  output: "./dev-swagger.json",
-  verbose: true,
+    sources: ["./src/**/*.ts"],
+    output: "./dev-swagger.json",
+    verbose: true,
 };
 ```
 

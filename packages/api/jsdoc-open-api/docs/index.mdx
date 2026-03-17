@@ -10,18 +10,21 @@ Automatically generate OpenAPI/Swagger specifications from JSDoc comments in you
 ## Key Features
 
 **Generation Methods**
+
 - **CLI Tool** - Command-line interface for quick generation
 - **Programmatic API** - JavaScript/TypeScript API for build processes
 - **Webpack Plugin** - Seamless integration with Webpack and Next.js
 - **Build Automation** - Automatic regeneration during development
 
 **Syntax Support**
+
 - **Standard OpenAPI** - Full YAML/JSON syntax within JSDoc comments
 - **Short Syntax** - Concise notation for common API definitions
 - **Flexible Comments** - Multiple comment styles and formats
 - **Type Inference** - Automatic type extraction from JSDoc tags
 
 **OpenAPI Features**
+
 - **OpenAPI 3.0+** - Full OpenAPI 3.x specification support
 - **Paths & Operations** - HTTP methods, parameters, responses
 - **Schemas & Models** - Request/response body definitions
@@ -29,6 +32,7 @@ Automatically generate OpenAPI/Swagger specifications from JSDoc comments in you
 - **Tags & Groups** - Organize endpoints with tags
 
 **Performance**
+
 - **Fast Parsing** - Optimized comment extraction
 - **Incremental Generation** - Only processes changed files
 - **Low Overhead** - Minimal impact on build times
@@ -40,14 +44,14 @@ Automatically generate OpenAPI/Swagger specifications from JSDoc comments in you
 import jsdocOpenApi from "@visulima/jsdoc-open-api";
 
 const spec = await jsdocOpenApi({
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "My API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: ["./src/routes/**/*.js"],
+    sources: ["./src/routes/**/*.js"],
 });
 
 console.log(spec);
@@ -77,8 +81,8 @@ Automatically generate API documentation from your code:
  *                 $ref: '#/components/schemas/User'
  */
 export async function getUsers(req, res) {
-  const users = await db.users.findMany();
-  res.json(users);
+    const users = await db.users.findMany();
+    res.json(users);
 }
 ```
 
@@ -97,17 +101,17 @@ Integrate with Next.js using the Webpack plugin:
 const withOpenApi = require("./with-open-api");
 
 module.exports = withOpenApi({
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Next.js API",
-      version: "1.0.0",
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Next.js API",
+            version: "1.0.0",
+        },
     },
-  },
-  sources: ["./app/api/**/*.ts"],
-  output: "public/swagger.json",
+    sources: ["./app/api/**/*.ts"],
+    output: "public/swagger.json",
 })({
-  // Your Next.js config
+    // Your Next.js config
 });
 ```
 
@@ -121,25 +125,25 @@ import jsdocOpenApi from "@visulima/jsdoc-open-api";
 import { writeFileSync } from "fs";
 
 async function generate() {
-  const spec = await jsdocOpenApi({
-    definition: {
-      openapi: "3.0.0",
-      info: {
-        title: "API Documentation",
-        version: process.env.npm_package_version,
-      },
-      servers: [
-        {
-          url: "https://api.example.com",
-          description: "Production",
+    const spec = await jsdocOpenApi({
+        definition: {
+            openapi: "3.0.0",
+            info: {
+                title: "API Documentation",
+                version: process.env.npm_package_version,
+            },
+            servers: [
+                {
+                    url: "https://api.example.com",
+                    description: "Production",
+                },
+            ],
         },
-      ],
-    },
-    sources: ["./src/api/**/*.ts"],
-  });
+        sources: ["./src/api/**/*.ts"],
+    });
 
-  writeFileSync("./docs/api-spec.json", JSON.stringify(spec, null, 2));
-  console.log("API specification generated!");
+    writeFileSync("./docs/api-spec.json", JSON.stringify(spec, null, 2));
+    console.log("API specification generated!");
 }
 
 generate();
@@ -149,28 +153,28 @@ Add to `package.json`:
 
 ```json
 {
-  "scripts": {
-    "docs": "node scripts/generate-api-docs.js",
-    "prebuild": "npm run docs"
-  }
+    "scripts": {
+        "docs": "node scripts/generate-api-docs.js",
+        "prebuild": "npm run docs"
+    }
 }
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Install and set up jsdoc-open-api
-  </Card>
-  <Card title="Quick Start" href="/quick-start">
-    Generate your first OpenAPI spec
-  </Card>
-  <Card title="Syntax Guide" href="/concepts/syntax">
-    Learn the JSDoc comment syntax
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Installation" href="/installation">
+        Install and set up jsdoc-open-api
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Generate your first OpenAPI spec
+    </Card>
+    <Card title="Syntax Guide" href="/concepts/syntax">
+        Learn the JSDoc comment syntax
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>
 
 ## Browser and Server Support

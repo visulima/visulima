@@ -154,14 +154,14 @@ The enum values must be of the same type as the parameter data type.
 ```
 
 ```yaml
-components:
-    schemas:
-        Status:
-            type: string
-            enum:
-                - available
-                - pending
-                - sold
+"components":
+    "schemas":
+        "Status":
+            "type": "string"
+            "enum":
+                - "available"
+                - "pending"
+                - "sold"
 ```
 
 ### Reusable Parameters
@@ -170,18 +170,18 @@ Parameters can be defined in `components` to be reused elsewhere.
 The following parameter definition:
 
 ```yaml
-components:
-    parameters:
-        ExampleParameter:
-            in: query
-            name: limit
-            schema:
-                type: integer
-                minimum: 1
-                maximum: 100
-                default: 20
-            required: false
-            description: The number of items to return.
+"components":
+    "parameters":
+        "ExampleParameter":
+            "in": "query"
+            "name": "limit"
+            "schema":
+                "type": "integer"
+                "minimum": 1
+                "maximum": 100
+                "default": 20
+            "required": false
+            "description": "The number of items to return."
 ```
 
 Can be used as:

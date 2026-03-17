@@ -23,7 +23,7 @@ describe("generate command", () => {
 
         const options = { config: "/path/to/nonexistent/config.js" };
 
-        await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow("No config file found, on: /path/to/nonexistent/config.js");
+        await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrowError("No config file found, on: /path/to/nonexistent/config.js");
     });
 
     it("collects the correct files from the given directories", async () => {

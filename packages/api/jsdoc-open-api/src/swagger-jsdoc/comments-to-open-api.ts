@@ -22,17 +22,14 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
     specs.map((spec: Spec) => {
         // Check if we have content to parse (description or name that should be combined)
         const hasContent = spec.description !== "" || (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":")));
-        
+
         if ((spec.tag === "openapi" || spec.tag === "swagger" || spec.tag === "asyncapi") && hasContent) {
             // Combine name and description if name is a path (starts with "/") or a top-level property (ends with ":")
             let yamlContent = spec.description;
+
             if (spec.name !== undefined && (spec.name.startsWith("/") || spec.name.endsWith(":"))) {
                 // If description starts with newlines, preserve them; otherwise add one newline
-                if (yamlContent.trim() === "") {
-                    yamlContent = spec.name;
-                } else {
-                    yamlContent = `${spec.name}\n${yamlContent}`;
-                }
+                yamlContent = yamlContent.trim() === "" ? spec.name : `${spec.name}\n${yamlContent}`;
             }
 
             const parsed = yaml.parseDocument(yamlContent);
