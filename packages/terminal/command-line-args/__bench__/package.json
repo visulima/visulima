@@ -8,23 +8,23 @@
         "test:bench": "vitest bench"
     },
     "dependencies": {
-        "@bomb.sh/args": "^0.3.1",
+        "@bomb.sh/args": "catalog:prod",
         "@visulima/command-line-args": "workspace:*",
-        "argparse": "^2.0.1",
-        "args": "^5.0.3",
-        "args-tokens": "^0.24.3",
-        "command-line-args": "^6.0.1",
-        "jackspeak": "^4.2.3",
-        "minimist": "^1.2.8",
-        "mri": "^1.2.0",
-        "yargs-parser": "^22.0.0"
+        "argparse": "catalog:prod",
+        "args": "catalog:prod",
+        "args-tokens": "catalog:prod",
+        "command-line-args": "catalog:prod",
+        "jackspeak": "catalog:prod",
+        "minimist": "catalog:prod",
+        "mri": "catalog:prod",
+        "yargs-parser": "catalog:prod"
     },
     "devDependencies": {
-        "@types/argparse": "^2.0.17",
-        "@types/command-line-args": "^5.2.3",
-        "@types/minimist": "1.2.5",
-        "@types/yargs-parser": "21.0.3",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.18"
+        "@types/argparse": "catalog:types",
+        "@types/command-line-args": "catalog:types",
+        "@types/minimist": "catalog:types",
+        "@types/yargs-parser": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }
