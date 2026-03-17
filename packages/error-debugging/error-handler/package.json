@@ -151,8 +151,8 @@
     },
     "dependencies": {
         "@tinyhttp/accepts": "catalog:prod",
-        "@visulima/boxen": "catalog:prod",
-        "@visulima/error": "catalog:prod",
+        "@visulima/boxen": "workspace:*",
+        "@visulima/error": "workspace:*",
         "http-errors": "catalog:prod",
         "http-status-codes": "catalog:prod",
         "jstoxml": "catalog:prod",
