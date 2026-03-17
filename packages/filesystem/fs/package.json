@@ -130,7 +130,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/path": "catalog:prod",
+        "@visulima/path": "workspace:*",
         "type-fest": "catalog:prod"
     },
     "devDependencies": {
@@ -140,7 +140,7 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/error": "catalog:dev",
+        "@visulima/error": "workspace:*",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
