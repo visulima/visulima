@@ -11,16 +11,16 @@
     "dependencies": {
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
-        "next": "^16.1.6",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4"
+        "next": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
     },
     "devDependencies": {
-        "@types/node": "^25",
-        "@types/react": "^19",
-        "@types/react-dom": "^19",
-        "eslint": "^10",
-        "eslint-config-next": "^16.1.6",
-        "typescript": "^5"
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "eslint": "catalog:lint",
+        "eslint-config-next": "catalog:lint",
+        "typescript": "catalog:tsc"
     }
 }

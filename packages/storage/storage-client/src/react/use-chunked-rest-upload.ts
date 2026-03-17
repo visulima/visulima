@@ -121,12 +121,18 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
         });
 
         // Sync state with adapter periodically
+        let mounted = true;
         const checkInterval = setInterval(async () => {
+            if (!mounted) {
+                return;
+            }
+
             setOffset(await adapterInstance.getOffset());
             setIsPaused(adapterInstance.isPaused());
         }, 100);
 
         return () => {
+            mounted = false;
             clearInterval(checkInterval);
             // Cleanup callbacks
             adapterInstance.setOnStart(undefined);

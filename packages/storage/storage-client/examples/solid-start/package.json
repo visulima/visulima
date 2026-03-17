@@ -10,12 +10,12 @@
         "version": "vinxi version"
     },
     "dependencies": {
-        "@solidjs/meta": "^0.29.4",
-        "@solidjs/router": "^0.15.4",
-        "@solidjs/start": "^1.3.2",
+        "@solidjs/meta": "catalog:frontend",
+        "@solidjs/router": "catalog:frontend",
+        "@solidjs/start": "catalog:frontend",
         "@visulima/storage": "workspace:*",
         "@visulima/storage-client": "workspace:*",
-        "solid-js": "^1.9.11",
-        "vinxi": "^0.5.11"
+        "solid-js": "catalog:frontend",
+        "vinxi": "catalog:prod"
     }
 }
