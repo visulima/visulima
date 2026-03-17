@@ -260,7 +260,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "catalog:prod",
+        "@visulima/colorize": "workspace:*",
         "type-fest": "catalog:prod"
     },
     "devDependencies": {
@@ -273,12 +273,12 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/error": "catalog:dev",
-        "@visulima/fmt": "catalog:dev",
-        "@visulima/inspector": "catalog:dev",
+        "@visulima/error": "workspace:*",
+        "@visulima/fmt": "workspace:*",
+        "@visulima/inspector": "workspace:*",
         "@visulima/packem": "catalog:dev",
-        "@visulima/redact": "catalog:dev",
-        "@visulima/string": "catalog:dev",
+        "@visulima/redact": "workspace:*",
+        "@visulima/string": "workspace:*",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "cli-spinners": "catalog:dev",
@@ -299,7 +299,7 @@
     "peerDependencies": {
         "@opentelemetry/api": "catalog:peer",
         "@sveltejs/kit": ">=2.0",
-        "@visulima/redact": "catalog:peer",
+        "@visulima/redact": "workspace:*",
         "elysia": ">=1.0",
         "express": ">=4.0",
         "fastify": ">=4.0",
