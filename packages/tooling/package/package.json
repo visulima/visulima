@@ -1,167 +1,169 @@
 {
-    "name": "@visulima/package",
-    "version": "5.0.0-alpha.4",
-    "description": "A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.",
-    "keywords": [
-        "anolilab",
-        "find",
-        "find-monorepo-root",
-        "find-up-pkg",
-        "find-package-manager",
-        "mono-repo",
-        "monorepo",
-        "package",
-        "package-json",
-        "package-manager",
-        "package.json",
-        "package.yaml",
-        "package.json5",
-        "packages",
-        "pkg-dir",
-        "pkg-manager",
-        "pkg-types",
-        "pkg-up",
-        "read-pkg",
-        "read-pkg-up",
-        "root",
-        "pnpm",
-        "bun",
-        "npm",
-        "yarn",
-        "yaml",
-        "json5",
-        "visulima"
-    ],
-    "homepage": "https://www.visulima.com/docs/package/package",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
+  "name": "@visulima/package",
+  "version": "5.0.0-alpha.4",
+  "description": "A comprehensive package management utility that helps you find root directories, monorepos, package managers, and parse package.json, package.yaml, and package.json5 files with advanced features like catalog resolution.",
+  "keywords": [
+    "anolilab",
+    "find",
+    "find-monorepo-root",
+    "find-up-pkg",
+    "find-package-manager",
+    "mono-repo",
+    "monorepo",
+    "package",
+    "package-json",
+    "package-manager",
+    "package.json",
+    "package.yaml",
+    "package.json5",
+    "packages",
+    "pkg-dir",
+    "pkg-manager",
+    "pkg-types",
+    "pkg-up",
+    "read-pkg",
+    "read-pkg-up",
+    "root",
+    "pnpm",
+    "bun",
+    "npm",
+    "yarn",
+    "yaml",
+    "json5",
+    "visulima"
+  ],
+  "homepage": "https://www.visulima.com/docs/package/package",
+  "bugs": {
+    "url": "https://github.com/visulima/visulima/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visulima/visulima.git",
+    "directory": "packages/tooling/package"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/prisis"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/package"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./monorepo": {
-            "types": "./dist/monorepo.d.ts",
-            "default": "./dist/monorepo.js"
-        },
-        "./package": {
-            "types": "./dist/package.d.ts",
-            "default": "./dist/package.js"
-        },
-        "./package-json": {
-            "types": "./dist/package-json.d.ts",
-            "default": "./dist/package-json.js"
-        },
-        "./package-manager": {
-            "types": "./dist/package-manager.d.ts",
-            "default": "./dist/package-manager.js"
-        },
-        "./pnpm": {
-            "types": "./dist/pnpm.d.ts",
-            "default": "./dist/pnpm.js"
-        },
-        "./error": {
-            "types": "./dist/error.d.ts",
-            "default": "./dist/error.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "scripts": {
-        "build": "packem build --development",
-        "build:prod": "packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "packem build --development --watch",
-        "lint:attw": "attw --pack",
-        "lint:eslint": "eslint . --cache --concurrency auto",
-        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
-        "lint:package-json": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
-    },
-    "dependencies": {
-        "@antfu/install-pkg": "catalog:prod",
-        "@visulima/fs": "workspace:*",
-        "@visulima/path": "workspace:*",
-        "json5": "catalog:prod",
-        "normalize-package-data": "catalog:prod",
-        "type-fest": "catalog:prod",
-        "yaml": "catalog:prod"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
-        "@arethetypeswrong/cli": "catalog:dev",
-        "@inquirer/core": "catalog:dev",
-        "@inquirer/type": "catalog:dev",
-        "@pnpm/exe": "catalog:dev",
-        "@total-typescript/ts-reset": "catalog:dev",
-        "@types/node": "catalog:types",
-        "@types/normalize-package-data": "catalog:types",
-        "@visulima/packem": "catalog:dev",
-        "@vitest/coverage-v8": "catalog:test",
-        "@vitest/ui": "catalog:test",
-        "@yarnpkg/pnp": "catalog:dev",
-        "conventional-changelog-conventionalcommits": "catalog:dev",
-        "dot-prop": "catalog:dev",
-        "esbuild": "catalog:build",
-        "eslint": "catalog:lint",
-        "execa": "catalog:dev",
-        "npm": "catalog:dev",
-        "prettier": "catalog:lint",
-        "publint": "catalog:dev",
-        "rimraf": "catalog:node",
-        "semantic-release": "catalog:cli",
-        "tempy": "catalog:dev",
-        "typescript": "catalog:tsc",
-        "vitest": "catalog:test",
-        "yarn": "catalog:dev"
-    },
-    "engines": {
-        "node": ">=22.13 <=25.x"
-    },
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
+    {
+      "type": "consulting",
+      "url": "https://anolilab.com/support"
     }
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Daniel Bannert",
+    "email": "d.bannert@anolilab.de"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./monorepo": {
+      "types": "./dist/monorepo.d.ts",
+      "default": "./dist/monorepo.js"
+    },
+    "./package": {
+      "types": "./dist/package.d.ts",
+      "default": "./dist/package.js"
+    },
+    "./package-json": {
+      "types": "./dist/package-json.d.ts",
+      "default": "./dist/package-json.js"
+    },
+    "./package-manager": {
+      "types": "./dist/package-manager.d.ts",
+      "default": "./dist/package-manager.js"
+    },
+    "./pnpm": {
+      "types": "./dist/pnpm.d.ts",
+      "default": "./dist/pnpm.js"
+    },
+    "./error": {
+      "types": "./dist/error.d.ts",
+      "default": "./dist/error.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "build": "packem build --development",
+    "build:prod": "packem build --production",
+    "clean": "rimraf node_modules dist .eslintcache",
+    "dev": "packem build --development --watch",
+    "lint:attw": "attw --pack",
+    "lint:eslint": "eslint . --cache --concurrency auto",
+    "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+    "lint:package-json": "publint --strict",
+    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+    "lint:types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui --coverage.enabled=true",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@antfu/install-pkg": "catalog:prod",
+    "@visulima/fs": "workspace:*",
+    "@visulima/path": "workspace:*",
+    "json5": "catalog:prod",
+    "normalize-package-data": "catalog:prod",
+    "type-fest": "catalog:prod",
+    "yaml": "catalog:prod"
+  },
+  "devDependencies": {
+    "@anolilab/eslint-config": "catalog:lint",
+    "@anolilab/prettier-config": "catalog:lint",
+    "@anolilab/semantic-release-pnpm": "catalog:dev",
+    "@anolilab/semantic-release-preset": "catalog:dev",
+    "@arethetypeswrong/cli": "catalog:dev",
+    "@inquirer/core": "catalog:dev",
+    "@inquirer/type": "catalog:dev",
+    "@pnpm/exe": "catalog:dev",
+    "@total-typescript/ts-reset": "catalog:dev",
+    "@types/node": "catalog:types",
+    "@types/normalize-package-data": "catalog:types",
+    "@visulima/packem": "catalog:dev",
+    "@vitest/coverage-v8": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "@yarnpkg/pnp": "catalog:dev",
+    "conventional-changelog-conventionalcommits": "catalog:dev",
+    "dot-prop": "catalog:dev",
+    "esbuild": "catalog:build",
+    "eslint": "catalog:lint",
+    "execa": "catalog:dev",
+    "npm": "catalog:dev",
+    "prettier": "catalog:lint",
+    "publint": "catalog:dev",
+    "rimraf": "catalog:node",
+    "semantic-release": "catalog:cli",
+    "tempy": "catalog:dev",
+    "typescript": "catalog:tsc",
+    "vitest": "catalog:test",
+    "yarn": "catalog:dev"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=22.13 <=25.x"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

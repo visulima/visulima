@@ -1,36 +1,38 @@
 {
-    "name": "tanstack-start",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite dev --port 3000",
-        "serve": "vite preview",
-        "test": "vitest run"
-    },
-    "dependencies": {
-        "@tanstack/react-router": "catalog:frontend",
-        "@tanstack/react-start": "catalog:frontend",
-        "@tanstack/router-plugin": "catalog:prod",
-        "@visulima/storage": "workspace:*",
-        "@visulima/storage-client": "workspace:*",
-        "nitro": "catalog:prod",
-        "react": "catalog:frontend",
-        "react-dom": "catalog:frontend",
-        "vite-tsconfig-paths": "catalog:build"
-    },
-    "devDependencies": {
-        "@tanstack/devtools-vite": "catalog:build",
-        "@testing-library/dom": "catalog:test",
-        "@testing-library/react": "catalog:test",
-        "@types/node": "catalog:types",
-        "@types/react": "catalog:types",
-        "@types/react-dom": "catalog:types",
-        "@vitejs/plugin-react": "catalog:build",
-        "jsdom": "catalog:dev",
-        "typescript": "catalog:tsc",
-        "vite": "catalog:build",
-        "vitest": "catalog:test",
-        "web-vitals": "catalog:dev"
-    }
+  "name": "tanstack-start",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev --port 3000",
+    "serve": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "catalog:frontend",
+    "@tanstack/react-start": "catalog:frontend",
+    "@tanstack/router-plugin": "catalog:prod",
+    "@visulima/storage": "workspace:*",
+    "@visulima/storage-client": "workspace:*",
+    "nitro": "catalog:prod",
+    "react": "catalog:frontend",
+    "react-dom": "catalog:frontend",
+    "vite-tsconfig-paths": "catalog:build"
+  },
+  "devDependencies": {
+    "@tanstack/devtools-vite": "catalog:build",
+    "@testing-library/dom": "catalog:test",
+    "@testing-library/react": "catalog:test",
+    "@types/node": "catalog:types",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@vitejs/plugin-react": "catalog:build",
+    "jsdom": "catalog:dev",
+    "typescript": "catalog:tsc",
+    "vite": "catalog:build",
+    "vitest": "catalog:test",
+    "web-vitals": "catalog:dev"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

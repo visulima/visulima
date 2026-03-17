@@ -1,9 +1,12 @@
 {
-    "name": "boxen-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/boxen": "workspace:*"
-    }
+  "name": "boxen-esm",
+  "private": true,
+  "description": "ESM version",
+  "type": "module",
+  "dependencies": {
+    "@visulima/boxen": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

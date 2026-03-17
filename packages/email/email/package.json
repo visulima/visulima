@@ -1,370 +1,371 @@
 {
-    "name": "@visulima/email",
-    "version": "1.0.0-alpha.10",
-    "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
-    "keywords": [
-        "visulima",
-        "email",
-        "mail",
-        "better-mail",
-        "smtp",
-        "resend",
-        "aws-ses",
-        "zeptomail",
-        "http",
-        "failover",
-        "roundrobin",
-        "mailcrab",
-        "nodemailer",
-        "opentelemetry",
-        "plunk",
-        "mock",
-        "sendgrid",
-        "mailgun",
-        "postmark",
-        "brevo",
-        "mailjet",
-        "mailersend",
-        "mandrill",
-        "postal",
-        "mailtrap",
-        "mailpace",
-        "azure",
-        "infobip",
-        "scaleway",
-        "ahasend",
-        "mailomat",
-        "sweego",
-        "dkim",
-        "smime",
-        "encryption",
-        "signing",
-        "crypto",
-        "disposable-email",
-        "disposable-email-domains",
-        "handlebars",
-        "mjml",
-        "react-email",
-        "vue-email",
-        "html-to-text"
-    ],
-    "homepage": "https://visulima.com/packages/email",
-    "bugs": {
-        "url": "https://github.com/visulima/visulima/issues"
+  "name": "@visulima/email",
+  "version": "1.0.0-alpha.10",
+  "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
+  "keywords": [
+    "visulima",
+    "email",
+    "mail",
+    "better-mail",
+    "smtp",
+    "resend",
+    "aws-ses",
+    "zeptomail",
+    "http",
+    "failover",
+    "roundrobin",
+    "mailcrab",
+    "nodemailer",
+    "opentelemetry",
+    "plunk",
+    "mock",
+    "sendgrid",
+    "mailgun",
+    "postmark",
+    "brevo",
+    "mailjet",
+    "mailersend",
+    "mandrill",
+    "postal",
+    "mailtrap",
+    "mailpace",
+    "azure",
+    "infobip",
+    "scaleway",
+    "ahasend",
+    "mailomat",
+    "sweego",
+    "dkim",
+    "smime",
+    "encryption",
+    "signing",
+    "crypto",
+    "disposable-email",
+    "disposable-email-domains",
+    "handlebars",
+    "mjml",
+    "react-email",
+    "vue-email",
+    "html-to-text"
+  ],
+  "homepage": "https://visulima.com/packages/email",
+  "bugs": {
+    "url": "https://github.com/visulima/visulima/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visulima/visulima.git",
+    "directory": "packages/email/email"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/prisis"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/email/email"
-    },
-    "funding": [
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/prisis"
-        },
-        {
-            "type": "consulting",
-            "url": "https://anolilab.com/support"
-        }
-    ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./template/handlebars": {
-            "types": "./dist/template-engines/handlebars.d.ts",
-            "default": "./dist/template-engines/handlebars.js"
-        },
-        "./template/mjml": {
-            "types": "./dist/template-engines/mjml.d.ts",
-            "default": "./dist/template-engines/mjml.js"
-        },
-        "./template/react-email": {
-            "types": "./dist/template-engines/react-email.d.ts",
-            "default": "./dist/template-engines/react-email.js"
-        },
-        "./template/vue-email": {
-            "types": "./dist/template-engines/vue-email.d.ts",
-            "default": "./dist/template-engines/vue-email.js"
-        },
-        "./template/html-to-text": {
-            "types": "./dist/template-engines/html-to-text.d.ts",
-            "default": "./dist/template-engines/html-to-text.js"
-        },
-        "./providers/aws-ses": {
-            "types": "./dist/providers/aws-ses/index.d.ts",
-            "default": "./dist/providers/aws-ses/index.js"
-        },
-        "./providers/http": {
-            "types": "./dist/providers/http/index.d.ts",
-            "default": "./dist/providers/http/index.js"
-        },
-        "./providers/resend": {
-            "types": "./dist/providers/resend/index.d.ts",
-            "default": "./dist/providers/resend/index.js"
-        },
-        "./providers/smtp": {
-            "types": "./dist/providers/smtp/index.d.ts",
-            "default": "./dist/providers/smtp/index.js"
-        },
-        "./providers/zeptomail": {
-            "types": "./dist/providers/zeptomail/index.d.ts",
-            "default": "./dist/providers/zeptomail/index.js"
-        },
-        "./providers/failover": {
-            "types": "./dist/providers/failover/index.d.ts",
-            "default": "./dist/providers/failover/index.js"
-        },
-        "./providers/roundrobin": {
-            "types": "./dist/providers/roundrobin/index.d.ts",
-            "default": "./dist/providers/roundrobin/index.js"
-        },
-        "./providers/mailcrab": {
-            "types": "./dist/providers/mailcrab/index.d.ts",
-            "default": "./dist/providers/mailcrab/index.js"
-        },
-        "./providers/nodemailer": {
-            "types": "./dist/providers/nodemailer/index.d.ts",
-            "default": "./dist/providers/nodemailer/index.js"
-        },
-        "./providers/opentelemetry": {
-            "types": "./dist/providers/opentelemetry/index.d.ts",
-            "default": "./dist/providers/opentelemetry/index.js"
-        },
-        "./providers/plunk": {
-            "types": "./dist/providers/plunk/index.d.ts",
-            "default": "./dist/providers/plunk/index.js"
-        },
-        "./providers/mock": {
-            "types": "./dist/providers/mock/index.d.ts",
-            "default": "./dist/providers/mock/index.js"
-        },
-        "./crypto": {
-            "types": "./dist/crypto/index.d.ts",
-            "default": "./dist/crypto/index.js"
-        },
-        "./providers/sendgrid": {
-            "types": "./dist/providers/sendgrid/index.d.ts",
-            "default": "./dist/providers/sendgrid/index.js"
-        },
-        "./providers/mailgun": {
-            "types": "./dist/providers/mailgun/index.d.ts",
-            "default": "./dist/providers/mailgun/index.js"
-        },
-        "./providers/postmark": {
-            "types": "./dist/providers/postmark/index.d.ts",
-            "default": "./dist/providers/postmark/index.js"
-        },
-        "./providers/brevo": {
-            "types": "./dist/providers/brevo/index.d.ts",
-            "default": "./dist/providers/brevo/index.js"
-        },
-        "./providers/mailjet": {
-            "types": "./dist/providers/mailjet/index.d.ts",
-            "default": "./dist/providers/mailjet/index.js"
-        },
-        "./providers/mailersend": {
-            "types": "./dist/providers/mailersend/index.d.ts",
-            "default": "./dist/providers/mailersend/index.js"
-        },
-        "./providers/mandrill": {
-            "types": "./dist/providers/mandrill/index.d.ts",
-            "default": "./dist/providers/mandrill/index.js"
-        },
-        "./providers/postal": {
-            "types": "./dist/providers/postal/index.d.ts",
-            "default": "./dist/providers/postal/index.js"
-        },
-        "./providers/mailtrap": {
-            "types": "./dist/providers/mailtrap/index.d.ts",
-            "default": "./dist/providers/mailtrap/index.js"
-        },
-        "./providers/mailpace": {
-            "types": "./dist/providers/mailpace/index.d.ts",
-            "default": "./dist/providers/mailpace/index.js"
-        },
-        "./providers/azure": {
-            "types": "./dist/providers/azure/index.d.ts",
-            "default": "./dist/providers/azure/index.js"
-        },
-        "./providers/infobip": {
-            "types": "./dist/providers/infobip/index.d.ts",
-            "default": "./dist/providers/infobip/index.js"
-        },
-        "./providers/scaleway": {
-            "types": "./dist/providers/scaleway/index.d.ts",
-            "default": "./dist/providers/scaleway/index.js"
-        },
-        "./providers/ahasend": {
-            "types": "./dist/providers/ahasend/index.d.ts",
-            "default": "./dist/providers/ahasend/index.js"
-        },
-        "./providers/mailomat": {
-            "types": "./dist/providers/mailomat/index.d.ts",
-            "default": "./dist/providers/mailomat/index.js"
-        },
-        "./providers/sweego": {
-            "types": "./dist/providers/sweego/index.d.ts",
-            "default": "./dist/providers/sweego/index.js"
-        },
-        "./utils/parse-address": {
-            "types": "./dist/utils/parse-address.d.ts",
-            "default": "./dist/utils/parse-address.js"
-        },
-        "./utils/format-email-address": {
-            "types": "./dist/utils/format-email-address.d.ts",
-            "default": "./dist/utils/format-email-address.js"
-        },
-        "./utils/cache": {
-            "types": "./dist/utils/cache.d.ts",
-            "default": "./dist/utils/cache.js"
-        },
-        "./validation/disposable-email-domains": {
-            "types": "./dist/utils/validation/disposable-email-domains.d.ts",
-            "default": "./dist/utils/validation/disposable-email-domains.js"
-        },
-        "./validation/validate-email": {
-            "types": "./dist/utils/validation/validate-email.d.ts",
-            "default": "./dist/utils/validation/validate-email.js"
-        },
-        "./validation/check-mx-records": {
-            "types": "./dist/utils/validation/check-mx-records.d.ts",
-            "default": "./dist/utils/validation/check-mx-records.js"
-        },
-        "./validation/role-accounts": {
-            "types": "./dist/utils/validation/role-accounts.d.ts",
-            "default": "./dist/utils/validation/role-accounts.js"
-        },
-        "./validation/verify-smtp": {
-            "types": "./dist/utils/validation/verify-smtp.d.ts",
-            "default": "./dist/utils/validation/verify-smtp.js"
-        },
-        "./validation/verify-email": {
-            "types": "./dist/utils/validation/verify-email.d.ts",
-            "default": "./dist/utils/validation/verify-email.js"
-        },
-        "./utils/normalize-email-aliases": {
-            "types": "./dist/utils/normalize-email-aliases.d.ts",
-            "default": "./dist/utils/normalize-email-aliases.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
-    "scripts": {
-        "build": "packem build --development",
-        "build:prod": "packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
-        "dev": "pnpm run build --watch",
-        "lint:attw": "attw --pack",
-        "lint:eslint": "eslint .",
-        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
-        "lint:package-json": "publint --strict",
-        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-        "lint:types": "tsc --noEmit --project tsconfig.json",
-        "test": "vitest run",
-        "test:coverage": "vitest run --coverage",
-        "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
-    },
-    "dependencies": {
-        "@visulima/disposable-email-domains": "workspace:*",
-        "html-to-text": "catalog:prod",
-        "ical-generator": "catalog:prod",
-        "lru-cache": "catalog:prod",
-        "mime": "catalog:prod"
-    },
-    "devDependencies": {
-        "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
-        "@arethetypeswrong/cli": "catalog:dev",
-        "@opentelemetry/api": "catalog:dev",
-        "@react-email/render": "catalog:frontend",
-        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@total-typescript/ts-reset": "catalog:dev",
-        "@types/mime": "catalog:types",
-        "@types/mjml": "catalog:types",
-        "@types/node": "catalog:types",
-        "@types/nodemailer": "catalog:types",
-        "@visulima/error": "workspace:*",
-        "@visulima/fs": "workspace:*",
-        "@visulima/packem": "catalog:dev",
-        "@visulima/path": "workspace:*",
-        "@vitest/coverage-v8": "catalog:test",
-        "@vitest/ui": "catalog:test",
-        "@vue-email/render": "catalog:frontend",
-        "asn1js": "catalog:dev",
-        "conventional-changelog-conventionalcommits": "catalog:dev",
-        "esbuild": "catalog:build",
-        "eslint": "catalog:lint",
-        "handlebars": "catalog:dev",
-        "mjml": "catalog:dev",
-        "nodemailer": "catalog:dev",
-        "openapi-types": "catalog:dev",
-        "pkijs": "catalog:dev",
-        "prettier": "catalog:lint",
-        "publint": "catalog:dev",
-        "rimraf": "catalog:node",
-        "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
-        "typescript": "catalog:tsc",
-        "vitest": "catalog:test"
-    },
-    "peerDependencies": {
-        "@opentelemetry/api": "^1.0.0 || ^2.0.0",
-        "@react-email/render": "catalog:frontend",
-        "@vue-email/render": "catalog:frontend",
-        "asn1js": "catalog:peer",
-        "handlebars": "catalog:peer",
-        "mjml": "catalog:peer",
-        "nodemailer": ">=7",
-        "pkijs": "catalog:peer"
-    },
-    "peerDependenciesMeta": {
-        "@opentelemetry/api": {
-            "optional": true
-        },
-        "@react-email/render": {
-            "optional": true
-        },
-        "@vue-email/render": {
-            "optional": true
-        },
-        "asn1js": {
-            "optional": true
-        },
-        "handlebars": {
-            "optional": true
-        },
-        "mjml": {
-            "optional": true
-        },
-        "nodemailer": {
-            "optional": true
-        },
-        "pkijs": {
-            "optional": true
-        }
-    },
-    "engines": {
-        "node": ">=22.13 <=25.x"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
+    {
+      "type": "consulting",
+      "url": "https://anolilab.com/support"
     }
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Daniel Bannert",
+    "email": "d.bannert@anolilab.de"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./template/handlebars": {
+      "types": "./dist/template-engines/handlebars.d.ts",
+      "default": "./dist/template-engines/handlebars.js"
+    },
+    "./template/mjml": {
+      "types": "./dist/template-engines/mjml.d.ts",
+      "default": "./dist/template-engines/mjml.js"
+    },
+    "./template/react-email": {
+      "types": "./dist/template-engines/react-email.d.ts",
+      "default": "./dist/template-engines/react-email.js"
+    },
+    "./template/vue-email": {
+      "types": "./dist/template-engines/vue-email.d.ts",
+      "default": "./dist/template-engines/vue-email.js"
+    },
+    "./template/html-to-text": {
+      "types": "./dist/template-engines/html-to-text.d.ts",
+      "default": "./dist/template-engines/html-to-text.js"
+    },
+    "./providers/aws-ses": {
+      "types": "./dist/providers/aws-ses/index.d.ts",
+      "default": "./dist/providers/aws-ses/index.js"
+    },
+    "./providers/http": {
+      "types": "./dist/providers/http/index.d.ts",
+      "default": "./dist/providers/http/index.js"
+    },
+    "./providers/resend": {
+      "types": "./dist/providers/resend/index.d.ts",
+      "default": "./dist/providers/resend/index.js"
+    },
+    "./providers/smtp": {
+      "types": "./dist/providers/smtp/index.d.ts",
+      "default": "./dist/providers/smtp/index.js"
+    },
+    "./providers/zeptomail": {
+      "types": "./dist/providers/zeptomail/index.d.ts",
+      "default": "./dist/providers/zeptomail/index.js"
+    },
+    "./providers/failover": {
+      "types": "./dist/providers/failover/index.d.ts",
+      "default": "./dist/providers/failover/index.js"
+    },
+    "./providers/roundrobin": {
+      "types": "./dist/providers/roundrobin/index.d.ts",
+      "default": "./dist/providers/roundrobin/index.js"
+    },
+    "./providers/mailcrab": {
+      "types": "./dist/providers/mailcrab/index.d.ts",
+      "default": "./dist/providers/mailcrab/index.js"
+    },
+    "./providers/nodemailer": {
+      "types": "./dist/providers/nodemailer/index.d.ts",
+      "default": "./dist/providers/nodemailer/index.js"
+    },
+    "./providers/opentelemetry": {
+      "types": "./dist/providers/opentelemetry/index.d.ts",
+      "default": "./dist/providers/opentelemetry/index.js"
+    },
+    "./providers/plunk": {
+      "types": "./dist/providers/plunk/index.d.ts",
+      "default": "./dist/providers/plunk/index.js"
+    },
+    "./providers/mock": {
+      "types": "./dist/providers/mock/index.d.ts",
+      "default": "./dist/providers/mock/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "default": "./dist/crypto/index.js"
+    },
+    "./providers/sendgrid": {
+      "types": "./dist/providers/sendgrid/index.d.ts",
+      "default": "./dist/providers/sendgrid/index.js"
+    },
+    "./providers/mailgun": {
+      "types": "./dist/providers/mailgun/index.d.ts",
+      "default": "./dist/providers/mailgun/index.js"
+    },
+    "./providers/postmark": {
+      "types": "./dist/providers/postmark/index.d.ts",
+      "default": "./dist/providers/postmark/index.js"
+    },
+    "./providers/brevo": {
+      "types": "./dist/providers/brevo/index.d.ts",
+      "default": "./dist/providers/brevo/index.js"
+    },
+    "./providers/mailjet": {
+      "types": "./dist/providers/mailjet/index.d.ts",
+      "default": "./dist/providers/mailjet/index.js"
+    },
+    "./providers/mailersend": {
+      "types": "./dist/providers/mailersend/index.d.ts",
+      "default": "./dist/providers/mailersend/index.js"
+    },
+    "./providers/mandrill": {
+      "types": "./dist/providers/mandrill/index.d.ts",
+      "default": "./dist/providers/mandrill/index.js"
+    },
+    "./providers/postal": {
+      "types": "./dist/providers/postal/index.d.ts",
+      "default": "./dist/providers/postal/index.js"
+    },
+    "./providers/mailtrap": {
+      "types": "./dist/providers/mailtrap/index.d.ts",
+      "default": "./dist/providers/mailtrap/index.js"
+    },
+    "./providers/mailpace": {
+      "types": "./dist/providers/mailpace/index.d.ts",
+      "default": "./dist/providers/mailpace/index.js"
+    },
+    "./providers/azure": {
+      "types": "./dist/providers/azure/index.d.ts",
+      "default": "./dist/providers/azure/index.js"
+    },
+    "./providers/infobip": {
+      "types": "./dist/providers/infobip/index.d.ts",
+      "default": "./dist/providers/infobip/index.js"
+    },
+    "./providers/scaleway": {
+      "types": "./dist/providers/scaleway/index.d.ts",
+      "default": "./dist/providers/scaleway/index.js"
+    },
+    "./providers/ahasend": {
+      "types": "./dist/providers/ahasend/index.d.ts",
+      "default": "./dist/providers/ahasend/index.js"
+    },
+    "./providers/mailomat": {
+      "types": "./dist/providers/mailomat/index.d.ts",
+      "default": "./dist/providers/mailomat/index.js"
+    },
+    "./providers/sweego": {
+      "types": "./dist/providers/sweego/index.d.ts",
+      "default": "./dist/providers/sweego/index.js"
+    },
+    "./utils/parse-address": {
+      "types": "./dist/utils/parse-address.d.ts",
+      "default": "./dist/utils/parse-address.js"
+    },
+    "./utils/format-email-address": {
+      "types": "./dist/utils/format-email-address.d.ts",
+      "default": "./dist/utils/format-email-address.js"
+    },
+    "./utils/cache": {
+      "types": "./dist/utils/cache.d.ts",
+      "default": "./dist/utils/cache.js"
+    },
+    "./validation/disposable-email-domains": {
+      "types": "./dist/utils/validation/disposable-email-domains.d.ts",
+      "default": "./dist/utils/validation/disposable-email-domains.js"
+    },
+    "./validation/validate-email": {
+      "types": "./dist/utils/validation/validate-email.d.ts",
+      "default": "./dist/utils/validation/validate-email.js"
+    },
+    "./validation/check-mx-records": {
+      "types": "./dist/utils/validation/check-mx-records.d.ts",
+      "default": "./dist/utils/validation/check-mx-records.js"
+    },
+    "./validation/role-accounts": {
+      "types": "./dist/utils/validation/role-accounts.d.ts",
+      "default": "./dist/utils/validation/role-accounts.js"
+    },
+    "./validation/verify-smtp": {
+      "types": "./dist/utils/validation/verify-smtp.d.ts",
+      "default": "./dist/utils/validation/verify-smtp.js"
+    },
+    "./validation/verify-email": {
+      "types": "./dist/utils/validation/verify-email.d.ts",
+      "default": "./dist/utils/validation/verify-email.js"
+    },
+    "./utils/normalize-email-aliases": {
+      "types": "./dist/utils/normalize-email-aliases.d.ts",
+      "default": "./dist/utils/normalize-email-aliases.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "packem build --development",
+    "build:prod": "packem build --production",
+    "clean": "rimraf node_modules dist .eslintcache",
+    "dev": "pnpm run build --watch",
+    "lint:attw": "attw --pack",
+    "lint:eslint": "eslint .",
+    "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+    "lint:package-json": "publint --strict",
+    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+    "lint:types": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui --coverage.enabled=true",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@visulima/disposable-email-domains": "workspace:*",
+    "html-to-text": "catalog:prod",
+    "ical-generator": "catalog:prod",
+    "lru-cache": "catalog:prod",
+    "mime": "catalog:prod"
+  },
+  "devDependencies": {
+    "@anolilab/eslint-config": "catalog:lint",
+    "@anolilab/prettier-config": "catalog:lint",
+    "@anolilab/semantic-release-pnpm": "catalog:dev",
+    "@anolilab/semantic-release-preset": "catalog:dev",
+    "@arethetypeswrong/cli": "catalog:dev",
+    "@opentelemetry/api": "catalog:dev",
+    "@react-email/render": "catalog:frontend",
+    "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+    "@total-typescript/ts-reset": "catalog:dev",
+    "@types/mime": "catalog:types",
+    "@types/mjml": "catalog:types",
+    "@types/node": "catalog:types",
+    "@types/nodemailer": "catalog:types",
+    "@visulima/error": "workspace:*",
+    "@visulima/fs": "workspace:*",
+    "@visulima/packem": "catalog:dev",
+    "@visulima/path": "workspace:*",
+    "@vitest/coverage-v8": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "@vue-email/render": "catalog:frontend",
+    "asn1js": "catalog:dev",
+    "conventional-changelog-conventionalcommits": "catalog:dev",
+    "esbuild": "catalog:build",
+    "eslint": "catalog:lint",
+    "handlebars": "catalog:dev",
+    "mjml": "catalog:dev",
+    "nodemailer": "catalog:dev",
+    "openapi-types": "catalog:dev",
+    "pkijs": "catalog:dev",
+    "prettier": "catalog:lint",
+    "publint": "catalog:dev",
+    "rimraf": "catalog:node",
+    "secretlint": "catalog:lint",
+    "semantic-release": "catalog:cli",
+    "typescript": "catalog:tsc",
+    "vitest": "catalog:test"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.0.0 || ^2.0.0",
+    "@react-email/render": "catalog:frontend",
+    "@vue-email/render": "catalog:frontend",
+    "asn1js": "catalog:peer",
+    "handlebars": "catalog:peer",
+    "mjml": "catalog:peer",
+    "nodemailer": ">=7",
+    "pkijs": "catalog:peer"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    },
+    "@react-email/render": {
+      "optional": true
+    },
+    "@vue-email/render": {
+      "optional": true
+    },
+    "asn1js": {
+      "optional": true
+    },
+    "handlebars": {
+      "optional": true
+    },
+    "mjml": {
+      "optional": true
+    },
+    "nodemailer": {
+      "optional": true
+    },
+    "pkijs": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=22.13 <=25.x"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

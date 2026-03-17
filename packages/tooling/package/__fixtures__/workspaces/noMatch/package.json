@@ -1,4 +1,8 @@
 {
-    "name": "@foo/test-root",
-    "private": true
+  "name": "@foo/test-root",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

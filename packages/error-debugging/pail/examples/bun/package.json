@@ -1,13 +1,16 @@
 {
-    "name": "@visulima/pail-bun-example",
-    "version": "1.0.0",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "dev": "bun --hot example.ts",
-        "start": "bun run example.ts"
-    },
-    "dependencies": {
-        "@visulima/pail": "catalog:prod"
-    }
+  "name": "@visulima/pail-bun-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot example.ts",
+    "start": "bun run example.ts"
+  },
+  "dependencies": {
+    "@visulima/pail": "catalog:prod"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

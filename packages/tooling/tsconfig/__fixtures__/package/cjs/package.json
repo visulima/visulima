@@ -1,9 +1,12 @@
 {
-    "name": "ts-config-cjs",
-    "private": true,
-    "description": "CommonJS version",
-    "type": "commonjs",
-    "dependencies": {
-        "@visulima/tsconfig": "workspace:*"
-    }
+  "name": "ts-config-cjs",
+  "private": true,
+  "description": "CommonJS version",
+  "type": "commonjs",
+  "dependencies": {
+    "@visulima/tsconfig": "workspace:*"
+  },
+  "devDependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }
