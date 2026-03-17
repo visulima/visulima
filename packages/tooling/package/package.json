@@ -114,8 +114,8 @@
     },
     "dependencies": {
         "@antfu/install-pkg": "catalog:prod",
-        "@visulima/fs": "catalog:prod",
-        "@visulima/path": "catalog:prod",
+        "@visulima/fs": "workspace:*",
+        "@visulima/path": "workspace:*",
         "json5": "catalog:prod",
         "normalize-package-data": "catalog:prod",
         "type-fest": "catalog:prod",
