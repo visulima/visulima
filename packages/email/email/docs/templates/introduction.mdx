@@ -230,7 +230,7 @@ await message.viewText(renderHandlebars, "Hello {{name}}! Welcome to {{company}}
 You can create custom template engines by implementing the `TemplateRenderer` type:
 
 ```typescript
-import type { TemplateRenderer } from "@visulima/email/template/types";
+import type { TemplateRenderer } from "@visulima/email";
 
 const myRenderer: TemplateRenderer = (template, data, options) => {
     let result = template as string;

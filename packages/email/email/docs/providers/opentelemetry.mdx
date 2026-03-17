@@ -21,11 +21,11 @@ npm install @opentelemetry/api @opentelemetry/sdk-trace-base
 
 ```typescript
 import { createMail } from "@visulima/email";
-import { openTelemetryProvider } from "@visulima/email/providers/opentelemetry";
+import { opentelemetryProvider } from "@visulima/email/providers/opentelemetry";
 import { resendProvider } from "@visulima/email/providers/resend";
 
 const mail = createMail(
-    openTelemetryProvider({
+    opentelemetryProvider({
         provider: resendProvider({ apiKey: process.env.RESEND_API_KEY! }),
         serviceName: "my-email-service",
         recordContent: false,
@@ -71,7 +71,7 @@ import { trace } from "@opentelemetry/api";
 const tracer = trace.getTracer("my-app", "1.0.0");
 
 const mail = createMail(
-    openTelemetryProvider({
+    opentelemetryProvider({
         provider: resendProvider({ apiKey: "re_xxx" }),
         tracer,
         serviceName: "email-service",
@@ -85,7 +85,7 @@ By default, email content is not recorded in spans for privacy reasons. Enable i
 
 ```typescript
 const mail = createMail(
-    openTelemetryProvider({
+    opentelemetryProvider({
         provider: resendProvider({ apiKey: "re_xxx" }),
         recordContent: true, // Records email content in spans
     }),

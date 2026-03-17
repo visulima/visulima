@@ -419,16 +419,22 @@ export default function FilesPage() {
 
     const { deleteFile, isLoading: isDeleting } = createDeleteFile({
         endpoint: "/api/files",
-        onSuccess: () => refetch(),
     });
 
     const { batchDeleteFiles, isLoading: isBatchDeleting } = createBatchDeleteFiles({
         endpoint: "/api/files",
-        onSuccess: () => {
-            setSelectedIds([]);
-            refetch();
-        },
     });
+
+    const handleDelete = async (id: string) => {
+        await deleteFile(id);
+        refetch();
+    };
+
+    const handleBatchDelete = async () => {
+        await batchDeleteFiles(selectedIds());
+        setSelectedIds([]);
+        refetch();
+    };
 
     const toggleSelect = (id: string) => {
         setSelectedIds((prev) =>
@@ -441,7 +447,7 @@ export default function FilesPage() {
             <h1>Files</h1>
 
             {selectedIds().length > 0 && (
-                <button onClick={() => batchDeleteFiles(selectedIds())} disabled={isBatchDeleting()}>
+                <button onClick={() => handleBatchDelete()} disabled={isBatchDeleting()}>
                     {isBatchDeleting() ? "Deleting..." : `Delete Selected (${selectedIds().length})`}
                 </button>
             )}
@@ -459,7 +465,7 @@ export default function FilesPage() {
                             />
                             {file.originalName || file.name || file.id}
                             {" "}({file.size} bytes)
-                            <button onClick={() => deleteFile(file.id)} disabled={isDeleting()}>
+                            <button onClick={() => handleDelete(file.id)} disabled={isDeleting()}>
                                 Delete
                             </button>
                         </li>

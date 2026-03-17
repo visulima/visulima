@@ -133,8 +133,7 @@ const cid = await message.embedFromPath("/path/to/image.png");
 ### Embed Image Data
 
 ```typescript
-const cid = message.embedData(Buffer.from("image data"), {
-    filename: "logo.png",
+const cid = message.embedData(Buffer.from("image data"), "logo.png", {
     contentType: "image/png",
 });
 // Use cid in HTML: <img src="cid:${cid}" />
@@ -153,7 +152,7 @@ await message.view(renderHandlebars, "<h1>Hello {{name}}!</h1>", { name: "John" 
 ### MJML Template
 
 ```typescript
-import { renderMjml } from "@visulima/email/template/mjml";
+import mjml from "@visulima/email/template/mjml";
 
 const mjmlTemplate = `
 <mjml>
@@ -167,27 +166,27 @@ const mjmlTemplate = `
 </mjml>
 `;
 
-await message.view(renderMjml, mjmlTemplate);
+await message.view(mjml, mjmlTemplate);
 ```
 
 ### React Email
 
 ```typescript
-import { renderReactEmail } from "@visulima/email/template/react-email";
+import reactEmail from "@visulima/email/template/react-email";
 import { WelcomeEmail } from "./emails/WelcomeEmail";
 
-await message.view(renderReactEmail, <WelcomeEmail name="John" />);
+await message.view(reactEmail, <WelcomeEmail name="John" />);
 ```
 
 ### Vue Email
 
 ```typescript
-import { renderVueEmail } from "@visulima/email/template/vue-email";
+import vueEmail from "@visulima/email/template/vue-email";
 import { MyTemplate } from "./emails/MyTemplate";
 
 // Render HTML
 await message.view(
-    renderVueEmail,
+    vueEmail,
     MyTemplate,
     {
         title: "some title",
@@ -199,7 +198,7 @@ await message.view(
 
 // Render plain text
 await message.view(
-    renderVueEmail,
+    vueEmail,
     MyTemplate,
     {
         title: "some title",
