@@ -1,0 +1,21 @@
+import type { BuildConfig } from "@visulima/packem/config";
+import isolatedDeclarationTransformer from "@visulima/packem/dts/isolated/transformer/typescript";
+import { defineConfig } from "@visulima/packem/config";
+import transformer from "@visulima/packem/transformer/esbuild";
+
+// eslint-disable-next-line import/no-unused-modules
+export default defineConfig({
+    runtime: "node",
+    node10Compatibility: {
+        writeToPackageJson: true,
+        typeScriptVersion: ">=5.0",
+    },
+    rollup: {
+        dynamicVars: false,
+        license: {
+            path: "./LICENSE.md",
+        },
+    },
+    transformer,
+    isolatedDeclarationTransformer,
+}) as BuildConfig;

@@ -1,163 +1,169 @@
 {
-  "name": "@visulima/jsdoc-open-api",
-  "version": "3.0.0-alpha.4",
-  "description": "Generates swagger doc based on JSDoc.",
-  "keywords": [
-    "visulima",
-    "javascript",
-    "openapi",
-    "swagger",
-    "jsdoc",
-    "comment",
-    "api",
-    "webpack",
-    "cli",
-    "command"
-  ],
-  "homepage": "https://www.visulima.com/docs/package/jsdoc-open-api",
-  "bugs": {
-    "url": "https://github.com/visulima/visulima/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/visulima/visulima.git",
-    "directory": "packages/api/jsdoc-open-api"
-  },
-  "funding": [
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/prisis"
+    "name": "@visulima/jsdoc-open-api",
+    "version": "3.0.0-alpha.4",
+    "description": "Generates swagger doc based on JSDoc.",
+    "keywords": [
+        "visulima",
+        "javascript",
+        "openapi",
+        "swagger",
+        "jsdoc",
+        "comment",
+        "api",
+        "webpack",
+        "cli",
+        "command"
+    ],
+    "homepage": "https://www.visulima.com/docs/package/jsdoc-open-api",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
     },
-    {
-      "type": "consulting",
-      "url": "https://anolilab.com/support"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/api/jsdoc-open-api"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./cli": {
+            "import": {
+                "types": "./dist/cli/index.d.mts",
+                "default": "./dist/cli/index.mjs"
+            },
+            "require": {
+                "types": "./dist/cli/index.d.cts",
+                "default": "./dist/cli/index.cjs"
+            }
+        },
+        "./cli/commander": {
+            "import": {
+                "types": "./dist/cli/commander/index.d.mts",
+                "default": "./dist/cli/commander/index.mjs"
+            },
+            "require": {
+                "types": "./dist/cli/commander/index.d.cts",
+                "default": "./dist/cli/commander/index.cjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "cli": [
+                "./dist/cli/index.d.ts"
+            ],
+            "cli/commander": [
+                "./dist/cli/commander/index.d.ts"
+            ]
+        }
+    },
+    "bin": {
+        "jsdoc-open-api": "./bin/index.js"
+    },
+    "files": [
+        "bin/**",
+        "cli/**",
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:eslint": "eslint . --cache --concurrency auto ",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@apidevtools/swagger-parser": "catalog:prod",
+        "@visulima/fs": "workspace:*",
+        "comment-parser": "catalog:prod",
+        "lodash.mergewith": "catalog:prod",
+        "yaml": "catalog:prod"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@types/cli-progress": "catalog:types",
+        "@types/http-errors": "catalog:types",
+        "@types/lodash.mergewith": "catalog:types",
+        "@types/node": "catalog:types",
+        "@types/webpack": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "cli-progress": "catalog:dev",
+        "commander": "catalog:dev",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "eslint": "catalog:lint",
+        "openapi-types": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "semantic-release": "catalog:cli",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test",
+        "webpack": "catalog:build"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {
+        "cli-progress": "catalog:optional",
+        "commander": "catalog:optional",
+        "webpack": "catalog:build"
+    },
+    "engines": {
+        "node": ">=22.13 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
-  ],
-  "license": "MIT",
-  "author": {
-    "name": "Daniel Bannert",
-    "email": "d.bannert@anolilab.de"
-  },
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      }
-    },
-    "./cli": {
-      "require": {
-        "types": "./dist/cli/index.d.ts",
-        "default": "./dist/cli/index.js"
-      },
-      "import": {
-        "types": "./dist/cli/index.d.mts",
-        "default": "./dist/cli/index.mjs"
-      }
-    },
-    "./cli/commander": {
-      "require": {
-        "types": "./dist/cli/commander/index.d.ts",
-        "default": "./dist/cli/commander/index.js"
-      },
-      "import": {
-        "types": "./dist/cli/commander/index.d.mts",
-        "default": "./dist/cli/commander/index.mjs"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "bin": {
-    "jsdoc-open-api": "./bin/index.js"
-  },
-  "files": [
-    "bin/**",
-    "cli/**",
-    "dist/**",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE.md"
-  ],
-  "scripts": {
-    "build": "cross-env NODE_ENV=development tsup",
-    "build:prod": "cross-env NODE_ENV=production tsup",
-    "clean": "rimraf node_modules dist .eslintcache",
-    "dev": "pnpm run build --watch",
-    "lint:eslint": "eslint . --cache --concurrency auto ",
-    "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
-    "lint:package-json": "publint --strict",
-    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-    "lint:types": "tsc --noEmit",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui --coverage.enabled=true",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@apidevtools/swagger-parser": "catalog:prod",
-    "comment-parser": "catalog:prod",
-    "lodash.mergewith": "catalog:prod",
-    "read-pkg-up": "catalog:prod",
-    "yaml": "catalog:prod"
-  },
-  "devDependencies": {
-    "@anolilab/eslint-config": "catalog:lint",
-    "@anolilab/prettier-config": "catalog:lint",
-    "@anolilab/semantic-release-pnpm": "catalog:dev",
-    "@anolilab/semantic-release-preset": "catalog:dev",
-    "@types/cli-progress": "catalog:types",
-    "@types/http-errors": "catalog:types",
-    "@types/lodash.mergewith": "catalog:types",
-    "@types/node": "catalog:types",
-    "@types/webpack": "catalog:types",
-    "@visulima/fs": "workspace:*",
-    "@vitest/coverage-v8": "catalog:test",
-    "@vitest/ui": "catalog:test",
-    "cli-progress": "catalog:dev",
-    "commander": "catalog:dev",
-    "conventional-changelog-conventionalcommits": "catalog:dev",
-    "cross-env": "catalog:dev",
-    "eslint": "catalog:lint",
-    "openapi-types": "catalog:dev",
-    "prettier": "catalog:lint",
-    "publint": "catalog:dev",
-    "rimraf": "catalog:node",
-    "semantic-release": "catalog:cli",
-    "tsup": "catalog:build",
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test",
-    "webpack": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {
-    "cli-progress": "catalog:optional",
-    "commander": "catalog:optional",
-    "webpack": "catalog:build"
-  },
-  "engines": {
-    "node": ">=22.13 <=25.x"
-  },
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
-  "sources": [
-    "src/index.ts",
-    "src/cli/index.ts",
-    "src/cli/commander/index.ts"
-  ]
 }
