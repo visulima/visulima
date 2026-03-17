@@ -8,6 +8,6 @@
         "start": "bun run example.ts"
     },
     "dependencies": {
-        "@visulima/pail": "3.2.2"
+        "@visulima/pail": "catalog:prod"
     }
 }
