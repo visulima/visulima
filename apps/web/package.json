@@ -15,9 +15,7 @@
         "lint:secrets": "secretlint **/*",
         "lint:types": "tsc --project tsconfig.json --noEmit",
         "serve": "vite preview",
-        "start": "node .output/server/index.mjs",
-        "test": "vitest",
-        "test:ui": "vitest --ui"
+        "start": "node .output/server/index.mjs"
     },
     "dependencies": {
         "@fuma-comment/react": "catalog:frontend",
@@ -31,7 +29,7 @@
         "@tanstack/react-router-devtools": "catalog:frontend",
         "@tanstack/react-start": "catalog:frontend",
         "@tanstack/react-virtual": "catalog:frontend",
-        "@types/mdx": "^2.0.13",
+        "@types/mdx": "catalog:types",
         "@unpic/react": "catalog:frontend",
         "@vidstack/react": "catalog:frontend",
         "@vitejs/plugin-react": "catalog:build",
@@ -47,7 +45,7 @@
         "fumadocs-ui": "catalog:frontend",
         "gray-matter": "catalog:prod",
         "lucide-react": "catalog:icons",
-        "lucide-static": "^0.577.0",
+        "lucide-static": "catalog:icons",
         "media-icons": "catalog:icons",
         "motion": "catalog:frontend",
         "next-themes": "catalog:prod",
