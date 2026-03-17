@@ -12,11 +12,11 @@
     },
     "dependencies": {
         "@visulima/email": "workspace:*",
-        "nodemailer": "^8.0.2"
+        "nodemailer": "catalog:prod"
     },
     "devDependencies": {
-        "@types/node": "25.4.0",
-        "tsx": "^4.21.0",
-        "typescript": "5.9.3"
+        "@types/node": "catalog:types",
+        "tsx": "catalog:dev",
+        "typescript": "catalog:tsc"
     }
 }
