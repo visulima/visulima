@@ -13,6 +13,10 @@ const PACKAGES_DIR = path.join(ROOT_DIR, "packages");
 const DEST_DIR = path.join(__dirname, "..", "src", "content", "docs", "packages");
 const PUBLIC_ASSETS_DIR = path.join(__dirname, "..", "public", "assets");
 
+/** Known app routes that should not be rewritten or stripped by the docs link processor. */
+const KNOWN_ROUTES = new Set(["brand", "changelog", "code-of-conduct", "docs", "imprint", "packages", "privacy"]);
+const KNOWN_ROUTES_PATTERN = [...KNOWN_ROUTES].join("|");
+
 /**
  * External repos whose docs/ folder should be fetched and merged into the packages docs.
  * Branch is determined by the current git branch: alpha → alpha, otherwise main.
@@ -305,12 +309,10 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
 
             // Also strip absolute links to non-existent non-docs routes (e.g. /examples, /usage)
             const final = updated.replace(
-                /\[([^\]]*)\]\(\/((?!docs\/|packages\/|brand|changelog|code-of-conduct|imprint|privacy|assets\/|https?:)[^)]*)\)/g,
+                new RegExp(`\\[([^\\]]*)\\]\\(\\/(?!(?:${KNOWN_ROUTES_PATTERN}|assets)\\/|https?:)([^)]*)\\)`, "g"),
                 (match, label, linkPath) => {
-                    // Check if it could be a valid static route
-                    const knownRoutes = new Set(["brand", "changelog", "code-of-conduct", "imprint", "privacy", "docs", "packages"]);
                     const firstSegment = linkPath.split(/[/#]/)[0];
-                    if (knownRoutes.has(firstSegment)) {
+                    if (KNOWN_ROUTES.has(firstSegment)) {
                         return match;
                     }
                     changed = true;
@@ -356,7 +358,7 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
 
             // Rewrite root-relative links (e.g. /usage/foo, /usage#anchor) that match existing package docs
             content = content.replace(
-                /(\[.*?\]\()\/(?!docs\/|assets\/|api\/og|packages\/|brand|changelog|code-of-conduct|imprint|privacy)([\w-]+(?:[/#][^)]*)?)\)/g,
+                new RegExp(`(\\[.*?\\]\\()\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|api)\\/)[\\w-]+(?:[/#][^)]*)?)\\)`, "g"),
                 (match, prefix, linkPath) => {
                     const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
                     const resolved = path.join(pkgRoot, cleanPath);
