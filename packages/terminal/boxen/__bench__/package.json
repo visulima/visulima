@@ -7,7 +7,7 @@
     },
     "devDependencies": {
         "@visulima/boxen": "workspace:*",
-        "boxen": "8.0.1",
-        "vitest": "^4.0.18"
+        "boxen": "catalog:dev",
+        "vitest": "catalog:test"
     }
 }
