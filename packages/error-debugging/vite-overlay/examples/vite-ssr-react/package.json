@@ -11,21 +11,21 @@
         "preview": "cross-env NODE_ENV=production node server"
     },
     "dependencies": {
-        "compression": "^1.8.1",
-        "express": "^5.2.1",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "sirv": "^3.0.2"
+        "compression": "catalog:prod",
+        "express": "catalog:backend",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "sirv": "catalog:prod"
     },
     "devDependencies": {
-        "@types/express": "^5.0.6",
-        "@types/node": "^25.4.0",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
+        "@types/express": "catalog:types",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-react": "^5.1.4",
-        "cross-env": "^10.1.0",
-        "typescript": "~5.9.3",
-        "vite": "^7.3.1"
+        "@vitejs/plugin-react": "catalog:build",
+        "cross-env": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
     }
 }

@@ -12,22 +12,22 @@
         "@tanstack/react-router": "1.166.2",
         "@tanstack/react-router-devtools": "1.166.2",
         "@tanstack/react-start": "1.166.2",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "redaxios": "^0.5.1",
-        "tailwind-merge": "^3.5.0"
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "redaxios": "catalog:prod",
+        "tailwind-merge": "catalog:prod"
     },
     "devDependencies": {
-        "@types/node": "^25.4.0",
-        "@types/react": "^19.2.14",
-        "@types/react-dom": "^19.2.3",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-react": "^5.1.4",
-        "autoprefixer": "^10.4.27",
-        "postcss": "^8.5.8",
-        "tailwindcss": "^4.2.1",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1",
-        "vite-tsconfig-paths": "^6.1.1"
+        "@vitejs/plugin-react": "catalog:build",
+        "autoprefixer": "catalog:dev",
+        "postcss": "catalog:dev",
+        "tailwindcss": "catalog:style",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vite-tsconfig-paths": "catalog:build"
     }
 }

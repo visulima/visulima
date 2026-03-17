@@ -11,19 +11,19 @@
         "type-check": "vue-tsc --build"
     },
     "dependencies": {
-        "vue": "^3.5.30"
+        "vue": "catalog:frontend"
     },
     "devDependencies": {
-        "@tsconfig/node22": "^22.0.5",
-        "@types/node": "^25.4.0",
+        "@tsconfig/node22": "catalog:dev",
+        "@types/node": "catalog:types",
         "@visulima/vite-overlay": "workspace:*",
-        "@vitejs/plugin-vue": "^6.0.4",
-        "@vue/tsconfig": "^0.9.0",
-        "npm-run-all2": "^8.0.4",
-        "typescript": "~5.9.3",
-        "vite": "^7.3.1",
-        "vite-plugin-vue-devtools": "^8.0.7",
-        "vue-tsc": "^3.2.5"
+        "@vitejs/plugin-vue": "catalog:build",
+        "@vue/tsconfig": "catalog:frontend",
+        "npm-run-all2": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vite-plugin-vue-devtools": "catalog:build",
+        "vue-tsc": "catalog:lint"
     },
     "engines": {
         "node": ">=22"
