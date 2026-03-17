@@ -135,12 +135,6 @@ const menu = [
             {
                 navItems: [
                     {
-                        description: "From developer to developer",
-                        href: "/blog",
-                        icon: <Book className="size-6" />,
-                        title: "Blog",
-                    },
-                    {
                         description: "Join developers building with Visulima",
                         href: "https://discord.gg/TtFJY8xkFK",
                         icon: <Handshake className="size-6" />,
