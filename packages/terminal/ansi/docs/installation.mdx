@@ -3,27 +3,29 @@ title: "Installation"
 description: "How to install and import @visulima/ansi"
 ---
 
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
 # Installation
 
 Install the package using your preferred package manager:
 
-<Tabs>
-  <Tab title="npm">
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">
     ```bash
     npm install @visulima/ansi
     ```
   </Tab>
-  <Tab title="pnpm">
+  <Tab value="pnpm">
     ```bash
     pnpm add @visulima/ansi
     ```
   </Tab>
-  <Tab title="yarn">
+  <Tab value="yarn">
     ```bash
     yarn add @visulima/ansi
     ```
   </Tab>
-  <Tab title="bun">
+  <Tab value="bun">
     ```bash
     bun add @visulima/ansi
     ```
