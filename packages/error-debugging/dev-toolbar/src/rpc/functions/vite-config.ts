@@ -16,7 +16,7 @@ type ViteConfigSnapshot = {
         chunkSizeWarningLimit?: number;
         cssCodeSplit?: boolean;
         emptyOutDir?: boolean | null;
-        minify?: "esbuild" | "terser" | boolean;
+        minify?: "esbuild" | "oxc" | "terser" | boolean;
         outDir?: string;
         reportCompressedSize?: boolean;
         sourcemap?: "hidden" | "inline" | boolean;
