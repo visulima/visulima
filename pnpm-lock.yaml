@@ -100,9 +100,6 @@ catalogs:
     vite-plugin-vue-devtools:
       specifier: 8.1.0
       version: 8.1.0
-    vite-tsconfig-paths:
-      specifier: 6.1.1
-      version: 6.1.1
     webpack:
       specifier: ^5.105.4
       version: 5.105.4
@@ -186,12 +183,6 @@ catalogs:
     '@shikijs/themes':
       specifier: ^4.0.2
       version: 4.0.2
-    '@std/bytes':
-      specifier: jsr:1.0.6
-      version: 1.0.6
-    '@std/html':
-      specifier: jsr:@std/html@1.0.5
-      version: 1.0.5
     '@sveltejs/adapter-auto':
       specifier: ^7.0.1
       version: 7.0.1
@@ -1939,9 +1930,6 @@ importers:
       vite:
         specifier: catalog:build
         version: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-      vite-tsconfig-paths:
-        specifier: catalog:build
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0)
 
   apps/web:
     dependencies:
@@ -3009,7 +2997,7 @@ importers:
         specifier: catalog:lint
         version: 11.3.1
       '@std/bytes':
-        specifier: catalog:dev
+        specifier: jsr:1.0.6
         version: '@jsr/std__bytes@1.0.6'
       '@total-typescript/ts-reset':
         specifier: catalog:dev
@@ -3263,7 +3251,7 @@ importers:
         specifier: catalog:lint
         version: 11.3.1
       '@std/html':
-        specifier: catalog:dev
+        specifier: jsr:@std/html@1.0.5
         version: '@jsr/std__html@1.0.5'
       '@total-typescript/ts-reset':
         specifier: catalog:dev
@@ -4478,9 +4466,6 @@ importers:
       vite:
         specifier: catalog:build
         version: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-      vite-tsconfig-paths:
-        specifier: catalog:build
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0)
 
   packages/error-debugging/dev-toolbar/examples/vite-tanstack-start-cloudflare:
     dependencies:
@@ -4506,6 +4491,9 @@ importers:
         specifier: catalog:prod
         version: 3.5.0
     devDependencies:
+      '@cloudflare/vite-plugin':
+        specifier: '*'
+        version: 1.29.0(vite@8.0.0)(workerd@1.20260312.1)(wrangler@4.74.0(@cloudflare/workers-types@4.20260317.1))
       '@cloudflare/workers-types':
         specifier: catalog:dev
         version: 4.20260317.1
@@ -4545,9 +4533,6 @@ importers:
       vite:
         specifier: catalog:build
         version: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-      vite-tsconfig-paths:
-        specifier: catalog:build
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0)
       wrangler:
         specifier: catalog:dev
         version: 4.74.0(@cloudflare/workers-types@4.20260317.1)
@@ -5822,9 +5807,6 @@ importers:
       vite:
         specifier: catalog:build
         version: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-      vite-tsconfig-paths:
-        specifier: catalog:build
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0)
 
   packages/error-debugging/vite-overlay/examples/vite-vue:
     dependencies:
@@ -6677,9 +6659,6 @@ importers:
       react-dom:
         specifier: catalog:frontend
         version: 19.2.4(react@19.2.4)
-      vite-tsconfig-paths:
-        specifier: catalog:build
-        version: 6.1.1(typescript@5.9.3)(vite@8.0.0)
     devDependencies:
       '@tanstack/devtools-vite':
         specifier: catalog:build
@@ -28511,16 +28490,6 @@ packages:
   ts-toolbelt@9.6.0:
     resolution: {integrity: sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==}
 
-  tsconfck@3.1.1:
-    resolution: {integrity: sha512-00eoI6WY57SvZEVjm13stEVE90VkEdJAFGgpFLTsZbJyW/LwFQ7uQxJHWpZ2hzSWgCPKc9AnBnNP+0X7o3hAmQ==}
-    engines: {node: ^18 || >=20}
-    hasBin: true
-    peerDependencies:
-      typescript: ^5.0.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
 
@@ -29472,11 +29441,6 @@ packages:
 
   vite-prerender-plugin@0.5.12:
     resolution: {integrity: sha512-EiwhbMn+flg14EysbLTmZSzq8NGTxhytgK3bf4aGRF1evWLGwZiHiUJ1KZDvbxgKbMf2pG6fJWGEa3UZXOnR1g==}
-    peerDependencies:
-      vite: '>=7.1.11'
-
-  vite-tsconfig-paths@6.1.1:
-    resolution: {integrity: sha512-2cihq7zliibCCZ8P9cKJrQBkfgdvcFkOOc3Y02o3GWUDLgqjWsZudaoiuOwO/gzTzy17cS5F7ZPo4bsnS4DGkg==}
     peerDependencies:
       vite: '>=7.1.11'
 
@@ -56274,10 +56238,6 @@ snapshots:
 
   ts-toolbelt@9.6.0: {}
 
-  tsconfck@3.1.1(typescript@5.9.3):
-    optionalDependencies:
-      typescript: 5.9.3
-
   tsconfig-paths@3.15.0:
     dependencies:
       '@types/json5': 0.0.29
@@ -57427,16 +57387,6 @@ snapshots:
       source-map: 0.7.6
       stack-trace: 1.0.0-pre2
       vite: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-
-  vite-tsconfig-paths@6.1.1(typescript@5.9.3)(vite@8.0.0):
-    dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-      globrex: 0.1.2
-      tsconfck: 3.1.1(typescript@5.9.3)
-      vite: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.0.0-alpha.32(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.2)(@pnpm/logger@1001.0.1)(@vercel/blob@2.3.1)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.15)(mysql2@3.15.3))(ioredis@5.9.2)(typescript@5.9.3)(vite@8.0.0)(vue@3.5.30(typescript@5.9.3)))(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
 
   vite@6.4.1(@types/node@25.5.0)(jiti@2.6.1)(less@4.4.2)(lightningcss@1.32.0)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:

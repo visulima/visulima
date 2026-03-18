@@ -90,7 +90,6 @@ catalogs:
     vite-plugin-solid: 2.11.11
     vite-plugin-svgr: 4.5.0
     vite-plugin-vue-devtools: 8.1.0
-    vite-tsconfig-paths: 6.1.1
     webpack: ^5.105.4
   cli:
     semantic-release: 25.0.3
