@@ -94,7 +94,7 @@
     "@arethetypeswrong/cli": "catalog:dev",
     "@optimize-lodash/rollup-plugin": "catalog:build",
     "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-    "@std/html": "catalog:dev",
+    "@std/html": "jsr:@std/html@1.0.5",
     "@total-typescript/ts-reset": "catalog:dev",
     "@types/node": "catalog:types",
     "@types/sanitize-html": "catalog:types",
