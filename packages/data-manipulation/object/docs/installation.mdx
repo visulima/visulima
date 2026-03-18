@@ -3,27 +3,29 @@ title: "Installation & Quick Start"
 description: "How to install @visulima/object and get started quickly"
 ---
 
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
 # Installation & Quick Start
 
 ## Installation
 
-<Tabs>
-  <Tab title="npm">
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">
     ```bash
     npm install @visulima/object
     ```
   </Tab>
-  <Tab title="pnpm">
+  <Tab value="pnpm">
     ```bash
     pnpm add @visulima/object
     ```
   </Tab>
-  <Tab title="yarn">
+  <Tab value="yarn">
     ```bash
     yarn add @visulima/object
     ```
   </Tab>
-  <Tab title="bun">
+  <Tab value="bun">
     ```bash
     bun add @visulima/object
     ```

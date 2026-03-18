@@ -1,20 +1,33 @@
-import { Callout, Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
-import { PartyPopper } from "lucide-react";
+---
+title: Quickstart
+description: Start here to build awesome APIs quickly with Visulima Connect.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Visulima Connect is a promise-based method routing and middleware layer. It is designed to work with Express.js, Next.js and many other frameworks.
 
 ## Start to use it
 
 <Steps>
+
+<Step>
+
 ### Install
 
 In your project directory, run the following command to install the dependency:
 
-<Tabs>
-    <Tab title="pnpm">``` pnpm i @visulima/connect ```</Tab>
-    <Tab title="npm">``` npm i @visulima/connect ```</Tab>
-    <Tab title="yarn">``` yarn add @visulima/connect ```</Tab>
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm i @visulima/connect ```</Tab>
+    <Tab value="npm">```bash npm i @visulima/connect ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/connect ```</Tab>
 </Tabs>
+
+</Step>
+
+<Step>
 
 ### Ready to Go!
 
@@ -22,7 +35,7 @@ In your project directory, run the following command to install the dependency:
 
 Now, you can create your first api route as `pages/api/hello.js`:
 
-```tsx filename="pages/api/hello.js"
+```tsx title="pages/api/hello.js"
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createNodeRouter, expressWrapper } from "@visulima/connect";
 import cors from "cors";
@@ -57,13 +70,15 @@ router
 export default router.handler();
 ```
 
-<span className="flex gap-4">
-    And run the `next` or `next dev` command specified in `package.json` to start developing the project! <PartyPopper size={24} className="inline mt-0.5" />
-</span>
+And run the `next` or `next dev` command specified in `package.json` to start developing the project!
+
+</Step>
+
+<Step>
 
 ### Now you can use it in your frontend
 
-```js filename="pages/index.js"
+```js title="pages/index.js"
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -83,5 +98,7 @@ export default function Home() {
     );
 }
 ```
+
+</Step>
 
 </Steps>

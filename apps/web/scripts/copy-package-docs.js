@@ -91,42 +91,21 @@ async function sanitizeMetaJson(filePath) {
 }
 
 /**
- * Ensures MDX files have valid frontmatter with a title,
- * and strips incompatible imports (e.g., nextra-theme-docs).
+ * Ensures MDX files have valid frontmatter with a title
+ * and performs compatibility fixes for fumadocs.
  */
 async function sanitizeMdx(filePath) {
     let content = await fs.readFile(filePath, "utf-8");
 
-    // 1. Strip import statements referencing unavailable modules
-    content = content.replace(/^import\s+.*from\s+['"]@visulima\/nextra-theme-docs.*['"];?\s*$/gm, "");
-
-    // 1b. Strip relative component/utility imports (e.g., from external repo docs)
+    // 1. Strip relative component/utility imports (e.g., from external repo docs)
     content = content.replace(/^import\s+.*from\s+['"]\.\.?\/(?:components|utils)\/.*['"];?\s*$/gm, "");
 
-    // 2. Strip custom div wrappers with className (non-standard, cause hydration mismatches)
-    content = content.replace(/<div\s+className="[^"]*">\s*\n?([\s\S]*?)\n?\s*<\/div>/g, "$1");
-
-    // 2b. Replace unsupported code block languages with supported alternatives
+    // 2. Replace unsupported code block languages with supported alternatives
     content = content.replace(/^```env$/gm, "```bash");
     content = content.replace(/^```npm$/gm, "```bash");
 
     // 3. Strip corrupted LLM artifacts (fullwidth pipe characters, tool call markers)
     content = content.replace(/<｜[^｜]*｜>/g, "");
-
-    // 3. Strip undefined JSX components from nextra-theme-docs FIRST (before escaping)
-    // Skip stripping if the file imports from fumadocs-ui (these components are valid there)
-    const hasFumadocsImport = /^import\s+.*from\s+['"]fumadocs-ui\//m.test(content);
-
-    if (!hasFumadocsImport) {
-        const nextraComponents = "Callout|Tab|Tabs|TabItem|Cards|Card|Steps|Step|FileTree|Bleed|Alert|CardGroup|Providers|QueryClientProvider|Badge|FeatureCard|FeatureGrid|ApiCard|ComparisonTable";
-        const wrapperRegex = new RegExp(`<(${nextraComponents})\\b[^>]*>([\\s\\S]*?)<\\/\\1>`, "g");
-        const selfClosingRegex = new RegExp(`<(${nextraComponents})\\b[^>]*\\/>`, "g");
-
-        for (let i = 0; i < 5; i++) {
-            content = content.replace(wrapperRegex, "$2");
-        }
-        content = content.replace(selfClosingRegex, "");
-    }
 
     // 4. Escape ALL angle brackets outside code blocks that aren't standard HTML tags.
     // This prevents MDX from interpreting TypeScript generics, comparison operators,
@@ -180,7 +159,7 @@ async function sanitizeMdx(filePath) {
 }
 
 /**
- * Recursively copies a directory, skipping Nextra-style _meta files.
+ * Recursively copies a directory.
  */
 async function copyDirectory(src, dest) {
     await fs.mkdir(dest, { recursive: true });
@@ -190,11 +169,6 @@ async function copyDirectory(src, dest) {
     for (const entry of entries) {
         const srcPath = path.join(src, entry.name);
         const destPath = path.join(dest, entry.name);
-
-        // Skip Nextra-style meta files (fumadocs uses meta.json)
-        if (entry.name.startsWith("_meta")) {
-            continue;
-        }
 
         if (entry.isDirectory()) {
             await copyDirectory(srcPath, destPath);
@@ -285,6 +259,7 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
             let content = await fs.readFile(fullPath, "utf-8");
             let changed = false;
 
+            // Fix broken markdown-style /docs/ links
             const updated = content.replace(
                 /\[([^\]]*)\]\(\/docs\/(.*?)\)/g,
                 (match, label, docPath) => {
@@ -307,8 +282,8 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                 }
             );
 
-            // Also strip absolute links to non-existent non-docs routes (e.g. /examples, /usage)
-            const final = updated.replace(
+            // Strip absolute markdown links to non-existent non-docs routes (e.g. /examples, /usage)
+            let final = updated.replace(
                 new RegExp(`\\[([^\\]]*)\\]\\(\\/(?!(?:${KNOWN_ROUTES_PATTERN}|assets)\\/|https?:)([^)]*)\\)`, "g"),
                 (match, label, linkPath) => {
                     const firstSegment = linkPath.split(/[/#]/)[0];
@@ -317,6 +292,40 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                     }
                     changed = true;
                     return label;
+                }
+            );
+
+            // Fix broken JSX href="/docs/..." links — remove the href to make it a plain element
+            final = final.replace(
+                /href="\/docs\/(.*?)"/g,
+                (match, docPath) => {
+                    const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
+                    const resolved = path.join(contentRoot, cleanPath);
+
+                    const exists =
+                        existsSync(resolved + ".mdx") ||
+                        existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) ||
+                        existsSync(path.join(resolved, "index.md"));
+
+                    if (!exists) {
+                        changed = true;
+                        return ""; // Remove broken href
+                    }
+                    return match;
+                }
+            );
+
+            // Fix broken JSX root-relative href links (e.g. href="/installation")
+            final = final.replace(
+                new RegExp(`href="\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|docs)\\/|https?:)[^"]*)"`, "g"),
+                (match, linkPath) => {
+                    const firstSegment = linkPath.split(/[/#]/)[0];
+                    if (KNOWN_ROUTES.has(firstSegment)) {
+                        return match;
+                    }
+                    changed = true;
+                    return ""; // Remove broken href
                 }
             );
 
@@ -345,7 +354,7 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
             const original = await fs.readFile(fullPath, "utf-8");
             let content = original;
 
-            // Rewrite /docs/ links
+            // Rewrite /docs/ links (markdown syntax)
             content = content.replace(
                 /(\[.*?\]\()\/docs\/(?!packages\/)(.*?\))/g,
                 (match, prefix, restPath) => {
@@ -356,7 +365,18 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                 }
             );
 
-            // Rewrite root-relative links (e.g. /usage/foo, /usage#anchor) that match existing package docs
+            // Rewrite /docs/ links (JSX href syntax)
+            content = content.replace(
+                /href="\/docs\/(?!packages\/)(.*?)"/g,
+                (match, restPath) => {
+                    if (restPath.startsWith(`${pkgName}/`) || restPath === pkgName) {
+                        return `href="/docs/packages/${restPath}"`;
+                    }
+                    return `href="/docs/packages/${pkgName}/${restPath}"`;
+                }
+            );
+
+            // Rewrite root-relative links (e.g. /usage/foo, /usage#anchor) that match existing package docs (markdown syntax)
             content = content.replace(
                 new RegExp(`(\\[.*?\\]\\()\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|api)\\/)[\\w-]+(?:[/#][^)]*)?)\\)`, "g"),
                 (match, prefix, linkPath) => {
@@ -366,6 +386,21 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     if (existsSync(resolved + ".mdx") || existsSync(resolved + ".md") ||
                         existsSync(path.join(resolved, "index.mdx")) || existsSync(path.join(resolved, "index.md"))) {
                         return `${prefix}/docs/packages/${pkgName}/${linkPath})`;
+                    }
+                    return match;
+                }
+            );
+
+            // Rewrite root-relative links (JSX href syntax)
+            content = content.replace(
+                new RegExp(`href="\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|api|docs)\\/|https?:)[\\w-]+(?:[/#][^"]*)?)"`, "g"),
+                (match, linkPath) => {
+                    const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
+                    const resolved = path.join(pkgRoot, cleanPath);
+
+                    if (existsSync(resolved + ".mdx") || existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) || existsSync(path.join(resolved, "index.md"))) {
+                        return `href="/docs/packages/${pkgName}/${linkPath}"`;
                     }
                     return match;
                 }

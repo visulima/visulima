@@ -3,27 +3,29 @@ title: "Installation & Quick Start"
 description: "Install and start using @visulima/redact"
 ---
 
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
 # Installation & Quick Start
 
 ## Installation
 
-<Tabs>
-  <Tab title="npm">
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">
     ```bash
     npm install @visulima/redact
     ```
   </Tab>
-  <Tab title="pnpm">
+  <Tab value="pnpm">
     ```bash
     pnpm add @visulima/redact
     ```
   </Tab>
-  <Tab title="yarn">
+  <Tab value="yarn">
     ```bash
     yarn add @visulima/redact
     ```
   </Tab>
-  <Tab title="bun">
+  <Tab value="bun">
     ```bash
     bun add @visulima/redact
     ```

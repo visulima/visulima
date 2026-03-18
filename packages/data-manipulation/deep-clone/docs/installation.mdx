@@ -3,27 +3,29 @@ title: "Installation"
 description: "How to install and import @visulima/deep-clone"
 ---
 
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
 # Installation
 
 Install the package using your preferred package manager:
 
-<Tabs>
-  <Tab title="npm">
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">
     ```bash
     npm install @visulima/deep-clone
     ```
   </Tab>
-  <Tab title="pnpm">
+  <Tab value="pnpm">
     ```bash
     pnpm add @visulima/deep-clone
     ```
   </Tab>
-  <Tab title="yarn">
+  <Tab value="yarn">
     ```bash
     yarn add @visulima/deep-clone
     ```
   </Tab>
-  <Tab title="bun">
+  <Tab value="bun">
     ```bash
     bun add @visulima/deep-clone
     ```

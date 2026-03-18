@@ -1,26 +1,36 @@
-import { Tab, Tabs, Steps } from "@visulima/nextra-theme-docs/components";
-import { PartyPopper } from "lucide-react";
+---
+title: Quick Start
+description: Get started with Cerebro and build your first CLI in under 2 minutes.
+---
 
-# Quick Start
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 
 Get started with Cerebro and build your first CLI in under 2 minutes.
 
 <Steps>
+
+<Step>
+
 ### Install Cerebro
 
 Install the package using your preferred package manager:
 
-<Tabs>
-    <Tab title="pnpm">```bash pnpm add @visulima/cerebro ```</Tab>
-    <Tab title="npm">```bash npm install @visulima/cerebro ```</Tab>
-    <Tab title="yarn">```bash yarn add @visulima/cerebro ```</Tab>
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add @visulima/cerebro ```</Tab>
+    <Tab value="npm">```bash npm install @visulima/cerebro ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/cerebro ```</Tab>
 </Tabs>
+
+</Step>
+
+<Step>
 
 ### Create Your CLI File
 
 Create a new file `cli.js` (or `cli.ts` for TypeScript):
 
-```typescript filename="cli.js"
+```typescript title="cli.js"
 import { Cerebro } from "@visulima/cerebro";
 
 const cli = new Cerebro("my-app", {
@@ -55,6 +65,10 @@ cli.addCommand({
 await cli.run();
 ```
 
+</Step>
+
+<Step>
+
 ### Make It Executable
 
 Add the shebang and make it executable:
@@ -68,6 +82,10 @@ Or if using TypeScript with tsx:
 ```bash
 chmod +x cli.ts
 ```
+
+</Step>
+
+<Step>
 
 ### Run Your CLI
 
@@ -91,11 +109,15 @@ node cli.js hello Alice -g "Hey"
 # Output: Hey, Alice!
 ```
 
+</Step>
+
+<Step>
+
 ### TypeScript Support
 
 For TypeScript, use the same code but with `.ts` extension:
 
-```typescript filename="cli.ts"
+```typescript title="cli.ts"
 import { Cerebro } from "@visulima/cerebro";
 
 // ... same code ...
@@ -111,15 +133,15 @@ tsx cli.ts hello Alice
 tsc cli.ts && node cli.js hello Alice
 ```
 
-<PartyPopper size={24} className="mt-0.5" />
+**Congratulations!** You've created your first CLI with Cerebro. Now explore the [Commands Guide](/docs/packages/cerebro/guides/commands) to learn more about advanced features.
 
-**Congratulations!** You've created your first CLI with Cerebro. Now explore the [Commands Guide](/docs/cerebro/guides/commands) to learn more about advanced features.
+</Step>
 
 </Steps>
 
 ## What's Next?
 
-- [Commands Guide](/docs/cerebro/guides/commands) - Learn about command configuration
-- [Options & Arguments](/docs/cerebro/guides/options) - Handle CLI options and arguments
-- [Plugins](/docs/cerebro/guides/plugins) - Extend functionality with plugins
-- [API Reference](/docs/cerebro/api/cli) - Complete API documentation
+- [Commands Guide](/docs/packages/cerebro/guides/commands) - Learn about command configuration
+- [Options & Arguments](/docs/packages/cerebro/guides/options) - Handle CLI options and arguments
+- [Plugins](/docs/packages/cerebro/guides/plugins) - Extend functionality with plugins
+- [API Reference](/docs/packages/cerebro/api/cli) - Complete API documentation

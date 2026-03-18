@@ -3,27 +3,29 @@ title: "Installation"
 description: "How to install and import @visulima/find-cache-dir"
 ---
 
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
 # Installation
 
 Install the package using your preferred package manager:
 
-<Tabs>
-  <Tab title="npm">
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab value="npm">
     ```bash
     npm install @visulima/find-cache-dir
     ```
   </Tab>
-  <Tab title="pnpm">
+  <Tab value="pnpm">
     ```bash
     pnpm add @visulima/find-cache-dir
     ```
   </Tab>
-  <Tab title="yarn">
+  <Tab value="yarn">
     ```bash
     yarn add @visulima/find-cache-dir
     ```
   </Tab>
-  <Tab title="bun">
+  <Tab value="bun">
     ```bash
     bun add @visulima/find-cache-dir
     ```
