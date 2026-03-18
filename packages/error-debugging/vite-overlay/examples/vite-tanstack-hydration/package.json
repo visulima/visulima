@@ -27,8 +27,7 @@
     "postcss": "catalog:dev",
     "tailwindcss": "catalog:style",
     "typescript": "catalog:tsc",
-    "vite": "catalog:build",
-    "vite-tsconfig-paths": "catalog:build"
+    "vite": "catalog:build"
   },
   "peerDependencies": {},
   "optionalDependencies": {}
