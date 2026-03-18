@@ -1,6 +1,10 @@
 [build]
   command = "pnpm run build:web"
+  publish = "apps/web/dist/client"
   ignore = "node apps/web/scripts/netlify-ignore-command.cjs"
+
+[functions]
+  directory = "apps/web/netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22"
