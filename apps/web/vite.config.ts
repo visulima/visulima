@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 
+import netlify from "@netlify/vite-plugin-tanstack-start";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
@@ -112,8 +113,9 @@ export default defineConfig(async ({ mode }) => {
                     enabled: true,
                 },
             }),
+            netlify(),
             react(),
-            babel({ presets: [reactCompilerPreset({ target: "19" })] }),
+            babel({ presets: [reactCompilerPreset()] }),
         ],
         server: {
             proxy: {
