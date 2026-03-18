@@ -1,5 +1,8 @@
 import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";
 
+import type { A11yInfo } from "./a11y-capture";
+import { captureA11yInfo, formatA11yText } from "./a11y-capture";
+
 // ─── Theme palette ─────────────────────────────────────────────────────────────
 // These elements live in document.body (outside the shadow DOM), so CSS variables
 // from the toolbar's :host are not available. We resolve the theme from the same
@@ -284,6 +287,64 @@ const createFloatingBadge = (onCancel: () => void): void => {
     document.body.append(badge);
 };
 
+/** Render accessibility info into the result popup. */
+const renderA11ySection = (info: A11yInfo, palette: InspectorPalette): HTMLElement => {
+    const section = document.createElement("div");
+
+    section.style.cssText = `margin-bottom:10px;padding:6px 8px;background:${palette.btnBg};border:1px solid ${palette.btnBorder};font-size:10px;line-height:1.6;`;
+
+    const title = document.createElement("div");
+
+    title.style.cssText = `color:${palette.primary};font-weight:bold;margin-bottom:2px;font-size:11px;`;
+    title.textContent = "Accessibility";
+    section.append(title);
+
+    const addRow = (label: string, value: string, highlight = false): void => {
+        const row = document.createElement("div");
+
+        row.style.cssText = "display:flex;gap:6px;align-items:baseline;";
+
+        const keySpan = document.createElement("span");
+
+        keySpan.style.cssText = `color:${palette.muted};min-width:70px;`;
+        keySpan.textContent = label;
+
+        const valueSpan = document.createElement("span");
+
+        valueSpan.style.cssText = `color:${highlight ? palette.primary : palette.fg};word-break:break-all;`;
+        valueSpan.textContent = value;
+
+        row.append(keySpan, valueSpan);
+        section.append(row);
+    };
+
+    if (info.role) {
+        addRow("role", info.role, true);
+    }
+
+    addRow("focusable", String(info.focusable));
+
+    if (info.tabindex !== null) {
+        addRow("tabindex", String(info.tabindex));
+    }
+
+    const ariaKeys = Object.keys(info.ariaAttributes);
+
+    for (const key of ariaKeys) {
+        addRow(key, info.ariaAttributes[key] as string);
+    }
+
+    if (!info.role && ariaKeys.length === 0 && info.tabindex === null) {
+        const none = document.createElement("div");
+
+        none.style.cssText = `color:${palette.muted};font-style:italic;`;
+        none.textContent = "No ARIA attributes";
+        section.append(none);
+    }
+
+    return section;
+};
+
 // ─── Result popup ─────────────────────────────────────────────────────────────
 
 let removePopupOutsideHandler: (() => void) | undefined;
@@ -403,6 +464,11 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
         popup.append(srcElement);
     }
 
+    // Accessibility info section
+    const a11yInfo = captureA11yInfo(element);
+
+    popup.append(renderA11ySection(a11yInfo, c));
+
     // Action buttons row
     const actions = document.createElement("div");
 
@@ -436,6 +502,15 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
             }),
         );
     }
+
+    actions.append(
+        makeActionButton("Copy A11y", () => {
+            navigator.clipboard.writeText(formatA11yText(a11yInfo)).catch(() => {
+                /* ignore */
+            });
+            removeResultPopup();
+        }),
+    );
 
     popup.append(actions);
 
