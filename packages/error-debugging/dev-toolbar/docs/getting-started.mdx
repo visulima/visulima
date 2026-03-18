@@ -204,11 +204,12 @@ devToolbar({
         import { devToolbar } from "@visulima/dev-toolbar/vite";
         import viteReact from "@vitejs/plugin-react";
         import { defineConfig } from "vite";
-        import tsConfigPaths from "vite-tsconfig-paths";
 
         export default defineConfig({
+            resolve: {
+                tsconfigPaths: true,
+            },
             plugins: [
-                tsConfigPaths({ projects: ["./tsconfig.json"] }),
                 tanstackStart(),
                 viteReact(),
                 // TanStack Start is auto-detected — no appendTo needed.
