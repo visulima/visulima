@@ -4,16 +4,17 @@ import { computePosition, flip, offset, shift } from "@floating-ui/dom";
 import { clsx } from "clsx";
 import type { ComponentChildren, JSX } from "preact";
 import { createContext } from "preact";
-import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 // ─── Context ────────────────────────────────────────────────────────────────────
 
 interface SelectContextValue {
-    highlightedIndex: number;
+    highlightedValue: string | null;
+    instanceId: string;
     onSelect: (value: string) => void;
     open: boolean;
     search: string;
-    setHighlightedIndex: (i: number) => void;
+    setHighlightedValue: (v: string | null) => void;
     setOpen: (v: boolean) => void;
     setSearch: (v: string) => void;
     triggerRef: { current: HTMLButtonElement | null };
@@ -71,13 +72,22 @@ interface SelectValueProps {
     placeholder?: string;
 }
 
+// ─── Unique ID counter ──────────────────────────────────────────────────────────
+
+let idCounter = 0;
+
 // ─── Root ───────────────────────────────────────────────────────────────────────
 
 const Select = ({ children, onValueChange, value = "" }: SelectProps): JSX.Element => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
-    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [highlightedValue, setHighlightedValue] = useState<string | null>(null);
     const triggerRef = useRef<HTMLButtonElement | null>(null);
+    const [instanceId] = useState(() => {
+        idCounter += 1;
+
+        return `select-${idCounter}`;
+    });
 
     const onSelect = useCallback(
         (v: string): void => {
@@ -92,12 +102,17 @@ const Select = ({ children, onValueChange, value = "" }: SelectProps): JSX.Eleme
     useEffect(() => {
         if (!open) {
             setSearch("");
-            setHighlightedIndex(-1);
+            setHighlightedValue(null);
         }
     }, [open]);
 
+    const contextValue = useMemo(
+        () => ({ highlightedValue, instanceId, onSelect, open, search, setHighlightedValue, setOpen, setSearch, triggerRef, value }),
+        [highlightedValue, instanceId, onSelect, open, search, value],
+    );
+
     return (
-        <SelectContext.Provider value={{ highlightedIndex, onSelect, open, search, setHighlightedIndex, setOpen, setSearch, triggerRef, value }}>
+        <SelectContext.Provider value={contextValue}>
             <span style={{ display: "contents" }}>{children}</span>
         </SelectContext.Provider>
     );
@@ -152,15 +167,25 @@ const SelectValue = ({ class: className, options, placeholder = "Select…" }: S
     return <span class={clsx("truncate", !selected && "text-muted-foreground", className)}>{selected ? selected.label : placeholder}</span>;
 };
 
+// ─── Helpers ────────────────────────────────────────────────────────────────────
+
+const getOptionElements = (list: HTMLElement): HTMLElement[] => [...list.querySelectorAll<HTMLElement>("[role='option']:not([aria-disabled='true'])")];
+
+const getOptionValue = (element: HTMLElement): string | null => element.getAttribute("data-value");
+
 // ─── Content (dropdown) ─────────────────────────────────────────────────────────
 
 const SelectContent = ({ align = "start", children, class: className, searchable = false, side = "bottom", sideOffset = 4 }: SelectContentProps): JSX.Element | undefined => {
-    const { highlightedIndex, open, search, setHighlightedIndex, setOpen, setSearch, triggerRef } = useSelectContext();
+    const { highlightedValue, instanceId, open, search, setHighlightedValue, setOpen, setSearch, triggerRef } = useSelectContext();
     const contentRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [ready, setReady] = useState(false);
+
+    // Keep a ref to the latest highlightedValue to avoid stale closures in keydown
+    const highlightedRef = useRef(highlightedValue);
+    highlightedRef.current = highlightedValue;
 
     // Position the dropdown using floating-ui
     useEffect(() => {
@@ -232,42 +257,60 @@ const SelectContent = ({ align = "start", children, class: className, searchable
                 return;
             }
 
-            const items = list.querySelectorAll("[role='option']:not([aria-disabled='true'])");
+            const items = getOptionElements(list);
             const count = items.length;
 
             if (count === 0) {
+                if (event_.key === "Escape") {
+                    event_.preventDefault();
+                    setOpen(false);
+                    triggerRef.current?.focus();
+                }
+
                 return;
             }
+
+            const currentHighlighted = highlightedRef.current;
+            const currentIndex = currentHighlighted === null ? -1 : items.findIndex((element) => getOptionValue(element) === currentHighlighted);
+
+            const highlightByIndex = (index: number): void => {
+                const element = items[index];
+
+                if (element) {
+                    const v = getOptionValue(element);
+
+                    if (v !== null) {
+                        setHighlightedValue(v);
+                    }
+
+                    element.scrollIntoView?.({ block: "nearest" });
+                }
+            };
 
             switch (event_.key) {
                 case "ArrowDown": {
                     event_.preventDefault();
-                    const next = highlightedIndex < count - 1 ? highlightedIndex + 1 : 0;
-
-                    setHighlightedIndex(next);
-                    (items[next] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest" });
+                    highlightByIndex(currentIndex < count - 1 ? currentIndex + 1 : 0);
                     break;
                 }
 
                 case "ArrowUp": {
                     event_.preventDefault();
-                    const previous = highlightedIndex > 0 ? highlightedIndex - 1 : count - 1;
-
-                    setHighlightedIndex(previous);
-                    (items[previous] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest" });
+                    highlightByIndex(currentIndex > 0 ? currentIndex - 1 : count - 1);
                     break;
                 }
 
                 case "Enter": {
                     event_.preventDefault();
 
-                    if (highlightedIndex >= 0 && highlightedIndex < count) {
-                        (items[highlightedIndex] as HTMLElement | undefined)?.click();
+                    if (currentIndex >= 0) {
+                        items[currentIndex]?.click();
                     }
 
                     break;
                 }
 
+                case "Tab":
                 case "Escape": {
                     event_.preventDefault();
                     setOpen(false);
@@ -277,15 +320,13 @@ const SelectContent = ({ align = "start", children, class: className, searchable
 
                 case "Home": {
                     event_.preventDefault();
-                    setHighlightedIndex(0);
-                    (items[0] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest" });
+                    highlightByIndex(0);
                     break;
                 }
 
                 case "End": {
                     event_.preventDefault();
-                    setHighlightedIndex(count - 1);
-                    (items[count - 1] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest" });
+                    highlightByIndex(count - 1);
                     break;
                 }
                 // No default
@@ -297,11 +338,14 @@ const SelectContent = ({ align = "start", children, class: className, searchable
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
-    }, [open, highlightedIndex, setHighlightedIndex, setOpen, triggerRef]);
+        // Using ref for highlightedValue, so we only depend on open
+    }, [open, setHighlightedValue, setOpen, triggerRef]);
 
     if (!open) {
         return undefined;
     }
+
+    const activeDescendantId = highlightedValue !== null ? `${instanceId}-option-${highlightedValue}` : undefined;
 
     return (
         <div
@@ -329,7 +373,7 @@ const SelectContent = ({ align = "start", children, class: className, searchable
                         )}
                         onInput={(event_) => {
                             setSearch((event_.currentTarget as HTMLInputElement).value);
-                            setHighlightedIndex(0);
+                            setHighlightedValue(null);
                         }}
                         placeholder="Search…"
                         ref={searchInputRef}
@@ -338,7 +382,12 @@ const SelectContent = ({ align = "start", children, class: className, searchable
                     />
                 </div>
             )}
-            <div class="max-h-[min(300px,var(--available-height,300px))] overflow-y-auto scrollbar-thin-border p-1" ref={listRef} role="listbox">
+            <div
+                aria-activedescendant={activeDescendantId}
+                class="max-h-[min(300px,var(--available-height,300px))] overflow-y-auto scrollbar-thin-border p-1"
+                ref={listRef}
+                role="listbox"
+            >
                 {children}
             </div>
         </div>
@@ -348,36 +397,10 @@ const SelectContent = ({ align = "start", children, class: className, searchable
 // ─── Item ───────────────────────────────────────────────────────────────────────
 
 const SelectItem = ({ children, class: className, value: itemValue }: SelectItemProps): JSX.Element => {
-    const { highlightedIndex, onSelect, setHighlightedIndex, value } = useSelectContext();
+    const { highlightedValue, instanceId, onSelect, setHighlightedValue, value } = useSelectContext();
     const isSelected = value === itemValue;
-    const itemRef = useRef<HTMLDivElement>(null);
-
-    // Determine this item's index among visible siblings
-    const getIndex = useCallback((): number => {
-        if (!itemRef.current) {
-            return -1;
-        }
-
-        const list = itemRef.current.closest("[role='listbox']");
-
-        if (!list) {
-            return -1;
-        }
-
-        const items = list.querySelectorAll("[role='option']:not([aria-disabled='true'])");
-        let index = -1;
-
-        items.forEach((element, index_) => {
-            if (element === itemRef.current) {
-                index = index_;
-            }
-        });
-
-        return index;
-    }, []);
-
-    const index = getIndex();
-    const isHighlighted = index >= 0 && index === highlightedIndex;
+    const isHighlighted = highlightedValue === itemValue;
+    const itemId = `${instanceId}-option-${itemValue}`;
 
     return (
         <div
@@ -392,15 +415,10 @@ const SelectItem = ({ children, class: className, value: itemValue }: SelectItem
                 !isHighlighted && "hover:bg-accent/50",
                 className,
             )}
+            data-value={itemValue}
+            id={itemId}
             onClick={() => onSelect(itemValue)}
-            onMouseEnter={() => {
-                const i = getIndex();
-
-                if (i >= 0) {
-                    setHighlightedIndex(i);
-                }
-            }}
-            ref={itemRef}
+            onMouseEnter={() => setHighlightedValue(itemValue)}
             role="option"
         >
             <span class="flex-1 truncate">{children}</span>
