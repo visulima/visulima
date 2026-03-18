@@ -148,7 +148,6 @@
         "vitest": "catalog:test",
         "webpack": "catalog:build"
     },
-    "peerDependencies": {},
     "optionalDependencies": {
         "cli-progress": "catalog:optional",
         "commander": "catalog:optional",
