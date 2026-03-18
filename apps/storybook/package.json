@@ -65,7 +65,6 @@
         "tailwindcss": "catalog:style",
         "tailwindcss-animate": "catalog:style",
         "typescript": "catalog:tsc",
-        "vite": "catalog:build",
-        "vite-tsconfig-paths": "catalog:build"
+        "vite": "catalog:build"
     }
 }
