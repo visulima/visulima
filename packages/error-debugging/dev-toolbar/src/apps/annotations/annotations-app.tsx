@@ -6,8 +6,9 @@ import { useCallback, useEffect, useState } from "preact/hooks";
 
 import type { Annotation, AnnotationIntent, AnnotationSeverity, AnnotationStatus } from "../../types/annotations";
 import type { AppComponentProps } from "../../types/app";
-import { type AnnotationSettings, MARKER_COLORS, loadSettings, saveSettings } from "../inspector/annotation-settings";
 import { Button, Textarea } from "../../ui";
+import type { AnnotationSettings } from "../inspector/annotation-settings";
+import { loadSettings, MARKER_COLORS, saveSettings } from "../inspector/annotation-settings";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -60,9 +61,7 @@ const StatusFilters = ({
             <button
                 class={clsx(
                     "px-2.5 py-1 text-[0.65rem] font-medium border cursor-pointer transition-colors",
-                    active === s
-                        ? "bg-primary/10 border-primary/30 text-primary"
-                        : "bg-foreground/3 border-border text-muted-foreground hover:bg-foreground/6",
+                    active === s ? "bg-primary/10 border-primary/30 text-primary" : "bg-foreground/3 border-border text-muted-foreground hover:bg-foreground/6",
                 )}
                 key={s}
                 onClick={() => onFilter(s)}
@@ -78,9 +77,9 @@ const AnnotationCard = ({
     annotation,
     isSelected,
     onClick,
-    onResolve,
-    onDismiss,
     onDelete,
+    onDismiss,
+    onResolve,
 }: {
     annotation: Annotation;
     isSelected: boolean;
@@ -90,10 +89,7 @@ const AnnotationCard = ({
     onResolve: () => void;
 }): ComponentChildren => (
     <div
-        class={clsx(
-            "p-3 border cursor-pointer transition-colors",
-            isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3",
-        )}
+        class={clsx("p-3 border cursor-pointer transition-colors", isSelected ? "bg-foreground/6 border-primary/30" : "border-border hover:bg-foreground/3")}
         onClick={onClick}
     >
         {/* Header */}
@@ -116,7 +112,7 @@ const AnnotationCard = ({
         <div class="flex items-center gap-2 mb-1.5">
             <code class="text-[0.62rem] text-foreground/60 font-mono bg-foreground/5 px-1.5 py-0.5 truncate">
                 {annotation.elementTag}
-                {annotation.elementPath ? ` \u00b7 ${annotation.elementPath}` : ""}
+                {annotation.elementPath ? ` \u00B7 ${annotation.elementPath}` : ""}
             </code>
         </div>
 
@@ -173,7 +169,7 @@ const AnnotationDetail = ({
             return;
         }
 
-        await helpers.rpc.updateAnnotation(annotation.id, {
+        await helpers.rpc.updateAnnotation?.(annotation.id, {
             threadMessage: { content: text, role: "human", timestamp: new Date().toISOString() },
         });
         setMessage("");
@@ -234,13 +230,13 @@ const AnnotationDetail = ({
 
                 {annotation.thread && annotation.thread.length > 0 && (
                     <div class="space-y-2 mb-3">
-                        {annotation.thread.map((msg, i) => (
+                        {annotation.thread.map((message_, i) => (
                             <div class="border border-border p-2" key={i}>
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-[0.62rem] font-semibold text-primary/70">{msg.role}</span>
-                                    <span class="text-[0.55rem] text-muted-foreground/50">{new Date(msg.timestamp).toLocaleString()}</span>
+                                    <span class="text-[0.62rem] font-semibold text-primary/70">{message_.role}</span>
+                                    <span class="text-[0.55rem] text-muted-foreground/50">{new Date(message_.timestamp).toLocaleString()}</span>
                                 </div>
-                                <p class="text-[0.68rem] text-foreground/80 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                <p class="text-[0.68rem] text-foreground/80 leading-relaxed whitespace-pre-wrap">{message_.content}</p>
                             </div>
                         ))}
                     </div>
@@ -266,13 +262,7 @@ const AnnotationDetail = ({
 
 // ─── Settings Panel ──────────────────────────────────────────────────────────
 
-const AnnotationSettingsPanel = ({
-    onChange,
-    settings,
-}: {
-    onChange: (s: AnnotationSettings) => void;
-    settings: AnnotationSettings;
-}): ComponentChildren => {
+const AnnotationSettingsPanel = ({ onChange, settings }: { onChange: (s: AnnotationSettings) => void; settings: AnnotationSettings }): ComponentChildren => {
     const update = (partial: Partial<AnnotationSettings>): void => {
         const next = { ...settings, ...partial };
 
@@ -283,7 +273,9 @@ const AnnotationSettingsPanel = ({
     return (
         <div class="space-y-3 p-4 border-t border-border">
             <div class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                <span aria-hidden="true" class="text-primary/50">{"// "}</span>
+                <span aria-hidden="true" class="text-primary/50">
+                    {"// "}
+                </span>
                 Settings
             </div>
 
@@ -369,11 +361,11 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         setError(undefined);
 
         try {
-            const data = await helpers.rpc.getAnnotations();
+            const data = await helpers.rpc.getAnnotations?.();
 
             setAnnotations(data as Annotation[]);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : String(err));
+        } catch (error_) {
+            setError(error_ instanceof Error ? error_.message : String(error_));
         } finally {
             setLoading(false);
         }
@@ -409,11 +401,9 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const handleAction = useCallback(
         async (id: string, action: "resolve" | "dismiss" | "delete") => {
             try {
-                if (action === "delete") {
-                    await helpers.rpc.deleteAnnotation(id);
-                } else {
-                    await helpers.rpc.updateAnnotation(id, { status: action === "resolve" ? "resolved" : "dismissed" });
-                }
+                await (action === "delete"
+                    ? helpers.rpc.deleteAnnotation?.(id)
+                    : helpers.rpc.updateAnnotation?.(id, { status: action === "resolve" ? "resolved" : "dismissed" }));
 
                 await load();
             } catch {
@@ -425,14 +415,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
     // ── Detail view ──
     if (selected) {
-        return (
-            <AnnotationDetail
-                annotation={selected}
-                helpers={helpers}
-                onBack={() => setSelectedId(undefined)}
-                onRefresh={() => load().catch(() => {})}
-            />
-        );
+        return <AnnotationDetail annotation={selected} helpers={helpers} onBack={() => setSelectedId(undefined)} onRefresh={() => load().catch(() => {})} />;
     }
 
     // ── List view ──
@@ -480,7 +463,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             </p>
                             <p class="mt-1 text-[0.7rem] text-muted-foreground">
                                 {annotations.length === 0
-                                    ? "Use the Inspector to click an element and select \"Annotate\"."
+                                    ? 'Use the Inspector to click an element and select "Annotate".'
                                     : "Try changing the status or intent filter."}
                             </p>
                         </div>
@@ -503,9 +486,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             </div>
 
             {/* Settings panel (collapsible) */}
-            {showSettings && (
-                <AnnotationSettingsPanel onChange={setSettings} settings={settings} />
-            )}
+            {showSettings && <AnnotationSettingsPanel onChange={setSettings} settings={settings} />}
         </div>
     );
 };

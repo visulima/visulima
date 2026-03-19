@@ -42,15 +42,15 @@ Add comment: "fix alignment"   →    Reads: element, source, styles
 
 When the Inspector is active, a floating toolbar appears at the bottom of the viewport with these controls:
 
-| Button | Shortcut | Description |
-| --- | --- | --- |
-| **Inspect** | — | Inspect mode — click to view source, a11y info, open in editor |
-| **Annotate** | — | Annotate mode — click to create an annotation at the click point |
-| **Freeze** | `P` | Pause/resume all animations, timers, and videos |
-| **Visibility** | `H` | Toggle annotation markers visible/hidden |
-| **Copy** | `C` | Copy all annotations as markdown to clipboard |
-| **Clear** | `X` | Delete all annotations (with confirmation) |
-| **Close** | `Esc` | Close the inspector |
+| Button         | Shortcut | Description                                                      |
+| -------------- | -------- | ---------------------------------------------------------------- |
+| **Inspect**    | —        | Inspect mode — click to view source, a11y info, open in editor   |
+| **Annotate**   | —        | Annotate mode — click to create an annotation at the click point |
+| **Freeze**     | `P`      | Pause/resume all animations, timers, and videos                  |
+| **Visibility** | `H`      | Toggle annotation markers visible/hidden                         |
+| **Copy**       | `C`      | Copy all annotations as markdown to clipboard                    |
+| **Clear**      | `X`      | Delete all annotations (with confirmation)                       |
+| **Close**      | `Esc`    | Close the inspector                                              |
 
 The toolbar is draggable — grab anywhere that isn't a button to reposition it.
 
@@ -60,12 +60,12 @@ The toolbar is draggable — grab anywhere that isn't a button to reposition it.
 2. Switch to **Annotate mode** (the message bubble icon in the floating toolbar)
 3. Hover over an element — the inspector overlay highlights it with a label
 4. Click the element — a **pending marker** appears at the click point and the annotation form opens nearby with:
-   - Element preview with source file and framework component info
-   - **Computed styles** (collapsible section)
-   - **Intent** selector (fix / change / approve / question)
-   - **Severity** selector (blocking / important / suggestion)
-   - **Screenshot capture** button
-   - **Comment** text field
+    - Element preview with source file and framework component info
+    - **Computed styles** (collapsible section)
+    - **Intent** selector (fix / change / approve / question)
+    - **Severity** selector (blocking / important / suggestion)
+    - **Screenshot capture** button
+    - **Comment** text field
 5. Submit — the annotation is saved to disk and a permanent numbered marker replaces the pending marker
 
 The overlay highlight **stays frozen** on the selected element while the form is open — hovering other elements won't change it.
@@ -103,19 +103,19 @@ Open the **Annotations** panel from the toolbar to see all annotations for the c
 
 Click any annotation marker or card to open the detail popup:
 
-| Field | Description |
-| --- | --- |
-| **Comment** | Your annotation text |
-| **Intent** | fix / change / approve / question |
-| **Severity** | blocking / important / suggestion |
-| **Status** | pending / acknowledged / resolved / dismissed |
-| **Element** | Tag name, classes, and human-readable label |
-| **Source** | `file:line:col` from JSX source injection |
-| **Screenshot** | Visual capture of the annotated element |
-| **Component** | React/Vue/Svelte component name and stack |
-| **Accessibility** | ARIA role, label, describedby, tabindex |
-| **Styles** | Key computed CSS properties |
-| **DOM Path** | Full ancestry path with shadow DOM markers |
+| Field             | Description                                   |
+| ----------------- | --------------------------------------------- |
+| **Comment**       | Your annotation text                          |
+| **Intent**        | fix / change / approve / question             |
+| **Severity**      | blocking / important / suggestion             |
+| **Status**        | pending / acknowledged / resolved / dismissed |
+| **Element**       | Tag name, classes, and human-readable label   |
+| **Source**        | `file:line:col` from JSX source injection     |
+| **Screenshot**    | Visual capture of the annotated element       |
+| **Component**     | React/Vue/Svelte component name and stack     |
+| **Accessibility** | ARIA role, label, describedby, tabindex       |
+| **Styles**        | Key computed CSS properties                   |
+| **DOM Path**      | Full ancestry path with shadow DOM markers    |
 
 ## Markdown Export
 
@@ -132,12 +132,12 @@ Configure the default detail level in the Annotations panel settings.
 
 Open the **Annotations** panel and click the **Settings** button in the toolbar bar to access annotation settings:
 
-| Setting | Options | Default |
-| --- | --- | --- |
-| **Output detail** | `compact`, `standard`, `detailed`, `forensic` | `standard` |
-| **Marker colour** | Indigo, Blue, Cyan, Green, Yellow, Orange, Red (solid filled) | Indigo |
-| **Marker click** | What happens when clicking a marker: Show Detail, Edit, or Delete | Show Detail |
-| **Block interactions** | Prevent clicks on buttons, links, inputs from firing while inspecting | `true` |
+| Setting                | Options                                                               | Default     |
+| ---------------------- | --------------------------------------------------------------------- | ----------- |
+| **Output detail**      | `compact`, `standard`, `detailed`, `forensic`                         | `standard`  |
+| **Marker colour**      | Indigo, Blue, Cyan, Green, Yellow, Orange, Red (solid filled)         | Indigo      |
+| **Marker click**       | What happens when clicking a marker: Show Detail, Edit, or Delete     | Show Detail |
+| **Block interactions** | Prevent clicks on buttons, links, inputs from firing while inspecting | `true`      |
 
 Settings are saved to `localStorage` under `__vdt_annotation_settings`.
 
@@ -146,6 +146,7 @@ Settings are saved to `localStorage` under `__vdt_annotation_settings`.
 When the Vite dev server is running, annotations sync in real-time between the browser and MCP agents via Server-Sent Events. The dev server watches `.devtoolbar/annotations.json` for changes and pushes `annotations.changed` events to connected browsers.
 
 This means:
+
 - When an agent resolves or acknowledges an annotation via MCP, the browser **automatically updates** markers and removes resolved annotations — no manual refresh needed.
 - When you create an annotation in the browser, the MCP agent can detect it immediately via `watch_annotations`.
 
@@ -166,11 +167,11 @@ The toolbar itself is never frozen — elements with the `__vdt_` prefix are exc
 
 The annotation system automatically detects framework components:
 
-| Framework | Detection Method | Captured Data |
-| --- | --- | --- |
-| **React** | Fiber tree (`__reactFiber$`) | Component name, component stack |
-| **Vue** | `__vue_app__` / `__vueParentComponent` | Component name |
-| **Svelte** | `__svelte_meta` | Component name |
+| Framework  | Detection Method                       | Captured Data                   |
+| ---------- | -------------------------------------- | ------------------------------- |
+| **React**  | Fiber tree (`__reactFiber$`)           | Component name, component stack |
+| **Vue**    | `__vue_app__` / `__vueParentComponent` | Component name                  |
+| **Svelte** | `__svelte_meta`                        | Component name                  |
 
 ## Storage
 
@@ -200,13 +201,13 @@ Both the Inspector and Annotations apps must be enabled:
 ```ts title="vite.config.ts"
 devToolbar({
     apps: {
-        inspector: true,    // Required — provides the annotation overlay
-        annotations: true,  // Shows the annotation management panel
+        inspector: true, // Required — provides the annotation overlay
+        annotations: true, // Shows the annotation management panel
     },
     injectSource: {
-        enabled: true,      // Recommended — enables source file linking
+        enabled: true, // Recommended — enables source file linking
     },
-    editor: "code",         // Optional — editor for "open in source"
+    editor: "code", // Optional — editor for "open in source"
 });
 ```
 
@@ -222,81 +223,81 @@ Every annotation is stored as a JSON object in `.devtoolbar/annotations.json`. T
 
 These fields are always present on every annotation.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | `string` | Unique identifier (UUID v4) |
-| `comment` | `string` | Human feedback text |
-| `intent` | `"fix" \| "change" \| "question" \| "approve"` | What the developer wants — fix a bug, request a change, ask a question, or approve |
-| `severity` | `"blocking" \| "important" \| "suggestion"` | Priority level — blocking issues are addressed first |
-| `status` | `"pending" \| "acknowledged" \| "resolved" \| "dismissed"` | Lifecycle state |
-| `elementTag` | `string` | HTML tag name (e.g. `button`, `div`, `img`) |
-| `url` | `string` | Page URL where the annotation was created |
-| `x` | `number` | Click position as percentage of viewport width (0-100) |
-| `y` | `number` | Click position as pixels from document top (or viewport top if `isFixed`) |
-| `createdAt` | `string` | ISO 8601 creation timestamp |
-| `updatedAt` | `string` | ISO 8601 last-updated timestamp |
+| Field        | Type                                                       | Description                                                                        |
+| ------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `id`         | `string`                                                   | Unique identifier (UUID v4)                                                        |
+| `comment`    | `string`                                                   | Human feedback text                                                                |
+| `intent`     | `"fix" \| "change" \| "question" \| "approve"`             | What the developer wants — fix a bug, request a change, ask a question, or approve |
+| `severity`   | `"blocking" \| "important" \| "suggestion"`                | Priority level — blocking issues are addressed first                               |
+| `status`     | `"pending" \| "acknowledged" \| "resolved" \| "dismissed"` | Lifecycle state                                                                    |
+| `elementTag` | `string`                                                   | HTML tag name (e.g. `button`, `div`, `img`)                                        |
+| `url`        | `string`                                                   | Page URL where the annotation was created                                          |
+| `x`          | `number`                                                   | Click position as percentage of viewport width (0-100)                             |
+| `y`          | `number`                                                   | Click position as pixels from document top (or viewport top if `isFixed`)          |
+| `createdAt`  | `string`                                                   | ISO 8601 creation timestamp                                                        |
+| `updatedAt`  | `string`                                                   | ISO 8601 last-updated timestamp                                                    |
 
 ### Element Context
 
 These optional fields provide rich context about the annotated element for AI agents and code search.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `elementLabel` | `string` | Human-readable label (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`) |
-| `elementPath` | `string` | Unique CSS selector for the element |
-| `cssClasses` | `string` | Space-separated class list (CSS module hashes cleaned) |
-| `fullPath` | `string` | Full DOM ancestry path (e.g. `body > main > article > p`) with shadow DOM markers (`⟨shadow⟩`) |
-| `nearbyText` | `string` | Visible text in/around the element (up to 120 chars) |
-| `nearbyElements` | `string` | Sibling elements for spatial context |
-| `selectedText` | `string` | Text the user had selected when annotating (up to 80 chars) |
-| `computedStyles` | `string` | Key CSS properties: display, position, color, font-size, padding, etc. |
-| `source` | `string` | Source file location from `data-vdt-source` (e.g. `src/App.tsx:42:10`) |
-| `boundingBox` | `BoundingBox` | Element position and dimensions at annotation time |
+| Field            | Type          | Description                                                                                    |
+| ---------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| `elementLabel`   | `string`      | Human-readable label (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`)              |
+| `elementPath`    | `string`      | Unique CSS selector for the element                                                            |
+| `cssClasses`     | `string`      | Space-separated class list (CSS module hashes cleaned)                                         |
+| `fullPath`       | `string`      | Full DOM ancestry path (e.g. `body > main > article > p`) with shadow DOM markers (`⟨shadow⟩`) |
+| `nearbyText`     | `string`      | Visible text in/around the element (up to 120 chars)                                           |
+| `nearbyElements` | `string`      | Sibling elements for spatial context                                                           |
+| `selectedText`   | `string`      | Text the user had selected when annotating (up to 80 chars)                                    |
+| `computedStyles` | `string`      | Key CSS properties: display, position, color, font-size, padding, etc.                         |
+| `source`         | `string`      | Source file location from `data-vdt-source` (e.g. `src/App.tsx:42:10`)                         |
+| `boundingBox`    | `BoundingBox` | Element position and dimensions at annotation time                                             |
 
 ### Framework Component Context
 
 The `frameworkContext` field captures component information from React, Vue, or Svelte — not limited to any single framework.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `frameworkContext.framework` | `string` | Framework identifier: `"react"`, `"vue"`, or `"svelte"` |
-| `frameworkContext.componentName` | `string` | Nearest user-land component name |
+| Field                             | Type       | Description                                                            |
+| --------------------------------- | ---------- | ---------------------------------------------------------------------- |
+| `frameworkContext.framework`      | `string`   | Framework identifier: `"react"`, `"vue"`, or `"svelte"`                |
+| `frameworkContext.componentName`  | `string`   | Nearest user-land component name                                       |
 | `frameworkContext.componentStack` | `string[]` | Full component ancestry (e.g. `["App", "Layout", "Header", "Button"]`) |
-| `frameworkContext.sourceFile` | `string` | Component source file path |
-| `frameworkContext.sourceLine` | `number` | Source line number |
+| `frameworkContext.sourceFile`     | `string`   | Component source file path                                             |
+| `frameworkContext.sourceLine`     | `number`   | Source line number                                                     |
 
 ### Accessibility
 
 The `accessibility` field captures ARIA attributes as a structured object.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `accessibility.role` | `string` | ARIA role (explicit only — implicit roles are omitted) |
-| `accessibility.ariaLabel` | `string` | `aria-label` value |
-| `accessibility.ariaDescribedBy` | `string` | Resolved text from `aria-describedby` target |
-| `accessibility.focusable` | `boolean` | Whether the element is keyboard-focusable |
-| `accessibility.tabindex` | `number` | `tabindex` value |
+| Field                           | Type      | Description                                            |
+| ------------------------------- | --------- | ------------------------------------------------------ |
+| `accessibility.role`            | `string`  | ARIA role (explicit only — implicit roles are omitted) |
+| `accessibility.ariaLabel`       | `string`  | `aria-label` value                                     |
+| `accessibility.ariaDescribedBy` | `string`  | Resolved text from `aria-describedby` target           |
+| `accessibility.focusable`       | `boolean` | Whether the element is keyboard-focusable              |
+| `accessibility.tabindex`        | `number`  | `tabindex` value                                       |
 
 ### Multi-select & Position
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `isMultiSelect` | `boolean` | True if created via drag selection or Cmd+Shift+Click |
-| `isFixed` | `boolean` | True if the element has fixed/sticky positioning (Y is viewport-relative) |
-| `elementBoundingBoxes` | `BoundingBox[]` | Individual bounding boxes for each element in a multi-select annotation |
+| Field                  | Type            | Description                                                               |
+| ---------------------- | --------------- | ------------------------------------------------------------------------- |
+| `isMultiSelect`        | `boolean`       | True if created via drag selection or Cmd+Shift+Click                     |
+| `isFixed`              | `boolean`       | True if the element has fixed/sticky positioning (Y is viewport-relative) |
+| `elementBoundingBoxes` | `BoundingBox[]` | Individual bounding boxes for each element in a multi-select annotation   |
 
 ### Resolution & Threading
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `resolvedAt` | `string` | ISO 8601 timestamp when resolved or dismissed |
-| `resolvedBy` | `string` | Who resolved it: `"human"` or `"agent"` |
-| `screenshot` | `string` | Relative path to screenshot file (e.g. `screenshots/uuid.png`) |
-| `thread` | `ThreadMessage[]` | Conversation thread between human and AI agent |
-| `thread[].id` | `string` | Unique message ID (server-generated) |
-| `thread[].role` | `string` | Message author: `"human"` or `"agent"` |
-| `thread[].content` | `string` | Message text |
-| `thread[].timestamp` | `string` | ISO 8601 timestamp (server-generated) |
+| Field                | Type              | Description                                                    |
+| -------------------- | ----------------- | -------------------------------------------------------------- |
+| `resolvedAt`         | `string`          | ISO 8601 timestamp when resolved or dismissed                  |
+| `resolvedBy`         | `string`          | Who resolved it: `"human"` or `"agent"`                        |
+| `screenshot`         | `string`          | Relative path to screenshot file (e.g. `screenshots/uuid.png`) |
+| `thread`             | `ThreadMessage[]` | Conversation thread between human and AI agent                 |
+| `thread[].id`        | `string`          | Unique message ID (server-generated)                           |
+| `thread[].role`      | `string`          | Message author: `"human"` or `"agent"`                         |
+| `thread[].content`   | `string`          | Message text                                                   |
+| `thread[].timestamp` | `string`          | ISO 8601 timestamp (server-generated)                          |
 
 ### TypeScript Types
 

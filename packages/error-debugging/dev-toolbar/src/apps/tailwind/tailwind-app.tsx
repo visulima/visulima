@@ -1037,11 +1037,9 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                 )}
             </div>
 
-            {total === 0 && tab !== "config"
-                ? (
+            {total === 0 && tab !== "config" ? (
                 <EmptyState />
-                )
-                : (
+            ) : (
                 <>
                     {/* Tab bar */}
                     <div class="flex border-b border-border shrink-0 overflow-x-auto">
@@ -1076,7 +1074,7 @@ const TailwindApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         {tab === "config" && <ConfigTab configData={configData} error={configError} loading={configLoading} onRetry={loadConfig} />}
                     </div>
                 </>
-                )}
+            )}
         </div>
     );
 };

@@ -19,6 +19,7 @@ The Inspector app lets you interact with any element on the rendered page. Click
 ### Inspect Mode (default)
 
 Click an element — a popup appears with:
+
 - **Open in editor** — jumps to the JSX source in your configured editor
 - **Copy HTML** — copies the element's outer HTML to the clipboard
 - **Copy path** — copies the `file:line:col` source path
@@ -30,15 +31,15 @@ Click an element — the annotation form opens directly at the click point. See 
 
 ### Keyboard Shortcuts
 
-| Key | Action |
-| --- | --- |
-| `P` | Toggle animation freeze |
-| `H` | Toggle marker visibility |
-| `C` | Copy annotations as markdown |
-| `X` | Clear all annotations |
-| `Esc` | Close inspector (or clear multi-select first) |
-| `Cmd`/`Ctrl` + hover | Deep select (pierce overlays) |
-| `Cmd`/`Ctrl` + `Shift` + click | Multi-select toggle |
+| Key                            | Action                                        |
+| ------------------------------ | --------------------------------------------- |
+| `P`                            | Toggle animation freeze                       |
+| `H`                            | Toggle marker visibility                      |
+| `C`                            | Copy annotations as markdown                  |
+| `X`                            | Clear all annotations                         |
+| `Esc`                          | Close inspector (or clear multi-select first) |
+| `Cmd`/`Ctrl` + hover           | Deep select (pierce overlays)                 |
+| `Cmd`/`Ctrl` + `Shift` + click | Multi-select toggle                           |
 
 Shortcuts are disabled when focused on an input, textarea, or select.
 
@@ -48,16 +49,16 @@ Press **Escape** or click the Inspector button again to deactivate.
 
 The Inspector captures detailed information about each hovered element:
 
-| Data | Source |
-| --- | --- |
-| **Element label** | Human-readable name (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`) |
-| **Source location** | `file:line:col` from `data-vdt-source` attributes |
-| **CSS classes** | Class list with CSS module hashes cleaned (e.g. `class_abc123` → `class`) |
-| **CSS selector** | Unique selector generated for the element (ID → unique class → nth-of-type) |
-| **Computed styles** | Key CSS properties: display, position, colors, fonts, spacing |
-| **Accessibility** | ARIA role, label, describedby, tabindex, focusable state |
-| **Component** | React/Vue/Svelte component name and stack (see [Framework Detection](#framework-detection)) |
-| **DOM path** | Full ancestry including shadow DOM boundaries (e.g. `body > main > button ⟨shadow⟩`) |
+| Data                | Source                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| **Element label**   | Human-readable name (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`)            |
+| **Source location** | `file:line:col` from `data-vdt-source` attributes                                           |
+| **CSS classes**     | Class list with CSS module hashes cleaned (e.g. `class_abc123` → `class`)                   |
+| **CSS selector**    | Unique selector generated for the element (ID → unique class → nth-of-type)                 |
+| **Computed styles** | Key CSS properties: display, position, colors, fonts, spacing                               |
+| **Accessibility**   | ARIA role, label, describedby, tabindex, focusable state                                    |
+| **Component**       | React/Vue/Svelte component name and stack (see [Framework Detection](#framework-detection)) |
+| **DOM path**        | Full ancestry including shadow DOM boundaries (e.g. `body > main > button ⟨shadow⟩`)        |
 
 ### Shadow DOM Piercing
 
@@ -125,11 +126,11 @@ The toolbar itself is never frozen — elements with the `__vdt_` prefix are exc
 
 The Inspector automatically detects framework components when hovering elements:
 
-| Framework | Detection Method | What's Captured |
-| --- | --- | --- |
-| **React** | Fiber tree (`__reactFiber$`) | Component name, component stack |
-| **Vue** | `__vue_app__` / `__vueParentComponent` | Component name |
-| **Svelte** | `__svelte_meta` | Component name |
+| Framework  | Detection Method                       | What's Captured                 |
+| ---------- | -------------------------------------- | ------------------------------- |
+| **React**  | Fiber tree (`__reactFiber$`)           | Component name, component stack |
+| **Vue**    | `__vue_app__` / `__vueParentComponent` | Component name                  |
+| **Svelte** | `__svelte_meta`                        | Component name                  |
 
 Component names are most accurate in development mode. Minified production builds strip component names.
 

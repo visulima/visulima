@@ -7,12 +7,9 @@
  * to match the inspector's rendering approach.
  */
 
-import type {
-    Annotation,
-    AnnotationIntent,
-    AnnotationSeverity,
-    CreateAnnotationData,
-} from "../../types/annotations";
+import type { Annotation, AnnotationIntent, AnnotationSeverity, CreateAnnotationData } from "../../types/annotations";
+import type { MarkerColor } from "./annotation-settings";
+import { getMarkerColor, loadSettings } from "./annotation-settings";
 import {
     annotationsToMarkdown,
     captureAccessibility,
@@ -22,17 +19,17 @@ import {
     deepElementFromPoint,
     detectFrameworkComponent,
     generateSelector,
-    getElementBoundingBoxes,
     getElementLabel,
-    getElementsInRect,
     getFullDomPath,
     getNearbyElements,
     getNearbyText,
     getSelectedText,
     isElementFixed,
 } from "./element-utils";
-import { type AnnotationSettings, getMarkerColor, loadSettings, type MarkerColor } from "./annotation-settings";
 import { originalSetTimeout, unfreezeAll } from "./freeze-animations";
+// ─── Palette (shared with inspector-app.ts via theme-palette.ts) ─────────────
+import type { AnnotationPalette } from "./theme-palette";
+import { getAnnotationPalette } from "./theme-palette";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -60,11 +57,6 @@ const SEVERITY_LABELS: Record<AnnotationSeverity, string> = {
     suggestion: "Suggestion",
 };
 
-// ─── Palette (shared with inspector-app.ts via theme-palette.ts) ─────────────
-
-import type { AnnotationPalette } from "./theme-palette";
-import { getAnnotationPalette } from "./theme-palette";
-
 type Palette = AnnotationPalette;
 
 const getPalette = getAnnotationPalette;
@@ -79,27 +71,37 @@ const getRpc = (): any => (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 const matchesCurrentPage = (annotationUrl: string): boolean => {
     try {
         const a = new URL(annotationUrl);
-        const current = window.location;
+        const current = globalThis.location;
 
         return a.origin === current.origin && a.pathname === current.pathname;
     } catch {
         // If URL is malformed, fall back to exact match
-        return annotationUrl === window.location.href;
+        return annotationUrl === globalThis.location.href;
     }
 };
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
 
-const makeBtn = (label: string, onClick: () => void, color?: string): HTMLButtonElement => {
+const makeButton = (label: string, onClick: () => void, color?: string): HTMLButtonElement => {
     const c = getPalette();
     const b = document.createElement("button");
 
     b.type = "button";
     b.textContent = label;
     b.style.cssText = `background:${c.btnBg};border:1px solid ${c.btnBorder};color:${color ?? c.primary};cursor:pointer;font:11px/1 'JetBrains Mono',monospace;padding:5px 10px;white-space:nowrap;`;
-    b.addEventListener("pointerover", () => { b.style.background = c.btnBgHover; b.style.borderColor = c.btnBorderHover; });
-    b.addEventListener("pointerout", () => { b.style.background = c.btnBg; b.style.borderColor = c.btnBorder; });
-    b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); onClick(); });
+    b.addEventListener("pointerover", () => {
+        b.style.background = c.btnBgHover;
+        b.style.borderColor = c.btnBorderHover;
+    });
+    b.addEventListener("pointerout", () => {
+        b.style.background = c.btnBg;
+        b.style.borderColor = c.btnBorder;
+    });
+    b.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+    });
 
     return b;
 };
@@ -110,27 +112,31 @@ const addMetaRow = (parent: HTMLElement, label: string, value: string, valueColo
 
     keySpan.textContent = `${label}: `;
 
-    const valSpan = document.createElement("span");
+    const valueSpan = document.createElement("span");
 
-    valSpan.textContent = value;
+    valueSpan.textContent = value;
 
     if (valueColor) {
-        valSpan.style.color = valueColor;
+        valueSpan.style.color = valueColor;
     }
 
-    row.append(keySpan, valSpan);
+    row.append(keySpan, valueSpan);
     parent.append(row);
 };
 
-const makeCloseBtn = (c: Palette, onClick: () => void): HTMLButtonElement => {
-    const btn = document.createElement("button");
+const makeCloseButton = (c: Palette, onClick: () => void): HTMLButtonElement => {
+    const button = document.createElement("button");
 
-    btn.type = "button";
-    btn.textContent = "\u00d7";
-    btn.style.cssText = `position:absolute;top:6px;right:8px;background:transparent;border:none;color:${c.muted};cursor:pointer;font:16px/1 monospace;padding:0;`;
-    btn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); onClick(); });
+    button.type = "button";
+    button.textContent = "\u00D7";
+    button.style.cssText = `position:absolute;top:6px;right:8px;background:transparent;border:none;color:${c.muted};cursor:pointer;font:16px/1 monospace;padding:0;`;
+    button.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onClick();
+    });
 
-    return btn;
+    return button;
 };
 
 /**
@@ -155,19 +161,23 @@ let navigationHandler: (() => void) | undefined;
  * x = percentage of viewport width, y = absolute page Y (scrollY + clientY).
  * For fixed elements, y stays as viewport-relative (no scrollY offset).
  */
-export const toPageCoords = (clientX: number, clientY: number, fixed: boolean = false): { x: number; y: number } => ({
-    x: (clientX / window.innerWidth) * 100,
-    y: fixed ? clientY : clientY + window.scrollY,
-});
+export const toPageCoords = (clientX: number, clientY: number, fixed: boolean = false): { x: number; y: number } => {
+    return {
+        x: (clientX / window.innerWidth) * 100,
+        y: fixed ? clientY : clientY + window.scrollY,
+    };
+};
 
 /**
  * Convert stored page coords back to viewport position for rendering.
  * Fixed elements use viewport-relative Y directly.
  */
-const toViewportCoords = (x: number, y: number, fixed: boolean = false): { left: number; top: number } => ({
-    left: (x / 100) * window.innerWidth,
-    top: fixed ? y : y - window.scrollY,
-});
+const toViewportCoords = (x: number, y: number, fixed: boolean = false): { left: number; top: number } => {
+    return {
+        left: (x / 100) * window.innerWidth,
+        top: fixed ? y : y - window.scrollY,
+    };
+};
 
 const repositionMarkers = (): void => {
     const markers = document.querySelectorAll<HTMLElement>(`.${MARKER_CLASS}`);
@@ -237,11 +247,13 @@ const attachNavigationListener = (): void => {
 
     navigationHandler = () => {
         // Re-load annotations after navigation (URL changed)
-        loadAndShowMarkers().catch(() => {/* ignore */});
+        loadAndShowMarkers().catch(() => {
+            /* ignore */
+        });
     };
 
     // Browser navigation
-    window.addEventListener("popstate", navigationHandler);
+    globalThis.addEventListener("popstate", navigationHandler);
 
     // Intercept pushState/replaceState for SPA frameworks
     // Store originals so we can restore them later
@@ -275,7 +287,7 @@ const attachNavigationListener = (): void => {
 
 const detachNavigationListener = (): void => {
     if (navigationHandler) {
-        window.removeEventListener("popstate", navigationHandler);
+        globalThis.removeEventListener("popstate", navigationHandler);
         navigationHandler = undefined;
     }
 
@@ -316,10 +328,14 @@ const attachSSE = (): void => {
             const rpc = getRpc();
 
             if (rpc?.getAnnotations) {
-                rpc.getAnnotations().then((annotations: Annotation[]) => {
-                    loadedAnnotations = annotations;
-                    renderMarkers();
-                        }).catch(() => {/* ignore */});
+                rpc.getAnnotations()
+                    .then((annotations: Annotation[]) => {
+                        loadedAnnotations = annotations;
+                        renderMarkers();
+                    })
+                    .catch(() => {
+                        /* ignore */
+                    });
             }
         });
         sseSource.addEventListener("error", () => {
@@ -355,13 +371,15 @@ export const loadAndShowMarkers = async (): Promise<void> => {
         attachScrollListeners();
         attachNavigationListener();
         attachSSE();
-    } catch { /* silently fail */ }
+    } catch {
+        /* silently fail */
+    }
 };
 
 /** Remove all annotation markers and detach listeners. */
 export const removeAllMarkers = (): void => {
-    for (const el of document.querySelectorAll(`.${MARKER_CLASS}`)) {
-        el.remove();
+    for (const element of document.querySelectorAll(`.${MARKER_CLASS}`)) {
+        element.remove();
     }
 
     closeAnnotationPopups();
@@ -378,13 +396,11 @@ export const closeAnnotationPopups = (): void => {
 };
 
 const renderMarkers = (): void => {
-    for (const el of document.querySelectorAll(`.${MARKER_CLASS}`)) {
-        el.remove();
+    for (const element of document.querySelectorAll(`.${MARKER_CLASS}`)) {
+        element.remove();
     }
 
-    const pageAnnotations = loadedAnnotations.filter(
-        (a) => (a.status === "pending" || a.status === "acknowledged") && matchesCurrentPage(a.url),
-    );
+    const pageAnnotations = loadedAnnotations.filter((a) => (a.status === "pending" || a.status === "acknowledged") && matchesCurrentPage(a.url));
 
     for (const [i, annotation] of pageAnnotations.entries()) {
         createMarkerElement(annotation, i + 1);
@@ -394,15 +410,17 @@ const renderMarkers = (): void => {
 const HIGHLIGHT_ID = "__vdt_annotation_highlight";
 
 const MULTI_SELECT_COLOR: MarkerColor = {
-    bg: "#22c55e", border: "#16a34a", fg: "#fff",
-    highlightBg: "rgba(34,197,94,0.12)", label: "Green", name: "green",
+    bg: "#22c55e",
+    border: "#16a34a",
+    fg: "#fff",
+    highlightBg: "rgba(34,197,94,0.12)",
+    label: "Green",
+    name: "green",
 };
 
 const createMarkerElement = (annotation: Annotation, index: number): void => {
     const settings = loadSettings();
-    const mc: MarkerColor = annotation.isMultiSelect && index > 1
-        ? MULTI_SELECT_COLOR
-        : getMarkerColor(settings);
+    const mc: MarkerColor = annotation.isMultiSelect && index > 1 ? MULTI_SELECT_COLOR : getMarkerColor(settings);
     const fixed = annotation.isFixed ?? false;
     const { left, top } = toViewportCoords(annotation.x, annotation.y, fixed);
     const isAcknowledged = annotation.status === "acknowledged";
@@ -421,10 +439,14 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
         "position:fixed",
         `top:${top - 11}px`,
         `left:${left - 11}px`,
-        "width:22px", "height:22px",
+        "width:22px",
+        "height:22px",
         "z-index:2147483643",
-        "pointer-events:auto", "cursor:pointer",
-        "display:flex", "align-items:center", "justify-content:center",
+        "pointer-events:auto",
+        "cursor:pointer",
+        "display:flex",
+        "align-items:center",
+        "justify-content:center",
         // Solid opaque fill — no transparency
         `background:${mc.bg}`,
         "border:none",
@@ -438,9 +460,9 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
     ].join(";");
 
     // Number label
-    const num = document.createElement("span");
+    const number_ = document.createElement("span");
 
-    num.style.cssText = [
+    number_.style.cssText = [
         `color:${mc.fg}`,
         "font-size:11px",
         "font-weight:700",
@@ -448,8 +470,8 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
         "font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif",
         "letter-spacing:-0.02em",
     ].join(";");
-    num.textContent = String(index);
-    marker.append(num);
+    number_.textContent = String(index);
+    marker.append(number_);
 
     // ── Hover: show edit icon + scale up + highlight original element ──
     marker.addEventListener("pointerover", () => {
@@ -457,10 +479,12 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
         marker.style.boxShadow = `0 2px 8px rgba(0,0,0,0.35),0 6px 20px ${mc.border}88,inset 0 1px 0 rgba(255,255,255,0.25)`;
 
         // Swap number for edit pencil icon
-        num.style.display = "none";
+        number_.style.display = "none";
         let editIcon = marker.querySelector<HTMLElement>(".__vdt_edit_icon");
 
-        if (!editIcon) {
+        if (editIcon) {
+            editIcon.style.display = "flex";
+        } else {
             editIcon = document.createElement("span");
             editIcon.className = "__vdt_edit_icon";
             editIcon.style.cssText = `display:flex;align-items:center;justify-content:center;`;
@@ -472,8 +496,6 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
             editIcon.append(svg.documentElement);
             marker.append(editIcon);
-        } else {
-            editIcon.style.display = "flex";
         }
 
         // Show the region/element this annotation applies to
@@ -498,7 +520,9 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
             if (annotation.elementPath && !annotation.elementPath.startsWith("region at")) {
                 try {
                     target = document.querySelector(annotation.elementPath);
-                } catch { /* invalid selector */ }
+                } catch {
+                    /* invalid selector */
+                }
             }
 
             if (!target && annotation.boundingBox) {
@@ -510,9 +534,9 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
                 // Validate size matches
                 if (target) {
-                    const elRect = target.getBoundingClientRect();
-                    const wr = bb.width > 0 ? elRect.width / bb.width : 1;
-                    const hr = bb.height > 0 ? elRect.height / bb.height : 1;
+                    const elementRect = target.getBoundingClientRect();
+                    const wr = bb.width > 0 ? elementRect.width / bb.width : 1;
+                    const hr = bb.height > 0 ? elementRect.height / bb.height : 1;
 
                     if (wr < 0.5 || hr < 0.5) {
                         target = null;
@@ -577,12 +601,13 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
         marker.style.boxShadow = `0 1px 3px rgba(0,0,0,0.3),0 4px 12px ${mc.border}66,inset 0 1px 0 rgba(255,255,255,0.2)`;
 
         // Restore number, hide edit icon
-        num.style.display = "";
+        number_.style.display = "";
         const editIcon = marker.querySelector<HTMLElement>(".__vdt_edit_icon");
 
         if (editIcon) {
             editIcon.style.display = "none";
         }
+
         document.getElementById(HIGHLIGHT_ID)?.remove();
 
         // Remove multi-select highlights
@@ -600,15 +625,17 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
         if (settings.markerClickBehavior === "delete") {
             // Delete immediately
-            getRpc()?.deleteAnnotation?.(annotation.id)?.then(() => {
-                loadAndShowMarkers().catch(() => {});
+            getRpc()
+                ?.deleteAnnotation?.(annotation.id)
+                ?.then(() => {
+                    loadAndShowMarkers().catch(() => {});
                 });
         } else if (settings.markerClickBehavior === "edit") {
-            const el = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+            const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
             const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y, annotation.isFixed);
-            const fakeRect = el?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
+            const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
-            showAnnotationForm(el ?? document.body, fakeRect, annotation.source, annotation);
+            showAnnotationForm(element ?? document.body, fakeRect, annotation.source, annotation);
         } else {
             showAnnotationDetail(annotation);
         }
@@ -621,11 +648,11 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
         if (settings.markerClickBehavior === "delete") {
             // Right-click edits when click deletes
-            const el = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+            const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
             const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y, annotation.isFixed);
-            const fakeRect = el?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
+            const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
-            showAnnotationForm(el ?? document.body, fakeRect, annotation.source, annotation);
+            showAnnotationForm(element ?? document.body, fakeRect, annotation.source, annotation);
         } else {
             showAnnotationDetail(annotation);
         }
@@ -641,26 +668,26 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
 // ─── Annotation form ─────────────────────────────────────────────────────────
 
-const cleanupResizeObserver = (el: HTMLElement | null): void => {
-    if (el) {
-        (el as HTMLElement & { __resizeObserver?: ResizeObserver }).__resizeObserver?.disconnect();
+const cleanupResizeObserver = (element: HTMLElement | null): void => {
+    if (element) {
+        (element as HTMLElement & { __resizeObserver?: ResizeObserver }).__resizeObserver?.disconnect();
     }
 };
 
 const removeAnnotationForm = (): void => {
-    const el = document.querySelector<HTMLElement>(`#${FORM_ID}`) as (HTMLElement & { __annotationId?: string }) | null;
-    const existed = !!el;
+    const element = document.querySelector<HTMLElement>(`#${FORM_ID}`) as (HTMLElement & { annotationId?: string }) | null;
+    const existed = !!element;
 
     // Unmark the marker if editing an existing annotation
-    if (el?.__annotationId) {
-        setMarkerPopupOpen(el.__annotationId, false);
+    if (element?.annotationId) {
+        setMarkerPopupOpen(element.annotationId, false);
     }
 
-    cleanupResizeObserver(el);
-    el?.remove();
+    cleanupResizeObserver(element);
+    element?.remove();
 
     // Remove pending marker
-    document.getElementById("__vdt_pending_marker")?.remove();
+    document.querySelector("#__vdt_pending_marker")?.remove();
 
     // Notify inspector to hide the frozen overlay
     if (existed) {
@@ -697,9 +724,13 @@ export const shakeAnnotationForm = (): void => {
     form.style.animation = "__vdt_shake 0.4s ease";
 
     // Clean up after animation
-    form.addEventListener("animationend", () => {
-        form.style.animation = "";
-    }, { once: true });
+    form.addEventListener(
+        "animationend",
+        () => {
+            form.style.animation = "";
+        },
+        { once: true },
+    );
 };
 
 /**
@@ -725,7 +756,7 @@ export const showAnnotationForm = (
     const selector = generateSelector(element);
     const nearbyText = getNearbyText(element);
     const selectedText = getSelectedText();
-    const frameworkCtx = detectFrameworkComponent(element);
+    const frameworkContext = detectFrameworkComponent(element);
 
     const form = document.createElement("div");
 
@@ -733,17 +764,22 @@ export const showAnnotationForm = (
 
     // Track which annotation is being edited (for marker icon state)
     if (editAnnotation) {
-        (form as HTMLElement & { __annotationId?: string }).__annotationId = editAnnotation.id;
+        (form as HTMLElement & { annotationId?: string }).annotationId = editAnnotation.id;
         setMarkerPopupOpen(editAnnotation.id, true);
     }
 
     form.style.cssText = [
-        "position:fixed", "z-index:2147483647",
-        `background:${c.bg}`, `border:1px solid ${c.btnBorder}`,
+        "position:fixed",
+        "z-index:2147483647",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
         "padding:12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        `color:${c.fg}`, `box-shadow:${c.shadow}`,
-        "min-width:300px", "max-width:400px", "pointer-events:auto",
+        `color:${c.fg}`,
+        `box-shadow:${c.shadow}`,
+        "min-width:300px",
+        "max-width:400px",
+        "pointer-events:auto",
     ].join(";");
 
     // Anchor point for positioning (will be applied after rendering via positionFormNearAnchor)
@@ -764,12 +800,16 @@ export const showAnnotationForm = (
             "position:fixed",
             `top:${clickPoint.y - 11}px`,
             `left:${clickPoint.x - 11}px`,
-            "width:22px", "height:22px",
+            "width:22px",
+            "height:22px",
             "z-index:2147483643",
             "pointer-events:none",
-            "display:flex", "align-items:center", "justify-content:center",
+            "display:flex",
+            "align-items:center",
+            "justify-content:center",
             `background:${mc.bg}`,
-            "border:none", "border-radius:50%",
+            "border:none",
+            "border-radius:50%",
             `box-shadow:0 1px 3px rgba(0,0,0,0.3),0 4px 12px ${mc.border}66,inset 0 1px 0 rgba(255,255,255,0.2)`,
             "animation:__vdt_pulse 1.4s ease-in-out infinite",
         ].join(";");
@@ -807,11 +847,11 @@ export const showAnnotationForm = (
         preview.append(srcLine);
     }
 
-    if (frameworkCtx) {
+    if (frameworkContext) {
         const fwLine = document.createElement("div");
 
         fwLine.style.cssText = `color:${c.success};margin-top:2px;`;
-        fwLine.textContent = `${frameworkCtx.framework}: <${frameworkCtx.componentName}>`;
+        fwLine.textContent = `${frameworkContext.framework}: <${frameworkContext.componentName}>`;
         preview.append(fwLine);
     }
 
@@ -852,28 +892,40 @@ export const showAnnotationForm = (
 
     // Intent selector
     let selectedIntent: AnnotationIntent = editAnnotation?.intent ?? "fix";
-    const intentRow = createToggleGroup(c, "Intent",
-        (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => ({
-            active: i === selectedIntent,
-            activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
-            key: i,
-            label: INTENT_LABELS[i],
-        })),
-        (key) => { selectedIntent = key as AnnotationIntent; },
+    const intentRow = createToggleGroup(
+        c,
+        "Intent",
+        (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => {
+            return {
+                active: i === selectedIntent,
+                activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
+                key: i,
+                label: INTENT_LABELS[i],
+            };
+        }),
+        (key) => {
+            selectedIntent = key as AnnotationIntent;
+        },
     );
 
     form.append(intentRow);
 
     // Severity selector
     let selectedSeverity: AnnotationSeverity = editAnnotation?.severity ?? "important";
-    const severityRow = createToggleGroup(c, "Severity",
-        (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => ({
-            active: s === selectedSeverity,
-            activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
-            key: s,
-            label: SEVERITY_LABELS[s],
-        })),
-        (key) => { selectedSeverity = key as AnnotationSeverity; },
+    const severityRow = createToggleGroup(
+        c,
+        "Severity",
+        (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => {
+            return {
+                active: s === selectedSeverity,
+                activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
+                key: s,
+                label: SEVERITY_LABELS[s],
+            };
+        }),
+        (key) => {
+            selectedSeverity = key as AnnotationSeverity;
+        },
     );
 
     form.append(severityRow);
@@ -884,38 +936,38 @@ export const showAnnotationForm = (
 
     screenshotRow.style.cssText = "margin-bottom:8px;";
 
-    const screenshotBtn = document.createElement("button");
+    const screenshotButton = document.createElement("button");
 
-    screenshotBtn.type = "button";
-    screenshotBtn.textContent = screenshotDataUrl ? "Remove Screenshot" : "Capture Screenshot";
-    screenshotBtn.style.cssText = `cursor:pointer;font:10px/1 'JetBrains Mono',monospace;padding:4px 8px;background:${c.btnBg};border:1px solid ${c.btnBorder};color:${c.primary};`;
-    screenshotBtn.addEventListener("click", async (e) => {
+    screenshotButton.type = "button";
+    screenshotButton.textContent = screenshotDataUrl ? "Remove Screenshot" : "Capture Screenshot";
+    screenshotButton.style.cssText = `cursor:pointer;font:10px/1 'JetBrains Mono',monospace;padding:4px 8px;background:${c.btnBg};border:1px solid ${c.btnBorder};color:${c.primary};`;
+    screenshotButton.addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
         if (screenshotDataUrl) {
             screenshotDataUrl = null;
-            screenshotBtn.textContent = "Capture Screenshot";
+            screenshotButton.textContent = "Capture Screenshot";
             screenshotPreview.style.display = "none";
         } else {
-            screenshotBtn.textContent = "Capturing...";
-            screenshotBtn.disabled = true;
+            screenshotButton.textContent = "Capturing...";
+            screenshotButton.disabled = true;
 
             const dataUrl = await captureElementScreenshot(element);
 
             if (dataUrl) {
                 screenshotDataUrl = dataUrl;
-                screenshotBtn.textContent = "Remove Screenshot";
+                screenshotButton.textContent = "Remove Screenshot";
                 screenshotPreview.style.display = "block";
                 screenshotPreview.style.backgroundImage = `url(${dataUrl})`;
             } else {
-                screenshotBtn.textContent = "Capture Failed — Retry";
+                screenshotButton.textContent = "Capture Failed — Retry";
             }
 
-            screenshotBtn.disabled = false;
+            screenshotButton.disabled = false;
         }
     });
-    screenshotRow.append(screenshotBtn);
+    screenshotRow.append(screenshotButton);
 
     const screenshotPreview = document.createElement("div");
 
@@ -929,15 +981,19 @@ export const showAnnotationForm = (
     textarea.placeholder = nearbyText ? `Feedback about "${nearbyText.slice(0, 40)}..."` : "Describe the issue or feedback...";
     textarea.value = editAnnotation?.comment ?? "";
     textarea.style.cssText = `width:100%;min-height:60px;resize:vertical;margin-bottom:8px;padding:6px 8px;background:${c.btnBg};border:1px solid ${c.btnBorder};color:${c.fg};font:11px/1.4 'JetBrains Mono',monospace;box-sizing:border-box;outline:none;`;
-    textarea.addEventListener("focus", () => { textarea.style.borderColor = c.primary; });
-    textarea.addEventListener("blur", () => { textarea.style.borderColor = c.btnBorder; });
+    textarea.addEventListener("focus", () => {
+        textarea.style.borderColor = c.primary;
+    });
+    textarea.addEventListener("blur", () => {
+        textarea.style.borderColor = c.btnBorder;
+    });
     textarea.addEventListener("click", (e) => e.stopPropagation());
     textarea.addEventListener("keydown", (e) => {
         e.stopPropagation();
 
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            submitBtn.click();
+            submitButton.click();
         }
 
         if (e.key === "Escape") {
@@ -952,7 +1008,7 @@ export const showAnnotationForm = (
 
     actions.style.cssText = "display:flex;gap:6px;";
 
-    const submitBtn = makeBtn(editAnnotation ? "Save" : "Create", async () => {
+    const submitButton = makeButton(editAnnotation ? "Save" : "Create", async () => {
         const comment = textarea.value.trim();
 
         if (!comment) {
@@ -967,8 +1023,8 @@ export const showAnnotationForm = (
             return;
         }
 
-        submitBtn.textContent = editAnnotation ? "Saving..." : "Creating...";
-        (submitBtn as HTMLButtonElement).disabled = true;
+        submitButton.textContent = editAnnotation ? "Saving..." : "Creating...";
+        (submitButton as HTMLButtonElement).disabled = true;
 
         try {
             if (editAnnotation) {
@@ -982,8 +1038,8 @@ export const showAnnotationForm = (
                 // Create mode — capture all context
                 const fixed = isElementFixed(element);
                 // Use the actual click point if available, otherwise center of element
-                const cx = clickPoint?.x ?? (rect.x + rect.width / 2);
-                const cy = clickPoint?.y ?? (rect.y + rect.height / 2);
+                const cx = clickPoint?.x ?? rect.x + rect.width / 2;
+                const cy = clickPoint?.y ?? rect.y + rect.height / 2;
                 const pageCoords = toPageCoords(cx, cy, fixed);
                 const a11y = captureAccessibility(element);
                 const styles = captureComputedStyles(element);
@@ -1000,7 +1056,7 @@ export const showAnnotationForm = (
                     elementLabel: label,
                     elementPath: selector,
                     elementTag: tag,
-                    frameworkContext: frameworkCtx,
+                    frameworkContext,
                     fullPath,
                     intent: selectedIntent,
                     isFixed: fixed || undefined,
@@ -1009,7 +1065,7 @@ export const showAnnotationForm = (
                     selectedText: selectedText || undefined,
                     severity: selectedSeverity,
                     source,
-                    url: window.location.href,
+                    url: globalThis.location.href,
                     x: pageCoords.x,
                     y: pageCoords.y,
                 };
@@ -1018,7 +1074,9 @@ export const showAnnotationForm = (
 
                 // Save screenshot if captured
                 if (screenshotDataUrl && screenshotDataUrl !== "existing") {
-                    await rpc.saveScreenshot(annotation.id, screenshotDataUrl).catch(() => {/* ignore */});
+                    await rpc.saveScreenshot(annotation.id, screenshotDataUrl).catch(() => {
+                        /* ignore */
+                    });
                 }
 
                 loadedAnnotations.push(annotation);
@@ -1028,23 +1086,32 @@ export const showAnnotationForm = (
             await loadAndShowMarkers();
             removeAnnotationForm();
         } catch {
-            submitBtn.textContent = "Error \u2014 retry";
-            (submitBtn as HTMLButtonElement).disabled = false;
+            submitButton.textContent = "Error \u2014 retry";
+            (submitButton as HTMLButtonElement).disabled = false;
         }
     });
 
-    actions.append(submitBtn, makeBtn("Cancel", () => removeAnnotationForm()));
+    actions.append(
+        submitButton,
+        makeButton("Cancel", () => removeAnnotationForm()),
+    );
 
     if (editAnnotation) {
-        actions.append(makeBtn("Delete", async () => {
-            await getRpc()?.deleteAnnotation?.(editAnnotation.id);
-            await loadAndShowMarkers();
-            removeAnnotationForm();
-        }, c.danger));
+        actions.append(
+            makeButton(
+                "Delete",
+                async () => {
+                    await getRpc()?.deleteAnnotation?.(editAnnotation.id);
+                    await loadAndShowMarkers();
+                    removeAnnotationForm();
+                },
+                c.danger,
+            ),
+        );
     }
 
     form.append(actions);
-    form.append(makeCloseBtn(c, () => removeAnnotationForm()));
+    form.append(makeCloseButton(c, () => removeAnnotationForm()));
 
     positionFormNearAnchor(form, anchorX, anchorY, textarea);
 };
@@ -1053,30 +1120,32 @@ export const showAnnotationForm = (
  * Show annotation form for a multi-select (drag) region.
  * Creates a single annotation covering multiple elements.
  */
-export const showMultiSelectForm = (
-    elements: Element[],
-    selectionRect: DOMRect,
-    boundingBoxes: import("../../types/annotations").BoundingBox[],
-): void => {
+export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect, boundingBoxes: import("../../types/annotations").BoundingBox[]): void => {
     removeAnnotationForm();
     removeAnnotationDetail();
 
     const c = getPalette();
 
-    // Use the first element as the primary target
-    const primary = elements[0] ?? document.body;
-    const elementNames = elements.slice(0, 5).map((el) => el.tagName.toLowerCase()).join(", ");
+    const elementNames = elements
+        .slice(0, 5)
+        .map((element) => element.tagName.toLowerCase())
+        .join(", ");
 
     const form = document.createElement("div");
 
     form.id = FORM_ID;
     form.style.cssText = [
-        "position:fixed", "z-index:2147483647",
-        `background:${c.bg}`, `border:1px solid ${c.btnBorder}`,
+        "position:fixed",
+        "z-index:2147483647",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
         "padding:12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        `color:${c.fg}`, `box-shadow:${c.shadow}`,
-        "min-width:300px", "max-width:400px", "pointer-events:auto",
+        `color:${c.fg}`,
+        `box-shadow:${c.shadow}`,
+        "min-width:300px",
+        "max-width:400px",
+        "pointer-events:auto",
     ].join(";");
 
     // Header
@@ -1095,25 +1164,43 @@ export const showMultiSelectForm = (
     // Intent + severity
     let selectedIntent: AnnotationIntent = "fix";
 
-    form.append(createToggleGroup(c, "Intent",
-        (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => ({
-            active: i === selectedIntent,
-            activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
-            key: i, label: INTENT_LABELS[i],
-        })),
-        (key) => { selectedIntent = key as AnnotationIntent; },
-    ));
+    form.append(
+        createToggleGroup(
+            c,
+            "Intent",
+            (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => {
+                return {
+                    active: i === selectedIntent,
+                    activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
+                    key: i,
+                    label: INTENT_LABELS[i],
+                };
+            }),
+            (key) => {
+                selectedIntent = key as AnnotationIntent;
+            },
+        ),
+    );
 
     let selectedSeverity: AnnotationSeverity = "important";
 
-    form.append(createToggleGroup(c, "Severity",
-        (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => ({
-            active: s === selectedSeverity,
-            activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
-            key: s, label: SEVERITY_LABELS[s],
-        })),
-        (key) => { selectedSeverity = key as AnnotationSeverity; },
-    ));
+    form.append(
+        createToggleGroup(
+            c,
+            "Severity",
+            (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => {
+                return {
+                    active: s === selectedSeverity,
+                    activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
+                    key: s,
+                    label: SEVERITY_LABELS[s],
+                };
+            }),
+            (key) => {
+                selectedSeverity = key as AnnotationSeverity;
+            },
+        ),
+    );
 
     const textarea = document.createElement("textarea");
 
@@ -1127,44 +1214,46 @@ export const showMultiSelectForm = (
 
     actions.style.cssText = "display:flex;gap:6px;";
 
-    actions.append(makeBtn("Create", async () => {
-        const comment = textarea.value.trim();
+    actions.append(
+        makeButton("Create", async () => {
+            const comment = textarea.value.trim();
 
-        if (!comment) {
-            textarea.style.borderColor = c.danger;
+            if (!comment) {
+                textarea.style.borderColor = c.danger;
 
-            return;
-        }
+                return;
+            }
 
-        const rpc = getRpc();
+            const rpc = getRpc();
 
-        if (!rpc) {
-            return;
-        }
+            if (!rpc) {
+                return;
+            }
 
-        const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
+            const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
 
-        const data: CreateAnnotationData = {
-            boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x, y: selectionRect.y },
-            comment,
-            elementBoundingBoxes: boundingBoxes,
-            elementTag: "multi-select",
-            intent: selectedIntent,
-            isMultiSelect: true,
-            severity: selectedSeverity,
-            url: window.location.href,
-            x: pageCoords.x,
-            y: pageCoords.y,
-        };
+            const data: CreateAnnotationData = {
+                boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x, y: selectionRect.y },
+                comment,
+                elementBoundingBoxes: boundingBoxes,
+                elementTag: "multi-select",
+                intent: selectedIntent,
+                isMultiSelect: true,
+                severity: selectedSeverity,
+                url: globalThis.location.href,
+                x: pageCoords.x,
+                y: pageCoords.y,
+            };
 
-        await rpc.createAnnotation(data);
-        await loadAndShowMarkers();
-        removeAnnotationForm();
-    }));
+            await rpc.createAnnotation(data);
+            await loadAndShowMarkers();
+            removeAnnotationForm();
+        }),
+    );
 
-    actions.append(makeBtn("Cancel", () => removeAnnotationForm()));
+    actions.append(makeButton("Cancel", () => removeAnnotationForm()));
     form.append(actions);
-    form.append(makeCloseBtn(c, () => removeAnnotationForm()));
+    form.append(makeCloseButton(c, () => removeAnnotationForm()));
 
     positionFormNearAnchor(form, selectionRect.x + selectionRect.width / 2, selectionRect.bottom, textarea);
 };
@@ -1189,9 +1278,14 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
 
     outline.id = AREA_OUTLINE_ID;
     outline.style.cssText = [
-        "position:fixed", "pointer-events:none", "z-index:2147483644", "box-sizing:border-box",
-        `top:${selectionRect.y}px`, `left:${selectionRect.x}px`,
-        `width:${selectionRect.width}px`, `height:${selectionRect.height}px`,
+        "position:fixed",
+        "pointer-events:none",
+        "z-index:2147483644",
+        "box-sizing:border-box",
+        `top:${selectionRect.y}px`,
+        `left:${selectionRect.x}px`,
+        `width:${selectionRect.width}px`,
+        `height:${selectionRect.height}px`,
         "border:2px dashed rgba(34,197,94,0.7)",
         "background:rgba(34,197,94,0.04)",
         "transition:opacity 0.15s",
@@ -1200,7 +1294,8 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     // "+" badge in top-right corner
     const badge = document.createElement("div");
 
-    badge.style.cssText = "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
+    badge.style.cssText =
+        "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
     badge.textContent = "+";
     outline.append(badge);
     document.body.append(outline);
@@ -1210,14 +1305,18 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
 
     form.id = FORM_ID;
     form.style.cssText = [
-        "position:fixed", "z-index:2147483647",
-        `background:${c.bg}`, `border:1px solid ${c.btnBorder}`,
+        "position:fixed",
+        "z-index:2147483647",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
         "padding:12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        `color:${c.fg}`, `box-shadow:${c.shadow}`,
-        "min-width:280px", "max-width:360px", "pointer-events:auto",
+        `color:${c.fg}`,
+        `box-shadow:${c.shadow}`,
+        "min-width:280px",
+        "max-width:360px",
+        "pointer-events:auto",
     ].join(";");
-
 
     // Header
     const header = document.createElement("div");
@@ -1229,25 +1328,43 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     // Intent + severity
     let selectedIntent: AnnotationIntent = "fix";
 
-    form.append(createToggleGroup(c, "Intent",
-        (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => ({
-            active: i === selectedIntent,
-            activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
-            key: i, label: INTENT_LABELS[i],
-        })),
-        (key) => { selectedIntent = key as AnnotationIntent; },
-    ));
+    form.append(
+        createToggleGroup(
+            c,
+            "Intent",
+            (["fix", "change", "question", "approve"] as AnnotationIntent[]).map((i) => {
+                return {
+                    active: i === selectedIntent,
+                    activeStyle: `background:${INTENT_COLORS[i].bg};border-color:${INTENT_COLORS[i].border};color:${INTENT_COLORS[i].fg}`,
+                    key: i,
+                    label: INTENT_LABELS[i],
+                };
+            }),
+            (key) => {
+                selectedIntent = key as AnnotationIntent;
+            },
+        ),
+    );
 
     let selectedSeverity: AnnotationSeverity = "important";
 
-    form.append(createToggleGroup(c, "Severity",
-        (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => ({
-            active: s === selectedSeverity,
-            activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
-            key: s, label: SEVERITY_LABELS[s],
-        })),
-        (key) => { selectedSeverity = key as AnnotationSeverity; },
-    ));
+    form.append(
+        createToggleGroup(
+            c,
+            "Severity",
+            (["blocking", "important", "suggestion"] as AnnotationSeverity[]).map((s) => {
+                return {
+                    active: s === selectedSeverity,
+                    activeStyle: `background:${c.btnBg};border-color:${c.primary};color:${c.primary}`,
+                    key: s,
+                    label: SEVERITY_LABELS[s],
+                };
+            }),
+            (key) => {
+                selectedSeverity = key as AnnotationSeverity;
+            },
+        ),
+    );
 
     // Comment textarea
     const textarea = document.createElement("textarea");
@@ -1260,7 +1377,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
 
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            submitBtn.click();
+            submitButton.click();
         }
 
         if (e.key === "Escape") {
@@ -1280,64 +1397,65 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
 
     actions.style.cssText = "display:flex;gap:6px;justify-content:flex-end;";
 
-    actions.append(makeBtn("Cancel", cleanup));
+    actions.append(makeButton("Cancel", cleanup));
 
-    const submitBtn = makeBtn("Add", async () => {
-        const comment = textarea.value.trim();
+    const submitButton = makeButton(
+        "Add",
+        async () => {
+            const comment = textarea.value.trim();
 
-        if (!comment) {
-            textarea.style.borderColor = c.danger;
+            if (!comment) {
+                textarea.style.borderColor = c.danger;
 
-            return;
-        }
+                return;
+            }
 
-        const rpc = getRpc();
+            const rpc = getRpc();
 
-        if (!rpc) {
-            return;
-        }
+            if (!rpc) {
+                return;
+            }
 
-        submitBtn.textContent = "Adding...";
-        (submitBtn as HTMLButtonElement).disabled = true;
+            submitButton.textContent = "Adding...";
+            (submitButton as HTMLButtonElement).disabled = true;
 
-        try {
-            const pageCoords = toPageCoords(
-                selectionRect.x + selectionRect.width / 2,
-                selectionRect.y + selectionRect.height / 2,
-            );
+            try {
+                const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
 
-            const data: CreateAnnotationData = {
-                boundingBox: {
-                    height: selectionRect.height,
-                    width: selectionRect.width,
-                    x: selectionRect.x,
-                    y: selectionRect.y,
-                },
-                comment,
-                elementLabel: "Area selection",
-                elementPath: `region at (${Math.round(selectionRect.x)}, ${Math.round(selectionRect.y)})`,
-                elementTag: "area",
-                intent: selectedIntent,
-                isMultiSelect: true,
-                severity: selectedSeverity,
-                url: window.location.href,
-                x: pageCoords.x,
-                y: pageCoords.y,
-            };
+                const data: CreateAnnotationData = {
+                    boundingBox: {
+                        height: selectionRect.height,
+                        width: selectionRect.width,
+                        x: selectionRect.x,
+                        y: selectionRect.y,
+                    },
+                    comment,
+                    elementLabel: "Area selection",
+                    elementPath: `region at (${Math.round(selectionRect.x)}, ${Math.round(selectionRect.y)})`,
+                    elementTag: "area",
+                    intent: selectedIntent,
+                    isMultiSelect: true,
+                    severity: selectedSeverity,
+                    url: globalThis.location.href,
+                    x: pageCoords.x,
+                    y: pageCoords.y,
+                };
 
-            await rpc.createAnnotation(data);
-            await loadAndShowMarkers();
-            cleanup();
-        } catch {
-            submitBtn.textContent = "Error — retry";
-            (submitBtn as HTMLButtonElement).disabled = false;
-        }
-    }, "#22c55e"); // Green "Add" button like agentation
+                await rpc.createAnnotation(data);
+                await loadAndShowMarkers();
+                cleanup();
+            } catch {
+                submitButton.textContent = "Error — retry";
+                (submitButton as HTMLButtonElement).disabled = false;
+            }
+        },
+        "#22c55e",
+    ); // Green "Add" button like agentation
 
-    actions.append(submitBtn);
+    actions.append(submitButton);
     form.append(actions);
 
-    form.append(makeCloseBtn(c, cleanup));
+    form.append(makeCloseButton(c, cleanup));
 
     positionFormNearAnchor(form, selectionRect.x + selectionRect.width / 2, selectionRect.bottom, textarea);
 };
@@ -1382,7 +1500,7 @@ const computePopupPosition = (formRect: DOMRect, anchorX: number, anchorY: numbe
  * Renders offscreen first to measure, then repositions within viewport bounds.
  * Watches for size changes (content expanding) and re-clamps automatically.
  */
-const positionFormNearAnchor = (form: HTMLElement, anchorX: number, anchorY: number, focusEl?: HTMLElement): void => {
+const positionFormNearAnchor = (form: HTMLElement, anchorX: number, anchorY: number, focusElement?: HTMLElement): void => {
     form.style.top = "-9999px";
     form.style.left = "-9999px";
 
@@ -1405,7 +1523,7 @@ const positionFormNearAnchor = (form: HTMLElement, anchorX: number, anchorY: num
     // Initial position after first paint
     requestAnimationFrame(() => {
         applyPosition();
-        focusEl?.focus();
+        focusElement?.focus();
     });
 
     // Re-position when content size changes (e.g. computed styles expand,
@@ -1425,7 +1543,7 @@ const positionFormNearAnchor = (form: HTMLElement, anchorX: number, anchorY: num
 const createToggleGroup = (
     c: Palette,
     label: string,
-    items: Array<{ active: boolean; activeStyle: string; key: string; label: string }>,
+    items: { active: boolean; activeStyle: string; key: string; label: string }[],
     onSelect: (key: string) => void,
 ): HTMLDivElement => {
     const row = document.createElement("div");
@@ -1445,15 +1563,15 @@ const createToggleGroup = (
     const buttons: HTMLButtonElement[] = [];
 
     for (const item of items) {
-        const btn = document.createElement("button");
+        const button = document.createElement("button");
 
-        btn.type = "button";
-        btn.textContent = item.label;
-        btn.dataset.key = item.key;
-        btn.style.cssText = `cursor:pointer;font:10px/1 'JetBrains Mono',monospace;padding:4px 8px;border:1px solid;white-space:nowrap;${
+        button.type = "button";
+        button.textContent = item.label;
+        button.dataset.key = item.key;
+        button.style.cssText = `cursor:pointer;font:10px/1 'JetBrains Mono',monospace;padding:4px 8px;border:1px solid;white-space:nowrap;${
             item.active ? item.activeStyle : `background:${c.btnBg};border-color:${c.btnBorder};color:${c.muted}`
         }`;
-        btn.addEventListener("click", (e) => {
+        button.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             onSelect(item.key);
@@ -1470,8 +1588,8 @@ const createToggleGroup = (
                 }
             }
         });
-        buttons.push(btn);
-        group.append(btn);
+        buttons.push(button);
+        group.append(button);
     }
 
     row.append(group);
@@ -1490,13 +1608,13 @@ const parseInlineStyle = (css: string): Record<string, string> => {
         }
 
         const key = pair.slice(0, colonIndex).trim();
-        const val = pair.slice(colonIndex + 1).trim();
+        const value = pair.slice(colonIndex + 1).trim();
 
-        if (key && val) {
+        if (key && value) {
             // Convert css-property to camelCase
             const camelKey = key.replaceAll(/-([a-z])/g, (_, ch) => (ch as string).toUpperCase());
 
-            result[camelKey] = val;
+            result[camelKey] = value;
         }
     }
 
@@ -1506,16 +1624,18 @@ const parseInlineStyle = (css: string): Record<string, string> => {
 // ─── Annotation detail popup ─────────────────────────────────────────────────
 
 const removeAnnotationDetail = (): void => {
-    const el = document.querySelector(`#${DETAIL_ID}`) as (HTMLElement & { __annotationId?: string; __cleanup?: () => void; __resizeObserver?: ResizeObserver }) | null;
+    const element = document.querySelector(`#${DETAIL_ID}`) as
+        | (HTMLElement & { __cleanup?: () => void; __resizeObserver?: ResizeObserver; annotationId?: string })
+        | null;
 
     // Unmark the marker
-    if (el?.__annotationId) {
-        setMarkerPopupOpen(el.__annotationId, false);
+    if (element?.annotationId) {
+        setMarkerPopupOpen(element.annotationId, false);
     }
 
-    el?.__cleanup?.();
-    el?.__resizeObserver?.disconnect();
-    el?.remove();
+    element?.__cleanup?.();
+    element?.__resizeObserver?.disconnect();
+    element?.remove();
 };
 
 /** Mark/unmark a marker as having an open popup (keeps edit icon visible). */
@@ -1529,14 +1649,16 @@ const setMarkerPopupOpen = (annotationId: string, open: boolean): void => {
             // Ensure edit icon is shown
             marker.style.transform = "scale(1.25)";
 
-            const num = marker.querySelector<HTMLElement>("span:not(.__vdt_edit_icon)");
+            const number_ = marker.querySelector<HTMLElement>("span:not(.__vdt_edit_icon)");
 
-            if (num) {
-                num.style.display = "none";
+            if (number_) {
+                number_.style.display = "none";
             }
 
             // Create edit icon if needed
-            if (!marker.querySelector(".__vdt_edit_icon")) {
+            if (marker.querySelector(".__vdt_edit_icon")) {
+                marker.querySelector<HTMLElement>(".__vdt_edit_icon")!.style.display = "flex";
+            } else {
                 const editIcon = document.createElement("span");
 
                 editIcon.className = "__vdt_edit_icon";
@@ -1549,18 +1671,16 @@ const setMarkerPopupOpen = (annotationId: string, open: boolean): void => {
 
                 editIcon.append(svg.documentElement);
                 marker.append(editIcon);
-            } else {
-                marker.querySelector<HTMLElement>(".__vdt_edit_icon")!.style.display = "flex";
             }
         } else {
             delete marker.dataset.popupOpen;
             marker.style.transform = "";
 
             // Restore number
-            const num = marker.querySelector<HTMLElement>("span:not(.__vdt_edit_icon)");
+            const number_ = marker.querySelector<HTMLElement>("span:not(.__vdt_edit_icon)");
 
-            if (num) {
-                num.style.display = "";
+            if (number_) {
+                number_.style.display = "";
             }
 
             const editIcon = marker.querySelector<HTMLElement>(".__vdt_edit_icon");
@@ -1584,14 +1704,21 @@ const showAnnotationDetail = (annotation: Annotation): void => {
     const popup = document.createElement("div");
 
     popup.id = DETAIL_ID;
-    (popup as HTMLElement & { __annotationId?: string }).__annotationId = annotation.id;
+    (popup as HTMLElement & { annotationId?: string }).annotationId = annotation.id;
     popup.style.cssText = [
-        "position:fixed", "z-index:2147483647",
-        `background:${c.bg}`, `border:1px solid ${c.btnBorder}`,
+        "position:fixed",
+        "z-index:2147483647",
+        `background:${c.bg}`,
+        `border:1px solid ${c.btnBorder}`,
         "padding:12px 32px 12px 12px",
         "font:12px/1.4 'JetBrains Mono',monospace",
-        `color:${c.fg}`, `box-shadow:${c.shadow}`,
-        "min-width:280px", "max-width:400px", "max-height:70vh", "overflow-y:auto", "pointer-events:auto",
+        `color:${c.fg}`,
+        `box-shadow:${c.shadow}`,
+        "min-width:280px",
+        "max-width:400px",
+        "max-height:70vh",
+        "overflow-y:auto",
+        "pointer-events:auto",
     ].join(";");
 
     // Position — will be set after measuring
@@ -1666,28 +1793,28 @@ const showAnnotationDetail = (annotation: Annotation): void => {
         threadTitle.textContent = `Thread (${annotation.thread.length})`;
         popup.append(threadTitle);
 
-        for (const msg of annotation.thread) {
-            const msgEl = document.createElement("div");
+        for (const message of annotation.thread) {
+            const messageElement = document.createElement("div");
 
-            msgEl.style.cssText = `margin-bottom:4px;padding:4px 6px;background:${c.btnBg};border:1px solid ${c.btnBorder};font-size:10px;`;
+            messageElement.style.cssText = `margin-bottom:4px;padding:4px 6px;background:${c.btnBg};border:1px solid ${c.btnBorder};font-size:10px;`;
 
-            const roleEl = document.createElement("span");
+            const roleElement = document.createElement("span");
 
-            roleEl.style.cssText = `color:${c.primary};font-weight:bold;`;
-            roleEl.textContent = msg.role;
+            roleElement.style.cssText = `color:${c.primary};font-weight:bold;`;
+            roleElement.textContent = message.role;
 
-            const timeEl = document.createElement("span");
+            const timeElement = document.createElement("span");
 
-            timeEl.style.cssText = `color:${c.muted};font-size:9px;margin-left:6px;`;
-            timeEl.textContent = new Date(msg.timestamp).toLocaleString();
+            timeElement.style.cssText = `color:${c.muted};font-size:9px;margin-left:6px;`;
+            timeElement.textContent = new Date(message.timestamp).toLocaleString();
 
-            const contentEl = document.createElement("div");
+            const contentElement = document.createElement("div");
 
-            contentEl.style.cssText = `color:${c.fg};margin-top:2px;white-space:pre-wrap;word-break:break-word;line-height:1.4;`;
-            contentEl.textContent = msg.content;
+            contentElement.style.cssText = `color:${c.fg};margin-top:2px;white-space:pre-wrap;word-break:break-word;line-height:1.4;`;
+            contentElement.textContent = message.content;
 
-            msgEl.append(roleEl, timeEl, contentEl);
-            popup.append(msgEl);
+            messageElement.append(roleElement, timeElement, contentElement);
+            popup.append(messageElement);
         }
     }
 
@@ -1705,66 +1832,88 @@ const showAnnotationDetail = (annotation: Annotation): void => {
 
     actions.style.cssText = "display:flex;gap:4px;flex-wrap:wrap;";
 
-    actions.append(makeBtn("Send", async () => {
-        const content = threadInput.value.trim();
+    actions.append(
+        makeButton("Send", async () => {
+            const content = threadInput.value.trim();
 
-        if (!content) {
-            return;
-        }
+            if (!content) {
+                return;
+            }
 
-        await getRpc()?.updateAnnotation?.(annotation.id, {
-            threadMessage: { content, role: "human", timestamp: new Date().toISOString() },
-        });
-        await loadAndShowMarkers();
-        const updated = loadedAnnotations.find((a) => a.id === annotation.id);
+            await getRpc()?.updateAnnotation?.(annotation.id, {
+                threadMessage: { content, role: "human", timestamp: new Date().toISOString() },
+            });
+            await loadAndShowMarkers();
+            const updated = loadedAnnotations.find((a) => a.id === annotation.id);
 
-        if (updated) {
-            showAnnotationDetail(updated);
-        }
-    }));
+            if (updated) {
+                showAnnotationDetail(updated);
+            }
+        }),
+    );
 
     // Edit button — re-opens the form in edit mode
     if (annotation.status === "pending") {
-        actions.append(makeBtn("Edit", () => {
-            removeAnnotationDetail();
+        actions.append(
+            makeButton("Edit", () => {
+                removeAnnotationDetail();
 
-            // Try to find the element by selector to position the form
-            const el = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
-            const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y);
-            const fakeRect = el?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
+                // Try to find the element by selector to position the form
+                const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+                const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y);
+                const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
-            showAnnotationForm(el ?? document.body, fakeRect, annotation.source, annotation);
-        }));
+                showAnnotationForm(element ?? document.body, fakeRect, annotation.source, annotation);
+            }),
+        );
 
-        actions.append(makeBtn("Resolve", async () => {
-            await getRpc()?.updateAnnotation?.(annotation.id, { status: "resolved" });
-            await loadAndShowMarkers();
-            removeAnnotationDetail();
-        }, c.success));
+        actions.append(
+            makeButton(
+                "Resolve",
+                async () => {
+                    await getRpc()?.updateAnnotation?.(annotation.id, { status: "resolved" });
+                    await loadAndShowMarkers();
+                    removeAnnotationDetail();
+                },
+                c.success,
+            ),
+        );
 
-        actions.append(makeBtn("Dismiss", async () => {
-            await getRpc()?.updateAnnotation?.(annotation.id, { status: "dismissed" });
-            await loadAndShowMarkers();
-            removeAnnotationDetail();
-        }));
+        actions.append(
+            makeButton("Dismiss", async () => {
+                await getRpc()?.updateAnnotation?.(annotation.id, { status: "dismissed" });
+                await loadAndShowMarkers();
+                removeAnnotationDetail();
+            }),
+        );
     }
 
-    actions.append(makeBtn("Delete", async () => {
-        await getRpc()?.deleteAnnotation?.(annotation.id);
-        loadedAnnotations = loadedAnnotations.filter((a) => a.id !== annotation.id);
-        removeAnnotationDetail();
-        renderMarkers();
-    }, c.danger));
+    actions.append(
+        makeButton(
+            "Delete",
+            async () => {
+                await getRpc()?.deleteAnnotation?.(annotation.id);
+                loadedAnnotations = loadedAnnotations.filter((a) => a.id !== annotation.id);
+                removeAnnotationDetail();
+                renderMarkers();
+            },
+            c.danger,
+        ),
+    );
 
     // Copy markdown for this annotation
-    actions.append(makeBtn("Copy MD", () => {
-        const md = annotationsToMarkdown([annotation]);
+    actions.append(
+        makeButton("Copy MD", () => {
+            const md = annotationsToMarkdown([annotation]);
 
-        navigator.clipboard.writeText(md).catch(() => {/* ignore */});
-    }));
+            navigator.clipboard.writeText(md).catch(() => {
+                /* ignore */
+            });
+        }),
+    );
 
     popup.append(actions);
-    popup.append(makeCloseBtn(c, () => removeAnnotationDetail()));
+    popup.append(makeCloseButton(c, () => removeAnnotationDetail()));
 
     // Position with collision handling
     positionFormNearAnchor(popup, markerLeft + 16, markerTop);
@@ -1787,7 +1936,6 @@ const showAnnotationDetail = (annotation: Annotation): void => {
     };
 };
 
-
 // ─── Markdown export keyboard shortcut ───────────────────────────────────────
 
 let markdownShortcutHandler: ((e: KeyboardEvent) => void) | undefined;
@@ -1803,7 +1951,9 @@ export const attachMarkdownShortcut = (): void => {
 
             const md = annotationsToMarkdown(loadedAnnotations);
 
-            navigator.clipboard.writeText(md).catch(() => {/* ignore */});
+            navigator.clipboard.writeText(md).catch(() => {
+                /* ignore */
+            });
         }
     };
 
@@ -1826,9 +1976,9 @@ export const isOverAnnotationOverlay = (target: Element | undefined): boolean =>
     }
 
     for (const id of [FORM_ID, DETAIL_ID]) {
-        const el = document.querySelector(`#${id}`);
+        const element = document.querySelector(`#${id}`);
 
-        if (el && (target === el || el.contains(target))) {
+        if (element && (target === element || element.contains(target))) {
             return true;
         }
     }

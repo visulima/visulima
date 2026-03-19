@@ -6,6 +6,7 @@ declare module "virtual:visulima-dev-toolbar-options" {
     interface DevToolbarVirtualOptions {
         apps: {
             a11y: boolean;
+            annotations: boolean;
             assets: boolean;
             inspector: boolean;
             moduleGraph: boolean;

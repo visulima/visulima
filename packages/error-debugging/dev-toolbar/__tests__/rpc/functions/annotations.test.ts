@@ -5,14 +5,7 @@ import path from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import {
-    createAnnotation,
-    deleteAnnotation,
-    getAnnotations,
-    getScreenshot,
-    saveScreenshot,
-    updateAnnotation,
-} from "../../../src/rpc/functions/annotations";
+import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "../../../src/rpc/functions/annotations";
 import { resolvePaths, writeAnnotations } from "../../../src/store/annotation-store";
 
 // Mock ViteDevServer
@@ -40,7 +33,19 @@ describe("rpc/functions/annotations", () => {
 
         it("returns stored annotations", async () => {
             await writeAnnotations(tmpDir, [
-                { comment: "test", createdAt: "2024-01-01", elementTag: "div", id: "1", intent: "fix", severity: "important", status: "pending", updatedAt: "2024-01-01", url: "/", x: 50, y: 100 },
+                {
+                    comment: "test",
+                    createdAt: "2024-01-01",
+                    elementTag: "div",
+                    id: "1",
+                    intent: "fix",
+                    severity: "important",
+                    status: "pending",
+                    updatedAt: "2024-01-01",
+                    url: "/",
+                    x: 50,
+                    y: 100,
+                },
             ] as never[]);
 
             const result = await getAnnotations(server);
@@ -234,8 +239,7 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("rejects unsupported formats", async () => {
-            await expect(saveScreenshot(server, "test-id", "data:image/bmp;base64,abc"))
-                .rejects.toThrow("Unsupported screenshot format");
+            await expect(saveScreenshot(server, "test-id", "data:image/bmp;base64,abc")).rejects.toThrow("Unsupported screenshot format");
         });
 
         it("SECURITY: rejects traversal in annotation ID", async () => {
@@ -250,8 +254,7 @@ describe("rpc/functions/annotations", () => {
         });
 
         it("rejects empty annotation ID", async () => {
-            await expect(saveScreenshot(server, "", "data:image/png;base64,abc"))
-                .rejects.toThrow("Invalid annotation ID");
+            await expect(saveScreenshot(server, "", "data:image/png;base64,abc")).rejects.toThrow("Invalid annotation ID");
         });
     });
 
@@ -281,7 +284,20 @@ describe("rpc/functions/annotations", () => {
         it("SECURITY: returns null for traversal paths in screenshot field", async () => {
             // Manually write annotation with malicious screenshot path
             await writeAnnotations(tmpDir, [
-                { comment: "evil", createdAt: "", elementTag: "div", id: "evil-id", intent: "fix", screenshot: "../../../etc/passwd", severity: "important", status: "pending", updatedAt: "", url: "/", x: 0, y: 0 },
+                {
+                    comment: "evil",
+                    createdAt: "",
+                    elementTag: "div",
+                    id: "evil-id",
+                    intent: "fix",
+                    screenshot: "../../../etc/passwd",
+                    severity: "important",
+                    status: "pending",
+                    updatedAt: "",
+                    url: "/",
+                    x: 0,
+                    y: 0,
+                },
             ] as never[]);
 
             const result = await getScreenshot(server, "evil-id");

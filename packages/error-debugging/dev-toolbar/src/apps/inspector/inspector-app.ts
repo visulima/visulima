@@ -1,23 +1,31 @@
 import { getEditorPreference } from "../../toolbar/hooks/use-frame-state";
-
 import type { A11yInfo } from "./a11y-capture";
 import { captureA11yInfo, formatA11yText } from "./a11y-capture";
-import { attachMarkdownShortcut, closeAnnotationPopups, detachMarkdownShortcut, isAnnotationFormOpen, isAnnotationsAppEnabled, isOverAnnotationOverlay, loadAndShowMarkers, removeAllMarkers, shakeAnnotationForm, showAnnotationForm, showAreaSelectionForm, showMultiSelectForm } from "./annotation-overlay";
+import {
+    attachMarkdownShortcut,
+    closeAnnotationPopups,
+    detachMarkdownShortcut,
+    isAnnotationFormOpen,
+    isOverAnnotationOverlay,
+    loadAndShowMarkers,
+    removeAllMarkers,
+    shakeAnnotationForm,
+    showAnnotationForm,
+    showAreaSelectionForm,
+    showMultiSelectForm,
+} from "./annotation-overlay";
 import { loadSettings } from "./annotation-settings";
 import { deepElementFromPoint, getElementBoundingBoxes, getElementLabel, getElementsInRect, pierceElementFromPoint } from "./element-utils";
 import { isFrozen, toggleFreeze } from "./freeze-animations";
-
 // ─── Theme palette ─────────────────────────────────────────────────────────────
 // These elements live in document.body (outside the shadow DOM), so CSS variables
 // from the toolbar's :host are not available. We resolve the theme from the same
 // localStorage key used by use-theme.ts and pick the matching palette.
-
 import type { InspectorPalette } from "./theme-palette";
-import { getInspectorPalette, isDarkTheme, INSPECTOR_DARK, INSPECTOR_LIGHT } from "./theme-palette";
+import { getInspectorPalette, INSPECTOR_DARK } from "./theme-palette";
 
 const getThemePalette = getInspectorPalette;
 const PALETTE_DARK = INSPECTOR_DARK;
-const PALETTE_LIGHT = INSPECTOR_LIGHT;
 
 // ─── DOM overlay helpers ──────────────────────────────────────────────────────
 
@@ -25,9 +33,34 @@ const OVERLAY_ID = "__vdt_inspector_overlay";
 
 // Tags that allow native text selection instead of starting a drag
 const TEXT_TAGS = new Set([
-    "P", "SPAN", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "TD", "TH",
-    "LABEL", "BLOCKQUOTE", "FIGCAPTION", "PRE", "CODE", "EM", "STRONG",
-    "B", "I", "U", "S", "A", "TIME", "CITE", "Q", "MARK", "SMALL",
+    "A",
+    "B",
+    "BLOCKQUOTE",
+    "CITE",
+    "CODE",
+    "EM",
+    "FIGCAPTION",
+    "H1",
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H6",
+    "I",
+    "LABEL",
+    "LI",
+    "MARK",
+    "P",
+    "PRE",
+    "Q",
+    "S",
+    "SMALL",
+    "SPAN",
+    "STRONG",
+    "TD",
+    "TH",
+    "TIME",
+    "U",
 ]);
 const LABEL_ID = "__vdt_inspector_label";
 const CURSOR_STYLE_ID = "__vdt_inspector_cursor";
@@ -36,17 +69,17 @@ const BADGE_KEYFRAMES_ID = "__vdt_inspector_kf";
 const RESULT_ID = "__vdt_inspector_result";
 
 /** Check if an element is the dev-toolbar or inside its Shadow DOM. */
-const isInsideDevToolbar = (el: Element | undefined): boolean => {
-    if (!el) {
+const isInsideDevToolbar = (element: Element | undefined): boolean => {
+    if (!element) {
         return false;
     }
 
-    if (el.tagName === "DEV-TOOLBAR") {
+    if (element.tagName === "DEV-TOOLBAR") {
         return true;
     }
 
     // Walk up, crossing shadow DOM boundaries
-    let current: Node | null = el;
+    let current: Node | null = element;
 
     while (current) {
         if (current instanceof ShadowRoot) {
@@ -228,9 +261,9 @@ const removeFloatingBadge = (): void => {
 
 /** Parse an SVG string safely via DOMParser (no innerHTML). */
 const parseSvg = (svgString: string): SVGElement => {
-    const doc = new DOMParser().parseFromString(svgString, "image/svg+xml");
+    const document_ = new DOMParser().parseFromString(svgString, "image/svg+xml");
 
-    return doc.documentElement as unknown as SVGElement;
+    return document_.documentElement as unknown as SVGElement;
 };
 
 // Static SVG icon strings (18x18, stroke-width 2)
@@ -246,52 +279,51 @@ const SVG_ANNOTATE = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height=
 
 let markersVisible = true;
 
-const makeToolbarButton = (
-    c: InspectorPalette,
-    svgString: string,
-    title: string,
-    onClick: () => void,
-    active: boolean = false,
-): HTMLButtonElement => {
-    const btn = document.createElement("button");
+const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string, onClick: () => void, active: boolean = false): HTMLButtonElement => {
+    const button = document.createElement("button");
 
-    btn.type = "button";
-    btn.title = title;
-    btn.style.cssText = [
-        "display:flex", "align-items:center", "justify-content:center",
-        "width:24px", "height:24px", "border:none",
-        "cursor:pointer", "padding:0",
-        `background:${active ? c.primary + "1f" : "transparent"}`,
+    button.type = "button";
+    button.title = title;
+    button.style.cssText = [
+        "display:flex",
+        "align-items:center",
+        "justify-content:center",
+        "width:24px",
+        "height:24px",
+        "border:none",
+        "cursor:pointer",
+        "padding:0",
+        `background:${active ? `${c.primary}1f` : "transparent"}`,
         `color:${active ? c.primary : c.muted}`,
         "transition:all 0.15s",
     ].join(";");
-    btn.append(parseSvg(svgString));
-    btn.addEventListener("pointerover", () => {
-        btn.style.background = c.primary + "14";
-        btn.style.color = c.primary;
+    button.append(parseSvg(svgString));
+    button.addEventListener("pointerover", () => {
+        button.style.background = `${c.primary}14`;
+        button.style.color = c.primary;
     });
-    btn.addEventListener("pointerout", () => {
-        btn.style.background = active ? c.primary + "1f" : "transparent";
-        btn.style.color = active ? c.primary : c.muted;
+    button.addEventListener("pointerout", () => {
+        button.style.background = active ? `${c.primary}1f` : "transparent";
+        button.style.color = active ? c.primary : c.muted;
     });
-    btn.addEventListener("pointerdown", () => {
-        btn.style.transform = "scale(0.94)";
+    button.addEventListener("pointerdown", () => {
+        button.style.transform = "scale(0.94)";
     });
-    btn.addEventListener("pointerup", () => {
-        btn.style.transform = "";
+    button.addEventListener("pointerup", () => {
+        button.style.transform = "";
     });
-    btn.addEventListener("click", (e) => {
+    button.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         onClick();
     });
 
-    return btn;
+    return button;
 };
 
 /** Replace button icon by swapping the SVG child. */
-const setButtonIcon = (btn: HTMLButtonElement, svgString: string): void => {
-    const svg = btn.querySelector("svg");
+const setButtonIcon = (button: HTMLButtonElement, svgString: string): void => {
+    const svg = button.querySelector("svg");
 
     if (svg) {
         svg.replaceWith(parseSvg(svgString));
@@ -315,9 +347,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
     // Shadow matching the dev-toolbar pill
     const isDark = c === PALETTE_DARK;
-    const pillShadow = isDark
-        ? "0 6px 24px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.5)"
-        : "0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.08)";
+    const pillShadow = isDark ? "0 6px 24px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.5)" : "0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.08)";
 
     badge.id = BADGE_ID;
     badge.style.cssText = [
@@ -374,31 +404,43 @@ const createFloatingBadge = (onCancel: () => void): void => {
     activeMode = "inspect";
 
     const createModeButton = (svgString: string, title: string, mode: InspectorMode): HTMLButtonElement => {
-        const btn = document.createElement("button");
+        const button = document.createElement("button");
 
-        btn.type = "button";
-        btn.title = title;
-        btn.append(parseSvg(svgString));
+        button.type = "button";
+        button.title = title;
+        button.append(parseSvg(svgString));
 
         const applyState = (): void => {
             const isActive = activeMode === mode;
 
-            btn.style.cssText = [
-                "display:flex", "align-items:center", "justify-content:center",
-                "width:24px", "height:24px", "border:none",
-                "cursor:pointer", "padding:0",
-                `background:${isActive ? c.primary + "1f" : "transparent"}`,
+            button.style.cssText = [
+                "display:flex",
+                "align-items:center",
+                "justify-content:center",
+                "width:24px",
+                "height:24px",
+                "border:none",
+                "cursor:pointer",
+                "padding:0",
+                `background:${isActive ? `${c.primary}1f` : "transparent"}`,
                 `color:${isActive ? c.primary : c.muted}`,
                 "transition:all 0.15s",
             ].join(";");
         };
 
         applyState();
-        btn.addEventListener("pointerover", () => { btn.style.background = c.primary + "14"; btn.style.color = c.primary; });
-        btn.addEventListener("pointerout", applyState);
-        btn.addEventListener("pointerdown", () => { btn.style.transform = "scale(0.94)"; });
-        btn.addEventListener("pointerup", () => { btn.style.transform = ""; });
-        btn.addEventListener("click", (e) => {
+        button.addEventListener("pointerover", () => {
+            button.style.background = `${c.primary}14`;
+            button.style.color = c.primary;
+        });
+        button.addEventListener("pointerout", applyState);
+        button.addEventListener("pointerdown", () => {
+            button.style.transform = "scale(0.94)";
+        });
+        button.addEventListener("pointerup", () => {
+            button.style.transform = "";
+        });
+        button.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
             activeMode = mode;
@@ -406,59 +448,67 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
             // Also update the other mode button
             for (const sibling of badge.querySelectorAll<HTMLButtonElement>("[data-mode]")) {
-                if (sibling !== btn) {
+                if (sibling !== button) {
                     sibling.dispatchEvent(new Event("pointerout"));
                 }
             }
         });
-        btn.dataset.mode = mode;
+        button.dataset.mode = mode;
 
-        return btn;
+        return button;
     };
 
-    const inspectBtn = createModeButton(SVG_INSPECT, "Inspect mode — click to view source & info", "inspect");
+    const inspectButton = createModeButton(SVG_INSPECT, "Inspect mode — click to view source & info", "inspect");
 
-    badge.append(inspectBtn);
+    badge.append(inspectButton);
 
-    const annotateBtn = createModeButton(SVG_ANNOTATE, "Annotate mode — click to add feedback", "annotate");
+    const annotateButton = createModeButton(SVG_ANNOTATE, "Annotate mode — click to add feedback", "annotate");
 
-    badge.append(annotateBtn);
+    badge.append(annotateButton);
 
     // ── Separator between modes and tools ──
-    const modeSep = document.createElement("span");
+    const modeSeparator = document.createElement("span");
 
-    modeSep.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
-    badge.append(modeSep);
+    modeSeparator.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    badge.append(modeSeparator);
 
     // ── Freeze button (P) ──
     // Pause icon = "click to pause/freeze", Play icon = "click to resume/unfreeze"
     const currentlyFrozen = isFrozen();
-    const freezeBtn = makeToolbarButton(c, currentlyFrozen ? SVG_PLAY : SVG_PAUSE, currentlyFrozen ? "Resume animations (P)" : "Pause animations (P)", () => {
-        const frozen = toggleFreeze();
+    const freezeButton = makeToolbarButton(
+        c,
+        currentlyFrozen ? SVG_PLAY : SVG_PAUSE,
+        currentlyFrozen ? "Resume animations (P)" : "Pause animations (P)",
+        () => {
+            const frozen = toggleFreeze();
 
-        // When frozen: show play icon (click to resume). When not: show pause icon (click to pause).
-        setButtonIcon(freezeBtn, frozen ? SVG_PLAY : SVG_PAUSE);
-        freezeBtn.title = frozen ? "Resume animations (P)" : "Pause animations (P)";
-        freezeBtn.style.color = frozen ? c.primary : c.muted;
-        freezeBtn.style.background = frozen ? c.primary + "22" : "transparent";
-    }, currentlyFrozen);
-    badge.append(freezeBtn);
+            // When frozen: show play icon (click to resume). When not: show pause icon (click to pause).
+            setButtonIcon(freezeButton, frozen ? SVG_PLAY : SVG_PAUSE);
+            freezeButton.title = frozen ? "Resume animations (P)" : "Pause animations (P)";
+            freezeButton.style.color = frozen ? c.primary : c.muted;
+            freezeButton.style.background = frozen ? `${c.primary}22` : "transparent";
+        },
+        currentlyFrozen,
+    );
+
+    badge.append(freezeButton);
 
     // ── Visibility toggle (H) ──
-    const visBtn = makeToolbarButton(c, SVG_EYE, "Toggle markers (H)", () => {
+    const visButton = makeToolbarButton(c, SVG_EYE, "Toggle markers (H)", () => {
         markersVisible = !markersVisible;
 
         for (const m of document.querySelectorAll<HTMLElement>(".__vdt_annotation_marker")) {
             m.style.visibility = markersVisible ? "visible" : "hidden";
         }
 
-        setButtonIcon(visBtn, markersVisible ? SVG_EYE : SVG_EYE_OFF);
-        visBtn.title = markersVisible ? "Hide markers (H)" : "Show markers (H)";
+        setButtonIcon(visButton, markersVisible ? SVG_EYE : SVG_EYE_OFF);
+        visButton.title = markersVisible ? "Hide markers (H)" : "Show markers (H)";
     });
-    badge.append(visBtn);
+
+    badge.append(visButton);
 
     // ── Copy markdown (C) ──
-    const copyBtn = makeToolbarButton(c, SVG_COPY, "Copy annotations (C)", async () => {
+    const copyButton = makeToolbarButton(c, SVG_COPY, "Copy annotations (C)", async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
@@ -474,99 +524,106 @@ const createFloatingBadge = (onCancel: () => void): void => {
             await navigator.clipboard.writeText(md);
 
             // Flash feedback
-            copyBtn.style.color = c.primary;
-            setTimeout(() => { copyBtn.style.color = c.muted; }, 1000);
+            copyButton.style.color = c.primary;
+            setTimeout(() => {
+                copyButton.style.color = c.muted;
+            }, 1000);
         } catch {
             /* ignore */
         }
     });
-    badge.append(copyBtn);
+
+    badge.append(copyButton);
 
     // ── Clear all (X) with confirmation bar ──
     const CONFIRM_BAR_ID = "__vdt_clear_confirm";
 
-    badge.append(makeToolbarButton(c, SVG_CLEAR, "Clear all annotations (X)", () => {
-        // Remove existing bar if any
-        document.getElementById(CONFIRM_BAR_ID)?.remove();
+    badge.append(
+        makeToolbarButton(c, SVG_CLEAR, "Clear all annotations (X)", () => {
+            // Remove existing bar if any
+            document.getElementById(CONFIRM_BAR_ID)?.remove();
 
-        const badgeRect = badge.getBoundingClientRect();
-        const bar = document.createElement("div");
+            const badgeRect = badge.getBoundingClientRect();
+            const bar = document.createElement("div");
 
-        bar.id = CONFIRM_BAR_ID;
-        bar.style.cssText = [
-            "position:fixed", "z-index:2147483646",
-            `bottom:${window.innerHeight - badgeRect.top + 6}px`,
-            `left:${badgeRect.left}px`,
-            `background:${c.bg}`,
-            `box-shadow:${pillShadow}`,
-            "padding:6px 12px",
-            "display:flex", "align-items:center", "gap:8px",
-            "font:12px/1 system-ui,-apple-system,sans-serif",
-            `color:${c.fg}`,
-            "pointer-events:auto",
-        ].join(";");
-        bar.addEventListener("click", (e) => e.stopPropagation());
-        bar.addEventListener("mousedown", (e) => e.stopPropagation());
+            bar.id = CONFIRM_BAR_ID;
+            bar.style.cssText = [
+                "position:fixed",
+                "z-index:2147483646",
+                `bottom:${window.innerHeight - badgeRect.top + 6}px`,
+                `left:${badgeRect.left}px`,
+                `background:${c.bg}`,
+                `box-shadow:${pillShadow}`,
+                "padding:6px 12px",
+                "display:flex",
+                "align-items:center",
+                "gap:8px",
+                "font:12px/1 system-ui,-apple-system,sans-serif",
+                `color:${c.fg}`,
+                "pointer-events:auto",
+            ].join(";");
+            bar.addEventListener("click", (e) => e.stopPropagation());
+            bar.addEventListener("mousedown", (e) => e.stopPropagation());
 
-        const label = document.createElement("span");
+            const label = document.createElement("span");
 
-        label.textContent = "Clear all annotations?";
-        label.style.cssText = `color:${c.muted};font-size:11px;`;
+            label.textContent = "Clear all annotations?";
+            label.style.cssText = `color:${c.muted};font-size:11px;`;
 
-        const yesBtn = document.createElement("button");
+            const yesButton = document.createElement("button");
 
-        yesBtn.type = "button";
-        yesBtn.textContent = "Yes, clear";
-        yesBtn.style.cssText = `background:#ef4444;color:#fff;border:none;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;`;
-        yesBtn.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            bar.remove();
+            yesButton.type = "button";
+            yesButton.textContent = "Yes, clear";
+            yesButton.style.cssText = `background:#ef4444;color:#fff;border:none;padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;`;
+            yesButton.addEventListener("click", async (e) => {
+                e.stopPropagation();
+                bar.remove();
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const rpc = (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
-            if (!rpc?.getAnnotations || !rpc?.deleteAnnotation) {
-                return;
-            }
+                if (!rpc?.getAnnotations || !rpc?.deleteAnnotation) {
+                    return;
+                }
 
-            const annotations = await rpc.getAnnotations();
+                const annotations = await rpc.getAnnotations();
 
-            // Bulk delete in parallel
-            await Promise.all(
-                (annotations as Array<{ id: string }>).map((a) => rpc.deleteAnnotation(a.id)),
-            );
+                // Bulk delete in parallel
+                await Promise.all((annotations as { id: string }[]).map((a) => rpc.deleteAnnotation(a.id)));
 
-            await loadAndShowMarkers();
-        });
+                await loadAndShowMarkers();
+            });
 
-        const noBtn = document.createElement("button");
+            const noButton = document.createElement("button");
 
-        noBtn.type = "button";
-        noBtn.textContent = "Cancel";
-        noBtn.style.cssText = `background:transparent;color:${c.muted};border:1px solid ${c.btnBorder};padding:4px 10px;cursor:pointer;font-size:11px;`;
-        noBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            bar.remove();
-        });
+            noButton.type = "button";
+            noButton.textContent = "Cancel";
+            noButton.style.cssText = `background:transparent;color:${c.muted};border:1px solid ${c.btnBorder};padding:4px 10px;cursor:pointer;font-size:11px;`;
+            noButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                bar.remove();
+            });
 
-        bar.append(label, yesBtn, noBtn);
-        document.body.append(bar);
+            bar.append(label, yesButton, noButton);
+            document.body.append(bar);
 
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => bar.remove(), 5000);
-    }));
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => bar.remove(), 5000);
+        }),
+    );
 
     // ── Separator ──
-    const sep = document.createElement("span");
+    const separator = document.createElement("span");
 
-    sep.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
-    badge.append(sep);
+    separator.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    badge.append(separator);
 
     // ── Close button ──
-    badge.append(makeToolbarButton(c, SVG_CLOSE, "Close inspector (Esc)", () => {
-        document.getElementById(SETTINGS_POPUP_ID)?.remove();
-        onCancel();
-    }));
+    badge.append(
+        makeToolbarButton(c, SVG_CLOSE, "Close inspector (Esc)", () => {
+            onCancel();
+        }),
+    );
 
     document.body.append(badge);
 };
@@ -844,11 +901,7 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
         // Horizontal: right of element → shift left if needed
         let finalLeft: number;
 
-        if (popupAnchorX + popupRect.width <= vw - margin) {
-            finalLeft = popupAnchorX;
-        } else {
-            finalLeft = Math.max(margin, vw - popupRect.width - margin);
-        }
+        finalLeft = popupAnchorX + popupRect.width <= vw - margin ? popupAnchorX : Math.max(margin, vw - popupRect.width - margin);
 
         popup.style.top = `${finalTop}px`;
         popup.style.left = `${finalLeft}px`;
@@ -896,7 +949,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
     setCrosshairCursor(true);
 
     // Load and show annotation markers on the page
-    loadAndShowMarkers().catch(() => {/* ignore */});
+    loadAndShowMarkers().catch(() => {
+        /* ignore */
+    });
 
     // Attach markdown export shortcut (Ctrl+Shift+C)
     attachMarkdownShortcut();
@@ -942,13 +997,13 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
     // ─── Cmd+Shift+Click multi-select state ─────────────────────────────────
     const MULTI_SELECT_OUTLINE_CLASS = "__vdt_multi_select_outline";
-    let pendingMultiSelectElements: Array<{ element: Element; name: string; rect: DOMRect }> = [];
+    let pendingMultiSelectElements: { element: Element; name: string; rect: DOMRect }[] = [];
     const modifiersHeld = { cmd: false, shift: false };
 
     const renderMultiSelectOutlines = (): void => {
         // Remove existing outlines
-        for (const el of document.querySelectorAll(`.${MULTI_SELECT_OUTLINE_CLASS}`)) {
-            el.remove();
+        for (const element of document.querySelectorAll(`.${MULTI_SELECT_OUTLINE_CLASS}`)) {
+            element.remove();
         }
 
         const isMulti = pendingMultiSelectElements.length > 1;
@@ -959,8 +1014,14 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
             outline.className = MULTI_SELECT_OUTLINE_CLASS;
             outline.style.cssText = [
-                "position:fixed", "pointer-events:none", "z-index:2147483644", "box-sizing:border-box",
-                `top:${r.top}px`, `left:${r.left}px`, `width:${r.width}px`, `height:${r.height}px`,
+                "position:fixed",
+                "pointer-events:none",
+                "z-index:2147483644",
+                "box-sizing:border-box",
+                `top:${r.top}px`,
+                `left:${r.left}px`,
+                `width:${r.width}px`,
+                `height:${r.height}px`,
                 isMulti
                     ? "border:2px solid rgba(34,197,94,0.7);background:rgba(34,197,94,0.08);"
                     : `border:2px solid ${getThemePalette().overlayBorder};background:${getThemePalette().overlayBg};`,
@@ -971,8 +1032,8 @@ export const startGlobalInspection = (onCancel: () => void): void => {
     };
 
     const removeMultiSelectOutlines = (): void => {
-        for (const el of document.querySelectorAll(`.${MULTI_SELECT_OUTLINE_CLASS}`)) {
-            el.remove();
+        for (const element of document.querySelectorAll(`.${MULTI_SELECT_OUTLINE_CLASS}`)) {
+            element.remove();
         }
     };
 
@@ -1003,8 +1064,10 @@ export const startGlobalInspection = (onCancel: () => void): void => {
         } else {
             // Multiple elements — multi-select annotation
             const elements = pendingMultiSelectElements.map((i) => i.element);
-            const freshRects = elements.map((el) => el.getBoundingClientRect());
-            const boxes = freshRects.map((r) => ({ height: r.height, width: r.width, x: r.x, y: r.y }));
+            const freshRects = elements.map((element) => element.getBoundingClientRect());
+            const boxes = freshRects.map((r) => {
+                return { height: r.height, width: r.width, x: r.x, y: r.y };
+            });
             const selectionRect = new DOMRect(
                 Math.min(...freshRects.map((r) => r.left)),
                 Math.min(...freshRects.map((r) => r.top)),
@@ -1014,11 +1077,7 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
             removeMultiSelectOutlines();
             pendingMultiSelectElements = [];
-            showMultiSelectForm(
-                elements,
-                selectionRect,
-                boxes,
-            );
+            showMultiSelectForm(elements, selectionRect, boxes);
         }
     };
 
@@ -1132,66 +1191,12 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             removeFloatingBadge();
             inspectionCleanup = undefined;
         },
-        handleMouseDown(event: MouseEvent): void {
-            const target = (event.composedPath()[0] || event.target) as HTMLElement;
-
-            // Skip on toolbar, markers, popups
-            if (target.closest?.(`#${BADGE_ID}`) || target.closest?.(`#${RESULT_ID}`) || target.classList?.contains("__vdt_annotation_marker")) {
-                return;
-            }
-
-            if (target.closest?.(`#__vdt_annotation_form`) || target.closest?.(`#__vdt_annotation_detail`)) {
-                return;
-            }
-
-            if (TEXT_TAGS.has(target.tagName) || target.isContentEditable) {
-                return;
-            }
-
-            // Record mousedown position — drag activates after threshold
-            dragStart = { x: event.clientX, y: event.clientY };
-            isDragging = false;
-        },
-        handleMouseUp(event: MouseEvent): void {
-            if (!dragStart || !isDragging) {
-                removeDragRect();
-
-                return;
-            }
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            const x = Math.min(dragStart.x, event.clientX);
-            const y = Math.min(dragStart.y, event.clientY);
-            const width = Math.abs(event.clientX - dragStart.x);
-            const height = Math.abs(event.clientY - dragStart.y);
-
-            removeDragRect();
-
-            if (width < 20 || height < 20) {
-                return;
-            }
-
-            // Find all elements in the selection rectangle
-            const selectionRect = new DOMRect(x, y, width, height);
-            const elements = getElementsInRect(selectionRect);
-
-            hideOverlay();
-
-            if (elements.length === 0) {
-                // Empty area selection — still create an annotation for the region
-                showAreaSelectionForm(selectionRect);
-            } else {
-                const boxes = getElementBoundingBoxes(elements);
-
-                showMultiSelectForm(elements, selectionRect, boxes);
-            }
-        },
         handleClick(event: MouseEvent): void {
             // Cmd/Ctrl (without Shift) = deep select / pierce mode
             const piercing = (event.metaKey || event.ctrlKey) && !event.shiftKey;
-            const target = (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ?? (event.target as Element | undefined);
+            const target =
+                (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
+                (event.target as Element | undefined);
 
             if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target)) {
                 return;
@@ -1204,16 +1209,16 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
                 const existingIndex = pendingMultiSelectElements.findIndex((item) => item.element === target);
 
-                if (existingIndex >= 0) {
-                    // Deselect
-                    pendingMultiSelectElements.splice(existingIndex, 1);
-                } else {
+                if (existingIndex === -1) {
                     // Select
                     pendingMultiSelectElements.push({
                         element: target,
                         name: getElementLabel(target),
                         rect: target.getBoundingClientRect(),
                     });
+                } else {
+                    // Deselect
+                    pendingMultiSelectElements.splice(existingIndex, 1);
                 }
 
                 renderMultiSelectOutlines();
@@ -1290,9 +1295,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             if (key === "p") {
                 event.preventDefault();
                 // Simulate freeze button click
-                const freezeBtn = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="animations"]`);
+                const freezeButton = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="animations"]`);
 
-                freezeBtn?.click();
+                freezeButton?.click();
 
                 return;
             }
@@ -1301,9 +1306,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             if (key === "h") {
                 event.preventDefault();
 
-                const visBtn = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="markers"]`);
+                const visButton = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="markers"]`);
 
-                visBtn?.click();
+                visButton?.click();
 
                 return;
             }
@@ -1312,9 +1317,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             if (key === "c" && !event.ctrlKey && !event.metaKey) {
                 event.preventDefault();
 
-                const copyBtn = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="Copy"]`);
+                const copyButton = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="Copy"]`);
 
-                copyBtn?.click();
+                copyButton?.click();
 
                 return;
             }
@@ -1323,10 +1328,30 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             if (key === "x") {
                 event.preventDefault();
 
-                const clearBtn = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="Clear"]`);
+                const clearButton = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="Clear"]`);
 
-                clearBtn?.click();
+                clearButton?.click();
             }
+        },
+        handleMouseDown(event: MouseEvent): void {
+            const target = (event.composedPath()[0] || event.target) as HTMLElement;
+
+            // Skip on toolbar, markers, popups
+            if (target.closest?.(`#${BADGE_ID}`) || target.closest?.(`#${RESULT_ID}`) || target.classList?.contains("__vdt_annotation_marker")) {
+                return;
+            }
+
+            if (target.closest?.(`#__vdt_annotation_form`) || target.closest?.(`#__vdt_annotation_detail`)) {
+                return;
+            }
+
+            if (TEXT_TAGS.has(target.tagName) || target.isContentEditable) {
+                return;
+            }
+
+            // Record mousedown position — drag activates after threshold
+            dragStart = { x: event.clientX, y: event.clientY };
+            isDragging = false;
         },
         handleMouseMove(event: MouseEvent): void {
             // Freeze overlay while annotation form is open — don't update highlight
@@ -1353,7 +1378,8 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 if (!rect) {
                     rect = document.createElement("div");
                     rect.id = DRAG_RECT_ID;
-                    rect.style.cssText = "position:fixed;pointer-events:none;z-index:2147483644;border:2px dashed rgba(99,102,241,0.7);background:rgba(99,102,241,0.1);";
+                    rect.style.cssText =
+                        "position:fixed;pointer-events:none;z-index:2147483644;border:2px dashed rgba(99,102,241,0.7);background:rgba(99,102,241,0.1);";
                     document.body.append(rect);
                 }
 
@@ -1377,7 +1403,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
             // Cmd/Ctrl (without Shift) = deep select / pierce mode on hover
             const piercing = (event.metaKey || event.ctrlKey) && !event.shiftKey;
-            const target = (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ?? (event.target as Element | undefined);
+            const target =
+                (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
+                (event.target as Element | undefined);
 
             if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target)) {
                 hideOverlay();
@@ -1392,6 +1420,42 @@ export const startGlobalInspection = (onCancel: () => void): void => {
 
             if (overlay) {
                 overlay.style.borderStyle = piercing ? "dashed" : "solid";
+            }
+        },
+        handleMouseUp(event: MouseEvent): void {
+            if (!dragStart || !isDragging) {
+                removeDragRect();
+
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const x = Math.min(dragStart.x, event.clientX);
+            const y = Math.min(dragStart.y, event.clientY);
+            const width = Math.abs(event.clientX - dragStart.x);
+            const height = Math.abs(event.clientY - dragStart.y);
+
+            removeDragRect();
+
+            if (width < 20 || height < 20) {
+                return;
+            }
+
+            // Find all elements in the selection rectangle
+            const selectionRect = new DOMRect(x, y, width, height);
+            const elements = getElementsInRect(selectionRect);
+
+            hideOverlay();
+
+            if (elements.length === 0) {
+                // Empty area selection — still create an annotation for the region
+                showAreaSelectionForm(selectionRect);
+            } else {
+                const boxes = getElementBoundingBoxes(elements);
+
+                showMultiSelectForm(elements, selectionRect, boxes);
             }
         },
     };

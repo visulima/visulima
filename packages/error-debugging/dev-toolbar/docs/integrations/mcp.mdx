@@ -73,6 +73,7 @@ Add the dev-toolbar MCP server to your agent's configuration.
 
         The server communicates over stdio using the MCP protocol. Point your MCP client at this command.
     </Tab>
+
 </Tabs>
 
 <Callout type="info">
@@ -134,6 +135,7 @@ Returns an array of annotation objects with full metadata (element tag, source l
 Fetch a specific annotation's screenshot as a base64-encoded data URL.
 
 **Parameters:**
+
 - `annotationId` (string) — the annotation ID
 
 Returns the screenshot as `data:image/png;base64,...` (or JPEG/WebP depending on capture format).
@@ -143,6 +145,7 @@ Returns the screenshot as `data:image/png;base64,...` (or JPEG/WebP depending on
 Mark an annotation as `acknowledged` — signals that work has started.
 
 **Parameters:**
+
 - `annotationId` (string) — the annotation ID
 
 ### `add_thread_message`
@@ -150,6 +153,7 @@ Mark an annotation as `acknowledged` — signals that work has started.
 Add a message to an annotation's conversation thread.
 
 **Parameters:**
+
 - `annotationId` (string) — the annotation ID
 - `content` (string) — the message text
 
@@ -160,6 +164,7 @@ The message is added with `role: "agent"`, a unique `id`, and a server-generated
 Mark an annotation as `resolved`. The associated screenshot is automatically deleted.
 
 **Parameters:**
+
 - `annotationId` (string) — the annotation ID
 
 ### `watch_annotations`
@@ -167,6 +172,7 @@ Mark an annotation as `resolved`. The associated screenshot is automatically del
 Block until new pending annotations appear. Useful for hands-free workflows where the agent polls for work.
 
 **Parameters:**
+
 - `timeout` (number, optional) — maximum wait time in milliseconds
 - `batchWindow` (number, optional) — wait this many milliseconds after the first new annotation before returning, to batch multiple annotations
 

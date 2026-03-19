@@ -79,22 +79,22 @@ type ViteConfigSnapshot = {
 const normalizeAlias = (rawAlias: unknown): AliasEntry[] | Record<string, string> | undefined => {
     if (Array.isArray(rawAlias)) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (rawAlias as any[])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((entry: any) => {
-                return {
-                    find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
-                    replacement: String(entry.replacement ?? ""),
-                };
-            });
+        return (
+            (rawAlias as any[])
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .map((entry: any) => {
+                    return {
+                        find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
+                        replacement: String(entry.replacement ?? ""),
+                    };
+                })
+        );
     }
 
     if (rawAlias !== undefined && rawAlias !== null && typeof rawAlias === "object") {
-        return Object.fromEntries(
-            Object.entries(rawAlias as Record<string, string>).map(([k, v]) => [k, String(v)]),
-        );
+        return Object.fromEntries(Object.entries(rawAlias as Record<string, string>).map(([k, v]) => [k, String(v)]));
     }
 
     return undefined;
@@ -168,12 +168,12 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
         envPrefix: config.envPrefix,
         esbuild: config.esbuild
             ? {
-                jsx: config.esbuild.jsx as string | undefined,
-                jsxFactory: config.esbuild.jsxFactory,
-                jsxFragment: config.esbuild.jsxFragment,
-                jsxImportSource: config.esbuild.jsxImportSource,
-                target: config.esbuild.target as string | string[] | undefined,
-            }
+                  jsx: config.esbuild.jsx as string | undefined,
+                  jsxFactory: config.esbuild.jsxFactory,
+                  jsxFragment: config.esbuild.jsxFragment,
+                  jsxImportSource: config.esbuild.jsxImportSource,
+                  target: config.esbuild.target as string | string[] | undefined,
+              }
             : undefined,
         mode: config.mode,
         optimizeDeps: {
@@ -219,11 +219,11 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
             config.ssr === undefined
                 ? undefined
                 : {
-                    // external can be string[] | true — normalise to string[] only
-                    external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
-                    noExternal: ssrNoExternalNormalized,
-                    target: config.ssr?.target,
-                },
+                      // external can be string[] | true — normalise to string[] only
+                      external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
+                      noExternal: ssrNoExternalNormalized,
+                      target: config.ssr?.target,
+                  },
     };
 };
 

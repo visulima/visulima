@@ -97,7 +97,9 @@ const resolveIsDark = (): boolean => {
 
             return true;
         }
-    } catch { /* noop */ }
+    } catch {
+        /* noop */
+    }
 
     cachedIsDark = globalThis.window?.matchMedia("(prefers-color-scheme: dark)").matches ?? true;
 
@@ -106,11 +108,9 @@ const resolveIsDark = (): boolean => {
 
 export const isDarkTheme = (): boolean => resolveIsDark();
 
-export const getInspectorPalette = (): InspectorPalette =>
-    resolveIsDark() ? INSPECTOR_DARK : INSPECTOR_LIGHT;
+export const getInspectorPalette = (): InspectorPalette => (resolveIsDark() ? INSPECTOR_DARK : INSPECTOR_LIGHT);
 
-export const getAnnotationPalette = (): AnnotationPalette =>
-    resolveIsDark() ? ANNOTATION_DARK : ANNOTATION_LIGHT;
+export const getAnnotationPalette = (): AnnotationPalette => (resolveIsDark() ? ANNOTATION_DARK : ANNOTATION_LIGHT);
 
 /** Reset cache (e.g. when theme changes). */
 export const resetPaletteCache = (): void => {
@@ -121,9 +121,9 @@ export const resetPaletteCache = (): void => {
 // Guarded to prevent duplicate listeners on HMR reloads.
 const LISTENER_KEY = "__vdt_palette_listener";
 
-if (typeof window !== "undefined" && !(window as Record<string, unknown>)[LISTENER_KEY]) {
-    (window as Record<string, unknown>)[LISTENER_KEY] = true;
-    window.addEventListener("storage", (e) => {
+if (globalThis.window !== undefined && !(globalThis as unknown as Record<string, unknown>)[LISTENER_KEY]) {
+    (globalThis as unknown as Record<string, unknown>)[LISTENER_KEY] = true;
+    globalThis.addEventListener("storage", (e) => {
         if (e.key === "__v_dt__theme") {
             cachedIsDark = undefined;
         }

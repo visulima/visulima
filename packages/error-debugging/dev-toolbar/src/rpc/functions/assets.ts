@@ -77,7 +77,12 @@ const createSemaphore = (limit: number) => {
     return { acquire, release };
 };
 
-const walkDirectory = async (directory: string, resolvedPublicDirectory: string, semaphore: ReturnType<typeof createSemaphore>, collected: StaticAsset[]): Promise<void> => {
+const walkDirectory = async (
+    directory: string,
+    resolvedPublicDirectory: string,
+    semaphore: ReturnType<typeof createSemaphore>,
+    collected: StaticAsset[],
+): Promise<void> => {
     if (collected.length >= MAX_ASSETS) {
         return;
     }

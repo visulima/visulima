@@ -67,11 +67,15 @@ export const loadSettings = (): AnnotationSettings => {
         const raw = localStorage.getItem(STORAGE_KEY);
 
         if (raw) {
-            cachedSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
+            const parsed = JSON.parse(raw) as Partial<AnnotationSettings>;
 
-            return cachedSettings;
+            cachedSettings = { ...DEFAULT_SETTINGS, ...parsed };
+
+            return cachedSettings as AnnotationSettings;
         }
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
 
     cachedSettings = { ...DEFAULT_SETTINGS };
 
@@ -83,7 +87,9 @@ export const saveSettings = (settings: AnnotationSettings): void => {
 
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch { /* ignore */ }
+    } catch {
+        /* ignore */
+    }
 };
 
 export const getMarkerColor = (settings?: AnnotationSettings): MarkerColor => {

@@ -158,7 +158,10 @@ const PopoverContent = ({
 
     return (
         <div
-            class={clsx("z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95", className)}
+            class={clsx(
+                "z-50 w-72 rounded-none border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95",
+                className,
+            )}
             ref={contentRef}
             role="dialog"
             style={{ left: `${position.x}px`, position: "fixed", top: `${position.y}px` }}

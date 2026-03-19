@@ -233,17 +233,13 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
 
             const parts: string[] = [];
 
-            if (event.altKey)
-                parts.push("Alt");
+            if (event.altKey) parts.push("Alt");
 
-            if (event.ctrlKey)
-                parts.push("Control");
+            if (event.ctrlKey) parts.push("Control");
 
-            if (event.metaKey)
-                parts.push("Meta");
+            if (event.metaKey) parts.push("Meta");
 
-            if (event.shiftKey)
-                parts.push("Shift");
+            if (event.shiftKey) parts.push("Shift");
 
             parts.push(event.key);
 
@@ -346,14 +342,14 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: v } })}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: v } })}
                                 value={state.keybindings?.toggle ?? DEFAULT_KEYBINDINGS.toggle}
                             />
                             {state.keybindings?.toggle !== DEFAULT_KEYBINDINGS.toggle && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
                                     onClick={() =>
-                                        updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: DEFAULT_KEYBINDINGS.toggle } })
+                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: DEFAULT_KEYBINDINGS.toggle } })
                                     }
                                     variant="link"
                                 >
@@ -369,14 +365,14 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: v } })}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: v } })}
                                 value={state.keybindings?.close ?? DEFAULT_KEYBINDINGS.close}
                             />
                             {state.keybindings?.close !== DEFAULT_KEYBINDINGS.close && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
                                     onClick={() =>
-                                        updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: DEFAULT_KEYBINDINGS.close } })
+                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: DEFAULT_KEYBINDINGS.close } })
                                     }
                                     variant="link"
                                 >

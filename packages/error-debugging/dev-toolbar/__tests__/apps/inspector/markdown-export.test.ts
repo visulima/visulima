@@ -28,19 +28,13 @@ describe("annotationsToMarkdown", () => {
         });
 
         it("includes selected text", () => {
-            const md = annotationsToMarkdown(
-                [makeAnnotation({ selectedText: "some selected text" })],
-                "compact",
-            );
+            const md = annotationsToMarkdown([makeAnnotation({ selectedText: "some selected text" })], "compact");
 
             expect(md).toContain(`(re: "some selected tex`);
         });
 
         it("uses elementLabel when available", () => {
-            const md = annotationsToMarkdown(
-                [makeAnnotation({ elementLabel: 'button "Submit"' })],
-                "compact",
-            );
+            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: 'button "Submit"' })], "compact");
 
             expect(md).toContain('**button "Submit":**');
         });
@@ -55,26 +49,30 @@ describe("annotationsToMarkdown", () => {
         });
 
         it("includes selector", () => {
-            const md = annotationsToMarkdown(
-                [makeAnnotation({ elementPath: "#submit-btn" })],
-                "standard",
-            );
+            const md = annotationsToMarkdown([makeAnnotation({ elementPath: "#submit-btn" })], "standard");
 
             expect(md).toContain("**Selector:** `#submit-btn`");
         });
 
         it("includes source", () => {
-            const md = annotationsToMarkdown(
-                [makeAnnotation({ source: "src/App.tsx:42:10" })],
-                "standard",
-            );
+            const md = annotationsToMarkdown([makeAnnotation({ source: "src/App.tsx:42:10" })], "standard");
 
             expect(md).toContain("**Source:** `src/App.tsx:42:10`");
         });
 
         it("includes framework context", () => {
             const md = annotationsToMarkdown(
-                [makeAnnotation({ frameworkContext: { componentName: "Button", componentStack: ["App", "Layout", "Button"], framework: "react", sourceFile: "src/Button.tsx", sourceLine: 10 } })],
+                [
+                    makeAnnotation({
+                        frameworkContext: {
+                            componentName: "Button",
+                            componentStack: ["App", "Layout", "Button"],
+                            framework: "react",
+                            sourceFile: "src/Button.tsx",
+                            sourceLine: 10,
+                        },
+                    }),
+                ],
                 "standard",
             );
 
@@ -122,14 +120,16 @@ describe("annotationsToMarkdown", () => {
     describe("forensic format", () => {
         it("includes everything", () => {
             const md = annotationsToMarkdown(
-                [makeAnnotation({
-                    accessibility: { focusable: true, role: "button" },
-                    computedStyles: "color: red; font-size: 14px",
-                    cssClasses: "btn",
-                    fullPath: "body > main > button",
-                    nearbyElements: "span, div, a",
-                    nearbyText: "Submit form",
-                })],
+                [
+                    makeAnnotation({
+                        accessibility: { focusable: true, role: "button" },
+                        computedStyles: "color: red; font-size: 14px",
+                        cssClasses: "btn",
+                        fullPath: "body > main > button",
+                        nearbyElements: "span, div, a",
+                        nearbyText: "Submit form",
+                    }),
+                ],
                 "forensic",
             );
 
@@ -149,10 +149,7 @@ describe("annotationsToMarkdown", () => {
     });
 
     it("handles multiple annotations", () => {
-        const md = annotationsToMarkdown([
-            makeAnnotation({ comment: "First" }),
-            makeAnnotation({ comment: "Second" }),
-        ]);
+        const md = annotationsToMarkdown([makeAnnotation({ comment: "First" }), makeAnnotation({ comment: "Second" })]);
 
         expect(md).toContain("2 annotation(s)");
         expect(md).toContain("First");
