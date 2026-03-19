@@ -66,6 +66,7 @@ export interface DevToolbarOptions {
     apps?: {
         [key: string]: boolean | undefined;
         a11y?: boolean;
+        annotations?: boolean;
         assets?: boolean;
         inspector?: boolean;
         moduleGraph?: boolean;
@@ -215,6 +216,19 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     const mainPlugin: Plugin = {
         apply: "serve",
 
+        config() {
+            return {
+                server: {
+                    watch: {
+                        // Exclude the annotation store directory from Vite's file watcher.
+                        // Writing annotations/screenshots to .devtoolbar/ must not trigger
+                        // a full page reload or HMR update.
+                        ignored: ["**/.devtoolbar/**"],
+                    },
+                },
+            };
+        },
+
         configResolved(resolvedConfig) {
             config = resolvedConfig;
 
@@ -280,6 +294,50 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     type: "custom",
                 });
             });
+
+            // SSE endpoint for live annotation sync (browser ↔ MCP agent)
+            // Watches .devtoolbar/annotations.json for changes and pushes events.
+            srv.middlewares.use("/__devtoolbar/events", async (req, res) => {
+                res.writeHead(200, {
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "Content-Type": "text/event-stream",
+                    "X-Accel-Buffering": "no",
+                });
+
+                const sendEvent = (event: string, data: unknown): void => {
+                    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+                };
+
+                sendEvent("connected", { timestamp: Date.now() });
+
+                // Use Node.js fs.watch (available in all Node versions, no CJS require needed)
+                const { watch } = await import("node:fs");
+                const annotationsPath = path.join(srv.config.root, ".devtoolbar", "annotations.json");
+
+                let watcher: ReturnType<typeof watch> | undefined;
+
+                try {
+                    watcher = watch(annotationsPath, { persistent: false }, (eventType) => {
+                        if (eventType === "change") {
+                            sendEvent("annotations.changed", { timestamp: Date.now() });
+                        }
+                    });
+                } catch {
+                    // File may not exist yet — fall back to polling
+                    const interval = setInterval(() => {
+                        sendEvent("annotations.changed", { timestamp: Date.now() });
+                    }, 2000);
+
+                    req.on("close", () => clearInterval(interval));
+
+                    return;
+                }
+
+                req.on("close", () => {
+                    watcher?.close();
+                });
+            });
         },
 
         enforce: "pre",
@@ -303,6 +361,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return `export default ${JSON.stringify({
                     apps: {
                         a11y: options.apps?.a11y ?? false,
+                        // Auto-enable annotations when inspector is enabled (inspector's
+                        // badge links to the annotations panel for managing annotations)
+                        annotations: options.apps?.annotations ?? options.apps?.inspector ?? false,
                         assets: options.apps?.assets ?? false,
                         inspector: options.apps?.inspector ?? false,
                         moduleGraph: options.apps?.moduleGraph ?? false,

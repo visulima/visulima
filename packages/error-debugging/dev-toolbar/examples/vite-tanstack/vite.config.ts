@@ -19,6 +19,7 @@ export default defineConfig({
             apps: {
                 settings: true,
                 timeline: true,
+                inspector: true,
             },
             defaultVisible: true,
             placement: "bottom-center",

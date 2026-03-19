@@ -32,6 +32,9 @@
   },
   "sideEffects": false,
   "type": "module",
+  "bin": {
+    "visulima-dev-toolbar-mcp": "./bin/mcp.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -81,9 +84,17 @@
       "types": "./dist/apps/timeline/index.d.ts",
       "default": "./dist/apps/timeline/index.js"
     },
+    "./apps/annotations": {
+      "types": "./dist/apps/annotations/index.d.ts",
+      "default": "./dist/apps/annotations/index.js"
+    },
     "./apps/vite-config": {
       "types": "./dist/apps/vite-config/index.d.ts",
       "default": "./dist/apps/vite-config/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/server.d.ts",
+      "default": "./dist/mcp/server.js"
     },
     "./toolbar": {
       "types": "./dist/toolbar/index.d.ts",
@@ -96,6 +107,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "bin",
     "dist",
     "README.md",
     "CHANGELOG.md"
@@ -168,11 +180,19 @@
     "vitest": "catalog:test"
   },
   "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "axe-core": "catalog:peer",
-    "vite": "^6 || ^7 || ^8"
+    "vite": "^6 || ^7 || ^8",
+    "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "@modelcontextprotocol/sdk": {
+      "optional": true
+    },
     "axe-core": {
+      "optional": true
+    },
+    "zod": {
       "optional": true
     }
   },
