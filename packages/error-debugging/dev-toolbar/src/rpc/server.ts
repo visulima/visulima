@@ -1,6 +1,8 @@
 import type { ViteDevServer, WebSocketClient } from "vite";
 
+import type { CreateAnnotationData, UpdateAnnotationData } from "../types/annotations";
 import type { ServerFunctions, ServerRPCContext } from "../types/rpc";
+import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "./functions/annotations";
 import { getStaticAssets } from "./functions/assets";
 import { getModuleGraph } from "./functions/module-graph";
 import { openInEditor } from "./functions/open-in-editor";
@@ -12,7 +14,11 @@ import { getViteConfig } from "./functions/vite-config";
  */
 const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?: string } = {}): Partial<ServerFunctions> => {
     return {
+        createAnnotation: async (data: CreateAnnotationData) => createAnnotation(server, data),
+        deleteAnnotation: async (id: string) => deleteAnnotation(server, id),
+        getAnnotations: async () => getAnnotations(server),
         getModuleGraph: async () => getModuleGraph(server),
+        getScreenshot: async (annotationId: string) => getScreenshot(server, annotationId),
         getStaticAssets: async () => getStaticAssets(server),
         getTailwindConfig: async () => getTailwindConfig(server),
         getViteConfig: async () => getViteConfig(server),
@@ -24,6 +30,8 @@ const createDefaultServerFunctions = (server: ViteDevServer, options: { editor?:
 
             return readFile(filePath, "utf8");
         },
+        saveScreenshot: async (annotationId: string, dataUrl: string) => saveScreenshot(server, annotationId, dataUrl),
+        updateAnnotation: async (id: string, data: UpdateAnnotationData) => updateAnnotation(server, id, data),
     };
 };
 

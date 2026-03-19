@@ -1,4 +1,4 @@
 {
     "title": "Integrations",
-    "pages": ["library-integration", "vite-overlay"]
+    "pages": ["library-integration", "mcp", "vite-overlay"]
 }

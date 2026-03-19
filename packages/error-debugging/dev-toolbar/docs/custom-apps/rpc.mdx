@@ -68,6 +68,68 @@ await (helpers.rpc as any).openInEditor("/absolute/path/to/file.ts", 10, 5);
 // Opens file.ts at line 10, column 5
 ```
 
+### `getAnnotations()`
+
+Returns all annotations stored in `.devtoolbar/annotations.json`.
+
+```ts
+const annotations = await (helpers.rpc as any).getAnnotations();
+// [{ id: "abc", comment: "Fix alignment", intent: "fix", status: "pending", ... }]
+```
+
+### `createAnnotation(data)`
+
+Creates a new annotation. The server generates the `id`, `createdAt`, and `updatedAt` fields.
+
+```ts
+await (helpers.rpc as any).createAnnotation({
+    comment: "Fix this button alignment",
+    intent: "fix",
+    severity: "important",
+    elementTag: "button",
+    url: window.location.href,
+    x: 50,
+    y: 200,
+});
+```
+
+### `updateAnnotation(id, data)`
+
+Updates an existing annotation's comment, intent, severity, status, or adds a thread message.
+
+```ts
+await (helpers.rpc as any).updateAnnotation("abc123", {
+    status: "resolved",
+    resolvedBy: "human",
+});
+```
+
+### `deleteAnnotation(id)`
+
+Deletes an annotation and its associated screenshot file.
+
+```ts
+await (helpers.rpc as any).deleteAnnotation("abc123");
+```
+
+### `getScreenshot(annotationId)`
+
+Returns the screenshot for an annotation as a base64 data URL.
+
+```ts
+const dataUrl = await (helpers.rpc as any).getScreenshot("abc123");
+// "data:image/png;base64,iVBOR..."
+```
+
+### `saveScreenshot(annotationId, dataUrl)`
+
+Saves a screenshot from a data URL. Returns the relative file path.
+
+```ts
+const path = await (helpers.rpc as any).saveScreenshot("abc123", dataUrl);
+// "screenshots/abc123.png"
+```
+
 ## Custom Server Functions
 
 Add your own Node.js functions by passing them to the plugin's `serverFunctions` option:
