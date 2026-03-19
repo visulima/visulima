@@ -1,13 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-    DEFAULT_SETTINGS,
-    MARKER_COLORS,
-    getMarkerColor,
-    loadSettings,
-    saveSettings,
-} from "../../../src/apps/inspector/annotation-settings";
+import { DEFAULT_SETTINGS, MARKER_COLORS, getMarkerColor, loadSettings, saveSettings } from "../../../src/apps/inspector/annotation-settings";
 
 describe("annotation-settings", () => {
     afterEach(() => {

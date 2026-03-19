@@ -28,7 +28,7 @@ const formatSize = (bytes: number): string => {
 
 /** Guard against javascript: and data: URIs produced by unusual filenames. */
 // eslint-disable-next-line no-confusing-arrow
-const safePublicPath = (p: string): string => p.startsWith("/") && !p.includes(":") ? p : "#";
+const safePublicPath = (p: string): string => (p.startsWith("/") && !p.includes(":") ? p : "#");
 
 const TYPE_FILTER_OPTIONS: { label: string; value: StaticAsset["type"] | "all" }[] = [
     { label: "All", value: "all" },
@@ -227,13 +227,12 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 {/* Asset list */}
                 <div class="flex-1 overflow-auto divide-y divide-border/30" role="list">
-                    {filtered.length === 0
-                        ? (
+                    {filtered.length === 0 ? (
                         <div class="flex items-center justify-center p-8 text-[0.8rem] text-muted-foreground">
                             {assets.length === 0 ? "No assets found in public directory." : "No assets match the current filter."}
                         </div>
-                        )
-                        : filtered.map((asset) => (
+                    ) : (
+                        filtered.map((asset) => (
                             <button
                                 aria-label={asset.publicPath}
                                 aria-selected={selected?.publicPath === asset.publicPath}
@@ -252,7 +251,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 <span class="shrink-0 text-[0.65rem] text-muted-foreground">{formatSize(asset.size)}</span>
                             </button>
                         ))
-                    }
+                    )}
                 </div>
 
                 {/* Detail panel */}

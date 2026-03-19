@@ -175,7 +175,14 @@ const getOptionValue = (element: HTMLElement): string | null => element.getAttri
 
 // ─── Content (dropdown) ─────────────────────────────────────────────────────────
 
-const SelectContent = ({ align = "start", children, class: className, searchable = false, side = "bottom", sideOffset = 4 }: SelectContentProps): JSX.Element | undefined => {
+const SelectContent = ({
+    align = "start",
+    children,
+    class: className,
+    searchable = false,
+    side = "bottom",
+    sideOffset = 4,
+}: SelectContentProps): JSX.Element | undefined => {
     const { highlightedValue, instanceId, open, search, setHighlightedValue, setOpen, setSearch, triggerRef } = useSelectContext();
     const contentRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);

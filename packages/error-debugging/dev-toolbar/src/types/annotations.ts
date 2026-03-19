@@ -142,11 +142,14 @@ export interface Annotation {
     /** Text near the annotated element for additional context */
     nearbyText?: string;
 
+    /** ISO 8601 resolution timestamp */
+    resolvedAt?: string;
+
     /** Who resolved it — "human" or "agent" (or a specific agent name) */
     resolvedBy?: string;
 
-    /** ISO 8601 resolution timestamp */
-    resolvedAt?: string;
+    /** Path to screenshot file relative to .devtoolbar/ (e.g. "screenshots/&lt;id>.png") */
+    screenshot?: string;
 
     /** Text the user had selected when annotating */
     selectedText?: string;
@@ -154,8 +157,8 @@ export interface Annotation {
     /** Severity level */
     severity: AnnotationSeverity;
 
-    /** Path to screenshot file relative to .devtoolbar/ (e.g. "screenshots/<id>.png") */
-    screenshot?: string;
+    /** Source file location from data-vdt-source (file:line:col) */
+    source?: string;
 
     /** Lifecycle status */
     status: AnnotationStatus;
@@ -169,14 +172,13 @@ export interface Annotation {
     /** Page URL where the annotation was created */
     url: string;
 
-    /** Source file location from data-vdt-source (file:line:col) */
-    source?: string;
-
     /** Click X as percentage of viewport width (0-100) — survives resize */
     x: number;
 
-    /** Click Y as absolute page position (pixels from document top) — survives scroll.
-     *  For fixed/sticky elements, Y is viewport-relative instead. */
+    /**
+     * Click Y as absolute page position (pixels from document top) — survives scroll.
+     *  For fixed/sticky elements, Y is viewport-relative instead.
+     */
     y: number;
 }
 

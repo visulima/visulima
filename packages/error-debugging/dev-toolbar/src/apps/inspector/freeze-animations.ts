@@ -13,9 +13,7 @@
 
 // Exclude selectors — dev-toolbar UI elements should never be frozen
 const EXCLUDE_ATTRS = ["id^='__vdt_'", "class*='__vdt_'"];
-const NOT_SELECTORS = EXCLUDE_ATTRS
-    .flatMap((a) => [`:not([${a}])`, `:not([${a}] *)`])
-    .join("");
+const NOT_SELECTORS = EXCLUDE_ATTRS.flatMap((a) => [`:not([${a}])`, `:not([${a}] *)`]).join("");
 
 const STYLE_ID = "__vdt_freeze_styles";
 const STATE_KEY = "__vdt_freeze_state";
@@ -25,7 +23,7 @@ const STATE_KEY = "__vdt_freeze_state";
 interface FreezeState {
     frozen: boolean;
     frozenRAFQueue: FrameRequestCallback[];
-    frozenTimeoutQueue: Array<() => void>;
+    frozenTimeoutQueue: (() => void)[];
     installed: boolean;
     origRAF: typeof requestAnimationFrame;
     origSetInterval: typeof setInterval;
@@ -34,7 +32,7 @@ interface FreezeState {
 }
 
 const getState = (): FreezeState => {
-    if (typeof window === "undefined") {
+    if (globalThis.window === undefined) {
         return {
             frozen: false,
             frozenRAFQueue: [],
@@ -48,7 +46,7 @@ const getState = (): FreezeState => {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any;
+    const w = globalThis as any;
 
     if (!w[STATE_KEY]) {
         w[STATE_KEY] = {
@@ -70,20 +68,19 @@ const _s = getState();
 
 // ─── Install patches (once — survives HMR) ──────────────────────────────────
 
-if (typeof window !== "undefined" && !_s.installed) {
-    _s.origSetTimeout = window.setTimeout.bind(window);
-    _s.origSetInterval = window.setInterval.bind(window);
-    _s.origRAF = window.requestAnimationFrame.bind(window);
+if (globalThis.window !== undefined && !_s.installed) {
+    _s.origSetTimeout = globalThis.setTimeout.bind(globalThis);
+    _s.origSetInterval = globalThis.setInterval.bind(globalThis);
+    _s.origRAF = globalThis.requestAnimationFrame.bind(globalThis);
 
     // Patch setTimeout — queue callback when frozen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).setTimeout = (handler: TimerHandler, timeout?: number, ...args: unknown[]): ReturnType<typeof setTimeout> => {
+    (globalThis as any).setTimeout = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
-            return _s.origSetTimeout(handler, timeout);
+            return _s.origSetTimeout(handler, timeout) as unknown as number;
         }
 
         return _s.origSetTimeout(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (...a: any[]) => {
                 if (_s.frozen) {
                     _s.frozenTimeoutQueue.push(() => (handler as Function)(...a));
@@ -93,18 +90,17 @@ if (typeof window !== "undefined" && !_s.installed) {
             },
             timeout,
             ...args,
-        );
+        ) as unknown as number;
     };
 
     // Patch setInterval — skip callback when frozen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).setInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]): ReturnType<typeof setInterval> => {
+    (globalThis as any).setInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
-            return _s.origSetInterval(handler, timeout);
+            return _s.origSetInterval(handler, timeout) as unknown as number;
         }
 
         return _s.origSetInterval(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (...a: any[]) => {
                 if (!_s.frozen) {
                     (handler as Function)(...a);
@@ -112,20 +108,19 @@ if (typeof window !== "undefined" && !_s.installed) {
             },
             timeout,
             ...args,
-        );
+        ) as unknown as number;
     };
 
     // Patch requestAnimationFrame — queue when frozen
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).requestAnimationFrame = (callback: FrameRequestCallback): number => {
-        return _s.origRAF((timestamp: number) => {
+    (globalThis as any).requestAnimationFrame = (callback: FrameRequestCallback): number =>
+        _s.origRAF((timestamp: number) => {
             if (_s.frozen) {
                 _s.frozenRAFQueue.push(callback);
             } else {
                 callback(timestamp);
             }
         });
-    };
 
     _s.installed = true;
 }
@@ -208,16 +203,16 @@ export const unfreezeAll = (): void => {
 
     _s.frozenTimeoutQueue = [];
 
-    for (const cb of timeoutQueue) {
+    for (const callback of timeoutQueue) {
         _s.origSetTimeout(() => {
             if (_s.frozen) {
-                _s.frozenTimeoutQueue.push(cb);
+                _s.frozenTimeoutQueue.push(callback);
 
                 return;
             }
 
             try {
-                cb();
+                callback();
             } catch {
                 // ignore replay errors
             }
@@ -229,15 +224,15 @@ export const unfreezeAll = (): void => {
 
     _s.frozenRAFQueue = [];
 
-    for (const cb of rafQueue) {
+    for (const callback of rafQueue) {
         _s.origRAF((ts: number) => {
             if (_s.frozen) {
-                _s.frozenRAFQueue.push(cb);
+                _s.frozenRAFQueue.push(callback);
 
                 return;
             }
 
-            cb(ts);
+            callback(ts);
         });
     }
 

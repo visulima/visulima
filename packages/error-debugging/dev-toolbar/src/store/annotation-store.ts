@@ -36,7 +36,7 @@ export const isPathInsideBase = (filepath: string, baseDir: string): boolean => 
  * Sanitizes an ID for use as a filename — strips path separators and
  * non-alphanumeric characters (except hyphens) to prevent traversal.
  */
-export const sanitizeId = (id: string): string => id.replaceAll(/[^a-zA-Z0-9-]/g, "");
+export const sanitizeId = (id: string): string => id.replaceAll(/[^a-z0-9-]/gi, "");
 
 /**
  * Ensures the store directories exist.
@@ -53,18 +53,20 @@ export const ensureStoreDir = async (root: string): Promise<void> => {
  */
 let writeLock: Promise<void> = Promise.resolve();
 
-export const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+export const withLock = async <T>(function_: () => Promise<T>): Promise<T> => {
     // Chain onto the existing lock so operations are serialized
     const release = writeLock;
 
     let resolve: () => void;
 
-    writeLock = new Promise<void>((r) => { resolve = r; });
+    writeLock = new Promise<void>((r) => {
+        resolve = r;
+    });
 
     await release;
 
     try {
-        return await fn();
+        return await function_();
     } finally {
         resolve!();
     }
@@ -108,7 +110,7 @@ export const writeAnnotations = async (root: string, annotations: Annotation[]):
  */
 export const deleteScreenshotFile = async (root: string, screenshotPath: string): Promise<void> => {
     // Validate path to prevent directory traversal
-    if (!screenshotPath.startsWith(SCREENSHOTS_DIR + "/")) {
+    if (!screenshotPath.startsWith(`${SCREENSHOTS_DIR}/`)) {
         return;
     }
 

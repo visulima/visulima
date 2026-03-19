@@ -257,15 +257,13 @@ const PluginRow = ({ index, plugin }: { index: number; plugin: PluginInfo }): Co
     <div class="flex items-center gap-3 px-4 py-1.5 hover:bg-secondary transition-colors duration-100">
         <span class="text-xxs text-muted-foreground font-mono tabular-nums w-5 shrink-0 text-right select-none opacity-40">{index + 1}</span>
         <span class="text-xs font-mono text-foreground flex-1 truncate">{plugin.name}</span>
-        {plugin.enforce
-            ? (
+        {plugin.enforce ? (
             <span class={clsx("text-xxs font-mono font-bold px-1.5 py-0.5 border uppercase tracking-wide", ENFORCE_COLORS[plugin.enforce])}>
                 {plugin.enforce}
             </span>
-            )
-            : (
+        ) : (
             <span class="text-xxs font-mono text-muted-foreground px-1.5 py-0.5 bg-secondary border border-border">normal</span>
-            )}
+        )}
     </div>
 );
 
@@ -293,12 +291,11 @@ const PluginList = ({ plugins }: { plugins: PluginInfo[] }): ComponentChildren =
                 <span class="text-xxs font-bold uppercase tracking-widest text-muted-foreground w-14 text-right">Enforce</span>
             </div>
 
-            {filtered.length === 0
-                ? (
+            {filtered.length === 0 ? (
                 <div class="px-4 py-6 text-center text-xs text-muted-foreground">No plugins match "{query}"</div>
-                )
-                : filtered.map((plugin) => <PluginRow index={plugins.indexOf(plugin)} key={plugin.name} plugin={plugin} />)
-            }
+            ) : (
+                filtered.map((plugin) => <PluginRow index={plugins.indexOf(plugin)} key={plugin.name} plugin={plugin} />)
+            )}
 
             {query && filtered.length > 0 && (
                 <div class="px-4 py-1.5 bg-secondary border-t border-border text-right">
@@ -355,13 +352,11 @@ const AliasTable = ({ alias }: { alias: unknown }): ComponentChildren => {
                 >
                     <code class="text-xs font-mono text-primary break-all leading-relaxed self-center">{find}</code>
                     <div class="self-center">
-                        {LOOKS_LIKE_PATH.test(replacement) && replacement.length > 40
-                            ? (
+                        {LOOKS_LIKE_PATH.test(replacement) && replacement.length > 40 ? (
                             <ShortPath path={replacement} />
-                            )
-                            : (
+                        ) : (
                             <code class="text-xs font-mono text-foreground break-all leading-relaxed">{replacement}</code>
-                            )}
+                        )}
                     </div>
                 </div>
             ))}
@@ -381,28 +376,25 @@ const SecretValue = ({ forceVisible, tag, value }: { forceVisible: boolean; tag?
     const isVisible = forceVisible || localRevealed;
     const needsTruncation = isVisible && value.length > VALUE_TRUNCATE_AT;
 
-    const valueNode = isVisible
-        ? (
+    const valueNode = isVisible ? (
         <code class="text-xs font-mono text-foreground truncate block">{value}</code>
-        )
-        : (
+    ) : (
         <span class="text-xs font-mono text-muted-foreground tracking-widest select-none">••••••••</span>
-        );
+    );
 
     return (
         <div class="flex items-center gap-2 w-full min-w-0">
             <span class="flex-1 min-w-0 overflow-hidden">
-                {needsTruncation
-                    ? (
+                {needsTruncation ? (
                     <Tooltip>
                         <TooltipTrigger class="w-full block cursor-default">{valueNode}</TooltipTrigger>
                         <TooltipContent side="top">
                             <code class="text-xs font-mono break-all max-w-xs block">{value}</code>
                         </TooltipContent>
                     </Tooltip>
-                    )
-                    : valueNode
-                }
+                ) : (
+                    valueNode
+                )}
             </span>
             {tag}
             <button
@@ -636,13 +628,11 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                 {/* ── Plugins ────────────────────────────────────────────── */}
                 <TabsContent class="flex-1 overflow-auto p-4 mt-0" value="plugins">
-                    {pluginCount === 0
-                        ? (
+                    {pluginCount === 0 ? (
                         <p class="text-sm text-muted-foreground text-center py-8">No plugins registered</p>
-                        )
-                        : (
+                    ) : (
                         <PluginList plugins={config.plugins ?? []} />
-                        )}
+                    )}
                 </TabsContent>
 
                 {/* ── Build ──────────────────────────────────────────────── */}
@@ -675,14 +665,12 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                         <KVRow label="preprocessors" value={config.css?.preprocessors} />
                     </Section>
 
-                    {(config.optimizeDeps?.include?.length ?? 0) > 0 || (config.optimizeDeps?.exclude?.length ?? 0) > 0
-                        ? (
+                    {(config.optimizeDeps?.include?.length ?? 0) > 0 || (config.optimizeDeps?.exclude?.length ?? 0) > 0 ? (
                         <Section title="Optimize Deps">
                             <KVRow label="include" value={config.optimizeDeps?.include} />
                             <KVRow label="exclude" value={config.optimizeDeps?.exclude} />
                         </Section>
-                        )
-                        : undefined}
+                    ) : undefined}
 
                     {config.ssr && (
                         <Section title="SSR">
@@ -716,15 +704,13 @@ const ViteConfigApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                 {/* ── Env & Define ───────────────────────────────────────── */}
                 <TabsContent class="flex-1 overflow-auto p-4 space-y-4 mt-0" value="env">
-                    {envCount > 0
-                        ? (
+                    {envCount > 0 ? (
                         <EnvVariableTable entries={Object.entries(config.env ?? {}) as [string, string][]} />
-                        )
-                        : (
+                    ) : (
                         <div class="rounded-none border border-border bg-card border-l-2 border-l-primary/20 px-4 py-3">
                             <p class="text-xs text-muted-foreground">No environment variables exposed to the client.</p>
                         </div>
-                        )}
+                    )}
 
                     <DefineTable entries={Object.entries(config.define ?? {})} />
                 </TabsContent>

@@ -1,9 +1,9 @@
 import type { ViteDevServer } from "vite";
 
-import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "./annotations";
 import type { StaticAsset } from "../rpc/functions/assets";
 import type { SerializableModuleNode } from "../rpc/functions/module-graph";
 import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
+import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "./annotations";
 
 /**
  * Server-side RPC functions

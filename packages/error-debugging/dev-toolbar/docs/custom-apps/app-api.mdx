@@ -53,19 +53,19 @@ interface DevToolbarApp {
 
 Do not use these IDs for custom apps:
 
-| ID                          | App                       |
-| --------------------------- | ------------------------- |
-| `dev-toolbar:a11y`          | Accessibility             |
-| `dev-toolbar:annotations`   | Annotations               |
-| `dev-toolbar:assets`        | Assets                    |
-| `dev-toolbar:inspector`     | Inspector                 |
-| `dev-toolbar:module-graph`  | Module Graph              |
-| `dev-toolbar:performance`   | Performance               |
-| `dev-toolbar:seo`           | SEO                       |
-| `dev-toolbar:settings`      | Settings                  |
-| `dev-toolbar:tailwind`      | Tailwind                  |
-| `dev-toolbar:timeline`      | Timeline                  |
-| `dev-toolbar:vite-config`   | Vite Config               |
+| ID                         | App           |
+| -------------------------- | ------------- |
+| `dev-toolbar:a11y`         | Accessibility |
+| `dev-toolbar:annotations`  | Annotations   |
+| `dev-toolbar:assets`       | Assets        |
+| `dev-toolbar:inspector`    | Inspector     |
+| `dev-toolbar:module-graph` | Module Graph  |
+| `dev-toolbar:performance`  | Performance   |
+| `dev-toolbar:seo`          | SEO           |
+| `dev-toolbar:settings`     | Settings      |
+| `dev-toolbar:tailwind`     | Tailwind      |
+| `dev-toolbar:timeline`     | Timeline      |
+| `dev-toolbar:vite-config`  | Vite Config   |
 
 ---
 
@@ -90,6 +90,7 @@ type AppView =
 When `view` is omitted, the toolbar defaults to `{ type: "inline" }` and renders the `component` (or calls `init`) inside the panel's Shadow DOM.
 
 When `view: { type: "iframe", src }` is set:
+
 - `component` and `init` are ignored.
 - The panel renders a borderless `<iframe>` that fills the content area.
 - The toolbar chrome (resize handles, fullscreen, PiP) works as normal.

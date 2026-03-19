@@ -19,152 +19,153 @@ import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "../
 /**
  * Get all annotations.
  */
-export const getAnnotations = async (server: ViteDevServer): Promise<Annotation[]> => {
-    return readAnnotations(server.config.root);
-};
+export const getAnnotations = async (server: ViteDevServer): Promise<Annotation[]> => readAnnotations(server.config.root);
 
 /**
  * Create a new annotation.
  * Only picks known fields from data to prevent injection of server-managed fields.
  */
-export const createAnnotation = async (server: ViteDevServer, data: CreateAnnotationData): Promise<Annotation> => withLock(async () => {
-    const root = server.config.root;
-    const now = new Date().toISOString();
+export const createAnnotation = async (server: ViteDevServer, data: CreateAnnotationData): Promise<Annotation> =>
+    withLock(async () => {
+        const { root } = server.config;
+        const now = new Date().toISOString();
 
-    // Explicitly pick only the fields we expect — never spread untrusted data
-    const annotation: Annotation = {
-        accessibility: data.accessibility,
-        boundingBox: data.boundingBox,
-        comment: data.comment,
-        computedStyles: data.computedStyles,
-        createdAt: now,
-        cssClasses: data.cssClasses,
-        elementBoundingBoxes: data.elementBoundingBoxes,
-        elementLabel: data.elementLabel,
-        elementPath: data.elementPath,
-        elementTag: data.elementTag,
-        frameworkContext: data.frameworkContext,
-        fullPath: data.fullPath,
-        id: crypto.randomUUID(),
-        intent: data.intent,
-        isFixed: data.isFixed,
-        isMultiSelect: data.isMultiSelect,
-        nearbyElements: data.nearbyElements,
-        nearbyText: data.nearbyText,
-        screenshot: data.screenshot,
-        selectedText: data.selectedText,
-        severity: data.severity,
-        source: data.source,
-        status: "pending",
-        updatedAt: now,
-        url: data.url,
-        x: data.x,
-        y: data.y,
-    };
+        // Explicitly pick only the fields we expect — never spread untrusted data
+        const annotation: Annotation = {
+            accessibility: data.accessibility,
+            boundingBox: data.boundingBox,
+            comment: data.comment,
+            computedStyles: data.computedStyles,
+            createdAt: now,
+            cssClasses: data.cssClasses,
+            elementBoundingBoxes: data.elementBoundingBoxes,
+            elementLabel: data.elementLabel,
+            elementPath: data.elementPath,
+            elementTag: data.elementTag,
+            frameworkContext: data.frameworkContext,
+            fullPath: data.fullPath,
+            id: crypto.randomUUID(),
+            intent: data.intent,
+            isFixed: data.isFixed,
+            isMultiSelect: data.isMultiSelect,
+            nearbyElements: data.nearbyElements,
+            nearbyText: data.nearbyText,
+            screenshot: data.screenshot,
+            selectedText: data.selectedText,
+            severity: data.severity,
+            source: data.source,
+            status: "pending",
+            updatedAt: now,
+            url: data.url,
+            x: data.x,
+            y: data.y,
+        };
 
-    const annotations = await readAnnotations(root);
+        const annotations = await readAnnotations(root);
 
-    annotations.push(annotation);
-    await writeAnnotations(root, annotations);
+        annotations.push(annotation);
+        await writeAnnotations(root, annotations);
 
-    return annotation;
-});
+        return annotation;
+    });
 
 /**
  * Update an existing annotation.
  */
-export const updateAnnotation = async (server: ViteDevServer, id: string, data: UpdateAnnotationData): Promise<Annotation | null> => withLock(async () => {
-    const root = server.config.root;
-    const annotations = await readAnnotations(root);
-    const index = annotations.findIndex((a) => a.id === id);
+export const updateAnnotation = async (server: ViteDevServer, id: string, data: UpdateAnnotationData): Promise<Annotation | null> =>
+    withLock(async () => {
+        const { root } = server.config;
+        const annotations = await readAnnotations(root);
+        const index = annotations.findIndex((a) => a.id === id);
 
-    if (index === -1) {
-        return null;
-    }
+        if (index === -1) {
+            return null;
+        }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const annotation = annotations[index]!;
-    const now = new Date().toISOString();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const annotation = annotations[index]!;
+        const now = new Date().toISOString();
 
-    if (data.comment !== undefined) {
-        annotation.comment = data.comment;
-    }
+        if (data.comment !== undefined) {
+            annotation.comment = data.comment;
+        }
 
-    if (data.intent !== undefined) {
-        annotation.intent = data.intent;
-    }
+        if (data.intent !== undefined) {
+            annotation.intent = data.intent;
+        }
 
-    if (data.severity !== undefined) {
-        annotation.severity = data.severity;
-    }
+        if (data.severity !== undefined) {
+            annotation.severity = data.severity;
+        }
 
-    if (data.status !== undefined) {
-        annotation.status = data.status;
+        if (data.status !== undefined) {
+            annotation.status = data.status;
 
-        if (data.status === "resolved" || data.status === "dismissed") {
-            annotation.resolvedBy = data.resolvedBy ?? "human";
-            annotation.resolvedAt = now;
+            if (data.status === "resolved" || data.status === "dismissed") {
+                annotation.resolvedBy = data.resolvedBy ?? "human";
+                annotation.resolvedAt = now;
 
-            // Clean up screenshot on resolution
-            if (annotation.screenshot) {
-                await deleteScreenshotFile(root, annotation.screenshot);
-                annotation.screenshot = undefined;
+                // Clean up screenshot on resolution
+                if (annotation.screenshot) {
+                    await deleteScreenshotFile(root, annotation.screenshot);
+                    annotation.screenshot = undefined;
+                }
             }
         }
-    }
 
-    if (data.threadMessage) {
-        if (!annotation.thread) {
-            annotation.thread = [];
+        if (data.threadMessage) {
+            if (!annotation.thread) {
+                annotation.thread = [];
+            }
+
+            // Override timestamp and generate ID server-side
+            annotation.thread.push({
+                ...data.threadMessage,
+                id: crypto.randomUUID(),
+                timestamp: now,
+            });
         }
 
-        // Override timestamp and generate ID server-side
-        annotation.thread.push({
-            ...data.threadMessage,
-            id: crypto.randomUUID(),
-            timestamp: now,
-        });
-    }
+        annotation.updatedAt = now;
+        annotations[index] = annotation;
+        await writeAnnotations(root, annotations);
 
-    annotation.updatedAt = now;
-    annotations[index] = annotation;
-    await writeAnnotations(root, annotations);
-
-    return annotation;
-});
+        return annotation;
+    });
 
 /**
  * Delete an annotation.
  */
-export const deleteAnnotation = async (server: ViteDevServer, id: string): Promise<boolean> => withLock(async () => {
-    const root = server.config.root;
-    const annotations = await readAnnotations(root);
-    const index = annotations.findIndex((a) => a.id === id);
+export const deleteAnnotation = async (server: ViteDevServer, id: string): Promise<boolean> =>
+    withLock(async () => {
+        const { root } = server.config;
+        const annotations = await readAnnotations(root);
+        const index = annotations.findIndex((a) => a.id === id);
 
-    if (index === -1) {
-        return false;
-    }
+        if (index === -1) {
+            return false;
+        }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const annotation = annotations[index]!;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const annotation = annotations[index]!;
 
-    // Clean up screenshot
-    if (annotation.screenshot) {
-        await deleteScreenshotFile(root, annotation.screenshot);
-    }
+        // Clean up screenshot
+        if (annotation.screenshot) {
+            await deleteScreenshotFile(root, annotation.screenshot);
+        }
 
-    annotations.splice(index, 1);
-    await writeAnnotations(root, annotations);
+        annotations.splice(index, 1);
+        await writeAnnotations(root, annotations);
 
-    return true;
-});
+        return true;
+    });
 
 /**
  * Save a screenshot from a base64 data URL.
- * Returns the relative path within .devtoolbar/ (e.g. "screenshots/<id>.png").
+ * Returns the relative path within .devtoolbar/ (e.g. "screenshots/&lt;id>.png").
  */
 export const saveScreenshot = async (server: ViteDevServer, annotationId: string, dataUrl: string): Promise<string> => {
-    const root = server.config.root;
+    const { root } = server.config;
 
     await ensureStoreDir(root);
 
@@ -210,7 +211,7 @@ export const saveScreenshot = async (server: ViteDevServer, annotationId: string
  * Get a screenshot as a base64 data URL.
  */
 export const getScreenshot = async (server: ViteDevServer, annotationId: string): Promise<string | null> => {
-    const root = server.config.root;
+    const { root } = server.config;
     const annotations = await readAnnotations(root);
     const annotation = annotations.find((a) => a.id === annotationId);
 
@@ -219,7 +220,7 @@ export const getScreenshot = async (server: ViteDevServer, annotationId: string)
     }
 
     // Validate the screenshot path before reading
-    if (!annotation.screenshot.startsWith(SCREENSHOTS_DIR + "/")) {
+    if (!annotation.screenshot.startsWith(`${SCREENSHOTS_DIR}/`)) {
         return null;
     }
 

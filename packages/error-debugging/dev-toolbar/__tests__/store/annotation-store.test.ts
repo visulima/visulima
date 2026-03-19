@@ -119,7 +119,19 @@ describe("annotation-store", () => {
 
         it("writes and reads annotations", async () => {
             const annotations = [
-                { comment: "test", createdAt: "2024-01-01", elementTag: "div", id: "1", intent: "fix", severity: "important", status: "pending", updatedAt: "2024-01-01", url: "/", x: 50, y: 100 },
+                {
+                    comment: "test",
+                    createdAt: "2024-01-01",
+                    elementTag: "div",
+                    id: "1",
+                    intent: "fix",
+                    severity: "important",
+                    status: "pending",
+                    updatedAt: "2024-01-01",
+                    url: "/",
+                    x: 50,
+                    y: 100,
+                },
             ];
 
             await writeAnnotations(tmpDir, annotations as never[]);
@@ -155,9 +167,11 @@ describe("annotation-store", () => {
     describe("withLock", () => {
         it("releases lock even when function throws", async () => {
             // First operation throws
-            await expect(withLock(async () => {
-                throw new Error("boom");
-            })).rejects.toThrow("boom");
+            await expect(
+                withLock(async () => {
+                    throw new Error("boom");
+                }),
+            ).rejects.toThrow("boom");
 
             // Second operation should still complete (lock released)
             const result = await withLock(async () => 42);
@@ -169,7 +183,9 @@ describe("annotation-store", () => {
             const order: number[] = [];
 
             const op1 = withLock(async () => {
-                await new Promise((r) => { setTimeout(r, 50); });
+                await new Promise((r) => {
+                    setTimeout(r, 50);
+                });
                 order.push(1);
 
                 return 1;

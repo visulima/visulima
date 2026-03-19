@@ -261,9 +261,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     continue;
                 }
 
-                const fn = typeof hook === "function" ? hook : typeof hook === "object" && "handler" in hook ? hook.handler : undefined;
+                const function_ = typeof hook === "function" ? hook : typeof hook === "object" && "handler" in hook ? hook.handler : undefined;
 
-                if (typeof fn !== "function") {
+                if (typeof function_ !== "function") {
                     continue;
                 }
 
@@ -272,7 +272,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                         return undefined;
                     }
 
-                    return (fn as Function).call(this, code, id, ...rest);
+                    return (function_ as Function).call(this, code, id, ...rest);
                 };
 
                 if (typeof hook === "function") {
@@ -297,10 +297,10 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // SSE endpoint for live annotation sync (browser ↔ MCP agent)
             // Watches .devtoolbar/annotations.json for changes and pushes events.
-            srv.middlewares.use("/__devtoolbar/events", async (req, res) => {
+            srv.middlewares.use("/__devtoolbar/events", async (request, res) => {
                 res.writeHead(200, {
                     "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
+                    Connection: "keep-alive",
                     "Content-Type": "text/event-stream",
                     "X-Accel-Buffering": "no",
                 });
@@ -329,12 +329,12 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                         sendEvent("annotations.changed", { timestamp: Date.now() });
                     }, 2000);
 
-                    req.on("close", () => clearInterval(interval));
+                    request.on("close", () => clearInterval(interval));
 
                     return;
                 }
 
-                req.on("close", () => {
+                request.on("close", () => {
                     watcher?.close();
                 });
             });
@@ -436,9 +436,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo
-                && filename
-                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo &&
+                filename &&
+                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }

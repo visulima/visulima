@@ -12,23 +12,24 @@ import type { AccessibilityInfo, BoundingBox, FrameworkContext } from "../../typ
  * Recursively pierce shadow DOM boundaries to find the deepest element
  * at the given coordinates. Similar to agentation's deepElementFromPoint.
  */
+
 /**
  * Check if an iframe's contentDocument is accessible (same-origin).
  */
 const isSameOriginIframe = (iframe: HTMLIFrameElement): boolean => {
     try {
-        const doc = iframe.contentDocument;
+        const document_ = iframe.contentDocument;
 
-        return doc !== null && doc.body !== null;
+        return document_ !== null && document_.body !== null;
     } catch {
         return false;
     }
 };
 
 export const deepElementFromPoint = (x: number, y: number): Element | null => {
-    let el = document.elementFromPoint(x, y);
+    let element = document.elementFromPoint(x, y);
 
-    if (!el) {
+    if (!element) {
         return null;
     }
 
@@ -39,20 +40,20 @@ export const deepElementFromPoint = (x: number, y: number): Element | null => {
         changed = false;
 
         // Drill into shadow roots
-        while (el?.shadowRoot) {
-            const deeper = el.shadowRoot.elementFromPoint(x, y);
+        while (element?.shadowRoot) {
+            const deeper = element.shadowRoot.elementFromPoint(x, y);
 
-            if (!deeper || deeper === el) {
+            if (!deeper || deeper === element) {
                 break;
             }
 
-            el = deeper;
+            element = deeper;
             changed = true;
         }
 
         // Drill into same-origin iframes
-        if (el?.tagName === "IFRAME") {
-            const iframe = el as HTMLIFrameElement;
+        if (element?.tagName === "IFRAME") {
+            const iframe = element as HTMLIFrameElement;
 
             if (isSameOriginIframe(iframe)) {
                 const iframeRect = iframe.getBoundingClientRect();
@@ -63,7 +64,7 @@ export const deepElementFromPoint = (x: number, y: number): Element | null => {
                     const deeper = iframe.contentDocument!.elementFromPoint(iframeX, iframeY);
 
                     if (deeper && deeper !== iframe) {
-                        el = deeper;
+                        element = deeper;
                         changed = true;
                     }
                 } catch {
@@ -73,7 +74,7 @@ export const deepElementFromPoint = (x: number, y: number): Element | null => {
         }
     }
 
-    return el;
+    return element;
 };
 
 /**
@@ -85,10 +86,10 @@ export const getViewportRect = (element: Element): DOMRect => {
     let offsetX = 0;
     let offsetY = 0;
 
-    let currentDoc = element.ownerDocument;
+    let currentDocument = element.ownerDocument;
 
-    while (currentDoc !== document) {
-        const frameElement = currentDoc.defaultView?.frameElement as HTMLIFrameElement | null;
+    while (currentDocument !== document) {
+        const frameElement = currentDocument.defaultView?.frameElement as HTMLIFrameElement | null;
 
         if (!frameElement) {
             break;
@@ -98,7 +99,7 @@ export const getViewportRect = (element: Element): DOMRect => {
 
         offsetX += frameRect.left;
         offsetY += frameRect.top;
-        currentDoc = frameElement.ownerDocument;
+        currentDocument = frameElement.ownerDocument;
     }
 
     return new DOMRect(rect.x + offsetX, rect.y + offsetY, rect.width, rect.height);
@@ -109,17 +110,15 @@ export const getViewportRect = (element: Element): DOMRect => {
  */
 // ─── Deep Select / Pierce Mode ───────────────────────────────────────────────
 
-const GENERIC_CONTAINER_TAGS = new Set([
-    "DIV", "SPAN", "SECTION", "ARTICLE", "MAIN", "ASIDE", "HEADER", "FOOTER", "NAV",
-]);
+const GENERIC_CONTAINER_TAGS = new Set(["ARTICLE", "ASIDE", "DIV", "FOOTER", "HEADER", "MAIN", "NAV", "SECTION", "SPAN"]);
 
 /** Check if an element (or any ancestor) has opacity:0 or is hidden via CSS. */
-const isEffectivelyInvisible = (el: Element): boolean => {
-    if (typeof (el as HTMLElement).checkVisibility === "function") {
-        return !(el as HTMLElement).checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+const isEffectivelyInvisible = (element: Element): boolean => {
+    if (typeof (element as HTMLElement).checkVisibility === "function") {
+        return !(element as HTMLElement).checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
     }
 
-    let current: Element | null = el;
+    let current: Element | null = element;
 
     while (current && current !== document.body) {
         if (getComputedStyle(current).opacity === "0") {
@@ -133,12 +132,12 @@ const isEffectivelyInvisible = (el: Element): boolean => {
 };
 
 /** Check if element has direct text content (not just children). */
-const hasDirectContent = (el: Element): boolean => {
-    if (!GENERIC_CONTAINER_TAGS.has(el.tagName)) {
+const hasDirectContent = (element: Element): boolean => {
+    if (!GENERIC_CONTAINER_TAGS.has(element.tagName)) {
         return true; // non-generic elements (button, a, img, input) are always "content"
     }
 
-    for (const child of el.childNodes) {
+    for (const child of element.childNodes) {
         if (child.nodeType === Node.TEXT_NODE && child.textContent?.trim()) {
             return true;
         }
@@ -237,13 +236,13 @@ export const pierceElementFromPoint = (x: number, y: number): Element | null => 
 
 // ─── Parent Element (cross shadow DOM) ───────────────────────────────────────
 
-export const getParentElement = (el: Element): Element | null => {
-    if (el.parentElement) {
-        return el.parentElement;
+export const getParentElement = (element: Element): Element | null => {
+    if (element.parentElement) {
+        return element.parentElement;
     }
 
     // Cross shadow DOM boundary
-    const root = el.getRootNode();
+    const root = element.getRootNode();
 
     if (root instanceof ShadowRoot) {
         return root.host;
@@ -261,7 +260,7 @@ export const isElementFixed = (element: Element): boolean => {
     let current: Element | null = element;
 
     while (current) {
-        const position = getComputedStyle(current).position;
+        const { position } = getComputedStyle(current);
 
         if (position === "fixed" || position === "sticky") {
             return true;
@@ -303,22 +302,22 @@ export const getElementLabel = (element: Element): string => {
 
     // Images
     if (tag === "img") {
-        const alt = (element as HTMLImageElement).alt;
+        const { alt } = element as HTMLImageElement;
 
         return alt ? `image "${alt.slice(0, 40)}"` : "image";
     }
 
     // Inputs
     if (tag === "input") {
-        const type = (element as HTMLInputElement).type;
-        const placeholder = (element as HTMLInputElement).placeholder;
+        const { type } = element as HTMLInputElement;
+        const { placeholder } = element as HTMLInputElement;
 
         return placeholder ? `input[${type}] "${placeholder.slice(0, 30)}"` : `input[${type}]`;
     }
 
     // Textarea
     if (tag === "textarea") {
-        const placeholder = (element as HTMLTextAreaElement).placeholder;
+        const { placeholder } = element as HTMLTextAreaElement;
 
         return placeholder ? `textarea "${placeholder.slice(0, 30)}"` : "textarea";
     }
@@ -353,7 +352,7 @@ export const getElementLabel = (element: Element): string => {
 
 // ─── CSS Selector Generation ─────────────────────────────────────────────────
 
-const STATE_CLASSES = new Set(["hover", "focus", "active", "visited", "disabled", "checked", "selected"]);
+const STATE_CLASSES = new Set(["active", "checked", "disabled", "focus", "hover", "selected", "visited"]);
 
 /**
  * Generate a unique CSS selector for an element.
@@ -403,7 +402,7 @@ export const generateSelector = (element: Element): string => {
             break;
         }
 
-        const parent = current.parentElement;
+        const parent: Element | null = current.parentElement;
 
         if (parent) {
             const siblings = [...parent.children].filter((c) => c.tagName === current!.tagName);
@@ -432,12 +431,10 @@ const isModuleHash = (cls: string): boolean => MODULE_HASH_RE.test(cls);
 /**
  * Clean CSS classes by stripping module hash suffixes.
  */
-export const cleanCssClasses = (classes: DOMTokenList): string => {
-    return [...classes]
-        .map((cls) => cls.replace(MODULE_HASH_RE, ""))
+export const cleanCssClasses = (classes: DOMTokenList): string =>
+    Array.from(classes, (cls) => cls.replace(MODULE_HASH_RE, ""))
         .filter(Boolean)
         .join(" ");
-};
 
 // ─── Full DOM Ancestry Path ──────────────────────────────────────────────────
 
@@ -501,13 +498,13 @@ export const getNearbyText = (element: Element, maxLength: number = 120): string
     const ownText = element.textContent?.trim() ?? "";
 
     if (ownText.length > 0) {
-        return ownText.length > maxLength ? ownText.slice(0, maxLength) + "\u2026" : ownText;
+        return ownText.length > maxLength ? `${ownText.slice(0, maxLength)}\u2026` : ownText;
     }
 
     const label = element.getAttribute("aria-label") ?? element.getAttribute("title") ?? "";
 
     if (label) {
-        return label.length > maxLength ? label.slice(0, maxLength) + "\u2026" : label;
+        return label.length > maxLength ? `${label.slice(0, maxLength)}\u2026` : label;
     }
 
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
@@ -521,7 +518,7 @@ export const getNearbyText = (element: Element, maxLength: number = 120): string
  * Capture currently selected text (up to maxLength chars).
  */
 export const getSelectedText = (maxLength: number = 80): string => {
-    const selection = window.getSelection();
+    const selection = globalThis.getSelection();
 
     if (!selection || selection.isCollapsed) {
         return "";
@@ -529,7 +526,7 @@ export const getSelectedText = (maxLength: number = 80): string => {
 
     const text = selection.toString().trim();
 
-    return text.length > maxLength ? text.slice(0, maxLength) + "\u2026" : text;
+    return text.length > maxLength ? `${text.slice(0, maxLength)}\u2026` : text;
 };
 
 // ─── Accessibility Capture ───────────────────────────────────────────────────
@@ -540,22 +537,22 @@ const FOCUSABLE_TAGS = new Set(["A", "BUTTON", "INPUT", "SELECT", "TEXTAREA"]);
  * Capture accessibility attributes from an element.
  */
 export const captureAccessibility = (element: Element): AccessibilityInfo => {
-    const el = element as HTMLElement;
-    const role = el.getAttribute("role") ?? el.tagName.toLowerCase();
-    const ariaLabel = el.getAttribute("aria-label") ?? undefined;
-    const ariaDescribedBy = el.getAttribute("aria-describedby")
-        ? document.getElementById(el.getAttribute("aria-describedby")!)?.textContent?.trim()
+    const element_ = element as HTMLElement;
+    const role = element_.getAttribute("role") ?? element_.tagName.toLowerCase();
+    const ariaLabel = element_.getAttribute("aria-label") ?? undefined;
+    const ariaDescribedBy = element_.getAttribute("aria-describedby")
+        ? document.getElementById(element_.getAttribute("aria-describedby")!)?.textContent?.trim()
         : undefined;
-    const tabindexAttr = el.getAttribute("tabindex");
-    const tabindex = tabindexAttr !== null ? Number.parseInt(tabindexAttr, 10) : undefined;
+    const tabindexAttribute = element_.getAttribute("tabindex");
+    const tabindex = tabindexAttribute === null ? undefined : Number.parseInt(tabindexAttribute, 10);
 
-    const focusable = FOCUSABLE_TAGS.has(el.tagName) || (tabindex !== undefined && tabindex >= 0);
+    const focusable = FOCUSABLE_TAGS.has(element_.tagName) || (tabindex !== undefined && tabindex >= 0);
 
     return {
         ariaDescribedBy,
         ariaLabel,
         focusable,
-        role: role !== el.tagName.toLowerCase() ? role : undefined,
+        role: role === element_.tagName.toLowerCase() ? undefined : role,
         tabindex,
     };
 };
@@ -563,9 +560,22 @@ export const captureAccessibility = (element: Element): AccessibilityInfo => {
 // ─── Computed Styles Capture ─────────────────────────────────────────────────
 
 const FORENSIC_STYLE_PROPS = [
-    "display", "position", "color", "background-color", "font-size",
-    "font-family", "font-weight", "line-height", "padding", "margin",
-    "border", "width", "height", "overflow", "z-index", "opacity",
+    "display",
+    "position",
+    "color",
+    "background-color",
+    "font-size",
+    "font-family",
+    "font-weight",
+    "line-height",
+    "padding",
+    "margin",
+    "border",
+    "width",
+    "height",
+    "overflow",
+    "z-index",
+    "opacity",
 ];
 
 /**
@@ -670,7 +680,7 @@ const detectVue = (element: Element): FrameworkContext | undefined => {
 
     // Build component stack
     const stack: string[] = [componentName];
-    let parent = instance.parent;
+    let { parent } = instance;
 
     while (parent) {
         const name = parent.type?.__name ?? parent.type?.name;
@@ -718,9 +728,7 @@ const detectSvelte = (element: Element): FrameworkContext | undefined => {
 /**
  * Detect framework component for an element.
  */
-export const detectFrameworkComponent = (element: Element): FrameworkContext | undefined => {
-    return detectReact(element) ?? detectVue(element) ?? detectSvelte(element);
-};
+export const detectFrameworkComponent = (element: Element): FrameworkContext | undefined => detectReact(element) ?? detectVue(element) ?? detectSvelte(element);
 
 // ─── Screenshot Capture ──────────────────────────────────────────────────────
 
@@ -774,15 +782,15 @@ export const captureElementScreenshot = async (element: Element): Promise<string
         fullCanvas.width = video.videoWidth;
         fullCanvas.height = video.videoHeight;
 
-        const fullCtx = fullCanvas.getContext("2d");
+        const fullContext = fullCanvas.getContext("2d");
 
-        if (!fullCtx) {
+        if (!fullContext) {
             stream.getTracks().forEach((t) => t.stop());
 
             return null;
         }
 
-        fullCtx.drawImage(video, 0, 0);
+        fullContext.drawImage(video, 0, 0);
 
         // Stop the stream immediately
         stream.getTracks().forEach((t) => t.stop());
@@ -798,13 +806,13 @@ export const captureElementScreenshot = async (element: Element): Promise<string
         cropCanvas.width = cropW;
         cropCanvas.height = cropH;
 
-        const cropCtx = cropCanvas.getContext("2d");
+        const cropContext = cropCanvas.getContext("2d");
 
-        if (!cropCtx) {
+        if (!cropContext) {
             return null;
         }
 
-        cropCtx.drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+        cropContext.drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
         return cropCanvas.toDataURL("image/png");
     } catch {
@@ -821,21 +829,23 @@ export const captureElementScreenshot = async (element: Element): Promise<string
 const querySelectorAllWithIframes = (selector: string): Element[] => {
     const results: Element[] = [];
 
-    const searchDoc = (doc: Document): void => {
-        for (const el of doc.querySelectorAll(selector)) {
-            results.push(el);
+    const searchDocument = (document_: Document): void => {
+        for (const element of document_.querySelectorAll(selector)) {
+            results.push(element);
         }
 
-        for (const iframe of doc.querySelectorAll("iframe")) {
+        for (const iframe of document_.querySelectorAll("iframe")) {
             if (isSameOriginIframe(iframe as HTMLIFrameElement)) {
                 try {
-                    searchDoc((iframe as HTMLIFrameElement).contentDocument!);
-                } catch { /* ignore */ }
+                    searchDocument((iframe as HTMLIFrameElement).contentDocument!);
+                } catch {
+                    /* ignore */
+                }
             }
         }
     };
 
-    searchDoc(document);
+    searchDocument(document);
 
     return results;
 };
@@ -852,20 +862,21 @@ export const getElementsInRect = (rect: DOMRect): Element[] => {
     const stepY = Math.max(10, rect.height / 20);
     const seen = new Set<Element>();
 
-    for (let x = rect.x; x <= rect.x + rect.width; x += stepX) {
-        for (let y = rect.y; y <= rect.y + rect.height; y += stepY) {
-            const el = deepElementFromPoint(x, y);
+    for (let { x } = rect; x <= rect.x + rect.width; x += stepX) {
+        for (let { y } = rect; y <= rect.y + rect.height; y += stepY) {
+            const element = deepElementFromPoint(x, y);
 
-            if (el && !seen.has(el) && el.tagName !== "BODY" && el.tagName !== "HTML" && !el.tagName.includes("-")) {
-                const elRect = getViewportRect(el);
+            if (element && !seen.has(element) && element.tagName !== "BODY" && element.tagName !== "HTML" && !element.tagName.includes("-")) {
+                const elementRect = getViewportRect(element);
 
                 if (
-                    elRect.left >= rect.x - 5 && elRect.top >= rect.y - 5
-                    && elRect.right <= rect.x + rect.width + 5
-                    && elRect.bottom <= rect.y + rect.height + 5
+                    elementRect.left >= rect.x - 5 &&
+                    elementRect.top >= rect.y - 5 &&
+                    elementRect.right <= rect.x + rect.width + 5 &&
+                    elementRect.bottom <= rect.y + rect.height + 5
                 ) {
-                    seen.add(el);
-                    elements.push(el);
+                    seen.add(element);
+                    elements.push(element);
                 }
             }
         }
@@ -874,45 +885,42 @@ export const getElementsInRect = (rect: DOMRect): Element[] => {
     // Also check nearby elements via selector (including inside iframes)
     const nearbySelector = "button, a, input, img, p, h1, h2, h3, h4, h5, h6, li, label, td, th";
 
-    for (const el of querySelectorAllWithIframes(nearbySelector)) {
-        if (seen.has(el) || el.tagName === "BODY" || el.tagName === "HTML") {
+    for (const element of querySelectorAllWithIframes(nearbySelector)) {
+        if (seen.has(element) || element.tagName === "BODY" || element.tagName === "HTML") {
             continue;
         }
 
-        const elRect = getViewportRect(el);
+        const elementRect = getViewportRect(element);
 
         // Filter huge elements (>80% viewport) and tiny elements (<10px)
-        if (elRect.width > window.innerWidth * 0.8 && elRect.height > window.innerHeight * 0.5) {
+        if (elementRect.width > window.innerWidth * 0.8 && elementRect.height > window.innerHeight * 0.5) {
             continue;
         }
 
-        if (elRect.width < 10 || elRect.height < 10) {
+        if (elementRect.width < 10 || elementRect.height < 10) {
             continue;
         }
 
         // Check intersection with selection rect
-        if (elRect.left < rect.x + rect.width && elRect.right > rect.x && elRect.top < rect.y + rect.height && elRect.bottom > rect.y) {
-            seen.add(el);
-            elements.push(el);
+        if (elementRect.left < rect.x + rect.width && elementRect.right > rect.x && elementRect.top < rect.y + rect.height && elementRect.bottom > rect.y) {
+            seen.add(element);
+            elements.push(element);
         }
     }
 
     // Filter out parent elements that contain other matched elements
-    return elements.filter(
-        (el) => !elements.some((other) => other !== el && el.contains(other)),
-    );
+    return elements.filter((element) => !elements.some((other) => other !== element && element.contains(other)));
 };
 
 /**
  * Get bounding boxes from a list of elements (iframe-aware).
  */
-export const getElementBoundingBoxes = (elements: Element[]): BoundingBox[] => {
-    return elements.map((el) => {
-        const r = getViewportRect(el);
+export const getElementBoundingBoxes = (elements: Element[]): BoundingBox[] =>
+    elements.map((element) => {
+        const r = getViewportRect(element);
 
         return { height: r.height, width: r.width, x: r.x, y: r.y };
     });
-};
 
 // ─── Markdown Export ─────────────────────────────────────────────────────────
 
@@ -924,7 +932,7 @@ export const getElementBoundingBoxes = (elements: Element[]): BoundingBox[] => {
  * - forensic: + full DOM path, styles, accessibility, nearby elements
  */
 export const annotationsToMarkdown = (
-    annotations: Array<{
+    annotations: {
         accessibility?: AccessibilityInfo;
         comment: string;
         computedStyles?: string;
@@ -942,7 +950,7 @@ export const annotationsToMarkdown = (
         source?: string;
         status: string;
         url: string;
-    }>,
+    }[],
     detail: "compact" | "detailed" | "forensic" | "standard" = "standard",
 ): string => {
     if (annotations.length === 0) {
@@ -968,10 +976,7 @@ export const annotationsToMarkdown = (
     for (const [i, a] of annotations.entries()) {
         const label = a.elementLabel ?? a.elementTag;
 
-        lines.push(`## ${i + 1}. [${a.intent.toUpperCase()}] ${a.severity} \u2014 ${label}`);
-        lines.push("");
-        lines.push(`**Status:** ${a.status}`);
-        lines.push(`**URL:** ${a.url}`);
+        lines.push(`## ${i + 1}. [${a.intent.toUpperCase()}] ${a.severity} \u2014 ${label}`, "", `**Status:** ${a.status}`, `**URL:** ${a.url}`);
 
         if (a.elementPath) {
             lines.push(`**Selector:** \`${a.elementPath}\``);
@@ -1029,11 +1034,7 @@ export const annotationsToMarkdown = (
             }
         }
 
-        lines.push("");
-        lines.push(a.comment);
-        lines.push("");
-        lines.push("---");
-        lines.push("");
+        lines.push("", a.comment, "", "---", "");
     }
 
     return lines.join("\n");

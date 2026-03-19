@@ -95,14 +95,13 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
     const overlayActiveClass = showOverlays
         ? "border-primary/30 text-primary bg-primary/8"
         : "border-border text-muted-foreground bg-transparent hover:text-foreground";
-    const overlayButtonClass
-        = issues.length === 0 ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed" : clsx("cursor-pointer", overlayActiveClass);
+    const overlayButtonClass =
+        issues.length === 0 ? "border-border/50 text-muted-foreground/40 bg-transparent cursor-not-allowed" : clsx("cursor-pointer", overlayActiveClass);
 
     return (
         <div class="space-y-3 min-w-[200px]">
             {/* Summary */}
-            {lastScan
-                ? (
+            {lastScan ? (
                 <>
                     <div class="flex items-baseline gap-2">
                         <span class={clsx("text-2xl font-bold tabular-nums leading-none", total > 0 ? "text-destructive" : "text-success-foreground")}>
@@ -122,13 +121,12 @@ const A11yTooltip = (_props: AppTooltipProps): ComponentChildren => {
 
                     <p class="text-[0.62rem] text-muted-foreground/50">Scanned {formatElapsed(lastScan)}</p>
                 </>
-                )
-                : (
+            ) : (
                 <div>
                     <p class="text-[0.72rem] text-muted-foreground">No scan run yet.</p>
                     <p class="text-[0.65rem] text-muted-foreground/50 mt-0.5">Scan this page to detect WCAG violations.</p>
                 </div>
-                )}
+            )}
 
             {/* Actions */}
             <div class="flex items-center gap-2 pt-2 border-t border-border/50">

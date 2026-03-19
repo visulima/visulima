@@ -13,21 +13,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import {
-    deleteScreenshotFile,
-    isPathInsideBase,
-    readAnnotations,
-    resolvePaths,
-    SCREENSHOTS_DIR,
-    withLock,
-    writeAnnotations,
-} from "../store/annotation-store";
+import { deleteScreenshotFile, isPathInsideBase, readAnnotations, resolvePaths, SCREENSHOTS_DIR, withLock, writeAnnotations } from "../store/annotation-store";
 
 // ─── MCP Server ──────────────────────────────────────────────────────────────
 
 export const startMcpServer = async (): Promise<void> => {
     // Dynamic import — only available when @modelcontextprotocol/sdk is installed
+    // @ts-expect-error -- optional peer dependency
     const { McpServer } = await import("@modelcontextprotocol/sdk/server/mcp.js");
+    // @ts-expect-error -- optional peer dependency
     const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
     const { z } = await import("zod");
 
@@ -48,11 +42,13 @@ export const startMcpServer = async (): Promise<void> => {
             const annotations = await readAnnotations(root);
             const pending = annotations.filter((a) => a.status === "pending");
 
-            const result = pending.map((a) => ({
-                ...a,
-                // Replace screenshot path with boolean to avoid sending large base64 data
-                screenshot: Boolean(a.screenshot),
-            }));
+            const result = pending.map((a) => {
+                return {
+                    ...a,
+                    // Replace screenshot path with boolean to avoid sending large base64 data
+                    screenshot: Boolean(a.screenshot),
+                };
+            });
 
             return {
                 content: [
@@ -73,7 +69,7 @@ export const startMcpServer = async (): Promise<void> => {
         {
             annotation_id: z.string().describe("The annotation ID to get the screenshot for"),
         },
-        async ({ annotation_id }) => {
+        async ({ annotation_id }: { annotation_id: string }) => {
             const annotations = await readAnnotations(root);
             const annotation = annotations.find((a) => a.id === annotation_id);
 
@@ -92,7 +88,7 @@ export const startMcpServer = async (): Promise<void> => {
             }
 
             // Validate screenshot path
-            if (!annotation.screenshot.startsWith(SCREENSHOTS_DIR + "/")) {
+            if (!annotation.screenshot.startsWith(`${SCREENSHOTS_DIR}/`)) {
                 return {
                     content: [{ text: JSON.stringify({ error: "Invalid screenshot path" }), type: "text" as const }],
                     isError: true,
@@ -141,42 +137,43 @@ export const startMcpServer = async (): Promise<void> => {
         {
             annotation_id: z.string().describe("The annotation ID to resolve"),
         },
-        async ({ annotation_id }) => withLock(async () => {
-            const annotations = await readAnnotations(root);
-            const index = annotations.findIndex((a) => a.id === annotation_id);
+        async ({ annotation_id }: { annotation_id: string }) =>
+            withLock(async () => {
+                const annotations = await readAnnotations(root);
+                const index = annotations.findIndex((a) => a.id === annotation_id);
 
-            if (index === -1) {
+                if (index === -1) {
+                    return {
+                        content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
+                        isError: true,
+                    };
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const annotation = annotations[index]!;
+
+                annotation.status = "resolved";
+                annotation.resolvedBy = "agent";
+                annotation.updatedAt = new Date().toISOString();
+
+                // Delete screenshot safely
+                if (annotation.screenshot) {
+                    await deleteScreenshotFile(root, annotation.screenshot);
+                    annotation.screenshot = undefined;
+                }
+
+                annotations[index] = annotation;
+                await writeAnnotations(root, annotations);
+
                 return {
-                    content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
-                    isError: true,
+                    content: [
+                        {
+                            text: JSON.stringify({ annotation, ok: true }, undefined, 2),
+                            type: "text" as const,
+                        },
+                    ],
                 };
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const annotation = annotations[index]!;
-
-            annotation.status = "resolved";
-            annotation.resolvedBy = "agent";
-            annotation.updatedAt = new Date().toISOString();
-
-            // Delete screenshot safely
-            if (annotation.screenshot) {
-                await deleteScreenshotFile(root, annotation.screenshot);
-                annotation.screenshot = undefined;
-            }
-
-            annotations[index] = annotation;
-            await writeAnnotations(root, annotations);
-
-            return {
-                content: [
-                    {
-                        text: JSON.stringify({ annotation, ok: true }, undefined, 2),
-                        type: "text" as const,
-                    },
-                ],
-            };
-        }),
+            }),
     );
 
     // ── Tool: add_thread_message ──
@@ -188,44 +185,45 @@ export const startMcpServer = async (): Promise<void> => {
             annotation_id: z.string().describe("The annotation ID to add a message to"),
             message: z.string().describe("The message content"),
         },
-        async ({ annotation_id, message }) => withLock(async () => {
-            const annotations = await readAnnotations(root);
-            const index = annotations.findIndex((a) => a.id === annotation_id);
+        async ({ annotation_id, message }: { annotation_id: string; message: string }) =>
+            withLock(async () => {
+                const annotations = await readAnnotations(root);
+                const index = annotations.findIndex((a) => a.id === annotation_id);
 
-            if (index === -1) {
+                if (index === -1) {
+                    return {
+                        content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
+                        isError: true,
+                    };
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const annotation = annotations[index]!;
+
+                if (!annotation.thread) {
+                    annotation.thread = [];
+                }
+
+                annotation.thread.push({
+                    content: message,
+                    id: crypto.randomUUID(),
+                    role: "agent",
+                    timestamp: new Date().toISOString(),
+                });
+
+                annotation.updatedAt = new Date().toISOString();
+                annotations[index] = annotation;
+                await writeAnnotations(root, annotations);
+
                 return {
-                    content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
-                    isError: true,
+                    content: [
+                        {
+                            text: JSON.stringify({ annotation, ok: true }, undefined, 2),
+                            type: "text" as const,
+                        },
+                    ],
                 };
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const annotation = annotations[index]!;
-
-            if (!annotation.thread) {
-                annotation.thread = [];
-            }
-
-            annotation.thread.push({
-                content: message,
-                id: crypto.randomUUID(),
-                role: "agent",
-                timestamp: new Date().toISOString(),
-            });
-
-            annotation.updatedAt = new Date().toISOString();
-            annotations[index] = annotation;
-            await writeAnnotations(root, annotations);
-
-            return {
-                content: [
-                    {
-                        text: JSON.stringify({ annotation, ok: true }, undefined, 2),
-                        type: "text" as const,
-                    },
-                ],
-            };
-        }),
+            }),
     );
 
     // ── Tool: acknowledge_annotation ──
@@ -236,34 +234,35 @@ export const startMcpServer = async (): Promise<void> => {
         {
             annotation_id: z.string().describe("The annotation ID to acknowledge"),
         },
-        async ({ annotation_id }) => withLock(async () => {
-            const annotations = await readAnnotations(root);
-            const index = annotations.findIndex((a) => a.id === annotation_id);
+        async ({ annotation_id }: { annotation_id: string }) =>
+            withLock(async () => {
+                const annotations = await readAnnotations(root);
+                const index = annotations.findIndex((a) => a.id === annotation_id);
 
-            if (index === -1) {
+                if (index === -1) {
+                    return {
+                        content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
+                        isError: true,
+                    };
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const annotation = annotations[index]!;
+
+                annotation.status = "acknowledged";
+                annotation.updatedAt = new Date().toISOString();
+                annotations[index] = annotation;
+                await writeAnnotations(root, annotations);
+
                 return {
-                    content: [{ text: JSON.stringify({ error: "Annotation not found" }), type: "text" as const }],
-                    isError: true,
+                    content: [
+                        {
+                            text: JSON.stringify({ annotation, ok: true }, undefined, 2),
+                            type: "text" as const,
+                        },
+                    ],
                 };
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const annotation = annotations[index]!;
-
-            annotation.status = "acknowledged";
-            annotation.updatedAt = new Date().toISOString();
-            annotations[index] = annotation;
-            await writeAnnotations(root, annotations);
-
-            return {
-                content: [
-                    {
-                        text: JSON.stringify({ annotation, ok: true }, undefined, 2),
-                        type: "text" as const,
-                    },
-                ],
-            };
-        }),
+            }),
     );
 
     // ── Tool: watch_annotations ──
@@ -275,7 +274,7 @@ export const startMcpServer = async (): Promise<void> => {
             batch_window_ms: z.number().optional().describe("How long to wait for additional annotations after the first one arrives (default: 10000ms)"),
             timeout_ms: z.number().optional().describe("Maximum time to wait before returning empty (default: 300000ms = 5 minutes)"),
         },
-        async ({ batch_window_ms, timeout_ms }) => {
+        async ({ batch_window_ms, timeout_ms }: { batch_window_ms?: number; timeout_ms?: number }) => {
             const batchWindow = batch_window_ms ?? 10_000;
             const timeout = timeout_ms ?? 300_000;
 
@@ -285,14 +284,18 @@ export const startMcpServer = async (): Promise<void> => {
 
             // Wait for new annotations to appear
             while (Date.now() - startTime < timeout) {
-                await new Promise((resolve) => { setTimeout(resolve, 2000); });
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 2000);
+                });
 
                 const current = await readAnnotations(root);
                 const pendingCount = current.filter((a) => a.status === "pending").length;
 
                 if (pendingCount > lastCount) {
                     // New annotations detected — start batch window
-                    await new Promise((resolve) => { setTimeout(resolve, batchWindow); });
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, batchWindow);
+                    });
 
                     // Collect all pending
                     const final = await readAnnotations(root);
@@ -301,11 +304,17 @@ export const startMcpServer = async (): Promise<void> => {
                     return {
                         content: [
                             {
-                                text: JSON.stringify({
-                                    annotations: pending.map((a) => ({ ...a, screenshot: Boolean(a.screenshot) })),
-                                    count: pending.length,
-                                    newCount: pending.length - lastCount,
-                                }, undefined, 2),
+                                text: JSON.stringify(
+                                    {
+                                        annotations: pending.map((a) => {
+                                            return { ...a, screenshot: Boolean(a.screenshot) };
+                                        }),
+                                        count: pending.length,
+                                        newCount: pending.length - lastCount,
+                                    },
+                                    undefined,
+                                    2,
+                                ),
                                 type: "text" as const,
                             },
                         ],

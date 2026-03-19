@@ -16,10 +16,10 @@ When both packages are installed together the Dev Toolbar automatically detects 
 
 The toolbar polls two globals that vite-overlay writes to the browser window:
 
-| Global | Set by | What it contains |
-| --- | --- | --- |
-| `window.__v_o_error_history` | vite-overlay | Array of all captured errors |
-| `window.__v_o__current` | vite-overlay | The currently mounted overlay element |
+| Global                       | Set by       | What it contains                      |
+| ---------------------------- | ------------ | ------------------------------------- |
+| `window.__v_o_error_history` | vite-overlay | Array of all captured errors          |
+| `window.__v_o__current`      | vite-overlay | The currently mounted overlay element |
 
 When `__v_o_error_history` has at least one entry a red triangular badge button appears on the right side of the toolbar bar. The badge shows the error count (capped at `9+`). Clicking it toggles the overlay panel open or closed.
 
@@ -65,9 +65,7 @@ export default defineConfig({
 });
 ```
 
-<Callout type="info">
-  Plugin order does not matter. The toolbar detects vite-overlay at runtime via the shared globals, not at build time.
-</Callout>
+<Callout type="info">Plugin order does not matter. The toolbar detects vite-overlay at runtime via the shared globals, not at build time.</Callout>
 
 </Step>
 
@@ -118,7 +116,7 @@ devToolbar({
     // Inject via the router module instead of index.html
     appendTo: /router\.tsx$/,
     apps: { settings: true },
-})
+});
 ```
 
 See the [Getting Started](/docs/dev-toolbar/getting-started) guide for more details on `appendTo`.
@@ -128,7 +126,7 @@ See the [Getting Started](/docs/dev-toolbar/getting-started) guide for more deta
 The vite-overlay plugin auto-detects `@vitejs/plugin-react`. No extra configuration is needed. To use a custom React plugin pass its name:
 
 ```ts
-viteOverlay({ reactPluginName: "my-custom-react-plugin" })
+viteOverlay({ reactPluginName: "my-custom-react-plugin" });
 ```
 
 ### Vue
@@ -136,7 +134,7 @@ viteOverlay({ reactPluginName: "my-custom-react-plugin" })
 Pass a custom Vue plugin name if you use something other than `@vitejs/plugin-vue`:
 
 ```ts
-viteOverlay({ vuePluginName: "my-custom-vue-plugin" })
+viteOverlay({ vuePluginName: "my-custom-vue-plugin" });
 ```
 
 ---
@@ -145,10 +143,10 @@ viteOverlay({ vuePluginName: "my-custom-vue-plugin" })
 
 The full option set for `@visulima/vite-overlay` is documented in its own package. The options most relevant when used together with the Dev Toolbar are:
 
-| Option | Default | Notes |
-| --- | --- | --- |
-| `showBallonButton` | `true` | Set to `false` when using the Dev Toolbar so only the toolbar badge is shown |
-| `forwardConsole` | `true` | Captures `console.error` calls and shows them in the overlay |
-| `forwardedConsoleMethods` | `["error"]` | Add `"warn"` etc. to capture more console output |
-| `solutionFinders` | `[]` | Custom solution-finder functions for AI-powered hints |
-| `overlay.customCSS` | — | Inject CSS to restyle the overlay panel or balloon |
+| Option                    | Default     | Notes                                                                        |
+| ------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| `showBallonButton`        | `true`      | Set to `false` when using the Dev Toolbar so only the toolbar badge is shown |
+| `forwardConsole`          | `true`      | Captures `console.error` calls and shows them in the overlay                 |
+| `forwardedConsoleMethods` | `["error"]` | Add `"warn"` etc. to capture more console output                             |
+| `solutionFinders`         | `[]`        | Custom solution-finder functions for AI-powered hints                        |
+| `overlay.customCSS`       | —           | Inject CSS to restyle the overlay panel or balloon                           |
