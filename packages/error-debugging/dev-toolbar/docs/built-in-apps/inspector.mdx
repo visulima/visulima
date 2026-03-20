@@ -64,9 +64,9 @@ The Inspector captures detailed information about each hovered element:
 
 The Inspector recursively pierces open shadow roots and same-origin iframes to find the actual element under your cursor. This means you can inspect elements inside web components and embedded frames.
 
-### Pierce Mode
+### Deep Select
 
-Hold **Cmd** (Mac) or **Ctrl** (Windows/Linux) while hovering to activate pierce mode. This skips through invisible overlays, animation wrappers, and empty container divs to reach the actual content element underneath. Uses a two-pass algorithm: text content first, then smallest visible element.
+Hold **Cmd** (Mac) or **Ctrl** (Windows/Linux) while hovering to activate deep select. This skips through invisible overlays, animation wrappers, and empty container divs to reach the actual content element underneath. The highlight border switches to **dashed** to indicate deep select is active. Uses a two-pass algorithm: text content first, then smallest visible element.
 
 ## JSX Source Injection
 

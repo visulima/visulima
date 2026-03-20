@@ -77,6 +77,23 @@ const safeQuerySelector = (selector: string | undefined): Element | null => {
     }
 };
 
+/** Brief toast notification. */
+const showToast = (message: string, type: "error" | "success" = "success"): void => {
+    const TOAST_ID = "__vdt_toast";
+
+    document.getElementById(TOAST_ID)?.remove();
+
+    const c = getPalette();
+    const toast = document.createElement("div");
+
+    toast.id = TOAST_ID;
+    toast.textContent = message;
+    toast.style.cssText = `position:fixed;z-index:2147483648;bottom:1rem;right:1rem;padding:6px 14px;background:${type === "success" ? "#22c55e" : "#ef4444"};color:#fff;font:12px/1 system-ui,-apple-system,sans-serif;font-weight:600;pointer-events:none;opacity:0;transition:opacity 0.2s,transform 0.2s;transform:translateY(4px);`;
+    document.body.append(toast);
+    requestAnimationFrame(() => { toast.style.opacity = "1"; toast.style.transform = "translateY(0)"; });
+    setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 200); }, 1500);
+};
+
 /**
  * Compare annotation URL with current page — ignores query params and hash
  * so annotations survive ?debug=true flags and #section anchors.
@@ -881,7 +898,7 @@ export const showAnnotationForm = (
         if (styles) {
             const details = document.createElement("details");
 
-            details.style.cssText = `margin-bottom:8px;font-size:9px;color:${c.muted};`;
+            details.style.cssText = `margin-bottom:8px;font-size:10px;color:${c.muted};`;
 
             const summary = document.createElement("summary");
 
@@ -1094,6 +1111,7 @@ export const showAnnotationForm = (
             // Refresh markers
             await loadAndShowMarkers();
             removeAnnotationForm();
+            showToast(editAnnotation ? "Annotation saved" : "Annotation created");
         } catch {
             submitButton.textContent = "Error \u2014 retry";
             (submitButton as HTMLButtonElement).disabled = false;
@@ -1257,6 +1275,7 @@ export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect,
             await rpc.createAnnotation(data);
             await loadAndShowMarkers();
             removeAnnotationForm();
+            showToast("Annotation created");
         }),
     );
 
@@ -1453,6 +1472,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
                 await rpc.createAnnotation(data);
                 await loadAndShowMarkers();
                 cleanup();
+                showToast("Annotation created");
             } catch {
                 submitButton.textContent = "Error — retry";
                 (submitButton as HTMLButtonElement).disabled = false;
@@ -1710,6 +1730,7 @@ const showAnnotationDetail = (annotation: Annotation): void => {
 
     const c = getPalette();
     const colors = INTENT_COLORS[annotation.intent];
+    const isDark = c.bg === "#18181b";
     const popup = document.createElement("div");
 
     popup.id = DETAIL_ID;
@@ -1718,211 +1739,525 @@ const showAnnotationDetail = (annotation: Annotation): void => {
         "position:fixed",
         "z-index:2147483647",
         `background:${c.bg}`,
-        `border:1px solid ${c.btnBorder}`,
-        "padding:12px 32px 12px 12px",
-        "font:12px/1.4 'JetBrains Mono',monospace",
+        `border:1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)"}`,
+        "padding:0",
+        "font:12px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif",
         `color:${c.fg}`,
-        `box-shadow:${c.shadow}`,
-        "min-width:280px",
-        "max-width:400px",
+        `box-shadow:0 8px 32px rgba(0,0,0,${isDark ? "0.5" : "0.15"}),0 0 0 1px rgba(${isDark ? "255,255,255,0.06" : "0,0,0,0.06"})`,
+        "width:360px",
         "max-height:70vh",
-        "overflow-y:auto",
+        "overflow:hidden",
+        "display:flex",
+        "flex-direction:column",
         "pointer-events:auto",
     ].join(";");
 
     // Position — will be set after measuring
     const { left: markerLeft, top: markerTop } = toViewportCoords(annotation.x, annotation.y);
 
-    // Header
-    const headerRow = document.createElement("div");
+    // ═══ HEADER BAR ═══
+    const header = document.createElement("div");
 
-    headerRow.style.cssText = "display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;";
+    header.style.cssText = `display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"};flex-shrink:0;`;
 
     const intentBadge = document.createElement("span");
 
-    intentBadge.textContent = INTENT_LABELS[annotation.intent];
-    intentBadge.style.cssText = `font-size:10px;font-weight:bold;text-transform:uppercase;padding:2px 6px;background:${colors.bg};border:1px solid ${colors.border};color:${colors.fg};`;
-    headerRow.append(intentBadge);
+    intentBadge.textContent = INTENT_LABELS[annotation.intent].toUpperCase();
+    intentBadge.style.cssText = `font-size:10px;font-weight:700;letter-spacing:0.05em;padding:2px 6px;background:${colors.bg};color:${colors.fg};`;
+    header.append(intentBadge);
 
     const sevLabel = document.createElement("span");
 
     sevLabel.textContent = SEVERITY_LABELS[annotation.severity];
     sevLabel.style.cssText = `font-size:10px;font-weight:600;color:${annotation.severity === "blocking" ? c.danger : c.muted};`;
-    headerRow.append(sevLabel);
+    header.append(sevLabel);
 
-    const statusLabel = document.createElement("span");
+    const statusPill = document.createElement("span");
 
-    statusLabel.textContent = annotation.status;
-    statusLabel.style.cssText = `font-size:9px;text-transform:uppercase;color:${c.muted};margin-left:auto;`;
-    headerRow.append(statusLabel);
-    popup.append(headerRow);
+    statusPill.textContent = annotation.status.toUpperCase();
+    statusPill.style.cssText = `font-size:10px;font-weight:700;letter-spacing:0.08em;padding:2px 6px;margin-left:auto;background:${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"};color:${c.muted};`;
+    header.append(statusPill);
+
+    // Close X in header
+    const closeX = document.createElement("button");
+
+    closeX.type = "button";
+    closeX.textContent = "\u00D7";
+    closeX.style.cssText = `background:none;border:none;color:${c.muted};cursor:pointer;font-size:16px;padding:0 0 0 4px;line-height:1;`;
+    closeX.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); removeAnnotationDetail(); });
+    header.append(closeX);
+    popup.append(header);
+
+    // ═══ SCROLLABLE BODY ═══
+    const body = document.createElement("div");
+
+    body.style.cssText = "flex:1;overflow-y:auto;padding:10px 12px;";
 
     // Comment
-    const comment = document.createElement("div");
+    const commentBox = document.createElement("div");
 
-    comment.style.cssText = `margin-bottom:8px;padding:6px 8px;background:${c.btnBg};border:1px solid ${c.btnBorder};font-size:11px;line-height:1.5;white-space:pre-wrap;word-break:break-word;`;
-    comment.textContent = annotation.comment;
-    popup.append(comment);
+    commentBox.style.cssText = `padding:8px 10px;background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"};font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:10px;`;
+    commentBox.textContent = annotation.comment;
+    body.append(commentBox);
 
-    // Meta
-    const meta = document.createElement("div");
+    // Collapsible metadata
+    const metaDetails = document.createElement("details");
 
-    meta.style.cssText = `font-size:9px;color:${c.muted};margin-bottom:8px;line-height:1.6;`;
-    addMetaRow(meta, "Element", `${annotation.elementTag}${annotation.cssClasses ? ` .${annotation.cssClasses}` : ""}`);
+    metaDetails.style.cssText = `margin-bottom:10px;font-size:10px;color:${c.muted};`;
+
+    const metaSummary = document.createElement("summary");
+
+    metaSummary.textContent = `${annotation.elementLabel ?? annotation.elementTag}${annotation.source ? ` \u2022 ${annotation.source.split("/").pop()}` : ""}`;
+    metaSummary.style.cssText = `cursor:pointer;font-size:10px;color:${c.muted};padding:4px 0;list-style:none;`;
+    metaSummary.addEventListener("click", (e) => e.stopPropagation());
+    metaDetails.append(metaSummary);
+
+    const metaContent = document.createElement("div");
+
+    metaContent.style.cssText = `padding:6px 0;line-height:1.7;`;
+    addMetaRow(metaContent, "Element", `${annotation.elementTag}${annotation.cssClasses ? ` .${annotation.cssClasses}` : ""}`);
 
     if (annotation.elementPath) {
-        addMetaRow(meta, "Selector", annotation.elementPath);
+        addMetaRow(metaContent, "Selector", annotation.elementPath);
     }
 
     if (annotation.source) {
-        addMetaRow(meta, "Source", annotation.source, c.primary);
+        addMetaRow(metaContent, "Source", annotation.source, c.primary);
     }
 
     if (annotation.frameworkContext) {
-        addMetaRow(meta, "Component", `${annotation.frameworkContext.componentName} (${annotation.frameworkContext.framework})`, c.success);
+        addMetaRow(metaContent, "Component", `${annotation.frameworkContext.componentName} (${annotation.frameworkContext.framework})`, c.success);
     }
 
     if (annotation.nearbyText) {
-        addMetaRow(meta, "Context", annotation.nearbyText);
+        addMetaRow(metaContent, "Context", annotation.nearbyText);
     }
 
     if (annotation.selectedText) {
-        addMetaRow(meta, "Selected", `"${annotation.selectedText}"`);
+        addMetaRow(metaContent, "Selected", `"${annotation.selectedText}"`);
     }
 
-    addMetaRow(meta, "URL", annotation.url);
-    addMetaRow(meta, "Created", new Date(annotation.createdAt).toLocaleString());
-    popup.append(meta);
+    addMetaRow(metaContent, "URL", annotation.url);
+    addMetaRow(metaContent, "Created", new Date(annotation.createdAt).toLocaleString());
+    metaDetails.append(metaContent);
+    body.append(metaDetails);
 
-    // Thread
+    // ═══ THREAD (chat-style) ═══
     if (annotation.thread && annotation.thread.length > 0) {
-        const threadTitle = document.createElement("div");
+        const threadLabel = document.createElement("div");
 
-        threadTitle.style.cssText = `font-size:10px;font-weight:bold;color:${c.primary};margin-bottom:4px;`;
-        threadTitle.textContent = `Thread (${annotation.thread.length})`;
-        popup.append(threadTitle);
+        threadLabel.style.cssText = `font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:${c.muted};margin-bottom:6px;`;
+        threadLabel.textContent = `Thread \u00b7 ${annotation.thread.length}`;
+        body.append(threadLabel);
+
+        const threadScroll = document.createElement("div");
+
+        threadScroll.style.cssText = `max-height:160px;overflow-y:auto;margin-bottom:8px;display:flex;flex-direction:column;gap:4px;`;
 
         for (const message of annotation.thread) {
-            const messageElement = document.createElement("div");
+            const isHuman = message.role === "human";
+            const bubble = document.createElement("div");
 
-            messageElement.style.cssText = `margin-bottom:4px;padding:4px 6px;background:${c.btnBg};border:1px solid ${c.btnBorder};font-size:10px;`;
+            bubble.style.cssText = [
+                `max-width:85%`,
+                `padding:6px 10px`,
+                `border-radius:${isHuman ? "2px 2px 0 2px" : "2px 2px 2px 0"}`,
+                `font-size:11px`,
+                `line-height:1.45`,
+                `white-space:pre-wrap`,
+                `word-break:break-word`,
+                `align-self:${isHuman ? "flex-end" : "flex-start"}`,
+                isHuman
+                    ? `background:${c.primary};color:#18181b`
+                    : `background:${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"};color:${c.fg}`,
+            ].join(";");
+            bubble.textContent = message.content;
 
-            const roleElement = document.createElement("span");
+            const timeLabel = document.createElement("div");
 
-            roleElement.style.cssText = `color:${c.primary};font-weight:bold;`;
-            roleElement.textContent = message.role;
+            timeLabel.style.cssText = `font-size:10px;color:${c.muted};margin-top:2px;opacity:0.6;text-align:${isHuman ? "right" : "left"};`;
+            timeLabel.textContent = new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-            const timeElement = document.createElement("span");
+            const wrapper = document.createElement("div");
 
-            timeElement.style.cssText = `color:${c.muted};font-size:9px;margin-left:6px;`;
-            timeElement.textContent = new Date(message.timestamp).toLocaleString();
-
-            const contentElement = document.createElement("div");
-
-            contentElement.style.cssText = `color:${c.fg};margin-top:2px;white-space:pre-wrap;word-break:break-word;line-height:1.4;`;
-            contentElement.textContent = message.content;
-
-            messageElement.append(roleElement, timeElement, contentElement);
-            popup.append(messageElement);
+            wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isHuman ? "flex-end" : "flex-start"};`;
+            wrapper.append(bubble, timeLabel);
+            threadScroll.append(wrapper);
         }
+
+        requestAnimationFrame(() => { threadScroll.scrollTop = threadScroll.scrollHeight; });
+        body.append(threadScroll);
     }
 
-    // Thread input
+    popup.append(body);
+
+    // ═══ CHAT INPUT BAR (fixed at bottom) ═══
+    const inputBar = document.createElement("div");
+
+    inputBar.style.cssText = `display:flex;gap:6px;align-items:flex-end;padding:8px 12px;border-top:1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"};flex-shrink:0;`;
+
     const threadInput = document.createElement("textarea");
 
-    threadInput.placeholder = "Add a message...";
-    threadInput.style.cssText = `width:100%;min-height:40px;resize:vertical;margin:6px 0;padding:4px 6px;background:${c.btnBg};border:1px solid ${c.btnBorder};color:${c.fg};font:10px/1.4 'JetBrains Mono',monospace;box-sizing:border-box;outline:none;`;
+    threadInput.placeholder = "Message...";
+    threadInput.rows = 1;
+    threadInput.style.cssText = `flex:1;min-height:28px;max-height:80px;resize:none;padding:5px 8px;background:${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"};border:1px solid transparent;color:${c.fg};font:11px/1.4 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;box-sizing:border-box;outline:none;`;
     threadInput.addEventListener("click", (e) => e.stopPropagation());
     threadInput.addEventListener("keydown", (e) => e.stopPropagation());
-    popup.append(threadInput);
+    threadInput.addEventListener("focus", () => { threadInput.style.borderColor = c.primary; });
+    threadInput.addEventListener("blur", () => { threadInput.style.borderColor = "transparent"; });
+    // Auto-grow
+    threadInput.addEventListener("input", () => {
+        threadInput.style.height = "auto";
+        threadInput.style.height = `${Math.min(threadInput.scrollHeight, 80)}px`;
+    });
+    inputBar.append(threadInput);
 
-    // Actions
-    const actions = document.createElement("div");
+    // Send arrow button
+    const sendArrow = document.createElement("button");
 
-    actions.style.cssText = "display:flex;gap:4px;flex-wrap:wrap;";
+    sendArrow.type = "button";
+    sendArrow.style.cssText = `width:28px;height:28px;border-radius:50%;border:none;background:${c.primary};color:#18181b;cursor:not-allowed;opacity:0.3;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.15s,background 0.15s;`;
 
-    actions.append(
-        makeButton("Send", async () => {
-            const content = threadInput.value.trim();
-
-            if (!content) {
-                return;
-            }
-
-            await getRpc()?.updateAnnotation?.(annotation.id, {
-                threadMessage: { content, role: "human", timestamp: new Date().toISOString() },
-            });
-            await loadAndShowMarkers();
-            const updated = loadedAnnotations.find((a) => a.id === annotation.id);
-
-            if (updated) {
-                showAnnotationDetail(updated);
-            }
-        }),
+    const arrowSvg = new DOMParser().parseFromString(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>`,
+        "image/svg+xml",
     );
 
-    // Edit button — re-opens the form in edit mode
+    sendArrow.append(arrowSvg.documentElement);
+    sendArrow.disabled = true;
+
+    threadInput.addEventListener("input", () => {
+        const hasContent = threadInput.value.trim().length > 0;
+
+        sendArrow.disabled = !hasContent;
+        sendArrow.style.opacity = hasContent ? "1" : "0.3";
+        sendArrow.style.cursor = hasContent ? "pointer" : "not-allowed";
+    });
+
+    sendArrow.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const content = threadInput.value.trim();
+
+        if (!content) {
+            return;
+        }
+
+        await getRpc()?.updateAnnotation?.(annotation.id, {
+            threadMessage: { content, role: "human", timestamp: new Date().toISOString() },
+        });
+        showToast("Message sent");
+        await loadAndShowMarkers();
+        const updated = loadedAnnotations.find((a) => a.id === annotation.id);
+
+        if (updated) {
+            showAnnotationDetail(updated);
+        }
+    });
+    inputBar.append(sendArrow);
+    popup.append(inputBar);
+
+    // ═══ ACTION BAR (fixed at bottom) ═══
+    const actionBar = document.createElement("div");
+
+    actionBar.style.cssText = `display:flex;align-items:center;gap:4px;padding:6px 12px;border-top:1px solid ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"};flex-shrink:0;`;
+
     if (annotation.status === "pending") {
-        actions.append(
-            makeButton("Edit", () => {
-                removeAnnotationDetail();
+        // Primary actions
+        const resolveButton = document.createElement("button");
 
-                // Try to find the element by selector to position the form
-                const element = safeQuerySelector(annotation.elementPath);
-                const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y);
-                const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
+        resolveButton.type = "button";
+        resolveButton.textContent = "Resolve";
+        resolveButton.style.cssText = `padding:4px 10px;border:none;background:${c.success};color:#fff;font-size:10px;font-weight:600;cursor:pointer;`;
+        resolveButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await getRpc()?.updateAnnotation?.(annotation.id, { status: "resolved" });
+            showToast("Annotation resolved");
+            await loadAndShowMarkers();
+            removeAnnotationDetail();
+        });
+        actionBar.append(resolveButton);
 
-                showAnnotationForm(element ?? document.body, fakeRect, annotation.source, annotation);
-            }),
-        );
+        const editButton = document.createElement("button");
 
-        actions.append(
-            makeButton(
-                "Resolve",
-                async () => {
-                    await getRpc()?.updateAnnotation?.(annotation.id, { status: "resolved" });
-                    await loadAndShowMarkers();
-                    removeAnnotationDetail();
-                },
-                c.success,
-            ),
-        );
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+        editButton.style.cssText = `padding:4px 10px;border:1px solid ${c.btnBorder};background:transparent;color:${c.fg};font-size:10px;font-weight:500;cursor:pointer;`;
+        editButton.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-        actions.append(
-            makeButton("Dismiss", async () => {
-                await getRpc()?.updateAnnotation?.(annotation.id, { status: "dismissed" });
+            // Transform to edit mode — keep the same popup container
+            while (popup.firstChild) {
+                popup.firstChild.remove();
+            }
+
+            popup.style.padding = "0";
+            popup.style.overflow = "hidden";
+            popup.style.display = "flex";
+
+            // ── Edit header ──
+            const editHeaderBar = document.createElement("div");
+
+            editHeaderBar.style.cssText = `display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"};flex-shrink:0;`;
+
+            const editTitle = document.createElement("span");
+
+            editTitle.textContent = "Edit Annotation";
+            editTitle.style.cssText = `font-size:12px;font-weight:700;color:${c.fg};`;
+            editHeaderBar.append(editTitle);
+
+            const editCloseX = document.createElement("button");
+
+            editCloseX.type = "button";
+            editCloseX.textContent = "\u00D7";
+            editCloseX.style.cssText = `background:none;border:none;color:${c.muted};cursor:pointer;font-size:16px;padding:0;line-height:1;margin-left:auto;`;
+            editCloseX.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); removeAnnotationDetail(); showAnnotationDetail(annotation); });
+            editHeaderBar.append(editCloseX);
+            popup.append(editHeaderBar);
+
+            // ── Edit body ──
+            const editBody = document.createElement("div");
+
+            editBody.style.cssText = "flex:1;overflow-y:auto;padding:12px;";
+
+            // Intent — pill-style selector
+            const intentLabel = document.createElement("div");
+
+            intentLabel.style.cssText = `font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:${c.muted};margin-bottom:6px;`;
+            intentLabel.textContent = "Intent";
+            editBody.append(intentLabel);
+
+            let editIntent: AnnotationIntent = annotation.intent;
+            const intentGroup = document.createElement("div");
+
+            intentGroup.style.cssText = "display:flex;gap:4px;margin-bottom:12px;";
+
+            const intentButtons: HTMLButtonElement[] = [];
+
+            for (const intent of ["fix", "change", "question", "approve"] as AnnotationIntent[]) {
+                const ic = INTENT_COLORS[intent];
+                const pill = document.createElement("button");
+
+                pill.type = "button";
+                pill.textContent = INTENT_LABELS[intent];
+                pill.dataset.intent = intent;
+                pill.style.cssText = `padding:4px 10px;border:none;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.15s;${
+                    intent === editIntent
+                        ? `background:${ic.bg};color:${ic.fg};box-shadow:0 0 0 1px ${ic.border};`
+                        : `background:${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"};color:${c.muted};`
+                }`;
+                pill.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    editIntent = intent;
+
+                    for (const b of intentButtons) {
+                        const bi = INTENT_COLORS[b.dataset.intent as AnnotationIntent];
+
+                        if (b.dataset.intent === intent) {
+                            b.style.background = bi.bg;
+                            b.style.color = bi.fg;
+                            b.style.boxShadow = `0 0 0 1px ${bi.border}`;
+                        } else {
+                            b.style.background = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+                            b.style.color = c.muted;
+                            b.style.boxShadow = "none";
+                        }
+                    }
+                });
+                intentButtons.push(pill);
+                intentGroup.append(pill);
+            }
+
+            editBody.append(intentGroup);
+
+            // Severity — pill-style selector
+            const severityLabel = document.createElement("div");
+
+            severityLabel.style.cssText = `font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:${c.muted};margin-bottom:6px;`;
+            severityLabel.textContent = "Severity";
+            editBody.append(severityLabel);
+
+            let editSeverity: AnnotationSeverity = annotation.severity;
+            const severityGroup = document.createElement("div");
+
+            severityGroup.style.cssText = "display:flex;gap:4px;margin-bottom:12px;";
+
+            const severityButtons: HTMLButtonElement[] = [];
+
+            for (const sev of ["blocking", "important", "suggestion"] as AnnotationSeverity[]) {
+                const pill = document.createElement("button");
+
+                pill.type = "button";
+                pill.textContent = SEVERITY_LABELS[sev];
+                pill.dataset.severity = sev;
+                pill.style.cssText = `padding:4px 10px;border:none;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.15s;${
+                    sev === editSeverity
+                        ? `background:${c.primary};color:#18181b;`
+                        : `background:${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"};color:${c.muted};`
+                }`;
+                pill.addEventListener("click", (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    editSeverity = sev;
+
+                    for (const b of severityButtons) {
+                        if (b.dataset.severity === sev) {
+                            b.style.background = c.primary;
+                            b.style.color = "#18181b";
+                        } else {
+                            b.style.background = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)";
+                            b.style.color = c.muted;
+                        }
+                    }
+                });
+                severityButtons.push(pill);
+                severityGroup.append(pill);
+            }
+
+            editBody.append(severityGroup);
+
+            // Comment textarea
+            const commentLabel = document.createElement("div");
+
+            commentLabel.style.cssText = `font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:${c.muted};margin-bottom:6px;`;
+            commentLabel.textContent = "Comment";
+            editBody.append(commentLabel);
+
+            const editTextarea = document.createElement("textarea");
+
+            editTextarea.value = annotation.comment;
+            editTextarea.style.cssText = `width:100%;min-height:90px;resize:vertical;padding:8px 10px;background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"};border:1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};color:${c.fg};font:12px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;box-sizing:border-box;outline:none;transition:border-color 0.15s;`;
+            editTextarea.addEventListener("click", (ev) => ev.stopPropagation());
+            editTextarea.addEventListener("keydown", (ev) => ev.stopPropagation());
+            editTextarea.addEventListener("focus", () => { editTextarea.style.borderColor = c.primary; });
+            editTextarea.addEventListener("blur", () => { editTextarea.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"; });
+            editBody.append(editTextarea);
+            popup.append(editBody);
+
+            // ── Edit action bar ──
+            const editActionBar = document.createElement("div");
+
+            editActionBar.style.cssText = `display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"};flex-shrink:0;`;
+
+            // Save — primary filled button
+            const saveButton = document.createElement("button");
+
+            saveButton.type = "button";
+            saveButton.textContent = "Save";
+            saveButton.style.cssText = `padding:4px 10px;border:none;background:${c.primary};color:#18181b;font-size:10px;font-weight:600;cursor:pointer;`;
+            saveButton.addEventListener("click", async (ev) => {
+                ev.stopPropagation();
+
+                const editComment = editTextarea.value.trim();
+
+                if (!editComment) {
+                    editTextarea.style.borderColor = c.danger;
+
+                    return;
+                }
+
+                await getRpc()?.updateAnnotation?.(annotation.id, { comment: editComment, intent: editIntent, severity: editSeverity });
+                showToast("Annotation saved");
                 await loadAndShowMarkers();
-                removeAnnotationDetail();
-            }),
-        );
-    }
+                const updated = loadedAnnotations.find((a) => a.id === annotation.id);
 
-    actions.append(
-        makeButton(
-            "Delete",
-            async () => {
+                if (updated) {
+                    removeAnnotationDetail();
+                    showAnnotationDetail(updated);
+                } else {
+                    removeAnnotationDetail();
+                }
+            });
+            editActionBar.append(saveButton);
+
+            // Cancel — outlined
+            const cancelButton = document.createElement("button");
+
+            cancelButton.type = "button";
+            cancelButton.textContent = "Cancel";
+            cancelButton.style.cssText = `padding:4px 10px;border:1px solid ${c.btnBorder};background:transparent;color:${c.fg};font-size:10px;font-weight:500;cursor:pointer;`;
+            cancelButton.addEventListener("click", (ev) => { ev.stopPropagation(); removeAnnotationDetail(); showAnnotationDetail(annotation); });
+            editActionBar.append(cancelButton);
+
+            // Delete — text-only, right-aligned
+            const deleteButton = document.createElement("button");
+
+            deleteButton.type = "button";
+            deleteButton.textContent = "Delete";
+            deleteButton.style.cssText = `padding:4px 10px;border:none;background:transparent;color:${c.danger};font-size:10px;cursor:pointer;margin-left:auto;`;
+            deleteButton.addEventListener("click", async (ev) => {
+                ev.stopPropagation();
                 await getRpc()?.deleteAnnotation?.(annotation.id);
                 loadedAnnotations = loadedAnnotations.filter((a) => a.id !== annotation.id);
+                showToast("Annotation deleted");
                 removeAnnotationDetail();
                 renderMarkers();
-            },
-            c.danger,
-        ),
-    );
-
-    // Copy markdown for this annotation
-    actions.append(
-        makeButton("Copy MD", () => {
-            const md = annotationsToMarkdown([annotation]);
-
-            navigator.clipboard.writeText(md).catch(() => {
-                /* ignore */
             });
-        }),
-    );
+            editActionBar.append(deleteButton);
+            popup.append(editActionBar);
 
-    popup.append(actions);
-    popup.append(makeCloseButton(c, () => removeAnnotationDetail()));
+            setTimeout(() => editTextarea.focus(), 50);
+        });
+        actionBar.append(editButton);
+    }
+
+    // Secondary actions (right-aligned)
+    const secondaryGroup = document.createElement("div");
+
+    secondaryGroup.style.cssText = "display:flex;gap:2px;margin-left:auto;";
+
+    if (annotation.status === "pending") {
+        const dismissButton = document.createElement("button");
+
+        dismissButton.type = "button";
+        dismissButton.textContent = "Dismiss";
+        dismissButton.style.cssText = `padding:4px 8px;border:none;background:transparent;color:${c.muted};font-size:10px;cursor:pointer;`;
+        dismissButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            await getRpc()?.updateAnnotation?.(annotation.id, { status: "dismissed" });
+            showToast("Annotation dismissed");
+            await loadAndShowMarkers();
+            removeAnnotationDetail();
+        });
+        secondaryGroup.append(dismissButton);
+    }
+
+    const copyMdButton = document.createElement("button");
+
+    copyMdButton.type = "button";
+    copyMdButton.textContent = "Copy";
+    copyMdButton.style.cssText = `padding:4px 8px;border:none;background:transparent;color:${c.muted};font-size:10px;cursor:pointer;`;
+    copyMdButton.addEventListener("click", async (e) => {
+        e.stopPropagation();
+
+        try {
+            await navigator.clipboard.writeText(annotationsToMarkdown([annotation]));
+            showToast("Copied to clipboard");
+        } catch {
+            showToast("Copy failed", "error");
+        }
+    });
+    secondaryGroup.append(copyMdButton);
+
+    const deleteButton = document.createElement("button");
+
+    deleteButton.type = "button";
+    deleteButton.textContent = "Delete";
+    deleteButton.style.cssText = `padding:4px 8px;border:none;background:transparent;color:${c.danger};font-size:10px;cursor:pointer;`;
+    deleteButton.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        await getRpc()?.deleteAnnotation?.(annotation.id);
+        loadedAnnotations = loadedAnnotations.filter((a) => a.id !== annotation.id);
+        showToast("Annotation deleted");
+        removeAnnotationDetail();
+        renderMarkers();
+    });
+    secondaryGroup.append(deleteButton);
+
+    actionBar.append(secondaryGroup);
+    popup.append(actionBar);
 
     // Position with collision handling
     positionFormNearAnchor(popup, markerLeft + 16, markerTop);
