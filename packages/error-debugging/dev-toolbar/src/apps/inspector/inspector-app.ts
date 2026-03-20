@@ -379,11 +379,13 @@ const createFloatingBadge = (onCancel: () => void): void => {
         badge.style.top = `${e.clientY - dragOffsetY}px`;
         badge.style.transform = "none";
         badge.style.bottom = "auto";
+        badge.style.cursor = "grabbing";
     };
 
     const onDragEnd = (): void => {
         document.removeEventListener("pointermove", onDragMove);
         document.removeEventListener("pointerup", onDragEnd);
+        badge.style.cursor = "";
     };
 
     badge.addEventListener("pointerdown", (e) => {
@@ -398,6 +400,44 @@ const createFloatingBadge = (onCancel: () => void): void => {
         document.addEventListener("pointermove", onDragMove);
         document.addEventListener("pointerup", onDragEnd);
     });
+
+    // ── Drag handle (grip dots) ──
+    const dragHandle = document.createElement("div");
+
+    dragHandle.style.cssText = [
+        "display:flex",
+        "flex-direction:column",
+        "gap:2px",
+        "padding:2px 4px",
+        "cursor:grab",
+        `color:${c.muted}`,
+        "opacity:0.4",
+        "transition:opacity 0.15s",
+    ].join(";");
+    dragHandle.addEventListener("pointerover", () => {
+        dragHandle.style.opacity = "0.8";
+    });
+    dragHandle.addEventListener("pointerout", () => {
+        dragHandle.style.opacity = "0.4";
+    });
+
+    // 6 dots (2x3 grid) as drag indicator
+    for (let row = 0; row < 3; row++) {
+        const dotRow = document.createElement("div");
+
+        dotRow.style.cssText = "display:flex;gap:2px;";
+
+        for (let col = 0; col < 2; col++) {
+            const dot = document.createElement("div");
+
+            dot.style.cssText = `width:3px;height:3px;border-radius:50%;background:${c.muted};`;
+            dotRow.append(dot);
+        }
+
+        dragHandle.append(dotRow);
+    }
+
+    badge.append(dragHandle);
 
     // ── Mode buttons (Inspect / Annotate) ──
     // These need dynamic active state checks so pointerout doesn't reset them.
@@ -744,7 +784,7 @@ const makeActionButton = (label: string, onClick: () => void): HTMLButtonElement
     return b;
 };
 
-const showResultPopup = (element: Element, rect: DOMRect, source: string | undefined): void => {
+const showResultPopup = (element: Element, rect: DOMRect, source: string | undefined, clickX?: number, clickY?: number): void => {
     // Cancel any pending outside-click handler from a previous popup before
     // removing the popup element, so the stale handler can't fire and remove
     // the new popup that is about to be created.
@@ -770,9 +810,9 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
         "pointer-events:auto",
     ].join(";");
 
-    // Position will be set after rendering (measure-then-place)
-    const popupAnchorX = rect.left;
-    const popupAnchorY = rect.bottom;
+    // Position near the click point (or element edge as fallback)
+    const popupAnchorX = clickX ?? rect.left;
+    const popupAnchorY = clickY ?? rect.bottom;
 
     // Element label (tag + id + classes)
     const tag = element.tagName.toLowerCase();
@@ -1261,9 +1301,9 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 updateOverlayPosition(target);
                 showAnnotationForm(target, rect, source, undefined, { x: event.clientX, y: event.clientY });
             } else {
-                // Inspect mode — hide overlay and show result popup
+                // Inspect mode — hide overlay and show result popup at click point
                 hideOverlay();
-                showResultPopup(target, rect, source);
+                showResultPopup(target, rect, source, event.clientX, event.clientY);
             }
         },
         handleKeyDown(event: KeyboardEvent): void {
