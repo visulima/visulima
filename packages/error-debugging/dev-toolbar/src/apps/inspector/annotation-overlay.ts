@@ -64,6 +64,19 @@ const getPalette = getAnnotationPalette;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getRpc = (): any => (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
+/** Safe querySelector — returns null for invalid selectors (e.g. area selection paths like "region at (x, y)"). */
+const safeQuerySelector = (selector: string | undefined): Element | null => {
+    if (!selector) {
+        return null;
+    }
+
+    try {
+        return document.querySelector(selector);
+    } catch {
+        return null;
+    }
+};
+
 /**
  * Compare annotation URL with current page — ignores query params and hash
  * so annotations survive ?debug=true flags and #section anchors.
@@ -517,12 +530,8 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
             // Single element — try to find by selector or bounding box center
             let target: Element | null = null;
 
-            if (annotation.elementPath && !annotation.elementPath.startsWith("region at")) {
-                try {
-                    target = document.querySelector(annotation.elementPath);
-                } catch {
-                    /* invalid selector */
-                }
+            if (annotation.elementPath) {
+                target = safeQuerySelector(annotation.elementPath);
             }
 
             if (!target && annotation.boundingBox) {
@@ -631,7 +640,7 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
                     loadAndShowMarkers().catch(() => {});
                 });
         } else if (settings.markerClickBehavior === "edit") {
-            const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+            const element = safeQuerySelector(annotation.elementPath);
             const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y, annotation.isFixed);
             const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
@@ -648,7 +657,7 @@ const createMarkerElement = (annotation: Annotation, index: number): void => {
 
         if (settings.markerClickBehavior === "delete") {
             // Right-click edits when click deletes
-            const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+            const element = safeQuerySelector(annotation.elementPath);
             const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y, annotation.isFixed);
             const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
@@ -1859,7 +1868,7 @@ const showAnnotationDetail = (annotation: Annotation): void => {
                 removeAnnotationDetail();
 
                 // Try to find the element by selector to position the form
-                const element = annotation.elementPath ? document.querySelector(annotation.elementPath) : null;
+                const element = safeQuerySelector(annotation.elementPath);
                 const { left: vLeft, top: vTop } = toViewportCoords(annotation.x, annotation.y);
                 const fakeRect = element?.getBoundingClientRect() ?? new DOMRect(vLeft, vTop, 100, 20);
 
