@@ -323,10 +323,29 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                             sendEvent("annotations.changed", { timestamp: Date.now() });
                         }
                     });
+
+                    watcher.on("error", () => {
+                        // Silently ignore watcher errors (e.g. file deleted);
+                        // the client will re-fetch on next poll cycle.
+                    });
                 } catch {
-                    // File may not exist yet — fall back to polling
-                    const interval = setInterval(() => {
-                        sendEvent("annotations.changed", { timestamp: Date.now() });
+                    // File may not exist yet — fall back to polling with mtime check
+                    const { stat } = await import("node:fs/promises");
+
+                    let lastMtime = 0;
+
+                    const interval = setInterval(async () => {
+                        try {
+                            const s = await stat(annotationsPath);
+                            const mtime = s.mtimeMs;
+
+                            if (mtime !== lastMtime) {
+                                lastMtime = mtime;
+                                sendEvent("annotations.changed", { timestamp: Date.now() });
+                            }
+                        } catch {
+                            // File doesn't exist yet — skip
+                        }
                     }, 2000);
 
                     request.on("close", () => clearInterval(interval));

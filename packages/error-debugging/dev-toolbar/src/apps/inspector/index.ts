@@ -18,21 +18,23 @@ const inspectorApp: DevToolbarApp = {
             // Cancelled via badge or Escape — cleanup() already ran (removed
             // listeners/overlay/badge), so we just need to handle annotations
             // and deactivate the toolbar button.
-            removeAllMarkers();
-            detachMarkdownShortcut();
+            try {
+                removeAllMarkers();
+                detachMarkdownShortcut();
 
-            // Close annotations panel if open — await to avoid render race
-            if (api?.getActiveApp?.() === "dev-toolbar:annotations") {
-                try {
-                    await api.closeApp?.();
-                } catch {
-                    /* ignore */
+                // Close annotations panel if open — await to avoid render race
+                if (api?.getActiveApp?.() === "dev-toolbar:annotations") {
+                    try {
+                        await api.closeApp?.();
+                    } catch {
+                        /* ignore */
+                    }
                 }
-            }
-
-            // Deactivate the inspector button in the toolbar
-            if (api?.setAppActive) {
-                api.setAppActive("dev-toolbar:inspector", false);
+            } finally {
+                // Deactivate the inspector button in the toolbar even if cleanup threw
+                if (api?.setAppActive) {
+                    api.setAppActive("dev-toolbar:inspector", false);
+                }
             }
         });
     },

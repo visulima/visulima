@@ -24,8 +24,10 @@ function App() {
     return (
         <>
             <div>
-                <a href="https://vite.dev" target="_blank"></a>
-                <a href="https://react.dev" target="_blank">
+                <a href="https://vite.dev" rel="noopener noreferrer" target="_blank">
+                    <img alt="Vite logo" className="logo" src="/vite.svg" />
+                </a>
+                <a href="https://react.dev" rel="noopener noreferrer" target="_blank">
                     <img alt="React logo" className="logo react" src={reactLogo} />
                 </a>
             </div>

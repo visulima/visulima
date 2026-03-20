@@ -16,7 +16,7 @@ import {
 } from "./annotation-overlay";
 import { loadSettings } from "./annotation-settings";
 import { deepElementFromPoint, getElementBoundingBoxes, getElementLabel, getElementsInRect, pierceElementFromPoint } from "./element-utils";
-import { isFrozen, toggleFreeze } from "./freeze-animations";
+import { isFrozen, originalSetTimeout, toggleFreeze } from "./freeze-animations";
 // ─── Theme palette ─────────────────────────────────────────────────────────────
 // These elements live in document.body (outside the shadow DOM), so CSS variables
 // from the toolbar's :host are not available. We resolve the theme from the same
@@ -975,7 +975,9 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
     popup.style.left = "-9999px";
     document.body.append(popup);
 
-    requestAnimationFrame(() => {
+    // Use originalSetTimeout to bypass freeze-animations patch —
+    // requestAnimationFrame would be blocked while animations are frozen.
+    originalSetTimeout(() => {
         if (!document.contains(popup)) {
             return;
         }
@@ -1003,7 +1005,7 @@ const showResultPopup = (element: Element, rect: DOMRect, source: string | undef
 
         popup.style.top = `${finalTop}px`;
         popup.style.left = `${finalLeft}px`;
-    });
+    }, 0);
 
     // Dismiss when clicking outside the popup (after a tick to skip this click).
     const handleOutside = (event: MouseEvent): void => {

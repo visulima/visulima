@@ -83,7 +83,6 @@ const showToast = (message: string, type: "error" | "success" = "success"): void
 
     document.getElementById(TOAST_ID)?.remove();
 
-    const c = getPalette();
     const toast = document.createElement("div");
 
     toast.id = TOAST_ID;
@@ -1234,50 +1233,62 @@ export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect,
     textarea.placeholder = `Feedback about ${elements.length} selected elements...`;
     textarea.style.cssText = `width:100%;min-height:60px;resize:vertical;margin-bottom:8px;padding:6px 8px;background:${c.btnBg};border:1px solid ${c.btnBorder};color:${c.fg};font:11px/1.4 'JetBrains Mono',monospace;box-sizing:border-box;outline:none;`;
     textarea.addEventListener("click", (e) => e.stopPropagation());
-    textarea.addEventListener("keydown", (e) => e.stopPropagation());
+    textarea.addEventListener("keydown", (e) => {
+        e.stopPropagation();
+
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submitButton.click();
+        }
+
+        if (e.key === "Escape") {
+            e.preventDefault();
+            removeAnnotationForm();
+        }
+    });
     form.append(textarea);
 
     const actions = document.createElement("div");
 
     actions.style.cssText = "display:flex;gap:6px;";
 
-    actions.append(
-        makeButton("Create", async () => {
-            const comment = textarea.value.trim();
+    const submitButton = makeButton("Create", async () => {
+        const comment = textarea.value.trim();
 
-            if (!comment) {
-                textarea.style.borderColor = c.danger;
+        if (!comment) {
+            textarea.style.borderColor = c.danger;
 
-                return;
-            }
+            return;
+        }
 
-            const rpc = getRpc();
+        const rpc = getRpc();
 
-            if (!rpc) {
-                return;
-            }
+        if (!rpc) {
+            return;
+        }
 
-            const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
+        const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
 
-            const data: CreateAnnotationData = {
-                boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x, y: selectionRect.y },
-                comment,
-                elementBoundingBoxes: boundingBoxes,
-                elementTag: "multi-select",
-                intent: selectedIntent,
-                isMultiSelect: true,
-                severity: selectedSeverity,
-                url: globalThis.location.href,
-                x: pageCoords.x,
-                y: pageCoords.y,
-            };
+        const data: CreateAnnotationData = {
+            boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x, y: selectionRect.y },
+            comment,
+            elementBoundingBoxes: boundingBoxes,
+            elementTag: "multi-select",
+            intent: selectedIntent,
+            isMultiSelect: true,
+            severity: selectedSeverity,
+            url: globalThis.location.href,
+            x: pageCoords.x,
+            y: pageCoords.y,
+        };
 
-            await rpc.createAnnotation(data);
-            await loadAndShowMarkers();
-            removeAnnotationForm();
-            showToast("Annotation created");
-        }),
-    );
+        await rpc.createAnnotation(data);
+        await loadAndShowMarkers();
+        removeAnnotationForm();
+        showToast("Annotation created");
+    });
+
+    actions.append(submitButton);
 
     actions.append(makeButton("Cancel", () => removeAnnotationForm()));
     form.append(actions);
