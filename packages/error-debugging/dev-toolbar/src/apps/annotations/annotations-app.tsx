@@ -230,8 +230,8 @@ const AnnotationDetail = ({
 
                 {annotation.thread && annotation.thread.length > 0 && (
                     <div class="space-y-2 mb-3">
-                        {annotation.thread.map((message_, i) => (
-                            <div class="border border-border p-2" key={i}>
+                        {annotation.thread.map((message_) => (
+                            <div class="border border-border p-2" key={`${message_.role}-${message_.timestamp}`}>
                                 <div class="flex items-center gap-2 mb-1">
                                     <span class="text-[0.62rem] font-semibold text-primary/70">{message_.role}</span>
                                     <span class="text-[0.55rem] text-muted-foreground/50">{new Date(message_.timestamp).toLocaleString()}</span>
@@ -363,7 +363,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
         try {
             const data = await helpers.rpc.getAnnotations?.();
 
-            setAnnotations(data as Annotation[]);
+            setAnnotations((data as Annotation[] | undefined) ?? []);
         } catch (error_) {
             setError(error_ instanceof Error ? error_.message : String(error_));
         } finally {
@@ -406,8 +406,9 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     : helpers.rpc.updateAnnotation?.(id, { status: action === "resolve" ? "resolved" : "dismissed" }));
 
                 await load();
-            } catch {
-                /* ignore */
+            } catch (error_) {
+                // eslint-disable-next-line no-console
+                console.error(`[annotations] ${action} failed for ${id}:`, error_);
             }
         },
         [helpers, load],

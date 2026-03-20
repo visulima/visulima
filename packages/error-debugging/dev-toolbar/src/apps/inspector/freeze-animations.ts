@@ -18,6 +18,9 @@ const NOT_SELECTORS = EXCLUDE_ATTRS.flatMap((a) => [`:not([${a}])`, `:not([${a}]
 const STYLE_ID = "__vdt_freeze_styles";
 const STATE_KEY = "__vdt_freeze_state";
 
+/** Maximum number of entries allowed in each frozen queue to prevent unbounded memory growth. */
+const MAX_FROZEN_QUEUE = 1000;
+
 // ─── Shared mutable state on window (survives HMR) ──────────────────────────
 
 interface FreezeState {
@@ -83,7 +86,14 @@ if (globalThis.window !== undefined && !_s.installed) {
         return _s.origSetTimeout(
             (...a: any[]) => {
                 if (_s.frozen) {
-                    _s.frozenTimeoutQueue.push(() => (handler as Function)(...a));
+                    if (_s.frozenTimeoutQueue.length < MAX_FROZEN_QUEUE) {
+                        _s.frozenTimeoutQueue.push(() => (handler as Function)(...a));
+                    } else if (_s.frozenTimeoutQueue.length === MAX_FROZEN_QUEUE) {
+                        // Push a sentinel so the warning fires only once
+                        _s.frozenTimeoutQueue.push(() => {});
+                        // eslint-disable-next-line no-console
+                        console.warn(`[dev-toolbar] frozenTimeoutQueue exceeded ${MAX_FROZEN_QUEUE} entries — further callbacks are being dropped.`);
+                    }
                 } else {
                     (handler as Function)(...a);
                 }
@@ -116,7 +126,14 @@ if (globalThis.window !== undefined && !_s.installed) {
     (globalThis as any).requestAnimationFrame = (callback: FrameRequestCallback): number =>
         _s.origRAF((timestamp: number) => {
             if (_s.frozen) {
-                _s.frozenRAFQueue.push(callback);
+                if (_s.frozenRAFQueue.length < MAX_FROZEN_QUEUE) {
+                    _s.frozenRAFQueue.push(callback);
+                } else if (_s.frozenRAFQueue.length === MAX_FROZEN_QUEUE) {
+                    // Push a sentinel so the warning fires only once
+                    _s.frozenRAFQueue.push(() => {});
+                    // eslint-disable-next-line no-console
+                    console.warn(`[dev-toolbar] frozenRAFQueue exceeded ${MAX_FROZEN_QUEUE} entries — further callbacks are being dropped.`);
+                }
             } else {
                 callback(timestamp);
             }
@@ -206,7 +223,9 @@ export const unfreezeAll = (): void => {
     for (const callback of timeoutQueue) {
         _s.origSetTimeout(() => {
             if (_s.frozen) {
-                _s.frozenTimeoutQueue.push(callback);
+                if (_s.frozenTimeoutQueue.length <= MAX_FROZEN_QUEUE) {
+                    _s.frozenTimeoutQueue.push(callback);
+                }
 
                 return;
             }
@@ -227,7 +246,9 @@ export const unfreezeAll = (): void => {
     for (const callback of rafQueue) {
         _s.origRAF((ts: number) => {
             if (_s.frozen) {
-                _s.frozenRAFQueue.push(callback);
+                if (_s.frozenRAFQueue.length <= MAX_FROZEN_QUEUE) {
+                    _s.frozenRAFQueue.push(callback);
+                }
 
                 return;
             }

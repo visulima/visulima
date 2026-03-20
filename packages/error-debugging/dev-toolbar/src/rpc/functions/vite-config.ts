@@ -100,6 +100,13 @@ const normalizeAlias = (rawAlias: unknown): AliasEntry[] | Record<string, string
     return undefined;
 };
 
+/**
+ * Normalizes the `ssr.noExternal` Vite config value into a stable shape for
+ * the toolbar UI. Vite accepts `true` (bundle everything), an array of
+ * package names/patterns, or `undefined`. This helper coerces the raw config
+ * value into one of those three forms so downstream code can rely on a
+ * predictable type.
+ */
 const normalizeSsrNoExternal = (value: unknown): boolean | string[] | undefined => {
     if (typeof value === "boolean") {
         return value;

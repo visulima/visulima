@@ -202,6 +202,8 @@ const SelectContent = ({
             return;
         }
 
+        let cancelled = false;
+
         const placement = align === "center" ? side : (`${side}-${align}` as const);
 
         computePosition(triggerRef.current, contentRef.current, {
@@ -209,6 +211,10 @@ const SelectContent = ({
             placement,
         })
             .then((result) => {
+                if (cancelled) {
+                    return result;
+                }
+
                 setPosition({ x: result.x, y: result.y });
                 setReady(true);
 
@@ -217,6 +223,10 @@ const SelectContent = ({
             .catch(() => {
                 // ignore positioning errors in non-browser environments
             });
+
+        return () => {
+            cancelled = true;
+        };
     }, [open, side, sideOffset, align, triggerRef]);
 
     // Focus search input when dropdown opens
@@ -373,6 +383,8 @@ const SelectContent = ({
             {searchable && (
                 <div class="border-b border-border p-1.5">
                     <input
+                        aria-activedescendant={activeDescendantId}
+                        aria-controls={`${instanceId}-listbox`}
                         aria-label="Search options"
                         class={clsx(
                             "w-full bg-transparent text-[0.75rem] text-foreground placeholder:text-muted-foreground",
@@ -384,14 +396,16 @@ const SelectContent = ({
                         }}
                         placeholder="Search…"
                         ref={searchInputRef}
+                        role="combobox"
                         type="text"
                         value={search}
                     />
                 </div>
             )}
             <div
-                aria-activedescendant={activeDescendantId}
+                {...(!searchable && { "aria-activedescendant": activeDescendantId, tabIndex: 0 })}
                 class="max-h-[min(300px,var(--available-height,300px))] overflow-y-auto scrollbar-thin-border p-1"
+                id={`${instanceId}-listbox`}
                 ref={listRef}
                 role="listbox"
             >

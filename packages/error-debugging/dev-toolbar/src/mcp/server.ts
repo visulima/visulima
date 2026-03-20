@@ -19,9 +19,7 @@ import { deleteScreenshotFile, isPathInsideBase, readAnnotations, resolvePaths, 
 
 export const startMcpServer = async (): Promise<void> => {
     // Dynamic import — only available when @modelcontextprotocol/sdk is installed
-    // @ts-expect-error -- optional peer dependency
     const { McpServer } = await import("@modelcontextprotocol/sdk/server/mcp.js");
-    // @ts-expect-error -- optional peer dependency
     const { StdioServerTransport } = await import("@modelcontextprotocol/sdk/server/stdio.js");
     const { z } = await import("zod");
 
@@ -277,58 +275,89 @@ export const startMcpServer = async (): Promise<void> => {
         async ({ batch_window_ms, timeout_ms }: { batch_window_ms?: number; timeout_ms?: number }) => {
             const batchWindow = batch_window_ms ?? 10_000;
             const timeout = timeout_ms ?? 300_000;
+            const POLL_INTERVAL = 2000;
 
-            // Poll for new annotations
-            const startTime = Date.now();
-            let lastCount = (await readAnnotations(root)).filter((a) => a.status === "pending").length;
+            // Track annotation IDs instead of counts to detect new annotations
+            // even when others are resolved simultaneously
+            const knownIds = new Set(
+                (await readAnnotations(root)).filter((a) => a.status === "pending").map((a) => a.id),
+            );
 
-            // Wait for new annotations to appear
-            while (Date.now() - startTime < timeout) {
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 2000);
-                });
+            // Use a timer-based approach with proper cleanup
+            let pollInterval: ReturnType<typeof setInterval> | undefined;
+            let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
 
-                const current = await readAnnotations(root);
-                const pendingCount = current.filter((a) => a.status === "pending").length;
+            const result = await Promise.race([
+                // Timeout promise
+                new Promise<{ timedOut: true }>((resolve) => {
+                    timeoutTimer = setTimeout(() => resolve({ timedOut: true }), timeout);
+                }),
+                // Polling promise using setInterval
+                new Promise<{ annotations: Array<Record<string, unknown>>; newIds: string[] }>((resolve, reject) => {
+                    pollInterval = setInterval(() => {
+                        readAnnotations(root)
+                            .then((current) => {
+                                const pending = current.filter((a) => a.status === "pending");
+                                const newIds = pending.filter((a) => !knownIds.has(a.id)).map((a) => a.id);
 
-                if (pendingCount > lastCount) {
-                    // New annotations detected — start batch window
-                    await new Promise((resolve) => {
-                        setTimeout(resolve, batchWindow);
-                    });
+                                if (newIds.length > 0) {
+                                    clearInterval(pollInterval);
+                                    clearTimeout(timeoutTimer);
 
-                    // Collect all pending
-                    const final = await readAnnotations(root);
-                    const pending = final.filter((a) => a.status === "pending");
+                                    // Batch window: wait for additional annotations
+                                    setTimeout(() => {
+                                        readAnnotations(root)
+                                            .then((final) => {
+                                                const finalPending = final.filter((a) => a.status === "pending");
+                                                const allNewIds = finalPending.filter((a) => !knownIds.has(a.id)).map((a) => a.id);
 
-                    return {
-                        content: [
-                            {
-                                text: JSON.stringify(
-                                    {
-                                        annotations: pending.map((a) => {
-                                            return { ...a, screenshot: Boolean(a.screenshot) };
-                                        }),
-                                        count: pending.length,
-                                        newCount: pending.length - lastCount,
-                                    },
-                                    undefined,
-                                    2,
-                                ),
-                                type: "text" as const,
-                            },
-                        ],
-                    };
-                }
+                                                resolve({
+                                                    annotations: finalPending.map((a) => {
+                                                        return { ...a, screenshot: Boolean(a.screenshot) };
+                                                    }),
+                                                    newIds: allNewIds,
+                                                });
+                                            })
+                                            .catch(reject);
+                                    }, batchWindow);
+                                }
+                            })
+                            .catch((error) => {
+                                clearInterval(pollInterval);
+                                clearTimeout(timeoutTimer);
+                                reject(error);
+                            });
+                    }, POLL_INTERVAL);
+                }),
+            ]);
 
-                lastCount = pendingCount;
+            // Clean up any remaining timers
+            clearInterval(pollInterval);
+            clearTimeout(timeoutTimer);
+
+            if ("timedOut" in result) {
+                return {
+                    content: [
+                        {
+                            text: JSON.stringify({ annotations: [], count: 0, newCount: 0, timedOut: true }),
+                            type: "text" as const,
+                        },
+                    ],
+                };
             }
 
-            // Timeout — return empty
             return {
                 content: [
                     {
-                        text: JSON.stringify({ annotations: [], count: 0, newCount: 0, timedOut: true }),
+                        text: JSON.stringify(
+                            {
+                                annotations: result.annotations,
+                                count: result.annotations.length,
+                                newCount: result.newIds.length,
+                            },
+                            undefined,
+                            2,
+                        ),
                         type: "text" as const,
                     },
                 ],
