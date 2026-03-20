@@ -14,13 +14,22 @@ The Annotations app lets you mark elements on a rendered page with visual annota
 
 Traditional bug reporting loses context. A screenshot in a ticket doesn't carry the CSS class, the React component name, or the exact source file. Annotations capture all of that automatically — and expose it to AI coding agents so they can find and fix the issue without asking you to explain where the code lives.
 
-```
-Developer                           AI Agent (via MCP)
-──────────────                      ──────────────────
-Click element → Create annotation   get_pending_annotations()
-Add comment: "fix alignment"   →    Reads: element, source, styles
-                                    Fixes code
-                                    resolve_annotation()
+```mermaid
+sequenceDiagram
+    participant D as Developer (Browser)
+    participant S as .devtoolbar/
+    participant A as AI Agent (MCP)
+
+    D->>S: Click element → Create annotation
+    D->>S: Add comment, intent, severity
+    Note over S: annotations.json updated
+    A->>S: get_pending_annotations()
+    S-->>A: Returns element, source, styles, comment
+    A->>A: Reads context, fixes code
+    A->>S: acknowledge_annotation()
+    Note over D: Marker shows "acknowledged"
+    A->>S: resolve_annotation()
+    Note over D: Marker disappears
 ```
 
 ## Features
@@ -28,6 +37,18 @@ Add comment: "fix alignment"   →    Reads: element, source, styles
 - **Intent tagging** — mark annotations as `fix`, `change`, `approve`, or `question`
 - **Severity levels** — `blocking`, `important`, or `suggestion`
 - **Status lifecycle** — `pending` → `acknowledged` → `resolved` or `dismissed`
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: Created
+    pending --> acknowledged: Agent starts work
+    pending --> resolved: Human or agent fixes
+    pending --> dismissed: Not actionable
+    acknowledged --> resolved: Fix complete
+    acknowledged --> dismissed: Not actionable
+    resolved --> [*]
+    dismissed --> [*]
+```
 - **Rich metadata capture** — bounding box, CSS classes, computed styles, accessibility attributes, framework component info, DOM path, nearby elements, selected text
 - **Screenshot capture** — pixel-perfect screenshots via the Screen Capture API
 - **Source file linking** — automatically captures `file:line:col` from `data-vdt-source` attributes
@@ -80,7 +101,7 @@ The overlay highlight **stays frozen** on the selected element while the form is
 
 **Text selection** — selected text (`window.getSelection()`) is automatically captured when clicking to annotate. The selected text is included in the annotation.
 
-**Deep select (Cmd+hover)** — hold Cmd (Mac) or Ctrl (Windows) while hovering to pierce through invisible overlays, animation wrappers, and empty container divs. The highlight switches to a dashed border to indicate pierce mode. Useful with frameworks like Framer Motion or Remotion that render empty divs on top of content.
+**Deep select (Cmd+hover)** — hold Cmd (Mac) or Ctrl (Windows) while hovering to pierce through invisible overlays, animation wrappers, and empty container divs. The highlight switches to a dashed border to indicate deep select is active. Useful with frameworks like Framer Motion or Remotion that render empty divs on top of content.
 
 ### Marker Interactions
 
@@ -119,14 +140,147 @@ Click any annotation marker or card to open the detail popup:
 
 ## Markdown Export
 
-Export annotations as structured markdown for pasting into GitHub issues, PR descriptions, or AI agent prompts. Four detail levels are available:
+Press **C** on the inspector toolbar or click **Copy** in an annotation detail popup to export annotations as structured markdown. Four detail levels are available — configure the default in the Annotations panel settings.
 
-- **Compact** — comment, intent, and element tag only. Use for quick issue lists.
-- **Standard** — adds source location, severity, and selected text. Good for most bug reports.
-- **Detailed** — includes CSS classes, accessibility info, and nearby elements. Use for thorough reviews.
-- **Forensic** — everything: computed styles, full DOM path, component stack, nearby text. Use for AI agents that need maximum context.
+### When to use each format
 
-Configure the default detail level in the Annotations panel settings.
+| Format | Best for | Includes |
+| --- | --- | --- |
+| **Compact** | Quick fix lists, Slack messages | Element + comment (one line per annotation) |
+| **Standard** | Bug reports, PR descriptions | + source location, selector, component info, selected text |
+| **Detailed** | Thorough reviews, complex layouts | + CSS classes, DOM path, nearby text context |
+| **Forensic** | AI agents, debugging style issues | + computed styles, accessibility, nearby elements |
+
+### Output examples
+
+<Tabs items={["Compact", "Standard", "Detailed", "Forensic"]}>
+    <Tab value="Compact">
+        Minimal output — one line per annotation. Good for quick issue lists or pasting into Slack.
+
+        ```markdown
+        # Annotations (3)
+
+        - **button "Submit":** Fix the padding on mobile — text is clipped
+        - **h1 "Welcome":** Change heading to "Get Started" (re: "Welcome to...")
+        - **input[email]:** Add validation error state for invalid emails
+        ```
+    </Tab>
+    <Tab value="Standard">
+        Balanced detail for most use cases. Includes source file, selector, and component context so agents can find the code.
+
+        ```markdown
+        # Annotations
+
+        > 3 annotation(s)
+
+        ## 1. [FIX] important — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+
+        Fix the padding on mobile — text is clipped
+
+        ---
+
+        ## 2. [CHANGE] suggestion — h1 "Welcome"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/
+        **Selector:** `h1.hero-heading`
+        **Source:** `src/pages/Home.tsx:18:6`
+        **Selected:** "Welcome to..."
+
+        Change heading to "Get Started"
+
+        ---
+        ```
+    </Tab>
+    <Tab value="Detailed">
+        Full context with classes, DOM path, and nearby text. Good for thorough reviews where the reviewer needs spatial context.
+
+        ```markdown
+        # Annotations
+
+        > 2 annotation(s)
+
+        ## 1. [FIX] blocking — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+        **Classes:** `flex items-center gap-2 px-4 py-2 bg-primary`
+        **Context:** Submit your application
+        **DOM Path:** `body > main > form > div > button`
+
+        Fix the padding on mobile — text is clipped on iPhone SE
+
+        ---
+        ```
+    </Tab>
+    <Tab value="Forensic">
+        Maximum detail including computed styles, accessibility attributes, and nearby elements. Use when AI agents need every possible signal to locate and fix an issue.
+
+        ```markdown
+        # Annotations
+
+        > 1 annotation(s)
+
+        ## 1. [FIX] blocking — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+        **Classes:** `flex items-center gap-2 px-4 py-2 bg-primary`
+        **Context:** Submit your application
+        **DOM Path:** `body > main > form > div > button`
+        **Role:** button
+        **Nearby:** input, label, div, span
+        **Styles:** `display: flex; padding: 8px 16px; font-size: 14px; color: rgb(255, 255, 255); background-color: rgb(99, 102, 241)`
+
+        Fix the padding on mobile — text is clipped on iPhone SE.
+        The bounding box overlaps the adjacent input on viewports below 375px.
+
+        ---
+        ```
+    </Tab>
+</Tabs>
+
+### Customizing output
+
+The copied markdown is plain text. Edit it before pasting into your agent prompt:
+
+- **Add context** — prepend with "I'm working on the dashboard page, fix these issues:"
+- **Prioritize** — reorder annotations by importance
+- **Remove noise** — delete annotations that aren't relevant
+- **Add instructions** — append "Fix these and run `pnpm test` when done"
+
+### Source file detection
+
+In development mode, the annotation system automatically detects source files via `data-vdt-source` attributes injected by the Vite plugin's Babel/SWC transform. This works with any JSX framework (React, Vue JSX, Solid, etc.) and enables agents to jump directly to the right file:line:col instead of searching.
+
+### Framework component detection
+
+Component names and stacks are included when detected. The level of detail adapts to your output format:
+
+| Format | React | Vue | Svelte |
+| --- | --- | --- | --- |
+| **Compact** | omitted | omitted | omitted |
+| **Standard** | Component name + stack | Component name | Component name |
+| **Detailed** | + source file | + source file | + source file |
+| **Forensic** | + full stack, all ancestors | + parent chain | + file path |
 
 ## Annotation Settings
 
@@ -183,7 +337,7 @@ Annotations are stored on the filesystem, not in the browser:
 └── screenshots/
     ├── {uuid}.png
     ├── {uuid}.jpg
-    └── screenshots/
+    └── {uuid}.webp
 ```
 
 The store includes file locking to prevent concurrent write races and path validation to prevent directory traversal.

@@ -19,14 +19,18 @@ Annotations capture _what_ needs to change and _where_ in the codebase. The MCP 
 4. Add messages to annotation threads
 5. Mark annotations as resolved when the fix is complete
 
+```mermaid
+flowchart LR
+    B[Browser\nDev Toolbar] -->|save| S[".devtoolbar/\nannotations.json\nscreenshots/"]
+    A[AI Agent] -->|MCP tools| S
+    S -->|SSE events| B
+
+    style B fill:#6366f1,color:#fff
+    style A fill:#22c55e,color:#fff
+    style S fill:#18181b,color:#fafafa,stroke:#a1a1aa
 ```
-Browser (Dev Toolbar)          MCP Server             AI Agent
-─────────────────────          ──────────             ────────
-Create annotation    ──save──→ .devtoolbar/    ←──── get_pending_annotations
-Capture screenshot   ──save──→ screenshots/    ←──── get_screenshot
-                               annotations.json ←──── resolve_annotation
-View thread updates  ←─read──  annotations.json ←──── add_thread_message
-```
+
+The browser writes annotations to disk. The MCP server reads them. SSE events notify the browser when the agent makes changes.
 
 ---
 
@@ -186,7 +190,20 @@ The simplest pattern — you annotate, then ask your agent to check:
 
 ```
 You:   "Check for pending annotations and fix them"
-Agent: Uses get_pending_annotations → reads context → fixes code → resolve_annotation
+Agent: get_pending_annotations → reads context → fixes code → resolve_annotation
+```
+
+```mermaid
+sequenceDiagram
+    participant You
+    participant Agent
+
+    You->>Agent: "Fix pending annotations"
+    Agent->>Agent: get_pending_annotations()
+    Agent->>Agent: Read element, source, styles
+    Agent->>Agent: Fix code
+    Agent->>Agent: resolve_annotation()
+    Agent-->>You: "Fixed 3 annotations"
 ```
 
 ### Hands-free Mode
@@ -195,7 +212,22 @@ The agent watches for new annotations and acts on them automatically:
 
 ```
 You:   "Watch for annotations and fix them as they come in"
-Agent: Uses watch_annotations in a loop → processes each batch → resolves
+Agent: watch_annotations in a loop → acknowledge → fix → resolve
+```
+
+```mermaid
+sequenceDiagram
+    participant You as Developer
+    participant Agent
+
+    You->>Agent: "Watch and fix annotations"
+    loop Every batch
+        Agent->>Agent: watch_annotations()
+        Note over Agent: Blocks until new annotations arrive
+        Agent->>Agent: acknowledge_annotation()
+        Agent->>Agent: Fix code
+        Agent->>Agent: resolve_annotation()
+    end
 ```
 
 ### Critique Mode

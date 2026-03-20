@@ -284,22 +284,33 @@ const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string
 
     button.type = "button";
     button.title = title;
+    // Match main toolbar: size-8 (32px), icon wrapper size-6 (24px), svg 18px
     button.style.cssText = [
+        "position:relative",
         "display:flex",
-        "align-items:center",
         "justify-content:center",
-        "width:24px",
-        "height:24px",
-        "border:none",
-        "cursor:pointer",
+        "align-items:center",
+        "width:32px",
+        "height:32px",
+        "border:0",
+        "white-space:nowrap",
         "padding:0",
+        "margin:0",
+        "cursor:pointer",
         `background:${active ? `${c.primary}1f` : "transparent"}`,
         `color:${active ? c.primary : c.muted}`,
-        "transition:all 0.15s",
+        "transition:all 150ms",
     ].join(";");
-    button.append(parseSvg(svgString));
+
+    // Icon wrapper matching main toolbar's size-6 > [&_svg]:size-4.5
+    const iconWrap = document.createElement("div");
+
+    iconWrap.style.cssText = "width:24px;height:24px;display:flex;align-items:center;justify-content:center;user-select:none;";
+    iconWrap.append(parseSvg(svgString));
+    button.append(iconWrap);
+
     button.addEventListener("pointerover", () => {
-        button.style.background = `${c.primary}14`;
+        button.style.background = `${c.primary}14`; // primary/8
         button.style.color = c.primary;
     });
     button.addEventListener("pointerout", () => {
@@ -328,6 +339,47 @@ const setButtonIcon = (button: HTMLButtonElement, svgString: string): void => {
     if (svg) {
         svg.replaceWith(parseSvg(svgString));
     }
+};
+
+/** Show a brief toast message near the toolbar badge. */
+const showToast = (message: string, type: "error" | "success" = "success"): void => {
+    const TOAST_ID = "__vdt_toast";
+
+    document.getElementById(TOAST_ID)?.remove();
+
+    const toast = document.createElement("div");
+
+    toast.id = TOAST_ID;
+    toast.textContent = message;
+    toast.style.cssText = [
+        "position:fixed",
+        "z-index:2147483646",
+        "bottom:1rem",
+        "right:1rem",
+        "padding:6px 14px",
+        "border-radius:4px",
+        `background:${type === "success" ? "#22c55e" : "#ef4444"}`,
+        "color:#fff",
+        "font:12px/1 system-ui,-apple-system,sans-serif",
+        "font-weight:600",
+        "pointer-events:none",
+        "opacity:0",
+        "transition:opacity 0.2s,transform 0.2s",
+        "transform:translateY(4px)",
+    ].join(";");
+
+    document.body.append(toast);
+
+    requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+        toast.style.transform = "translateY(0)";
+    });
+
+    // Fade out after 1.5s
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 200);
+    }, 1500);
 };
 
 const createFloatingBadge = (onCancel: () => void): void => {
@@ -448,23 +500,32 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
         button.type = "button";
         button.title = title;
-        button.append(parseSvg(svgString));
+
+        // Icon wrapper matching main toolbar
+        const iconWrap = document.createElement("div");
+
+        iconWrap.style.cssText = "width:24px;height:24px;display:flex;align-items:center;justify-content:center;user-select:none;";
+        iconWrap.append(parseSvg(svgString));
+        button.append(iconWrap);
 
         const applyState = (): void => {
             const isActive = activeMode === mode;
 
             button.style.cssText = [
+                "position:relative",
                 "display:flex",
-                "align-items:center",
                 "justify-content:center",
-                "width:24px",
-                "height:24px",
-                "border:none",
-                "cursor:pointer",
+                "align-items:center",
+                "width:32px",
+                "height:32px",
+                "border:0",
+                "white-space:nowrap",
                 "padding:0",
+                "margin:0",
+                "cursor:pointer",
                 `background:${isActive ? `${c.primary}1f` : "transparent"}`,
                 `color:${isActive ? c.primary : c.muted}`,
-                "transition:all 0.15s",
+                "transition:all 150ms",
             ].join(";");
         };
 
@@ -509,7 +570,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     // ── Separator between modes and tools ──
     const modeSeparator = document.createElement("span");
 
-    modeSeparator.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    modeSeparator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
     badge.append(modeSeparator);
 
     // ── Freeze button (P) ──
@@ -563,13 +624,9 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
             await navigator.clipboard.writeText(md);
 
-            // Flash feedback
-            copyButton.style.color = c.primary;
-            setTimeout(() => {
-                copyButton.style.color = c.muted;
-            }, 1000);
+            showToast("Copied to clipboard");
         } catch {
-            /* ignore */
+            showToast("Copy failed", "error");
         }
     });
 
@@ -632,6 +689,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
                 await Promise.all((annotations as { id: string }[]).map((a) => rpc.deleteAnnotation(a.id)));
 
                 await loadAndShowMarkers();
+                showToast(`${annotations.length} annotation${(annotations as unknown[]).length === 1 ? "" : "s"} cleared`);
             });
 
             const noButton = document.createElement("button");
@@ -655,7 +713,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     // ── Separator ──
     const separator = document.createElement("span");
 
-    separator.style.cssText = `width:1px;height:16px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    separator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
     badge.append(separator);
 
     // ── Close button ──
