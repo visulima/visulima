@@ -65,5 +65,13 @@ export {
 export type { TaskOrchestratorOptions } from "./task-orchestrator";
 export { TaskOrchestrator } from "./task-orchestrator";
 
+// Auto-fingerprinting (Vite Task-style caching)
+export type { TaskFingerprint, CacheMissReason } from "./fingerprint";
+export { FingerprintManager } from "./fingerprint";
+
+// File access tracking
+export type { FileAccess, TrackingResult } from "./file-access-tracker";
+export { FileAccessTracker } from "./file-access-tracker";
+
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";

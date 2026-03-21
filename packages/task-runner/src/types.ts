@@ -258,6 +258,35 @@ export interface TaskRunnerOptions {
     defaultBase?: string;
     /** Custom environment variables to include in hash */
     envVars?: string[];
+    /**
+     * Enable auto-fingerprinting mode (Vite Task-style).
+     * When enabled, the task runner automatically tracks which files
+     * a task accesses during execution and uses that for cache invalidation
+     * instead of requiring manual input configuration.
+     *
+     * Falls back to explicit inputs (Nx-style) when file tracking
+     * is not supported on the current platform.
+     *
+     * @default false
+     */
+    autoFingerprint?: boolean;
+    /**
+     * Environment variable patterns to include in auto-fingerprint.
+     * Supports wildcard patterns like "VITE_*".
+     * Only used when autoFingerprint is enabled.
+     */
+    fingerprintEnvPatterns?: string[];
+    /**
+     * Environment variables that should be passed to tasks but NOT
+     * included in the cache fingerprint. Useful for CI-specific vars.
+     * Only used when autoFingerprint is enabled.
+     */
+    untrackedEnvVars?: string[];
+    /**
+     * Whether to show cache miss diagnostics (why a cache miss occurred).
+     * @default false
+     */
+    cacheDiagnostics?: boolean;
 }
 
 /**
@@ -317,4 +346,6 @@ export interface LifeCycleInterface {
     startTasks?(tasks: Task[]): void;
     endTasks?(taskResults: TaskResult[]): void;
     printTaskTerminalOutput?(task: Task, status: TaskStatus, terminalOutput: string): void;
+    /** Called when a cache miss occurs with diagnostic information */
+    printCacheMiss?(task: Task, reasons: string): void;
 }

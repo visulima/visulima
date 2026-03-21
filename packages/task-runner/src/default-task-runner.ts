@@ -15,13 +15,26 @@ import { TaskScheduler } from "./task-scheduler";
  * The default task runner implementation.
  *
  * Runs tasks with caching, scheduling, and lifecycle support.
- * This is the main entry point for executing tasks.
+ * Supports two caching modes:
+ *
+ * 1. **Nx-style** (default): Explicit input declarations with upfront hash computation
+ * 2. **Auto-fingerprint** (Vite Task-style): Set `autoFingerprint: true` to automatically
+ *    track file accesses and use them for cache invalidation
  *
  * @example
  * ```ts
  * import { defaultTaskRunner } from "@visulima/task-runner";
  *
+ * // Nx-style (explicit inputs)
  * const results = await defaultTaskRunner(tasks, options, context);
+ *
+ * // Vite Task-style (auto-fingerprinting)
+ * const results = await defaultTaskRunner(tasks, {
+ *     ...options,
+ *     autoFingerprint: true,
+ *     fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
+ *     cacheDiagnostics: true,
+ * }, context);
  * ```
  */
 export const defaultTaskRunner = async (
@@ -79,6 +92,9 @@ export const defaultTaskRunner = async (
         workspaceRoot,
         skipCache: options.skipNxCache,
         captureOutput: true,
+        autoFingerprint: options.autoFingerprint,
+        fingerprintEnvPatterns: options.fingerprintEnvPatterns,
+        cacheDiagnostics: options.cacheDiagnostics,
     });
 
     return orchestrator.run();

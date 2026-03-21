@@ -50,6 +50,12 @@ export class CompositeLifeCycle implements LifeCycleInterface {
             lc.printTaskTerminalOutput?.(task, status, terminalOutput);
         }
     }
+
+    printCacheMiss(task: Task, reasons: string): void {
+        for (const lc of this.#lifeCycles) {
+            lc.printCacheMiss?.(task, reasons);
+        }
+    }
 }
 
 /**
@@ -106,6 +112,12 @@ export class ConsoleLifeCycle implements LifeCycleInterface {
     ): void {
         if (terminalOutput.trim()) {
             console.log(terminalOutput);
+        }
+    }
+
+    printCacheMiss(task: Task, reasons: string): void {
+        if (this.#verbose) {
+            console.log(`[task-runner] ${task.id}: ${reasons}`);
         }
     }
 }

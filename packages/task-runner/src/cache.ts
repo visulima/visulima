@@ -9,6 +9,8 @@ import {
 } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
+import type { TaskFingerprint } from "./fingerprint";
+
 /**
  * Represents a cached task result.
  */
@@ -19,6 +21,8 @@ export interface CachedResult {
     terminalOutput: string;
     /** The hash that was used as the cache key */
     hash: string;
+    /** The auto-fingerprint data, if auto-fingerprinting was used */
+    fingerprint?: TaskFingerprint;
 }
 
 /**
@@ -94,7 +98,20 @@ export class Cache {
                 // Terminal output may not exist
             }
 
-            return { code, terminalOutput, hash };
+            let fingerprint: TaskFingerprint | undefined;
+
+            try {
+                const fingerprintContent = await readFile(
+                    join(cacheEntryDir, "fingerprint.json"),
+                    "utf-8",
+                );
+
+                fingerprint = JSON.parse(fingerprintContent) as TaskFingerprint;
+            } catch {
+                // Fingerprint may not exist (non-auto-fingerprinted entry)
+            }
+
+            return { code, terminalOutput, hash, fingerprint };
         } catch {
             return null;
         }
@@ -108,6 +125,7 @@ export class Cache {
         terminalOutput: string,
         outputs: string[],
         code: number,
+        fingerprint?: TaskFingerprint,
     ): Promise<void> {
         const cacheEntryDir = join(this.#cacheDirectory, hash);
 
@@ -122,6 +140,14 @@ export class Cache {
 
         // Store terminal output
         await writeFile(join(cacheEntryDir, "terminalOutput"), terminalOutput);
+
+        // Store fingerprint if provided
+        if (fingerprint) {
+            await writeFile(
+                join(cacheEntryDir, "fingerprint.json"),
+                JSON.stringify(fingerprint),
+            );
+        }
 
         // Archive output files
         await this.#archiveOutputs(cacheEntryDir, outputs);
@@ -171,6 +197,51 @@ export class Cache {
         } catch {
             return false;
         }
+    }
+
+    /**
+     * Retrieves the most recent cached result for a task by its ID.
+     * Used in auto-fingerprint mode where the hash is derived from
+     * tracked file accesses rather than computed upfront.
+     */
+    async getByTaskId(taskId: string): Promise<CachedResult | null> {
+        const indexFile = join(this.#cacheDirectory, ".task-index.json");
+
+        try {
+            const indexContent = await readFile(indexFile, "utf-8");
+            const index = JSON.parse(indexContent) as Record<string, string>;
+            const hash = index[taskId];
+
+            if (!hash) {
+                return null;
+            }
+
+            return this.get(hash);
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Stores the mapping from task ID to cache hash.
+     * Used in auto-fingerprint mode for looking up entries by task ID.
+     */
+    async setTaskIndex(taskId: string, hash: string): Promise<void> {
+        const indexFile = join(this.#cacheDirectory, ".task-index.json");
+        let index: Record<string, string> = {};
+
+        try {
+            const indexContent = await readFile(indexFile, "utf-8");
+
+            index = JSON.parse(indexContent) as Record<string, string>;
+        } catch {
+            // Index doesn't exist yet
+        }
+
+        index[taskId] = hash;
+
+        await mkdir(this.#cacheDirectory, { recursive: true });
+        await writeFile(indexFile, JSON.stringify(index));
     }
 
     /**
