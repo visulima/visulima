@@ -92,5 +92,15 @@ export { getAffectedProjects, getChangedFiles, filterAffectedTasks } from "./aff
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";
 
+// Graph visualization
+export type { GraphFormat, GraphVisualizerOptions, GraphJson } from "./graph-visualizer";
+export {
+    toGraphvizDot,
+    toGraphJson,
+    toGraphHtml,
+    toGraphAscii,
+    projectGraphToDot,
+} from "./graph-visualizer";
+
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";
