@@ -27,8 +27,8 @@ export interface TaskSummary {
     hashDetails: TaskHashDetails | undefined;
     /** The task's declared outputs */
     outputs: string[];
-    /** Cache status (hit, miss, skipped) */
-    cacheStatus: string;
+    /** Cache status */
+    cacheStatus: "HIT" | "REMOTE_HIT" | "MISS" | "SKIPPED";
     /** Exit code */
     exitCode: number | undefined;
     /** Start time (ISO 8601) */
@@ -211,10 +211,7 @@ export const writeRunSummary = async (
     return filePath;
 };
 
-/**
- * Returns a human-readable cache status string.
- */
-const getCacheStatus = (result: TaskResult): string => {
+const getCacheStatus = (result: TaskResult): "HIT" | "REMOTE_HIT" | "MISS" | "SKIPPED" => {
     switch (result.status) {
         case "local-cache":
         case "local-cache-kept-existing": {

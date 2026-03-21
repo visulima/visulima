@@ -92,8 +92,8 @@ export class Cache {
         const cacheEntryDir = join(this.#cacheDirectory, hash);
 
         try {
-            // Check for the .commit marker to ensure the entry is complete
-            await stat(join(cacheEntryDir, ".commit"));
+            // Reading .commit first verifies the entry is complete (atomic write guarantee)
+            await readFile(join(cacheEntryDir, ".commit"));
 
             const codeString = await readFile(join(cacheEntryDir, "code"), "utf-8");
             const code = Number.parseInt(codeString.trim(), 10);
@@ -148,22 +148,20 @@ export class Cache {
         );
 
         try {
-            // Build the entry in a temp directory
             await mkdir(tempDir, { recursive: true });
 
-            await writeFile(join(tempDir, "code"), String(code));
-            await writeFile(join(tempDir, "terminalOutput"), terminalOutput);
+            // Write data files in parallel, then .commit marker last
+            const writes: Promise<void>[] = [
+                writeFile(join(tempDir, "code"), String(code)),
+                writeFile(join(tempDir, "terminalOutput"), terminalOutput),
+                this.#archiveOutputs(tempDir, outputs),
+            ];
 
             if (fingerprint) {
-                await writeFile(
-                    join(tempDir, "fingerprint.json"),
-                    JSON.stringify(fingerprint),
-                );
+                writes.push(writeFile(join(tempDir, "fingerprint.json"), JSON.stringify(fingerprint)));
             }
 
-            await this.#archiveOutputs(tempDir, outputs);
-
-            // Write the .commit marker last
+            await Promise.all(writes);
             await writeFile(join(tempDir, ".commit"), "");
 
             // Atomically move into place

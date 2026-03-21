@@ -6,10 +6,12 @@ import type { ProjectGraph, Task, TaskGraph } from "./types";
  */
 export class TaskScheduler {
     readonly #taskGraph: TaskGraph;
-    readonly #projectGraph: ProjectGraph;
     readonly #maxParallel: number;
     readonly #completedTasks = new Set<string>();
     readonly #runningTasks = new Set<string>();
+    readonly #totalTasks: number;
+    readonly #dependentCounts: Map<string, number>;
+    readonly #projectDepths: Map<string, number>;
 
     constructor(
         taskGraph: TaskGraph,
@@ -17,13 +19,14 @@ export class TaskScheduler {
         maxParallel: number = 3,
     ) {
         this.#taskGraph = taskGraph;
-        this.#projectGraph = projectGraph;
         this.#maxParallel = maxParallel;
+        this.#totalTasks = Object.keys(taskGraph.tasks).length;
+        this.#dependentCounts = this.#calculateDependentCounts();
+        this.#projectDepths = this.#calculateProjectDepths(projectGraph);
     }
 
     /**
      * Returns the next batch of tasks that are ready to execute.
-     * A task is ready when all its dependencies have completed.
      */
     getNextBatch(): Task[] {
         const availableSlots = this.#maxParallel - this.#runningTasks.size;
@@ -38,49 +41,27 @@ export class TaskScheduler {
         return sortedTasks.slice(0, availableSlots);
     }
 
-    /**
-     * Marks a task as started.
-     */
     startTask(taskId: string): void {
         this.#runningTasks.add(taskId);
     }
 
-    /**
-     * Marks a task as completed.
-     */
     completeTask(taskId: string): void {
         this.#runningTasks.delete(taskId);
         this.#completedTasks.add(taskId);
     }
 
-    /**
-     * Returns true if all tasks have been completed.
-     */
     isComplete(): boolean {
-        return (
-            this.#completedTasks.size === Object.keys(this.#taskGraph.tasks).length
-        );
+        return this.#completedTasks.size === this.#totalTasks;
     }
 
-    /**
-     * Returns the number of tasks that have not yet been completed.
-     */
     get remainingCount(): number {
-        return (
-            Object.keys(this.#taskGraph.tasks).length - this.#completedTasks.size
-        );
+        return this.#totalTasks - this.#completedTasks.size;
     }
 
-    /**
-     * Returns the number of currently running tasks.
-     */
     get runningCount(): number {
         return this.#runningTasks.size;
     }
 
-    /**
-     * Returns all tasks ready to execute (dependencies met, not yet started or completed).
-     */
     #getReadyTasks(): Task[] {
         const ready: Task[] = [];
 
@@ -90,9 +71,8 @@ export class TaskScheduler {
             }
 
             const deps = this.#taskGraph.dependencies[taskId] ?? [];
-            const allDepsMet = deps.every((dep) => this.#completedTasks.has(dep));
 
-            if (allDepsMet) {
+            if (deps.every((dep) => this.#completedTasks.has(dep))) {
                 ready.push(task);
             }
         }
@@ -100,43 +80,26 @@ export class TaskScheduler {
         return ready;
     }
 
-    /**
-     * Sorts tasks by priority for execution ordering.
-     *
-     * Priority factors (highest to lowest):
-     * 1. Number of tasks that depend on this task (more dependents = higher priority)
-     * 2. Tasks with parallelism=false go first when they're the only option
-     * 3. Depth in the project dependency graph
-     */
     #sortByPriority(tasks: Task[]): Task[] {
-        const dependentCounts = this.#calculateDependentCounts();
-        const projectDepths = this.#calculateProjectDepths();
-
         return [...tasks].sort((a, b) => {
-            // More dependents = higher priority
-            const aDeps = dependentCounts.get(a.id) ?? 0;
-            const bDeps = dependentCounts.get(b.id) ?? 0;
+            const aDeps = this.#dependentCounts.get(a.id) ?? 0;
+            const bDeps = this.#dependentCounts.get(b.id) ?? 0;
 
             if (aDeps !== bDeps) {
                 return bDeps - aDeps;
             }
 
-            // Deeper in project graph = higher priority (build dependencies first)
-            const aDepth = projectDepths.get(a.target.project) ?? 0;
-            const bDepth = projectDepths.get(b.target.project) ?? 0;
+            const aDepth = this.#projectDepths.get(a.target.project) ?? 0;
+            const bDepth = this.#projectDepths.get(b.target.project) ?? 0;
 
             if (aDepth !== bDepth) {
                 return bDepth - aDepth;
             }
 
-            // Stable sort by task ID
             return a.id.localeCompare(b.id);
         });
     }
 
-    /**
-     * Calculates how many tasks depend on each task (directly or transitively).
-     */
     #calculateDependentCounts(): Map<string, number> {
         const counts = new Map<string, number>();
 
@@ -144,7 +107,6 @@ export class TaskScheduler {
             counts.set(taskId, 0);
         }
 
-        // For each task, increment the count of all its dependencies
         for (const deps of Object.values(this.#taskGraph.dependencies)) {
             for (const dep of deps) {
                 counts.set(dep, (counts.get(dep) ?? 0) + 1);
@@ -154,10 +116,7 @@ export class TaskScheduler {
         return counts;
     }
 
-    /**
-     * Calculates the depth of each project in the dependency graph.
-     */
-    #calculateProjectDepths(): Map<string, number> {
+    #calculateProjectDepths(projectGraph: ProjectGraph): Map<string, number> {
         const depths = new Map<string, number>();
         const visited = new Set<string>();
 
@@ -167,18 +126,16 @@ export class TaskScheduler {
             }
 
             if (visited.has(projectName)) {
-                return 0; // Cycle detected, break it
+                return 0;
             }
 
             visited.add(projectName);
 
-            const deps = this.#projectGraph.dependencies[projectName] ?? [];
+            const deps = projectGraph.dependencies[projectName] ?? [];
             let maxDepth = 0;
 
             for (const dep of deps) {
-                const depDepth = calculateDepth(dep.target);
-
-                maxDepth = Math.max(maxDepth, depDepth + 1);
+                maxDepth = Math.max(maxDepth, calculateDepth(dep.target) + 1);
             }
 
             depths.set(projectName, maxDepth);
@@ -187,7 +144,7 @@ export class TaskScheduler {
             return maxDepth;
         };
 
-        for (const projectName of Object.keys(this.#projectGraph.nodes)) {
+        for (const projectName of Object.keys(projectGraph.nodes)) {
             calculateDepth(projectName);
         }
 

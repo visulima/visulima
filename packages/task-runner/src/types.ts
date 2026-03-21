@@ -252,10 +252,6 @@ export interface TaskRunnerOptions {
     maxCacheAge?: number;
     /** Whether to skip cache reads */
     skipNxCache?: boolean;
-    /** Whether caching is enabled */
-    cacheableOperations?: string[];
-    /** The base branch for affected calculations */
-    defaultBase?: string;
     /** Custom environment variables to include in hash */
     envVars?: string[];
     /**

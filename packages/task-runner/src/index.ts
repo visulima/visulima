@@ -124,5 +124,16 @@ export {
 export type { TaskSummary, RunSummary } from "./run-summary";
 export { generateRunSummary, writeRunSummary } from "./run-summary";
 
+// Shared utilities
+export {
+    hashFile,
+    hashStrings,
+    sortObjectKeys,
+    collectFiles,
+    resolveTaskCwd,
+    createFailureResult,
+    readPackageDeps,
+} from "./utils";
+
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";

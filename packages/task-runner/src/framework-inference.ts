@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+
+import { readPackageDeps } from "./utils";
 
 /**
  * Detected framework information.
@@ -80,33 +81,24 @@ const FRAMEWORK_DEFINITIONS: ReadonlyArray<{
 export const detectFrameworks = async (
     packageJsonPath: string,
 ): Promise<DetectedFramework[]> => {
-    try {
-        const content = await readFile(packageJsonPath, "utf-8");
-        const pkg = JSON.parse(content) as {
-            dependencies?: Record<string, string>;
-            devDependencies?: Record<string, string>;
-        };
+    const allDeps = await readPackageDeps(packageJsonPath, { peer: false, optional: false });
 
-        const allDeps = new Set<string>([
-            ...Object.keys(pkg.dependencies ?? {}),
-            ...Object.keys(pkg.devDependencies ?? {}),
-        ]);
-
-        const detected: DetectedFramework[] = [];
-
-        for (const framework of FRAMEWORK_DEFINITIONS) {
-            if (framework.packages.some((pkg) => allDeps.has(pkg))) {
-                detected.push({
-                    name: framework.name,
-                    envPrefixes: framework.envPrefixes,
-                });
-            }
-        }
-
-        return detected;
-    } catch {
+    if (!allDeps) {
         return [];
     }
+
+    const detected: DetectedFramework[] = [];
+
+    for (const framework of FRAMEWORK_DEFINITIONS) {
+        if (framework.packages.some((pkg) => allDeps.has(pkg))) {
+            detected.push({
+                name: framework.name,
+                envPrefixes: framework.envPrefixes,
+            });
+        }
+    }
+
+    return detected;
 };
 
 /**

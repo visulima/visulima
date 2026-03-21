@@ -1,12 +1,11 @@
-import { createHash } from "node:crypto";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, stat } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
 import type { FileAccess } from "./file-access-tracker";
+import { hashFile, hashStrings, sortObjectKeys } from "./utils";
 
 /**
  * Represents a stored fingerprint for a task execution.
- * Contains all the data needed to determine if a cached result is still valid.
  */
 export interface TaskFingerprint {
     /** Content hashes of files that were read during execution */
@@ -25,11 +24,8 @@ export interface TaskFingerprint {
  * Describes why a cache miss occurred.
  */
 export interface CacheMissReason {
-    /** The type of change that caused the miss */
     type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
-    /** The path or variable name that changed */
     detail: string;
-    /** Optional previous and current hash values */
     previousHash?: string;
     currentHash?: string;
 }
@@ -37,25 +33,17 @@ export interface CacheMissReason {
 /**
  * Manages task fingerprints for auto-detection caching.
  *
- * Instead of requiring manual input configuration (like Nx),
- * this module automatically determines cache validity by:
- * 1. Recording which files a task actually accesses during execution
- * 2. Storing content hashes of those files
- * 3. On subsequent runs, checking if any accessed file has changed
- *
- * Inspired by Vite Task's zero-config caching approach.
+ * Records which files a task accesses during execution, stores content
+ * hashes, and on subsequent runs checks if any accessed file has changed.
  */
 export class FingerprintManager {
     readonly #workspaceRoot: string;
+    readonly #fileHashCache = new Map<string, string | null>();
 
     constructor(workspaceRoot: string) {
         this.#workspaceRoot = resolve(workspaceRoot);
     }
 
-    /**
-     * Creates a fingerprint from recorded file accesses.
-     * Called after a task executes to capture what files it touched.
-     */
     async createFingerprint(
         accesses: FileAccess[],
         command: string,
@@ -65,17 +53,14 @@ export class FingerprintManager {
         untrackedEnvVars: string[] = [],
     ): Promise<TaskFingerprint> {
         const fileHashes: Record<string, string> = {};
-        const missingFiles: string[] = [];
+        const missingPaths = new Set<string>();
         const directoryListings: Record<string, string[]> = {};
 
-        // Process each file access
         for (const access of accesses) {
-            const relativePath = this.#toRelativePath(access.path);
+            const relativePath = relative(this.#workspaceRoot, access.path);
 
             if (access.type === "missing") {
-                if (!missingFiles.includes(relativePath)) {
-                    missingFiles.push(relativePath);
-                }
+                missingPaths.add(relativePath);
             } else if (access.type === "readdir") {
                 if (!directoryListings[relativePath]) {
                     try {
@@ -83,13 +68,12 @@ export class FingerprintManager {
 
                         directoryListings[relativePath] = entries.sort();
                     } catch {
-                        // Directory might no longer exist
                         directoryListings[relativePath] = [];
                     }
                 }
             } else if (access.type === "read" || access.type === "stat") {
                 if (!fileHashes[relativePath]) {
-                    const hash = await this.#hashFile(access.path);
+                    const hash = await this.#hashFileWithCache(access.path);
 
                     if (hash) {
                         fileHashes[relativePath] = hash;
@@ -98,10 +82,8 @@ export class FingerprintManager {
             }
         }
 
-        // Hash the command
-        const commandHash = this.#hashString(`${command}:${JSON.stringify(this.#sortObject(args))}`);
+        const commandHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
-        // Hash environment variables (excluding untracked ones)
         const envHashes: Record<string, string> = {};
         const matchedEnvVars = this.#resolveEnvPatterns(envPatterns, envVars);
         const untrackedSet = new Set(untrackedEnvVars);
@@ -111,98 +93,94 @@ export class FingerprintManager {
                 continue;
             }
 
-            envHashes[key] = this.#hashString(`${key}=${value ?? ""}`);
+            envHashes[key] = hashStrings(`${key}=${value ?? ""}`);
         }
 
-        // Sort missing files for deterministic comparison
-        missingFiles.sort();
+        const missingFiles = [...missingPaths].sort();
 
-        return {
-            fileHashes,
-            missingFiles,
-            directoryListings,
-            commandHash,
-            envHashes,
-        };
+        return { fileHashes, missingFiles, directoryListings, commandHash, envHashes };
     }
 
     /**
-     * Validates a stored fingerprint against the current state of the filesystem.
-     * Returns null if the fingerprint is still valid (cache hit),
-     * or an array of reasons why it's invalid (cache miss).
+     * Validates a stored fingerprint against the current state.
+     * Returns null if valid (cache hit), or an array of reasons (cache miss).
+     *
+     * Does NOT use the file hash cache — validation must see current disk state.
      */
     async validate(fingerprint: TaskFingerprint): Promise<CacheMissReason[] | null> {
         const reasons: CacheMissReason[] = [];
 
-        // Check if any tracked files have changed
-        for (const [relativePath, previousHash] of Object.entries(fingerprint.fileHashes)) {
-            const absolutePath = resolve(this.#workspaceRoot, relativePath);
-            const currentHash = await this.#hashFile(absolutePath);
+        const fileCheckPromises = Object.entries(fingerprint.fileHashes).map(
+            async ([relativePath, previousHash]) => {
+                const absolutePath = resolve(this.#workspaceRoot, relativePath);
+                const currentHash = await hashFile(absolutePath);
 
-            if (!currentHash) {
-                // File was deleted
-                reasons.push({
-                    type: "file-deleted",
-                    detail: relativePath,
-                    previousHash,
-                });
-            } else if (currentHash !== previousHash) {
-                // File content changed
-                reasons.push({
-                    type: "file-changed",
-                    detail: relativePath,
-                    previousHash,
-                    currentHash,
-                });
-            }
-        }
-
-        // Check if any previously missing files now exist
-        for (const relativePath of fingerprint.missingFiles) {
-            const absolutePath = resolve(this.#workspaceRoot, relativePath);
-
-            try {
-                await stat(absolutePath);
-                // File now exists - cache invalid
-                reasons.push({
-                    type: "file-created",
-                    detail: relativePath,
-                });
-            } catch {
-                // Still missing - that's fine
-            }
-        }
-
-        // Check if directory listings have changed
-        for (const [relativePath, previousEntries] of Object.entries(fingerprint.directoryListings)) {
-            const absolutePath = resolve(this.#workspaceRoot, relativePath);
-
-            try {
-                const currentEntries = (await readdir(absolutePath)).sort();
-                const previousStr = JSON.stringify(previousEntries);
-                const currentStr = JSON.stringify(currentEntries);
-
-                if (previousStr !== currentStr) {
-                    reasons.push({
-                        type: "directory-changed",
-                        detail: relativePath,
-                        previousHash: previousStr,
-                        currentHash: currentStr,
-                    });
+                if (!currentHash) {
+                    return { type: "file-deleted" as const, detail: relativePath, previousHash };
                 }
-            } catch {
-                // Directory no longer exists
-                reasons.push({
-                    type: "directory-changed",
-                    detail: relativePath,
-                });
+
+                if (currentHash !== previousHash) {
+                    return { type: "file-changed" as const, detail: relativePath, previousHash, currentHash };
+                }
+
+                return null;
+            },
+        );
+
+        // Parallelize missing file checks
+        const missingCheckPromises = fingerprint.missingFiles.map(
+            async (relativePath) => {
+                const absolutePath = resolve(this.#workspaceRoot, relativePath);
+
+                try {
+                    await stat(absolutePath);
+
+                    return { type: "file-created" as const, detail: relativePath };
+                } catch {
+                    return null;
+                }
+            },
+        );
+
+        // Parallelize directory listing checks
+        const dirCheckPromises = Object.entries(fingerprint.directoryListings).map(
+            async ([relativePath, previousEntries]) => {
+                const absolutePath = resolve(this.#workspaceRoot, relativePath);
+
+                try {
+                    const currentEntries = (await readdir(absolutePath)).sort();
+
+                    if (JSON.stringify(previousEntries) !== JSON.stringify(currentEntries)) {
+                        return {
+                            type: "directory-changed" as const,
+                            detail: relativePath,
+                            previousHash: JSON.stringify(previousEntries),
+                            currentHash: JSON.stringify(currentEntries),
+                        };
+                    }
+                } catch {
+                    return { type: "directory-changed" as const, detail: relativePath };
+                }
+
+                return null;
+            },
+        );
+
+        const [fileResults, missingResults, dirResults] = await Promise.all([
+            Promise.all(fileCheckPromises),
+            Promise.all(missingCheckPromises),
+            Promise.all(dirCheckPromises),
+        ]);
+
+        for (const r of [...fileResults, ...missingResults, ...dirResults]) {
+            if (r) {
+                reasons.push(r);
             }
         }
 
-        // Check environment variables
+        // Check environment variables (synchronous, no I/O)
         for (const [envName, previousHash] of Object.entries(fingerprint.envHashes)) {
-            const currentValue = process.env[envName] ?? "";
-            const currentHash = this.#hashString(`${envName}=${currentValue}`);
+            const currentHash = hashStrings(`${envName}=${process.env[envName] ?? ""}`);
 
             if (currentHash !== previousHash) {
                 reasons.push({
@@ -217,15 +195,12 @@ export class FingerprintManager {
         return reasons.length > 0 ? reasons : null;
     }
 
-    /**
-     * Validates just the command hash portion of a fingerprint.
-     */
     validateCommand(
         fingerprint: TaskFingerprint,
         command: string,
         args: Record<string, unknown>,
     ): CacheMissReason | null {
-        const currentHash = this.#hashString(`${command}:${JSON.stringify(this.#sortObject(args))}`);
+        const currentHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
         if (currentHash !== fingerprint.commandHash) {
             return {
@@ -239,9 +214,6 @@ export class FingerprintManager {
         return null;
     }
 
-    /**
-     * Formats cache miss reasons into human-readable diagnostic messages.
-     */
     formatMissReasons(reasons: CacheMissReason[]): string {
         const lines: string[] = ["Cache miss reasons:"];
 
@@ -287,9 +259,6 @@ export class FingerprintManager {
         return lines.join("\n");
     }
 
-    /**
-     * Resolves environment variable patterns (e.g., "VITE_*") into actual variable names.
-     */
     #resolveEnvPatterns(
         patterns: string[],
         envVars: Record<string, string | undefined>,
@@ -298,7 +267,6 @@ export class FingerprintManager {
 
         for (const pattern of patterns) {
             if (pattern.includes("*")) {
-                // Wildcard pattern
                 const prefix = pattern.replace("*", "");
 
                 for (const [key, value] of Object.entries(envVars)) {
@@ -307,7 +275,6 @@ export class FingerprintManager {
                     }
                 }
             } else {
-                // Exact match
                 result[pattern] = envVars[pattern];
             }
         }
@@ -315,42 +282,17 @@ export class FingerprintManager {
         return result;
     }
 
-    /**
-     * Converts an absolute path to a workspace-relative path.
-     */
-    #toRelativePath(absolutePath: string): string {
-        return relative(this.#workspaceRoot, absolutePath);
-    }
+    async #hashFileWithCache(filePath: string): Promise<string | null> {
+        const cached = this.#fileHashCache.get(filePath);
 
-    /**
-     * Hashes a file's content.
-     */
-    async #hashFile(filePath: string): Promise<string | null> {
-        try {
-            const content = await readFile(filePath);
-
-            return createHash("sha256").update(content).digest("hex");
-        } catch {
-            return null;
+        if (cached !== undefined) {
+            return cached;
         }
-    }
 
-    /**
-     * Hashes a string value.
-     */
-    #hashString(value: string): string {
-        return createHash("sha256").update(value).digest("hex");
-    }
+        const hash = await hashFile(filePath);
 
-    /**
-     * Sorts an object's keys for deterministic serialization.
-     */
-    #sortObject(object: Record<string, unknown>): Record<string, unknown> {
-        return Object.keys(object)
-            .sort()
-            .reduce<Record<string, unknown>>((accumulator, key) => {
-                accumulator[key] = object[key];
-                return accumulator;
-            }, {});
+        this.#fileHashCache.set(filePath, hash);
+
+        return hash;
     }
 }

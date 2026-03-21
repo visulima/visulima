@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 
 import type {
@@ -17,6 +17,7 @@ import type {
 import { loadNativeBindings } from "./native-binding";
 import { LockfileHasher } from "./lockfile-hasher";
 import { getFrameworkEnvVars } from "./framework-inference";
+import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
 
 /**
  * Interface for task hashers.
@@ -78,49 +79,36 @@ const DEFAULT_GLOBAL_INPUTS = [
 
 const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
 
-/**
- * Recursively collects all files in a directory, ignoring common non-source directories.
- */
-const collectFiles = async (dir: string): Promise<string[]> => {
-    const results: string[] = [];
+const LOCKFILE_NAMES = new Set([
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+]);
 
-    try {
-        const dirStat = await stat(dir);
+// Cache native bindings at module level for computeTaskHash
+let _cachedNative: ReturnType<typeof loadNativeBindings> | undefined;
 
-        if (dirStat.isFile()) {
-            return [dir];
-        }
-
-        const entries = await readdir(dir, { withFileTypes: true });
-
-        const promises = entries.map(async (entry) => {
-            if (IGNORED_DIRS.has(entry.name)) {
-                return [];
-            }
-
-            const fullPath = join(dir, entry.name);
-
-            if (entry.isDirectory()) {
-                return collectFiles(fullPath);
-            }
-
-            if (entry.isFile()) {
-                return [fullPath];
-            }
-
-            return [];
-        });
-
-        const nested = await Promise.all(promises);
-
-        for (const files of nested) {
-            results.push(...files);
-        }
-    } catch {
-        // Directory doesn't exist or can't be read
+const getNativeBindings = () => {
+    if (_cachedNative === undefined) {
+        _cachedNative = loadNativeBindings();
     }
 
-    return results;
+    return _cachedNative;
+};
+
+/**
+ * Hashes sorted entries of a Record into a Hash object.
+ */
+const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<string, string>, prefix?: string): void => {
+    for (const key of Object.keys(record).sort()) {
+        if (prefix) {
+            hash.update(`${prefix}${key}`);
+        } else {
+            hash.update(key);
+        }
+
+        hash.update(record[key] as string);
+    }
 };
 
 /**
@@ -150,7 +138,7 @@ export class InProcessTaskHasher implements TaskHasher {
         this.#envVars = options.envVars ?? [];
         this.#globalInputs = options.globalInputs ?? DEFAULT_GLOBAL_INPUTS;
         this.#globalEnv = options.globalEnv ?? [];
-        this.#native = loadNativeBindings();
+        this.#native = getNativeBindings();
         this.#smartLockfileHashing = options.smartLockfileHashing ?? false;
         this.#lockfileHasher = this.#smartLockfileHashing
             ? new LockfileHasher(options.workspaceRoot)
@@ -164,17 +152,14 @@ export class InProcessTaskHasher implements TaskHasher {
         const implicitDeps: Record<string, string> = {};
         const runtime: Record<string, string> = {};
 
-        // Include global inputs hash (lock files, tsconfig, .env)
         const globalHash = await this.#computeGlobalHash();
 
         if (globalHash) {
             implicitDeps["__global__"] = globalHash;
         }
 
-        // Resolve inputs for the task
         const inputs = this.#resolveInputs(task);
 
-        // Hash each input
         for (const input of inputs) {
             if (isFileSetInput(input)) {
                 const fileHashes = await this.#hashFileSet(task, input.fileset);
@@ -183,55 +168,42 @@ export class InProcessTaskHasher implements TaskHasher {
                     nodes[filePath] = hash;
                 }
             } else if (isRuntimeInput(input)) {
-                const hash = this.#hashRuntime(input.runtime);
-
-                runtime[input.runtime] = hash;
+                runtime[input.runtime] = this.#hashRuntime(input.runtime);
             } else if (isEnvironmentInput(input)) {
-                const hash = this.#hashEnvironment(input.env);
-
-                runtime[`env:${input.env}`] = hash;
+                runtime[`env:${input.env}`] = hashStrings(input.env, process.env[input.env] ?? "");
             } else if (isExternalDependencyInput(input)) {
-                for (const dep of input.externalDependencies) {
-                    const hash = await this.#hashExternalDependency(dep);
+                const depHashes = await Promise.all(
+                    input.externalDependencies.map(async (dep) => [dep, await this.#hashExternalDependency(dep)] as const),
+                );
 
+                for (const [dep, hash] of depHashes) {
                     implicitDeps[dep] = hash;
                 }
             }
         }
 
-        // Include configured env vars
         for (const envVar of this.#envVars) {
-            const hash = this.#hashEnvironment(envVar);
-
-            runtime[`env:${envVar}`] = hash;
+            runtime[`env:${envVar}`] = hashStrings(envVar, process.env[envVar] ?? "");
         }
 
-        // Smart lockfile hashing: hash only the resolved deps relevant to this project
-        if (this.#lockfileHasher) {
-            const project = this.#projects[task.target.project];
+        // Hoist project lookup once for lockfile + framework features
+        const project = this.#projects[task.target.project];
 
-            if (project) {
-                const packageJsonPath = join(project.root, "package.json");
-                const lockfileHash = await this.#lockfileHasher.hashForPackage(packageJsonPath);
+        if (project) {
+            if (this.#lockfileHasher) {
+                const lockfileHash = await this.#lockfileHasher.hashForPackage(join(project.root, "package.json"));
 
                 if (lockfileHash) {
                     implicitDeps["__lockfile__"] = lockfileHash.hash;
                 }
             }
-        }
 
-        // Framework inference: auto-detect framework env vars and include in hash
-        if (this.#frameworkInference) {
-            const project = this.#projects[task.target.project];
-
-            if (project) {
+            if (this.#frameworkInference) {
                 const packageJsonPath = resolve(this.#workspaceRoot, project.root, "package.json");
                 const frameworkEnvVars = await getFrameworkEnvVars(packageJsonPath);
 
                 for (const envName of Object.keys(frameworkEnvVars)) {
-                    const hash = this.#hashEnvironment(envName);
-
-                    runtime[`framework-env:${envName}`] = hash;
+                    runtime[`framework-env:${envName}`] = hashStrings(envName, process.env[envName] ?? "");
                 }
             }
         }
@@ -244,24 +216,15 @@ export class InProcessTaskHasher implements TaskHasher {
         };
     }
 
-    /**
-     * Computes a hash of the task command.
-     * Uses native Rust implementation when available for better performance.
-     */
     #hashCommand(task: Task): string {
-        if (this.#native) {
-            const sortedOverrides = Object.keys(task.overrides)
-                .sort()
-                .reduce<Record<string, unknown>>((accumulator, key) => {
-                    accumulator[key] = task.overrides[key];
-                    return accumulator;
-                }, {});
+        const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
 
+        if (this.#native) {
             return this.#native.hashCommand(
                 task.target.project,
                 task.target.target,
                 task.target.configuration ?? null,
-                JSON.stringify(sortedOverrides),
+                overridesJson,
             );
         }
 
@@ -274,39 +237,24 @@ export class InProcessTaskHasher implements TaskHasher {
             hash.update(task.target.configuration);
         }
 
-        const sortedOverrides = Object.keys(task.overrides)
-            .sort()
-            .reduce<Record<string, unknown>>((accumulator, key) => {
-                accumulator[key] = task.overrides[key];
-                return accumulator;
-            }, {});
-
-        hash.update(JSON.stringify(sortedOverrides));
+        hash.update(overridesJson);
 
         return hash.digest("hex");
     }
 
-    /**
-     * Resolves the inputs for a task, expanding named inputs.
-     */
     #resolveInputs(task: Task): InputDefinition[] {
         const project = this.#projects[task.target.project];
         const targetConfig = project?.targets?.[task.target.target];
         const defaultConfig = this.#targetDefaults[task.target.target];
-
         const rawInputs = targetConfig?.inputs ?? defaultConfig?.inputs;
 
         if (!rawInputs) {
-            // Default: hash all files in the project
             return [{ fileset: "{projectRoot}/**/*" }];
         }
 
         return this.#expandInputs(rawInputs, task.target.project);
     }
 
-    /**
-     * Expands input definitions, resolving named input references.
-     */
     #expandInputs(
         inputs: (string | InputDefinition)[],
         projectName: string,
@@ -316,14 +264,11 @@ export class InProcessTaskHasher implements TaskHasher {
 
         for (const input of inputs) {
             if (typeof input === "string") {
-                // Check if it's a named input reference
                 if (input.startsWith("{") || input.startsWith("!{")) {
                     result.push({ fileset: input });
                 } else if (input.startsWith("^")) {
-                    // Dependency input - not expanded here, handled at graph level
                     continue;
                 } else if (this.#namedInputs[input] && !seen.has(input)) {
-                    // Named input reference
                     seen.add(input);
                     result.push(
                         ...this.#expandInputs(this.#namedInputs[input] as (string | InputDefinition)[], projectName),
@@ -350,24 +295,20 @@ export class InProcessTaskHasher implements TaskHasher {
         const project = this.#projects[task.target.project];
         const projectRoot = project?.root ?? "";
 
-        // Resolve pattern variables
         const resolvedPattern = pattern
             .replace("{projectRoot}", projectRoot)
             .replace("{workspaceRoot}", ".");
 
         const isNegation = resolvedPattern.startsWith("!");
-        const actualPattern = isNegation ? resolvedPattern.slice(1) : resolvedPattern;
 
         if (isNegation) {
-            // Negation patterns are handled by glob
             return {};
         }
 
-        const absoluteBase = resolve(this.#workspaceRoot, actualPattern.replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+        const absoluteBase = resolve(this.#workspaceRoot, resolvedPattern.replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
         const result: Record<string, string> = {};
 
         try {
-            // Use native parallel hashing when available
             if (this.#native) {
                 const fileHashes = this.#native.hashFilesInDirectory(
                     absoluteBase,
@@ -376,23 +317,19 @@ export class InProcessTaskHasher implements TaskHasher {
 
                 for (const { path, hash } of fileHashes) {
                     result[path] = hash;
-                    // Also populate the cache for potential reuse
                     this.#fileHashCache.set(resolve(this.#workspaceRoot, path), hash);
                 }
 
                 return result;
             }
 
-            // Fallback: TypeScript-based sequential hashing
-            const files = await collectFiles(absoluteBase);
+            const files = await collectFiles(absoluteBase, IGNORED_DIRS);
 
             const hashPromises = files.map(async (filePath) => {
                 const hash = await this.#hashFile(filePath);
 
                 if (hash) {
-                    const relativePath = relative(this.#workspaceRoot, filePath);
-
-                    result[relativePath] = hash;
+                    result[relative(this.#workspaceRoot, filePath)] = hash;
                 }
             });
 
@@ -404,9 +341,6 @@ export class InProcessTaskHasher implements TaskHasher {
         return result;
     }
 
-    /**
-     * Hashes a single file.
-     */
     async #hashFile(filePath: string): Promise<string | undefined> {
         const cached = this.#fileHashCache.get(filePath);
 
@@ -426,67 +360,29 @@ export class InProcessTaskHasher implements TaskHasher {
         }
     }
 
-    /**
-     * Hashes a runtime input (e.g., node version).
-     */
     #hashRuntime(runtime: string): string {
-        const hash = createHash("sha256");
-
-        hash.update(runtime);
-
-        // For common runtimes, use known values
         if (runtime === "node -v" || runtime === "node --version") {
-            hash.update(process.version);
-        } else {
-            // Use the runtime string itself as a placeholder
-            hash.update(`runtime:${runtime}`);
+            return hashStrings(runtime, process.version);
         }
 
-        return hash.digest("hex");
+        return hashStrings(runtime, `runtime:${runtime}`);
     }
 
-    /**
-     * Hashes an environment variable.
-     */
-    #hashEnvironment(envName: string): string {
-        const hash = createHash("sha256");
-        const value = process.env[envName] ?? "";
-
-        hash.update(envName);
-        hash.update(value);
-
-        return hash.digest("hex");
-    }
-
-    /**
-     * Hashes an external dependency by reading its package.json version.
-     */
     async #hashExternalDependency(depName: string): Promise<string> {
-        const hash = createHash("sha256");
-
-        hash.update(depName);
-
         try {
-            const packageJsonPath = join(
-                this.#workspaceRoot,
-                "node_modules",
-                depName,
-                "package.json",
-            );
+            const packageJsonPath = join(this.#workspaceRoot, "node_modules", depName, "package.json");
             const packageJsonContent = await readFile(packageJsonPath, "utf-8");
             const packageJson = JSON.parse(packageJsonContent) as { version?: string };
 
-            hash.update(packageJson.version ?? "unknown");
+            return hashStrings(depName, packageJson.version ?? "unknown");
         } catch {
-            hash.update("not-installed");
+            return hashStrings(depName, "not-installed");
         }
-
-        return hash.digest("hex");
     }
 
     /**
-     * Computes a combined hash of all global inputs (lock files, tsconfig, .env)
-     * and global env vars. Cached after first computation.
+     * Computes a combined hash of all global inputs and global env vars.
+     * Cached after first computation.
      */
     async #computeGlobalHash(): Promise<string | null> {
         if (this.#globalHash !== null) {
@@ -496,35 +392,27 @@ export class InProcessTaskHasher implements TaskHasher {
         const hash = createHash("sha256");
         let hasContent = false;
 
-        // Lockfile patterns to skip when smart lockfile hashing is enabled
-        const lockfileNames = new Set([
-            "package-lock.json",
-            "pnpm-lock.yaml",
-            "yarn.lock",
-        ]);
+        // Hash global input files (parallelized)
+        const globalFileHashes = await Promise.all(
+            this.#globalInputs
+                .filter((input) => !(this.#smartLockfileHashing && LOCKFILE_NAMES.has(input)))
+                .map(async (globalInput) => {
+                    const fileHash = await this.#hashFile(join(this.#workspaceRoot, globalInput));
 
-        // Hash global input files
-        for (const globalInput of this.#globalInputs) {
-            // Skip lockfiles in global hash when smart lockfile hashing is active
-            if (this.#smartLockfileHashing && lockfileNames.has(globalInput)) {
-                continue;
-            }
+                    return fileHash ? { name: globalInput, hash: fileHash } : null;
+                }),
+        );
 
-            const filePath = join(this.#workspaceRoot, globalInput);
-            const fileHash = await this.#hashFile(filePath);
-
-            if (fileHash) {
-                hash.update(globalInput);
-                hash.update(fileHash);
+        for (const entry of globalFileHashes) {
+            if (entry) {
+                hash.update(entry.name);
+                hash.update(entry.hash);
                 hasContent = true;
             }
         }
 
-        // Hash global env vars
         for (const envName of this.#globalEnv) {
-            const value = process.env[envName] ?? "";
-
-            hash.update(`globalEnv:${envName}=${value}`);
+            hash.update(`globalEnv:${envName}=${process.env[envName] ?? ""}`);
             hasContent = true;
         }
 
@@ -533,9 +421,6 @@ export class InProcessTaskHasher implements TaskHasher {
         return this.#globalHash || null;
     }
 
-    /**
-     * Clears the file hash cache.
-     */
     clearCache(): void {
         this.#fileHashCache.clear();
         this.#globalHash = null;
@@ -548,7 +433,7 @@ export class InProcessTaskHasher implements TaskHasher {
  * Uses native Rust implementation when available.
  */
 export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
-    const native = loadNativeBindings();
+    const native = getNativeBindings();
 
     if (native) {
         const nodes = Object.keys(hashDetails.nodes)
@@ -578,27 +463,14 @@ export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
     const hash = createHash("sha256");
 
     hash.update(hashDetails.command);
+    hashSortedEntries(hash, hashDetails.nodes);
 
-    // Sort and hash nodes
-    for (const key of Object.keys(hashDetails.nodes).sort()) {
-        hash.update(key);
-        hash.update(hashDetails.nodes[key] as string);
-    }
-
-    // Sort and hash implicit deps
     if (hashDetails.implicitDeps) {
-        for (const key of Object.keys(hashDetails.implicitDeps).sort()) {
-            hash.update(key);
-            hash.update(hashDetails.implicitDeps[key] as string);
-        }
+        hashSortedEntries(hash, hashDetails.implicitDeps);
     }
 
-    // Sort and hash runtime
     if (hashDetails.runtime) {
-        for (const key of Object.keys(hashDetails.runtime).sort()) {
-            hash.update(key);
-            hash.update(hashDetails.runtime[key] as string);
-        }
+        hashSortedEntries(hash, hashDetails.runtime);
     }
 
     return hash.digest("hex");

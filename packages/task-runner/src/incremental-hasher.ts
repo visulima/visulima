@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
-import { readFile, stat, readdir } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
+
+import { collectFiles } from "./utils";
 
 /**
  * Incremental file hasher that only re-hashes files that have changed
@@ -88,8 +90,6 @@ export class IncrementalFileHasher {
             return;
         }
 
-        const { mkdir, writeFile } = await import("node:fs/promises");
-
         const dir = join(this.#snapshotPath, "..");
 
         await mkdir(dir, { recursive: true });
@@ -115,7 +115,7 @@ export class IncrementalFileHasher {
         await this.load();
 
         const result: Record<string, string> = {};
-        const filePaths = await this.#collectFiles(dirPath);
+        const filePaths = await collectFiles(dirPath, this.#ignoredDirs);
 
         // Process files in parallel batches for optimal throughput
         const BATCH_SIZE = 64;
@@ -182,62 +182,6 @@ export class IncrementalFileHasher {
 
             return null;
         }
-    }
-
-    /**
-     * Recursively collects all file paths in a directory.
-     */
-    async #collectFiles(dirPath: string): Promise<string[]> {
-        const results: string[] = [];
-
-        try {
-            const entries = await readdir(dirPath, { withFileTypes: true });
-
-            const promises = entries.map(async (entry) => {
-                if (this.#ignoredDirs.has(entry.name)) {
-                    return [];
-                }
-
-                const fullPath = join(dirPath, entry.name);
-
-                if (entry.isDirectory()) {
-                    return this.#collectFiles(fullPath);
-                }
-
-                if (entry.isFile()) {
-                    return [fullPath];
-                }
-
-                // Follow symlinks
-                if (entry.isSymbolicLink()) {
-                    try {
-                        const linkStat = await stat(fullPath);
-
-                        if (linkStat.isFile()) {
-                            return [fullPath];
-                        }
-
-                        if (linkStat.isDirectory()) {
-                            return this.#collectFiles(fullPath);
-                        }
-                    } catch {
-                        // Broken symlink
-                    }
-                }
-
-                return [];
-            });
-
-            const nested = await Promise.all(promises);
-
-            for (const files of nested) {
-                results.push(...files);
-            }
-        } catch {
-            // Directory doesn't exist
-        }
-
-        return results;
     }
 
     /**

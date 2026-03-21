@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
+import { readPackageDeps } from "./utils";
+
 /**
  * Resolved dependency entry from a lockfile.
  */
@@ -51,10 +53,10 @@ export class LockfileHasher {
      * @returns Hash of the relevant lockfile entries, or null if no lockfile found
      */
     async hashForPackage(packageJsonPath: string): Promise<PackageLockfileHash | null> {
-        // Read the package.json to get declared dependencies
-        const deps = await this.#readPackageDeps(packageJsonPath);
+        const fullPath = join(this.#workspaceRoot, packageJsonPath);
+        const deps = await readPackageDeps(fullPath);
 
-        if (!deps || deps.length === 0) {
+        if (!deps || deps.size === 0) {
             return null;
         }
 
@@ -105,36 +107,6 @@ export class LockfileHasher {
     clearCache(): void {
         this.#lockfileCache = null;
         this.#lockfileType = null;
-    }
-
-    /**
-     * Reads declared dependencies from a package.json file.
-     */
-    async #readPackageDeps(packageJsonPath: string): Promise<string[] | null> {
-        try {
-            const fullPath = join(this.#workspaceRoot, packageJsonPath);
-            const content = await readFile(fullPath, "utf-8");
-            const pkg = JSON.parse(content) as {
-                dependencies?: Record<string, string>;
-                devDependencies?: Record<string, string>;
-                peerDependencies?: Record<string, string>;
-                optionalDependencies?: Record<string, string>;
-            };
-
-            const deps = new Set<string>();
-
-            for (const depMap of [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies, pkg.optionalDependencies]) {
-                if (depMap) {
-                    for (const name of Object.keys(depMap)) {
-                        deps.add(name);
-                    }
-                }
-            }
-
-            return [...deps];
-        } catch {
-            return null;
-        }
     }
 
     /**
