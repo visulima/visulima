@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
+import { execFile } from "node:child_process";
 
 import { RemoteCache } from "../src/remote-cache";
 
@@ -295,6 +296,70 @@ describe("RemoteCache", () => {
             const result = await cache.retrieve("abc123", cacheDir);
 
             expect(result).toBe(false);
+        });
+
+        it("should download and extract a valid artifact", async () => {
+            // Create a source directory with cache entry content
+            const sourceDir = join(cacheDir, "source-entry");
+
+            await mkdir(sourceDir, { recursive: true });
+            await writeFile(join(sourceDir, ".commit"), "retrieve-hash");
+            await writeFile(join(sourceDir, "code"), "0");
+            await writeFile(join(sourceDir, "terminalOutput"), "Build succeeded");
+
+            // Create a tar.gz of the source directory
+            const archivePath = join(cacheDir, "artifact.tar.gz");
+
+            await new Promise<void>((resolve, reject) => {
+                execFile("tar", ["-czf", archivePath, "-C", sourceDir, "."], (error) => {
+                    if (error) reject(error);
+                    else resolve();
+                });
+            });
+
+            const archiveContent = await readFile(archivePath);
+
+            // Serve the archive
+            const { server, url } = await startMockServer((req, res) => {
+                if (req.method === "GET") {
+                    res.writeHead(200, {
+                        "Content-Type": "application/octet-stream",
+                        "Content-Length": String(archiveContent.length),
+                    });
+                    res.end(archiveContent);
+                } else {
+                    res.writeHead(404);
+                    res.end();
+                }
+            });
+
+            try {
+                // Use a separate download dir so we don't conflict with source
+                const downloadDir = join(cacheDir, "download-cache");
+
+                await mkdir(downloadDir, { recursive: true });
+
+                const cache = new RemoteCache({ url });
+                const result = await cache.retrieve("retrieve-hash", downloadDir);
+
+                expect(result).toBe(true);
+
+                // Verify the extracted content
+                const entryDir = join(downloadDir, "retrieve-hash");
+                const commitFile = await readFile(join(entryDir, ".commit"), "utf-8");
+
+                expect(commitFile).toBe("retrieve-hash");
+
+                const codeFile = await readFile(join(entryDir, "code"), "utf-8");
+
+                expect(codeFile).toBe("0");
+
+                const outputFile = await readFile(join(entryDir, "terminalOutput"), "utf-8");
+
+                expect(outputFile).toBe("Build succeeded");
+            } finally {
+                await closeServer(server);
+            }
         });
     });
 

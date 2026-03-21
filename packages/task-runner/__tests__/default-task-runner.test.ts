@@ -82,6 +82,9 @@ describe("defaultTaskRunner", () => {
 
     afterEach(async () => {
         await rm(workspaceRoot, { recursive: true, force: true });
+
+        // Clean up env vars that tests may set
+        delete process.env["NEXT_PUBLIC_E2E_TEST_URL"];
     });
 
     it("should execute and cache tasks end-to-end", async () => {

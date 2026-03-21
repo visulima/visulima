@@ -1,5 +1,5 @@
 import { exec } from "node:child_process";
-import { relative, resolve } from "node:path";
+// path utilities not needed - git returns workspace-relative paths
 
 import type { ProjectGraph, ProjectConfiguration } from "./types";
 

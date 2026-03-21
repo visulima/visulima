@@ -198,7 +198,7 @@ export const toGraphHtml = (
   </defs>
 </svg>
 <script>
-const data = ${JSON.stringify(graphData)};
+const data = ${JSON.stringify(graphData).replace(/<\//g, "<\\/")};
 const svg = document.getElementById('graph');
 const W = window.innerWidth, H = window.innerHeight;
 const statusColors = {

@@ -1,8 +1,7 @@
-import { createReadStream, createWriteStream } from "node:fs";
-import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { createWriteStream } from "node:fs";
+import { mkdir, readFile, rm, stat } from "node:fs/promises";
+import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
-import { createGzip, createGunzip } from "node:zlib";
 import { execFile } from "node:child_process";
 
 /**

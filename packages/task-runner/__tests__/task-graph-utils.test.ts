@@ -71,13 +71,13 @@ describe("walkTaskGraph", () => {
             visited.push(taskId);
         });
 
-        // a:build should be visited before b:build, which is before c:build
+        // Dependencies first: c:build (no deps) before b:build before a:build
         const aIndex = visited.indexOf("a:build");
         const bIndex = visited.indexOf("b:build");
         const cIndex = visited.indexOf("c:build");
 
-        expect(aIndex).toBeLessThan(bIndex);
-        expect(bIndex).toBeLessThan(cIndex);
+        expect(cIndex).toBeLessThan(bIndex);
+        expect(bIndex).toBeLessThan(aIndex);
     });
 
     it("should visit all tasks", () => {

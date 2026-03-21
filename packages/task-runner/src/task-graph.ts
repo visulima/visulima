@@ -85,9 +85,15 @@ export const createTaskGraph = (
         }
     }
 
-    const roots = Object.keys(tasks).filter((taskId) => {
-        return !Object.values(dependencies).some((deps) => deps.includes(taskId));
-    });
+    const allDeps = new Set<string>();
+
+    for (const deps of Object.values(dependencies)) {
+        for (const dep of deps) {
+            allDeps.add(dep);
+        }
+    }
+
+    const roots = Object.keys(tasks).filter((taskId) => !allDeps.has(taskId));
 
     return { roots, tasks, dependencies };
 };

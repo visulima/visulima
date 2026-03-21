@@ -38,7 +38,11 @@ export const sortObjectKeys = (object: Record<string, unknown>): Record<string, 
     const sorted: Record<string, unknown> = {};
 
     for (const key of Object.keys(object).sort()) {
-        sorted[key] = object[key];
+        const value = object[key];
+
+        sorted[key] = value !== null && typeof value === "object" && !Array.isArray(value)
+            ? sortObjectKeys(value as Record<string, unknown>)
+            : value;
     }
 
     return sorted;

@@ -52,7 +52,7 @@ export interface TaskHashDetails {
  * Represents a directed acyclic graph of tasks.
  */
 export interface TaskGraph {
-    /** Tasks that have no dependencies (entry points) */
+    /** Top-level tasks that no other task depends on (the final outputs to run) */
     roots: string[];
     /** All tasks in the graph, keyed by task ID */
     tasks: Record<string, Task>;

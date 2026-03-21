@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { join } from "node:path";
 
 import type {
     LifeCycleInterface,
@@ -384,7 +385,7 @@ export class TaskOrchestrator {
 
                 const hashDetails = await this.#taskHasher.hashTask(task);
                 const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => ({
-                    path: `${this.#workspaceRoot}/${filePath}`,
+                    path: join(this.#workspaceRoot, filePath),
                     type: "read" as const,
                 }));
 

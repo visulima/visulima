@@ -102,9 +102,9 @@ const getNativeBindings = () => {
 const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<string, string>, prefix?: string): void => {
     for (const key of Object.keys(record).sort()) {
         if (prefix) {
-            hash.update(`${prefix}${key}`);
+            hash.update(`${prefix}${key}\0`);
         } else {
-            hash.update(key);
+            hash.update(`${key}\0`);
         }
 
         hash.update(record[key] as string);
@@ -159,10 +159,26 @@ export class InProcessTaskHasher implements TaskHasher {
         }
 
         const inputs = this.#resolveInputs(task);
+        const negationPatterns: string[] = [];
+
+        // First pass: collect negation patterns
+        for (const input of inputs) {
+            if (isFileSetInput(input)) {
+                const project = this.#projects[task.target.project];
+                const projectRoot = project?.root ?? "";
+                const resolved = input.fileset
+                    .replace("{projectRoot}", projectRoot)
+                    .replace("{workspaceRoot}", ".");
+
+                if (resolved.startsWith("!")) {
+                    negationPatterns.push(resolved.slice(1).replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+                }
+            }
+        }
 
         for (const input of inputs) {
             if (isFileSetInput(input)) {
-                const fileHashes = await this.#hashFileSet(task, input.fileset);
+                const fileHashes = await this.#hashFileSet(task, input.fileset, negationPatterns);
 
                 for (const [filePath, hash] of Object.entries(fileHashes)) {
                     nodes[filePath] = hash;
@@ -291,6 +307,7 @@ export class InProcessTaskHasher implements TaskHasher {
     async #hashFileSet(
         task: Task,
         pattern: string,
+        negationPatterns: string[] = [],
     ): Promise<Record<string, string>> {
         const project = this.#projects[task.target.project];
         const projectRoot = project?.root ?? "";
@@ -299,14 +316,17 @@ export class InProcessTaskHasher implements TaskHasher {
             .replace("{projectRoot}", projectRoot)
             .replace("{workspaceRoot}", ".");
 
-        const isNegation = resolvedPattern.startsWith("!");
-
-        if (isNegation) {
+        if (resolvedPattern.startsWith("!")) {
+            // Negation patterns are collected and applied by the caller
             return {};
         }
 
         const absoluteBase = resolve(this.#workspaceRoot, resolvedPattern.replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+        const absoluteNegations = negationPatterns.map((p) => resolve(this.#workspaceRoot, p));
         const result: Record<string, string> = {};
+
+        const isExcluded = (filePath: string): boolean =>
+            absoluteNegations.some((neg) => filePath.startsWith(neg + "/") || filePath === neg);
 
         try {
             if (this.#native) {
@@ -316,8 +336,12 @@ export class InProcessTaskHasher implements TaskHasher {
                 );
 
                 for (const { path, hash } of fileHashes) {
-                    result[path] = hash;
-                    this.#fileHashCache.set(resolve(this.#workspaceRoot, path), hash);
+                    const absPath = resolve(this.#workspaceRoot, path);
+
+                    if (!isExcluded(absPath)) {
+                        result[path] = hash;
+                        this.#fileHashCache.set(absPath, hash);
+                    }
                 }
 
                 return result;
@@ -326,6 +350,10 @@ export class InProcessTaskHasher implements TaskHasher {
             const files = await collectFiles(absoluteBase, IGNORED_DIRS);
 
             const hashPromises = files.map(async (filePath) => {
+                if (isExcluded(filePath)) {
+                    return;
+                }
+
                 const hash = await this.#hashFile(filePath);
 
                 if (hash) {

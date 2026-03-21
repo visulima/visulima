@@ -103,28 +103,41 @@ export const findCycles = (taskGraph: TaskGraph): string[][] => {
 };
 
 /**
- * Walks the task graph in topological order, calling the callback for each task.
+ * Walks the task graph in topological order (dependencies before dependents),
+ * calling the callback for each task.
  */
 export const walkTaskGraph = (
     taskGraph: TaskGraph,
     callback: (taskId: string) => void,
 ): void => {
-    const inDegree = new Map<string, number>();
+    // Build a reverse map: for each task, count how many dependencies it has
+    const dependencyCount = new Map<string, number>();
 
     for (const taskId of Object.keys(taskGraph.tasks)) {
-        inDegree.set(taskId, 0);
+        dependencyCount.set(taskId, (taskGraph.dependencies[taskId] ?? []).length);
     }
 
-    for (const deps of Object.values(taskGraph.dependencies)) {
+    // Build reverse dependency map: dep → tasks that depend on dep
+    const dependents = new Map<string, string[]>();
+
+    for (const [taskId, deps] of Object.entries(taskGraph.dependencies)) {
         for (const dep of deps) {
-            inDegree.set(dep, (inDegree.get(dep) ?? 0) + 1);
+            let list = dependents.get(dep);
+
+            if (!list) {
+                list = [];
+                dependents.set(dep, list);
+            }
+
+            list.push(taskId);
         }
     }
 
+    // Start with tasks that have no dependencies (leaf tasks)
     const queue: string[] = [];
 
-    for (const [taskId, degree] of inDegree) {
-        if (degree === 0) {
+    for (const [taskId, count] of dependencyCount) {
+        if (count === 0) {
             queue.push(taskId);
         }
     }
@@ -134,15 +147,16 @@ export const walkTaskGraph = (
 
         callback(taskId);
 
-        const deps = taskGraph.dependencies[taskId] ?? [];
+        // Decrement dependency count for tasks that depend on this one
+        const taskDependents = dependents.get(taskId) ?? [];
 
-        for (const dep of deps) {
-            const newDegree = (inDegree.get(dep) ?? 1) - 1;
+        for (const dependent of taskDependents) {
+            const newCount = (dependencyCount.get(dependent) ?? 1) - 1;
 
-            inDegree.set(dep, newDegree);
+            dependencyCount.set(dependent, newCount);
 
-            if (newDegree === 0) {
-                queue.push(dep);
+            if (newCount === 0) {
+                queue.push(dependent);
             }
         }
     }
@@ -223,9 +237,16 @@ export const makeAcyclic = (taskGraph: TaskGraph): TaskGraph => {
         );
     }
 
+    const allDeps = new Set<string>();
+
+    for (const deps of Object.values(newDependencies)) {
+        for (const dep of deps) {
+            allDeps.add(dep);
+        }
+    }
+
     const roots = Object.keys(taskGraph.tasks).filter(
-        (taskId) =>
-            !Object.values(newDependencies).some((deps) => deps.includes(taskId)),
+        (taskId) => !allDeps.has(taskId),
     );
 
     return {

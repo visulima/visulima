@@ -77,7 +77,7 @@ export const defaultTaskRunner = async (
     });
 
     // Clean old cache entries in the background
-    void cache.removeOldEntries();
+    void cache.removeOldEntries().catch(() => {});
 
     // Create the task hasher with global inputs support
     const projects: Record<string, import("./types").ProjectConfiguration> = {};

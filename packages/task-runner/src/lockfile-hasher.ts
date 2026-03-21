@@ -78,6 +78,10 @@ export class LockfileHasher {
             }
         }
 
+        if (resolved.length === 0) {
+            return null;
+        }
+
         // Sort for deterministic hashing
         resolved.sort((a, b) => a.name.localeCompare(b.name));
 

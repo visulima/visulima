@@ -28,6 +28,11 @@ describe("InProcessTaskHasher", () => {
 
     afterEach(async () => {
         await rm(workspaceRoot, { recursive: true, force: true });
+
+        // Clean up env vars that tests may set
+        delete process.env["TEST_VAR_HASHER"];
+        delete process.env["NEXT_PUBLIC_API_URL"];
+        delete process.env["NEXT_PUBLIC_TEST"];
     });
 
     it("should hash a task with default inputs (all project files)", async () => {

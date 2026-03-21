@@ -1,5 +1,5 @@
 import { exec } from "node:child_process";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { platform } from "node:os";
 
@@ -113,13 +113,7 @@ export class FileAccessTracker {
                 }
 
                 // Clean up trace file
-                try {
-                    const { rm } = await import("node:fs/promises");
-
-                    await rm(traceFile, { force: true });
-                } catch {
-                    // Ignore cleanup errors
-                }
+                await rm(traceFile, { force: true }).catch(() => {});
 
                 promiseResolve({
                     accesses,
@@ -306,8 +300,6 @@ fs.readdirSync = function(...args) {
 };
 
 // Async variants
-const { promisify } = require("node:util");
-
 const origReadFileCb = _originalReadFile;
 fs.readFile = function(...args) {
     log("read", args[0]?.toString());
@@ -345,4 +337,7 @@ fsp.readdir = async function(...args) {
     log("readdir", args[0]?.toString());
     return origFspReaddir.apply(this, args);
 };
+
+// Flush and close the log stream on exit
+process.on("exit", () => { logStream.end(); });
 `;

@@ -1,8 +1,6 @@
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { platform } from "node:os";
-
 import type { Task, TaskExecutionOptions } from "./types";
 import type { FileAccess } from "./file-access-tracker";
 
@@ -67,7 +65,7 @@ export class TrackedTaskExecutor {
     ): Promise<TrackedExecutionResult> {
         const cwd = options.cwd
             ?? (task.projectRoot
-                ? `${this.#workspaceRoot}/${task.projectRoot}`
+                ? join(this.#workspaceRoot, task.projectRoot)
                 : this.#workspaceRoot);
 
         // Strategy 1: strace (Linux only, most complete)
@@ -101,8 +99,9 @@ export class TrackedTaskExecutor {
 
         await mkdir(cacheDir, { recursive: true });
 
-        const logFile = join(cacheDir, `preload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.log`);
-        const preloadFile = join(cacheDir, `preload-${Date.now()}.mjs`);
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const logFile = join(cacheDir, `preload-${uniqueId}.log`);
+        const preloadFile = join(cacheDir, `preload-${uniqueId}.mjs`);
 
         // Write the preload script
         const scriptContent = generatePreloadScript(logFile);
