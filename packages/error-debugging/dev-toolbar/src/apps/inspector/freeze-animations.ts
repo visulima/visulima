@@ -223,7 +223,7 @@ export const unfreezeAll = (): void => {
     for (const callback of timeoutQueue) {
         _s.origSetTimeout(() => {
             if (_s.frozen) {
-                if (_s.frozenTimeoutQueue.length <= MAX_FROZEN_QUEUE) {
+                if (_s.frozenTimeoutQueue.length < MAX_FROZEN_QUEUE) {
                     _s.frozenTimeoutQueue.push(callback);
                 }
 
@@ -246,7 +246,7 @@ export const unfreezeAll = (): void => {
     for (const callback of rafQueue) {
         _s.origRAF((ts: number) => {
             if (_s.frozen) {
-                if (_s.frozenRAFQueue.length <= MAX_FROZEN_QUEUE) {
+                if (_s.frozenRAFQueue.length < MAX_FROZEN_QUEUE) {
                     _s.frozenRAFQueue.push(callback);
                 }
 
