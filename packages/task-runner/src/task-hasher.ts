@@ -1,0 +1,415 @@
+import { createHash } from "node:crypto";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { join, relative, resolve } from "node:path";
+
+import type {
+    EnvironmentInput,
+    ExternalDependencyInput,
+    FileSetInput,
+    InputDefinition,
+    NamedInputs,
+    ProjectConfiguration,
+    RuntimeInput,
+    Task,
+    TaskHashDetails,
+    TargetConfiguration,
+} from "./types";
+
+/**
+ * Interface for task hashers.
+ */
+export interface TaskHasher {
+    hashTask(task: Task): Promise<TaskHashDetails>;
+}
+
+/**
+ * Options for creating an InProcessTaskHasher.
+ */
+export interface TaskHasherOptions {
+    /** The workspace root directory */
+    workspaceRoot: string;
+    /** Project configurations keyed by project name */
+    projects: Record<string, ProjectConfiguration>;
+    /** Named input definitions */
+    namedInputs?: NamedInputs;
+    /** Target default configurations */
+    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+    /** Additional environment variables to include in hash */
+    envVars?: string[];
+}
+
+const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
+
+/**
+ * Recursively collects all files in a directory, ignoring common non-source directories.
+ */
+const collectFiles = async (dir: string): Promise<string[]> => {
+    const results: string[] = [];
+
+    try {
+        const dirStat = await stat(dir);
+
+        if (dirStat.isFile()) {
+            return [dir];
+        }
+
+        const entries = await readdir(dir, { withFileTypes: true });
+
+        const promises = entries.map(async (entry) => {
+            if (IGNORED_DIRS.has(entry.name)) {
+                return [];
+            }
+
+            const fullPath = join(dir, entry.name);
+
+            if (entry.isDirectory()) {
+                return collectFiles(fullPath);
+            }
+
+            if (entry.isFile()) {
+                return [fullPath];
+            }
+
+            return [];
+        });
+
+        const nested = await Promise.all(promises);
+
+        for (const files of nested) {
+            results.push(...files);
+        }
+    } catch {
+        // Directory doesn't exist or can't be read
+    }
+
+    return results;
+};
+
+/**
+ * Computes hashes for tasks based on their inputs.
+ * Used to determine if a cached result can be reused.
+ */
+export class InProcessTaskHasher implements TaskHasher {
+    readonly #workspaceRoot: string;
+    readonly #projects: Record<string, ProjectConfiguration>;
+    readonly #namedInputs: NamedInputs;
+    readonly #targetDefaults: Record<string, Partial<TargetConfiguration>>;
+    readonly #envVars: string[];
+    readonly #fileHashCache = new Map<string, string>();
+
+    constructor(options: TaskHasherOptions) {
+        this.#workspaceRoot = options.workspaceRoot;
+        this.#projects = options.projects;
+        this.#namedInputs = options.namedInputs ?? {};
+        this.#targetDefaults = options.targetDefaults ?? {};
+        this.#envVars = options.envVars ?? [];
+    }
+
+    async hashTask(task: Task): Promise<TaskHashDetails> {
+        const commandHash = this.#hashCommand(task);
+        const nodes: Record<string, string> = {};
+        const implicitDeps: Record<string, string> = {};
+        const runtime: Record<string, string> = {};
+
+        // Resolve inputs for the task
+        const inputs = this.#resolveInputs(task);
+
+        // Hash each input
+        for (const input of inputs) {
+            if (isFileSetInput(input)) {
+                const fileHashes = await this.#hashFileSet(task, input.fileset);
+
+                for (const [filePath, hash] of Object.entries(fileHashes)) {
+                    nodes[filePath] = hash;
+                }
+            } else if (isRuntimeInput(input)) {
+                const hash = this.#hashRuntime(input.runtime);
+
+                runtime[input.runtime] = hash;
+            } else if (isEnvironmentInput(input)) {
+                const hash = this.#hashEnvironment(input.env);
+
+                runtime[`env:${input.env}`] = hash;
+            } else if (isExternalDependencyInput(input)) {
+                for (const dep of input.externalDependencies) {
+                    const hash = await this.#hashExternalDependency(dep);
+
+                    implicitDeps[dep] = hash;
+                }
+            }
+        }
+
+        // Include configured env vars
+        for (const envVar of this.#envVars) {
+            const hash = this.#hashEnvironment(envVar);
+
+            runtime[`env:${envVar}`] = hash;
+        }
+
+        return {
+            command: commandHash,
+            nodes,
+            implicitDeps: Object.keys(implicitDeps).length > 0 ? implicitDeps : undefined,
+            runtime: Object.keys(runtime).length > 0 ? runtime : undefined,
+        };
+    }
+
+    /**
+     * Computes a hash of the task command.
+     */
+    #hashCommand(task: Task): string {
+        const hash = createHash("sha256");
+
+        hash.update(task.target.project);
+        hash.update(task.target.target);
+
+        if (task.target.configuration) {
+            hash.update(task.target.configuration);
+        }
+
+        // Sort and include overrides for deterministic hashing
+        const sortedOverrides = Object.keys(task.overrides)
+            .sort()
+            .reduce<Record<string, unknown>>((accumulator, key) => {
+                accumulator[key] = task.overrides[key];
+                return accumulator;
+            }, {});
+
+        hash.update(JSON.stringify(sortedOverrides));
+
+        return hash.digest("hex");
+    }
+
+    /**
+     * Resolves the inputs for a task, expanding named inputs.
+     */
+    #resolveInputs(task: Task): InputDefinition[] {
+        const project = this.#projects[task.target.project];
+        const targetConfig = project?.targets?.[task.target.target];
+        const defaultConfig = this.#targetDefaults[task.target.target];
+
+        const rawInputs = targetConfig?.inputs ?? defaultConfig?.inputs;
+
+        if (!rawInputs) {
+            // Default: hash all files in the project
+            return [{ fileset: "{projectRoot}/**/*" }];
+        }
+
+        return this.#expandInputs(rawInputs, task.target.project);
+    }
+
+    /**
+     * Expands input definitions, resolving named input references.
+     */
+    #expandInputs(
+        inputs: (string | InputDefinition)[],
+        projectName: string,
+    ): InputDefinition[] {
+        const result: InputDefinition[] = [];
+        const seen = new Set<string>();
+
+        for (const input of inputs) {
+            if (typeof input === "string") {
+                // Check if it's a named input reference
+                if (input.startsWith("{") || input.startsWith("!{")) {
+                    result.push({ fileset: input });
+                } else if (input.startsWith("^")) {
+                    // Dependency input - not expanded here, handled at graph level
+                    continue;
+                } else if (this.#namedInputs[input] && !seen.has(input)) {
+                    // Named input reference
+                    seen.add(input);
+                    result.push(
+                        ...this.#expandInputs(this.#namedInputs[input] as (string | InputDefinition)[], projectName),
+                    );
+                } else {
+                    result.push({ fileset: input });
+                }
+            } else {
+                result.push(input);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Hashes all files matching a fileset pattern.
+     */
+    async #hashFileSet(
+        task: Task,
+        pattern: string,
+    ): Promise<Record<string, string>> {
+        const project = this.#projects[task.target.project];
+        const projectRoot = project?.root ?? "";
+
+        // Resolve pattern variables
+        const resolvedPattern = pattern
+            .replace("{projectRoot}", projectRoot)
+            .replace("{workspaceRoot}", ".");
+
+        const isNegation = resolvedPattern.startsWith("!");
+        const actualPattern = isNegation ? resolvedPattern.slice(1) : resolvedPattern;
+
+        if (isNegation) {
+            // Negation patterns are handled by glob
+            return {};
+        }
+
+        const absoluteBase = resolve(this.#workspaceRoot, actualPattern.replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+        const result: Record<string, string> = {};
+
+        try {
+            const files = await collectFiles(absoluteBase);
+
+            const hashPromises = files.map(async (filePath) => {
+                const hash = await this.#hashFile(filePath);
+
+                if (hash) {
+                    const relativePath = relative(this.#workspaceRoot, filePath);
+
+                    result[relativePath] = hash;
+                }
+            });
+
+            await Promise.all(hashPromises);
+        } catch {
+            // Directory doesn't exist or can't be read
+        }
+
+        return result;
+    }
+
+    /**
+     * Hashes a single file.
+     */
+    async #hashFile(filePath: string): Promise<string | undefined> {
+        const cached = this.#fileHashCache.get(filePath);
+
+        if (cached) {
+            return cached;
+        }
+
+        try {
+            const content = await readFile(filePath);
+            const hash = createHash("sha256").update(content).digest("hex");
+
+            this.#fileHashCache.set(filePath, hash);
+
+            return hash;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Hashes a runtime input (e.g., node version).
+     */
+    #hashRuntime(runtime: string): string {
+        const hash = createHash("sha256");
+
+        hash.update(runtime);
+
+        // For common runtimes, use known values
+        if (runtime === "node -v" || runtime === "node --version") {
+            hash.update(process.version);
+        } else {
+            // Use the runtime string itself as a placeholder
+            hash.update(`runtime:${runtime}`);
+        }
+
+        return hash.digest("hex");
+    }
+
+    /**
+     * Hashes an environment variable.
+     */
+    #hashEnvironment(envName: string): string {
+        const hash = createHash("sha256");
+        const value = process.env[envName] ?? "";
+
+        hash.update(envName);
+        hash.update(value);
+
+        return hash.digest("hex");
+    }
+
+    /**
+     * Hashes an external dependency by reading its package.json version.
+     */
+    async #hashExternalDependency(depName: string): Promise<string> {
+        const hash = createHash("sha256");
+
+        hash.update(depName);
+
+        try {
+            const packageJsonPath = join(
+                this.#workspaceRoot,
+                "node_modules",
+                depName,
+                "package.json",
+            );
+            const packageJsonContent = await readFile(packageJsonPath, "utf-8");
+            const packageJson = JSON.parse(packageJsonContent) as { version?: string };
+
+            hash.update(packageJson.version ?? "unknown");
+        } catch {
+            hash.update("not-installed");
+        }
+
+        return hash.digest("hex");
+    }
+
+    /**
+     * Clears the file hash cache.
+     */
+    clearCache(): void {
+        this.#fileHashCache.clear();
+    }
+}
+
+/**
+ * Computes the final hash for a task from its hash details.
+ */
+export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
+    const hash = createHash("sha256");
+
+    hash.update(hashDetails.command);
+
+    // Sort and hash nodes
+    for (const key of Object.keys(hashDetails.nodes).sort()) {
+        hash.update(key);
+        hash.update(hashDetails.nodes[key] as string);
+    }
+
+    // Sort and hash implicit deps
+    if (hashDetails.implicitDeps) {
+        for (const key of Object.keys(hashDetails.implicitDeps).sort()) {
+            hash.update(key);
+            hash.update(hashDetails.implicitDeps[key] as string);
+        }
+    }
+
+    // Sort and hash runtime
+    if (hashDetails.runtime) {
+        for (const key of Object.keys(hashDetails.runtime).sort()) {
+            hash.update(key);
+            hash.update(hashDetails.runtime[key] as string);
+        }
+    }
+
+    return hash.digest("hex");
+};
+
+// Type guards
+const isFileSetInput = (input: InputDefinition): input is FileSetInput =>
+    "fileset" in input;
+
+const isRuntimeInput = (input: InputDefinition): input is RuntimeInput =>
+    "runtime" in input;
+
+const isEnvironmentInput = (input: InputDefinition): input is EnvironmentInput =>
+    "env" in input;
+
+const isExternalDependencyInput = (input: InputDefinition): input is ExternalDependencyInput =>
+    "externalDependencies" in input;
