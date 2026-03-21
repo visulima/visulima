@@ -1,6 +1,6 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use sha2::{Digest, Sha256};
+use xxhash_rust::xxh3::xxh3_128;
 use std::collections::BTreeMap;
 
 use crate::file_hasher::hex;
@@ -18,7 +18,7 @@ pub struct NativeTaskHashDetails {
     pub runtime: Option<Vec<Vec<String>>>,
 }
 
-/// Computes the command hash for a task.
+/// Computes the command hash for a task using xxh3-128.
 /// Takes project name, target name, optional configuration, and sorted overrides JSON.
 #[napi]
 pub fn hash_command(
@@ -27,27 +27,28 @@ pub fn hash_command(
     configuration: Option<String>,
     overrides_json: String,
 ) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(project.as_bytes());
-    hasher.update(target.as_bytes());
+    let mut data = Vec::new();
+    data.extend_from_slice(project.as_bytes());
+    data.extend_from_slice(target.as_bytes());
 
     if let Some(config) = &configuration {
-        hasher.update(config.as_bytes());
+        data.extend_from_slice(config.as_bytes());
     }
 
-    hasher.update(overrides_json.as_bytes());
+    data.extend_from_slice(overrides_json.as_bytes());
 
-    hex::encode(hasher.finalize())
+    let h = xxh3_128(&data);
+    hex::encode(h.to_be_bytes())
 }
 
-/// Computes the final combined hash from task hash details.
+/// Computes the final combined hash from task hash details using xxh3-128.
 /// This produces the cache key used for lookup.
 #[napi]
 pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
-    let mut hasher = Sha256::new();
+    let mut data = Vec::new();
 
     // Hash the command
-    hasher.update(details.command.as_bytes());
+    data.extend_from_slice(details.command.as_bytes());
 
     // Sort and hash nodes for deterministic output
     let sorted_nodes: BTreeMap<&str, &str> = details
@@ -58,8 +59,8 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
         .collect();
 
     for (key, value) in &sorted_nodes {
-        hasher.update(key.as_bytes());
-        hasher.update(value.as_bytes());
+        data.extend_from_slice(key.as_bytes());
+        data.extend_from_slice(value.as_bytes());
     }
 
     // Sort and hash implicit deps
@@ -71,8 +72,8 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
             .collect();
 
         for (key, value) in &sorted {
-            hasher.update(key.as_bytes());
-            hasher.update(value.as_bytes());
+            data.extend_from_slice(key.as_bytes());
+            data.extend_from_slice(value.as_bytes());
         }
     }
 
@@ -85,19 +86,22 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
             .collect();
 
         for (key, value) in &sorted {
-            hasher.update(key.as_bytes());
-            hasher.update(value.as_bytes());
+            data.extend_from_slice(key.as_bytes());
+            data.extend_from_slice(value.as_bytes());
         }
     }
 
-    hex::encode(hasher.finalize())
+    let h = xxh3_128(&data);
+    hex::encode(h.to_be_bytes())
 }
 
-/// Hashes an environment variable name + value pair.
+/// Hashes an environment variable name + value pair using xxh3-128.
 #[napi]
 pub fn hash_env_var(name: String, value: String) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(name.as_bytes());
-    hasher.update(value.as_bytes());
-    hex::encode(hasher.finalize())
+    let mut data = Vec::new();
+    data.extend_from_slice(name.as_bytes());
+    data.extend_from_slice(value.as_bytes());
+
+    let h = xxh3_128(&data);
+    hex::encode(h.to_be_bytes())
 }

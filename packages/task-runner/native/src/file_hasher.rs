@@ -1,8 +1,7 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rayon::prelude::*;
-use sha2::{Digest, Sha256};
-use std::collections::HashMap;
+use xxhash_rust::xxh3::xxh3_128;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -10,18 +9,17 @@ use walkdir::WalkDir;
 /// Ignored directory names during file collection.
 const IGNORED_DIRS: &[&str] = &["node_modules", ".git", "dist", "coverage", ".cache"];
 
-/// Computes the SHA-256 hash of a single file.
+/// Computes the xxh3-128 hash of a single file.
 /// Returns the hex-encoded hash string.
+///
+/// Uses xxHash xxh3 (same as Nx) for maximum hashing throughput.
+/// xxh3 is ~5-10x faster than SHA-256 on modern CPUs with SIMD.
 #[napi]
 pub fn hash_file(file_path: String) -> Result<String> {
     let content = fs::read(&file_path)
         .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read file {}: {}", file_path, e)))?;
 
-    let mut hasher = Sha256::new();
-    hasher.update(&content);
-    let result = hasher.finalize();
-
-    Ok(hex::encode(result))
+    Ok(hash_bytes(&content))
 }
 
 /// Collects all files in a directory recursively, ignoring common non-source directories.
@@ -59,7 +57,7 @@ pub struct FileHash {
     pub hash: String,
 }
 
-/// Collects all files in a directory and computes SHA-256 hashes for each,
+/// Collects all files in a directory and computes xxh3-128 hashes for each,
 /// using parallel processing via rayon for maximum throughput.
 ///
 /// Returns a list of { path, hash } objects where path is relative to workspace_root.
@@ -75,10 +73,7 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
         let content = fs::read(dir_path)
             .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read file: {}", e)))?;
 
-        let mut hasher = Sha256::new();
-        hasher.update(&content);
-        let hash = hex::encode(hasher.finalize());
-
+        let hash = hash_bytes(&content);
         let rel = make_relative(&dir, &workspace_root);
 
         return Ok(vec![FileHash {
@@ -102,9 +97,7 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
         .par_iter()
         .filter_map(|file_path| {
             let content = fs::read(file_path).ok()?;
-            let mut hasher = Sha256::new();
-            hasher.update(&content);
-            let hash = hex::encode(hasher.finalize());
+            let hash = hash_bytes(&content);
 
             let abs = file_path.to_string_lossy().to_string();
             let rel = make_relative(&abs, &workspace_root);
@@ -116,17 +109,15 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
     Ok(results)
 }
 
-/// Computes SHA-256 hashes for multiple files in parallel.
-/// Takes absolute file paths, returns a map of relative_path -> hash.
+/// Computes xxh3-128 hashes for multiple files in parallel.
+/// Takes absolute file paths, returns relative_path + hash pairs.
 #[napi]
 pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Result<Vec<FileHash>> {
     let results: Vec<FileHash> = file_paths
         .par_iter()
         .filter_map(|file_path| {
             let content = fs::read(file_path).ok()?;
-            let mut hasher = Sha256::new();
-            hasher.update(&content);
-            let hash = hex::encode(hasher.finalize());
+            let hash = hash_bytes(&content);
 
             let rel = make_relative(file_path, &workspace_root);
 
@@ -152,27 +143,31 @@ fn make_relative(path: &str, workspace_root: &str) -> String {
     }
 }
 
-/// Computes a SHA-256 hash from a byte string.
+/// Core hashing function using xxh3-128.
+/// Produces a 32-character hex string (128-bit hash).
+fn hash_bytes(data: &[u8]) -> String {
+    let h = xxh3_128(data);
+    hex::encode(h.to_be_bytes())
+}
+
+/// Computes an xxh3-128 hash from a string.
 /// Useful for hashing command strings, JSON, etc.
 #[napi]
 pub fn hash_string(input: String) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(input.as_bytes());
-    hex::encode(hasher.finalize())
+    hash_bytes(input.as_bytes())
 }
 
-/// Computes a combined SHA-256 hash from multiple strings.
-/// Strings are hashed in order, producing a single deterministic hash.
+/// Computes a combined xxh3-128 hash from multiple strings.
+/// Strings are concatenated and hashed, producing a single deterministic hash.
 #[napi]
 pub fn hash_strings(inputs: Vec<String>) -> String {
-    let mut hasher = Sha256::new();
+    let mut combined = Vec::new();
     for input in &inputs {
-        hasher.update(input.as_bytes());
+        combined.extend_from_slice(input.as_bytes());
     }
-    hex::encode(hasher.finalize())
+    hash_bytes(&combined)
 }
 
-// Need hex encoding - use sha2's built-in or inline it
 mod hex {
     const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
 
