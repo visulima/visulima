@@ -16,6 +16,8 @@ import { useTheme } from "../../toolbar/hooks/use-theme";
 import type { AppComponentProps } from "../../types/app";
 import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../ui/components/select";
+import type { SelectOption } from "../../ui/components/select";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 
@@ -113,39 +115,34 @@ const ThemeControl = ({ onChange, value }: { onChange: (v: Theme) => void; value
     );
 };
 
-/** Segmented select for auto-hide delay */
-const HIDE_OPTIONS: { label: string; value: number }[] = [
-    { label: "Never", value: -1 },
-    { label: "Always", value: 0 },
-    { label: "2s", value: 2000 },
-    { label: "5s", value: 5000 },
-    { label: "10s", value: 10_000 },
-    { label: "30s", value: 30_000 },
+/** Select options for auto-hide delay */
+const HIDE_OPTIONS: SelectOption[] = [
+    { label: "Never", value: "-1" },
+    { label: "Always", value: "0" },
+    { label: "2s", value: "2000" },
+    { label: "5s", value: "5000" },
+    { label: "10s", value: "10000" },
+    { label: "30s", value: "30000" },
 ];
 
 const HideDelayControl = ({ onChange, value }: { onChange: (v: number) => void; value: number }): ComponentChildren => (
-    <select
-        class={clsx(
-            "bg-foreground/6 border border-border",
-            "text-[0.775rem] font-medium text-foreground",
-            "px-2.5 py-1.5 cursor-pointer",
-            "focus:outline-none focus:ring-1 focus:ring-ring",
-            "transition-colors duration-150",
-        )}
-        onChange={(event) => onChange(Number((event.target as HTMLSelectElement).value))}
-        value={String(value)}
-    >
-        {HIDE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={String(opt.value)}>
-                {opt.label}
-            </option>
-        ))}
-    </select>
+    <Select onValueChange={(v) => onChange(Number(v))} value={String(value)}>
+        <SelectTrigger>
+            <SelectValue options={HIDE_OPTIONS} />
+        </SelectTrigger>
+        <SelectContent>
+            {HIDE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                </SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
 );
 
 // ─── Editor selector ─────────────────────────────────────────────────────────
 
-const EDITOR_OPTIONS: { label: string; value: string }[] = [
+const EDITOR_OPTIONS: SelectOption[] = [
     { label: "Auto-detected", value: "" },
     { label: "AppCode", value: "appcode" },
     { label: "Android Studio", value: "android-studio" },
@@ -176,24 +173,36 @@ const EDITOR_OPTIONS: { label: string; value: string }[] = [
     { label: "Zed", value: "zed" },
 ];
 
+/** Filtered editor list that reads the search context. */
+const EditorItems = (): ComponentChildren => {
+    const { search } = useSelectContext();
+    const query = search.toLowerCase();
+    const filtered = query ? EDITOR_OPTIONS.filter((opt) => opt.label.toLowerCase().includes(query)) : EDITOR_OPTIONS;
+
+    if (filtered.length === 0) {
+        return <div class="px-2 py-3 text-center text-[0.725rem] text-muted-foreground">No editors found</div>;
+    }
+
+    return (
+        <>
+            {filtered.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                </SelectItem>
+            ))}
+        </>
+    );
+};
+
 const EditorControl = ({ onChange, value }: { onChange: (v: string) => void; value: string }): ComponentChildren => (
-    <select
-        class={clsx(
-            "bg-foreground/6 border border-border",
-            "text-[0.775rem] font-medium text-foreground",
-            "px-2.5 py-1.5 cursor-pointer",
-            "focus:outline-none focus:ring-1 focus:ring-ring",
-            "transition-colors duration-150",
-        )}
-        onChange={(event) => onChange((event.target as HTMLSelectElement).value)}
-        value={value}
-    >
-        {EDITOR_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-                {opt.label}
-            </option>
-        ))}
-    </select>
+    <Select onValueChange={onChange} value={value}>
+        <SelectTrigger>
+            <SelectValue options={EDITOR_OPTIONS} placeholder="Auto-detected" />
+        </SelectTrigger>
+        <SelectContent searchable>
+            <EditorItems />
+        </SelectContent>
+    </Select>
 );
 
 // ─── Keyboard shortcut capture ────────────────────────────────────────────────
@@ -224,17 +233,13 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
 
             const parts: string[] = [];
 
-            if (event.altKey)
-                parts.push("Alt");
+            if (event.altKey) parts.push("Alt");
 
-            if (event.ctrlKey)
-                parts.push("Control");
+            if (event.ctrlKey) parts.push("Control");
 
-            if (event.metaKey)
-                parts.push("Meta");
+            if (event.metaKey) parts.push("Meta");
 
-            if (event.shiftKey)
-                parts.push("Shift");
+            if (event.shiftKey) parts.push("Shift");
 
             parts.push(event.key);
 
@@ -337,14 +342,14 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: v } })}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: v } })}
                                 value={state.keybindings?.toggle ?? DEFAULT_KEYBINDINGS.toggle}
                             />
                             {state.keybindings?.toggle !== DEFAULT_KEYBINDINGS.toggle && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
                                     onClick={() =>
-                                        updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: DEFAULT_KEYBINDINGS.toggle } })
+                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: DEFAULT_KEYBINDINGS.toggle } })
                                     }
                                     variant="link"
                                 >
@@ -360,14 +365,14 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: v } })}
+                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: v } })}
                                 value={state.keybindings?.close ?? DEFAULT_KEYBINDINGS.close}
                             />
                             {state.keybindings?.close !== DEFAULT_KEYBINDINGS.close && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
                                     onClick={() =>
-                                        updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: DEFAULT_KEYBINDINGS.close } })
+                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: DEFAULT_KEYBINDINGS.close } })
                                     }
                                     variant="link"
                                 >

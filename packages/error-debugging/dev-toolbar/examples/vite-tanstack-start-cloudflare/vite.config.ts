@@ -3,15 +3,16 @@ import { devToolbar } from "@visulima/dev-toolbar/vite";
 import viteOverlay from "@visulima/vite-overlay";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import tsConfigPaths from "vite-tsconfig-paths";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
+    resolve: {
+        tsconfigPaths: true,
+    },
     plugins: [
+        cloudflare({ viteEnvironment: { name: "ssr" } }),
         // Disable the native balloon button — the dev-toolbar renders its own error button
         viteOverlay({ showBallonButton: false }),
-        tsConfigPaths({
-            projects: ["./tsconfig.json"],
-        }),
         tanstackStart({
             sitemap: {
                 host: "https://your-project.pages.dev",
@@ -19,9 +20,6 @@ export default defineConfig({
         }),
         viteReact(),
         devToolbar({
-            // TanStack Start SSR renders HTML server-side, bypassing Vite's
-            // transformIndexHtml. Use appendTo to inject via the module graph instead.
-            appendTo: /router\.tsx$/,
             apps: {
                 settings: true,
                 timeline: true,

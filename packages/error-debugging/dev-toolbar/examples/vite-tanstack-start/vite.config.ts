@@ -3,15 +3,14 @@ import { devToolbar } from "@visulima/dev-toolbar/vite";
 import viteOverlay from "@visulima/vite-overlay";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+    resolve: {
+        tsconfigPaths: true,
+    },
     plugins: [
         // Disable the native balloon button — the dev-toolbar renders its own error button
         viteOverlay({ showBallonButton: false }),
-        tsConfigPaths({
-            projects: ["./tsconfig.json"],
-        }),
         tanstackStart({
             sitemap: {
                 host: "https://localhost:3000",

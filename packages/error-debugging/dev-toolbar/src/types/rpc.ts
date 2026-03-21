@@ -3,6 +3,7 @@ import type { ViteDevServer } from "vite";
 import type { StaticAsset } from "../rpc/functions/assets";
 import type { SerializableModuleNode } from "../rpc/functions/module-graph";
 import type { TailwindConfigResult } from "../rpc/functions/tailwind-config";
+import type { Annotation, CreateAnnotationData, UpdateAnnotationData } from "./annotations";
 
 /**
  * Server-side RPC functions
@@ -17,9 +18,32 @@ export interface ServerFunctions {
     [key: string]: (...args: any[]) => Promise<any>;
 
     /**
+     * Create a new annotation
+     * @param data Annotation data (id, timestamps, status are generated server-side)
+     */
+    createAnnotation: (data: CreateAnnotationData) => Promise<Annotation>;
+
+    /**
+     * Delete an annotation and its screenshot
+     * @param id Annotation ID
+     */
+    deleteAnnotation: (id: string) => Promise<boolean>;
+
+    /**
+     * Get all annotations
+     */
+    getAnnotations: () => Promise<Annotation[]>;
+
+    /**
      * Get module dependency graph
      */
     getModuleGraph: () => Promise<SerializableModuleNode[]>;
+
+    /**
+     * Get a screenshot as a base64 data URL
+     * @param annotationId Annotation ID
+     */
+    getScreenshot: (annotationId: string) => Promise<string | null>;
 
     /**
      * Get all static assets from the public directory
@@ -51,6 +75,21 @@ export interface ServerFunctions {
      * @param path File path
      */
     readFile: (path: string) => Promise<string>;
+
+    /**
+     * Save a screenshot for an annotation
+     * @param annotationId Annotation ID
+     * @param dataUrl Base64 data URL (PNG, JPEG, WebP, or SVG)
+     * @returns Relative path within .devtoolbar/
+     */
+    saveScreenshot: (annotationId: string, dataUrl: string) => Promise<string>;
+
+    /**
+     * Update an existing annotation
+     * @param id Annotation ID
+     * @param data Fields to update
+     */
+    updateAnnotation: (id: string, data: UpdateAnnotationData) => Promise<Annotation | null>;
 }
 
 /**

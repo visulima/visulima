@@ -41,6 +41,7 @@ Controls which built-in apps are registered. All optional apps are **disabled by
 ```ts
 apps?: {
     a11y?: boolean;           // default: false
+    annotations?: boolean;    // default: false
     assets?: boolean;         // default: false
     inspector?: boolean;      // default: false
     moduleGraph?: boolean;    // default: false
@@ -53,11 +54,12 @@ apps?: {
 }
 ```
 
-**Example** — enable the SEO, Inspector, and Performance apps:
+**Example** — enable the SEO, Inspector, Annotations, and Performance apps:
 
 ```ts
 devToolbar({
     apps: {
+        annotations: true,
         inspector: true,
         seo: true,
         performance: true,
@@ -86,9 +88,9 @@ devToolbar({
 
 The plugin automatically detects supported SSR frameworks and sets `appendTo` for you:
 
-| Framework        | Detection                                       | Auto `appendTo`      |
-| ---------------- | ----------------------------------------------- | -------------------- |
-| TanStack Start   | `tanstack-start-core:config` or `tanstack-react-start:config` plugin present | `/router\.tsx$/` |
+| Framework      | Detection                                                                    | Auto `appendTo`  |
+| -------------- | ---------------------------------------------------------------------------- | ---------------- |
+| TanStack Start | `tanstack-start-core:config` or `tanstack-react-start:config` plugin present | `/router\.tsx$/` |
 
 If your framework is auto-detected, you do not need to set `appendTo` manually. An explicit `appendTo` value always takes precedence over auto-detection.
 
@@ -351,6 +353,7 @@ interface DevToolbarOptions {
      */
     apps?: {
         a11y?: boolean;
+        annotations?: boolean;
         assets?: boolean;
         inspector?: boolean;
         moduleGraph?: boolean;

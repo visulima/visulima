@@ -122,8 +122,8 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
         }),
     ];
 
-    const visibleEvents: TimelineEvent[]
-        = activeTab === ALL_TAB ? groups.flatMap((g) => g.events).toSorted((a, b) => a.time - b.time) : groups.find((g) => g.id === activeTab)?.events ?? [];
+    const visibleEvents: TimelineEvent[] =
+        activeTab === ALL_TAB ? groups.flatMap((g) => g.events).toSorted((a, b) => a.time - b.time) : (groups.find((g) => g.id === activeTab)?.events ?? []);
 
     const clearAll = (): void => {
         const store = getTimelineStore();
@@ -169,8 +169,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 {/* Events list */}
                 <div class="flex-1 overflow-auto">
-                    {visibleEvents.length === 0
-                        ? (
+                    {visibleEvents.length === 0 ? (
                         <div class="flex flex-col items-center justify-center h-full gap-4 p-8 text-center select-none">
                             <div class="size-12 border border-border/50 bg-foreground/2 flex items-center justify-center">
                                 <svg
@@ -192,8 +191,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                                 </p>
                             </div>
                         </div>
-                        )
-                        : (
+                    ) : (
                         <div class="divide-y divide-border/50">
                             {visibleEvents.map((event) => {
                                 const group = groups.find((g) => g.events.some((event_) => event_.id === event.id));
@@ -223,7 +221,7 @@ const TimelineApp = (_props: AppComponentProps): ComponentChildren => {
                                 );
                             })}
                         </div>
-                        )}
+                    )}
                 </div>
 
                 {/* Detail panel */}

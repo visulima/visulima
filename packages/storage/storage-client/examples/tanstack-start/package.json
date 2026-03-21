@@ -16,8 +16,7 @@
     "@visulima/storage-client": "workspace:*",
     "nitro": "catalog:prod",
     "react": "catalog:frontend",
-    "react-dom": "catalog:frontend",
-    "vite-tsconfig-paths": "catalog:build"
+    "react-dom": "catalog:frontend"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "catalog:build",

@@ -275,7 +275,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                         </Button>
                         <Button
                             onClick={() => {
-                                const q = (s: string): string => `"${s.replaceAll("\"", "\"\"")}"`;
+                                const q = (s: string): string => `"${s.replaceAll('"', '""')}"`;
                                 const header = ["Rule ID", "Severity", "Message", "Selector", "HTML", "WCAG Tags"].join(",");
                                 const rows = issues.flatMap((issue) =>
                                     issue.nodes.map((node) =>
@@ -347,8 +347,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                             ))}
                         </div>
 
-                        {displayedIssues.length === 0
-                            ? (
+                        {displayedIssues.length === 0 ? (
                             <div class="p-6 text-center border border-border">
                                 <p class="text-[0.8125rem] font-medium text-foreground/70">
                                     {issues.length === 0 ? "No violations found!" : "No issues match the current filters."}
@@ -357,8 +356,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                     <p class="mt-1 text-[0.7rem] text-muted-foreground">Great — the page passes all rules for the selected standard.</p>
                                 )}
                             </div>
-                            )
-                            : (
+                        ) : (
                             <section>
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
@@ -386,7 +384,7 @@ const A11yApp = (_props: AppComponentProps): ComponentChildren => {
                                     ))}
                                 </div>
                             </section>
-                            )}
+                        )}
 
                         {disabledRules.length > 0 && (
                             <div class="flex items-center gap-2 text-[0.65rem] text-muted-foreground/60">

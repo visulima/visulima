@@ -53,15 +53,19 @@ interface DevToolbarApp {
 
 Do not use these IDs for custom apps:
 
-| ID                         | App                       |
-| -------------------------- | ------------------------- |
-| `dev-toolbar:a11y`         | Accessibility             |
-| `dev-toolbar:performance`  | Performance               |
-| `dev-toolbar:seo`          | SEO                       |
-| `dev-toolbar:settings`     | Settings                  |
-| `dev-toolbar:timeline`     | Timeline                  |
-| `dev-toolbar:module-graph` | Module Graph              |
-| `dev-toolbar:vite-config`  | Vite Config               |
+| ID                         | App           |
+| -------------------------- | ------------- |
+| `dev-toolbar:a11y`         | Accessibility |
+| `dev-toolbar:annotations`  | Annotations   |
+| `dev-toolbar:assets`       | Assets        |
+| `dev-toolbar:inspector`    | Inspector     |
+| `dev-toolbar:module-graph` | Module Graph  |
+| `dev-toolbar:performance`  | Performance   |
+| `dev-toolbar:seo`          | SEO           |
+| `dev-toolbar:settings`     | Settings      |
+| `dev-toolbar:tailwind`     | Tailwind      |
+| `dev-toolbar:timeline`     | Timeline      |
+| `dev-toolbar:vite-config`  | Vite Config   |
 
 ---
 
@@ -86,6 +90,7 @@ type AppView =
 When `view` is omitted, the toolbar defaults to `{ type: "inline" }` and renders the `component` (or calls `init`) inside the panel's Shadow DOM.
 
 When `view: { type: "iframe", src }` is set:
+
 - `component` and `init` are ignored.
 - The panel renders a borderless `<iframe>` that fills the content area.
 - The toolbar chrome (resize handles, fullscreen, PiP) works as normal.
@@ -143,10 +148,50 @@ interface ServerFunctions {
     >;
 
     /**
+     * Returns the resolved Tailwind CSS design tokens. Returns null if no Tailwind config found.
+     */
+    getTailwindConfig(): Promise<Record<string, unknown> | null>;
+
+    /**
+     * Reads a file relative to the project root and returns its UTF-8 content.
+     */
+    readFile(path: string): Promise<string>;
+
+    /**
      * Opens a file in the configured editor.
      * Respects the LAUNCH_EDITOR environment variable; defaults to VS Code.
      */
     openInEditor(file: string, line?: number, column?: number): Promise<void>;
+
+    /**
+     * Returns all annotations from .devtoolbar/annotations.json.
+     */
+    getAnnotations(): Promise<Annotation[]>;
+
+    /**
+     * Creates a new annotation. Server generates id and timestamps.
+     */
+    createAnnotation(data: CreateAnnotationData): Promise<Annotation>;
+
+    /**
+     * Updates an existing annotation.
+     */
+    updateAnnotation(id: string, data: UpdateAnnotationData): Promise<Annotation>;
+
+    /**
+     * Deletes an annotation and its screenshot.
+     */
+    deleteAnnotation(id: string): Promise<void>;
+
+    /**
+     * Returns a screenshot as a base64 data URL.
+     */
+    getScreenshot(annotationId: string): Promise<string>;
+
+    /**
+     * Saves a screenshot from a data URL. Returns the relative file path.
+     */
+    saveScreenshot(annotationId: string, dataUrl: string): Promise<string>;
 }
 ```
 

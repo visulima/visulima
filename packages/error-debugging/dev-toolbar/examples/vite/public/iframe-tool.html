@@ -28,7 +28,11 @@
                 line-height: 1.5;
             }
 
-            * { box-sizing: border-box; margin: 0; padding: 0; }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
 
             body {
                 background: var(--bg);
@@ -57,16 +61,38 @@
                 color: var(--text-muted);
             }
 
-            header h1 span { color: var(--primary); margin-right: 4px; }
+            header h1 span {
+                color: var(--primary);
+                margin-right: 4px;
+            }
 
-            .status { margin-left: auto; font-size: 0.68rem; font-weight: 600; }
-            .status.ok { color: var(--success); }
-            .status.err { color: var(--error); }
+            .status {
+                margin-left: auto;
+                font-size: 0.68rem;
+                font-weight: 600;
+            }
+            .status.ok {
+                color: var(--success);
+            }
+            .status.err {
+                color: var(--error);
+            }
 
-            main { display: flex; flex: 1; overflow: hidden; }
+            main {
+                display: flex;
+                flex: 1;
+                overflow: hidden;
+            }
 
-            .pane { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-            .pane + .pane { border-left: 1px solid var(--border); }
+            .pane {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                overflow: hidden;
+            }
+            .pane + .pane {
+                border-left: 1px solid var(--border);
+            }
 
             .pane-header {
                 display: flex;
@@ -86,7 +112,11 @@
                 color: var(--text-muted);
             }
 
-            .pane-actions { margin-left: auto; display: flex; gap: 4px; }
+            .pane-actions {
+                margin-left: auto;
+                display: flex;
+                gap: 4px;
+            }
 
             button {
                 background: transparent;
@@ -98,13 +128,16 @@
                 font-size: 0.68rem;
                 font-weight: 600;
                 cursor: pointer;
-                transition: color 0.12s, background 0.12s, border-color 0.12s;
+                transition:
+                    color 0.12s,
+                    background 0.12s,
+                    border-color 0.12s;
             }
 
             button:hover {
                 color: var(--text);
                 border-color: var(--text-muted);
-                background: rgba(255,255,255,0.04);
+                background: rgba(255, 255, 255, 0.04);
             }
 
             button.primary {
@@ -113,7 +146,9 @@
                 background: var(--primary-dim);
             }
 
-            button.primary:hover { background: rgba(202, 255, 0, 0.15); }
+            button.primary:hover {
+                background: rgba(202, 255, 0, 0.15);
+            }
 
             textarea {
                 flex: 1;
@@ -129,7 +164,10 @@
                 overflow: auto;
             }
 
-            textarea::placeholder { color: var(--text-muted); opacity: 0.5; }
+            textarea::placeholder {
+                color: var(--text-muted);
+                opacity: 0.5;
+            }
 
             #output {
                 flex: 1;
@@ -140,15 +178,33 @@
                 white-space: pre;
             }
 
-            #output .empty { color: var(--text-muted); font-style: italic; opacity: 0.5; }
-            #output .err-msg { color: var(--error); }
+            #output .empty {
+                color: var(--text-muted);
+                font-style: italic;
+                opacity: 0.5;
+            }
+            #output .err-msg {
+                color: var(--error);
+            }
 
-            .tok-s { color: var(--string); }
-            .tok-n { color: var(--number); }
-            .tok-b { color: var(--boolean); }
-            .tok-nil { color: var(--null-color); }
-            .tok-k { color: var(--key); }
-            .tok-p { color: var(--text-muted); }
+            .tok-s {
+                color: var(--string);
+            }
+            .tok-n {
+                color: var(--number);
+            }
+            .tok-b {
+                color: var(--boolean);
+            }
+            .tok-nil {
+                color: var(--null-color);
+            }
+            .tok-k {
+                color: var(--key);
+            }
+            .tok-p {
+                color: var(--text-muted);
+            }
         </style>
     </head>
     <body>
@@ -166,11 +222,7 @@
                         <button class="primary" id="btn-format">Format ↵</button>
                     </div>
                 </div>
-                <textarea
-                    id="input"
-                    placeholder="Paste JSON here and click Format, or press Ctrl+Enter…"
-                    spellcheck="false"
-                ></textarea>
+                <textarea id="input" placeholder="Paste JSON here and click Format, or press Ctrl+Enter…" spellcheck="false"></textarea>
             </div>
             <div class="pane">
                 <div class="pane-header">
@@ -320,7 +372,9 @@
                 navigator.clipboard.writeText(text).then(function () {
                     var btn = document.getElementById("btn-copy");
                     btn.textContent = "Copied!";
-                    setTimeout(function () { btn.textContent = "Copy"; }, 1200);
+                    setTimeout(function () {
+                        btn.textContent = "Copy";
+                    }, 1200);
                 });
             });
 

@@ -75,7 +75,7 @@
     "@anolilab/semantic-release-preset": "catalog:dev",
     "@arethetypeswrong/cli": "catalog:dev",
     "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-    "@std/bytes": "catalog:dev",
+    "@std/bytes": "jsr:1.0.6",
     "@total-typescript/ts-reset": "catalog:dev",
     "@types/node": "catalog:types",
     "@visulima/packem": "catalog:dev",
