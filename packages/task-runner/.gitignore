@@ -1,0 +1,3 @@
+# Native addon build artifacts
+native/*.node
+native/target/

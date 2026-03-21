@@ -1,0 +1,104 @@
+---
+title: Caching
+description: How task caching works with explicit inputs
+---
+
+# Caching (Nx-style)
+
+The default caching mode uses explicit input declarations to compute deterministic hashes. If the hash matches a previous run, the cached result is replayed instantly.
+
+## How It Works
+
+1. **Collect inputs** - File patterns, env vars, runtime commands, external dependencies
+2. **Compute hash** - SHA-256 hash of all input contents
+3. **Check cache** - Look up hash in local (then remote) cache
+4. **Hit?** Replay terminal output and restore build artifacts
+5. **Miss?** Execute task, store result for next time
+
+## Inputs
+
+### File patterns
+
+```typescript
+const options = {
+    namedInputs: {
+        production: [
+            "{projectRoot}/src/**/*",
+            "{projectRoot}/package.json",
+            "!{projectRoot}/**/*.test.ts",
+        ],
+    },
+    targetDefaults: {
+        build: { inputs: ["production"] },
+    },
+};
+```
+
+### Environment variables
+
+```typescript
+{
+    envVars: ["NODE_ENV", "API_URL"],
+    globalEnv: ["CI"], // Changes bust ALL caches
+}
+```
+
+### Runtime commands
+
+```typescript
+const inputs = [
+    { runtime: "node --version" },
+    { env: "NODE_ENV" },
+    { externalDependencies: ["typescript", "esbuild"] },
+];
+```
+
+## Global Inputs
+
+Files that invalidate every task's cache when changed:
+
+```typescript
+{
+    globalInputs: [
+        "package-lock.json",  // Default
+        "pnpm-lock.yaml",     // Default
+        "yarn.lock",          // Default
+        "tsconfig.base.json", // Default
+        ".env",               // Default
+    ],
+}
+```
+
+## Cache Storage
+
+Cache entries are stored atomically in `.task-runner-cache/`:
+
+```
+.task-runner-cache/
+  <hash>/
+    outputs/          # Archived build outputs
+    code              # Exit code
+    terminalOutput    # Captured terminal output
+    fingerprint.json  # Auto-fingerprint data (optional)
+    .commit           # Marker for complete entries
+```
+
+## Cache Size Management
+
+```typescript
+{
+    maxCacheSize: "1GB",           // Evict oldest entries when exceeded
+    maxCacheAge: 7 * 24 * 60 * 60 * 1000, // 7 days (default)
+}
+```
+
+## Dry Run
+
+Inspect hashes without executing:
+
+```typescript
+const results = await defaultTaskRunner(tasks, {
+    dryRun: true,
+}, context);
+// Each task reports "skipped" with its computed hash
+```

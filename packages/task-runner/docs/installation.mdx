@@ -1,0 +1,40 @@
+---
+title: Installation
+description: Install and set up the task runner in your project
+---
+
+# Installation
+
+## Package Managers
+
+### npm
+
+```bash
+npm install @visulima/task-runner
+```
+
+### yarn
+
+```bash
+yarn add @visulima/task-runner
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/task-runner
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher
+- **TypeScript**: Optional but recommended for full type safety
+
+## Optional: Native Addon
+
+For maximum performance, the task runner includes an optional Rust-based native addon that provides:
+
+- **xxHash xxh3-128** file hashing (5-10x faster than SHA-256)
+- **Parallel file hashing** via rayon (utilizes all CPU cores)
+
+The native addon is loaded automatically when available and falls back to pure TypeScript implementations otherwise. No additional installation is required.

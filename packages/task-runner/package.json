@@ -46,13 +46,27 @@
     },
     "files": [
         "dist",
+        "native/*.node",
         "README.md",
         "CHANGELOG.md"
     ],
+    "napi": {
+        "name": "task-runner-native",
+        "triples": {
+            "defaults": true,
+            "additional": [
+                "aarch64-apple-darwin",
+                "aarch64-unknown-linux-gnu",
+                "aarch64-unknown-linux-musl"
+            ]
+        }
+    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
-        "clean": "rimraf node_modules dist .eslintcache",
+        "build:native": "napi build --platform --release --cargo-cwd native",
+        "build:native:debug": "napi build --platform --cargo-cwd native",
+        "clean": "rimraf node_modules dist .eslintcache native/*.node",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --cache --concurrency auto",
@@ -67,6 +81,7 @@
         "test:watch": "vitest"
     },
     "devDependencies": {
+        "@napi-rs/cli": "^3.0.0-alpha.72",
         "@anolilab/eslint-config": "^16.4.4",
         "@anolilab/prettier-config": "^6.0.8",
         "@anolilab/semantic-release-pnpm": "3.0.0",
