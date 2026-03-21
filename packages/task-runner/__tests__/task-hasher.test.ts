@@ -131,6 +131,167 @@ describe("InProcessTaskHasher", () => {
         delete process.env["TEST_VAR_HASHER"];
     });
 
+    it("should use smart lockfile hashing when enabled", async () => {
+        // Create a lockfile
+        await writeFile(
+            join(workspaceRoot, "package-lock.json"),
+            JSON.stringify({
+                lockfileVersion: 3,
+                packages: {
+                    "node_modules/lodash": { version: "4.17.21" },
+                    "node_modules/express": { version: "4.18.2" },
+                },
+            }),
+        );
+
+        // lib-a depends on lodash only
+        await writeFile(
+            join(workspaceRoot, "packages/lib-a/package.json"),
+            JSON.stringify({
+                name: "lib-a",
+                dependencies: { lodash: "^4.17.0" },
+            }),
+        );
+
+        const hasher = new InProcessTaskHasher({
+            workspaceRoot,
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            smartLockfileHashing: true,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            target: { project: "lib-a", target: "build" },
+            overrides: {},
+            outputs: [],
+        };
+
+        const details = await hasher.hashTask(task);
+
+        // Should have a __lockfile__ implicit dep
+        expect(details.implicitDeps).toBeDefined();
+        expect(details.implicitDeps!["__lockfile__"]).toBeDefined();
+    });
+
+    it("should produce different lockfile hashes for different resolved versions", async () => {
+        await writeFile(
+            join(workspaceRoot, "packages/lib-a/package.json"),
+            JSON.stringify({
+                name: "lib-a",
+                dependencies: { lodash: "^4.17.0" },
+            }),
+        );
+
+        // First lockfile
+        await writeFile(
+            join(workspaceRoot, "package-lock.json"),
+            JSON.stringify({
+                lockfileVersion: 3,
+                packages: { "node_modules/lodash": { version: "4.17.21" } },
+            }),
+        );
+
+        const hasher1 = new InProcessTaskHasher({
+            workspaceRoot,
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            smartLockfileHashing: true,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            target: { project: "lib-a", target: "build" },
+            overrides: {},
+            outputs: [],
+        };
+
+        const details1 = await hasher1.hashTask(task);
+
+        // Update lockfile with different version
+        await writeFile(
+            join(workspaceRoot, "package-lock.json"),
+            JSON.stringify({
+                lockfileVersion: 3,
+                packages: { "node_modules/lodash": { version: "4.17.20" } },
+            }),
+        );
+
+        const hasher2 = new InProcessTaskHasher({
+            workspaceRoot,
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            smartLockfileHashing: true,
+        });
+
+        const details2 = await hasher2.hashTask(task);
+
+        expect(details1.implicitDeps!["__lockfile__"]).not.toBe(details2.implicitDeps!["__lockfile__"]);
+    });
+
+    it("should include framework env vars in hash when frameworkInference is enabled", async () => {
+        // Make lib-a a Next.js project
+        await writeFile(
+            join(workspaceRoot, "packages/lib-a/package.json"),
+            JSON.stringify({
+                name: "lib-a",
+                dependencies: { next: "14.0.0", react: "18.2.0" },
+            }),
+        );
+
+        process.env["NEXT_PUBLIC_API_URL"] = "https://api.example.com";
+
+        const hasher = new InProcessTaskHasher({
+            workspaceRoot,
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            frameworkInference: true,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            target: { project: "lib-a", target: "build" },
+            overrides: {},
+            outputs: [],
+        };
+
+        const details = await hasher.hashTask(task);
+
+        expect(details.runtime).toBeDefined();
+        expect(details.runtime!["framework-env:NEXT_PUBLIC_API_URL"]).toBeDefined();
+
+        delete process.env["NEXT_PUBLIC_API_URL"];
+    });
+
+    it("should not include framework env vars when frameworkInference is disabled", async () => {
+        await writeFile(
+            join(workspaceRoot, "packages/lib-a/package.json"),
+            JSON.stringify({
+                name: "lib-a",
+                dependencies: { next: "14.0.0" },
+            }),
+        );
+
+        process.env["NEXT_PUBLIC_TEST"] = "value";
+
+        const hasher = new InProcessTaskHasher({
+            workspaceRoot,
+            projects: { "lib-a": { root: "packages/lib-a" } },
+            frameworkInference: false,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            target: { project: "lib-a", target: "build" },
+            overrides: {},
+            outputs: [],
+        };
+
+        const details = await hasher.hashTask(task);
+
+        const frameworkKeys = Object.keys(details.runtime ?? {}).filter((k) => k.startsWith("framework-env:"));
+
+        expect(frameworkKeys).toHaveLength(0);
+
+        delete process.env["NEXT_PUBLIC_TEST"];
+    });
+
     it("should use named inputs when configured", async () => {
         const hasher = new InProcessTaskHasher({
             workspaceRoot,

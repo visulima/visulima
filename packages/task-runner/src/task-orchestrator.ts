@@ -48,6 +48,11 @@ export interface TaskOrchestratorOptions {
     autoFingerprint?: boolean;
     /** Environment variable patterns for fingerprinting (e.g., "VITE_*") */
     fingerprintEnvPatterns?: string[];
+    /**
+     * Environment variables that should be passed to tasks but NOT
+     * included in the cache fingerprint. Only used with autoFingerprint.
+     */
+    untrackedEnvVars?: string[];
     /** Whether to show cache miss diagnostics */
     cacheDiagnostics?: boolean;
     /**
@@ -103,6 +108,7 @@ export class TaskOrchestrator {
     readonly #fingerprintManager: FingerprintManager | null;
     readonly #trackedExecutor: TrackedTaskExecutor | null;
     readonly #fingerprintEnvPatterns: string[];
+    readonly #untrackedEnvVars: string[];
     readonly #cacheDiagnostics: boolean;
     readonly #resolveCommand: ((task: Task) => string | undefined) | null;
     readonly #remoteCache: RemoteCache | null;
@@ -125,6 +131,7 @@ export class TaskOrchestrator {
         this.#captureOutput = options.captureOutput ?? true;
         this.#autoFingerprint = options.autoFingerprint ?? false;
         this.#fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
+        this.#untrackedEnvVars = options.untrackedEnvVars ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
         this.#resolveCommand = options.resolveCommand ?? null;
         this.#remoteCache = options.remoteCache ?? null;
@@ -525,6 +532,7 @@ export class TaskOrchestrator {
                     task.overrides,
                     process.env as Record<string, string | undefined>,
                     this.#fingerprintEnvPatterns,
+                    this.#untrackedEnvVars,
                 );
             } else {
                 // Path B: Fallback - run via standard executor, build fingerprint
@@ -550,6 +558,7 @@ export class TaskOrchestrator {
                     task.overrides,
                     process.env as Record<string, string | undefined>,
                     this.#fingerprintEnvPatterns,
+                    this.#untrackedEnvVars,
                 );
             }
 

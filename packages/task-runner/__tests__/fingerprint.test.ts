@@ -105,6 +105,63 @@ describe("FingerprintManager", () => {
             expect(fingerprint.envHashes["NODE_ENV"]).toBeUndefined();
         });
 
+        it("should exclude untracked env vars from fingerprint", async () => {
+            const envVars = {
+                VITE_API_URL: "http://localhost:3000",
+                VITE_SECRET: "should-be-excluded",
+                VITE_MODE: "dev",
+            };
+
+            const fingerprint = await manager.createFingerprint(
+                [],
+                "app:build",
+                {},
+                envVars,
+                ["VITE_*"],
+                ["VITE_SECRET"],
+            );
+
+            expect(fingerprint.envHashes["VITE_API_URL"]).toBeDefined();
+            expect(fingerprint.envHashes["VITE_MODE"]).toBeDefined();
+            expect(fingerprint.envHashes["VITE_SECRET"]).toBeUndefined();
+        });
+
+        it("should not affect fingerprint when untracked env var changes", async () => {
+            const envVars1 = {
+                VITE_API_URL: "http://localhost:3000",
+                CI_BUILD_ID: "build-1",
+            };
+
+            const envVars2 = {
+                VITE_API_URL: "http://localhost:3000",
+                CI_BUILD_ID: "build-2",
+            };
+
+            const fp1 = await manager.createFingerprint(
+                [],
+                "app:build",
+                {},
+                envVars1,
+                ["VITE_*", "CI_BUILD_ID"],
+                ["CI_BUILD_ID"],
+            );
+
+            const fp2 = await manager.createFingerprint(
+                [],
+                "app:build",
+                {},
+                envVars2,
+                ["VITE_*", "CI_BUILD_ID"],
+                ["CI_BUILD_ID"],
+            );
+
+            // VITE_API_URL should be the same
+            expect(fp1.envHashes["VITE_API_URL"]).toBe(fp2.envHashes["VITE_API_URL"]);
+            // CI_BUILD_ID should not be present in either fingerprint
+            expect(fp1.envHashes["CI_BUILD_ID"]).toBeUndefined();
+            expect(fp2.envHashes["CI_BUILD_ID"]).toBeUndefined();
+        });
+
         it("should produce different command hashes for different args", async () => {
             const fp1 = await manager.createFingerprint(
                 [],

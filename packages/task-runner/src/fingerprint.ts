@@ -62,6 +62,7 @@ export class FingerprintManager {
         args: Record<string, unknown>,
         envVars: Record<string, string | undefined>,
         envPatterns: string[] = [],
+        untrackedEnvVars: string[] = [],
     ): Promise<TaskFingerprint> {
         const fileHashes: Record<string, string> = {};
         const missingFiles: string[] = [];
@@ -100,11 +101,16 @@ export class FingerprintManager {
         // Hash the command
         const commandHash = this.#hashString(`${command}:${JSON.stringify(this.#sortObject(args))}`);
 
-        // Hash environment variables
+        // Hash environment variables (excluding untracked ones)
         const envHashes: Record<string, string> = {};
         const matchedEnvVars = this.#resolveEnvPatterns(envPatterns, envVars);
+        const untrackedSet = new Set(untrackedEnvVars);
 
         for (const [key, value] of Object.entries(matchedEnvVars)) {
+            if (untrackedSet.has(key)) {
+                continue;
+            }
+
             envHashes[key] = this.#hashString(`${key}=${value ?? ""}`);
         }
 

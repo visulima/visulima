@@ -228,7 +228,7 @@ export class InProcessTaskHasher implements TaskHasher {
                 const packageJsonPath = resolve(this.#workspaceRoot, project.root, "package.json");
                 const frameworkEnvVars = await getFrameworkEnvVars(packageJsonPath);
 
-                for (const [envName, value] of Object.entries(frameworkEnvVars)) {
+                for (const envName of Object.keys(frameworkEnvVars)) {
                     const hash = this.#hashEnvironment(envName);
 
                     runtime[`framework-env:${envName}`] = hash;

@@ -109,6 +109,7 @@ export {
     parseNpmLockfile,
     parsePnpmLockfile,
     parseYarnLockfile,
+    extractPackageName,
 } from "./lockfile-hasher";
 
 // Framework environment variable inference

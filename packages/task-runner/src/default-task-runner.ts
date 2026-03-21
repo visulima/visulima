@@ -11,6 +11,7 @@ import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
 import { RemoteCache } from "./remote-cache";
+import { inferFrameworkEnvPatterns } from "./framework-inference";
 
 /**
  * The default task runner implementation.
@@ -117,6 +118,16 @@ export const defaultTaskRunner = async (
         ? new RemoteCache(options.remoteCache)
         : undefined;
 
+    // Merge framework-inferred env patterns with explicitly configured ones
+    // This makes frameworkInference work with both Nx-style and autoFingerprint modes
+    let fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
+
+    if (options.frameworkInference && options.autoFingerprint) {
+        const inferredPatterns = await inferFrameworkEnvPatterns(workspaceRoot, projects);
+
+        fingerprintEnvPatterns = [...new Set([...fingerprintEnvPatterns, ...inferredPatterns])];
+    }
+
     // Create the orchestrator
     const orchestrator = new TaskOrchestrator({
         taskHasher,
@@ -128,7 +139,8 @@ export const defaultTaskRunner = async (
         skipCache: options.skipNxCache,
         captureOutput: true,
         autoFingerprint: options.autoFingerprint,
-        fingerprintEnvPatterns: options.fingerprintEnvPatterns,
+        fingerprintEnvPatterns,
+        untrackedEnvVars: options.untrackedEnvVars,
         cacheDiagnostics: options.cacheDiagnostics,
         resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
         remoteCache,
