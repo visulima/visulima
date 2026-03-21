@@ -42,9 +42,9 @@ const readMetaTags = (): MetaTags => {
     const getMeta = (name: string): string => (document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement)?.content ?? "";
     const getOg = (prop: string): string => (document.querySelector(`meta[property="og:${prop}"]`) as HTMLMetaElement)?.content ?? "";
     const getTwitter = (name: string): string =>
-        (document.querySelector(`meta[name="twitter:${name}"]`) as HTMLMetaElement)?.content
-        ?? (document.querySelector(`meta[property="twitter:${name}"]`) as HTMLMetaElement)?.content
-        ?? "";
+        (document.querySelector(`meta[name="twitter:${name}"]`) as HTMLMetaElement)?.content ??
+        (document.querySelector(`meta[property="twitter:${name}"]`) as HTMLMetaElement)?.content ??
+        "";
     const getArticle = (prop: string): string => (document.querySelector(`meta[property="article:${prop}"]`) as HTMLMetaElement)?.content ?? "";
 
     return {
@@ -52,7 +52,7 @@ const readMetaTags = (): MetaTags => {
         articleModifiedTime: getArticle("modified_time"),
         articlePublishedTime: getArticle("published_time"),
         articleSection: getArticle("section"),
-        canonical: (document.querySelector("link[rel=\"canonical\"]") as HTMLLinkElement)?.href ?? "",
+        canonical: (document.querySelector('link[rel="canonical"]') as HTMLLinkElement)?.href ?? "",
         description: getMeta("description"),
         ogDescription: getOg("description"),
         ogImage: getOg("image"),
@@ -106,26 +106,24 @@ type Validator = (schema: Record<string, unknown>) => JsonLdValidationMessage[];
 const validateArticle: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "headline") && !has(schema, "name"))
-        msgs.push({ message: "headline (or name) is required", property: "headline", severity: "error" });
+    if (!has(schema, "headline") && !has(schema, "name")) msgs.push({ message: "headline (or name) is required", property: "headline", severity: "error" });
 
     if (has(schema, "author")) {
         const author = schema["author"] as Record<string, unknown>;
 
         if (typeof author === "object" && !Array.isArray(author) && !has(author, "name"))
             msgs.push({ message: "author.name is missing", property: "author.name", severity: "warning" });
-    } else { msgs.push({ message: "author is required", property: "author", severity: "error" }); }
+    } else {
+        msgs.push({ message: "author is required", property: "author", severity: "error" });
+    }
 
-    if (!has(schema, "datePublished"))
-        msgs.push({ message: "datePublished is required", property: "datePublished", severity: "error" });
+    if (!has(schema, "datePublished")) msgs.push({ message: "datePublished is required", property: "datePublished", severity: "error" });
     else if (!isISO8601(schema["datePublished"]))
         msgs.push({ message: "datePublished should be ISO 8601 format (e.g. 2024-01-15T09:00:00Z)", property: "datePublished", severity: "warning" });
 
-    if (!has(schema, "image"))
-        msgs.push({ message: "image is recommended for rich results", property: "image", severity: "warning" });
+    if (!has(schema, "image")) msgs.push({ message: "image is recommended for rich results", property: "image", severity: "warning" });
 
-    if (!has(schema, "description"))
-        msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+    if (!has(schema, "description")) msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
 
     return msgs;
 };
@@ -134,8 +132,7 @@ const validateArticle: Validator = (schema) => {
 const validateProduct: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
     const hasOffers = has(schema, "offers");
     const hasRating = has(schema, "aggregateRating");
@@ -166,8 +163,7 @@ const validateProduct: Validator = (schema) => {
             msgs.push({ message: "aggregateRating.reviewCount (or ratingCount) is required", property: "aggregateRating.reviewCount", severity: "error" });
     }
 
-    if (!has(schema, "image"))
-        msgs.push({ message: "image is recommended for rich results", property: "image", severity: "suggestion" });
+    if (!has(schema, "image")) msgs.push({ message: "image is recommended for rich results", property: "image", severity: "suggestion" });
 
     return msgs;
 };
@@ -182,8 +178,7 @@ const validateBreadcrumbList: Validator = (schema) => {
         return msgs;
     }
 
-    if (items.length < 2)
-        msgs.push({ message: "itemListElement should have at least 2 items", property: "itemListElement", severity: "warning" });
+    if (items.length < 2) msgs.push({ message: "itemListElement should have at least 2 items", property: "itemListElement", severity: "warning" });
 
     items.forEach((item: Record<string, unknown>, i: number) => {
         if (item["position"] !== i + 1)
@@ -191,8 +186,7 @@ const validateBreadcrumbList: Validator = (schema) => {
 
         const name = (item["name"] as string) || (item["item"] as Record<string, unknown>)?.["name"];
 
-        if (!name)
-            msgs.push({ message: `itemListElement[${i}].name is required`, property: `itemListElement[${i}].name`, severity: "error" });
+        if (!name) msgs.push({ message: `itemListElement[${i}].name is required`, property: `itemListElement[${i}].name`, severity: "error" });
     });
 
     return msgs;
@@ -224,23 +218,17 @@ const validateFaqPage: Validator = (schema) => {
 const validateEvent: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "startDate"))
-        msgs.push({ message: "startDate is required", property: "startDate", severity: "error" });
-    else if (!isISO8601(schema["startDate"]))
-        msgs.push({ message: "startDate should be ISO 8601 format", property: "startDate", severity: "warning" });
+    if (!has(schema, "startDate")) msgs.push({ message: "startDate is required", property: "startDate", severity: "error" });
+    else if (!isISO8601(schema["startDate"])) msgs.push({ message: "startDate should be ISO 8601 format", property: "startDate", severity: "warning" });
 
     const location = schema["location"] as Record<string, unknown> | undefined;
 
-    if (!location)
-        msgs.push({ message: "location is required", property: "location", severity: "error" });
-    else if (!has(location, "name"))
-        msgs.push({ message: "location.name is required", property: "location.name", severity: "error" });
+    if (!location) msgs.push({ message: "location is required", property: "location", severity: "error" });
+    else if (!has(location, "name")) msgs.push({ message: "location.name is required", property: "location.name", severity: "error" });
 
-    if (!has(schema, "description"))
-        msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
+    if (!has(schema, "description")) msgs.push({ message: "description is recommended", property: "description", severity: "suggestion" });
 
     return msgs;
 };
@@ -248,14 +236,11 @@ const validateEvent: Validator = (schema) => {
 const validateOrganization: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "url"))
-        msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+    if (!has(schema, "url")) msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
 
-    if (!has(schema, "logo"))
-        msgs.push({ message: "logo is recommended for Knowledge Panel eligibility", property: "logo", severity: "suggestion" });
+    if (!has(schema, "logo")) msgs.push({ message: "logo is recommended for Knowledge Panel eligibility", property: "logo", severity: "suggestion" });
 
     return msgs;
 };
@@ -263,11 +248,9 @@ const validateOrganization: Validator = (schema) => {
 const validatePerson: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "url"))
-        msgs.push({ message: "url is recommended", property: "url", severity: "suggestion" });
+    if (!has(schema, "url")) msgs.push({ message: "url is recommended", property: "url", severity: "suggestion" });
 
     return msgs;
 };
@@ -275,20 +258,16 @@ const validatePerson: Validator = (schema) => {
 const validateRecipe: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "image"))
-        msgs.push({ message: "image is required for rich results", property: "image", severity: "error" });
+    if (!has(schema, "image")) msgs.push({ message: "image is required for rich results", property: "image", severity: "error" });
 
     if (!has(schema, "recipeIngredient") && !has(schema, "ingredients"))
         msgs.push({ message: "recipeIngredient is recommended", property: "recipeIngredient", severity: "suggestion" });
 
-    if (!has(schema, "recipeInstructions"))
-        msgs.push({ message: "recipeInstructions is recommended", property: "recipeInstructions", severity: "suggestion" });
+    if (!has(schema, "recipeInstructions")) msgs.push({ message: "recipeInstructions is recommended", property: "recipeInstructions", severity: "suggestion" });
 
-    if (!has(schema, "author"))
-        msgs.push({ message: "author is recommended", property: "author", severity: "suggestion" });
+    if (!has(schema, "author")) msgs.push({ message: "author is recommended", property: "author", severity: "suggestion" });
 
     return msgs;
 };
@@ -296,11 +275,9 @@ const validateRecipe: Validator = (schema) => {
 const validateWebSiteOrPage: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "url"))
-        msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
+    if (!has(schema, "url")) msgs.push({ message: "url is recommended", property: "url", severity: "warning" });
 
     return msgs;
 };
@@ -308,19 +285,14 @@ const validateWebSiteOrPage: Validator = (schema) => {
 const validateVideoObject: Validator = (schema) => {
     const msgs: JsonLdValidationMessage[] = [];
 
-    if (!has(schema, "name"))
-        msgs.push({ message: "name is required", property: "name", severity: "error" });
+    if (!has(schema, "name")) msgs.push({ message: "name is required", property: "name", severity: "error" });
 
-    if (!has(schema, "description"))
-        msgs.push({ message: "description is required", property: "description", severity: "error" });
+    if (!has(schema, "description")) msgs.push({ message: "description is required", property: "description", severity: "error" });
 
-    if (!has(schema, "thumbnailUrl"))
-        msgs.push({ message: "thumbnailUrl is required for rich results", property: "thumbnailUrl", severity: "error" });
+    if (!has(schema, "thumbnailUrl")) msgs.push({ message: "thumbnailUrl is required for rich results", property: "thumbnailUrl", severity: "error" });
 
-    if (!has(schema, "uploadDate"))
-        msgs.push({ message: "uploadDate is required", property: "uploadDate", severity: "error" });
-    else if (!isISO8601(schema["uploadDate"]))
-        msgs.push({ message: "uploadDate should be ISO 8601 format", property: "uploadDate", severity: "warning" });
+    if (!has(schema, "uploadDate")) msgs.push({ message: "uploadDate is required", property: "uploadDate", severity: "error" });
+    else if (!isISO8601(schema["uploadDate"])) msgs.push({ message: "uploadDate should be ISO 8601 format", property: "uploadDate", severity: "warning" });
 
     return msgs;
 };
@@ -350,10 +322,8 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
     const context = String(schema["@context"] ?? "");
     const type = String(schema["@type"] ?? "");
 
-    if (!context)
-        msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
-    else if (!context.includes("schema.org"))
-        msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
+    if (!context) msgs.push({ message: "@context is missing — should be 'https://schema.org'", property: "@context", severity: "error" });
+    else if (!context.includes("schema.org")) msgs.push({ message: "@context should reference schema.org", property: "@context", severity: "warning" });
 
     if (!type) {
         msgs.push({ message: "@type is required", property: "@type", severity: "error" });
@@ -366,21 +336,17 @@ const validateJsonLd = (schema: Record<string, unknown>): JsonLdValidationMessag
 
     const validator = TYPE_VALIDATORS[type];
 
-    if (validator)
-        msgs.push(...validator(schema));
+    if (validator) msgs.push(...validator(schema));
 
     return msgs;
 };
 
 const deriveStatus = (messages: JsonLdValidationMessage[]): JsonLdSchema["status"] => {
-    if (messages.some((m) => m.severity === "error"))
-        return "error";
+    if (messages.some((m) => m.severity === "error")) return "error";
 
-    if (messages.some((m) => m.severity === "warning"))
-        return "warning";
+    if (messages.some((m) => m.severity === "warning")) return "warning";
 
-    if (messages.some((m) => m.severity === "suggestion"))
-        return "suggestion";
+    if (messages.some((m) => m.severity === "suggestion")) return "suggestion";
 
     return "ok";
 };
@@ -408,7 +374,7 @@ const XML_CDATA_START_RE = /^<!\[CDATA\[/;
 const XML_CDATA_END_RE = /\]\]>$/;
 
 const readJsonLdSchemas = (): JsonLdSchema[] => {
-    const scripts = document.querySelectorAll("script[type=\"application/ld+json\"]");
+    const scripts = document.querySelectorAll('script[type="application/ld+json"]');
     const schemas: JsonLdSchema[] = [];
 
     scripts.forEach((script, scriptIndex) => {
@@ -472,28 +438,28 @@ const TAG_DEFINITIONS: TagDefinition[] = [
         key: "ogTitle",
         label: "og:title",
         priority: "required",
-        snippet: "<meta property=\"og:title\" content=\"Your Page Title\" />",
+        snippet: '<meta property="og:title" content="Your Page Title" />',
     },
     {
         description: "Description shown when sharing on social media (max 200 chars)",
         key: "ogDescription",
         label: "og:description",
         priority: "required",
-        snippet: "<meta property=\"og:description\" content=\"Your page description\" />",
+        snippet: '<meta property="og:description" content="Your page description" />',
     },
     {
         description: "Image shown when sharing (recommended: 1200 × 630 px)",
         key: "ogImage",
         label: "og:image",
         priority: "required",
-        snippet: "<meta property=\"og:image\" content=\"https://yoursite.com/og-image.jpg\" />",
+        snippet: '<meta property="og:image" content="https://yoursite.com/og-image.jpg" />',
     },
     {
         description: "Twitter card format — controls how link previews appear on X / Twitter",
         key: "twitterCard",
         label: "twitter:card",
         priority: "required",
-        snippet: "<meta name=\"twitter:card\" content=\"summary_large_image\" />",
+        snippet: '<meta name="twitter:card" content="summary_large_image" />',
     },
     // ── Recommended ───────────────────────────────────────────────────────────
     {
@@ -501,77 +467,77 @@ const TAG_DEFINITIONS: TagDefinition[] = [
         key: "description",
         label: "description",
         priority: "recommended",
-        snippet: "<meta name=\"description\" content=\"Your page description\" />",
+        snippet: '<meta name="description" content="Your page description" />',
     },
     {
         description: "Canonical URL to prevent duplicate content issues with search engines",
         key: "canonical",
         label: "canonical",
         priority: "recommended",
-        snippet: "<link rel=\"canonical\" href=\"https://yoursite.com/page\" />",
+        snippet: '<link rel="canonical" href="https://yoursite.com/page" />',
     },
     {
         description: "Canonical page URL for Open Graph — should match the canonical link tag",
         key: "ogUrl",
         label: "og:url",
         priority: "recommended",
-        snippet: "<meta property=\"og:url\" content=\"https://yoursite.com/page\" />",
+        snippet: '<meta property="og:url" content="https://yoursite.com/page" />',
     },
     {
         description: "Type of content: website, article, product, video.movie, etc.",
         key: "ogType",
         label: "og:type",
         priority: "recommended",
-        snippet: "<meta property=\"og:type\" content=\"website\" />",
+        snippet: '<meta property="og:type" content="website" />',
     },
     {
         description: "Your website name — shown for consistent branding on social platforms",
         key: "ogSiteName",
         label: "og:site_name",
         priority: "recommended",
-        snippet: "<meta property=\"og:site_name\" content=\"Your Site Name\" />",
+        snippet: '<meta property="og:site_name" content="Your Site Name" />',
     },
     {
         description: "Language and territory of page content (e.g. en_US, de_DE, fr_FR)",
         key: "ogLocale",
         label: "og:locale",
         priority: "recommended",
-        snippet: "<meta property=\"og:locale\" content=\"en_US\" />",
+        snippet: '<meta property="og:locale" content="en_US" />',
     },
     {
         description: "Alt text for the OG image — important for accessibility on social platforms",
         key: "ogImageAlt",
         label: "og:image:alt",
         priority: "recommended",
-        snippet: "<meta property=\"og:image:alt\" content=\"Description of the shared image\" />",
+        snippet: '<meta property="og:image:alt" content="Description of the shared image" />',
     },
     {
         description: "Override title specifically for X / Twitter cards (falls back to og:title)",
         key: "twitterTitle",
         label: "twitter:title",
         priority: "recommended",
-        snippet: "<meta name=\"twitter:title\" content=\"Your Page Title\" />",
+        snippet: '<meta name="twitter:title" content="Your Page Title" />',
     },
     {
         description: "Override description for X / Twitter cards (falls back to og:description)",
         key: "twitterDescription",
         label: "twitter:description",
         priority: "recommended",
-        snippet: "<meta name=\"twitter:description\" content=\"Your page description\" />",
+        snippet: '<meta name="twitter:description" content="Your page description" />',
     },
     {
         description: "Override image for X / Twitter cards (falls back to og:image)",
         key: "twitterImage",
         label: "twitter:image",
         priority: "recommended",
-        snippet: "<meta name=\"twitter:image\" content=\"https://yoursite.com/twitter-card.jpg\" />",
+        snippet: '<meta name="twitter:image" content="https://yoursite.com/twitter-card.jpg" />',
     },
     {
         description: "X / Twitter handle of the website owner (e.g. @yourhandle)",
         key: "twitterSite",
         label: "twitter:site",
         priority: "recommended",
-        snippet: "<meta name=\"twitter:site\" content=\"@yourhandle\" />",
+        snippet: '<meta name="twitter:site" content="@yourhandle" />',
     },
 ];
 
@@ -680,15 +646,13 @@ const SocialPreview = ({ meta, platform }: { meta: MetaTags; platform: PlatformC
             </div>
             <div class="p-3">
                 <div class="w-full aspect-[1200/630] bg-foreground/6 border border-border/50 mb-2.5 overflow-hidden relative">
-                    {image
-                        ? (
+                    {image ? (
                         <img alt="OG image preview" class="w-full h-full object-cover" loading="lazy" src={image} />
-                        )
-                        : (
+                    ) : (
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span class="text-[0.65rem] text-muted-foreground/40 uppercase tracking-wider">No image</span>
                         </div>
-                        )}
+                    )}
                 </div>
                 {url && <div class="text-[0.6rem] text-muted-foreground/60 uppercase tracking-wider truncate mb-1">{url}</div>}
                 <div class="text-[0.8rem] font-semibold text-foreground line-clamp-1">{title}</div>
@@ -706,13 +670,11 @@ const MetaRow = ({ label, required = false, value }: { label: string; required?:
             <span class="text-[0.7rem] font-mono text-muted-foreground">{label}</span>
         </div>
         <div class="flex-1 min-w-0">
-            {value
-                ? (
+            {value ? (
                 <span class="text-[0.75rem] text-foreground break-all">{value}</span>
-                )
-                : (
+            ) : (
                 <span class={clsx("text-[0.7rem]", required ? "text-warning" : "text-muted-foreground/40")}>{required ? "⚠ Missing" : "—"}</span>
-                )}
+            )}
         </div>
     </div>
 );
@@ -826,8 +788,7 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
             {open && (
                 <div class="border-t border-border">
                     {/* Validation messages */}
-                    {schema.messages.length > 0
-                        ? (
+                    {schema.messages.length > 0 ? (
                         <div class="px-4 py-3 space-y-1.5">
                             {schema.messages.map((message, i) => {
                                 const messageCfg = SEVERITY_CONFIG[message.severity];
@@ -843,13 +804,12 @@ const SchemaCard = ({ schema }: { schema: JsonLdSchema }): ComponentChildren => 
                                 );
                             })}
                         </div>
-                        )
-                        : (
+                    ) : (
                         <div class="px-4 py-3 flex items-center gap-2 text-[0.72rem] text-success">
                             <span>✔</span>
                             <span>No issues found</span>
                         </div>
-                        )}
+                    )}
 
                     {/* Raw JSON toggle */}
                     <div class="border-t border-border/50 px-4 py-2 flex items-center justify-between">
@@ -1008,9 +968,11 @@ const SerpSnippetPreview = ({
         <div class={clsx("border border-border/50 bg-background p-4 font-sans", isMobile ? "max-w-[380px]" : "max-w-[600px]")}>
             {/* Top row: favicon + site info */}
             <div class="flex items-center gap-3 mb-2">
-                {data.favicon
-                    ? <img alt="favicon" class="size-7 rounded-full shrink-0 object-contain" src={data.favicon} />
-                    : <div class="size-7 rounded-full shrink-0 bg-foreground/10 flex items-center justify-center" />}
+                {data.favicon ? (
+                    <img alt="favicon" class="size-7 rounded-full shrink-0 object-contain" src={data.favicon} />
+                ) : (
+                    <div class="size-7 rounded-full shrink-0 bg-foreground/10 flex items-center justify-center" />
+                )}
                 <div class="flex flex-col min-w-0">
                     <span class="text-[0.875rem] text-foreground leading-snug">{data.siteName || data.url}</span>
                     <span class="text-[0.75rem] text-muted-foreground leading-snug truncate">{data.url}</span>
@@ -1023,10 +985,7 @@ const SerpSnippetPreview = ({
             </p>
 
             {/* Description */}
-            <p class={clsx(
-                "text-[0.875rem] text-muted-foreground leading-relaxed m-0",
-                isMobile && "line-clamp-3",
-            )}>
+            <p class={clsx("text-[0.875rem] text-muted-foreground leading-relaxed m-0", isMobile && "line-clamp-3")}>
                 {displayDescription || "No meta description."}
             </p>
         </div>
@@ -1037,7 +996,9 @@ const SerpSnippetPreview = ({
                 <p class="text-[0.7rem] font-semibold text-destructive mb-1">Issues:</p>
                 <ul class="m-0 pl-5 list-disc">
                     {issues.map((issue, i) => (
-                        <li class="text-[0.75rem] text-destructive/80 mt-0.5" key={i}>{issue}</li>
+                        <li class="text-[0.75rem] text-destructive/80 mt-0.5" key={i}>
+                            {issue}
+                        </li>
                     ))}
                 </ul>
             </div>
@@ -1134,7 +1095,13 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
             <div class="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border shrink-0">
                 <div class="flex items-center gap-0">
                     {(["preview", "serp", "tags", "missing", "jsonld"] as const).map((tab) => {
-                        const LABELS: Record<SeoTab, string> = { jsonld: "Structured Data", missing: "Missing", preview: "Social Previews", serp: "SERP", tags: "Meta Tags" };
+                        const LABELS: Record<SeoTab, string> = {
+                            jsonld: "Structured Data",
+                            missing: "Missing",
+                            preview: "Social Previews",
+                            serp: "SERP",
+                            tags: "Meta Tags",
+                        };
                         const label = LABELS[tab];
                         let badge: number | undefined;
 
@@ -1261,8 +1228,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                 {/* ── Structured Data ──────────────────────────────────────── */}
                 {activeTab === "jsonld" && (
                     <div class="p-5 space-y-3">
-                        {schemas.length === 0
-                            ? (
+                        {schemas.length === 0 ? (
                             <div class="flex flex-col items-center justify-center py-12 gap-3">
                                 <div class="size-10 border border-border flex items-center justify-center text-muted-foreground/40 text-lg select-none">
                                     {"{}"}
@@ -1270,12 +1236,11 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 <p class="text-[0.8rem] font-medium text-foreground/70">No structured data found</p>
                                 <p class="text-[0.7rem] text-muted-foreground text-center max-w-xs leading-relaxed">
                                     {/* eslint-disable-next-line no-secrets/no-secrets */}
-                                    Add a <code class="font-mono bg-foreground/6 px-1">{"<script type=\"application/ld+json\">"}</code> block to help search
+                                    Add a <code class="font-mono bg-foreground/6 px-1">{'<script type="application/ld+json">'}</code> block to help search
                                     engines understand your content.
                                 </p>
                             </div>
-                            )
-                            : (
+                        ) : (
                             <>
                                 <div class="flex items-center justify-between mb-1">
                                     <p class="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
@@ -1291,15 +1256,14 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                     <SchemaCard key={i} schema={schema} />
                                 ))}
                             </>
-                            )}
+                        )}
                     </div>
                 )}
 
                 {/* ── Missing Tags ──────────────────────────────────────────── */}
                 {activeTab === "missing" && (
                     <div class="p-5 space-y-5">
-                        {missingTotal === 0
-                            ? (
+                        {missingTotal === 0 ? (
                             <div class="flex flex-col items-center justify-center py-12 gap-3">
                                 <div class="size-10 border border-success/30 bg-success/8 flex items-center justify-center text-success text-lg select-none">
                                     ✓
@@ -1307,8 +1271,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                 <p class="text-[0.8rem] font-medium text-foreground/70">All recommended tags are present</p>
                                 <p class="text-[0.7rem] text-muted-foreground">Your page has all required and recommended meta tags.</p>
                             </div>
-                            )
-                            : (
+                        ) : (
                             <>
                                 {missingRequired.length > 0 && (
                                     <div>
@@ -1340,7 +1303,7 @@ const SeoApp = (_props: AppComponentProps): ComponentChildren => {
                                     </div>
                                 )}
                             </>
-                            )}
+                        )}
                     </div>
                 )}
             </div>

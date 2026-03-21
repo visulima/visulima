@@ -1,10 +1,12 @@
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { defineConfig } from "vite";
-import tsConfigPaths from "vite-tsconfig-paths";
 import viteErrorOverlay from "@visulima/vite-overlay";
 import viteReact from "@vitejs/plugin-react";
 
 export default defineConfig({
+    resolve: {
+        tsconfigPaths: true,
+    },
     plugins: [
         viteErrorOverlay({
             overlay: {
@@ -25,9 +27,6 @@ export default defineConfig({
                     }
                 `,
             },
-        }),
-        tsConfigPaths({
-            projects: ["./tsconfig.json"],
         }),
         tanstackStart({
             sitemap: {

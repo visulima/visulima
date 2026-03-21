@@ -66,6 +66,7 @@ export interface DevToolbarOptions {
     apps?: {
         [key: string]: boolean | undefined;
         a11y?: boolean;
+        annotations?: boolean;
         assets?: boolean;
         inspector?: boolean;
         moduleGraph?: boolean;
@@ -215,6 +216,19 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     const mainPlugin: Plugin = {
         apply: "serve",
 
+        config() {
+            return {
+                server: {
+                    watch: {
+                        // Exclude the annotation store directory from Vite's file watcher.
+                        // Writing annotations/screenshots to .devtoolbar/ must not trigger
+                        // a full page reload or HMR update.
+                        ignored: ["**/.devtoolbar/**"],
+                    },
+                },
+            };
+        },
+
         configResolved(resolvedConfig) {
             config = resolvedConfig;
 
@@ -247,9 +261,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     continue;
                 }
 
-                const fn = typeof hook === "function" ? hook : typeof hook === "object" && "handler" in hook ? hook.handler : undefined;
+                const function_ = typeof hook === "function" ? hook : typeof hook === "object" && "handler" in hook ? hook.handler : undefined;
 
-                if (typeof fn !== "function") {
+                if (typeof function_ !== "function") {
                     continue;
                 }
 
@@ -258,7 +272,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                         return undefined;
                     }
 
-                    return (fn as Function).call(this, code, id, ...rest);
+                    return (function_ as Function).call(this, code, id, ...rest);
                 };
 
                 if (typeof hook === "function") {
@@ -278,6 +292,69 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 srv.ws.send({
                     event: "dev-toolbar:init",
                     type: "custom",
+                });
+            });
+
+            // SSE endpoint for live annotation sync (browser ↔ MCP agent)
+            // Watches .devtoolbar/annotations.json for changes and pushes events.
+            srv.middlewares.use("/__devtoolbar/events", async (request, res) => {
+                res.writeHead(200, {
+                    "Cache-Control": "no-cache",
+                    Connection: "keep-alive",
+                    "Content-Type": "text/event-stream",
+                    "X-Accel-Buffering": "no",
+                });
+
+                const sendEvent = (event: string, data: unknown): void => {
+                    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+                };
+
+                sendEvent("connected", { timestamp: Date.now() });
+
+                // Use Node.js fs.watch (available in all Node versions, no CJS require needed)
+                const { watch } = await import("node:fs");
+                const annotationsPath = path.join(srv.config.root, ".devtoolbar", "annotations.json");
+
+                let watcher: ReturnType<typeof watch> | undefined;
+
+                try {
+                    watcher = watch(annotationsPath, { persistent: false }, (eventType) => {
+                        if (eventType === "change") {
+                            sendEvent("annotations.changed", { timestamp: Date.now() });
+                        }
+                    });
+
+                    watcher.on("error", () => {
+                        // Silently ignore watcher errors (e.g. file deleted);
+                        // the client will re-fetch on next poll cycle.
+                    });
+                } catch {
+                    // File may not exist yet — fall back to polling with mtime check
+                    const { stat } = await import("node:fs/promises");
+
+                    let lastMtime = 0;
+
+                    const interval = setInterval(async () => {
+                        try {
+                            const s = await stat(annotationsPath);
+                            const mtime = s.mtimeMs;
+
+                            if (mtime !== lastMtime) {
+                                lastMtime = mtime;
+                                sendEvent("annotations.changed", { timestamp: Date.now() });
+                            }
+                        } catch {
+                            // File doesn't exist yet — skip
+                        }
+                    }, 2000);
+
+                    request.on("close", () => clearInterval(interval));
+
+                    return;
+                }
+
+                request.on("close", () => {
+                    watcher?.close();
                 });
             });
         },
@@ -303,6 +380,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                 return `export default ${JSON.stringify({
                     apps: {
                         a11y: options.apps?.a11y ?? false,
+                        // Auto-enable annotations when inspector is enabled (inspector's
+                        // badge links to the annotations panel for managing annotations)
+                        annotations: options.apps?.annotations ?? options.apps?.inspector ?? false,
                         assets: options.apps?.assets ?? false,
                         inspector: options.apps?.inspector ?? false,
                         moduleGraph: options.apps?.moduleGraph ?? false,
@@ -375,9 +455,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo
-                && filename
-                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo &&
+                filename &&
+                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }

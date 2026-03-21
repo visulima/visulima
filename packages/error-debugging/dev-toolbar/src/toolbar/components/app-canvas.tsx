@@ -150,20 +150,18 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                 )}
             >
                 <div class={clsx("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
-                    {sidebarCollapsed
-                        ? (
+                    {sidebarCollapsed ? (
                         <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
                             V
                         </span>
-                        )
-                        : (
+                    ) : (
                         <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
                             <span aria-hidden="true" class="text-primary/60 mr-1">
                                 //
                             </span>
                             DevTools
                         </span>
-                        )}
+                    )}
                 </div>
 
                 <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
@@ -186,8 +184,7 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                     onClick={() => setActiveAppId(app.id)}
                                     type="button"
                                 >
-                                    {app.icon
-                                        ? (
+                                    {app.icon ? (
                                         <span
                                             class={clsx(
                                                 "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
@@ -195,12 +192,11 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
                                             )}
                                             dangerouslySetInnerHTML={{ __html: app.icon }}
                                         />
-                                        )
-                                        : (
+                                    ) : (
                                         <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
                                             {app.name.slice(0, 2)}
                                         </span>
-                                        )}
+                                    )}
                                     {!sidebarCollapsed && <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>}
                                 </button>
 
@@ -292,15 +288,13 @@ const PipPanel = ({ apps, initialActiveAppId, onClose }: PipPanelProps): Compone
 
                 {/* Scrollable content */}
                 <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
-                    {activeApp
-                        ? (
+                    {activeApp ? (
                         <AppContent app={activeApp} key={activeApp.id} />
-                        )
-                        : (
+                    ) : (
                         <div class="flex flex-col items-center justify-center h-full gap-3 p-8 select-none text-muted-foreground">
                             <p class="text-[0.8rem]">Select a tool from the sidebar</p>
                         </div>
-                        )}
+                    )}
                 </div>
             </div>
         </div>
@@ -528,12 +522,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 }, 380);
             });
         } else if (
-            !isFullscreen
-            && wasFullscreen // ── Exiting fullscreen ───────────────────────────────────────────
+            !isFullscreen &&
+            wasFullscreen && // ── Exiting fullscreen ───────────────────────────────────────────
             // If the animated exit is in progress, the onClick handler owns the
             // element styles — don't fight it. Only run instant snap for non-
             // animated exits (e.g. programmatic viewMode changes).
-            && !isExitAnimatingRef.current
+            !isExitAnimatingRef.current
         ) {
             element.style.transition = "none";
             element.style.clipPath = "";
@@ -649,12 +643,12 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
         return undefined;
     }
 
-    const startResize
-        = (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
-            (event_: MouseEvent): void => {
-                event_.preventDefault();
-                isResizingRef.current = direction;
-            };
+    const startResize =
+        (direction: { bottom?: boolean; left?: boolean; right?: boolean; top?: boolean }) =>
+        (event_: MouseEvent): void => {
+            event_.preventDefault();
+            isResizingRef.current = direction;
+        };
 
     return (
         <>
@@ -742,20 +736,18 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                 >
                     {/* Sidebar header */}
                     <div class={clsx("flex items-center shrink-0 border-b border-border/50 h-12", sidebarCollapsed ? "justify-center px-2" : "px-3")}>
-                        {sidebarCollapsed
-                            ? (
+                        {sidebarCollapsed ? (
                             <span aria-hidden="true" class="text-primary font-black text-[0.8rem] select-none">
                                 V
                             </span>
-                            )
-                            : (
+                        ) : (
                             <span class="text-[0.6rem] font-bold uppercase tracking-[0.14em] text-muted-foreground select-none">
                                 <span aria-hidden="true" class="text-primary/60 mr-1">
                                     //
                                 </span>
                                 DevTools
                             </span>
-                            )}
+                        )}
                     </div>
                     <div class="flex flex-col flex-1 overflow-y-auto p-2 gap-1 scrollbar-thin-border">
                         {apps
@@ -783,8 +775,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                         }}
                                         type="button"
                                     >
-                                        {app.icon
-                                            ? (
+                                        {app.icon ? (
                                             <span
                                                 class={clsx(
                                                     "size-4 shrink-0 flex items-center justify-center [&_svg]:size-4",
@@ -792,12 +783,11 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                 )}
                                                 dangerouslySetInnerHTML={{ __html: app.icon }}
                                             />
-                                            )
-                                            : (
+                                        ) : (
                                             <span class="size-4.5 shrink-0 flex items-center justify-center text-[0.65rem] font-bold uppercase select-none">
                                                 {app.name.slice(0, 2)}
                                             </span>
-                                            )}
+                                        )}
 
                                         {!sidebarCollapsed && (
                                             <span class="text-[0.8125rem] font-medium truncate leading-none tracking-[-0.01em]">{app.name}</span>
@@ -1009,11 +999,9 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
 
                     {/* Scrollable content */}
                     <div class="devtools-content-scroll scrollbar-thin-border flex-1 overflow-auto min-h-0 bg-background">
-                        {activeApp
-                            ? (
+                        {activeApp ? (
                             <AppContent app={activeApp} key={activeApp.id} />
-                            )
-                            : (
+                        ) : (
                             <div class="flex flex-col items-center justify-center h-full gap-7 p-8 select-none">
                                 {/* Hero icon */}
                                 <div class="flex flex-col items-center gap-3">
@@ -1045,18 +1033,16 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                                     onClick={() => onToggleApp(a.id).catch(console.error)}
                                                     type="button"
                                                 >
-                                                    {a.icon
-                                                        ? (
+                                                    {a.icon ? (
                                                         <span
                                                             class="size-3.5 shrink-0 flex items-center justify-center [&_svg]:size-3.5 text-muted-foreground"
                                                             dangerouslySetInnerHTML={{ __html: a.icon }}
                                                         />
-                                                        )
-                                                        : (
+                                                    ) : (
                                                         <span class="size-3.5 text-[0.5rem] font-bold text-muted-foreground shrink-0 text-center">
                                                             {a.name.slice(0, 2).toUpperCase()}
                                                         </span>
-                                                        )}
+                                                    )}
                                                     <span class="text-[0.75rem] font-medium text-muted-foreground">{a.name}</span>
                                                 </button>
                                             ))}
@@ -1064,7 +1050,7 @@ const DevPanel = ({ activeAppId, apps, onClose, onToggleApp, panelVisible, posit
                                     </div>
                                 )}
                             </div>
-                            )}
+                        )}
                     </div>
                 </div>
             </div>

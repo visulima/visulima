@@ -12,15 +12,21 @@ vi.mock(import("../../src/toolbar/stylesheet"), () => {
 // Mock the hooks to avoid global state side effects
 vi.mock(import("../../src/hooks/index"), () => {
     return {
-        getGlobalHook: vi.fn(() => { return { emit: vi.fn() }; }),
-        setupGlobalHook: vi.fn(() => { return { emit: vi.fn() }; }),
+        getGlobalHook: vi.fn(() => {
+            return { emit: vi.fn() };
+        }),
+        setupGlobalHook: vi.fn(() => {
+            return { emit: vi.fn() };
+        }),
     };
 });
 
 // Mock settings to avoid localStorage dependencies
 vi.mock(import("../../src/toolbar/settings"), () => {
     return {
-        loadSettings: vi.fn(() => { return { defaultVisible: false }; }),
+        loadSettings: vi.fn(() => {
+            return { defaultVisible: false };
+        }),
         updateSettings: vi.fn(),
     };
 });
@@ -28,14 +34,18 @@ vi.mock(import("../../src/toolbar/settings"), () => {
 // Mock RPC client
 vi.mock(import("../../src/rpc/client"), () => {
     return {
-        createClientRPCContext: vi.fn(() => { return { callServer: vi.fn() }; }),
+        createClientRPCContext: vi.fn(() => {
+            return { callServer: vi.fn() };
+        }),
     };
 });
 
 // Mock timeline store
 vi.mock(import("../../src/timeline/index"), () => {
     return {
-        getTimelineStore: vi.fn(() => { return { addEvent: vi.fn() }; }),
+        getTimelineStore: vi.fn(() => {
+            return { addEvent: vi.fn() };
+        }),
     };
 });
 

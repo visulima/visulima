@@ -113,7 +113,7 @@ export default defineConfig(async ({ mode }) => {
                     enabled: true,
                 },
             }),
-            netlify(),
+            ...(mode !== "development" ? [netlify()] : []),
             react(),
             babel({ presets: [reactCompilerPreset()] }),
         ],

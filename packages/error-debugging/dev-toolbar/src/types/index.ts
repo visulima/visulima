@@ -2,6 +2,18 @@
  * Public type exports
  */
 
+export type {
+    AccessibilityInfo,
+    Annotation,
+    AnnotationIntent,
+    AnnotationSeverity,
+    AnnotationStatus,
+    BoundingBox,
+    CreateAnnotationData,
+    FrameworkContext,
+    ThreadMessage,
+    UpdateAnnotationData,
+} from "./annotations";
 export type { AppView, DevToolbarApp, DevToolbarAppState, ServerFunctions, ServerHelpers, ToolbarAppEventTarget } from "./app";
 export type { VisulimaDevTools } from "./global-api";
 export type { DevToolbarHook, HookEvents } from "./hooks";
