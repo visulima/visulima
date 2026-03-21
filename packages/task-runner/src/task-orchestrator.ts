@@ -18,6 +18,7 @@ import { TaskScheduler } from "./task-scheduler";
 import { FingerprintManager } from "./fingerprint";
 import { TrackedTaskExecutor } from "./tracked-executor";
 import type { RemoteCache } from "./remote-cache";
+import { generateRunSummary, writeRunSummary } from "./run-summary";
 
 /**
  * Options for the TaskOrchestrator.
@@ -69,6 +70,15 @@ export interface TaskOrchestratorOptions {
      * Output style for terminal output.
      */
     outputStyle?: "full" | "hash-only" | "errors-only" | "stream";
+    /**
+     * Generate a detailed JSON run summary after execution.
+     * Writes to `.task-runner/runs/{run-id}.json`.
+     */
+    summarize?: boolean;
+    /**
+     * The task graph (needed for run summary generation).
+     */
+    taskGraph?: import("./types").TaskGraph;
 }
 
 /**
@@ -98,7 +108,10 @@ export class TaskOrchestrator {
     readonly #remoteCache: RemoteCache | null;
     readonly #dryRun: boolean;
     readonly #outputStyle: "full" | "hash-only" | "errors-only" | "stream";
+    readonly #summarize: boolean;
+    readonly #taskGraph: import("./types").TaskGraph | null;
     readonly #results: TaskResults = new Map();
+    readonly #startTime: number;
     #aborted = false;
 
     constructor(options: TaskOrchestratorOptions) {
@@ -117,6 +130,9 @@ export class TaskOrchestrator {
         this.#remoteCache = options.remoteCache ?? null;
         this.#dryRun = options.dryRun ?? false;
         this.#outputStyle = options.outputStyle ?? "full";
+        this.#summarize = options.summarize ?? false;
+        this.#taskGraph = options.taskGraph ?? null;
+        this.#startTime = Date.now();
 
         if (this.#autoFingerprint) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
@@ -147,6 +163,17 @@ export class TaskOrchestrator {
             process.removeListener("SIGINT", signalHandler);
             process.removeListener("SIGTERM", signalHandler);
             this.#lifeCycle.endCommand?.();
+        }
+
+        // Generate run summary if requested
+        if (this.#summarize && this.#taskGraph) {
+            const summary = generateRunSummary(
+                this.#results,
+                this.#taskGraph,
+                this.#startTime,
+            );
+
+            await writeRunSummary(summary, this.#workspaceRoot);
         }
 
         return this.#results;

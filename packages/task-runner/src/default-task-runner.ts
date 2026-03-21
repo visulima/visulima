@@ -93,6 +93,8 @@ export const defaultTaskRunner = async (
         envVars: options.envVars,
         globalInputs: options.globalInputs,
         globalEnv: options.globalEnv,
+        smartLockfileHashing: options.smartLockfileHashing,
+        frameworkInference: options.frameworkInference,
     });
 
     // Calculate max parallel
@@ -132,6 +134,8 @@ export const defaultTaskRunner = async (
         remoteCache,
         dryRun: options.dryRun,
         outputStyle: options.outputStyle,
+        summarize: options.summarize,
+        taskGraph,
     });
 
     return orchestrator.run();

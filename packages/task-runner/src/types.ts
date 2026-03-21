@@ -334,6 +334,39 @@ export interface TaskRunnerOptions {
      * @default false
      */
     cacheDiagnostics?: boolean;
+    /**
+     * Enable smart lockfile hashing.
+     * Instead of hashing the entire lockfile (which busts ALL caches),
+     * only hash the resolved versions of each package's actual dependencies.
+     * This matches Turborepo's smart lockfile hashing behavior.
+     * @default false
+     */
+    smartLockfileHashing?: boolean;
+    /**
+     * Enable framework environment variable inference.
+     * When true, automatically detects common frontend frameworks and includes
+     * their public env var prefixes in the task hash:
+     * - Next.js: NEXT_PUBLIC_*
+     * - Vite: VITE_*
+     * - Create React App: REACT_APP_*
+     * - Gatsby: GATSBY_*
+     * - Nuxt: NUXT_PUBLIC_*
+     * - Expo: EXPO_PUBLIC_*
+     *
+     * Matches Turborepo's framework inference behavior.
+     * @default false
+     */
+    frameworkInference?: boolean;
+    /**
+     * Generate a detailed JSON run summary after execution.
+     * When true, writes a summary file to `.task-runner/runs/` containing
+     * all task inputs, outputs, hashes, timings, and cache status.
+     *
+     * Useful for debugging cache misses and comparing runs.
+     * Matches Turborepo's `--summarize` flag.
+     * @default false
+     */
+    summarize?: boolean;
 }
 
 /**

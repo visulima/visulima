@@ -15,6 +15,8 @@ import type {
     TargetConfiguration,
 } from "./types";
 import { loadNativeBindings } from "./native-binding";
+import { LockfileHasher } from "./lockfile-hasher";
+import { getFrameworkEnvVars } from "./framework-inference";
 
 /**
  * Interface for task hashers.
@@ -46,6 +48,23 @@ export interface TaskHasherOptions {
      * Global environment variables that invalidate all task hashes.
      */
     globalEnv?: string[];
+    /**
+     * Enable smart lockfile hashing.
+     * When true, instead of hashing the entire lockfile, only the resolved
+     * versions of a package's actual dependencies are hashed.
+     * This means changing the lockfile only busts cache for affected packages.
+     *
+     * Matches Turborepo's smart lockfile hashing behavior.
+     * @default false
+     */
+    smartLockfileHashing?: boolean;
+    /**
+     * Enable framework environment variable inference.
+     * When true, auto-detects frameworks and includes their public
+     * env var prefixes in the task hash.
+     * @default false
+     */
+    frameworkInference?: boolean;
 }
 
 const DEFAULT_GLOBAL_INPUTS = [
@@ -118,6 +137,9 @@ export class InProcessTaskHasher implements TaskHasher {
     readonly #globalEnv: string[];
     readonly #fileHashCache = new Map<string, string>();
     readonly #native: ReturnType<typeof loadNativeBindings>;
+    readonly #smartLockfileHashing: boolean;
+    readonly #lockfileHasher: LockfileHasher | null;
+    readonly #frameworkInference: boolean;
     #globalHash: string | null = null;
 
     constructor(options: TaskHasherOptions) {
@@ -129,6 +151,11 @@ export class InProcessTaskHasher implements TaskHasher {
         this.#globalInputs = options.globalInputs ?? DEFAULT_GLOBAL_INPUTS;
         this.#globalEnv = options.globalEnv ?? [];
         this.#native = loadNativeBindings();
+        this.#smartLockfileHashing = options.smartLockfileHashing ?? false;
+        this.#lockfileHasher = this.#smartLockfileHashing
+            ? new LockfileHasher(options.workspaceRoot)
+            : null;
+        this.#frameworkInference = options.frameworkInference ?? false;
     }
 
     async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -177,6 +204,36 @@ export class InProcessTaskHasher implements TaskHasher {
             const hash = this.#hashEnvironment(envVar);
 
             runtime[`env:${envVar}`] = hash;
+        }
+
+        // Smart lockfile hashing: hash only the resolved deps relevant to this project
+        if (this.#lockfileHasher) {
+            const project = this.#projects[task.target.project];
+
+            if (project) {
+                const packageJsonPath = join(project.root, "package.json");
+                const lockfileHash = await this.#lockfileHasher.hashForPackage(packageJsonPath);
+
+                if (lockfileHash) {
+                    implicitDeps["__lockfile__"] = lockfileHash.hash;
+                }
+            }
+        }
+
+        // Framework inference: auto-detect framework env vars and include in hash
+        if (this.#frameworkInference) {
+            const project = this.#projects[task.target.project];
+
+            if (project) {
+                const packageJsonPath = resolve(this.#workspaceRoot, project.root, "package.json");
+                const frameworkEnvVars = await getFrameworkEnvVars(packageJsonPath);
+
+                for (const [envName, value] of Object.entries(frameworkEnvVars)) {
+                    const hash = this.#hashEnvironment(envName);
+
+                    runtime[`framework-env:${envName}`] = hash;
+                }
+            }
         }
 
         return {
@@ -439,8 +496,20 @@ export class InProcessTaskHasher implements TaskHasher {
         const hash = createHash("sha256");
         let hasContent = false;
 
+        // Lockfile patterns to skip when smart lockfile hashing is enabled
+        const lockfileNames = new Set([
+            "package-lock.json",
+            "pnpm-lock.yaml",
+            "yarn.lock",
+        ]);
+
         // Hash global input files
         for (const globalInput of this.#globalInputs) {
+            // Skip lockfiles in global hash when smart lockfile hashing is active
+            if (this.#smartLockfileHashing && lockfileNames.has(globalInput)) {
+                continue;
+            }
+
             const filePath = join(this.#workspaceRoot, globalInput);
             const fileHash = await this.#hashFile(filePath);
 
@@ -470,6 +539,7 @@ export class InProcessTaskHasher implements TaskHasher {
     clearCache(): void {
         this.#fileHashCache.clear();
         this.#globalHash = null;
+        this.#lockfileHasher?.clearCache();
     }
 }
 

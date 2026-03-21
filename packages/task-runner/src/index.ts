@@ -102,5 +102,26 @@ export {
     projectGraphToDot,
 } from "./graph-visualizer";
 
+// Smart lockfile hashing
+export type { ResolvedDependency, PackageLockfileHash } from "./lockfile-hasher";
+export {
+    LockfileHasher,
+    parseNpmLockfile,
+    parsePnpmLockfile,
+    parseYarnLockfile,
+} from "./lockfile-hasher";
+
+// Framework environment variable inference
+export type { DetectedFramework } from "./framework-inference";
+export {
+    detectFrameworks,
+    inferFrameworkEnvPatterns,
+    getFrameworkEnvVars,
+} from "./framework-inference";
+
+// Run summary (--summarize)
+export type { TaskSummary, RunSummary } from "./run-summary";
+export { generateRunSummary, writeRunSummary } from "./run-summary";
+
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";
