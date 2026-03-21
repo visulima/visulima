@@ -46,27 +46,30 @@
     },
     "files": [
         "dist",
-        "native/*.node",
+        "*.node",
         "README.md",
         "CHANGELOG.md"
     ],
     "napi": {
-        "name": "task-runner-native",
-        "triples": {
-            "defaults": true,
-            "additional": [
-                "aarch64-apple-darwin",
-                "aarch64-unknown-linux-gnu",
-                "aarch64-unknown-linux-musl"
-            ]
-        }
+        "binaryName": "task-runner-native",
+        "packageName": "@visulima/task-runner-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
     },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
         "build:native": "napi build --platform --release --cargo-cwd native",
         "build:native:debug": "napi build --platform --cargo-cwd native",
-        "clean": "rimraf node_modules dist .eslintcache native/*.node",
+        "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
         "lint:eslint": "eslint . --cache --concurrency auto",
@@ -103,6 +106,16 @@
         "semantic-release": "^25.0.2",
         "typescript": "^5.9.3",
         "vitest": "^4.0.13"
+    },
+    "optionalDependencies": {
+        "@visulima/task-runner-binding-darwin-x64": "0.0.1",
+        "@visulima/task-runner-binding-darwin-arm64": "0.0.1",
+        "@visulima/task-runner-binding-linux-x64-gnu": "0.0.1",
+        "@visulima/task-runner-binding-linux-x64-musl": "0.0.1",
+        "@visulima/task-runner-binding-linux-arm64-gnu": "0.0.1",
+        "@visulima/task-runner-binding-linux-arm64-musl": "0.0.1",
+        "@visulima/task-runner-binding-win32-x64-msvc": "0.0.1",
+        "@visulima/task-runner-binding-win32-arm64-msvc": "0.0.1"
     },
     "engines": {
         "node": ">=20.19 <=25.x"
