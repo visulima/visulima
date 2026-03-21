@@ -115,10 +115,10 @@ export class LockfileHasher {
      */
     async #getResolvedVersions(): Promise<Map<string, string> | null> {
         if (this.#lockfileCache !== null) {
-            return this.#lockfileCache;
+            // Return cached result (empty map means "no lockfile found")
+            return this.#lockfileCache.size > 0 ? this.#lockfileCache : null;
         }
 
-        // Try each lockfile format in order
         const parsers: Array<{ file: string; type: "npm" | "pnpm" | "yarn"; parser: (content: string) => Map<string, string> }> = [
             { file: "package-lock.json", type: "npm", parser: parseNpmLockfile },
             { file: "pnpm-lock.yaml", type: "pnpm", parser: parsePnpmLockfile },
@@ -139,6 +139,7 @@ export class LockfileHasher {
             }
         }
 
+        // Cache the "not found" result as empty map to avoid repeated file reads
         this.#lockfileCache = new Map();
 
         return null;

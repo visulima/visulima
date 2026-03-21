@@ -249,24 +249,22 @@ describe("defaultTaskRunner", () => {
         expect(cacheMissMessages[0]).toContain("No previous fingerprint found");
     });
 
-    it("should support outputStyle option without errors", async () => {
+    it("should skip cache when skipNxCache is true", async () => {
         const task = makeTask();
-        const executor: TaskExecutor = async () => ({
-            code: 0,
-            terminalOutput: "Built",
-        });
+
+        let executionCount = 0;
+        const executor: TaskExecutor = async () => {
+            executionCount++;
+            return { code: 0, terminalOutput: "Built" };
+        };
 
         const context = createContext(workspaceRoot, [task], executor);
 
-        // Should not throw for any output style
-        for (const style of ["full", "hash-only", "errors-only", "stream"] as const) {
-            const results = await defaultTaskRunner(
-                [task],
-                { outputStyle: style, skipNxCache: true },
-                context,
-            );
+        await defaultTaskRunner([task], {}, context);
+        expect(executionCount).toBe(1);
 
-            expect(results.get("app:build")?.status).toBe("success");
-        }
+        // Second run with skipNxCache should execute again
+        await defaultTaskRunner([task], { skipNxCache: true }, context);
+        expect(executionCount).toBe(2);
     });
 });

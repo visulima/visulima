@@ -60,7 +60,11 @@ export const createTaskGraph = (
     const queue: Task[] = [...initialTasks];
 
     while (queue.length > 0) {
-        const task = queue.shift() as Task;
+        const task = queue.shift();
+
+        if (!task) {
+            break;
+        }
 
         if (visited.has(task.id)) {
             continue;

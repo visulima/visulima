@@ -3,7 +3,7 @@ import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { join, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { createGzip, createGunzip } from "node:zlib";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 
 /**
  * Options for the remote cache.
@@ -197,8 +197,9 @@ export class RemoteCache {
 
     async #createTarGz(sourceDir: string, outputPath: string): Promise<void> {
         return new Promise((promiseResolve, reject) => {
-            exec(
-                `tar -czf ${outputPath} -C ${sourceDir} .`,
+            execFile(
+                "tar",
+                ["-czf", outputPath, "-C", sourceDir, "."],
                 (error) => {
                     if (error) {
                         reject(error);
@@ -212,8 +213,9 @@ export class RemoteCache {
 
     async #extractTarGz(archivePath: string, destDir: string): Promise<void> {
         return new Promise((promiseResolve, reject) => {
-            exec(
-                `tar -xzf ${archivePath} -C ${destDir}`,
+            execFile(
+                "tar",
+                ["-xzf", archivePath, "-C", destDir],
                 (error) => {
                     if (error) {
                         reject(error);

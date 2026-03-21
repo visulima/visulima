@@ -8,7 +8,7 @@ import {
     stat,
     writeFile,
 } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 import type { TaskFingerprint } from "./fingerprint";
 
@@ -97,6 +97,10 @@ export class Cache {
 
             const codeString = await readFile(join(cacheEntryDir, "code"), "utf-8");
             const code = Number.parseInt(codeString.trim(), 10);
+
+            if (Number.isNaN(code)) {
+                return null;
+            }
 
             let terminalOutput = "";
 
@@ -198,8 +202,7 @@ export class Cache {
                     continue;
                 }
 
-                // Ensure the parent directory exists
-                const parentDir = join(absoluteOutput, "..");
+                const parentDir = dirname(absoluteOutput);
 
                 await mkdir(parentDir, { recursive: true });
 

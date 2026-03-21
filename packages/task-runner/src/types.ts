@@ -294,14 +294,6 @@ export interface TaskRunnerOptions {
         write?: boolean;
     };
     /**
-     * Output style for terminal output.
-     * - "full": Show all output (default)
-     * - "hash-only": Only show task hashes
-     * - "errors-only": Only show failed task output
-     * - "stream": Stream output in real-time
-     */
-    outputStyle?: "full" | "hash-only" | "errors-only" | "stream";
-    /**
      * Enable auto-fingerprinting mode (Vite Task-style).
      * When enabled, the task runner automatically tracks which files
      * a task accesses during execution and uses that for cache invalidation

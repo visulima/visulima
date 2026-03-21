@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 
 import { collectFiles } from "./utils";
 
@@ -90,7 +90,7 @@ export class IncrementalFileHasher {
             return;
         }
 
-        const dir = join(this.#snapshotPath, "..");
+        const dir = dirname(this.#snapshotPath);
 
         await mkdir(dir, { recursive: true });
 

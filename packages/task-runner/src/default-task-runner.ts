@@ -145,7 +145,6 @@ export const defaultTaskRunner = async (
         resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
         remoteCache,
         dryRun: options.dryRun,
-        outputStyle: options.outputStyle,
         summarize: options.summarize,
         taskGraph,
     });
