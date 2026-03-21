@@ -259,6 +259,53 @@ export interface TaskRunnerOptions {
     /** Custom environment variables to include in hash */
     envVars?: string[];
     /**
+     * Global input files that invalidate ALL task hashes when changed.
+     * These are workspace-root-relative paths.
+     *
+     * Default: ["package-lock.json", "pnpm-lock.yaml", "yarn.lock",
+     *           "tsconfig.base.json", ".env"]
+     *
+     * When any global input changes, every task's hash changes,
+     * forcing a full rebuild. This matches Turborepo's `globalDependencies`.
+     */
+    globalInputs?: string[];
+    /**
+     * Global environment variables that invalidate ALL task hashes.
+     * Matches Turborepo's `globalEnv`.
+     */
+    globalEnv?: string[];
+    /**
+     * Dry-run mode: compute hashes and check cache but don't execute tasks.
+     * Useful for debugging cache hits/misses.
+     * @default false
+     */
+    dryRun?: boolean;
+    /**
+     * Remote cache configuration.
+     * When configured, the task runner will check the remote cache
+     * after a local cache miss, and upload results after execution.
+     */
+    remoteCache?: {
+        /** Remote cache server URL */
+        url: string;
+        /** Authentication token */
+        token?: string;
+        /** Team/namespace for cache isolation */
+        teamId?: string;
+        /** Enable remote reads (default: true) */
+        read?: boolean;
+        /** Enable remote writes (default: true) */
+        write?: boolean;
+    };
+    /**
+     * Output style for terminal output.
+     * - "full": Show all output (default)
+     * - "hash-only": Only show task hashes
+     * - "errors-only": Only show failed task output
+     * - "stream": Stream output in real-time
+     */
+    outputStyle?: "full" | "hash-only" | "errors-only" | "stream";
+    /**
      * Enable auto-fingerprinting mode (Vite Task-style).
      * When enabled, the task runner automatically tracks which files
      * a task accesses during execution and uses that for cache invalidation

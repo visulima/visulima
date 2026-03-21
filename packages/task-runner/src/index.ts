@@ -47,9 +47,17 @@ export {
 export type { TaskHasher, TaskHasherOptions } from "./task-hasher";
 export { computeTaskHash, InProcessTaskHasher } from "./task-hasher";
 
+// Incremental file hashing (mtime-based, daemon-compatible)
+export type { FileSnapshot, IncrementalHasherOptions } from "./incremental-hasher";
+export { IncrementalFileHasher } from "./incremental-hasher";
+
 // Cache
 export type { CachedResult, CacheOptions } from "./cache";
 export { Cache, formatCacheSize, parseCacheSize } from "./cache";
+
+// Remote cache (Turborepo-compatible HTTP protocol)
+export type { RemoteCacheOptions } from "./remote-cache";
+export { RemoteCache } from "./remote-cache";
 
 // Task scheduler
 export { TaskScheduler } from "./task-scheduler";
@@ -71,11 +79,15 @@ export { FingerprintManager } from "./fingerprint";
 
 // File access tracking
 export type { FileAccess, TrackingResult } from "./file-access-tracker";
-export { FileAccessTracker } from "./file-access-tracker";
+export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
 
 // Tracked executor (for auto-fingerprint mode)
 export type { TrackedExecutionResult } from "./tracked-executor";
 export { TrackedTaskExecutor } from "./tracked-executor";
+
+// Affected detection (git diff-based)
+export type { AffectedOptions, AffectedResult } from "./affected";
+export { getAffectedProjects, getChangedFiles, filterAffectedTasks } from "./affected";
 
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";

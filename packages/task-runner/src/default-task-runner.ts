@@ -10,6 +10,7 @@ import { EmptyLifeCycle } from "./life-cycle";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
 import { TaskScheduler } from "./task-scheduler";
+import { RemoteCache } from "./remote-cache";
 
 /**
  * The default task runner implementation.
@@ -34,6 +35,22 @@ import { TaskScheduler } from "./task-scheduler";
  *     autoFingerprint: true,
  *     fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
  *     cacheDiagnostics: true,
+ * }, context);
+ *
+ * // With remote cache
+ * const results = await defaultTaskRunner(tasks, {
+ *     ...options,
+ *     remoteCache: {
+ *         url: "https://cache.example.com",
+ *         token: process.env.CACHE_TOKEN,
+ *         teamId: "my-team",
+ *     },
+ * }, context);
+ *
+ * // Dry-run (inspect hashes without executing)
+ * const results = await defaultTaskRunner(tasks, {
+ *     ...options,
+ *     dryRun: true,
  * }, context);
  * ```
  */
@@ -61,7 +78,7 @@ export const defaultTaskRunner = async (
     // Clean old cache entries in the background
     void cache.removeOldEntries();
 
-    // Create the task hasher
+    // Create the task hasher with global inputs support
     const projects: Record<string, import("./types").ProjectConfiguration> = {};
 
     for (const [name, node] of Object.entries(projectGraph.nodes)) {
@@ -74,6 +91,8 @@ export const defaultTaskRunner = async (
         namedInputs: options.namedInputs,
         targetDefaults: options.targetDefaults,
         envVars: options.envVars,
+        globalInputs: options.globalInputs,
+        globalEnv: options.globalEnv,
     });
 
     // Calculate max parallel
@@ -83,7 +102,6 @@ export const defaultTaskRunner = async (
     const scheduler = new TaskScheduler(taskGraph, projectGraph, maxParallel);
 
     // Build command resolver for auto-fingerprint mode
-    // Resolves the shell command for a task from its target configuration
     const resolveCommand = (task: Task): string | undefined => {
         const project = projectGraph.nodes[task.target.project];
         const targetConfig = project?.data.targets?.[task.target.target];
@@ -91,6 +109,11 @@ export const defaultTaskRunner = async (
 
         return targetConfig?.command ?? defaultConfig?.command;
     };
+
+    // Create remote cache if configured
+    const remoteCache = options.remoteCache
+        ? new RemoteCache(options.remoteCache)
+        : undefined;
 
     // Create the orchestrator
     const orchestrator = new TaskOrchestrator({
@@ -106,6 +129,9 @@ export const defaultTaskRunner = async (
         fingerprintEnvPatterns: options.fingerprintEnvPatterns,
         cacheDiagnostics: options.cacheDiagnostics,
         resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
+        remoteCache,
+        dryRun: options.dryRun,
+        outputStyle: options.outputStyle,
     });
 
     return orchestrator.run();

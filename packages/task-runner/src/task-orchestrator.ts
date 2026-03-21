@@ -17,6 +17,7 @@ import { computeTaskHash } from "./task-hasher";
 import { TaskScheduler } from "./task-scheduler";
 import { FingerprintManager } from "./fingerprint";
 import { TrackedTaskExecutor } from "./tracked-executor";
+import type { RemoteCache } from "./remote-cache";
 
 /**
  * Options for the TaskOrchestrator.
@@ -54,6 +55,20 @@ export interface TaskOrchestratorOptions {
      * If not provided, falls back to Nx-style hashing for fingerprint creation.
      */
     resolveCommand?: (task: Task) => string | undefined;
+    /**
+     * Remote cache instance for distributed caching.
+     * When provided, checks remote after local miss, uploads after execution.
+     */
+    remoteCache?: RemoteCache;
+    /**
+     * Dry-run mode: compute hashes and check cache but don't execute tasks.
+     * Tasks report "skipped" status with their computed hash.
+     */
+    dryRun?: boolean;
+    /**
+     * Output style for terminal output.
+     */
+    outputStyle?: "full" | "hash-only" | "errors-only" | "stream";
 }
 
 /**
@@ -80,6 +95,9 @@ export class TaskOrchestrator {
     readonly #fingerprintEnvPatterns: string[];
     readonly #cacheDiagnostics: boolean;
     readonly #resolveCommand: ((task: Task) => string | undefined) | null;
+    readonly #remoteCache: RemoteCache | null;
+    readonly #dryRun: boolean;
+    readonly #outputStyle: "full" | "hash-only" | "errors-only" | "stream";
     readonly #results: TaskResults = new Map();
     #aborted = false;
 
@@ -96,6 +114,9 @@ export class TaskOrchestrator {
         this.#fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
         this.#resolveCommand = options.resolveCommand ?? null;
+        this.#remoteCache = options.remoteCache ?? null;
+        this.#dryRun = options.dryRun ?? false;
+        this.#outputStyle = options.outputStyle ?? "full";
 
         if (this.#autoFingerprint) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
@@ -228,17 +249,55 @@ export class TaskOrchestrator {
         task.hash = hash;
         task.hashDetails = hashDetails;
 
-        // Check cache
+        // Dry-run mode: report hash but don't execute
+        if (this.#dryRun) {
+            return this.#dryRunResult(task, startTime);
+        }
+
+        // Check local cache
         if (!this.#skipCache && task.cache !== false) {
             const cachedResult = await this.#cache.get(hash);
 
             if (cachedResult) {
                 return this.#applyCachedResult(task, cachedResult, startTime);
             }
+
+            // Check remote cache on local miss
+            if (this.#remoteCache) {
+                const retrieved = await this.#remoteCache.retrieve(
+                    hash,
+                    this.#cache.cacheDirectory,
+                );
+
+                if (retrieved) {
+                    const remoteCached = await this.#cache.get(hash);
+
+                    if (remoteCached) {
+                        const result = await this.#applyCachedResult(task, remoteCached, startTime);
+
+                        result.status = "remote-cache";
+
+                        return result;
+                    }
+                }
+            }
         }
 
         // Execute the task
-        return this.#executeTask(task, startTime);
+        const result = await this.#executeTask(task, startTime);
+
+        // Upload to remote cache after successful execution
+        if (
+            result.code === 0 &&
+            task.cache !== false &&
+            task.hash &&
+            this.#remoteCache
+        ) {
+            // Fire and forget — don't block on remote upload
+            void this.#remoteCache.store(task.hash, this.#cache.cacheDirectory);
+        }
+
+        return result;
     }
 
     /**
@@ -547,6 +606,25 @@ export class TaskOrchestrator {
         }
 
         return hash.digest("hex");
+    }
+
+    /**
+     * Creates a dry-run result for a task (hash computed, not executed).
+     */
+    #dryRunResult(task: Task, startTime: number): TaskResult {
+        const cacheStatus = task.hash ? `[hash: ${task.hash.slice(0, 12)}...]` : "[no hash]";
+        const result: TaskResult = {
+            task,
+            status: "skipped",
+            terminalOutput: `DRY RUN ${cacheStatus}`,
+            startTime,
+            endTime: Date.now(),
+            code: 0,
+        };
+
+        this.#results.set(task.id, result);
+
+        return result;
     }
 
     #delay(ms: number): Promise<void> {

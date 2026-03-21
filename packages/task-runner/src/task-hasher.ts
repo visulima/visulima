@@ -37,7 +37,25 @@ export interface TaskHasherOptions {
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Additional environment variables to include in hash */
     envVars?: string[];
+    /**
+     * Global input files that invalidate all task hashes when changed.
+     * These are workspace-root-relative paths (e.g., "pnpm-lock.yaml").
+     */
+    globalInputs?: string[];
+    /**
+     * Global environment variables that invalidate all task hashes.
+     */
+    globalEnv?: string[];
 }
+
+const DEFAULT_GLOBAL_INPUTS = [
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "tsconfig.base.json",
+    "tsconfig.json",
+    ".env",
+];
 
 const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
 
@@ -96,8 +114,11 @@ export class InProcessTaskHasher implements TaskHasher {
     readonly #namedInputs: NamedInputs;
     readonly #targetDefaults: Record<string, Partial<TargetConfiguration>>;
     readonly #envVars: string[];
+    readonly #globalInputs: string[];
+    readonly #globalEnv: string[];
     readonly #fileHashCache = new Map<string, string>();
     readonly #native: ReturnType<typeof loadNativeBindings>;
+    #globalHash: string | null = null;
 
     constructor(options: TaskHasherOptions) {
         this.#workspaceRoot = options.workspaceRoot;
@@ -105,6 +126,8 @@ export class InProcessTaskHasher implements TaskHasher {
         this.#namedInputs = options.namedInputs ?? {};
         this.#targetDefaults = options.targetDefaults ?? {};
         this.#envVars = options.envVars ?? [];
+        this.#globalInputs = options.globalInputs ?? DEFAULT_GLOBAL_INPUTS;
+        this.#globalEnv = options.globalEnv ?? [];
         this.#native = loadNativeBindings();
     }
 
@@ -113,6 +136,13 @@ export class InProcessTaskHasher implements TaskHasher {
         const nodes: Record<string, string> = {};
         const implicitDeps: Record<string, string> = {};
         const runtime: Record<string, string> = {};
+
+        // Include global inputs hash (lock files, tsconfig, .env)
+        const globalHash = await this.#computeGlobalHash();
+
+        if (globalHash) {
+            implicitDeps["__global__"] = globalHash;
+        }
 
         // Resolve inputs for the task
         const inputs = this.#resolveInputs(task);
@@ -398,10 +428,48 @@ export class InProcessTaskHasher implements TaskHasher {
     }
 
     /**
+     * Computes a combined hash of all global inputs (lock files, tsconfig, .env)
+     * and global env vars. Cached after first computation.
+     */
+    async #computeGlobalHash(): Promise<string | null> {
+        if (this.#globalHash !== null) {
+            return this.#globalHash;
+        }
+
+        const hash = createHash("sha256");
+        let hasContent = false;
+
+        // Hash global input files
+        for (const globalInput of this.#globalInputs) {
+            const filePath = join(this.#workspaceRoot, globalInput);
+            const fileHash = await this.#hashFile(filePath);
+
+            if (fileHash) {
+                hash.update(globalInput);
+                hash.update(fileHash);
+                hasContent = true;
+            }
+        }
+
+        // Hash global env vars
+        for (const envName of this.#globalEnv) {
+            const value = process.env[envName] ?? "";
+
+            hash.update(`globalEnv:${envName}=${value}`);
+            hasContent = true;
+        }
+
+        this.#globalHash = hasContent ? hash.digest("hex") : "";
+
+        return this.#globalHash || null;
+    }
+
+    /**
      * Clears the file hash cache.
      */
     clearCache(): void {
         this.#fileHashCache.clear();
+        this.#globalHash = null;
     }
 }
 
