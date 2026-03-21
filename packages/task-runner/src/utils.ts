@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
 

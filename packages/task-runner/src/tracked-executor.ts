@@ -1,6 +1,6 @@
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 
 import type { FileAccess } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";

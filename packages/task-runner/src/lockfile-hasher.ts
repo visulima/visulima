@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 
 import { readPackageDeps } from "./utils";
 

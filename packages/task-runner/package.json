@@ -70,7 +70,8 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/humanizer": "workspace:*"
+        "@visulima/humanizer": "workspace:*",
+        "@visulima/path": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "^16.4.4",

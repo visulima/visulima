@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative } from "@visulima/path";
 
 import { collectFiles } from "./utils";
 

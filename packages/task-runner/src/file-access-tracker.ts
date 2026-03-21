@@ -1,7 +1,7 @@
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
-import { join, resolve } from "node:path";
+import { join, resolve } from "@visulima/path";
 
 /**
  * Represents a file access recorded during task execution.

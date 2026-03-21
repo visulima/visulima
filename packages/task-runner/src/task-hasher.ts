@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve } from "@visulima/path";
 
 import { getFrameworkEnvVariables } from "./framework-inference";
 import { LockfileHasher } from "./lockfile-hasher";

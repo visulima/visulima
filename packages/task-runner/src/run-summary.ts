@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 
 import type { TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
 

@@ -1,5 +1,5 @@
 import { readdir, stat } from "node:fs/promises";
-import { relative, resolve } from "node:path";
+import { relative, resolve } from "@visulima/path";
 
 import type { FileAccess } from "./file-access-tracker";
 import { hashFile, hashStrings, sortObjectKeys } from "./utils";

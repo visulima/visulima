@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 import { pipeline } from "node:stream/promises";
 
 /**

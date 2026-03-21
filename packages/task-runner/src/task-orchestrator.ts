@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { join } from "node:path";
+import { join } from "@visulima/path";
 
 import type { Cache, CachedResult } from "./cache";
 import type { TaskFingerprint } from "./fingerprint";
