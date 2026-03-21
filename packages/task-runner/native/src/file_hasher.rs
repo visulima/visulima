@@ -1,0 +1,188 @@
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
+use rayon::prelude::*;
+use sha2::{Digest, Sha256};
+use std::collections::HashMap;
+use std::fs;
+use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
+
+/// Ignored directory names during file collection.
+const IGNORED_DIRS: &[&str] = &["node_modules", ".git", "dist", "coverage", ".cache"];
+
+/// Computes the SHA-256 hash of a single file.
+/// Returns the hex-encoded hash string.
+#[napi]
+pub fn hash_file(file_path: String) -> Result<String> {
+    let content = fs::read(&file_path)
+        .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read file {}: {}", file_path, e)))?;
+
+    let mut hasher = Sha256::new();
+    hasher.update(&content);
+    let result = hasher.finalize();
+
+    Ok(hex::encode(result))
+}
+
+/// Collects all files in a directory recursively, ignoring common non-source directories.
+/// Returns a list of absolute file paths.
+#[napi]
+pub fn collect_files(dir: String) -> Result<Vec<String>> {
+    let path = Path::new(&dir);
+
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+
+    if path.is_file() {
+        return Ok(vec![dir]);
+    }
+
+    let files: Vec<String> = WalkDir::new(path)
+        .into_iter()
+        .filter_entry(|entry| {
+            let name = entry.file_name().to_str().unwrap_or("");
+            !IGNORED_DIRS.contains(&name)
+        })
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| entry.path().to_string_lossy().to_string())
+        .collect();
+
+    Ok(files)
+}
+
+/// A single file hash result.
+#[napi(object)]
+pub struct FileHash {
+    pub path: String,
+    pub hash: String,
+}
+
+/// Collects all files in a directory and computes SHA-256 hashes for each,
+/// using parallel processing via rayon for maximum throughput.
+///
+/// Returns a list of { path, hash } objects where path is relative to workspace_root.
+#[napi]
+pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Vec<FileHash>> {
+    let dir_path = Path::new(&dir);
+
+    if !dir_path.exists() {
+        return Ok(Vec::new());
+    }
+
+    if dir_path.is_file() {
+        let content = fs::read(dir_path)
+            .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read file: {}", e)))?;
+
+        let mut hasher = Sha256::new();
+        hasher.update(&content);
+        let hash = hex::encode(hasher.finalize());
+
+        let rel = make_relative(&dir, &workspace_root);
+
+        return Ok(vec![FileHash {
+            path: rel,
+            hash,
+        }]);
+    }
+
+    let files: Vec<PathBuf> = WalkDir::new(dir_path)
+        .into_iter()
+        .filter_entry(|entry| {
+            let name = entry.file_name().to_str().unwrap_or("");
+            !IGNORED_DIRS.contains(&name)
+        })
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.file_type().is_file())
+        .map(|entry| entry.path().to_owned())
+        .collect();
+
+    let results: Vec<FileHash> = files
+        .par_iter()
+        .filter_map(|file_path| {
+            let content = fs::read(file_path).ok()?;
+            let mut hasher = Sha256::new();
+            hasher.update(&content);
+            let hash = hex::encode(hasher.finalize());
+
+            let abs = file_path.to_string_lossy().to_string();
+            let rel = make_relative(&abs, &workspace_root);
+
+            Some(FileHash { path: rel, hash })
+        })
+        .collect();
+
+    Ok(results)
+}
+
+/// Computes SHA-256 hashes for multiple files in parallel.
+/// Takes absolute file paths, returns a map of relative_path -> hash.
+#[napi]
+pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Result<Vec<FileHash>> {
+    let results: Vec<FileHash> = file_paths
+        .par_iter()
+        .filter_map(|file_path| {
+            let content = fs::read(file_path).ok()?;
+            let mut hasher = Sha256::new();
+            hasher.update(&content);
+            let hash = hex::encode(hasher.finalize());
+
+            let rel = make_relative(file_path, &workspace_root);
+
+            Some(FileHash { path: rel, hash })
+        })
+        .collect();
+
+    Ok(results)
+}
+
+/// Makes a path relative to the workspace root.
+fn make_relative(path: &str, workspace_root: &str) -> String {
+    let normalized_root = if workspace_root.ends_with('/') {
+        workspace_root.to_string()
+    } else {
+        format!("{}/", workspace_root)
+    };
+
+    if path.starts_with(&normalized_root) {
+        path[normalized_root.len()..].to_string()
+    } else {
+        path.to_string()
+    }
+}
+
+/// Computes a SHA-256 hash from a byte string.
+/// Useful for hashing command strings, JSON, etc.
+#[napi]
+pub fn hash_string(input: String) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input.as_bytes());
+    hex::encode(hasher.finalize())
+}
+
+/// Computes a combined SHA-256 hash from multiple strings.
+/// Strings are hashed in order, producing a single deterministic hash.
+#[napi]
+pub fn hash_strings(inputs: Vec<String>) -> String {
+    let mut hasher = Sha256::new();
+    for input in &inputs {
+        hasher.update(input.as_bytes());
+    }
+    hex::encode(hasher.finalize())
+}
+
+// Need hex encoding - use sha2's built-in or inline it
+mod hex {
+    const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
+
+    pub fn encode(bytes: impl AsRef<[u8]>) -> String {
+        let bytes = bytes.as_ref();
+        let mut result = String::with_capacity(bytes.len() * 2);
+        for &byte in bytes {
+            result.push(HEX_CHARS[(byte >> 4) as usize] as char);
+            result.push(HEX_CHARS[(byte & 0x0f) as usize] as char);
+        }
+        result
+    }
+}
