@@ -14,6 +14,7 @@ import type {
     TaskHashDetails,
     TargetConfiguration,
 } from "./types";
+import { loadNativeBindings } from "./native-binding";
 
 /**
  * Interface for task hashers.
@@ -96,6 +97,7 @@ export class InProcessTaskHasher implements TaskHasher {
     readonly #targetDefaults: Record<string, Partial<TargetConfiguration>>;
     readonly #envVars: string[];
     readonly #fileHashCache = new Map<string, string>();
+    readonly #native: ReturnType<typeof loadNativeBindings>;
 
     constructor(options: TaskHasherOptions) {
         this.#workspaceRoot = options.workspaceRoot;
@@ -103,6 +105,7 @@ export class InProcessTaskHasher implements TaskHasher {
         this.#namedInputs = options.namedInputs ?? {};
         this.#targetDefaults = options.targetDefaults ?? {};
         this.#envVars = options.envVars ?? [];
+        this.#native = loadNativeBindings();
     }
 
     async hashTask(task: Task): Promise<TaskHashDetails> {
@@ -156,8 +159,25 @@ export class InProcessTaskHasher implements TaskHasher {
 
     /**
      * Computes a hash of the task command.
+     * Uses native Rust implementation when available for better performance.
      */
     #hashCommand(task: Task): string {
+        if (this.#native) {
+            const sortedOverrides = Object.keys(task.overrides)
+                .sort()
+                .reduce<Record<string, unknown>>((accumulator, key) => {
+                    accumulator[key] = task.overrides[key];
+                    return accumulator;
+                }, {});
+
+            return this.#native.hashCommand(
+                task.target.project,
+                task.target.target,
+                task.target.configuration ?? null,
+                JSON.stringify(sortedOverrides),
+            );
+        }
+
         const hash = createHash("sha256");
 
         hash.update(task.target.project);
@@ -167,7 +187,6 @@ export class InProcessTaskHasher implements TaskHasher {
             hash.update(task.target.configuration);
         }
 
-        // Sort and include overrides for deterministic hashing
         const sortedOverrides = Object.keys(task.overrides)
             .sort()
             .reduce<Record<string, unknown>>((accumulator, key) => {
@@ -235,6 +254,7 @@ export class InProcessTaskHasher implements TaskHasher {
 
     /**
      * Hashes all files matching a fileset pattern.
+     * Uses native Rust parallel hashing (via rayon) when available.
      */
     async #hashFileSet(
         task: Task,
@@ -260,6 +280,23 @@ export class InProcessTaskHasher implements TaskHasher {
         const result: Record<string, string> = {};
 
         try {
+            // Use native parallel hashing when available
+            if (this.#native) {
+                const fileHashes = this.#native.hashFilesInDirectory(
+                    absoluteBase,
+                    this.#workspaceRoot,
+                );
+
+                for (const { path, hash } of fileHashes) {
+                    result[path] = hash;
+                    // Also populate the cache for potential reuse
+                    this.#fileHashCache.set(resolve(this.#workspaceRoot, path), hash);
+                }
+
+                return result;
+            }
+
+            // Fallback: TypeScript-based sequential hashing
             const files = await collectFiles(absoluteBase);
 
             const hashPromises = files.map(async (filePath) => {
@@ -370,8 +407,36 @@ export class InProcessTaskHasher implements TaskHasher {
 
 /**
  * Computes the final hash for a task from its hash details.
+ * Uses native Rust implementation when available.
  */
 export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
+    const native = loadNativeBindings();
+
+    if (native) {
+        const nodes = Object.keys(hashDetails.nodes)
+            .sort()
+            .map((key) => [key, hashDetails.nodes[key] as string]);
+
+        const implicitDeps = hashDetails.implicitDeps
+            ? Object.keys(hashDetails.implicitDeps)
+                  .sort()
+                  .map((key) => [key, hashDetails.implicitDeps![key] as string])
+            : undefined;
+
+        const runtime = hashDetails.runtime
+            ? Object.keys(hashDetails.runtime)
+                  .sort()
+                  .map((key) => [key, hashDetails.runtime![key] as string])
+            : undefined;
+
+        return native.computeTaskHash({
+            command: hashDetails.command,
+            nodes,
+            implicit_deps: implicitDeps,
+            runtime,
+        });
+    }
+
     const hash = createHash("sha256");
 
     hash.update(hashDetails.command);

@@ -82,6 +82,16 @@ export const defaultTaskRunner = async (
     // Create the scheduler
     const scheduler = new TaskScheduler(taskGraph, projectGraph, maxParallel);
 
+    // Build command resolver for auto-fingerprint mode
+    // Resolves the shell command for a task from its target configuration
+    const resolveCommand = (task: Task): string | undefined => {
+        const project = projectGraph.nodes[task.target.project];
+        const targetConfig = project?.data.targets?.[task.target.target];
+        const defaultConfig = options.targetDefaults?.[task.target.target];
+
+        return targetConfig?.command ?? defaultConfig?.command;
+    };
+
     // Create the orchestrator
     const orchestrator = new TaskOrchestrator({
         taskHasher,
@@ -95,6 +105,7 @@ export const defaultTaskRunner = async (
         autoFingerprint: options.autoFingerprint,
         fingerprintEnvPatterns: options.fingerprintEnvPatterns,
         cacheDiagnostics: options.cacheDiagnostics,
+        resolveCommand: options.autoFingerprint ? resolveCommand : undefined,
     });
 
     return orchestrator.run();

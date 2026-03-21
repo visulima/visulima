@@ -16,7 +16,7 @@ import { Cache } from "./cache";
 import { computeTaskHash } from "./task-hasher";
 import { TaskScheduler } from "./task-scheduler";
 import { FingerprintManager } from "./fingerprint";
-import { FileAccessTracker } from "./file-access-tracker";
+import { TrackedTaskExecutor } from "./tracked-executor";
 
 /**
  * Options for the TaskOrchestrator.
@@ -48,6 +48,12 @@ export interface TaskOrchestratorOptions {
     fingerprintEnvPatterns?: string[];
     /** Whether to show cache miss diagnostics */
     cacheDiagnostics?: boolean;
+    /**
+     * A function that resolves the shell command for a task.
+     * Required for auto-fingerprint mode to track file accesses via strace.
+     * If not provided, falls back to Nx-style hashing for fingerprint creation.
+     */
+    resolveCommand?: (task: Task) => string | undefined;
 }
 
 /**
@@ -70,9 +76,10 @@ export class TaskOrchestrator {
     readonly #captureOutput: boolean;
     readonly #autoFingerprint: boolean;
     readonly #fingerprintManager: FingerprintManager | null;
-    readonly #fileAccessTracker: FileAccessTracker | null;
+    readonly #trackedExecutor: TrackedTaskExecutor | null;
     readonly #fingerprintEnvPatterns: string[];
     readonly #cacheDiagnostics: boolean;
+    readonly #resolveCommand: ((task: Task) => string | undefined) | null;
     readonly #results: TaskResults = new Map();
     #aborted = false;
 
@@ -88,13 +95,14 @@ export class TaskOrchestrator {
         this.#autoFingerprint = options.autoFingerprint ?? false;
         this.#fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
+        this.#resolveCommand = options.resolveCommand ?? null;
 
         if (this.#autoFingerprint) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
-            this.#fileAccessTracker = new FileAccessTracker(options.workspaceRoot);
+            this.#trackedExecutor = new TrackedTaskExecutor(options.workspaceRoot);
         } else {
             this.#fingerprintManager = null;
-            this.#fileAccessTracker = null;
+            this.#trackedExecutor = null;
         }
     }
 
@@ -387,68 +395,63 @@ export class TaskOrchestrator {
     /**
      * Executes a task with file access tracking and stores the fingerprint.
      * Used in auto-fingerprint mode.
+     *
+     * Strategy:
+     * 1. If a shell command can be resolved AND strace is supported,
+     *    run via TrackedTaskExecutor to capture actual file accesses
+     * 2. Otherwise, run via the standard TaskExecutor and build fingerprint
+     *    from the Nx-style file hash inputs as a fallback
      */
     async #executeTaskWithTracking(task: Task, startTime: number): Promise<TaskResult> {
-        if (!this.#fileAccessTracker || !this.#fingerprintManager) {
-            // Fallback to standard execution if tracking isn't available
+        if (!this.#fingerprintManager) {
             return this.#executeTask(task, startTime);
         }
 
-        const useStrace = this.#fileAccessTracker.isSupported();
+        const taskCommand = `${task.target.project}:${task.target.target}`;
+        const cwd = task.projectRoot
+            ? `${this.#workspaceRoot}/${task.projectRoot}`
+            : this.#workspaceRoot;
 
         try {
             let code: number;
             let terminalOutput: string;
             let fingerprint: TaskFingerprint | undefined;
 
-            if (useStrace) {
-                // Use strace-based tracking for any command
-                const targetConfig = task.target;
-                const command = `${targetConfig.project}:${targetConfig.target}`;
+            // Try to resolve a shell command for strace-based tracking
+            const shellCommand = this.#resolveCommand?.(task);
+            const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
 
-                // For strace tracking, we need the actual command
-                // The task executor handles the actual execution
-                // We'll execute via the normal executor and create a fingerprint
-                // based on the project files that changed
-                const executionResult = await this.#taskExecutor(task, {
-                    cwd: task.projectRoot
-                        ? `${this.#workspaceRoot}/${task.projectRoot}`
-                        : this.#workspaceRoot,
-                    captureOutput: this.#captureOutput,
-                });
+            if (canTrack && this.#trackedExecutor) {
+                // Path A: Actual file access tracking via strace
+                const trackedResult = await this.#trackedExecutor.execute(
+                    task,
+                    { cwd, captureOutput: this.#captureOutput },
+                    shellCommand,
+                );
 
-                code = executionResult.code;
-                terminalOutput = executionResult.terminalOutput;
+                code = trackedResult.code;
+                terminalOutput = trackedResult.terminalOutput;
 
-                // Create fingerprint from the task's project files
-                // Since we can't easily strace the task executor, we use the
-                // standard approach of hashing the project files but store it
-                // as a fingerprint for future validation
-                const hashDetails = await this.#taskHasher.hashTask(task);
-                const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => ({
-                    path: `${this.#workspaceRoot}/${filePath}`,
-                    type: "read" as const,
-                }));
-
+                // Build fingerprint from ACTUAL file accesses recorded by strace
                 fingerprint = await this.#fingerprintManager.createFingerprint(
-                    fileAccesses,
-                    command,
+                    trackedResult.accesses,
+                    taskCommand,
                     task.overrides,
                     process.env as Record<string, string | undefined>,
                     this.#fingerprintEnvPatterns,
                 );
             } else {
-                // No strace support - use standard execution with hash-based fingerprint
+                // Path B: Fallback - run via standard executor, build fingerprint
+                // from Nx-style project file scanning
                 const executionResult = await this.#taskExecutor(task, {
-                    cwd: task.projectRoot
-                        ? `${this.#workspaceRoot}/${task.projectRoot}`
-                        : this.#workspaceRoot,
+                    cwd,
                     captureOutput: this.#captureOutput,
                 });
 
                 code = executionResult.code;
                 terminalOutput = executionResult.terminalOutput;
 
+                // Use the task hasher to discover project files as a fallback
                 const hashDetails = await this.#taskHasher.hashTask(task);
                 const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => ({
                     path: `${this.#workspaceRoot}/${filePath}`,
@@ -457,7 +460,7 @@ export class TaskOrchestrator {
 
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     fileAccesses,
-                    `${task.target.project}:${task.target.target}`,
+                    taskCommand,
                     task.overrides,
                     process.env as Record<string, string | undefined>,
                     this.#fingerprintEnvPatterns,
@@ -480,7 +483,6 @@ export class TaskOrchestrator {
 
             // Cache successful results with fingerprint
             if (code === 0 && task.cache !== false && fingerprint) {
-                // Generate a hash from the fingerprint for cache storage
                 const hash = this.#hashFingerprint(fingerprint);
 
                 task.hash = hash;
@@ -493,7 +495,6 @@ export class TaskOrchestrator {
                     fingerprint,
                 );
 
-                // Store the task ID → hash mapping
                 await this.#cache.setTaskIndex(task.id, hash);
             }
 

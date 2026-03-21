@@ -3,6 +3,7 @@ import {
     mkdir,
     readdir,
     readFile,
+    rename,
     rm,
     stat,
     writeFile,
@@ -51,19 +52,29 @@ const DEFAULT_MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
  *     outputs/          (Archived build outputs)
  *     code              (Exit code)
  *     terminalOutput    (Captured terminal output)
+ *     fingerprint.json  (Auto-fingerprint data, optional)
  *     .commit           (Marker indicating complete cache entry)
+ *   .task-index.json    (Task ID → hash mapping for auto-fingerprint)
  * ```
+ *
+ * Atomicity: Cache entries are written to a temporary directory first,
+ * then renamed into place. The `.commit` marker ensures readers only
+ * see complete entries.
  */
 export class Cache {
     readonly #workspaceRoot: string;
     readonly #cacheDirectory: string;
     readonly #maxCacheAge: number;
+    readonly #maxCacheSize: number | null;
 
     constructor(options: CacheOptions) {
         this.#workspaceRoot = options.workspaceRoot;
         this.#cacheDirectory =
             options.cacheDirectory ?? join(options.workspaceRoot, ".task-runner-cache");
         this.#maxCacheAge = options.maxCacheAge ?? DEFAULT_MAX_CACHE_AGE;
+        this.#maxCacheSize = options.maxCacheSize
+            ? parseCacheSize(options.maxCacheSize)
+            : null;
     }
 
     /**
@@ -119,6 +130,9 @@ export class Cache {
 
     /**
      * Stores a task result in the cache.
+     *
+     * Uses atomic write: builds the entry in a temporary directory,
+     * then renames into place to avoid partial reads by concurrent processes.
      */
     async put(
         hash: string,
@@ -128,32 +142,37 @@ export class Cache {
         fingerprint?: TaskFingerprint,
     ): Promise<void> {
         const cacheEntryDir = join(this.#cacheDirectory, hash);
+        const tempDir = join(
+            this.#cacheDirectory,
+            `.tmp-${hash}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        );
 
-        // Remove any existing incomplete entry
-        await this.#removeEntry(cacheEntryDir);
+        try {
+            // Build the entry in a temp directory
+            await mkdir(tempDir, { recursive: true });
 
-        // Create the cache entry directory
-        await mkdir(cacheEntryDir, { recursive: true });
+            await writeFile(join(tempDir, "code"), String(code));
+            await writeFile(join(tempDir, "terminalOutput"), terminalOutput);
 
-        // Store exit code
-        await writeFile(join(cacheEntryDir, "code"), String(code));
+            if (fingerprint) {
+                await writeFile(
+                    join(tempDir, "fingerprint.json"),
+                    JSON.stringify(fingerprint),
+                );
+            }
 
-        // Store terminal output
-        await writeFile(join(cacheEntryDir, "terminalOutput"), terminalOutput);
+            await this.#archiveOutputs(tempDir, outputs);
 
-        // Store fingerprint if provided
-        if (fingerprint) {
-            await writeFile(
-                join(cacheEntryDir, "fingerprint.json"),
-                JSON.stringify(fingerprint),
-            );
+            // Write the .commit marker last
+            await writeFile(join(tempDir, ".commit"), "");
+
+            // Atomically move into place
+            await this.#removeEntry(cacheEntryDir);
+            await rename(tempDir, cacheEntryDir);
+        } catch {
+            // Clean up temp dir on failure
+            await this.#removeEntry(tempDir);
         }
-
-        // Archive output files
-        await this.#archiveOutputs(cacheEntryDir, outputs);
-
-        // Write the .commit marker last to indicate a complete entry
-        await writeFile(join(cacheEntryDir, ".commit"), "");
     }
 
     /**
@@ -224,10 +243,15 @@ export class Cache {
 
     /**
      * Stores the mapping from task ID to cache hash.
-     * Used in auto-fingerprint mode for looking up entries by task ID.
+     * Uses atomic write to prevent corruption from concurrent access.
      */
     async setTaskIndex(taskId: string, hash: string): Promise<void> {
         const indexFile = join(this.#cacheDirectory, ".task-index.json");
+        const tempFile = join(
+            this.#cacheDirectory,
+            `.task-index-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.tmp`,
+        );
+
         let index: Record<string, string> = {};
 
         try {
@@ -241,32 +265,79 @@ export class Cache {
         index[taskId] = hash;
 
         await mkdir(this.#cacheDirectory, { recursive: true });
-        await writeFile(indexFile, JSON.stringify(index));
+        await writeFile(tempFile, JSON.stringify(index));
+
+        try {
+            await rename(tempFile, indexFile);
+        } catch {
+            // Fallback: direct write if rename fails (cross-device)
+            await writeFile(indexFile, JSON.stringify(index));
+            await rm(tempFile, { force: true });
+        }
     }
 
     /**
-     * Removes old cache entries that exceed the maximum age.
+     * Removes old cache entries that exceed the maximum age,
+     * and enforces the maximum cache size by evicting oldest entries.
      */
     async removeOldEntries(): Promise<void> {
         try {
             const entries = await readdir(this.#cacheDirectory);
             const now = Date.now();
 
-            const removalPromises = entries.map(async (entry) => {
+            // Collect entry metadata for age and size eviction
+            const entryInfos: Array<{ name: string; path: string; mtimeMs: number; size: number }> = [];
+
+            for (const entry of entries) {
+                // Skip index files and temp dirs
+                if (entry.startsWith(".")) {
+                    continue;
+                }
+
                 const entryPath = join(this.#cacheDirectory, entry);
 
                 try {
                     const entryStat = await stat(entryPath);
 
                     if (now - entryStat.mtimeMs > this.#maxCacheAge) {
+                        // Remove expired entries immediately
                         await this.#removeEntry(entryPath);
+                    } else {
+                        const size = await this.#getDirectorySize(entryPath);
+
+                        entryInfos.push({
+                            name: entry,
+                            path: entryPath,
+                            mtimeMs: entryStat.mtimeMs,
+                            size,
+                        });
                     }
                 } catch {
                     // Entry may have been removed already
                 }
-            });
+            }
 
-            await Promise.all(removalPromises);
+            // Enforce max cache size by evicting oldest entries first
+            if (this.#maxCacheSize !== null) {
+                // Sort by modification time (oldest first)
+                entryInfos.sort((a, b) => a.mtimeMs - b.mtimeMs);
+
+                let totalSize = 0;
+
+                for (const info of entryInfos) {
+                    totalSize += info.size;
+                }
+
+                // Evict oldest entries until under the limit
+                for (const info of entryInfos) {
+                    if (totalSize <= this.#maxCacheSize) {
+                        break;
+                    }
+
+                    await this.#removeEntry(info.path);
+                    totalSize -= info.size;
+                }
+            }
         } catch {
             // Cache directory may not exist yet
         }
@@ -306,6 +377,33 @@ export class Cache {
                 // Output file doesn't exist, skip it
             }
         }
+    }
+
+    /**
+     * Calculates the total size of a directory in bytes.
+     */
+    async #getDirectorySize(dirPath: string): Promise<number> {
+        let totalSize = 0;
+
+        try {
+            const entries = await readdir(dirPath, { withFileTypes: true });
+
+            for (const entry of entries) {
+                const fullPath = join(dirPath, entry.name);
+
+                if (entry.isDirectory()) {
+                    totalSize += await this.#getDirectorySize(fullPath);
+                } else if (entry.isFile()) {
+                    const fileStat = await stat(fullPath);
+
+                    totalSize += fileStat.size;
+                }
+            }
+        } catch {
+            // Ignore errors
+        }
+
+        return totalSize;
     }
 
     /**

@@ -73,5 +73,12 @@ export { FingerprintManager } from "./fingerprint";
 export type { FileAccess, TrackingResult } from "./file-access-tracker";
 export { FileAccessTracker } from "./file-access-tracker";
 
+// Tracked executor (for auto-fingerprint mode)
+export type { TrackedExecutionResult } from "./tracked-executor";
+export { TrackedTaskExecutor } from "./tracked-executor";
+
+// Native bindings (optional, for performance)
+export { isNativeAvailable, loadNativeBindings } from "./native-binding";
+
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";
