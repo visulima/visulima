@@ -229,10 +229,16 @@ const SelectContent = ({
         };
     }, [open, side, sideOffset, align, triggerRef]);
 
-    // Focus search input when dropdown opens
+    // Focus search input or listbox when dropdown opens
     useEffect(() => {
-        if (open && searchable && searchInputRef.current) {
+        if (!open) {
+            return;
+        }
+
+        if (searchable && searchInputRef.current) {
             searchInputRef.current.focus();
+        } else if (listRef.current) {
+            listRef.current.focus();
         }
     }, [open, searchable]);
 

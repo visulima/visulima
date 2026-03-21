@@ -409,6 +409,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             } catch (error_) {
                 // eslint-disable-next-line no-console
                 console.error(`[annotations] ${action} failed for ${id}:`, error_);
+                setError(error_ instanceof Error ? error_.message : `Failed to ${action} annotation`);
             }
         },
         [helpers, load],

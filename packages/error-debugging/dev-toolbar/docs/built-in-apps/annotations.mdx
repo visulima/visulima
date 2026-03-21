@@ -284,7 +284,7 @@ Component names and stacks are included when detected. The level of detail adapt
 
 ## Annotation Settings
 
-Open the **Annotations** panel and click the **Settings** button in the toolbar bar to access annotation settings:
+Open the **Annotations** panel and click the **Settings** button in the toolbar to access annotation settings:
 
 | Setting                | Options                                                               | Default     |
 | ---------------------- | --------------------------------------------------------------------- | ----------- |
@@ -426,7 +426,7 @@ The `accessibility` field captures ARIA attributes as a structured object.
 
 | Field                           | Type      | Description                                            |
 | ------------------------------- | --------- | ------------------------------------------------------ |
-| `accessibility.role`            | `string`  | ARIA role (explicit only — implicit roles are omitted) |
+| `accessibility.role`            | `string`  | ARIA role (explicit or implicit)                       |
 | `accessibility.ariaLabel`       | `string`  | `aria-label` value                                     |
 | `accessibility.ariaDescribedBy` | `string`  | Resolved text from `aria-describedby` target           |
 | `accessibility.focusable`       | `boolean` | Whether the element is keyboard-focusable              |
@@ -445,7 +445,7 @@ The `accessibility` field captures ARIA attributes as a structured object.
 | Field                | Type              | Description                                                    |
 | -------------------- | ----------------- | -------------------------------------------------------------- |
 | `resolvedAt`         | `string`          | ISO 8601 timestamp when resolved or dismissed                  |
-| `resolvedBy`         | `string`          | Who resolved it: `"human"` or `"agent"`                        |
+| `resolvedBy`         | `string`          | Who resolved it: `"human"`, `"agent"`, or a specific agent name |
 | `screenshot`         | `string`          | Relative path to screenshot file (e.g. `screenshots/uuid.png`) |
 | `thread`             | `ThreadMessage[]` | Conversation thread between human and AI agent                 |
 | `thread[].id`        | `string`          | Unique message ID (server-generated)                           |

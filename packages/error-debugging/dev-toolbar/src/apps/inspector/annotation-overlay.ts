@@ -36,6 +36,7 @@ import { getAnnotationPalette } from "./theme-palette";
 const MARKER_CLASS = "__vdt_annotation_marker";
 const FORM_ID = "__vdt_annotation_form";
 const DETAIL_ID = "__vdt_annotation_detail";
+const AREA_OUTLINE_ID = "__vdt_area_outline";
 
 const INTENT_COLORS: Record<AnnotationIntent, { bg: string; border: string; fg: string }> = {
     approve: { bg: "rgba(34,197,94,0.15)", border: "rgba(34,197,94,0.6)", fg: "#22c55e" },
@@ -418,10 +419,11 @@ export const removeAllMarkers = (): void => {
     unfreezeAll();
 };
 
-/** Close all annotation popups (form, detail) but keep markers. */
+/** Close all annotation popups (form, detail) and area outline, but keep markers. */
 export const closeAnnotationPopups = (): void => {
     removeAnnotationForm();
     removeAnnotationDetail();
+    document.getElementById(AREA_OUTLINE_ID)?.remove();
 };
 
 const renderMarkers = (): void => {
@@ -1058,7 +1060,15 @@ export const showAnnotationForm = (
                     comment,
                     intent: selectedIntent,
                     severity: selectedSeverity,
+                    ...(screenshotDataUrl !== "existing" && { screenshot: screenshotDataUrl }),
                 });
+
+                // Save new screenshot file if captured
+                if (screenshotDataUrl && screenshotDataUrl !== "existing") {
+                    await rpc.saveScreenshot(editAnnotation.id, screenshotDataUrl).catch(() => {
+                        /* ignore */
+                    });
+                }
             } else {
                 // Create mode — capture all context
                 const fixed = isElementFixed(element);
@@ -1074,7 +1084,7 @@ export const showAnnotationForm = (
 
                 const data: CreateAnnotationData = {
                     accessibility: a11y,
-                    boundingBox: { height: rect.height, width: rect.width, x: rect.x, y: rect.y },
+                    boundingBox: { height: rect.height, width: rect.width, x: rect.x + (fixed ? 0 : window.scrollX), y: rect.y + (fixed ? 0 : window.scrollY) },
                     comment,
                     computedStyles: styles || undefined,
                     cssClasses: cleanCssClasses(element.classList),
@@ -1270,7 +1280,7 @@ export const showMultiSelectForm = (elements: Element[], selectionRect: DOMRect,
         const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
 
         const data: CreateAnnotationData = {
-            boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x, y: selectionRect.y },
+            boundingBox: { height: selectionRect.height, width: selectionRect.width, x: selectionRect.x + window.scrollX, y: selectionRect.y + window.scrollY },
             comment,
             elementBoundingBoxes: boundingBoxes,
             elementTag: "multi-select",
@@ -1309,8 +1319,6 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     const c = getPalette();
 
     // Show the area outline with a "+" badge (like agentation)
-    const AREA_OUTLINE_ID = "__vdt_area_outline";
-
     document.getElementById(AREA_OUTLINE_ID)?.remove();
 
     const outline = document.createElement("div");
@@ -1465,8 +1473,8 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
                     boundingBox: {
                         height: selectionRect.height,
                         width: selectionRect.width,
-                        x: selectionRect.x,
-                        y: selectionRect.y,
+                        x: selectionRect.x + window.scrollX,
+                        y: selectionRect.y + window.scrollY,
                     },
                     comment,
                     elementLabel: "Area selection",
@@ -1764,7 +1772,7 @@ const showAnnotationDetail = (annotation: Annotation): void => {
     ].join(";");
 
     // Position — will be set after measuring
-    const { left: markerLeft, top: markerTop } = toViewportCoords(annotation.x, annotation.y);
+    const { left: markerLeft, top: markerTop } = toViewportCoords(annotation.x, annotation.y, annotation.isFixed ?? false);
 
     // ═══ HEADER BAR ═══
     const header = document.createElement("div");
