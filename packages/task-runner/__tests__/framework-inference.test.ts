@@ -1,31 +1,29 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import {
-    detectFrameworks,
-    inferFrameworkEnvPatterns,
-    getFrameworkEnvVars,
-} from "../src/framework-inference";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `fw-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+import { detectFrameworks, getFrameworkEnvVariables, inferFrameworkEnvPatterns } from "../src/framework-inference";
 
-    await mkdir(dir, { recursive: true });
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `fw-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    return dir;
+    await mkdir(directory, { recursive: true });
+
+    return directory;
 };
 
-describe("detectFrameworks", () => {
+describe(detectFrameworks, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should detect Next.js", async () => {
@@ -206,34 +204,28 @@ describe("detectFrameworks", () => {
     });
 });
 
-describe("inferFrameworkEnvPatterns", () => {
+describe(inferFrameworkEnvPatterns, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should infer patterns across multiple projects", async () => {
         await mkdir(join(workspaceRoot, "packages/web"), { recursive: true });
         await mkdir(join(workspaceRoot, "packages/admin"), { recursive: true });
 
-        await writeFile(
-            join(workspaceRoot, "packages/web/package.json"),
-            JSON.stringify({ dependencies: { next: "14.0.0" } }),
-        );
+        await writeFile(join(workspaceRoot, "packages/web/package.json"), JSON.stringify({ dependencies: { next: "14.0.0" } }));
 
-        await writeFile(
-            join(workspaceRoot, "packages/admin/package.json"),
-            JSON.stringify({ devDependencies: { vite: "5.0.0" } }),
-        );
+        await writeFile(join(workspaceRoot, "packages/admin/package.json"), JSON.stringify({ devDependencies: { vite: "5.0.0" } }));
 
         const patterns = await inferFrameworkEnvPatterns(workspaceRoot, {
-            web: { root: "packages/web" },
             admin: { root: "packages/admin" },
+            web: { root: "packages/web" },
         });
 
         expect(patterns).toContain("NEXT_PUBLIC_*");
@@ -244,15 +236,9 @@ describe("inferFrameworkEnvPatterns", () => {
         await mkdir(join(workspaceRoot, "packages/web1"), { recursive: true });
         await mkdir(join(workspaceRoot, "packages/web2"), { recursive: true });
 
-        await writeFile(
-            join(workspaceRoot, "packages/web1/package.json"),
-            JSON.stringify({ dependencies: { next: "14.0.0" } }),
-        );
+        await writeFile(join(workspaceRoot, "packages/web1/package.json"), JSON.stringify({ dependencies: { next: "14.0.0" } }));
 
-        await writeFile(
-            join(workspaceRoot, "packages/web2/package.json"),
-            JSON.stringify({ dependencies: { next: "13.0.0" } }),
-        );
+        await writeFile(join(workspaceRoot, "packages/web2/package.json"), JSON.stringify({ dependencies: { next: "13.0.0" } }));
 
         const patterns = await inferFrameworkEnvPatterns(workspaceRoot, {
             web1: { root: "packages/web1" },
@@ -266,54 +252,48 @@ describe("inferFrameworkEnvPatterns", () => {
     });
 });
 
-describe("getFrameworkEnvVars", () => {
+describe(getFrameworkEnvVariables, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should return matching framework env vars", async () => {
         const packageJsonPath = join(workspaceRoot, "package.json");
 
-        await writeFile(
-            packageJsonPath,
-            JSON.stringify({ dependencies: { next: "14.0.0" } }),
-        );
+        await writeFile(packageJsonPath, JSON.stringify({ dependencies: { next: "14.0.0" } }));
 
         const env = {
-            NEXT_PUBLIC_API_URL: "https://api.example.com",
             NEXT_PUBLIC_ANALYTICS_ID: "abc123",
-            SECRET_KEY: "secret",
+            NEXT_PUBLIC_API_URL: "https://api.example.com",
             PATH: "/usr/bin",
+            SECRET_KEY: "secret",
         };
 
-        const result = await getFrameworkEnvVars(packageJsonPath, env);
+        const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
         expect(result).toEqual({
-            NEXT_PUBLIC_API_URL: "https://api.example.com",
             NEXT_PUBLIC_ANALYTICS_ID: "abc123",
+            NEXT_PUBLIC_API_URL: "https://api.example.com",
         });
     });
 
     it("should return empty for no matching env vars", async () => {
         const packageJsonPath = join(workspaceRoot, "package.json");
 
-        await writeFile(
-            packageJsonPath,
-            JSON.stringify({ dependencies: { next: "14.0.0" } }),
-        );
+        await writeFile(packageJsonPath, JSON.stringify({ dependencies: { next: "14.0.0" } }));
 
         const env = {
-            SECRET_KEY: "secret",
             PATH: "/usr/bin",
+            SECRET_KEY: "secret",
         };
 
-        const result = await getFrameworkEnvVars(packageJsonPath, env);
+        const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
         expect(result).toEqual({});
     });
@@ -331,11 +311,11 @@ describe("getFrameworkEnvVars", () => {
 
         const env = {
             NEXT_PUBLIC_API: "https://api.example.com",
-            VITE_APP_TITLE: "My App",
             OTHER_VAR: "ignored",
+            VITE_APP_TITLE: "My App",
         };
 
-        const result = await getFrameworkEnvVars(packageJsonPath, env);
+        const result = await getFrameworkEnvVariables(packageJsonPath, env);
 
         expect(result).toEqual({
             NEXT_PUBLIC_API: "https://api.example.com",

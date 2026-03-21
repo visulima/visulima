@@ -1,25 +1,29 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { CompositeLifeCycle, ConsoleLifeCycle, EmptyLifeCycle } from "../src/life-cycle";
-import type { Task, TaskResult, LifeCycleInterface } from "../src/types";
+import type { LifeCycleInterface, Task, TaskResult } from "../src/types";
 
-const createTask = (id: string): Task => ({
-    id,
-    target: { project: id.split(":")[0]!, target: id.split(":")[1]! },
-    overrides: {},
-    outputs: [],
-});
+const createTask = (id: string): Task => {
+    return {
+        id,
+        outputs: [],
+        overrides: {},
+        target: { project: id.split(":")[0] as string, target: id.split(":")[1] as string },
+    };
+};
 
-const createResult = (taskId: string, status: "success" | "failure" = "success"): TaskResult => ({
-    task: createTask(taskId),
-    status,
-    terminalOutput: `output for ${taskId}`,
-    startTime: 1000,
-    endTime: 2000,
-    code: status === "success" ? 0 : 1,
-});
+const createResult = (taskId: string, status: "success" | "failure" = "success"): TaskResult => {
+    return {
+        code: status === "success" ? 0 : 1,
+        endTime: 2000,
+        startTime: 1000,
+        status,
+        task: createTask(taskId),
+        terminalOutput: `output for ${taskId}`,
+    };
+};
 
-describe("EmptyLifeCycle", () => {
+describe(EmptyLifeCycle, () => {
     it("should not throw when methods are called", () => {
         const lc = new EmptyLifeCycle();
 
@@ -34,17 +38,17 @@ describe("EmptyLifeCycle", () => {
     });
 });
 
-describe("CompositeLifeCycle", () => {
+describe(CompositeLifeCycle, () => {
     it("should forward events to all registered handlers", () => {
         const handler1: LifeCycleInterface = {
-            startCommand: vi.fn(),
             endCommand: vi.fn(),
             scheduleTask: vi.fn(),
+            startCommand: vi.fn(),
         };
 
         const handler2: LifeCycleInterface = {
-            startCommand: vi.fn(),
             scheduleTask: vi.fn(),
+            startCommand: vi.fn(),
         };
 
         const composite = new CompositeLifeCycle([handler1, handler2]);
@@ -53,9 +57,9 @@ describe("CompositeLifeCycle", () => {
         composite.endCommand();
         composite.scheduleTask(createTask("a:build"));
 
-        expect(handler1.startCommand).toHaveBeenCalledOnce();
-        expect(handler2.startCommand).toHaveBeenCalledOnce();
-        expect(handler1.endCommand).toHaveBeenCalledOnce();
+        expect(handler1.startCommand).toHaveBeenCalledTimes(1);
+        expect(handler2.startCommand).toHaveBeenCalledTimes(1);
+        expect(handler1.endCommand).toHaveBeenCalledTimes(1);
         expect(handler1.scheduleTask).toHaveBeenCalledWith(expect.objectContaining({ id: "a:build" }));
         expect(handler2.scheduleTask).toHaveBeenCalledWith(expect.objectContaining({ id: "a:build" }));
     });
@@ -74,7 +78,7 @@ describe("CompositeLifeCycle", () => {
     });
 });
 
-describe("ConsoleLifeCycle", () => {
+describe(ConsoleLifeCycle, () => {
     it("should log task starts", () => {
         const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
         const lc = new ConsoleLifeCycle();

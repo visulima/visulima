@@ -1,7 +1,7 @@
 import { exec } from "node:child_process";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
+import { join, resolve } from "node:path";
 
 /**
  * Represents a file access recorded during task execution.
@@ -33,9 +33,10 @@ export interface TrackingResult {
  */
 export class FileAccessTracker {
     readonly #workspaceRoot: string;
+
     readonly #excludePatterns: RegExp[];
 
-    constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
+    public constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
         this.#workspaceRoot = resolve(workspaceRoot);
         this.#excludePatterns = excludePatterns ?? [
             /\/proc\//,
@@ -51,7 +52,8 @@ export class FileAccessTracker {
     /**
      * Returns true if file access tracking is supported on the current platform.
      */
-    isSupported(): boolean {
+    // eslint-disable-next-line class-methods-use-this
+    public isSupported(): boolean {
         return platform() === "linux";
     }
 
@@ -59,7 +61,7 @@ export class FileAccessTracker {
      * Runs a command and tracks all file system accesses.
      * On unsupported platforms, runs the command without tracking.
      */
-    async track(
+    public async track(
         command: string,
         options: {
             cwd?: string;
@@ -83,11 +85,11 @@ export class FileAccessTracker {
             env?: Record<string, string | undefined>;
         },
     ): Promise<TrackingResult> {
-        const traceDir = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
+        const traceDirectory = join(this.#workspaceRoot, "node_modules", ".cache", "task-runner");
 
-        await mkdir(traceDir, { recursive: true });
-
-        const traceFile = join(traceDir, `strace-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.log`);
+        await mkdir(traceDirectory, { recursive: true });
+        // eslint-disable-next-line sonarjs/pseudo-random
+        const traceFile = join(traceDirectory, `strace-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.log`);
 
         // strace flags:
         // -f: follow forks
@@ -96,31 +98,36 @@ export class FileAccessTracker {
         // -qq: suppress non-essential messages
         const straceCommand = `strace -f -qq -e trace=open,openat,stat,lstat,newfstatat,access,getdents,getdents64 -o ${traceFile} -- ${command}`;
 
-        return new Promise((promiseResolve) => {
-            const child = exec(straceCommand, {
-                cwd: options.cwd ?? this.#workspaceRoot,
-                env: { ...process.env, ...options.env } as Record<string, string>,
-                maxBuffer: 50 * 1024 * 1024, // 50MB
-            }, async (_error, stdout, stderr) => {
-                let accesses: FileAccess[] = [];
+        return new Promise((_resolve) => {
+            // eslint-disable-next-line sonarjs/os-command
+            const child = exec(
+                straceCommand,
+                {
+                    cwd: options.cwd ?? this.#workspaceRoot,
+                    env: { ...process.env, ...options.env } as Record<string, string>,
+                    maxBuffer: 50 * 1024 * 1024, // 50MB
+                },
+                async (_error, stdout, stderr) => {
+                    let accesses: FileAccess[] = [];
 
-                try {
-                    const traceContent = await readFile(traceFile, "utf-8");
+                    try {
+                        const traceContent = await readFile(traceFile, "utf8");
 
-                    accesses = this.#parseStraceOutput(traceContent, options.cwd ?? this.#workspaceRoot);
-                } catch {
-                    // Trace file might not exist if strace isn't available
-                }
+                        accesses = this.#parseStraceOutput(traceContent, options.cwd ?? this.#workspaceRoot);
+                    } catch {
+                        // Trace file might not exist if strace isn't available
+                    }
 
-                // Clean up trace file
-                await rm(traceFile, { force: true }).catch(() => {});
+                    // Clean up trace file
+                    await rm(traceFile, { force: true }).catch(() => {});
 
-                promiseResolve({
-                    accesses,
-                    code: child.exitCode ?? 1,
-                    output: stdout + stderr,
-                });
-            });
+                    _resolve({
+                        accesses,
+                        code: child.exitCode ?? 1,
+                        output: stdout + stderr,
+                    });
+                },
+            );
         });
     }
 
@@ -146,7 +153,8 @@ export class FileAccessTracker {
     /**
      * Parses a single strace output line.
      */
-    #parseStraceLine(line: string, cwd: string): FileAccess | null {
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    #parseStraceLine(line: string, cwd: string): FileAccess | undefined {
         // Match patterns like:
         // openat(AT_FDCWD, "/path/to/file", O_RDONLY) = 3
         // stat("/path/to/file", {st_mode=...}) = 0
@@ -154,7 +162,7 @@ export class FileAccessTracker {
         // openat(AT_FDCWD, "/path/to/file", O_RDONLY) = -1 ENOENT
         // getdents64(3, ...) = 0
 
-        let path: string | null = null;
+        let path: string | undefined;
         let type: FileAccess["type"] = "read";
         let isMissing = false;
 
@@ -205,7 +213,7 @@ export class FileAccessTracker {
         // Skip these for now; directory tracking is done via openat with O_DIRECTORY
 
         if (!path) {
-            return null;
+            return undefined;
         }
 
         // Resolve relative paths
@@ -215,12 +223,12 @@ export class FileAccessTracker {
 
         // Filter out system paths and excluded patterns
         if (this.#shouldExclude(path)) {
-            return null;
+            return undefined;
         }
 
         // Only include paths within or related to the workspace
         if (!path.startsWith(this.#workspaceRoot)) {
-            return null;
+            return undefined;
         }
 
         return { path, type };
@@ -243,18 +251,23 @@ export class FileAccessTracker {
             env?: Record<string, string | undefined>;
         },
     ): Promise<TrackingResult> {
-        return new Promise((promiseResolve) => {
-            const child = exec(command, {
-                cwd: options.cwd ?? this.#workspaceRoot,
-                env: { ...process.env, ...options.env } as Record<string, string>,
-                maxBuffer: 50 * 1024 * 1024,
-            }, (_error, stdout, stderr) => {
-                promiseResolve({
-                    accesses: [],
-                    code: child.exitCode ?? 1,
-                    output: stdout + stderr,
-                });
-            });
+        return new Promise((_resolve) => {
+            // eslint-disable-next-line sonarjs/os-command
+            const child = exec(
+                command,
+                {
+                    cwd: options.cwd ?? this.#workspaceRoot,
+                    env: { ...process.env, ...options.env } as Record<string, string>,
+                    maxBuffer: 50 * 1024 * 1024,
+                },
+                (_error, stdout, stderr) => {
+                    _resolve({
+                        accesses: [],
+                        code: child.exitCode ?? 1,
+                        output: stdout + stderr,
+                    });
+                },
+            );
         });
     }
 }
@@ -265,7 +278,7 @@ export class FileAccessTracker {
  *
  * This is an alternative to strace that works cross-platform for Node.js processes.
  */
-export const generatePreloadScript = (outputPath: string): string => `
+export const generatePreloadScript = (outputPath: string): string => String.raw`
 import { createWriteStream } from "node:fs";
 import { Module } from "node:module";
 
@@ -279,7 +292,7 @@ const _originalReaddir = require("node:fs").readdir;
 const logStream = createWriteStream(${JSON.stringify(outputPath)}, { flags: "a" });
 
 const log = (type, path) => {
-    logStream.write(JSON.stringify({ type, path }) + "\\n");
+    logStream.write(JSON.stringify({ type, path }) + "\n");
 };
 
 const fs = require("node:fs");

@@ -1,85 +1,113 @@
+import { execFile } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
-import { execFile } from "node:child_process";
 
 /**
  * Options for the remote cache.
  */
-export interface RemoteCacheOptions {
-    /** Remote cache server URL (e.g., "https://cache.example.com") */
-    url: string;
-    /** Authentication token for the remote cache */
-    token?: string;
-    /** Team ID or namespace for cache isolation */
-    teamId?: string;
-    /** Request timeout in milliseconds (default: 30000) */
-    timeout?: number;
-    /** Whether to enable remote cache reads */
-    read?: boolean;
-    /** Whether to enable remote cache writes */
-    write?: boolean;
+interface RemoteCacheOptions {
     /**
      * Called when a fire-and-forget upload fails.
      * Since uploads are non-blocking, errors are silently swallowed by default.
      * Provide this callback to log or report upload failures.
      */
     onUploadError?: (hash: string, error: unknown) => void;
+    /** Whether to enable remote cache reads */
+    read?: boolean;
+    /** Team ID or namespace for cache isolation */
+    teamId?: string;
+    /** Request timeout in milliseconds (default: 30000) */
+    timeout?: number;
+    /** Authentication token for the remote cache */
+    token?: string;
+    /** Remote cache server URL (e.g., "https://cache.example.com") */
+    url: string;
+    /** Whether to enable remote cache writes */
+    write?: boolean;
 }
+
+const createTarGz = (sourceDirectory: string, outputPath: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        // eslint-disable-next-line sonarjs/no-os-command-from-path
+        execFile("tar", ["-czf", outputPath, "-C", sourceDirectory, "."], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+const extractTarGz = (archivePath: string, destinationDirectory: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+        // eslint-disable-next-line sonarjs/no-os-command-from-path
+        execFile("tar", ["-xzf", archivePath, "-C", destinationDirectory], (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
 
 /**
  * HTTP-based remote cache compatible with the Turborepo remote cache protocol.
  *
  * Protocol:
- * - GET  /v8/artifacts/{hash}?teamId={team}  → retrieve cached artifact (gzipped tar)
- * - PUT  /v8/artifacts/{hash}?teamId={team}  → store artifact
- * - POST /v8/artifacts/events                → analytics (optional)
+ * - GET  /v8/artifacts/{hash}?teamId={team}  -> retrieve cached artifact (gzipped tar)
+ * - PUT  /v8/artifacts/{hash}?teamId={team}  -> store artifact
+ * - POST /v8/artifacts/events                -> analytics (optional)
  *
  * Authentication via `Authorization: Bearer {token}` header.
  *
  * The cache entry is a gzipped tarball containing the cache directory contents
  * (code, terminalOutput, fingerprint.json, outputs/, .commit).
  */
-export class RemoteCache {
+class RemoteCache {
     readonly #url: string;
-    readonly #token: string | null;
-    readonly #teamId: string | null;
-    readonly #timeout: number;
-    readonly #read: boolean;
-    readonly #write: boolean;
-    readonly #onUploadError: ((hash: string, error: unknown) => void) | null;
 
-    constructor(options: RemoteCacheOptions) {
+    readonly #token: string | undefined;
+
+    readonly #teamId: string | undefined;
+
+    readonly #timeout: number;
+
+    readonly #read: boolean;
+
+    readonly #write: boolean;
+
+    readonly #onUploadError: ((hash: string, error: unknown) => void) | undefined;
+
+    public constructor(options: RemoteCacheOptions) {
         this.#url = options.url.replace(/\/$/, "");
-        this.#token = options.token ?? null;
-        this.#teamId = options.teamId ?? null;
+        this.#token = options.token;
+        this.#teamId = options.teamId;
         this.#timeout = options.timeout ?? 30_000;
         this.#read = options.read ?? true;
         this.#write = options.write ?? true;
-        this.#onUploadError = options.onUploadError ?? null;
+        this.#onUploadError = options.onUploadError;
     }
 
     /**
      * Retrieves a cached artifact from the remote cache.
-     * Returns the local path to the extracted cache entry, or null if not found.
+     * Returns the local path to the extracted cache entry, or undefined if not found.
      */
-    async retrieve(
-        hash: string,
-        localCacheDir: string,
-    ): Promise<boolean> {
+    public async retrieve(hash: string, localCacheDirectory: string): Promise<boolean> {
         if (!this.#read) {
             return false;
         }
 
-        const entryDir = join(localCacheDir, hash);
-        const archivePath = join(localCacheDir, `.remote-${hash}.tar.gz`);
+        const entryDirectory = join(localCacheDirectory, hash);
+        const archivePath = join(localCacheDirectory, `.remote-${hash}.tar.gz`);
 
         try {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch(artifactUrl, {
-                method: "GET",
                 headers: this.#buildHeaders(),
+                method: "GET",
                 signal: AbortSignal.timeout(this.#timeout),
             });
 
@@ -88,28 +116,29 @@ export class RemoteCache {
             }
 
             // Write the gzipped response to a temporary file
-            await mkdir(localCacheDir, { recursive: true });
+            await mkdir(localCacheDirectory, { recursive: true });
 
-            const body = response.body;
+            const { body } = response;
 
             if (!body) {
                 return false;
             }
 
             const fileStream = createWriteStream(archivePath);
+
             // @ts-expect-error - ReadableStream to Writable pipe works in Node.js
             await pipeline(body, fileStream);
 
             // Extract the archive to the cache entry directory
-            await mkdir(entryDir, { recursive: true });
-            await this.#extractTarGz(archivePath, entryDir);
+            await mkdir(entryDirectory, { recursive: true });
+            await extractTarGz(archivePath, entryDirectory);
             await rm(archivePath, { force: true });
 
             return true;
         } catch {
             // Clean up partial downloads
             await rm(archivePath, { force: true }).catch(() => {});
-            await rm(entryDir, { recursive: true, force: true }).catch(() => {});
+            await rm(entryDirectory, { force: true, recursive: true }).catch(() => {});
 
             return false;
         }
@@ -118,35 +147,33 @@ export class RemoteCache {
     /**
      * Stores a cache entry in the remote cache.
      */
-    async store(
-        hash: string,
-        localCacheDir: string,
-    ): Promise<boolean> {
+    public async store(hash: string, localCacheDirectory: string): Promise<boolean> {
         if (!this.#write) {
             return false;
         }
 
-        const entryDir = join(localCacheDir, hash);
-        const archivePath = join(localCacheDir, `.upload-${hash}.tar.gz`);
+        const entryDirectory = join(localCacheDirectory, hash);
+        const archivePath = join(localCacheDirectory, `.upload-${hash}.tar.gz`);
 
         try {
             // Check the entry exists and is complete
-            await stat(join(entryDir, ".commit"));
+            await stat(join(entryDirectory, ".commit"));
 
             // Create a gzipped tarball of the cache entry
-            await this.#createTarGz(entryDir, archivePath);
+            await createTarGz(entryDirectory, archivePath);
 
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
             const archiveContent = await readFile(archivePath);
 
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch(artifactUrl, {
-                method: "PUT",
+                body: archiveContent,
                 headers: {
                     ...this.#buildHeaders(),
-                    "Content-Type": "application/octet-stream",
                     "Content-Length": String(archiveContent.length),
+                    "Content-Type": "application/octet-stream",
                 },
-                body: archiveContent,
+                method: "PUT",
                 signal: AbortSignal.timeout(this.#timeout),
             });
 
@@ -164,16 +191,17 @@ export class RemoteCache {
     /**
      * Checks if an artifact exists in the remote cache without downloading it.
      */
-    async exists(hash: string): Promise<boolean> {
+    public async exists(hash: string): Promise<boolean> {
         if (!this.#read) {
             return false;
         }
 
         try {
             const artifactUrl = this.#buildUrl(`/v8/artifacts/${hash}`);
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch(artifactUrl, {
-                method: "HEAD",
                 headers: this.#buildHeaders(),
+                method: "HEAD",
                 signal: AbortSignal.timeout(this.#timeout),
             });
 
@@ -202,36 +230,7 @@ export class RemoteCache {
 
         return headers;
     }
-
-    async #createTarGz(sourceDir: string, outputPath: string): Promise<void> {
-        return new Promise((promiseResolve, reject) => {
-            execFile(
-                "tar",
-                ["-czf", outputPath, "-C", sourceDir, "."],
-                (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        promiseResolve();
-                    }
-                },
-            );
-        });
-    }
-
-    async #extractTarGz(archivePath: string, destDir: string): Promise<void> {
-        return new Promise((promiseResolve, reject) => {
-            execFile(
-                "tar",
-                ["-xzf", archivePath, "-C", destDir],
-                (error) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        promiseResolve();
-                    }
-                },
-            );
-        });
-    }
 }
+
+export type { RemoteCacheOptions };
+export { RemoteCache };

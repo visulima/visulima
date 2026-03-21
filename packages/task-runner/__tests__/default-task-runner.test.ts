@@ -1,87 +1,95 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { defaultTaskRunner } from "../src/default-task-runner";
 import { EmptyLifeCycle } from "../src/life-cycle";
-import type {
-    Task,
-    TaskGraph,
-    ProjectGraph,
-    TaskRunnerContext,
-    TaskRunnerOptions,
-    TaskExecutor,
-    LifeCycleInterface,
-} from "../src/types";
+import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph, TaskRunnerContext, TaskRunnerOptions } from "../src/types";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `runner-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `runner-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    await mkdir(dir, { recursive: true });
+    await mkdir(directory, { recursive: true });
 
-    return dir;
+    return directory;
 };
 
-const createContext = (
-    workspaceRoot: string,
-    tasks: Task[],
-    executor: TaskExecutor,
-    lifeCycle?: LifeCycleInterface,
-): TaskRunnerContext => {
+const createContext = (workspaceRoot: string, tasks: Task[], executor: TaskExecutor, lifeCycle?: LifeCycleInterface): TaskRunnerContext => {
     const taskGraph: TaskGraph = {
+        dependencies: Object.fromEntries(tasks.map((t) => [t.id, []])),
         roots: tasks.map((t) => t.id),
         tasks: Object.fromEntries(tasks.map((t) => [t.id, t])),
-        dependencies: Object.fromEntries(tasks.map((t) => [t.id, []])),
     };
 
     const projectGraph: ProjectGraph = {
+        dependencies: { app: [] },
         nodes: {
             app: {
+                data: { root: "packages/app" },
                 name: "app",
                 type: "application",
-                data: { root: "packages/app" },
             },
         },
-        dependencies: { app: [] },
     };
 
     return {
-        taskGraph,
-        projectGraph,
         lifeCycle: lifeCycle ?? new EmptyLifeCycle(),
+        projectGraph,
         taskExecutor: executor,
+        taskGraph,
         workspaceRoot,
     };
 };
 
-const makeTask = (id = "app:build"): Task => ({
-    id,
-    target: {
-        project: id.split(":")[0] as string,
-        target: id.split(":")[1] as string,
-    },
-    overrides: {},
-    outputs: [],
-    projectRoot: "packages/app",
-});
+const makeTask = (id = "app:build"): Task => {
+    return {
+        id,
+        outputs: [],
+        overrides: {},
+        projectRoot: "packages/app",
+        target: {
+            project: id.split(":")[0] as string,
+            target: id.split(":")[1] as string,
+        },
+    };
+};
 
-describe("defaultTaskRunner", () => {
+const createCountingExecutor = (): { executor: TaskExecutor; getCount: () => number } => {
+    let executionCount = 0;
+
+    return {
+        executor: async () => {
+            executionCount += 1;
+
+            return { code: 0, terminalOutput: "Built" };
+        },
+        getCount: () => executionCount,
+    };
+};
+
+const createSimpleExecutor = (): TaskExecutor => async () => {
+    return {
+        code: 0,
+        terminalOutput: "Built",
+    };
+};
+
+describe(defaultTaskRunner, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
 
         await mkdir(join(workspaceRoot, "packages/app/src"), { recursive: true });
         await writeFile(join(workspaceRoot, "packages/app/src/index.ts"), "const x = 1;");
-        await writeFile(
-            join(workspaceRoot, "packages/app/package.json"),
-            JSON.stringify({ name: "app", dependencies: { lodash: "^4.17.0" } }),
-        );
+        await writeFile(join(workspaceRoot, "packages/app/package.json"), JSON.stringify({ dependencies: { lodash: "^4.17.0" }, name: "app" }));
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
 
         // Clean up env vars that tests may set
         delete process.env["NEXT_PUBLIC_E2E_TEST_URL"];
@@ -89,12 +97,7 @@ describe("defaultTaskRunner", () => {
 
     it("should execute and cache tasks end-to-end", async () => {
         const task = makeTask();
-
-        let executionCount = 0;
-        const executor: TaskExecutor = async () => {
-            executionCount++;
-            return { code: 0, terminalOutput: "Built" };
-        };
+        const { executor, getCount } = createCountingExecutor();
 
         const context = createContext(workspaceRoot, [task], executor);
 
@@ -102,13 +105,13 @@ describe("defaultTaskRunner", () => {
         const results1 = await defaultTaskRunner([task], {}, context);
 
         expect(results1.get("app:build")?.status).toBe("success");
-        expect(executionCount).toBe(1);
+        expect(getCount()).toBe(1);
 
         // Second run — should hit cache
         const results2 = await defaultTaskRunner([task], {}, context);
 
         expect(results2.get("app:build")?.status).toBe("local-cache");
-        expect(executionCount).toBe(1);
+        expect(getCount()).toBe(1);
     });
 
     it("should support dry-run mode", async () => {
@@ -125,6 +128,7 @@ describe("defaultTaskRunner", () => {
         expect(result?.terminalOutput).toContain("DRY RUN");
     });
 
+    // eslint-disable-next-line no-secrets/no-secrets
     it("should support smartLockfileHashing", async () => {
         const task = makeTask();
 
@@ -139,24 +143,21 @@ describe("defaultTaskRunner", () => {
             }),
         );
 
-        let executionCount = 0;
-        const executor: TaskExecutor = async () => {
-            executionCount++;
-            return { code: 0, terminalOutput: "Built" };
-        };
+        const { executor, getCount } = createCountingExecutor();
 
         const context = createContext(workspaceRoot, [task], executor);
         const options: TaskRunnerOptions = { smartLockfileHashing: true };
 
         // Run once
         await defaultTaskRunner([task], options, context);
-        expect(executionCount).toBe(1);
+
+        expect(getCount()).toBe(1);
 
         // Run again — should cache hit (lockfile hasn't changed)
         const results2 = await defaultTaskRunner([task], options, context);
 
         expect(results2.get("app:build")?.status).toBe("local-cache");
-        expect(executionCount).toBe(1);
+        expect(getCount()).toBe(1);
     });
 
     it("should support frameworkInference", async () => {
@@ -166,24 +167,21 @@ describe("defaultTaskRunner", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { next: "14.0.0", react: "18.2.0" },
+                name: "app",
             }),
         );
 
         process.env["NEXT_PUBLIC_E2E_TEST_URL"] = "http://localhost:3000";
 
-        let executionCount = 0;
-        const executor: TaskExecutor = async () => {
-            executionCount++;
-            return { code: 0, terminalOutput: "Built" };
-        };
+        const { executor, getCount } = createCountingExecutor();
 
         const context = createContext(workspaceRoot, [task], executor);
 
         // First run
         await defaultTaskRunner([task], { frameworkInference: true }, context);
-        expect(executionCount).toBe(1);
+
+        expect(getCount()).toBe(1);
 
         // Change the framework env var — should bust cache
         process.env["NEXT_PUBLIC_E2E_TEST_URL"] = "http://localhost:4000";
@@ -191,30 +189,28 @@ describe("defaultTaskRunner", () => {
         const results2 = await defaultTaskRunner([task], { frameworkInference: true }, context);
 
         expect(results2.get("app:build")?.status).toBe("success");
-        expect(executionCount).toBe(2);
+        expect(getCount()).toBe(2);
 
         delete process.env["NEXT_PUBLIC_E2E_TEST_URL"];
     });
 
     it("should generate summary when summarize is enabled", async () => {
         const task = makeTask();
-        const executor: TaskExecutor = async () => ({
-            code: 0,
-            terminalOutput: "Built",
-        });
+        const executor = createSimpleExecutor();
 
         const context = createContext(workspaceRoot, [task], executor);
+
         await defaultTaskRunner([task], { summarize: true }, context);
 
         // Check that a summary file was written
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
-        const files = await readdir(runsDir);
+        const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+        const files = await readdir(runsDirectory);
 
-        expect(files.length).toBe(1);
+        expect(files).toHaveLength(1);
         expect(files[0]).toMatch(/\.json$/);
 
         // Verify the summary content
-        const content = await readFile(join(runsDir, files[0] as string), "utf-8");
+        const content = await readFile(join(runsDirectory, files[0] as string), "utf8");
         const summary = JSON.parse(content);
 
         expect(summary.tasks).toHaveLength(1);
@@ -227,10 +223,7 @@ describe("defaultTaskRunner", () => {
 
     it("should invoke cacheDiagnostics lifecycle hook on miss", async () => {
         const task = makeTask();
-        const executor: TaskExecutor = async () => ({
-            code: 0,
-            terminalOutput: "Built",
-        });
+        const executor = createSimpleExecutor();
 
         const cacheMissMessages: string[] = [];
         const lifeCycle: LifeCycleInterface = {
@@ -241,33 +234,26 @@ describe("defaultTaskRunner", () => {
 
         const context = createContext(workspaceRoot, [task], executor, lifeCycle);
 
-        await defaultTaskRunner(
-            [task],
-            { autoFingerprint: true, cacheDiagnostics: true },
-            context,
-        );
+        await defaultTaskRunner([task], { autoFingerprint: true, cacheDiagnostics: true }, context);
 
         // On first run with auto-fingerprint, there's no previous fingerprint
-        expect(cacheMissMessages.length).toBe(1);
+        expect(cacheMissMessages).toHaveLength(1);
         expect(cacheMissMessages[0]).toContain("No previous fingerprint found");
     });
 
     it("should skip cache when skipNxCache is true", async () => {
         const task = makeTask();
-
-        let executionCount = 0;
-        const executor: TaskExecutor = async () => {
-            executionCount++;
-            return { code: 0, terminalOutput: "Built" };
-        };
+        const { executor, getCount } = createCountingExecutor();
 
         const context = createContext(workspaceRoot, [task], executor);
 
         await defaultTaskRunner([task], {}, context);
-        expect(executionCount).toBe(1);
+
+        expect(getCount()).toBe(1);
 
         // Second run with skipNxCache should execute again
         await defaultTaskRunner([task], { skipNxCache: true }, context);
-        expect(executionCount).toBe(2);
+
+        expect(getCount()).toBe(2);
     });
 });

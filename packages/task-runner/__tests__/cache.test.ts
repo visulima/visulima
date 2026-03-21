@@ -1,29 +1,31 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { Cache, parseCacheSize, formatCacheSize } from "../src/cache";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `task-runner-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+import { Cache, formatCacheSize, parseCacheSize } from "../src/cache";
 
-    await mkdir(dir, { recursive: true });
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `task-runner-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    return dir;
+    await mkdir(directory, { recursive: true });
+
+    return directory;
 };
 
-describe("Cache", () => {
+describe(Cache, () => {
     let workspaceRoot: string;
     let cache: Cache;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
         cache = new Cache({ workspaceRoot });
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     describe("put and get", () => {
@@ -32,25 +34,28 @@ describe("Cache", () => {
 
             const result = await cache.get("abc123");
 
-            expect(result).not.toBeNull();
+            expect(result).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.code).toBe(0);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.terminalOutput).toBe("build output");
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.hash).toBe("abc123");
         });
 
         it("should return null for non-existent entry", async () => {
             const result = await cache.get("nonexistent");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should store fingerprint data when provided", async () => {
             const fingerprint = {
+                commandHash: "cmdhash",
+                directoryListings: {},
+                envHashes: {},
                 fileHashes: { "src/index.ts": "hash1" },
                 missingFiles: [],
-                directoryListings: {},
-                commandHash: "cmdhash",
-                envHashes: {},
             };
 
             await cache.put("fp123", "output", [], 0, fingerprint);
@@ -62,16 +67,16 @@ describe("Cache", () => {
 
         it("should not return entry without .commit marker", async () => {
             // Manually create an incomplete entry
-            const entryDir = join(cache.cacheDirectory, "incomplete");
+            const entryDirectory = join(cache.cacheDirectory, "incomplete");
 
-            await mkdir(entryDir, { recursive: true });
-            await writeFile(join(entryDir, "code"), "0");
-            await writeFile(join(entryDir, "terminalOutput"), "output");
+            await mkdir(entryDirectory, { recursive: true });
+            await writeFile(join(entryDirectory, "code"), "0");
+            await writeFile(join(entryDirectory, "terminalOutput"), "output");
             // No .commit marker
 
             const result = await cache.get("incomplete");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should overwrite existing entry", async () => {
@@ -80,6 +85,7 @@ describe("Cache", () => {
 
             const result = await cache.get("hash1");
 
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.terminalOutput).toBe("second output");
         });
     });
@@ -87,23 +93,23 @@ describe("Cache", () => {
     describe("output archiving and restoration", () => {
         it("should archive and restore output files", async () => {
             // Create an output file
-            const outputDir = join(workspaceRoot, "dist");
+            const outputDirectory = join(workspaceRoot, "dist");
 
-            await mkdir(outputDir, { recursive: true });
-            await writeFile(join(outputDir, "bundle.js"), "console.log('hello')");
+            await mkdir(outputDirectory, { recursive: true });
+            await writeFile(join(outputDirectory, "bundle.js"), "console.log('hello')");
 
             // Cache with output
             await cache.put("build1", "built", ["dist"], 0);
 
             // Remove the output
-            await rm(outputDir, { recursive: true, force: true });
+            await rm(outputDirectory, { force: true, recursive: true });
 
             // Restore
             const restored = await cache.restoreOutputs("build1", ["dist"]);
 
             expect(restored).toBe(true);
 
-            const content = await readFile(join(outputDir, "bundle.js"), "utf-8");
+            const content = await readFile(join(outputDirectory, "bundle.js"), "utf8");
 
             expect(content).toBe("console.log('hello')");
         });
@@ -124,14 +130,15 @@ describe("Cache", () => {
 
             const result = await cache.getByTaskId("project:build");
 
-            expect(result).not.toBeNull();
+            expect(result).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.hash).toBe("hash1");
         });
 
         it("should return null for unknown task ID", async () => {
             const result = await cache.getByTaskId("unknown:task");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
 
         it("should update existing task index entry", async () => {
@@ -142,7 +149,9 @@ describe("Cache", () => {
 
             const result = await cache.getByTaskId("project:build");
 
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.hash).toBe("hash2");
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.terminalOutput).toBe("output2");
         });
     });
@@ -150,28 +159,30 @@ describe("Cache", () => {
     describe("removeOldEntries", () => {
         it("should remove entries older than maxCacheAge", async () => {
             const shortCache = new Cache({
-                workspaceRoot,
                 maxCacheAge: 1, // 1ms - everything is old
+                workspaceRoot,
             });
 
             await shortCache.put("old1", "output", [], 0);
 
             // Wait a tiny bit to ensure the entry is "old"
-            await new Promise((r) => { setTimeout(r, 10); });
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
 
             await shortCache.removeOldEntries();
 
             const result = await shortCache.get("old1");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
     });
 
     describe("maxCacheSize enforcement", () => {
         it("should evict oldest entries when over size limit", async () => {
             const smallCache = new Cache({
-                workspaceRoot,
                 maxCacheSize: "1KB", // Very small
+                workspaceRoot,
             });
 
             // Create entries with some content
@@ -180,11 +191,15 @@ describe("Cache", () => {
             await smallCache.put("first", largeOutput, [], 0);
 
             // Small delay to ensure different mtime
-            await new Promise((r) => { setTimeout(r, 50); });
+            await new Promise((resolve) => {
+                setTimeout(resolve, 50);
+            });
 
             await smallCache.put("second", largeOutput, [], 0);
 
-            await new Promise((r) => { setTimeout(r, 50); });
+            await new Promise((resolve) => {
+                setTimeout(resolve, 50);
+            });
 
             await smallCache.put("third", largeOutput, [], 0);
 
@@ -194,7 +209,7 @@ describe("Cache", () => {
             // The newest entry should survive, oldest should be evicted
             const third = await smallCache.get("third");
 
-            expect(third).not.toBeNull();
+            expect(third).toBeDefined();
         });
     });
 
@@ -205,12 +220,12 @@ describe("Cache", () => {
 
             const result = await cache.get("entry1");
 
-            expect(result).toBeNull();
+            expect(result).toBeUndefined();
         });
     });
 });
 
-describe("parseCacheSize", () => {
+describe(parseCacheSize, () => {
     it("should parse KB", () => {
         expect(parseCacheSize("100KB")).toBe(100 * 1024);
     });
@@ -232,11 +247,11 @@ describe("parseCacheSize", () => {
     });
 
     it("should throw on invalid format", () => {
-        expect(() => parseCacheSize("invalid")).toThrow();
+        expect(() => parseCacheSize("invalid")).toThrow("Invalid cache size format");
     });
 });
 
-describe("formatCacheSize", () => {
+describe(formatCacheSize, () => {
     it("should format bytes", () => {
         expect(formatCacheSize(500)).toBe("500B");
     });

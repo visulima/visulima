@@ -4,7 +4,8 @@ import type { TaskGraph } from "./types";
  * Finds a single cycle in the task graph, if one exists.
  * Returns the cycle as an array of task IDs, or null if no cycle exists.
  */
-export const findCycle = (taskGraph: TaskGraph): string[] | null => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const findCycle = (taskGraph: TaskGraph): string[] | undefined => {
     const visited = new Set<string>();
     const inStack = new Set<string>();
     const parent = new Map<string, string>();
@@ -59,7 +60,7 @@ export const findCycle = (taskGraph: TaskGraph): string[] | null => {
         }
     }
 
-    return null;
+    return undefined;
 };
 
 /**
@@ -106,10 +107,8 @@ export const findCycles = (taskGraph: TaskGraph): string[][] => {
  * Walks the task graph in topological order (dependencies before dependents),
  * calling the callback for each task.
  */
-export const walkTaskGraph = (
-    taskGraph: TaskGraph,
-    callback: (taskId: string) => void,
-): void => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+export const walkTaskGraph = (taskGraph: TaskGraph, callback: (taskId: string) => void): void => {
     // Build a reverse map: for each task, count how many dependencies it has
     const dependencyCount = new Map<string, number>();
 
@@ -178,14 +177,12 @@ export const reverseTaskGraph = (taskGraph: TaskGraph): TaskGraph => {
         }
     }
 
-    const roots = Object.keys(taskGraph.tasks).filter(
-        (taskId) => (reversedDependencies[taskId]?.length ?? 0) === 0,
-    );
+    const roots = Object.keys(taskGraph.tasks).filter((taskId) => (reversedDependencies[taskId]?.length ?? 0) === 0);
 
     return {
+        dependencies: reversedDependencies,
         roots,
         tasks: { ...taskGraph.tasks },
-        dependencies: reversedDependencies,
     };
 };
 
@@ -193,9 +190,7 @@ export const reverseTaskGraph = (taskGraph: TaskGraph): TaskGraph => {
  * Returns the leaf tasks (tasks with no dependencies of their own).
  */
 export const getLeafTasks = (taskGraph: TaskGraph): string[] =>
-    Object.keys(taskGraph.tasks).filter(
-        (taskId) => (taskGraph.dependencies[taskId]?.length ?? 0) === 0,
-    );
+    Object.keys(taskGraph.tasks).filter((taskId) => (taskGraph.dependencies[taskId]?.length ?? 0) === 0);
 
 /**
  * Removes edges that form cycles, making the graph acyclic.
@@ -204,7 +199,7 @@ export const getLeafTasks = (taskGraph: TaskGraph): string[] =>
 export const makeAcyclic = (taskGraph: TaskGraph): TaskGraph => {
     const visited = new Set<string>();
     const inStack = new Set<string>();
-    const edgesToRemove: Array<{ from: string; to: string }> = [];
+    const edgesToRemove: { from: string; to: string }[] = [];
 
     const dfs = (taskId: string): void => {
         visited.add(taskId);
@@ -232,9 +227,7 @@ export const makeAcyclic = (taskGraph: TaskGraph): TaskGraph => {
     const newDependencies: Record<string, string[]> = {};
 
     for (const [taskId, deps] of Object.entries(taskGraph.dependencies)) {
-        newDependencies[taskId] = deps.filter(
-            (dep) => !edgesToRemove.some((edge) => edge.from === taskId && edge.to === dep),
-        );
+        newDependencies[taskId] = deps.filter((dep) => !edgesToRemove.some((edge) => edge.from === taskId && edge.to === dep));
     }
 
     const allDeps = new Set<string>();
@@ -245,24 +238,19 @@ export const makeAcyclic = (taskGraph: TaskGraph): TaskGraph => {
         }
     }
 
-    const roots = Object.keys(taskGraph.tasks).filter(
-        (taskId) => !allDeps.has(taskId),
-    );
+    const roots = Object.keys(taskGraph.tasks).filter((taskId) => !allDeps.has(taskId));
 
     return {
+        dependencies: newDependencies,
         roots,
         tasks: { ...taskGraph.tasks },
-        dependencies: newDependencies,
     };
 };
 
 /**
  * Gets all tasks that depend on the given task (directly or transitively).
  */
-export const getDependentTasks = (
-    taskGraph: TaskGraph,
-    taskId: string,
-): string[] => {
+export const getDependentTasks = (taskGraph: TaskGraph, taskId: string): string[] => {
     const reversed = reverseTaskGraph(taskGraph);
     const result: string[] = [];
     const visited = new Set<string>();
@@ -296,10 +284,7 @@ export const getDependentTasks = (
 /**
  * Gets all tasks that the given task depends on (directly or transitively).
  */
-export const getTransitiveDependencies = (
-    taskGraph: TaskGraph,
-    taskId: string,
-): string[] => {
+export const getTransitiveDependencies = (taskGraph: TaskGraph, taskId: string): string[] => {
     const result: string[] = [];
     const visited = new Set<string>();
     const queue = [taskId];

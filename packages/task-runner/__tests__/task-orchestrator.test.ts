@@ -1,28 +1,30 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdir, rm } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { TaskOrchestrator } from "../src/task-orchestrator";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { Cache } from "../src/cache";
-import { InProcessTaskHasher } from "../src/task-hasher";
-import { TaskScheduler } from "../src/task-scheduler";
 import { EmptyLifeCycle } from "../src/life-cycle";
-import type { Task, TaskGraph, ProjectGraph, TaskExecutor, LifeCycleInterface } from "../src/types";
+import { InProcessTaskHasher } from "../src/task-hasher";
+import { TaskOrchestrator } from "../src/task-orchestrator";
+import { TaskScheduler } from "../src/task-scheduler";
+import type { LifeCycleInterface, ProjectGraph, Task, TaskExecutor, TaskGraph } from "../src/types";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `orch-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `orch-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    await mkdir(dir, { recursive: true });
+    await mkdir(directory, { recursive: true });
 
-    return dir;
+    return directory;
 };
 
-describe("TaskOrchestrator", () => {
+describe(TaskOrchestrator, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
 
         // Create a minimal project
         await mkdir(join(workspaceRoot, "packages/app/src"), { recursive: true });
@@ -33,69 +35,78 @@ describe("TaskOrchestrator", () => {
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
+
+    const successExecutor: TaskExecutor = async () => {
+        return {
+            code: 0,
+            terminalOutput: "done",
+        };
+    };
 
     const createOrchestrator = (
         tasks: Task[],
         executor: TaskExecutor,
         options: {
             autoFingerprint?: boolean;
-            skipCache?: boolean;
-            lifeCycle?: LifeCycleInterface;
             dependencies?: Record<string, string[]>;
+            lifeCycle?: LifeCycleInterface;
+            skipCache?: boolean;
         } = {},
     ) => {
         const taskGraph: TaskGraph = {
+            dependencies: options.dependencies ?? Object.fromEntries(tasks.map((t) => [t.id, []])),
             roots: tasks.map((t) => t.id),
             tasks: Object.fromEntries(tasks.map((t) => [t.id, t])),
-            dependencies: options.dependencies ?? Object.fromEntries(tasks.map((t) => [t.id, []])),
         };
 
         const projectGraph: ProjectGraph = {
+            dependencies: { app: [] },
             nodes: {
                 app: {
+                    data: { root: "packages/app" },
                     name: "app",
                     type: "application",
-                    data: { root: "packages/app" },
                 },
             },
-            dependencies: { app: [] },
         };
 
         const cache = new Cache({ workspaceRoot });
         const taskHasher = new InProcessTaskHasher({
-            workspaceRoot,
             projects: { app: { root: "packages/app" } },
+            workspaceRoot,
         });
         const scheduler = new TaskScheduler(taskGraph, projectGraph, 3);
         const lifeCycle = options.lifeCycle ?? new EmptyLifeCycle();
 
         return new TaskOrchestrator({
-            taskHasher,
-            cache,
-            scheduler,
-            lifeCycle,
-            taskExecutor: executor,
-            workspaceRoot,
-            skipCache: options.skipCache,
             autoFingerprint: options.autoFingerprint,
+            cache,
+            lifeCycle,
+            scheduler,
+            skipCache: options.skipCache,
+            taskExecutor: executor,
+            taskHasher,
+            workspaceRoot,
         });
     };
 
     it("should execute a simple task", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
-        const executor: TaskExecutor = async () => ({
-            code: 0,
-            terminalOutput: "Build successful",
-        });
+        const executor: TaskExecutor = async () => {
+            return {
+                code: 0,
+                terminalOutput: "Build successful",
+            };
+        };
 
         const orchestrator = createOrchestrator([task], executor);
         const results = await orchestrator.run();
@@ -111,15 +122,16 @@ describe("TaskOrchestrator", () => {
     it("should cache successful results", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
         let executionCount = 0;
         const executor: TaskExecutor = async () => {
-            executionCount++;
+            executionCount += 1;
+
             return { code: 0, terminalOutput: "Build successful" };
         };
 
@@ -142,15 +154,16 @@ describe("TaskOrchestrator", () => {
     it("should not cache failed tasks", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
         let executionCount = 0;
         const executor: TaskExecutor = async () => {
-            executionCount++;
+            executionCount += 1;
+
             return { code: 1, terminalOutput: "Build failed" };
         };
 
@@ -170,15 +183,16 @@ describe("TaskOrchestrator", () => {
     it("should skip cache when skipCache is true", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
         let executionCount = 0;
         const executor: TaskExecutor = async () => {
-            executionCount++;
+            executionCount += 1;
+
             return { code: 0, terminalOutput: "Built" };
         };
 
@@ -198,10 +212,10 @@ describe("TaskOrchestrator", () => {
     it("should handle executor errors gracefully", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
         const executor: TaskExecutor = async () => {
@@ -219,16 +233,18 @@ describe("TaskOrchestrator", () => {
     it("should execute tasks with auto-fingerprint mode", async () => {
         const task: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
             projectRoot: "packages/app",
+            target: { project: "app", target: "build" },
         };
 
-        const executor: TaskExecutor = async () => ({
-            code: 0,
-            terminalOutput: "Built with fingerprint",
-        });
+        const executor: TaskExecutor = async () => {
+            return {
+                code: 0,
+                terminalOutput: "Built with fingerprint",
+            };
+        };
 
         const orchestrator = createOrchestrator([task], executor, { autoFingerprint: true });
         const results = await orchestrator.run();
@@ -241,23 +257,23 @@ describe("TaskOrchestrator", () => {
         it("should stop processing on SIGINT", async () => {
             const task1: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const task2: Task = {
                 id: "app:test",
-                target: { project: "app", target: "test" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "test" },
             };
 
             let executionCount = 0;
             const executor: TaskExecutor = async () => {
-                executionCount++;
+                executionCount += 1;
 
                 if (executionCount === 1) {
                     // After first task starts, simulate SIGINT
@@ -285,20 +301,15 @@ describe("TaskOrchestrator", () => {
         it("should clean up signal listeners after run", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
-
-            const executor: TaskExecutor = async () => ({
-                code: 0,
-                terminalOutput: "done",
-            });
 
             const listenerCountBefore = process.listenerCount("SIGINT");
 
-            const orchestrator = createOrchestrator([task], executor);
+            const orchestrator = createOrchestrator([task], successExecutor);
 
             await orchestrator.run();
 
@@ -310,10 +321,10 @@ describe("TaskOrchestrator", () => {
         it("should clean up signal listeners even when tasks fail", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const executor: TaskExecutor = async () => {
@@ -336,42 +347,37 @@ describe("TaskOrchestrator", () => {
         it("should call startCommand and endCommand", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
-                startCommand: vi.fn(),
                 endCommand: vi.fn(),
+                startCommand: vi.fn(),
             };
 
-            const executor: TaskExecutor = async () => ({
-                code: 0,
-                terminalOutput: "done",
-            });
-
-            const orchestrator = createOrchestrator([task], executor, { lifeCycle });
+            const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
 
             await orchestrator.run();
 
-            expect(lifeCycle.startCommand).toHaveBeenCalledOnce();
-            expect(lifeCycle.endCommand).toHaveBeenCalledOnce();
+            expect(lifeCycle.startCommand).toHaveBeenCalledTimes(1);
+            expect(lifeCycle.endCommand).toHaveBeenCalledTimes(1);
         });
 
         it("should call endCommand even when task fails", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
-                startCommand: vi.fn(),
                 endCommand: vi.fn(),
+                startCommand: vi.fn(),
             };
 
             const executor: TaskExecutor = async () => {
@@ -382,67 +388,53 @@ describe("TaskOrchestrator", () => {
 
             await orchestrator.run();
 
-            expect(lifeCycle.endCommand).toHaveBeenCalledOnce();
+            expect(lifeCycle.endCommand).toHaveBeenCalledTimes(1);
         });
 
         it("should call scheduleTask for each task", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
                 scheduleTask: vi.fn(),
             };
 
-            const executor: TaskExecutor = async () => ({
-                code: 0,
-                terminalOutput: "done",
-            });
-
-            const orchestrator = createOrchestrator([task], executor, { lifeCycle });
+            const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
 
             await orchestrator.run();
 
-            expect(lifeCycle.scheduleTask).toHaveBeenCalledWith(
-                expect.objectContaining({ id: "app:build" }),
-            );
+            expect(lifeCycle.scheduleTask).toHaveBeenCalledWith(expect.objectContaining({ id: "app:build" }));
         });
 
         it("should call startTasks and endTasks", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
-                startTasks: vi.fn(),
                 endTasks: vi.fn(),
+                startTasks: vi.fn(),
             };
 
-            const executor: TaskExecutor = async () => ({
-                code: 0,
-                terminalOutput: "done",
-            });
-
-            const orchestrator = createOrchestrator([task], executor, { lifeCycle });
+            const orchestrator = createOrchestrator([task], successExecutor, { lifeCycle });
 
             await orchestrator.run();
 
-            expect(lifeCycle.startTasks).toHaveBeenCalledWith(
-                expect.arrayContaining([expect.objectContaining({ id: "app:build" })]),
-            );
+            expect(lifeCycle.startTasks).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: "app:build" })]));
             expect(lifeCycle.endTasks).toHaveBeenCalledWith(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        task: expect.objectContaining({ id: "app:build" }),
                         status: "success",
+                        task: expect.objectContaining({ id: "app:build" }),
                     }),
                 ]),
             );
@@ -451,49 +443,49 @@ describe("TaskOrchestrator", () => {
         it("should call printTaskTerminalOutput for tasks with output", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
                 printTaskTerminalOutput: vi.fn(),
             };
 
-            const executor: TaskExecutor = async () => ({
-                code: 0,
-                terminalOutput: "Build output here",
-            });
+            const executor: TaskExecutor = async () => {
+                return {
+                    code: 0,
+                    terminalOutput: "Build output here",
+                };
+            };
 
             const orchestrator = createOrchestrator([task], executor, { lifeCycle });
 
             await orchestrator.run();
 
-            expect(lifeCycle.printTaskTerminalOutput).toHaveBeenCalledWith(
-                expect.objectContaining({ id: "app:build" }),
-                "success",
-                "Build output here",
-            );
+            expect(lifeCycle.printTaskTerminalOutput).toHaveBeenCalledWith(expect.objectContaining({ id: "app:build" }), "success", "Build output here");
         });
 
         it("should report failure status in lifecycle hooks", async () => {
             const task: Task = {
                 id: "app:build",
-                target: { project: "app", target: "build" },
-                overrides: {},
                 outputs: [],
+                overrides: {},
                 projectRoot: "packages/app",
+                target: { project: "app", target: "build" },
             };
 
             const lifeCycle: LifeCycleInterface = {
                 endTasks: vi.fn(),
             };
 
-            const executor: TaskExecutor = async () => ({
-                code: 1,
-                terminalOutput: "Build failed",
-            });
+            const executor: TaskExecutor = async () => {
+                return {
+                    code: 1,
+                    terminalOutput: "Build failed",
+                };
+            };
 
             const orchestrator = createOrchestrator([task], executor, { lifeCycle });
 
@@ -502,8 +494,8 @@ describe("TaskOrchestrator", () => {
             expect(lifeCycle.endTasks).toHaveBeenCalledWith(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        status: "failure",
                         code: 1,
+                        status: "failure",
                     }),
                 ]),
             );

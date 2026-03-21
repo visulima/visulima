@@ -1,27 +1,27 @@
 import { createHash } from "node:crypto";
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { Task, TaskResult } from "./types";
 
 /**
  * Hashes a file's content using SHA-256.
- * Returns null if the file cannot be read.
+ * Returns undefined if the file cannot be read.
  */
-export const hashFile = async (filePath: string): Promise<string | null> => {
+const hashFile = async (filePath: string): Promise<string | undefined> => {
     try {
         const content = await readFile(filePath);
 
         return createHash("sha256").update(content).digest("hex");
     } catch {
-        return null;
+        return undefined;
     }
 };
 
 /**
  * Hashes one or more string values using SHA-256.
  */
-export const hashStrings = (...values: string[]): string => {
+const hashStrings = (...values: string[]): string => {
     const hash = createHash("sha256");
 
     for (const v of values) {
@@ -34,15 +34,16 @@ export const hashStrings = (...values: string[]): string => {
 /**
  * Sorts an object's keys for deterministic serialization.
  */
-export const sortObjectKeys = (object: Record<string, unknown>): Record<string, unknown> => {
+const sortObjectKeys = (object: Record<string, unknown>): Record<string, unknown> => {
     const sorted: Record<string, unknown> = {};
 
-    for (const key of Object.keys(object).sort()) {
+    for (const key of Object.keys(object).toSorted()) {
         const value = object[key];
 
-        sorted[key] = value !== null && typeof value === "object" && !Array.isArray(value)
-            ? sortObjectKeys(value as Record<string, unknown>)
-            : value;
+        sorted[key]
+            = value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
+                ? sortObjectKeys(value as Record<string, unknown>)
+                : value;
     }
 
     return sorted;
@@ -52,30 +53,27 @@ export const sortObjectKeys = (object: Record<string, unknown>): Record<string, 
  * Recursively collects all file paths in a directory,
  * skipping directories in the ignored set.
  */
-export const collectFiles = async (
-    dir: string,
-    ignoredDirs: Set<string>,
-): Promise<string[]> => {
+const collectFiles = async (directory: string, ignoredDirectories: Set<string>): Promise<string[]> => {
     const results: string[] = [];
 
     try {
-        const dirStat = await stat(dir);
+        const directoryStat = await stat(directory);
 
-        if (dirStat.isFile()) {
-            return [dir];
+        if (directoryStat.isFile()) {
+            return [directory];
         }
 
-        const entries = await readdir(dir, { withFileTypes: true });
+        const entries = await readdir(directory, { withFileTypes: true });
 
         const promises = entries.map(async (entry) => {
-            if (ignoredDirs.has(entry.name)) {
+            if (ignoredDirectories.has(entry.name)) {
                 return [];
             }
 
-            const fullPath = join(dir, entry.name);
+            const fullPath = join(directory, entry.name);
 
             if (entry.isDirectory()) {
-                return collectFiles(fullPath, ignoredDirs);
+                return collectFiles(fullPath, ignoredDirectories);
             }
 
             if (entry.isFile()) {
@@ -92,7 +90,7 @@ export const collectFiles = async (
                     }
 
                     if (linkStat.isDirectory()) {
-                        return collectFiles(fullPath, ignoredDirs);
+                        return collectFiles(fullPath, ignoredDirectories);
                     }
                 } catch {
                     // Broken symlink
@@ -117,42 +115,40 @@ export const collectFiles = async (
 /**
  * Resolves the working directory for a task.
  */
-export const resolveTaskCwd = (workspaceRoot: string, task: Task): string => {
-    return task.projectRoot
-        ? join(workspaceRoot, task.projectRoot)
-        : workspaceRoot;
-};
+
+// eslint-disable-next-line no-confusing-arrow
+const resolveTaskCwd = (workspaceRoot: string, task: Task): string => task.projectRoot ? join(workspaceRoot, task.projectRoot) : workspaceRoot;
 
 /**
  * Creates a failure TaskResult from an error.
  */
-export const createFailureResult = (
-    task: Task,
-    error: unknown,
-    startTime: number,
-): TaskResult => ({
-    task,
-    status: "failure",
-    terminalOutput: error instanceof Error ? error.message : String(error),
-    startTime,
-    endTime: Date.now(),
-    code: 1,
-});
+const createFailureResult = (task: Task, error: unknown, startTime: number): TaskResult => {
+    return {
+        code: 1,
+        endTime: Date.now(),
+        startTime,
+        status: "failure",
+        task,
+        terminalOutput: error instanceof Error ? error.message : String(error),
+    };
+};
 
 /**
  * Reads and parses a package.json, returning dependency names.
  */
-export const readPackageDeps = async (
+const READ_PACKAGE_DEPS_DEFAULTS = { optional: true, peer: true } as const;
+
+const readPackageDeps = async (
     packageJsonPath: string,
-    options: { peer?: boolean; optional?: boolean } = { peer: true, optional: true },
-): Promise<Set<string> | null> => {
+    options: { optional?: boolean; peer?: boolean } = READ_PACKAGE_DEPS_DEFAULTS,
+): Promise<Set<string> | undefined> => {
     try {
-        const content = await readFile(packageJsonPath, "utf-8");
+        const content = await readFile(packageJsonPath, "utf8");
         const pkg = JSON.parse(content) as {
             dependencies?: Record<string, string>;
             devDependencies?: Record<string, string>;
-            peerDependencies?: Record<string, string>;
             optionalDependencies?: Record<string, string>;
+            peerDependencies?: Record<string, string>;
         };
 
         const deps = new Set<string>();
@@ -176,6 +172,8 @@ export const readPackageDeps = async (
 
         return deps;
     } catch {
-        return null;
+        return undefined;
     }
 };
+
+export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys };

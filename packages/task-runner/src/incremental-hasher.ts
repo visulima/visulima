@@ -15,51 +15,47 @@ import { collectFiles } from "./utils";
  * The snapshot (path → { mtime, hash }) is kept in memory and can
  * optionally be persisted to disk for cross-process reuse.
  */
-export interface FileSnapshot {
-    /** Last modification time in milliseconds */
-    mtimeMs: number;
+interface FileSnapshot {
     /** SHA-256 hash of file contents */
     hash: string;
+    /** Last modification time in milliseconds */
+    mtimeMs: number;
     /** File size in bytes (fast pre-check) */
     size: number;
 }
 
-export interface IncrementalHasherOptions {
-    workspaceRoot: string;
+interface IncrementalHasherOptions {
     /** Directories to skip (default: node_modules, .git, dist, coverage, .cache) */
     ignoredDirs?: Set<string>;
     /** File to persist the snapshot to (for cross-run reuse) */
     snapshotPath?: string;
+    workspaceRoot: string;
 }
 
-const DEFAULT_IGNORED_DIRS = new Set([
-    "node_modules",
-    ".git",
-    "dist",
-    "coverage",
-    ".cache",
-    ".task-runner-cache",
-]);
+const DEFAULT_IGNORED_DIRS = new Set([".cache", ".git", ".task-runner-cache", "coverage", "dist", "node_modules"]);
 
-export class IncrementalFileHasher {
+class IncrementalFileHasher {
     readonly #workspaceRoot: string;
+
     readonly #ignoredDirs: Set<string>;
-    readonly #snapshotPath: string | null;
+
+    readonly #snapshotPath: string | undefined;
+
     readonly #snapshot = new Map<string, FileSnapshot>();
+
     #loaded = false;
 
-    constructor(options: IncrementalHasherOptions) {
+    public constructor(options: IncrementalHasherOptions) {
         this.#workspaceRoot = options.workspaceRoot;
         this.#ignoredDirs = options.ignoredDirs ?? DEFAULT_IGNORED_DIRS;
-        this.#snapshotPath = options.snapshotPath
-            ?? join(options.workspaceRoot, "node_modules", ".cache", "task-runner", "file-snapshot.json");
+        this.#snapshotPath = options.snapshotPath ?? join(options.workspaceRoot, "node_modules", ".cache", "task-runner", "file-snapshot.json");
     }
 
     /**
      * Loads the snapshot from disk if available.
      * Called automatically on first use.
      */
-    async load(): Promise<void> {
+    public async load(): Promise<void> {
         if (this.#loaded) {
             return;
         }
@@ -71,7 +67,7 @@ export class IncrementalFileHasher {
         }
 
         try {
-            const content = await readFile(this.#snapshotPath, "utf-8");
+            const content = await readFile(this.#snapshotPath, "utf8");
             const data = JSON.parse(content) as Record<string, FileSnapshot>;
 
             for (const [path, snap] of Object.entries(data)) {
@@ -85,14 +81,14 @@ export class IncrementalFileHasher {
     /**
      * Persists the current snapshot to disk for cross-run reuse.
      */
-    async save(): Promise<void> {
+    public async save(): Promise<void> {
         if (!this.#snapshotPath) {
             return;
         }
 
-        const dir = dirname(this.#snapshotPath);
+        const directory = dirname(this.#snapshotPath);
 
-        await mkdir(dir, { recursive: true });
+        await mkdir(directory, { recursive: true });
 
         const data: Record<string, FileSnapshot> = {};
 
@@ -111,28 +107,32 @@ export class IncrementalFileHasher {
      *
      * Returns a map of relative paths → hashes.
      */
-    async hashDirectory(dirPath: string): Promise<Record<string, string>> {
+    public async hashDirectory(directoryPath: string): Promise<Record<string, string>> {
         await this.load();
 
         const result: Record<string, string> = {};
-        const filePaths = await collectFiles(dirPath, this.#ignoredDirs);
+        const filePaths = await collectFiles(directoryPath, this.#ignoredDirs);
 
         // Process files in parallel batches for optimal throughput
         const BATCH_SIZE = 64;
+        const batches: string[][] = [];
 
         for (let i = 0; i < filePaths.length; i += BATCH_SIZE) {
-            const batch = filePaths.slice(i, i + BATCH_SIZE);
+            batches.push(filePaths.slice(i, i + BATCH_SIZE));
+        }
 
+        for (const batch of batches) {
+            // eslint-disable-next-line no-await-in-loop
             const batchResults = await Promise.all(
                 batch.map(async (filePath) => {
                     const hash = await this.#hashFileIncremental(filePath);
                     const relativePath = relative(this.#workspaceRoot, filePath);
 
-                    return { relativePath, hash };
+                    return { hash, relativePath };
                 }),
             );
 
-            for (const { relativePath, hash } of batchResults) {
+            for (const { hash, relativePath } of batchResults) {
                 if (hash) {
                     result[relativePath] = hash;
                 }
@@ -146,22 +146,18 @@ export class IncrementalFileHasher {
      * Hashes a single file incrementally.
      * Returns the cached hash if mtime + size haven't changed.
      */
-    async #hashFileIncremental(filePath: string): Promise<string | null> {
+    async #hashFileIncremental(filePath: string): Promise<string | undefined> {
         try {
             const fileStat = await stat(filePath);
 
             if (!fileStat.isFile()) {
-                return null;
+                return undefined;
             }
 
             const cached = this.#snapshot.get(filePath);
 
             // Fast path: mtime and size match → reuse cached hash
-            if (
-                cached &&
-                cached.mtimeMs === fileStat.mtimeMs &&
-                cached.size === fileStat.size
-            ) {
+            if (cached && cached.mtimeMs === fileStat.mtimeMs && cached.size === fileStat.size) {
                 return cached.hash;
             }
 
@@ -170,8 +166,8 @@ export class IncrementalFileHasher {
             const hash = createHash("sha256").update(content).digest("hex");
 
             this.#snapshot.set(filePath, {
-                mtimeMs: fileStat.mtimeMs,
                 hash,
+                mtimeMs: fileStat.mtimeMs,
                 size: fileStat.size,
             });
 
@@ -180,21 +176,24 @@ export class IncrementalFileHasher {
             // File doesn't exist or can't be read — remove from snapshot
             this.#snapshot.delete(filePath);
 
-            return null;
+            return undefined;
         }
     }
 
     /**
      * Returns how many files are in the snapshot (for diagnostics).
      */
-    get snapshotSize(): number {
+    public get snapshotSize(): number {
         return this.#snapshot.size;
     }
 
     /**
      * Clears the in-memory snapshot.
      */
-    clear(): void {
+    public clear(): void {
         this.#snapshot.clear();
     }
 }
+
+export type { FileSnapshot, IncrementalHasherOptions };
+export { IncrementalFileHasher };

@@ -1,79 +1,123 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-import type {
-    LifeCycleInterface,
-    Task,
-    TaskExecutor,
-    TaskResult,
-    TaskResults,
-    TaskStatus,
-} from "./types";
-import type { CachedResult } from "./cache";
-import type { TaskHasher } from "./task-hasher";
+import type { Cache, CachedResult } from "./cache";
 import type { TaskFingerprint } from "./fingerprint";
-
-import { Cache } from "./cache";
-import { computeTaskHash } from "./task-hasher";
-import { TaskScheduler } from "./task-scheduler";
 import { FingerprintManager } from "./fingerprint";
-import { TrackedTaskExecutor } from "./tracked-executor";
 import type { RemoteCache } from "./remote-cache";
 import { generateRunSummary, writeRunSummary } from "./run-summary";
-import { resolveTaskCwd, createFailureResult } from "./utils";
+import type { TaskHasher } from "./task-hasher";
+import { computeTaskHash } from "./task-hasher";
+import type { TaskScheduler } from "./task-scheduler";
+import { TrackedTaskExecutor } from "./tracked-executor";
+import type { LifeCycleInterface, Task, TaskExecutor, TaskResult, TaskResults, TaskStatus } from "./types";
+import { createFailureResult, resolveTaskCwd } from "./utils";
 
 /**
  * Options for the TaskOrchestrator.
  */
-export interface TaskOrchestratorOptions {
-    taskHasher: TaskHasher;
-    cache: Cache;
-    scheduler: TaskScheduler;
-    lifeCycle: LifeCycleInterface;
-    taskExecutor: TaskExecutor;
-    workspaceRoot: string;
-    skipCache?: boolean;
-    captureOutput?: boolean;
+interface TaskOrchestratorOptions {
     autoFingerprint?: boolean;
-    fingerprintEnvPatterns?: string[];
-    untrackedEnvVars?: string[];
+    cache: Cache;
     cacheDiagnostics?: boolean;
-    resolveCommand?: (task: Task) => string | undefined;
-    remoteCache?: RemoteCache;
+    captureOutput?: boolean;
     dryRun?: boolean;
+    fingerprintEnvPatterns?: string[];
+    lifeCycle: LifeCycleInterface;
+    remoteCache?: RemoteCache;
+    resolveCommand?: (task: Task) => string | undefined;
+    scheduler: TaskScheduler;
+    skipCache?: boolean;
     summarize?: boolean;
+    taskExecutor: TaskExecutor;
     taskGraph?: import("./types").TaskGraph;
+    taskHasher: TaskHasher;
+    untrackedEnvVars?: string[];
+    workspaceRoot: string;
 }
+
+const hashFingerprint = (fingerprint: TaskFingerprint): string => {
+    const hash = createHash("sha256");
+
+    hash.update(fingerprint.commandHash);
+
+    for (const key of Object.keys(fingerprint.fileHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.fileHashes[key] as string);
+    }
+
+    for (const path of fingerprint.missingFiles) {
+        hash.update(`missing:${path}`);
+    }
+
+    for (const key of Object.keys(fingerprint.directoryListings).toSorted()) {
+        hash.update(`dir:${key}`);
+        hash.update(JSON.stringify(fingerprint.directoryListings[key]));
+    }
+
+    for (const key of Object.keys(fingerprint.envHashes).toSorted()) {
+        hash.update(key);
+        hash.update(fingerprint.envHashes[key] as string);
+    }
+
+    return hash.digest("hex");
+};
+
+const delay = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Orchestrates the execution of tasks, handling caching,
  * scheduling, and lifecycle events.
  */
-export class TaskOrchestrator {
+class TaskOrchestrator {
     readonly #taskHasher: TaskHasher;
+
     readonly #cache: Cache;
+
     readonly #scheduler: TaskScheduler;
+
     readonly #lifeCycle: LifeCycleInterface;
+
     readonly #taskExecutor: TaskExecutor;
+
     readonly #workspaceRoot: string;
+
     readonly #skipCache: boolean;
+
     readonly #captureOutput: boolean;
+
     readonly #autoFingerprint: boolean;
-    readonly #fingerprintManager: FingerprintManager | null;
-    readonly #trackedExecutor: TrackedTaskExecutor | null;
+
+    readonly #fingerprintManager: FingerprintManager | undefined;
+
+    readonly #trackedExecutor: TrackedTaskExecutor | undefined;
+
     readonly #fingerprintEnvPatterns: string[];
+
     readonly #untrackedEnvVars: string[];
+
     readonly #cacheDiagnostics: boolean;
-    readonly #resolveCommand: ((task: Task) => string | undefined) | null;
-    readonly #remoteCache: RemoteCache | null;
+
+    readonly #resolveCommand: ((task: Task) => string | undefined) | undefined;
+
+    readonly #remoteCache: RemoteCache | undefined;
+
     readonly #dryRun: boolean;
+
     readonly #summarize: boolean;
-    readonly #taskGraph: import("./types").TaskGraph | null;
+
+    readonly #taskGraph: import("./types").TaskGraph | undefined;
+
     readonly #results: TaskResults = new Map();
+
     readonly #startTime: number;
+
     #aborted = false;
 
-    constructor(options: TaskOrchestratorOptions) {
+    public constructor(options: TaskOrchestratorOptions) {
         this.#taskHasher = options.taskHasher;
         this.#cache = options.cache;
         this.#scheduler = options.scheduler;
@@ -86,23 +130,23 @@ export class TaskOrchestrator {
         this.#fingerprintEnvPatterns = options.fingerprintEnvPatterns ?? [];
         this.#untrackedEnvVars = options.untrackedEnvVars ?? [];
         this.#cacheDiagnostics = options.cacheDiagnostics ?? false;
-        this.#resolveCommand = options.resolveCommand ?? null;
-        this.#remoteCache = options.remoteCache ?? null;
+        this.#resolveCommand = options.resolveCommand ?? undefined;
+        this.#remoteCache = options.remoteCache ?? undefined;
         this.#dryRun = options.dryRun ?? false;
         this.#summarize = options.summarize ?? false;
-        this.#taskGraph = options.taskGraph ?? null;
+        this.#taskGraph = options.taskGraph ?? undefined;
         this.#startTime = Date.now();
 
         if (this.#autoFingerprint) {
             this.#fingerprintManager = new FingerprintManager(options.workspaceRoot);
             this.#trackedExecutor = new TrackedTaskExecutor(options.workspaceRoot);
         } else {
-            this.#fingerprintManager = null;
-            this.#trackedExecutor = null;
+            this.#fingerprintManager = undefined;
+            this.#trackedExecutor = undefined;
         }
     }
 
-    async run(): Promise<TaskResults> {
+    public async run(): Promise<TaskResults> {
         this.#lifeCycle.startCommand?.();
 
         const signalHandler = (): void => {
@@ -129,21 +173,20 @@ export class TaskOrchestrator {
         return this.#results;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #executionLoop(): Promise<void> {
         while (!this.#scheduler.isComplete() && !this.#aborted) {
             const batch = this.#scheduler.getNextBatch();
 
             if (batch.length === 0) {
                 if (this.#scheduler.runningCount > 0) {
-                    await this.#delay(10);
+                    // eslint-disable-next-line no-await-in-loop
+                    await delay(10);
                     continue;
                 }
 
                 if (this.#scheduler.remainingCount > 0) {
-                    throw new Error(
-                        "Deadlock detected: tasks remain but none can be scheduled. " +
-                            "This may indicate a circular dependency.",
-                    );
+                    throw new Error("Deadlock detected: tasks remain but none can be scheduled. This may indicate a circular dependency.");
                 }
 
                 break;
@@ -156,12 +199,12 @@ export class TaskOrchestrator {
 
             this.#lifeCycle.startTasks?.(batch);
 
-            const taskPromises = batch.map((task) =>
-                this.#autoFingerprint
-                    ? this.#processTaskWithFingerprint(task)
-                    : this.#processTask(task),
+            const taskPromises = batch.map(
+                // eslint-disable-next-line no-confusing-arrow
+                (task) => this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task),
             );
 
+            // eslint-disable-next-line no-await-in-loop
             const results = await Promise.allSettled(taskPromises);
 
             const taskResults: TaskResult[] = [];
@@ -185,24 +228,20 @@ export class TaskOrchestrator {
 
             for (const result of taskResults) {
                 if (result.terminalOutput) {
-                    this.#lifeCycle.printTaskTerminalOutput?.(
-                        result.task,
-                        result.status,
-                        result.terminalOutput,
-                    );
+                    this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
                 }
             }
         }
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #processTask(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
 
         const hashDetails = await this.#taskHasher.hashTask(task);
         const hash = computeTaskHash(hashDetails);
 
-        task.hash = hash;
-        task.hashDetails = hashDetails;
+        Object.assign(task, { hash, hashDetails });
 
         if (this.#dryRun) {
             return this.#dryRunResult(task, startTime);
@@ -235,12 +274,13 @@ export class TaskOrchestrator {
         const result = await this.#executeTask(task, startTime);
 
         if (result.code === 0 && task.cache !== false && task.hash && this.#remoteCache) {
-            void this.#remoteCache.store(task.hash, this.#cache.cacheDirectory);
+            this.#remoteCache.store(task.hash, this.#cache.cacheDirectory).catch(() => {});
         }
 
         return result;
     }
 
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #processTaskWithFingerprint(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
 
@@ -256,10 +296,7 @@ export class TaskOrchestrator {
 
                 if (commandMiss) {
                     if (this.#cacheDiagnostics) {
-                        this.#lifeCycle.printCacheMiss?.(
-                            task,
-                            this.#fingerprintManager.formatMissReasons([commandMiss]),
-                        );
+                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons([commandMiss]));
                     }
                 } else {
                     const missReasons = await this.#fingerprintManager.validate(cachedResult.fingerprint);
@@ -269,38 +306,28 @@ export class TaskOrchestrator {
                     }
 
                     if (this.#cacheDiagnostics) {
-                        this.#lifeCycle.printCacheMiss?.(
-                            task,
-                            this.#fingerprintManager.formatMissReasons(missReasons),
-                        );
+                        this.#lifeCycle.printCacheMiss?.(task, this.#fingerprintManager.formatMissReasons(missReasons));
                     }
                 }
             } else if (this.#cacheDiagnostics && !cachedResult) {
-                this.#lifeCycle.printCacheMiss?.(
-                    task,
-                    "Cache miss reasons:\n  - No previous fingerprint found (first run)",
-                );
+                this.#lifeCycle.printCacheMiss?.(task, "Cache miss reasons:\n  - No previous fingerprint found (first run)");
             }
         }
 
         return this.#executeTaskWithTracking(task, startTime);
     }
 
-    async #applyCachedResult(
-        task: Task,
-        cachedResult: CachedResult,
-        startTime: number,
-    ): Promise<TaskResult> {
+    async #applyCachedResult(task: Task, cachedResult: CachedResult, startTime: number): Promise<TaskResult> {
         const restored = await this.#cache.restoreOutputs(cachedResult.hash, task.outputs);
         const status: TaskStatus = restored ? "local-cache" : "local-cache-kept-existing";
 
         const result: TaskResult = {
-            task,
-            status,
-            terminalOutput: cachedResult.terminalOutput,
-            startTime,
-            endTime: Date.now(),
             code: cachedResult.code,
+            endTime: Date.now(),
+            startTime,
+            status,
+            task,
+            terminalOutput: cachedResult.terminalOutput,
         };
 
         this.#results.set(task.id, result);
@@ -311,17 +338,17 @@ export class TaskOrchestrator {
     async #executeTask(task: Task, startTime: number): Promise<TaskResult> {
         try {
             const { code, terminalOutput } = await this.#taskExecutor(task, {
-                cwd: resolveTaskCwd(this.#workspaceRoot, task),
                 captureOutput: this.#captureOutput,
+                cwd: resolveTaskCwd(this.#workspaceRoot, task),
             });
 
             const result: TaskResult = {
-                task,
-                status: code === 0 ? "success" : "failure",
-                terminalOutput,
-                startTime,
-                endTime: Date.now(),
                 code,
+                endTime: Date.now(),
+                startTime,
+                status: code === 0 ? "success" : "failure",
+                task,
+                terminalOutput,
             };
 
             this.#results.set(task.id, result);
@@ -357,11 +384,7 @@ export class TaskOrchestrator {
             const canTrack = shellCommand && this.#trackedExecutor?.isTrackingSupported;
 
             if (canTrack && this.#trackedExecutor) {
-                const trackedResult = await this.#trackedExecutor.execute(
-                    task,
-                    { cwd, captureOutput: this.#captureOutput },
-                    shellCommand,
-                );
+                const trackedResult = await this.#trackedExecutor.execute(task, { captureOutput: this.#captureOutput, cwd }, shellCommand);
 
                 code = trackedResult.code;
                 terminalOutput = trackedResult.terminalOutput;
@@ -376,18 +399,20 @@ export class TaskOrchestrator {
                 );
             } else {
                 const executionResult = await this.#taskExecutor(task, {
-                    cwd,
                     captureOutput: this.#captureOutput,
+                    cwd,
                 });
 
                 code = executionResult.code;
                 terminalOutput = executionResult.terminalOutput;
 
                 const hashDetails = await this.#taskHasher.hashTask(task);
-                const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => ({
-                    path: join(this.#workspaceRoot, filePath),
-                    type: "read" as const,
-                }));
+                const fileAccesses = Object.keys(hashDetails.nodes).map((filePath) => {
+                    return {
+                        path: join(this.#workspaceRoot, filePath),
+                        type: "read" as const,
+                    };
+                });
 
                 fingerprint = await this.#fingerprintManager.createFingerprint(
                     fileAccesses,
@@ -400,20 +425,20 @@ export class TaskOrchestrator {
             }
 
             const result: TaskResult = {
-                task,
-                status: code === 0 ? "success" : "failure",
-                terminalOutput,
-                startTime,
-                endTime: Date.now(),
                 code,
+                endTime: Date.now(),
+                startTime,
+                status: code === 0 ? "success" : "failure",
+                task,
+                terminalOutput,
             };
 
             this.#results.set(task.id, result);
 
             if (code === 0 && task.cache !== false && fingerprint) {
-                const hash = this.#hashFingerprint(fingerprint);
+                const hash = hashFingerprint(fingerprint);
 
-                task.hash = hash;
+                Object.assign(task, { hash });
 
                 await this.#cache.put(hash, terminalOutput, task.outputs, code, fingerprint);
                 await this.#cache.setTaskIndex(task.id, hash);
@@ -429,52 +454,22 @@ export class TaskOrchestrator {
         }
     }
 
-    #hashFingerprint(fingerprint: TaskFingerprint): string {
-        const hash = createHash("sha256");
-
-        hash.update(fingerprint.commandHash);
-
-        for (const key of Object.keys(fingerprint.fileHashes).sort()) {
-            hash.update(key);
-            hash.update(fingerprint.fileHashes[key] as string);
-        }
-
-        for (const path of fingerprint.missingFiles) {
-            hash.update(`missing:${path}`);
-        }
-
-        for (const key of Object.keys(fingerprint.directoryListings).sort()) {
-            hash.update(`dir:${key}`);
-            hash.update(JSON.stringify(fingerprint.directoryListings[key]));
-        }
-
-        for (const key of Object.keys(fingerprint.envHashes).sort()) {
-            hash.update(key);
-            hash.update(fingerprint.envHashes[key] as string);
-        }
-
-        return hash.digest("hex");
-    }
-
     #dryRunResult(task: Task, startTime: number): TaskResult {
         const cacheStatus = task.hash ? `[hash: ${task.hash.slice(0, 12)}...]` : "[no hash]";
         const result: TaskResult = {
-            task,
-            status: "skipped",
-            terminalOutput: `DRY RUN ${cacheStatus}`,
-            startTime,
-            endTime: Date.now(),
             code: 0,
+            endTime: Date.now(),
+            startTime,
+            status: "skipped",
+            task,
+            terminalOutput: `DRY RUN ${cacheStatus}`,
         };
 
         this.#results.set(task.id, result);
 
         return result;
     }
-
-    #delay(ms: number): Promise<void> {
-        return new Promise((resolve) => {
-            setTimeout(resolve, ms);
-        });
-    }
 }
+
+export { TaskOrchestrator };
+export type { TaskOrchestratorOptions };

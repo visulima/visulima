@@ -5,83 +5,80 @@ import { readPackageDeps } from "./utils";
 /**
  * Detected framework information.
  */
-export interface DetectedFramework {
-    /** The framework name */
-    name: string;
+interface DetectedFramework {
     /** The env var prefix(es) that should be included in task hashes */
     envPrefixes: string[];
+    /** The framework name */
+    name: string;
 }
 
 /**
  * Known framework definitions with their package identifiers and env var prefixes.
  */
 const FRAMEWORK_DEFINITIONS: ReadonlyArray<{
+    envPrefixes: string[];
     name: string;
     packages: string[];
-    envPrefixes: string[];
 }> = [
     {
+        envPrefixes: ["NEXT_PUBLIC_"],
         name: "Next.js",
         packages: ["next"],
-        envPrefixes: ["NEXT_PUBLIC_"],
     },
     {
+        envPrefixes: ["VITE_"],
         name: "Vite",
         packages: ["vite"],
-        envPrefixes: ["VITE_"],
     },
     {
+        envPrefixes: ["REACT_APP_"],
         name: "Create React App",
         packages: ["react-scripts"],
-        envPrefixes: ["REACT_APP_"],
     },
     {
+        envPrefixes: ["GATSBY_"],
         name: "Gatsby",
         packages: ["gatsby"],
-        envPrefixes: ["GATSBY_"],
     },
     {
+        envPrefixes: ["NUXT_PUBLIC_"],
         name: "Nuxt",
         packages: ["nuxt", "nuxt3"],
-        envPrefixes: ["NUXT_PUBLIC_"],
     },
     {
+        envPrefixes: ["EXPO_PUBLIC_"],
         name: "Expo",
         packages: ["expo"],
-        envPrefixes: ["EXPO_PUBLIC_"],
     },
     {
+        envPrefixes: ["REMIX_PUBLIC_"],
         name: "Remix",
         packages: ["@remix-run/react", "@remix-run/node"],
-        envPrefixes: ["REMIX_PUBLIC_"],
     },
     {
+        envPrefixes: ["PUBLIC_"],
         name: "Astro",
         packages: ["astro"],
-        envPrefixes: ["PUBLIC_"],
     },
     {
+        envPrefixes: ["PUBLIC_"],
         name: "SvelteKit",
         packages: ["@sveltejs/kit"],
-        envPrefixes: ["PUBLIC_"],
     },
     {
+        envPrefixes: ["VITE_"],
         name: "Solid Start",
         packages: ["@solidjs/start", "solid-start"],
-        envPrefixes: ["VITE_"],
     },
 ];
 
 /**
  * Detects frameworks used in a project by inspecting its package.json dependencies.
- *
- * @param packageJsonPath - Absolute path to the package.json file
+ * @param packageJsonPath Absolute path to the package.json file
  * @returns Array of detected frameworks with their env prefixes
  */
-export const detectFrameworks = async (
-    packageJsonPath: string,
-): Promise<DetectedFramework[]> => {
-    const allDeps = await readPackageDeps(packageJsonPath, { peer: false, optional: false });
+const detectFrameworks = async (packageJsonPath: string): Promise<DetectedFramework[]> => {
+    const allDeps = await readPackageDeps(packageJsonPath, { optional: false, peer: false });
 
     if (!allDeps) {
         return [];
@@ -92,8 +89,8 @@ export const detectFrameworks = async (
     for (const framework of FRAMEWORK_DEFINITIONS) {
         if (framework.packages.some((pkg) => allDeps.has(pkg))) {
             detected.push({
-                name: framework.name,
                 envPrefixes: framework.envPrefixes,
+                name: framework.name,
             });
         }
     }
@@ -104,15 +101,11 @@ export const detectFrameworks = async (
 /**
  * Detects frameworks across all projects in a workspace and returns
  * the env var patterns that should be included in task hashes.
- *
- * @param workspaceRoot - The workspace root directory
- * @param projects - Map of project name to project configuration with root paths
+ * @param workspaceRoot The workspace root directory
+ * @param projects Map of project name to project configuration with root paths
  * @returns Array of env var wildcard patterns (e.g., ["NEXT_PUBLIC_*", "VITE_*"])
  */
-export const inferFrameworkEnvPatterns = async (
-    workspaceRoot: string,
-    projects: Record<string, { root: string }>,
-): Promise<string[]> => {
+const inferFrameworkEnvPatterns = async (workspaceRoot: string, projects: Record<string, { root: string }>): Promise<string[]> => {
     const allPrefixes = new Set<string>();
 
     const detectionPromises = Object.values(projects).map(async (project) => {
@@ -129,18 +122,17 @@ export const inferFrameworkEnvPatterns = async (
     await Promise.all(detectionPromises);
 
     // Convert prefixes to wildcard patterns
-    return [...allPrefixes].sort().map((prefix) => `${prefix}*`);
+    return [...allPrefixes].toSorted().map((prefix) => `${prefix}*`);
 };
 
 /**
  * For a specific project, detects frameworks and returns the matching
  * env vars from the current environment.
- *
- * @param packageJsonPath - Absolute path to the project's package.json
- * @param env - The current environment variables
+ * @param packageJsonPath Absolute path to the project's package.json
+ * @param env The current environment variables
  * @returns Map of env var name to value for matching framework env vars
  */
-export const getFrameworkEnvVars = async (
+const getFrameworkEnvVariables = async (
     packageJsonPath: string,
     env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
 ): Promise<Record<string, string>> => {
@@ -159,3 +151,6 @@ export const getFrameworkEnvVars = async (
 
     return result;
 };
+
+export type { DetectedFramework };
+export { detectFrameworks, getFrameworkEnvVariables, inferFrameworkEnvPatterns };

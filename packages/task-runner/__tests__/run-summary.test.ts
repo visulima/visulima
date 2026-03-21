@@ -1,46 +1,48 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdir, rm, readFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { generateRunSummary, writeRunSummary } from "../src/run-summary";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
 import type { RunSummary } from "../src/run-summary";
-import type { Task, TaskResult, TaskResults, TaskGraph } from "../src/types";
+import { generateRunSummary, writeRunSummary } from "../src/run-summary";
+import type { Task, TaskGraph, TaskResult, TaskResults } from "../src/types";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `summary-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `summary-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    await mkdir(dir, { recursive: true });
+    await mkdir(directory, { recursive: true });
 
-    return dir;
+    return directory;
 };
 
-const createTask = (id: string, overrides: Partial<Task> = {}): Task => ({
-    id,
-    target: {
-        project: id.split(":")[0] as string,
-        target: id.split(":")[1] as string,
-    },
-    overrides: {},
-    outputs: [],
-    ...overrides,
-});
+const createTask = (id: string, overrides: Partial<Task> = {}): Task => {
+    return {
+        id,
+        outputs: [],
+        overrides: {},
+        target: {
+            project: id.split(":")[0] as string,
+            target: id.split(":")[1] as string,
+        },
+        ...overrides,
+    };
+};
 
-const createResult = (
-    task: Task,
-    status: TaskResult["status"],
-    overrides: Partial<TaskResult> = {},
-): TaskResult => ({
-    task,
-    status,
-    startTime: Date.now() - 1000,
-    endTime: Date.now(),
-    code: status === "failure" ? 1 : 0,
-    terminalOutput: `Output of ${task.id}`,
-    ...overrides,
-});
+const createResult = (task: Task, status: TaskResult["status"], overrides: Partial<TaskResult> = {}): TaskResult => {
+    return {
+        code: status === "failure" ? 1 : 0,
+        endTime: Date.now(),
+        startTime: Date.now() - 1000,
+        status,
+        task,
+        terminalOutput: `Output of ${task.id}`,
+        ...overrides,
+    };
+};
 
-describe("generateRunSummary", () => {
+describe(generateRunSummary, () => {
     it("should generate a complete summary from task results", () => {
         const taskA = createTask("app:build", { hash: "abc123" });
         const taskB = createTask("lib:build", { hash: "def456" });
@@ -51,9 +53,9 @@ describe("generateRunSummary", () => {
         ]);
 
         const taskGraph: TaskGraph = {
+            dependencies: { "app:build": ["lib:build"], "lib:build": [] },
             roots: ["lib:build"],
             tasks: { "app:build": taskA, "lib:build": taskB },
-            dependencies: { "app:build": ["lib:build"], "lib:build": [] },
         };
 
         const startTime = Date.now() - 5000;
@@ -78,25 +80,25 @@ describe("generateRunSummary", () => {
         const taskD = createTask("web:build");
 
         const results: TaskResults = new Map([
+            ["api:build", createResult(taskC, "remote-cache")],
             ["app:build", createResult(taskA, "success")],
             ["lib:build", createResult(taskB, "local-cache")],
-            ["api:build", createResult(taskC, "remote-cache")],
             ["web:build", createResult(taskD, "failure")],
         ]);
 
         const taskGraph: TaskGraph = {
-            roots: ["app:build", "lib:build", "api:build", "web:build"],
-            tasks: {
-                "app:build": taskA,
-                "lib:build": taskB,
-                "api:build": taskC,
-                "web:build": taskD,
-            },
             dependencies: {
+                "api:build": [],
                 "app:build": [],
                 "lib:build": [],
-                "api:build": [],
                 "web:build": [],
+            },
+            roots: ["app:build", "lib:build", "api:build", "web:build"],
+            tasks: {
+                "api:build": taskC,
+                "app:build": taskA,
+                "lib:build": taskB,
+                "web:build": taskD,
             },
         };
 
@@ -107,12 +109,12 @@ describe("generateRunSummary", () => {
         expect(summary.stats.failed).toBe(1);
 
         const appSummary = summary.tasks.find((t) => t.taskId === "app:build");
-        const libSummary = summary.tasks.find((t) => t.taskId === "lib:build");
+        const librarySummary = summary.tasks.find((t) => t.taskId === "lib:build");
         const apiSummary = summary.tasks.find((t) => t.taskId === "api:build");
         const webSummary = summary.tasks.find((t) => t.taskId === "web:build");
 
         expect(appSummary?.cacheStatus).toBe("MISS");
-        expect(libSummary?.cacheStatus).toBe("HIT");
+        expect(librarySummary?.cacheStatus).toBe("HIT");
         expect(apiSummary?.cacheStatus).toBe("REMOTE_HIT");
         expect(webSummary?.cacheStatus).toBe("MISS");
     });
@@ -127,9 +129,9 @@ describe("generateRunSummary", () => {
         ]);
 
         const taskGraph: TaskGraph = {
+            dependencies: { "app:build": ["lib:build"], "lib:build": [] },
             roots: ["lib:build"],
             tasks: { "app:build": taskA, "lib:build": taskB },
-            dependencies: { "app:build": ["lib:build"], "lib:build": [] },
         };
 
         const summary = generateRunSummary(results, taskGraph, Date.now());
@@ -141,9 +143,9 @@ describe("generateRunSummary", () => {
     it("should include environment info", () => {
         const results: TaskResults = new Map();
         const taskGraph: TaskGraph = {
+            dependencies: {},
             roots: [],
             tasks: {},
-            dependencies: {},
         };
 
         const summary = generateRunSummary(results, taskGraph, Date.now());
@@ -163,14 +165,12 @@ describe("generateRunSummary", () => {
             },
         });
 
-        const results: TaskResults = new Map([
-            ["app:build", createResult(task, "success")],
-        ]);
+        const results: TaskResults = new Map([["app:build", createResult(task, "success")]]);
 
         const taskGraph: TaskGraph = {
+            dependencies: { "app:build": [] },
             roots: ["app:build"],
             tasks: { "app:build": task },
-            dependencies: { "app:build": [] },
         };
 
         const summary = generateRunSummary(results, taskGraph, Date.now());
@@ -184,14 +184,12 @@ describe("generateRunSummary", () => {
     it("should handle skipped tasks (dry-run)", () => {
         const task = createTask("app:build");
 
-        const results: TaskResults = new Map([
-            ["app:build", createResult(task, "skipped")],
-        ]);
+        const results: TaskResults = new Map([["app:build", createResult(task, "skipped")]]);
 
         const taskGraph: TaskGraph = {
+            dependencies: { "app:build": [] },
             roots: ["app:build"],
             tasks: { "app:build": task },
-            dependencies: { "app:build": [] },
         };
 
         const summary = generateRunSummary(results, taskGraph, Date.now());
@@ -204,16 +202,16 @@ describe("generateRunSummary", () => {
         const now = Date.now();
         const task = createTask("app:build");
         const result = createResult(task, "success", {
-            startTime: now - 3000,
             endTime: now,
+            startTime: now - 3000,
         });
 
         const results: TaskResults = new Map([["app:build", result]]);
 
         const taskGraph: TaskGraph = {
+            dependencies: { "app:build": [] },
             roots: ["app:build"],
             tasks: { "app:build": task },
-            dependencies: { "app:build": [] },
         };
 
         const summary = generateRunSummary(results, taskGraph, now - 5000);
@@ -222,38 +220,38 @@ describe("generateRunSummary", () => {
     });
 });
 
-describe("writeRunSummary", () => {
+describe(writeRunSummary, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should write summary to .task-runner/runs/ directory", async () => {
         const summary: RunSummary = {
-            id: "test-run-123",
-            startTime: new Date().toISOString(),
-            endTime: new Date().toISOString(),
             duration: 1000,
-            tasks: [],
-            stats: { total: 0, succeeded: 0, failed: 0, cached: 0, skipped: 0 },
-            taskGraph: { roots: [], dependencies: {} },
+            endTime: new Date().toISOString(),
             environment: {
+                arch: process.arch,
                 nodeVersion: process.version,
                 platform: process.platform,
-                arch: process.arch,
             },
+            id: "test-run-123",
+            startTime: new Date().toISOString(),
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 0, total: 0 },
+            taskGraph: { dependencies: {}, roots: [] },
+            tasks: [],
         };
 
         const filePath = await writeRunSummary(summary, workspaceRoot);
 
         expect(filePath).toContain(".task-runner/runs/test-run-123.json");
 
-        const content = await readFile(filePath, "utf-8");
+        const content = await readFile(filePath, "utf8");
         const parsed = JSON.parse(content) as RunSummary;
 
         expect(parsed.id).toBe("test-run-123");
@@ -262,63 +260,61 @@ describe("writeRunSummary", () => {
 
     it("should create the runs directory if it does not exist", async () => {
         const summary: RunSummary = {
-            id: "new-run",
-            startTime: new Date().toISOString(),
-            endTime: new Date().toISOString(),
             duration: 500,
-            tasks: [],
-            stats: { total: 0, succeeded: 0, failed: 0, cached: 0, skipped: 0 },
-            taskGraph: { roots: [], dependencies: {} },
+            endTime: new Date().toISOString(),
             environment: {
+                arch: process.arch,
                 nodeVersion: process.version,
                 platform: process.platform,
-                arch: process.arch,
             },
+            id: "new-run",
+            startTime: new Date().toISOString(),
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 0, total: 0 },
+            taskGraph: { dependencies: {}, roots: [] },
+            tasks: [],
         };
 
         await writeRunSummary(summary, workspaceRoot);
 
-        const runsDir = join(workspaceRoot, ".task-runner", "runs");
-        const entries = await readdir(runsDir);
+        const runsDirectory = join(workspaceRoot, ".task-runner", "runs");
+        const entries = await readdir(runsDirectory);
 
         expect(entries).toContain("new-run.json");
     });
 
     it("should write valid JSON with pretty formatting", async () => {
-        const task = createTask("app:build", { hash: "abc123" });
-
         const summary: RunSummary = {
+            duration: 2000,
+            endTime: new Date().toISOString(),
+            environment: {
+                arch: process.arch,
+                nodeVersion: process.version,
+                platform: process.platform,
+            },
             id: "formatted-run",
             startTime: new Date().toISOString(),
-            endTime: new Date().toISOString(),
-            duration: 2000,
+            stats: { cached: 0, failed: 0, skipped: 0, succeeded: 1, total: 1 },
+            taskGraph: { dependencies: { "app:build": [] }, roots: ["app:build"] },
             tasks: [
                 {
-                    taskId: "app:build",
-                    target: { project: "app", target: "build" },
+                    cacheable: true,
+                    cacheStatus: "MISS",
+                    dependencies: [],
+                    duration: 1500,
+                    endTime: new Date().toISOString(),
+                    exitCode: 0,
                     hash: "abc123",
                     hashDetails: undefined,
                     outputs: ["dist/**"],
-                    cacheStatus: "MISS",
-                    exitCode: 0,
                     startTime: new Date().toISOString(),
-                    endTime: new Date().toISOString(),
-                    duration: 1500,
-                    dependencies: [],
-                    cacheable: true,
+                    target: { project: "app", target: "build" },
+                    taskId: "app:build",
                 },
             ],
-            stats: { total: 1, succeeded: 1, failed: 0, cached: 0, skipped: 0 },
-            taskGraph: { roots: ["app:build"], dependencies: { "app:build": [] } },
-            environment: {
-                nodeVersion: process.version,
-                platform: process.platform,
-                arch: process.arch,
-            },
         };
 
         const filePath = await writeRunSummary(summary, workspaceRoot);
-        const content = await readFile(filePath, "utf-8");
+        const content = await readFile(filePath, "utf8");
 
         // Verify it's pretty-printed (has newlines and indentation)
         expect(content).toContain("\n");

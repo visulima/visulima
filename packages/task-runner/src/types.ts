@@ -2,36 +2,36 @@
  * Represents a target that a task executes against.
  */
 export interface TaskTarget {
+    /** Optional configuration name */
+    configuration?: string;
     /** The project name */
     project: string;
     /** The target name (e.g., "build", "test", "lint") */
     target: string;
-    /** Optional configuration name */
-    configuration?: string;
 }
 
 /**
  * Represents a single task to be executed.
  */
 export interface Task {
-    /** Unique identifier for the task, typically "project:target:configuration" */
-    id: string;
-    /** The target this task executes */
-    target: TaskTarget;
-    /** Overrides/extra options passed to the task */
-    overrides: Record<string, unknown>;
+    /** Whether this task is eligible for caching */
+    cache?: boolean;
     /** Hash of the task inputs for caching */
     hash?: string;
     /** Detailed hash information */
     hashDetails?: TaskHashDetails;
+    /** Unique identifier for the task, typically "project:target:configuration" */
+    id: string;
     /** Output file paths produced by this task */
     outputs: string[];
-    /** The project root directory */
-    projectRoot?: string;
-    /** Whether this task is eligible for caching */
-    cache?: boolean;
+    /** Overrides/extra options passed to the task */
+    overrides: Record<string, unknown>;
     /** Whether this task supports parallel execution */
     parallelism?: boolean;
+    /** The project root directory */
+    projectRoot?: string;
+    /** The target this task executes */
+    target: TaskTarget;
 }
 
 /**
@@ -40,10 +40,10 @@ export interface Task {
 export interface TaskHashDetails {
     /** The command hash */
     command: string;
-    /** Hashes of input files */
-    nodes: Record<string, string>;
     /** Hash of implicit dependencies */
     implicitDeps?: Record<string, string>;
+    /** Hashes of input files */
+    nodes: Record<string, string>;
     /** Hash of runtime values */
     runtime?: Record<string, string>;
 }
@@ -52,39 +52,33 @@ export interface TaskHashDetails {
  * Represents a directed acyclic graph of tasks.
  */
 export interface TaskGraph {
+    /** Dependencies for each task */
+    dependencies: Record<string, string[]>;
     /** Top-level tasks that no other task depends on (the final outputs to run) */
     roots: string[];
     /** All tasks in the graph, keyed by task ID */
     tasks: Record<string, Task>;
-    /** Dependencies for each task */
-    dependencies: Record<string, string[]>;
 }
 
 /**
  * Possible states of a task after execution.
  */
-export type TaskStatus =
-    | "success"
-    | "failure"
-    | "skipped"
-    | "local-cache"
-    | "local-cache-kept-existing"
-    | "remote-cache";
+export type TaskStatus = "success" | "failure" | "skipped" | "local-cache" | "local-cache-kept-existing" | "remote-cache";
 
 /**
  * Result of executing a task.
  */
 export interface TaskResult {
-    task: Task;
-    status: TaskStatus;
-    /** The terminal output produced during execution */
-    terminalOutput?: string;
-    /** The start time of the task */
-    startTime?: number;
-    /** The end time of the task */
-    endTime?: number;
     /** The exit code, if applicable */
     code?: number;
+    /** The end time of the task */
+    endTime?: number;
+    /** The start time of the task */
+    startTime?: number;
+    status: TaskStatus;
+    task: Task;
+    /** The terminal output produced during execution */
+    terminalOutput?: string;
 }
 
 /**
@@ -96,40 +90,40 @@ export type TaskResults = Map<string, TaskResult>;
  * Configuration for a project in the workspace.
  */
 export interface ProjectConfiguration {
+    /** Implicit dependencies on other projects */
+    implicitDependencies?: string[];
+    /** The project type */
+    projectType?: "library" | "application";
     /** The root directory of the project, relative to workspace root */
     root: string;
     /** The source root directory */
     sourceRoot?: string;
-    /** The project type */
-    projectType?: "library" | "application";
-    /** Named targets and their configurations */
-    targets?: Record<string, TargetConfiguration>;
     /** Tags for filtering */
     tags?: string[];
-    /** Implicit dependencies on other projects */
-    implicitDependencies?: string[];
+    /** Named targets and their configurations */
+    targets?: Record<string, TargetConfiguration>;
 }
 
 /**
  * Configuration for a target within a project.
  */
 export interface TargetConfiguration {
-    /** The executor/command to run */
-    executor?: string;
+    /** Whether this target is cacheable */
+    cache?: boolean;
     /** The command to run (alternative to executor) */
     command?: string;
-    /** Options passed to the executor */
-    options?: Record<string, unknown>;
     /** Named configurations (e.g., "production", "development") */
     configurations?: Record<string, Record<string, unknown>>;
     /** Other targets this target depends on */
     dependsOn?: (string | TargetDependencyConfig)[];
+    /** The executor/command to run */
+    executor?: string;
     /** Input patterns for cache invalidation */
     inputs?: (string | InputDefinition)[];
+    /** Options passed to the executor */
+    options?: Record<string, unknown>;
     /** Output patterns produced by this target */
     outputs?: string[];
-    /** Whether this target is cacheable */
-    cache?: boolean;
     /** Whether this target supports parallel execution */
     parallelism?: boolean;
 }
@@ -138,24 +132,20 @@ export interface TargetConfiguration {
  * Defines a dependency on another target.
  */
 export interface TargetDependencyConfig {
-    /** The target name */
-    target: string;
-    /** The project name (if different from the current project) */
-    projects?: string | string[];
     /** Whether this is a dependency on the same project */
     dependencies?: boolean;
     /** Params to pass through */
     params?: "forward" | "ignore";
+    /** The project name (if different from the current project) */
+    projects?: string | string[];
+    /** The target name */
+    target: string;
 }
 
 /**
  * Defines an input for cache invalidation.
  */
-export type InputDefinition =
-    | FileSetInput
-    | RuntimeInput
-    | EnvironmentInput
-    | ExternalDependencyInput;
+export type InputDefinition = FileSetInput | RuntimeInput | EnvironmentInput | ExternalDependencyInput;
 
 /**
  * An input based on file patterns.
@@ -209,22 +199,22 @@ export interface ProjectGraphDependency {
  * A node in the project graph.
  */
 export interface ProjectGraphProjectNode {
+    /** The project configuration */
+    data: ProjectConfiguration;
     /** The project name */
     name: string;
     /** The type of project */
     type: "library" | "application";
-    /** The project configuration */
-    data: ProjectConfiguration;
 }
 
 /**
  * The project graph represents the dependency relationships between projects.
  */
 export interface ProjectGraph {
-    /** All project nodes, keyed by project name */
-    nodes: Record<string, ProjectGraphProjectNode>;
     /** All dependency relationships */
     dependencies: Record<string, ProjectGraphDependency[]>;
+    /** All project nodes, keyed by project name */
+    nodes: Record<string, ProjectGraphProjectNode>;
 }
 
 /**
@@ -238,67 +228,6 @@ export interface NamedInputs {
  * Configuration for the task runner.
  */
 export interface TaskRunnerOptions {
-    /** Directory for storing cache */
-    cacheDirectory?: string;
-    /** Maximum number of parallel tasks */
-    parallel?: number | boolean;
-    /** Named inputs for cache invalidation */
-    namedInputs?: NamedInputs;
-    /** Target-specific default configurations */
-    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
-    /** Maximum cache size (e.g., "1GB") */
-    maxCacheSize?: string;
-    /** Maximum age of cache entries in milliseconds */
-    maxCacheAge?: number;
-    /** Whether to skip cache reads */
-    skipNxCache?: boolean;
-    /** Custom environment variables to include in hash */
-    envVars?: string[];
-    /**
-     * Global input files that invalidate ALL task hashes when changed.
-     * These are workspace-root-relative paths.
-     *
-     * Default: ["package-lock.json", "pnpm-lock.yaml", "yarn.lock",
-     *           "tsconfig.base.json", ".env"]
-     *
-     * When any global input changes, every task's hash changes,
-     * forcing a full rebuild. This matches Turborepo's `globalDependencies`.
-     */
-    globalInputs?: string[];
-    /**
-     * Global environment variables that invalidate ALL task hashes.
-     * Matches Turborepo's `globalEnv`.
-     */
-    globalEnv?: string[];
-    /**
-     * Dry-run mode: compute hashes and check cache but don't execute tasks.
-     * Useful for debugging cache hits/misses.
-     * @default false
-     */
-    dryRun?: boolean;
-    /**
-     * Remote cache configuration.
-     * When configured, the task runner will check the remote cache
-     * after a local cache miss, and upload results after execution.
-     */
-    remoteCache?: {
-        /** Remote cache server URL */
-        url: string;
-        /** Authentication token */
-        token?: string;
-        /** Team/namespace for cache isolation */
-        teamId?: string;
-        /** Enable remote reads (default: true) */
-        read?: boolean;
-        /** Enable remote writes (default: true) */
-        write?: boolean;
-        /**
-         * Called when a fire-and-forget upload fails.
-         * Since uploads are non-blocking, errors are silently swallowed by default.
-         * Provide this callback to log or report upload failures.
-         */
-        onUploadError?: (hash: string, error: unknown) => void;
-    };
     /**
      * Enable auto-fingerprinting mode (Vite Task-style).
      * When enabled, the task runner automatically tracks which files
@@ -307,35 +236,34 @@ export interface TaskRunnerOptions {
      *
      * Falls back to explicit inputs (Nx-style) when file tracking
      * is not supported on the current platform.
-     *
      * @default false
      */
     autoFingerprint?: boolean;
+
+    /**
+     * Whether to show cache miss diagnostics (why a cache miss occurred).
+     * @default false
+     */
+    cacheDiagnostics?: boolean;
+    /** Directory for storing cache */
+    cacheDirectory?: string;
+
+    /**
+     * Dry-run mode: compute hashes and check cache but don't execute tasks.
+     * Useful for debugging cache hits/misses.
+     * @default false
+     */
+    dryRun?: boolean;
+    /** Custom environment variables to include in hash */
+    envVars?: string[];
+
     /**
      * Environment variable patterns to include in auto-fingerprint.
      * Supports wildcard patterns like "VITE_*".
      * Only used when autoFingerprint is enabled.
      */
     fingerprintEnvPatterns?: string[];
-    /**
-     * Environment variables that should be passed to tasks but NOT
-     * included in the cache fingerprint. Useful for CI-specific vars.
-     * Only used when autoFingerprint is enabled.
-     */
-    untrackedEnvVars?: string[];
-    /**
-     * Whether to show cache miss diagnostics (why a cache miss occurred).
-     * @default false
-     */
-    cacheDiagnostics?: boolean;
-    /**
-     * Enable smart lockfile hashing.
-     * Instead of hashing the entire lockfile (which busts ALL caches),
-     * only hash the resolved versions of each package's actual dependencies.
-     * This matches Turborepo's smart lockfile hashing behavior.
-     * @default false
-     */
-    smartLockfileHashing?: boolean;
+
     /**
      * Enable framework environment variable inference.
      * When true, automatically detects common frontend frameworks and includes
@@ -351,6 +279,68 @@ export interface TaskRunnerOptions {
      * @default false
      */
     frameworkInference?: boolean;
+
+    /**
+     * Global environment variables that invalidate ALL task hashes.
+     * Matches Turborepo's `globalEnv`.
+     */
+    globalEnv?: string[];
+
+    /**
+     * Global input files that invalidate ALL task hashes when changed.
+     * These are workspace-root-relative paths.
+     *
+     * Default: ["package-lock.json", "pnpm-lock.yaml", "yarn.lock",
+     * "tsconfig.base.json", ".env"]
+     *
+     * When any global input changes, every task's hash changes,
+     * forcing a full rebuild. This matches Turborepo's `globalDependencies`.
+     */
+    globalInputs?: string[];
+    /** Maximum age of cache entries in milliseconds */
+    maxCacheAge?: number;
+    /** Maximum cache size (e.g., "1GB") */
+    maxCacheSize?: string;
+    /** Named inputs for cache invalidation */
+    namedInputs?: NamedInputs;
+    /** Maximum number of parallel tasks */
+    parallel?: number | boolean;
+
+    /**
+     * Remote cache configuration.
+     * When configured, the task runner will check the remote cache
+     * after a local cache miss, and upload results after execution.
+     */
+    remoteCache?: {
+        /**
+         * Called when a fire-and-forget upload fails.
+         * Since uploads are non-blocking, errors are silently swallowed by default.
+         * Provide this callback to log or report upload failures.
+         */
+        onUploadError?: (hash: string, error: unknown) => void;
+        /** Enable remote reads (default: true) */
+        read?: boolean;
+        /** Team/namespace for cache isolation */
+        teamId?: string;
+        /** Authentication token */
+        token?: string;
+        /** Remote cache server URL */
+        url: string;
+        /** Enable remote writes (default: true) */
+        write?: boolean;
+    };
+    /** Whether to skip cache reads */
+    skipNxCache?: boolean;
+
+    /**
+     * Enable smart lockfile hashing.
+     * Instead of hashing the entire lockfile (which busts ALL caches),
+     * only hash the resolved versions of each package's actual dependencies.
+     * This matches Turborepo's smart lockfile hashing behavior.
+     * @default false
+     */
+    smartLockfileHashing?: boolean;
+
     /**
      * Generate a detailed JSON run summary after execution.
      * When true, writes a summary file to `.task-runner/runs/` containing
@@ -361,18 +351,27 @@ export interface TaskRunnerOptions {
      * @default false
      */
     summarize?: boolean;
+    /** Target-specific default configurations */
+    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+
+    /**
+     * Environment variables that should be passed to tasks but NOT
+     * included in the cache fingerprint. Useful for CI-specific vars.
+     * Only used when autoFingerprint is enabled.
+     */
+    untrackedEnvVars?: string[];
 }
 
 /**
  * Options for executing a task.
  */
 export interface TaskExecutionOptions {
+    /** Whether to capture output */
+    captureOutput?: boolean;
     /** The working directory */
     cwd?: string;
     /** Environment variables */
     env?: Record<string, string>;
-    /** Whether to capture output */
-    captureOutput?: boolean;
     /** Stream output as it arrives */
     streamOutput?: boolean;
 }
@@ -380,32 +379,25 @@ export interface TaskExecutionOptions {
 /**
  * A task executor function.
  */
-export type TaskExecutor = (
-    task: Task,
-    options: TaskExecutionOptions,
-) => Promise<{ code: number; terminalOutput: string }>;
+export type TaskExecutor = (task: Task, options: TaskExecutionOptions) => Promise<{ code: number; terminalOutput: string }>;
 
 /**
  * The function type for a task runner.
  */
-export type TasksRunner = (
-    tasks: Task[],
-    options: TaskRunnerOptions,
-    context: TaskRunnerContext,
-) => Promise<TaskResults>;
+export type TasksRunner = (tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext) => Promise<TaskResults>;
 
 /**
  * Context provided to the task runner.
  */
 export interface TaskRunnerContext {
-    /** The task graph */
-    taskGraph: TaskGraph;
-    /** The project graph */
-    projectGraph: ProjectGraph;
     /** Lifecycle hooks */
     lifeCycle: LifeCycleInterface;
+    /** The project graph */
+    projectGraph: ProjectGraph;
     /** The task executor */
     taskExecutor: TaskExecutor;
+    /** The task graph */
+    taskGraph: TaskGraph;
     /** The workspace root directory */
     workspaceRoot: string;
 }
@@ -414,12 +406,12 @@ export interface TaskRunnerContext {
  * Interface for lifecycle event handlers.
  */
 export interface LifeCycleInterface {
-    startCommand?(): void;
-    endCommand?(): void;
-    scheduleTask?(task: Task): void;
-    startTasks?(tasks: Task[]): void;
-    endTasks?(taskResults: TaskResult[]): void;
-    printTaskTerminalOutput?(task: Task, status: TaskStatus, terminalOutput: string): void;
+    endCommand?: () => void;
+    endTasks?: (taskResults: TaskResult[]) => void;
     /** Called when a cache miss occurs with diagnostic information */
-    printCacheMiss?(task: Task, reasons: string): void;
+    printCacheMiss?: (task: Task, reasons: string) => void;
+    printTaskTerminalOutput?: (task: Task, status: TaskStatus, terminalOutput: string) => void;
+    scheduleTask?: (task: Task) => void;
+    startCommand?: () => void;
+    startTasks?: (tasks: Task[]) => void;
 }

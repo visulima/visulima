@@ -8,26 +8,26 @@ import { hashFile, hashStrings, sortObjectKeys } from "./utils";
  * Represents a stored fingerprint for a task execution.
  */
 export interface TaskFingerprint {
+    /** Hash of the command arguments */
+    commandHash: string;
+    /** Directory listings recorded during execution (path -> sorted entries) */
+    directoryListings: Record<string, string[]>;
+    /** Hashes of fingerprinted environment variables */
+    envHashes: Record<string, string>;
     /** Content hashes of files that were read during execution */
     fileHashes: Record<string, string>;
     /** Paths of files that were probed but didn't exist (ENOENT) */
     missingFiles: string[];
-    /** Directory listings recorded during execution (path -> sorted entries) */
-    directoryListings: Record<string, string[]>;
-    /** Hash of the command arguments */
-    commandHash: string;
-    /** Hashes of fingerprinted environment variables */
-    envHashes: Record<string, string>;
 }
 
 /**
  * Describes why a cache miss occurred.
  */
 export interface CacheMissReason {
-    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
+    currentHash?: string;
     detail: string;
     previousHash?: string;
-    currentHash?: string;
+    type: "file-changed" | "file-created" | "file-deleted" | "directory-changed" | "env-changed" | "args-changed" | "no-fingerprint";
 }
 
 /**
@@ -38,19 +38,21 @@ export interface CacheMissReason {
  */
 export class FingerprintManager {
     readonly #workspaceRoot: string;
-    readonly #fileHashCache = new Map<string, string | null>();
 
-    constructor(workspaceRoot: string) {
+    readonly #fileHashCache = new Map<string, string | undefined>();
+
+    public constructor(workspaceRoot: string) {
         this.#workspaceRoot = resolve(workspaceRoot);
     }
 
-    async createFingerprint(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async createFingerprint(
         accesses: FileAccess[],
         command: string,
         args: Record<string, unknown>,
-        envVars: Record<string, string | undefined>,
+        envVariables: Record<string, string | undefined>,
         envPatterns: string[] = [],
-        untrackedEnvVars: string[] = [],
+        untrackedEnvVariables: string[] = [],
     ): Promise<TaskFingerprint> {
         const fileHashes: Record<string, string> = {};
         const missingPaths = new Set<string>();
@@ -59,25 +61,41 @@ export class FingerprintManager {
         for (const access of accesses) {
             const relativePath = relative(this.#workspaceRoot, access.path);
 
-            if (access.type === "missing") {
-                missingPaths.add(relativePath);
-            } else if (access.type === "readdir") {
-                if (!directoryListings[relativePath]) {
-                    try {
-                        const entries = await readdir(access.path);
+            switch (access.type) {
+                case "missing": {
+                    missingPaths.add(relativePath);
 
-                        directoryListings[relativePath] = entries.sort();
-                    } catch {
-                        directoryListings[relativePath] = [];
-                    }
+                    break;
                 }
-            } else if (access.type === "read" || access.type === "stat") {
-                if (!fileHashes[relativePath]) {
-                    const hash = await this.#hashFileWithCache(access.path);
+                case "read":
+                case "stat": {
+                    if (!fileHashes[relativePath]) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const hash = await this.#hashFileWithCache(access.path);
 
-                    if (hash) {
-                        fileHashes[relativePath] = hash;
+                        if (hash) {
+                            fileHashes[relativePath] = hash;
+                        }
                     }
+
+                    break;
+                }
+                case "readdir": {
+                    if (!directoryListings[relativePath]) {
+                        try {
+                            // eslint-disable-next-line no-await-in-loop
+                            const entries = await readdir(access.path);
+
+                            directoryListings[relativePath] = entries.toSorted();
+                        } catch {
+                            directoryListings[relativePath] = [];
+                        }
+                    }
+
+                    break;
+                }
+                default: {
+                    break;
                 }
             }
         }
@@ -85,10 +103,10 @@ export class FingerprintManager {
         const commandHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
         const envHashes: Record<string, string> = {};
-        const matchedEnvVars = this.#resolveEnvPatterns(envPatterns, envVars);
-        const untrackedSet = new Set(untrackedEnvVars);
+        const matchedEnvVariables = FingerprintManager.#resolveEnvPatterns(envPatterns, envVariables);
+        const untrackedSet = new Set(untrackedEnvVariables);
 
-        for (const [key, value] of Object.entries(matchedEnvVars)) {
+        for (const [key, value] of Object.entries(matchedEnvVariables)) {
             if (untrackedSet.has(key)) {
                 continue;
             }
@@ -96,9 +114,9 @@ export class FingerprintManager {
             envHashes[key] = hashStrings(`${key}=${value ?? ""}`);
         }
 
-        const missingFiles = [...missingPaths].sort();
+        const missingFiles = [...missingPaths].toSorted();
 
-        return { fileHashes, missingFiles, directoryListings, commandHash, envHashes };
+        return { commandHash, directoryListings, envHashes, fileHashes, missingFiles };
     }
 
     /**
@@ -107,72 +125,67 @@ export class FingerprintManager {
      *
      * Does NOT use the file hash cache — validation must see current disk state.
      */
-    async validate(fingerprint: TaskFingerprint): Promise<CacheMissReason[] | null> {
+    public async validate(fingerprint: TaskFingerprint): Promise<CacheMissReason[] | undefined> {
         const reasons: CacheMissReason[] = [];
 
-        const fileCheckPromises = Object.entries(fingerprint.fileHashes).map(
-            async ([relativePath, previousHash]) => {
-                const absolutePath = resolve(this.#workspaceRoot, relativePath);
-                const currentHash = await hashFile(absolutePath);
+        const fileCheckPromises = Object.entries(fingerprint.fileHashes).map(async ([relativePath, previousHash]) => {
+            const absolutePath = resolve(this.#workspaceRoot, relativePath);
+            const currentHash = await hashFile(absolutePath);
 
-                if (!currentHash) {
-                    return { type: "file-deleted" as const, detail: relativePath, previousHash };
-                }
+            if (!currentHash) {
+                return { detail: relativePath, previousHash, type: "file-deleted" as const };
+            }
 
-                if (currentHash !== previousHash) {
-                    return { type: "file-changed" as const, detail: relativePath, previousHash, currentHash };
-                }
+            if (currentHash !== previousHash) {
+                return { currentHash, detail: relativePath, previousHash, type: "file-changed" as const };
+            }
 
-                return null;
-            },
-        );
+            return undefined;
+        });
 
         // Parallelize missing file checks
-        const missingCheckPromises = fingerprint.missingFiles.map(
-            async (relativePath) => {
-                const absolutePath = resolve(this.#workspaceRoot, relativePath);
+        const missingCheckPromises = fingerprint.missingFiles.map(async (relativePath) => {
+            const absolutePath = resolve(this.#workspaceRoot, relativePath);
 
-                try {
-                    await stat(absolutePath);
+            try {
+                await stat(absolutePath);
 
-                    return { type: "file-created" as const, detail: relativePath };
-                } catch {
-                    return null;
-                }
-            },
-        );
+                return { detail: relativePath, type: "file-created" as const };
+            } catch {
+                return undefined;
+            }
+        });
 
         // Parallelize directory listing checks
-        const dirCheckPromises = Object.entries(fingerprint.directoryListings).map(
-            async ([relativePath, previousEntries]) => {
-                const absolutePath = resolve(this.#workspaceRoot, relativePath);
+        const directoryCheckPromises = Object.entries(fingerprint.directoryListings).map(async ([relativePath, previousEntries]) => {
+            const absolutePath = resolve(this.#workspaceRoot, relativePath);
 
-                try {
-                    const currentEntries = (await readdir(absolutePath)).sort();
+            try {
+                const readdirResult = await readdir(absolutePath);
+                const currentEntries = readdirResult.toSorted();
 
-                    if (JSON.stringify(previousEntries) !== JSON.stringify(currentEntries)) {
-                        return {
-                            type: "directory-changed" as const,
-                            detail: relativePath,
-                            previousHash: JSON.stringify(previousEntries),
-                            currentHash: JSON.stringify(currentEntries),
-                        };
-                    }
-                } catch {
-                    return { type: "directory-changed" as const, detail: relativePath };
+                if (JSON.stringify(previousEntries) !== JSON.stringify(currentEntries)) {
+                    return {
+                        currentHash: JSON.stringify(currentEntries),
+                        detail: relativePath,
+                        previousHash: JSON.stringify(previousEntries),
+                        type: "directory-changed" as const,
+                    };
                 }
+            } catch {
+                return { detail: relativePath, type: "directory-changed" as const };
+            }
 
-                return null;
-            },
-        );
+            return undefined;
+        });
 
-        const [fileResults, missingResults, dirResults] = await Promise.all([
+        const [fileResults, missingResults, directoryResults] = await Promise.all([
             Promise.all(fileCheckPromises),
             Promise.all(missingCheckPromises),
-            Promise.all(dirCheckPromises),
+            Promise.all(directoryCheckPromises),
         ]);
 
-        for (const r of [...fileResults, ...missingResults, ...dirResults]) {
+        for (const r of [...fileResults, ...missingResults, ...directoryResults]) {
             if (r) {
                 reasons.push(r);
             }
@@ -184,41 +197,54 @@ export class FingerprintManager {
 
             if (currentHash !== previousHash) {
                 reasons.push({
-                    type: "env-changed",
+                    currentHash,
                     detail: envName,
                     previousHash,
-                    currentHash,
+                    type: "env-changed",
                 });
             }
         }
 
-        return reasons.length > 0 ? reasons : null;
+        return reasons.length > 0 ? reasons : undefined;
     }
 
-    validateCommand(
-        fingerprint: TaskFingerprint,
-        command: string,
-        args: Record<string, unknown>,
-    ): CacheMissReason | null {
+    // eslint-disable-next-line class-methods-use-this
+    public validateCommand(fingerprint: TaskFingerprint, command: string, args: Record<string, unknown>): CacheMissReason | undefined {
         const currentHash = hashStrings(`${command}:${JSON.stringify(sortObjectKeys(args))}`);
 
         if (currentHash !== fingerprint.commandHash) {
             return {
-                type: "args-changed",
+                currentHash,
                 detail: "command arguments",
                 previousHash: fingerprint.commandHash,
-                currentHash,
+                type: "args-changed",
             };
         }
 
-        return null;
+        return undefined;
     }
 
-    formatMissReasons(reasons: CacheMissReason[]): string {
+    // eslint-disable-next-line class-methods-use-this
+    public formatMissReasons(reasons: CacheMissReason[]): string {
         const lines: string[] = ["Cache miss reasons:"];
 
         for (const reason of reasons) {
             switch (reason.type) {
+                case "args-changed": {
+                    lines.push(`  - Command arguments changed`);
+                    break;
+                }
+
+                case "directory-changed": {
+                    lines.push(`  - Directory contents changed: ${reason.detail}`);
+                    break;
+                }
+
+                case "env-changed": {
+                    lines.push(`  - Environment variable changed: ${reason.detail}`);
+                    break;
+                }
+
                 case "file-changed": {
                     lines.push(`  - File modified: ${reason.detail}`);
                     break;
@@ -234,23 +260,11 @@ export class FingerprintManager {
                     break;
                 }
 
-                case "directory-changed": {
-                    lines.push(`  - Directory contents changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "env-changed": {
-                    lines.push(`  - Environment variable changed: ${reason.detail}`);
-                    break;
-                }
-
-                case "args-changed": {
-                    lines.push(`  - Command arguments changed`);
-                    break;
-                }
-
                 case "no-fingerprint": {
                     lines.push(`  - No previous fingerprint found (first run)`);
+                    break;
+                }
+                default: {
                     break;
                 }
             }
@@ -259,37 +273,34 @@ export class FingerprintManager {
         return lines.join("\n");
     }
 
-    #resolveEnvPatterns(
-        patterns: string[],
-        envVars: Record<string, string | undefined>,
-    ): Record<string, string | undefined> {
+    static #resolveEnvPatterns(patterns: string[], envVariables: Record<string, string | undefined>): Record<string, string | undefined> {
         const result: Record<string, string | undefined> = {};
 
         for (const pattern of patterns) {
             if (pattern.includes("*")) {
                 const prefix = pattern.replace("*", "");
 
-                for (const [key, value] of Object.entries(envVars)) {
+                for (const [key, value] of Object.entries(envVariables)) {
                     if (key.startsWith(prefix)) {
                         result[key] = value;
                     }
                 }
             } else {
-                result[pattern] = envVars[pattern];
+                result[pattern] = envVariables[pattern];
             }
         }
 
         return result;
     }
 
-    async #hashFileWithCache(filePath: string): Promise<string | null> {
+    async #hashFileWithCache(filePath: string): Promise<string | undefined> {
         const cached = this.#fileHashCache.get(filePath);
 
         if (cached !== undefined) {
             return cached;
         }
 
-        const hash = await hashFile(filePath);
+        const hash = await hashFile(filePath) ?? undefined;
 
         this.#fileHashCache.set(filePath, hash);
 

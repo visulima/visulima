@@ -1,32 +1,28 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import {
-    LockfileHasher,
-    parseNpmLockfile,
-    parsePnpmLockfile,
-    parseYarnLockfile,
-    extractPackageName,
-} from "../src/lockfile-hasher";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `lockfile-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+import { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "../src/lockfile-hasher";
 
-    await mkdir(dir, { recursive: true });
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `lockfile-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    return dir;
+    await mkdir(directory, { recursive: true });
+
+    return directory;
 };
 
-describe("parseNpmLockfile", () => {
+describe(parseNpmLockfile, () => {
     it("should parse v2/v3 packages format", () => {
         const lockfile = JSON.stringify({
             lockfileVersion: 3,
             packages: {
                 "": { version: "1.0.0" },
-                "node_modules/lodash": { version: "4.17.21" },
                 "node_modules/@types/node": { version: "20.10.0" },
+                "node_modules/lodash": { version: "4.17.21" },
                 "node_modules/typescript": { version: "5.3.2" },
             },
         });
@@ -40,11 +36,11 @@ describe("parseNpmLockfile", () => {
 
     it("should parse v1 dependencies format", () => {
         const lockfile = JSON.stringify({
-            lockfileVersion: 1,
             dependencies: {
-                lodash: { version: "4.17.21" },
                 express: { version: "4.18.2" },
+                lodash: { version: "4.17.21" },
             },
+            lockfileVersion: 1,
         });
 
         const versions = parseNpmLockfile(lockfile);
@@ -74,7 +70,7 @@ describe("parseNpmLockfile", () => {
     });
 });
 
-describe("parsePnpmLockfile", () => {
+describe(parsePnpmLockfile, () => {
     it("should parse dependencies section with specifier+version", () => {
         const lockfile = `lockfileVersion: '9.0'
 
@@ -112,7 +108,7 @@ packages:
     });
 });
 
-describe("parseYarnLockfile", () => {
+describe(parseYarnLockfile, () => {
     it("should parse Yarn v1 format", () => {
         const lockfile = `# yarn lockfile v1
 
@@ -151,7 +147,7 @@ describe("parseYarnLockfile", () => {
     });
 });
 
-describe("extractPackageName", () => {
+describe(extractPackageName, () => {
     it("should extract simple package name", () => {
         expect(extractPackageName("node_modules/lodash")).toBe("lodash");
     });
@@ -165,27 +161,27 @@ describe("extractPackageName", () => {
     });
 
     it("should return null for empty path", () => {
-        expect(extractPackageName("")).toBeNull();
+        expect(extractPackageName("")).toBeUndefined();
     });
 
     it("should return null for hidden entries", () => {
-        expect(extractPackageName("node_modules/.package-lock.json")).toBeNull();
+        expect(extractPackageName("node_modules/.package-lock.json")).toBeUndefined();
     });
 
     it("should return null for paths without node_modules", () => {
-        expect(extractPackageName("src/index.ts")).toBeNull();
+        expect(extractPackageName("src/index.ts")).toBeUndefined();
     });
 });
 
-describe("LockfileHasher", () => {
+describe(LockfileHasher, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should hash only relevant dependencies from npm lockfile", async () => {
@@ -194,9 +190,9 @@ describe("LockfileHasher", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { lodash: "^4.17.0" },
                 devDependencies: { typescript: "^5.0.0" },
+                name: "app",
             }),
         );
 
@@ -206,9 +202,9 @@ describe("LockfileHasher", () => {
             JSON.stringify({
                 lockfileVersion: 3,
                 packages: {
+                    "node_modules/express": { version: "4.18.2" },
                     "node_modules/lodash": { version: "4.17.21" },
                     "node_modules/typescript": { version: "5.3.2" },
-                    "node_modules/express": { version: "4.18.2" },
                 },
             }),
         );
@@ -216,10 +212,10 @@ describe("LockfileHasher", () => {
         const hasher = new LockfileHasher(workspaceRoot);
         const result = await hasher.hashForPackage("packages/app/package.json");
 
-        expect(result).not.toBeNull();
-        expect(result!.dependencies).toHaveLength(2);
+        expect(result).toBeDefined();
+        expect((result as NonNullable<typeof result>).dependencies).toHaveLength(2);
 
-        const depNames = result!.dependencies.map((d) => d.name);
+        const depNames = (result as NonNullable<typeof result>).dependencies.map((d) => d.name);
 
         expect(depNames).toContain("lodash");
         expect(depNames).toContain("typescript");
@@ -232,8 +228,8 @@ describe("LockfileHasher", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { lodash: "^4.17.0" },
+                name: "app",
             }),
         );
 
@@ -265,7 +261,7 @@ describe("LockfileHasher", () => {
         const hasher2 = new LockfileHasher(workspaceRoot);
         const result2 = await hasher2.hashForPackage("packages/app/package.json");
 
-        expect(result1!.hash).not.toBe(result2!.hash);
+        expect((result1 as NonNullable<typeof result1>).hash).not.toBe((result2 as NonNullable<typeof result2>).hash);
     });
 
     it("should return null when no lockfile exists", async () => {
@@ -273,23 +269,20 @@ describe("LockfileHasher", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { lodash: "^4.17.0" },
+                name: "app",
             }),
         );
 
         const hasher = new LockfileHasher(workspaceRoot);
         const result = await hasher.hashForPackage("packages/app/package.json");
 
-        expect(result).toBeNull();
+        expect(result).toBeUndefined();
     });
 
     it("should return null when package.json has no dependencies", async () => {
         await mkdir(join(workspaceRoot, "packages/app"), { recursive: true });
-        await writeFile(
-            join(workspaceRoot, "packages/app/package.json"),
-            JSON.stringify({ name: "app" }),
-        );
+        await writeFile(join(workspaceRoot, "packages/app/package.json"), JSON.stringify({ name: "app" }));
 
         await writeFile(
             join(workspaceRoot, "package-lock.json"),
@@ -304,7 +297,7 @@ describe("LockfileHasher", () => {
         const hasher = new LockfileHasher(workspaceRoot);
         const result = await hasher.hashForPackage("packages/app/package.json");
 
-        expect(result).toBeNull();
+        expect(result).toBeUndefined();
     });
 
     it("should detect lockfile type", async () => {
@@ -312,8 +305,8 @@ describe("LockfileHasher", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { lodash: "^4.17.0" },
+                name: "app",
             }),
         );
 
@@ -341,16 +334,16 @@ describe("LockfileHasher", () => {
         await writeFile(
             join(workspaceRoot, "packages/app/package.json"),
             JSON.stringify({
-                name: "app",
                 dependencies: { lodash: "^4.17.0" },
+                name: "app",
             }),
         );
 
         await writeFile(
             join(workspaceRoot, "packages/lib/package.json"),
             JSON.stringify({
-                name: "lib",
                 dependencies: { express: "^4.18.0" },
+                name: "lib",
             }),
         );
 
@@ -359,8 +352,8 @@ describe("LockfileHasher", () => {
             JSON.stringify({
                 lockfileVersion: 3,
                 packages: {
-                    "node_modules/lodash": { version: "4.17.21" },
                     "node_modules/express": { version: "4.18.2" },
+                    "node_modules/lodash": { version: "4.17.21" },
                 },
             }),
         );
@@ -369,14 +362,14 @@ describe("LockfileHasher", () => {
         const result1 = await hasher.hashForPackage("packages/app/package.json");
         const result2 = await hasher.hashForPackage("packages/lib/package.json");
 
-        expect(result1).not.toBeNull();
-        expect(result2).not.toBeNull();
+        expect(result1).toBeDefined();
+        expect(result2).toBeDefined();
 
         // Different packages should have different hashes
-        expect(result1!.hash).not.toBe(result2!.hash);
+        expect((result1 as NonNullable<typeof result1>).hash).not.toBe((result2 as NonNullable<typeof result2>).hash);
 
         // Verify correct dependencies
-        expect(result1!.dependencies[0]?.name).toBe("lodash");
-        expect(result2!.dependencies[0]?.name).toBe("express");
+        expect((result1 as NonNullable<typeof result1>).dependencies[0]?.name).toBe("lodash");
+        expect((result2 as NonNullable<typeof result2>).dependencies[0]?.name).toBe("express");
     });
 });

@@ -1,14 +1,14 @@
-import type { TaskGraph, ProjectGraph, Task } from "./types";
+import type { ProjectGraph, Task, TaskGraph } from "./types";
 
 /**
  * Graph visualization output formats.
  */
-export type GraphFormat = "dot" | "json" | "html" | "ascii";
+type GraphFormat = "dot" | "json" | "html" | "ascii";
 
 /**
  * Options for graph visualization.
  */
-export interface GraphVisualizerOptions {
+interface GraphVisualizerOptions {
     /** Show only affected/filtered tasks (highlight subset) */
     focusedTasks?: string[];
     /** Group tasks by project (default: true) */
@@ -17,32 +17,144 @@ export interface GraphVisualizerOptions {
     taskStatuses?: Map<string, "success" | "failure" | "skipped" | "local-cache" | "remote-cache" | "running" | "pending">;
 }
 
+// ─── Helper functions (defined before usage) ───────────────────────
+
+const getNodeColor = (taskId: string, focused: Set<string> | undefined, statuses?: Map<string, string>): string => {
+    if (focused && !focused.has(taskId)) {
+        return "#eeeeee";
+    }
+
+    const status = statuses?.get(taskId);
+
+    switch (status) {
+        case "failure": {
+            return "#FFB6C1";
+        }
+        case "local-cache":
+        case "remote-cache": {
+            return "#87CEEB";
+        }
+        case "running": {
+            return "#FFD700";
+        }
+        case "skipped": {
+            return "#D3D3D3";
+        }
+        case "success": {
+            return "#90EE90";
+        }
+        default: {
+            return "#FFFFFF";
+        }
+    }
+};
+
+const getStatusIcon = (status?: string): string => {
+    switch (status) {
+        case "failure": {
+            return "[FAIL] ";
+        }
+        case "local-cache":
+        case "remote-cache": {
+            return "[cache] ";
+        }
+        case "running": {
+            return "[...] ";
+        }
+        case "skipped": {
+            return "[skip] ";
+        }
+        case "success": {
+            return "[ok] ";
+        }
+        default: {
+            return "";
+        }
+    }
+};
+
+const formatTaskLine = (taskId: string, statuses?: Map<string, string>): string => {
+    const icon = getStatusIcon(statuses?.get(taskId));
+
+    return `${icon}${taskId}`;
+};
+
+const printTree = (
+    taskId: string,
+    prefix: string,
+    isLast: boolean,
+    taskGraph: TaskGraph,
+    printed: Set<string>,
+    lines: string[],
+    statuses?: Map<string, string>,
+): void => {
+    let connector: string;
+
+    if (prefix === "") {
+        connector = "";
+    } else if (isLast) {
+        connector = "└── ";
+    } else {
+        connector = "├── ";
+    }
+
+    const isDuplicate = printed.has(taskId);
+    const suffix = isDuplicate ? " (*)" : "";
+    const statusIcon = getStatusIcon(statuses?.get(taskId));
+
+    lines.push(`${prefix}${connector}${statusIcon}${taskId}${suffix}`);
+
+    if (isDuplicate) {
+        return;
+    }
+
+    printed.add(taskId);
+
+    const deps = taskGraph.dependencies[taskId] ?? [];
+
+    let childPrefix: string;
+
+    if (prefix === "") {
+        childPrefix = "";
+    } else if (isLast) {
+        childPrefix = `${prefix}    `;
+    } else {
+        childPrefix = `${prefix}│   `;
+    }
+
+    for (let i = 0; i < deps.length; i += 1) {
+        const isChildLast = i === deps.length - 1;
+        const dependency = deps[i];
+
+        if (dependency) {
+            printTree(dependency, childPrefix, isChildLast, taskGraph, printed, lines, statuses);
+        }
+    }
+};
+
 // ─── DOT Format (Graphviz) ─────────────────────────────────────────
 
 /**
  * Exports a task graph in DOT format for Graphviz rendering.
- *
  * @example
  * ```ts
  * const dot = toGraphvizDot(taskGraph);
  * // Render: dot -Tsvg -o graph.svg <<< "$dot"
  * ```
  */
-export const toGraphvizDot = (
-    taskGraph: TaskGraph,
-    options: GraphVisualizerOptions = {},
-): string => {
+// eslint-disable-next-line sonarjs/cognitive-complexity
+const toGraphvizDot = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}): string => {
     const { focusedTasks, groupByProject = true, taskStatuses } = options;
-    const focused = focusedTasks ? new Set(focusedTasks) : null;
+    const focused = focusedTasks ? new Set(focusedTasks) : undefined;
 
-    const lines: string[] = ['digraph TaskGraph {', '  rankdir=LR;', '  node [shape=box, style=filled, fontname="monospace"];'];
+    const lines: string[] = ["digraph TaskGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fontname=\"monospace\"];"];
 
     // Group nodes by project
     if (groupByProject) {
         const projectTasks = new Map<string, Task[]>();
 
         for (const task of Object.values(taskGraph.tasks)) {
-            const project = task.target.project;
+            const { project } = task.target;
             const list = projectTasks.get(project) ?? [];
 
             list.push(task);
@@ -50,10 +162,7 @@ export const toGraphvizDot = (
         }
 
         for (const [project, tasks] of projectTasks) {
-            lines.push(`  subgraph "cluster_${project}" {`);
-            lines.push(`    label="${project}";`);
-            lines.push('    style=dashed;');
-            lines.push('    color="#888888";');
+            lines.push(`  subgraph "cluster_${project}" {`, `    label="${project}";`, "    style=dashed;", "    color=\"#888888\";");
 
             for (const task of tasks) {
                 const color = getNodeColor(task.id, focused, taskStatuses);
@@ -85,65 +194,36 @@ export const toGraphvizDot = (
     return lines.join("\n");
 };
 
-const getNodeColor = (
-    taskId: string,
-    focused: Set<string> | null,
-    statuses?: Map<string, string>,
-): string => {
-    if (focused && !focused.has(taskId)) {
-        return "#eeeeee";
-    }
-
-    const status = statuses?.get(taskId);
-
-    switch (status) {
-        case "success":
-            return "#90EE90";
-        case "local-cache":
-        case "remote-cache":
-            return "#87CEEB";
-        case "failure":
-            return "#FFB6C1";
-        case "running":
-            return "#FFD700";
-        case "skipped":
-            return "#D3D3D3";
-        default:
-            return "#FFFFFF";
-    }
-};
-
 // ─── JSON Export ────────────────────────────────────────────────────
 
 /**
  * Exports the task graph as a JSON object suitable for visualization tools.
  */
-export interface GraphJson {
-    nodes: Array<{
-        id: string;
-        project: string;
-        target: string;
-        configuration?: string;
-        status?: string;
-    }>;
-    edges: Array<{
+interface GraphJson {
+    edges: {
         source: string;
         target: string;
-    }>;
+    }[];
+    nodes: {
+        configuration?: string;
+        id: string;
+        project: string;
+        status?: string;
+        target: string;
+    }[];
     roots: string[];
 }
 
-export const toGraphJson = (
-    taskGraph: TaskGraph,
-    taskStatuses?: Map<string, string>,
-): GraphJson => {
-    const nodes = Object.values(taskGraph.tasks).map((task) => ({
-        id: task.id,
-        project: task.target.project,
-        target: task.target.target,
-        configuration: task.target.configuration,
-        status: taskStatuses?.get(task.id),
-    }));
+const toGraphJson = (taskGraph: TaskGraph, taskStatuses?: Map<string, string>): GraphJson => {
+    const nodes = Object.values(taskGraph.tasks).map((task) => {
+        return {
+            configuration: task.target.configuration,
+            id: task.id,
+            project: task.target.project,
+            status: taskStatuses?.get(task.id),
+            target: task.target.target,
+        };
+    });
 
     const edges: GraphJson["edges"] = [];
 
@@ -153,7 +233,7 @@ export const toGraphJson = (
         }
     }
 
-    return { nodes, edges, roots: taskGraph.roots };
+    return { edges, nodes, roots: taskGraph.roots };
 };
 
 // ─── HTML Visualization (Self-Contained) ───────────────────────────
@@ -162,13 +242,10 @@ export const toGraphJson = (
  * Generates a self-contained HTML file with an interactive task graph visualization.
  * Uses a simple force-directed layout with SVG rendering (no external dependencies).
  */
-export const toGraphHtml = (
-    taskGraph: TaskGraph,
-    options: GraphVisualizerOptions = {},
-): string => {
+const toGraphHtml = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}): string => {
     const graphData = toGraphJson(taskGraph, options.taskStatuses);
 
-    return `<!DOCTYPE html>
+    return String.raw`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -198,7 +275,7 @@ export const toGraphHtml = (
   </defs>
 </svg>
 <script>
-const data = ${JSON.stringify(graphData).replace(/<\//g, "<\\/")};
+const data = ${JSON.stringify(graphData).replaceAll("</", String.raw`<\/`)};
 const svg = document.getElementById('graph');
 const W = window.innerWidth, H = window.innerHeight;
 const statusColors = {
@@ -277,7 +354,7 @@ nodes.forEach(n => {
   g.addEventListener('click', () => {
     const deps = data.edges.filter(e => e.source === n.id).map(e => e.target);
     const rdeps = data.edges.filter(e => e.target === n.id).map(e => e.source);
-    alert(n.id + '\\n\\nDepends on: ' + (deps.join(', ')||'none') + '\\nRequired by: ' + (rdeps.join(', ')||'none'));
+    alert(n.id + '\n\nDepends on: ' + (deps.join(', ')||'none') + '\nRequired by: ' + (rdeps.join(', ')||'none'));
   });
   svg.appendChild(g);
 });
@@ -290,7 +367,6 @@ nodes.forEach(n => {
 
 /**
  * Renders the task graph as ASCII art for terminal display.
- *
  * @example
  * ```
  * Task Graph (6 tasks, 5 dependencies)
@@ -304,17 +380,13 @@ nodes.forEach(n => {
  * (*) = already shown above
  * ```
  */
-export const toGraphAscii = (
-    taskGraph: TaskGraph,
-    options: GraphVisualizerOptions = {},
-): string => {
+const toGraphAscii = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}): string => {
     const { taskStatuses } = options;
     const lines: string[] = [];
     const taskCount = Object.keys(taskGraph.tasks).length;
     const edgeCount = Object.values(taskGraph.dependencies).reduce((s, d) => s + d.length, 0);
 
-    lines.push(`Task Graph (${taskCount} tasks, ${edgeCount} dependencies)`);
-    lines.push("");
+    lines.push(`Task Graph (${taskCount} tasks, ${edgeCount} dependencies)`, "");
 
     // Find root tasks (those not depended on by any other)
     const allDeps = new Set<string>();
@@ -343,67 +415,10 @@ export const toGraphAscii = (
     }
 
     if (printed.size < taskCount) {
-        lines.push("");
-        lines.push("(*) = already shown above");
+        lines.push("", "(*) = already shown above");
     }
 
     return lines.join("\n");
-};
-
-const printTree = (
-    taskId: string,
-    prefix: string,
-    isLast: boolean,
-    taskGraph: TaskGraph,
-    printed: Set<string>,
-    lines: string[],
-    statuses?: Map<string, string>,
-): void => {
-    const connector = prefix === "" ? "" : isLast ? "└── " : "├── ";
-    const isDuplicate = printed.has(taskId);
-    const suffix = isDuplicate ? " (*)" : "";
-    const statusIcon = getStatusIcon(statuses?.get(taskId));
-
-    lines.push(`${prefix}${connector}${statusIcon}${taskId}${suffix}`);
-
-    if (isDuplicate) {
-        return;
-    }
-
-    printed.add(taskId);
-
-    const deps = taskGraph.dependencies[taskId] ?? [];
-    const childPrefix = prefix === "" ? "" : prefix + (isLast ? "    " : "│   ");
-
-    for (let i = 0; i < deps.length; i++) {
-        const isChildLast = i === deps.length - 1;
-
-        printTree(deps[i]!, childPrefix, isChildLast, taskGraph, printed, lines, statuses);
-    }
-};
-
-const getStatusIcon = (status?: string): string => {
-    switch (status) {
-        case "success":
-            return "[ok] ";
-        case "local-cache":
-        case "remote-cache":
-            return "[cache] ";
-        case "failure":
-            return "[FAIL] ";
-        case "running":
-            return "[...] ";
-        case "skipped":
-            return "[skip] ";
-        default:
-            return "";
-    }
-};
-
-const formatTaskLine = (taskId: string, statuses?: Map<string, string>): string => {
-    const icon = getStatusIcon(statuses?.get(taskId));
-
-    return `${icon}${taskId}`;
 };
 
 // ─── Project Graph Visualization ───────────────────────────────────
@@ -411,12 +426,8 @@ const formatTaskLine = (taskId: string, statuses?: Map<string, string>): string 
 /**
  * Exports a project graph in DOT format.
  */
-export const projectGraphToDot = (projectGraph: ProjectGraph): string => {
-    const lines: string[] = [
-        'digraph ProjectGraph {',
-        '  rankdir=LR;',
-        '  node [shape=box, style=filled, fillcolor="#87CEEB", fontname="monospace"];',
-    ];
+const projectGraphToDot = (projectGraph: ProjectGraph): string => {
+    const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fillcolor=\"#87CEEB\", fontname=\"monospace\"];"];
 
     for (const node of Object.values(projectGraph.nodes)) {
         const color = node.type === "application" ? "#FFD700" : "#87CEEB";
@@ -436,3 +447,6 @@ export const projectGraphToDot = (projectGraph: ProjectGraph): string => {
 
     return lines.join("\n");
 };
+
+export type { GraphFormat, GraphJson, GraphVisualizerOptions };
+export { projectGraphToDot, toGraphAscii, toGraphHtml, toGraphJson, toGraphvizDot };

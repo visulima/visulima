@@ -1,23 +1,25 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { IncrementalFileHasher } from "../src/incremental-hasher";
 
-const createTmpDir = async (): Promise<string> => {
-    const dir = join(tmpdir(), `inc-hash-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+const createTemporaryDirectory = async (): Promise<string> => {
+    // eslint-disable-next-line sonarjs/pseudo-random
+    const directory = join(tmpdir(), `inc-hash-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 
-    await mkdir(dir, { recursive: true });
+    await mkdir(directory, { recursive: true });
 
-    return dir;
+    return directory;
 };
 
-describe("IncrementalFileHasher", () => {
+describe(IncrementalFileHasher, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
-        workspaceRoot = await createTmpDir();
+        workspaceRoot = await createTemporaryDirectory();
 
         await mkdir(join(workspaceRoot, "src"), { recursive: true });
         await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 1;");
@@ -25,13 +27,13 @@ describe("IncrementalFileHasher", () => {
     });
 
     afterEach(async () => {
-        await rm(workspaceRoot, { recursive: true, force: true });
+        await rm(workspaceRoot, { force: true, recursive: true });
     });
 
     it("should hash all files in a directory", async () => {
         const hasher = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
+            workspaceRoot,
         });
 
         const hashes = await hasher.hashDirectory(join(workspaceRoot, "src"));
@@ -43,8 +45,8 @@ describe("IncrementalFileHasher", () => {
 
     it("should reuse cached hashes for unchanged files", async () => {
         const hasher = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
+            workspaceRoot,
         });
 
         // First hash (cold)
@@ -58,14 +60,16 @@ describe("IncrementalFileHasher", () => {
 
     it("should detect file content changes via mtime", async () => {
         const hasher = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
+            workspaceRoot,
         });
 
         const hashes1 = await hasher.hashDirectory(join(workspaceRoot, "src"));
 
         // Modify a file (changes mtime)
-        await new Promise((r) => { setTimeout(r, 50); });
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50);
+        });
         await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 42;");
 
         const hashes2 = await hasher.hashDirectory(join(workspaceRoot, "src"));
@@ -79,8 +83,8 @@ describe("IncrementalFileHasher", () => {
         const snapshotPath = join(workspaceRoot, ".cache", "snapshot.json");
 
         const hasher1 = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath,
+            workspaceRoot,
         });
 
         await hasher1.hashDirectory(join(workspaceRoot, "src"));
@@ -88,8 +92,8 @@ describe("IncrementalFileHasher", () => {
 
         // Create a new hasher that loads from the saved snapshot
         const hasher2 = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath,
+            workspaceRoot,
         });
 
         const hashes = await hasher2.hashDirectory(join(workspaceRoot, "src"));
@@ -100,8 +104,8 @@ describe("IncrementalFileHasher", () => {
 
     it("should handle new files appearing", async () => {
         const hasher = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
+            workspaceRoot,
         });
 
         const hashes1 = await hasher.hashDirectory(join(workspaceRoot, "src"));
@@ -119,8 +123,8 @@ describe("IncrementalFileHasher", () => {
 
     it("should handle file deletions", async () => {
         const hasher = new IncrementalFileHasher({
-            workspaceRoot,
             snapshotPath: join(workspaceRoot, ".snapshot.json"),
+            workspaceRoot,
         });
 
         const hashes1 = await hasher.hashDirectory(join(workspaceRoot, "src"));

@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { filterAffectedTasks } from "../src/affected";
 
-describe("filterAffectedTasks", () => {
+describe(filterAffectedTasks, () => {
     it("should filter tasks to only affected projects", () => {
         const taskIds = ["app:build", "lib-a:build", "lib-b:build", "lib-c:build"];
         const affected = new Set(["app", "lib-a"]);

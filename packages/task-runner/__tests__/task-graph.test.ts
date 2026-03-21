@@ -1,19 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { createTaskGraph, getTaskId, parseTaskId } from "../src/task-graph";
-import type { Task, WorkspaceConfiguration, ProjectGraph } from "../src/types";
+import type { ProjectGraph, Task, WorkspaceConfiguration } from "../src/types";
 
-describe("getTaskId", () => {
+describe(getTaskId, () => {
     it("should create task ID from project and target", () => {
         expect(getTaskId({ project: "app", target: "build" })).toBe("app:build");
     });
 
     it("should include configuration in task ID", () => {
-        expect(getTaskId({ project: "app", target: "build", configuration: "prod" })).toBe("app:build:prod");
+        expect(getTaskId({ configuration: "prod", project: "app", target: "build" })).toBe("app:build:prod");
     });
 });
 
-describe("parseTaskId", () => {
+describe(parseTaskId, () => {
     it("should parse a basic task ID", () => {
         const result = parseTaskId("app:build");
 
@@ -35,9 +35,18 @@ describe("parseTaskId", () => {
     });
 });
 
-describe("createTaskGraph", () => {
+describe(createTaskGraph, () => {
     const workspace: WorkspaceConfiguration = {
         projects: {
+            app: {
+                root: "apps/app",
+                targets: {
+                    build: {
+                        command: "vite build",
+                        dependsOn: ["^build"],
+                    },
+                },
+            },
             "lib-a": {
                 root: "packages/lib-a",
                 targets: {
@@ -53,44 +62,38 @@ describe("createTaskGraph", () => {
                     },
                 },
             },
-            app: {
-                root: "apps/app",
-                targets: {
-                    build: {
-                        command: "vite build",
-                        dependsOn: ["^build"],
-                    },
-                },
-            },
         },
     };
 
     const projectGraph: ProjectGraph = {
-        nodes: {
-            "lib-a": { name: "lib-a", type: "library", data: workspace.projects["lib-a"]! },
-            "lib-b": { name: "lib-b", type: "library", data: workspace.projects["lib-b"]! },
-            app: { name: "app", type: "application", data: workspace.projects["app"]! },
-        },
         dependencies: {
-            "lib-a": [],
-            "lib-b": [{ source: "lib-b", target: "lib-a", type: "static" }],
             app: [
                 { source: "app", target: "lib-a", type: "static" },
                 { source: "app", target: "lib-b", type: "static" },
             ],
+            "lib-a": [],
+            "lib-b": [{ source: "lib-b", target: "lib-a", type: "static" }],
+        },
+        nodes: {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            app: { data: workspace.projects["app"]!, name: "app", type: "application" },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            "lib-a": { data: workspace.projects["lib-a"]!, name: "lib-a", type: "library" },
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            "lib-b": { data: workspace.projects["lib-b"]!, name: "lib-b", type: "library" },
         },
     };
 
     it("should create a task graph with dependencies", () => {
         const appBuild: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: ["apps/app/dist"],
+            overrides: {},
             projectRoot: "apps/app",
+            target: { project: "app", target: "build" },
         };
 
-        const graph = createTaskGraph([appBuild], { workspace, projectGraph });
+        const graph = createTaskGraph([appBuild], { projectGraph, workspace });
 
         expect(Object.keys(graph.tasks)).toContain("app:build");
         expect(Object.keys(graph.tasks)).toContain("lib-a:build");
@@ -100,12 +103,12 @@ describe("createTaskGraph", () => {
     it("should resolve dependency ordering", () => {
         const appBuild: Task = {
             id: "app:build",
-            target: { project: "app", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
+            target: { project: "app", target: "build" },
         };
 
-        const graph = createTaskGraph([appBuild], { workspace, projectGraph });
+        const graph = createTaskGraph([appBuild], { projectGraph, workspace });
 
         // app:build depends on lib-a:build and lib-b:build
         expect(graph.dependencies["app:build"]).toContain("lib-a:build");
@@ -129,20 +132,21 @@ describe("createTaskGraph", () => {
         };
 
         const graph: ProjectGraph = {
-            nodes: {
-                app: { name: "app", type: "application", data: workspaceWithSelf.projects["app"]! },
-            },
             dependencies: { app: [] },
+            nodes: {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                app: { data: workspaceWithSelf.projects["app"]!, name: "app", type: "application" },
+            },
         };
 
         const testTask: Task = {
             id: "app:test",
-            target: { project: "app", target: "test" },
-            overrides: {},
             outputs: [],
+            overrides: {},
+            target: { project: "app", target: "test" },
         };
 
-        const taskGraph = createTaskGraph([testTask], { workspace: workspaceWithSelf, projectGraph: graph });
+        const taskGraph = createTaskGraph([testTask], { projectGraph: graph, workspace: workspaceWithSelf });
 
         expect(taskGraph.dependencies["app:test"]).toContain("app:build");
     });
@@ -150,12 +154,12 @@ describe("createTaskGraph", () => {
     it("should identify root tasks", () => {
         const task: Task = {
             id: "lib-a:build",
-            target: { project: "lib-a", target: "build" },
-            overrides: {},
             outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
         };
 
-        const graph = createTaskGraph([task], { workspace, projectGraph });
+        const graph = createTaskGraph([task], { projectGraph, workspace });
 
         expect(graph.roots).toContain("lib-a:build");
     });

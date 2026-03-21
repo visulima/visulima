@@ -1,57 +1,61 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
     findCycle,
     findCycles,
-    walkTaskGraph,
-    reverseTaskGraph,
-    getLeafTasks,
-    makeAcyclic,
     getDependentTasks,
+    getLeafTasks,
     getTransitiveDependencies,
+    makeAcyclic,
+    reverseTaskGraph,
+    walkTaskGraph,
 } from "../src/task-graph-utils";
 import type { TaskGraph } from "../src/types";
 
-const createSimpleGraph = (): TaskGraph => ({
-    roots: ["a:build"],
-    tasks: {
-        "a:build": { id: "a:build", target: { project: "a", target: "build" }, overrides: {}, outputs: [] },
-        "b:build": { id: "b:build", target: { project: "b", target: "build" }, overrides: {}, outputs: [] },
-        "c:build": { id: "c:build", target: { project: "c", target: "build" }, overrides: {}, outputs: [] },
-    },
-    dependencies: {
-        "a:build": ["b:build"],
-        "b:build": ["c:build"],
-        "c:build": [],
-    },
-});
+const createSimpleGraph = (): TaskGraph => {
+    return {
+        dependencies: {
+            "a:build": ["b:build"],
+            "b:build": ["c:build"],
+            "c:build": [],
+        },
+        roots: ["a:build"],
+        tasks: {
+            "a:build": { id: "a:build", outputs: [], overrides: {}, target: { project: "a", target: "build" } },
+            "b:build": { id: "b:build", outputs: [], overrides: {}, target: { project: "b", target: "build" } },
+            "c:build": { id: "c:build", outputs: [], overrides: {}, target: { project: "c", target: "build" } },
+        },
+    };
+};
 
-const createCyclicGraph = (): TaskGraph => ({
-    roots: [],
-    tasks: {
-        "a:build": { id: "a:build", target: { project: "a", target: "build" }, overrides: {}, outputs: [] },
-        "b:build": { id: "b:build", target: { project: "b", target: "build" }, overrides: {}, outputs: [] },
-    },
-    dependencies: {
-        "a:build": ["b:build"],
-        "b:build": ["a:build"],
-    },
-});
+const createCyclicGraph = (): TaskGraph => {
+    return {
+        dependencies: {
+            "a:build": ["b:build"],
+            "b:build": ["a:build"],
+        },
+        roots: [],
+        tasks: {
+            "a:build": { id: "a:build", outputs: [], overrides: {}, target: { project: "a", target: "build" } },
+            "b:build": { id: "b:build", outputs: [], overrides: {}, target: { project: "b", target: "build" } },
+        },
+    };
+};
 
-describe("findCycle", () => {
+describe(findCycle, () => {
     it("should return null for acyclic graph", () => {
-        expect(findCycle(createSimpleGraph())).toBeNull();
+        expect(findCycle(createSimpleGraph())).toBeUndefined();
     });
 
     it("should find a cycle in cyclic graph", () => {
         const cycle = findCycle(createCyclicGraph());
 
-        expect(cycle).not.toBeNull();
-        expect(cycle!.length).toBeGreaterThan(2);
+        expect(cycle).toBeDefined();
+        expect((cycle as string[]).length).toBeGreaterThan(2);
     });
 });
 
-describe("findCycles", () => {
+describe(findCycles, () => {
     it("should return empty array for acyclic graph", () => {
         expect(findCycles(createSimpleGraph())).toEqual([]);
     });
@@ -63,7 +67,7 @@ describe("findCycles", () => {
     });
 });
 
-describe("walkTaskGraph", () => {
+describe(walkTaskGraph, () => {
     it("should visit tasks in topological order", () => {
         const visited: string[] = [];
 
@@ -91,7 +95,7 @@ describe("walkTaskGraph", () => {
     });
 });
 
-describe("reverseTaskGraph", () => {
+describe(reverseTaskGraph, () => {
     it("should reverse edge directions", () => {
         const reversed = reverseTaskGraph(createSimpleGraph());
 
@@ -103,7 +107,7 @@ describe("reverseTaskGraph", () => {
     });
 });
 
-describe("getLeafTasks", () => {
+describe(getLeafTasks, () => {
     it("should return tasks with no dependencies", () => {
         const leaves = getLeafTasks(createSimpleGraph());
 
@@ -111,11 +115,11 @@ describe("getLeafTasks", () => {
     });
 });
 
-describe("makeAcyclic", () => {
+describe(makeAcyclic, () => {
     it("should remove cycle-forming edges", () => {
         const acyclic = makeAcyclic(createCyclicGraph());
 
-        expect(findCycle(acyclic)).toBeNull();
+        expect(findCycle(acyclic)).toBeUndefined();
     });
 
     it("should not modify acyclic graphs", () => {
@@ -126,7 +130,7 @@ describe("makeAcyclic", () => {
     });
 });
 
-describe("getDependentTasks", () => {
+describe(getDependentTasks, () => {
     it("should find all tasks that depend on a task", () => {
         const dependents = getDependentTasks(createSimpleGraph(), "c:build");
 
@@ -141,7 +145,7 @@ describe("getDependentTasks", () => {
     });
 });
 
-describe("getTransitiveDependencies", () => {
+describe(getTransitiveDependencies, () => {
     it("should find all transitive dependencies", () => {
         const deps = getTransitiveDependencies(createSimpleGraph(), "a:build");
 

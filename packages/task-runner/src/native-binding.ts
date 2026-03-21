@@ -13,90 +13,91 @@
  * The napi v3 CLI outputs the .node file to the package root.
  */
 
-export interface NativeFileHash {
-    path: string;
+interface NativeFileHash {
     hash: string;
+    path: string;
 }
 
-export interface NativeTaskHashDetails {
+interface NativeTaskHashDetails {
     command: string;
-    nodes: string[][];
     implicit_deps?: string[][];
+    nodes: string[][];
     runtime?: string[][];
 }
 
-export interface NativeTaskGraph {
-    task_ids: string[];
+interface NativeTaskGraph {
     edges: string[][];
+    task_ids: string[];
 }
 
-export interface NativeCycleResult {
-    has_cycle: boolean;
+interface NativeCycleResult {
     cycle: string[];
+    has_cycle: boolean;
 }
 
-export interface NativeBindings {
-    // File hashing
-    hashFile(filePath: string): string;
-    collectFiles(dir: string): string[];
-    hashFilesInDirectory(dir: string, workspaceRoot: string): NativeFileHash[];
-    hashFilesBatch(filePaths: string[], workspaceRoot: string): NativeFileHash[];
-    hashString(input: string): string;
-    hashStrings(inputs: string[]): string;
-
-    // Task hashing
-    hashCommand(project: string, target: string, configuration: string | null, overridesJson: string): string;
-    computeTaskHash(details: NativeTaskHashDetails): string;
-    hashEnvVar(name: string, value: string): string;
-
+interface NativeBindings {
+    collectFiles: (directory: string) => string[];
+    computeTaskHash: (details: NativeTaskHashDetails) => string;
+    findAllCycles: (graph: NativeTaskGraph) => string[][];
+    findBackEdges: (graph: NativeTaskGraph) => string[][];
     // Graph operations
-    findCycle(graph: NativeTaskGraph): NativeCycleResult;
-    findAllCycles(graph: NativeTaskGraph): string[][];
-    topologicalSort(graph: NativeTaskGraph): string[];
-    findBackEdges(graph: NativeTaskGraph): string[][];
-    getTransitiveDeps(graph: NativeTaskGraph, taskId: string): string[];
-    getDependentTasks(graph: NativeTaskGraph, taskId: string): string[];
+    findCycle: (graph: NativeTaskGraph) => NativeCycleResult;
+    getDependentTasks: (graph: NativeTaskGraph, taskId: string) => string[];
+
+    getTransitiveDeps: (graph: NativeTaskGraph, taskId: string) => string[];
+    // Task hashing
+    hashCommand: (project: string, target: string, configuration: string | undefined, overridesJson: string) => string;
+    hashEnvVar: (name: string, value: string) => string;
+
+    // File hashing
+    hashFile: (filePath: string) => string;
+    hashFilesBatch: (filePaths: string[], workspaceRoot: string) => NativeFileHash[];
+    hashFilesInDirectory: (directory: string, workspaceRoot: string) => NativeFileHash[];
+    hashString: (input: string) => string;
+    hashStrings: (inputs: string[]) => string;
+    topologicalSort: (graph: NativeTaskGraph) => string[];
 }
 
-let _nativeBindings: NativeBindings | null = null;
-let _loadAttempted = false;
+let nativeBindings: NativeBindings | undefined;
+let loadAttempted = false;
 
 /**
- * Attempts to load the native addon. Returns null if unavailable.
+ * Attempts to load the native addon. Returns undefined if unavailable.
  * The result is cached after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
- * `task-runner-native.<platform>.node`. The napi-generated binding.js
+ * `task-runner-native.&lt;platform>.node`. The napi-generated binding.js
  * handles platform detection automatically.
  */
-export const loadNativeBindings = (): NativeBindings | null => {
-    if (_loadAttempted) {
-        return _nativeBindings;
+const loadNativeBindings = (): NativeBindings | undefined => {
+    if (loadAttempted) {
+        return nativeBindings;
     }
 
-    _loadAttempted = true;
+    loadAttempted = true;
 
     try {
         // Try napi v3 output location (package root, platform-specific name)
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        _nativeBindings = require(`../task-runner-native.${process.platform}-${process.arch === "x64" ? "x86_64" : process.arch}.node`) as NativeBindings;
+        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,import/no-dynamic-require
+        nativeBindings = require(`../task-runner-native.${process.platform}-${process.arch === "x64" ? "x86_64" : process.arch}.node`) as NativeBindings;
     } catch {
         try {
             // Fallback: try the napi-generated binding.js (handles platform detection)
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            _nativeBindings = require("../task-runner-native.js") as NativeBindings;
+            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
+            nativeBindings = require("../task-runner-native.js") as NativeBindings;
         } catch {
             // Native addon not available - will use TypeScript fallbacks
-            _nativeBindings = null;
+            nativeBindings = undefined;
         }
     }
 
-    return _nativeBindings;
+    return nativeBindings;
 };
 
 /**
  * Returns true if the native addon is loaded and available.
  */
-export const isNativeAvailable = (): boolean => {
-    return loadNativeBindings() !== null;
-};
+const isNativeAvailable = (): boolean => loadNativeBindings() !== undefined;
+
+export type { NativeBindings, NativeCycleResult, NativeFileHash, NativeTaskGraph, NativeTaskHashDetails };
+export { isNativeAvailable, loadNativeBindings };

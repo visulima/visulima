@@ -2,6 +2,9 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 
+import { getFrameworkEnvVariables } from "./framework-inference";
+import { LockfileHasher } from "./lockfile-hasher";
+import { loadNativeBindings } from "./native-binding";
 import type {
     EnvironmentInput,
     ExternalDependencyInput,
@@ -10,45 +13,49 @@ import type {
     NamedInputs,
     ProjectConfiguration,
     RuntimeInput,
+    TargetConfiguration,
     Task,
     TaskHashDetails,
-    TargetConfiguration,
 } from "./types";
-import { loadNativeBindings } from "./native-binding";
-import { LockfileHasher } from "./lockfile-hasher";
-import { getFrameworkEnvVars } from "./framework-inference";
 import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
 
 /**
  * Interface for task hashers.
  */
-export interface TaskHasher {
-    hashTask(task: Task): Promise<TaskHashDetails>;
+interface TaskHasher {
+    hashTask: (task: Task) => Promise<TaskHashDetails>;
 }
 
 /**
  * Options for creating an InProcessTaskHasher.
  */
-export interface TaskHasherOptions {
-    /** The workspace root directory */
-    workspaceRoot: string;
-    /** Project configurations keyed by project name */
-    projects: Record<string, ProjectConfiguration>;
-    /** Named input definitions */
-    namedInputs?: NamedInputs;
-    /** Target default configurations */
-    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+interface TaskHasherOptions {
     /** Additional environment variables to include in hash */
     envVars?: string[];
+
+    /**
+     * Enable framework environment variable inference.
+     * When true, auto-detects frameworks and includes their public
+     * env var prefixes in the task hash.
+     * @default false
+     */
+    frameworkInference?: boolean;
+
+    /**
+     * Global environment variables that invalidate all task hashes.
+     */
+    globalEnv?: string[];
+
     /**
      * Global input files that invalidate all task hashes when changed.
      * These are workspace-root-relative paths (e.g., "pnpm-lock.yaml").
      */
     globalInputs?: string[];
-    /**
-     * Global environment variables that invalidate all task hashes.
-     */
-    globalEnv?: string[];
+    /** Named input definitions */
+    namedInputs?: NamedInputs;
+    /** Project configurations keyed by project name */
+    projects: Record<string, ProjectConfiguration>;
+
     /**
      * Enable smart lockfile hashing.
      * When true, instead of hashing the entire lockfile, only the resolved
@@ -59,48 +66,34 @@ export interface TaskHasherOptions {
      * @default false
      */
     smartLockfileHashing?: boolean;
-    /**
-     * Enable framework environment variable inference.
-     * When true, auto-detects frameworks and includes their public
-     * env var prefixes in the task hash.
-     * @default false
-     */
-    frameworkInference?: boolean;
+    /** Target default configurations */
+    targetDefaults?: Record<string, Partial<TargetConfiguration>>;
+    /** The workspace root directory */
+    workspaceRoot: string;
 }
 
-const DEFAULT_GLOBAL_INPUTS = [
-    "package-lock.json",
-    "pnpm-lock.yaml",
-    "yarn.lock",
-    "tsconfig.base.json",
-    "tsconfig.json",
-    ".env",
-];
+const DEFAULT_GLOBAL_INPUTS = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "tsconfig.base.json", "tsconfig.json", ".env"];
 
-const IGNORED_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
+const IGNORED_DIRS = new Set([".git", "coverage", "dist", "node_modules"]);
 
-const LOCKFILE_NAMES = new Set([
-    "package-lock.json",
-    "pnpm-lock.yaml",
-    "yarn.lock",
-]);
+const LOCKFILE_NAMES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
 
 // Cache native bindings at module level for computeTaskHash
-let _cachedNative: ReturnType<typeof loadNativeBindings> | undefined;
+let cachedNative: ReturnType<typeof loadNativeBindings> | undefined;
 
 const getNativeBindings = () => {
-    if (_cachedNative === undefined) {
-        _cachedNative = loadNativeBindings();
+    if (cachedNative === undefined) {
+        cachedNative = loadNativeBindings();
     }
 
-    return _cachedNative;
+    return cachedNative;
 };
 
 /**
  * Hashes sorted entries of a Record into a Hash object.
  */
 const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<string, string>, prefix?: string): void => {
-    for (const key of Object.keys(record).sort()) {
+    for (const key of Object.keys(record).toSorted()) {
         if (prefix) {
             hash.update(`${prefix}${key}\0`);
         } else {
@@ -111,26 +104,55 @@ const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<s
     }
 };
 
+const hashRuntimeValue = (runtime: string): string => {
+    if (runtime === "node -v" || runtime === "node --version") {
+        return hashStrings(runtime, process.version);
+    }
+
+    return hashStrings(runtime, `runtime:${runtime}`);
+};
+
+// Type guards
+const isFileSetInput = (input: InputDefinition): input is FileSetInput => "fileset" in input;
+
+const isRuntimeInput = (input: InputDefinition): input is RuntimeInput => "runtime" in input;
+
+const isEnvironmentInput = (input: InputDefinition): input is EnvironmentInput => "env" in input;
+
+const isExternalDependencyInput = (input: InputDefinition): input is ExternalDependencyInput => "externalDependencies" in input;
+
 /**
  * Computes hashes for tasks based on their inputs.
  * Used to determine if a cached result can be reused.
  */
-export class InProcessTaskHasher implements TaskHasher {
+class InProcessTaskHasher implements TaskHasher {
     readonly #workspaceRoot: string;
-    readonly #projects: Record<string, ProjectConfiguration>;
-    readonly #namedInputs: NamedInputs;
-    readonly #targetDefaults: Record<string, Partial<TargetConfiguration>>;
-    readonly #envVars: string[];
-    readonly #globalInputs: string[];
-    readonly #globalEnv: string[];
-    readonly #fileHashCache = new Map<string, string>();
-    readonly #native: ReturnType<typeof loadNativeBindings>;
-    readonly #smartLockfileHashing: boolean;
-    readonly #lockfileHasher: LockfileHasher | null;
-    readonly #frameworkInference: boolean;
-    #globalHash: string | null = null;
 
-    constructor(options: TaskHasherOptions) {
+    readonly #projects: Record<string, ProjectConfiguration>;
+
+    readonly #namedInputs: NamedInputs;
+
+    readonly #targetDefaults: Record<string, Partial<TargetConfiguration>>;
+
+    readonly #envVars: string[];
+
+    readonly #globalInputs: string[];
+
+    readonly #globalEnv: string[];
+
+    readonly #fileHashCache = new Map<string, string>();
+
+    readonly #native: ReturnType<typeof loadNativeBindings>;
+
+    readonly #smartLockfileHashing: boolean;
+
+    readonly #lockfileHasher: LockfileHasher | undefined;
+
+    readonly #frameworkInference: boolean;
+
+    #globalHash: string | undefined = undefined;
+
+    public constructor(options: TaskHasherOptions) {
         this.#workspaceRoot = options.workspaceRoot;
         this.#projects = options.projects;
         this.#namedInputs = options.namedInputs ?? {};
@@ -140,13 +162,12 @@ export class InProcessTaskHasher implements TaskHasher {
         this.#globalEnv = options.globalEnv ?? [];
         this.#native = getNativeBindings();
         this.#smartLockfileHashing = options.smartLockfileHashing ?? false;
-        this.#lockfileHasher = this.#smartLockfileHashing
-            ? new LockfileHasher(options.workspaceRoot)
-            : null;
+        this.#lockfileHasher = this.#smartLockfileHashing ? new LockfileHasher(options.workspaceRoot) : undefined;
         this.#frameworkInference = options.frameworkInference ?? false;
     }
 
-    async hashTask(task: Task): Promise<TaskHashDetails> {
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async hashTask(task: Task): Promise<TaskHashDetails> {
         const commandHash = this.#hashCommand(task);
         const nodes: Record<string, string> = {};
         const implicitDeps: Record<string, string> = {};
@@ -166,31 +187,34 @@ export class InProcessTaskHasher implements TaskHasher {
             if (isFileSetInput(input)) {
                 const project = this.#projects[task.target.project];
                 const projectRoot = project?.root ?? "";
-                const resolved = input.fileset
-                    .replace("{projectRoot}", projectRoot)
-                    .replace("{workspaceRoot}", ".");
+                const resolved = input.fileset.replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
 
                 if (resolved.startsWith("!")) {
-                    negationPatterns.push(resolved.slice(1).replace(/\/\*\*\/\*$/, "").replace(/\/\*$/, ""));
+                    negationPatterns.push(
+                        resolved
+                            .slice(1)
+                            .replace(/\/\*\*\/\*$/, "")
+                            .replace(/\/\*$/, ""),
+                    );
                 }
             }
         }
 
         for (const input of inputs) {
             if (isFileSetInput(input)) {
+                // eslint-disable-next-line no-await-in-loop -- filesets must be processed sequentially to accumulate into shared nodes/runtime maps
                 const fileHashes = await this.#hashFileSet(task, input.fileset, negationPatterns);
 
                 for (const [filePath, hash] of Object.entries(fileHashes)) {
                     nodes[filePath] = hash;
                 }
             } else if (isRuntimeInput(input)) {
-                runtime[input.runtime] = this.#hashRuntime(input.runtime);
+                runtime[input.runtime] = hashRuntimeValue(input.runtime);
             } else if (isEnvironmentInput(input)) {
                 runtime[`env:${input.env}`] = hashStrings(input.env, process.env[input.env] ?? "");
             } else if (isExternalDependencyInput(input)) {
-                const depHashes = await Promise.all(
-                    input.externalDependencies.map(async (dep) => [dep, await this.#hashExternalDependency(dep)] as const),
-                );
+                // eslint-disable-next-line no-await-in-loop -- external dependencies processed within sequential input loop
+                const depHashes = await Promise.all(input.externalDependencies.map(async (dep) => [dep, await this.#hashExternalDependency(dep)] as const));
 
                 for (const [dep, hash] of depHashes) {
                     implicitDeps[dep] = hash;
@@ -198,8 +222,8 @@ export class InProcessTaskHasher implements TaskHasher {
             }
         }
 
-        for (const envVar of this.#envVars) {
-            runtime[`env:${envVar}`] = hashStrings(envVar, process.env[envVar] ?? "");
+        for (const envVariable of this.#envVars) {
+            runtime[`env:${envVariable}`] = hashStrings(envVariable, process.env[envVariable] ?? "");
         }
 
         // Hoist project lookup once for lockfile + framework features
@@ -216,9 +240,9 @@ export class InProcessTaskHasher implements TaskHasher {
 
             if (this.#frameworkInference) {
                 const packageJsonPath = resolve(this.#workspaceRoot, project.root, "package.json");
-                const frameworkEnvVars = await getFrameworkEnvVars(packageJsonPath);
+                const frameworkEnvVariables = await getFrameworkEnvVariables(packageJsonPath);
 
-                for (const envName of Object.keys(frameworkEnvVars)) {
+                for (const envName of Object.keys(frameworkEnvVariables)) {
                     runtime[`framework-env:${envName}`] = hashStrings(envName, process.env[envName] ?? "");
                 }
             }
@@ -226,8 +250,8 @@ export class InProcessTaskHasher implements TaskHasher {
 
         return {
             command: commandHash,
-            nodes,
             implicitDeps: Object.keys(implicitDeps).length > 0 ? implicitDeps : undefined,
+            nodes,
             runtime: Object.keys(runtime).length > 0 ? runtime : undefined,
         };
     }
@@ -236,12 +260,7 @@ export class InProcessTaskHasher implements TaskHasher {
         const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
 
         if (this.#native) {
-            return this.#native.hashCommand(
-                task.target.project,
-                task.target.target,
-                task.target.configuration ?? null,
-                overridesJson,
-            );
+            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, overridesJson);
         }
 
         const hash = createHash("sha256");
@@ -271,10 +290,7 @@ export class InProcessTaskHasher implements TaskHasher {
         return this.#expandInputs(rawInputs, task.target.project);
     }
 
-    #expandInputs(
-        inputs: (string | InputDefinition)[],
-        projectName: string,
-    ): InputDefinition[] {
+    #expandInputs(inputs: (string | InputDefinition)[], projectName: string): InputDefinition[] {
         const result: InputDefinition[] = [];
         const seen = new Set<string>();
 
@@ -286,9 +302,7 @@ export class InProcessTaskHasher implements TaskHasher {
                     continue;
                 } else if (this.#namedInputs[input] && !seen.has(input)) {
                     seen.add(input);
-                    result.push(
-                        ...this.#expandInputs(this.#namedInputs[input] as (string | InputDefinition)[], projectName),
-                    );
+                    result.push(...this.#expandInputs(this.#namedInputs[input] as (string | InputDefinition)[], projectName));
                 } else {
                     result.push({ fileset: input });
                 }
@@ -304,17 +318,11 @@ export class InProcessTaskHasher implements TaskHasher {
      * Hashes all files matching a fileset pattern.
      * Uses native Rust parallel hashing (via rayon) when available.
      */
-    async #hashFileSet(
-        task: Task,
-        pattern: string,
-        negationPatterns: string[] = [],
-    ): Promise<Record<string, string>> {
+    async #hashFileSet(task: Task, pattern: string, negationPatterns: string[] = []): Promise<Record<string, string>> {
         const project = this.#projects[task.target.project];
         const projectRoot = project?.root ?? "";
 
-        const resolvedPattern = pattern
-            .replace("{projectRoot}", projectRoot)
-            .replace("{workspaceRoot}", ".");
+        const resolvedPattern = pattern.replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
 
         if (resolvedPattern.startsWith("!")) {
             // Negation patterns are collected and applied by the caller
@@ -325,17 +333,13 @@ export class InProcessTaskHasher implements TaskHasher {
         const absoluteNegations = negationPatterns.map((p) => resolve(this.#workspaceRoot, p));
         const result: Record<string, string> = {};
 
-        const isExcluded = (filePath: string): boolean =>
-            absoluteNegations.some((neg) => filePath.startsWith(neg + "/") || filePath === neg);
+        const isExcluded = (filePath: string): boolean => absoluteNegations.some((neg) => filePath.startsWith(`${neg}/`) || filePath === neg);
 
         try {
             if (this.#native) {
-                const fileHashes = this.#native.hashFilesInDirectory(
-                    absoluteBase,
-                    this.#workspaceRoot,
-                );
+                const fileHashes = this.#native.hashFilesInDirectory(absoluteBase, this.#workspaceRoot);
 
-                for (const { path, hash } of fileHashes) {
+                for (const { hash, path } of fileHashes) {
                     const absPath = resolve(this.#workspaceRoot, path);
 
                     if (!isExcluded(absPath)) {
@@ -388,18 +392,10 @@ export class InProcessTaskHasher implements TaskHasher {
         }
     }
 
-    #hashRuntime(runtime: string): string {
-        if (runtime === "node -v" || runtime === "node --version") {
-            return hashStrings(runtime, process.version);
-        }
-
-        return hashStrings(runtime, `runtime:${runtime}`);
-    }
-
     async #hashExternalDependency(depName: string): Promise<string> {
         try {
             const packageJsonPath = join(this.#workspaceRoot, "node_modules", depName, "package.json");
-            const packageJsonContent = await readFile(packageJsonPath, "utf-8");
+            const packageJsonContent = await readFile(packageJsonPath, "utf8");
             const packageJson = JSON.parse(packageJsonContent) as { version?: string };
 
             return hashStrings(depName, packageJson.version ?? "unknown");
@@ -412,8 +408,8 @@ export class InProcessTaskHasher implements TaskHasher {
      * Computes a combined hash of all global inputs and global env vars.
      * Cached after first computation.
      */
-    async #computeGlobalHash(): Promise<string | null> {
-        if (this.#globalHash !== null) {
+    async #computeGlobalHash(): Promise<string | undefined> {
+        if (this.#globalHash !== undefined) {
             return this.#globalHash;
         }
 
@@ -427,7 +423,7 @@ export class InProcessTaskHasher implements TaskHasher {
                 .map(async (globalInput) => {
                     const fileHash = await this.#hashFile(join(this.#workspaceRoot, globalInput));
 
-                    return fileHash ? { name: globalInput, hash: fileHash } : null;
+                    return fileHash ? { hash: fileHash, name: globalInput } : undefined;
                 }),
         );
 
@@ -446,12 +442,12 @@ export class InProcessTaskHasher implements TaskHasher {
 
         this.#globalHash = hasContent ? hash.digest("hex") : "";
 
-        return this.#globalHash || null;
+        return this.#globalHash || undefined;
     }
 
-    clearCache(): void {
+    public clearCache(): void {
         this.#fileHashCache.clear();
-        this.#globalHash = null;
+        this.#globalHash = undefined;
         this.#lockfileHasher?.clearCache();
     }
 }
@@ -460,30 +456,30 @@ export class InProcessTaskHasher implements TaskHasher {
  * Computes the final hash for a task from its hash details.
  * Uses native Rust implementation when available.
  */
-export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
+const computeTaskHash = (hashDetails: TaskHashDetails): string => {
     const native = getNativeBindings();
 
     if (native) {
         const nodes = Object.keys(hashDetails.nodes)
-            .sort()
+            .toSorted()
             .map((key) => [key, hashDetails.nodes[key] as string]);
 
         const implicitDeps = hashDetails.implicitDeps
             ? Object.keys(hashDetails.implicitDeps)
-                  .sort()
-                  .map((key) => [key, hashDetails.implicitDeps![key] as string])
+                .toSorted()
+                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
             : undefined;
 
         const runtime = hashDetails.runtime
             ? Object.keys(hashDetails.runtime)
-                  .sort()
-                  .map((key) => [key, hashDetails.runtime![key] as string])
+                .toSorted()
+                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
             : undefined;
 
         return native.computeTaskHash({
             command: hashDetails.command,
-            nodes,
             implicit_deps: implicitDeps,
+            nodes,
             runtime,
         });
     }
@@ -504,15 +500,5 @@ export const computeTaskHash = (hashDetails: TaskHashDetails): string => {
     return hash.digest("hex");
 };
 
-// Type guards
-const isFileSetInput = (input: InputDefinition): input is FileSetInput =>
-    "fileset" in input;
-
-const isRuntimeInput = (input: InputDefinition): input is RuntimeInput =>
-    "runtime" in input;
-
-const isEnvironmentInput = (input: InputDefinition): input is EnvironmentInput =>
-    "env" in input;
-
-const isExternalDependencyInput = (input: InputDefinition): input is ExternalDependencyInput =>
-    "externalDependencies" in input;
+export { computeTaskHash, InProcessTaskHasher };
+export type { TaskHasher, TaskHasherOptions };
