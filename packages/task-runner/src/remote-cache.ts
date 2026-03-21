@@ -21,6 +21,12 @@ export interface RemoteCacheOptions {
     read?: boolean;
     /** Whether to enable remote cache writes */
     write?: boolean;
+    /**
+     * Called when a fire-and-forget upload fails.
+     * Since uploads are non-blocking, errors are silently swallowed by default.
+     * Provide this callback to log or report upload failures.
+     */
+    onUploadError?: (hash: string, error: unknown) => void;
 }
 
 /**
@@ -43,6 +49,7 @@ export class RemoteCache {
     readonly #timeout: number;
     readonly #read: boolean;
     readonly #write: boolean;
+    readonly #onUploadError: ((hash: string, error: unknown) => void) | null;
 
     constructor(options: RemoteCacheOptions) {
         this.#url = options.url.replace(/\/$/, "");
@@ -51,6 +58,7 @@ export class RemoteCache {
         this.#timeout = options.timeout ?? 30_000;
         this.#read = options.read ?? true;
         this.#write = options.write ?? true;
+        this.#onUploadError = options.onUploadError ?? null;
     }
 
     /**
@@ -146,8 +154,9 @@ export class RemoteCache {
             await rm(archivePath, { force: true });
 
             return response.ok;
-        } catch {
+        } catch (error) {
             await rm(archivePath, { force: true }).catch(() => {});
+            this.#onUploadError?.(hash, error);
 
             return false;
         }

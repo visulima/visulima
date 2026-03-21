@@ -292,6 +292,12 @@ export interface TaskRunnerOptions {
         read?: boolean;
         /** Enable remote writes (default: true) */
         write?: boolean;
+        /**
+         * Called when a fire-and-forget upload fails.
+         * Since uploads are non-blocking, errors are silently swallowed by default.
+         * Provide this callback to log or report upload failures.
+         */
+        onUploadError?: (hash: string, error: unknown) => void;
     };
     /**
      * Enable auto-fingerprinting mode (Vite Task-style).
