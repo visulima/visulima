@@ -50,25 +50,11 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "napi": {
-        "binaryName": "task-runner-native",
-        "packageName": "@visulima/task-runner-binding",
-        "targets": [
-            "x86_64-apple-darwin",
-            "aarch64-apple-darwin",
-            "x86_64-unknown-linux-gnu",
-            "x86_64-unknown-linux-musl",
-            "aarch64-unknown-linux-gnu",
-            "aarch64-unknown-linux-musl",
-            "x86_64-pc-windows-msvc",
-            "aarch64-pc-windows-msvc"
-        ]
-    },
     "scripts": {
         "build": "packem build --development",
-        "build:prod": "packem build --production",
         "build:native": "napi build --platform --release --cargo-cwd native",
         "build:native:debug": "napi build --platform --cargo-cwd native",
+        "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",
         "lint:attw": "attw --pack",
@@ -83,13 +69,16 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "@visulima/humanizer": "workspace:*"
+    },
     "devDependencies": {
-        "@napi-rs/cli": "^3.0.0-alpha.72",
         "@anolilab/eslint-config": "^16.4.4",
         "@anolilab/prettier-config": "^6.0.8",
         "@anolilab/semantic-release-pnpm": "3.0.0",
         "@anolilab/semantic-release-preset": "^12.0.0",
         "@arethetypeswrong/cli": "^0.18.2",
+        "@napi-rs/cli": "^3.0.0-alpha.72",
         "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",
         "@total-typescript/ts-reset": "^0.6.1",
         "@types/node": "24.10.1",
@@ -108,14 +97,14 @@
         "vitest": "^4.0.13"
     },
     "optionalDependencies": {
-        "@visulima/task-runner-binding-darwin-x64": "0.0.1",
         "@visulima/task-runner-binding-darwin-arm64": "0.0.1",
-        "@visulima/task-runner-binding-linux-x64-gnu": "0.0.1",
-        "@visulima/task-runner-binding-linux-x64-musl": "0.0.1",
+        "@visulima/task-runner-binding-darwin-x64": "0.0.1",
         "@visulima/task-runner-binding-linux-arm64-gnu": "0.0.1",
         "@visulima/task-runner-binding-linux-arm64-musl": "0.0.1",
-        "@visulima/task-runner-binding-win32-x64-msvc": "0.0.1",
-        "@visulima/task-runner-binding-win32-arm64-msvc": "0.0.1"
+        "@visulima/task-runner-binding-linux-x64-gnu": "0.0.1",
+        "@visulima/task-runner-binding-linux-x64-musl": "0.0.1",
+        "@visulima/task-runner-binding-win32-arm64-msvc": "0.0.1",
+        "@visulima/task-runner-binding-win32-x64-msvc": "0.0.1"
     },
     "engines": {
         "node": ">=20.19 <=25.x"
@@ -123,5 +112,19 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "napi": {
+        "binaryName": "task-runner-native",
+        "packageName": "@visulima/task-runner-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
     }
 }

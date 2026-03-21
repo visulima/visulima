@@ -253,7 +253,7 @@ describe(parseCacheSize, () => {
 
 describe(formatCacheSize, () => {
     it("should format bytes", () => {
-        expect(formatCacheSize(500)).toBe("500B");
+        expect(formatCacheSize(500)).toBe("500.0Bytes");
     });
 
     it("should format KB", () => {

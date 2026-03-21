@@ -39,7 +39,7 @@ const closeServer = (server: Server): Promise<void> =>
         server.close(() => resolve());
     });
 
-const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {
+const collectRequestBody = (request: IncomingMessage): Promise<Buffer<ArrayBufferLike>> => {
     const chunks: Buffer[] = [];
 
     return new Promise((resolve) => {
@@ -181,7 +181,7 @@ describe(RemoteCache, () => {
             await writeFile(join(entryDirectory, "terminalOutput"), "Build done");
 
             let receivedMethod = "";
-            let receivedBody = Buffer.alloc(0);
+            let receivedBody: Buffer<ArrayBufferLike> = Buffer.alloc(0);
 
             const { server, url } = await startMockServer((request, response) => {
                 receivedMethod = request.method ?? "";

@@ -2,6 +2,8 @@
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
+import { formatBytes, parseBytes } from "@visulima/humanizer";
+
 import type { TaskFingerprint } from "./fingerprint";
 
 /**
@@ -76,52 +78,23 @@ const getDirectorySize = async (directoryPath: string): Promise<number> => {
 
 /**
  * Parses a human-readable cache size string into bytes.
+ * Delegates to @visulima/humanizer's parseBytes with base-2 (1024) multipliers.
  */
 const parseCacheSize = (sizeString: string): number => {
-    const match = /^(\d+(?:\.\d+)?)\s*(KB|MB|GB|TB)?$/i.exec(sizeString.trim());
+    const result = parseBytes(sizeString.trim());
 
-    if (!match) {
+    if (Number.isNaN(result)) {
         throw new Error(`Invalid cache size format: "${sizeString}". Expected format like "500MB" or "1GB".`);
     }
 
-    const value = Number.parseFloat(match[1] as string);
-    const unit = (match[2] ?? "B").toUpperCase();
-
-    const multipliers: Record<string, number> = {
-        B: 1,
-        GB: 1024 * 1024 * 1024,
-        KB: 1024,
-        MB: 1024 * 1024,
-        TB: 1024 * 1024 * 1024 * 1024,
-    };
-
-    const multiplier = multipliers[unit];
-
-    if (multiplier === undefined) {
-        throw new Error(`Unknown size unit: ${unit}`);
-    }
-
-    return value * multiplier;
+    return result;
 };
 
 /**
  * Formats a byte count into a human-readable string.
+ * Delegates to @visulima/humanizer's formatBytes with base-2 (1024) multipliers.
  */
-const formatCacheSize = (bytes: number): string => {
-    if (bytes < 1024) {
-        return `${bytes}B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${(bytes / 1024).toFixed(1)}KB`;
-    }
-
-    if (bytes < 1024 * 1024 * 1024) {
-        return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-    }
-
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)}GB`;
-};
+const formatCacheSize = (bytes: number): string => formatBytes(bytes, { decimals: 1, space: false });
 
 /**
  * Local file-based cache for task results.

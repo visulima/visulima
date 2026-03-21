@@ -25,7 +25,7 @@ const createResult = (taskId: string, status: "success" | "failure" = "success")
 
 describe(EmptyLifeCycle, () => {
     it("should not throw when methods are called", () => {
-        const lc = new EmptyLifeCycle();
+        const lc: LifeCycleInterface = new EmptyLifeCycle();
 
         expect(() => {
             lc.startCommand?.();
