@@ -13,13 +13,13 @@ The main entry point. Returns `Promise<TaskResults>`.
 
 ## Task Graph
 
-### `createTaskGraph(tasks, projectGraph, config)`
+### `createTaskGraph(tasks, options)`
 
-Creates a dependency-ordered task graph from task definitions.
+Creates a dependency-ordered task graph from task definitions. `options` is a `CreateTaskGraphOptions` object with `projectGraph`, `targetDefaults?`, and `workspace`.
 
-### `getTaskId(project, target, configuration?)`
+### `getTaskId(target)`
 
-Creates a task ID string (`"project:target:configuration"`).
+Creates a task ID string from a `TaskTarget` object (`"project:target:configuration"`).
 
 ### `parseTaskId(id)`
 
@@ -27,7 +27,7 @@ Parses a task ID into `{ project, target, configuration? }`.
 
 ### Graph Utilities
 
-- `findCycle(graph)` - Returns first cycle found, or null
+- `findCycle(graph)` - Returns first cycle found, or undefined
 - `findCycles(graph)` - Returns all cycles
 - `makeAcyclic(graph)` - Removes cycle-forming edges
 - `walkTaskGraph(graph, fn)` - Walk in topological order
@@ -69,7 +69,7 @@ mtime-based file hasher that only re-hashes changed files.
 ```typescript
 const hasher = new IncrementalFileHasher({
     workspaceRoot,
-    snapshotPath: ".task-runner-cache/snapshot.json",
+    snapshotPath: "node_modules/.cache/task-runner/file-snapshot.json", // default
 });
 
 const hashes = await hasher.hashDirectory("packages/my-app/src");
@@ -90,8 +90,8 @@ Local file-based cache with LRU eviction.
 
 Turborepo-compatible HTTP cache client.
 
-- `retrieve(hash, cacheDir)` - Download from remote
-- `store(hash, cacheDir)` - Upload to remote
+- `retrieve(hash, localCacheDirectory)` - Download from remote
+- `store(hash, localCacheDirectory)` - Upload to remote
 
 ## Lockfile
 
@@ -99,8 +99,8 @@ Turborepo-compatible HTTP cache client.
 
 Smart lockfile parser that hashes per-package dependency versions.
 
-- `hashForPackage(packageJsonPath)` - Returns `PackageLockfileHash | null`
-- `lockfileType` - Detected format (`"npm" | "pnpm" | "yarn" | null`)
+- `hashForPackage(packageJsonPath)` - Returns `PackageLockfileHash | undefined`
+- `lockfileType` - Detected format (`"npm" | "pnpm" | "yarn" | undefined`)
 
 ### Lockfile Parsers
 
@@ -112,13 +112,13 @@ Smart lockfile parser that hashes per-package dependency versions.
 
 - `detectFrameworks(packageJsonPath)` - Returns detected frameworks
 - `inferFrameworkEnvPatterns(workspaceRoot, projects)` - Returns env patterns
-- `getFrameworkEnvVars(packageJsonPath, env?)` - Returns matching env vars
+- `getFrameworkEnvVariables(packageJsonPath, env?)` - Returns matching env vars
 
 ## Affected Detection
 
-- `getChangedFiles(options)` - Git diff to get changed file paths
-- `getAffectedProjects(files, projectGraph)` - Map files to projects
-- `filterAffectedTasks(tasks, affectedProjects)` - Filter tasks
+- `getChangedFiles(workspaceRoot, base, head)` - Git diff to get changed file paths
+- `getAffectedProjects(options)` - Detect affected projects from git changes (`AffectedOptions`)
+- `filterAffectedTasks(taskIds, affectedProjects)` - Filter task IDs by affected project set
 
 ## Visualization
 

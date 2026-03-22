@@ -15,9 +15,9 @@ The task runner provides multiple output formats for visualizing task graphs and
 import { toGraphvizDot } from "@visulima/task-runner";
 
 const dot = toGraphvizDot(taskGraph, {
-    focus: ["app:build"],        // Highlight specific tasks
-    statuses: taskStatusMap,     // Color by execution status
-    groupByProject: true,        // Group tasks by project
+    focusedTasks: ["app:build"],   // Highlight specific tasks
+    taskStatuses: taskStatusMap,   // Color by execution status
+    groupByProject: true,          // Group tasks by project
 });
 
 // Render with: dot -Tpng graph.dot -o graph.png

@@ -42,6 +42,13 @@ Summary files are written to `.task-runner/runs/{run-id}.json`:
       "cacheable": true
     }
   ],
+  "taskGraph": {
+    "dependencies": {
+      "app:build": ["lib:build"],
+      "lib:build": []
+    },
+    "roots": ["lib:build"]
+  },
   "stats": {
     "total": 5,
     "succeeded": 3,

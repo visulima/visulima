@@ -25,7 +25,7 @@ All options are passed to `defaultTaskRunner` as the second argument.
 | `namedInputs` | `NamedInputs` | `{}` | Named input definitions |
 | `targetDefaults` | `Record` | `{}` | Default target configurations |
 | `envVars` | `string[]` | `[]` | Env vars to include in hash |
-| `globalInputs` | `string[]` | lockfiles + tsconfig + .env | Files that bust all caches |
+| `globalInputs` | `string[]` | lockfiles + tsconfig.base.json + tsconfig.json + .env | Files that bust all caches |
 | `globalEnv` | `string[]` | `[]` | Env vars that bust all caches |
 | `smartLockfileHashing` | `boolean` | `false` | Per-package lockfile hashing |
 | `frameworkInference` | `boolean` | `false` | Auto-detect framework env vars |

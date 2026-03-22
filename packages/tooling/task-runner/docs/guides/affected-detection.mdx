@@ -16,17 +16,20 @@ import {
     filterAffectedTasks,
 } from "@visulima/task-runner";
 
-// Get files changed since main
-const changedFiles = await getChangedFiles({
+// Detect affected projects (uses git diff internally)
+const affected = await getAffectedProjects({
     base: "main",
-    cwd: workspaceRoot,
+    head: "HEAD",
+    projectGraph,
+    projects,
+    workspaceRoot,
 });
 
-// Map changed files to affected projects (with transitive expansion)
-const affected = getAffectedProjects(changedFiles, projectGraph);
-
-// Filter tasks to only affected projects
-const filteredTasks = filterAffectedTasks(tasks, affected);
+// Filter task IDs to only affected projects
+const filteredTaskIds = filterAffectedTasks(
+    taskIds,
+    new Set(affected.affectedProjects),
+);
 ```
 
 ## Transitive Expansion
@@ -37,7 +40,7 @@ If package A depends on package B, and B changes, then A is also affected. The a
 
 ```typescript
 const results = await defaultTaskRunner(
-    filterAffectedTasks(tasks, affected),
+    filterAffectedTasks(taskIds, new Set(affected.affectedProjects)),
     options,
     context,
 );

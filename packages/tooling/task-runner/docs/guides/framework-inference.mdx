@@ -25,10 +25,10 @@ const results = await defaultTaskRunner(tasks, {
 | Gatsby | `gatsby` | `GATSBY_*` |
 | Nuxt | `nuxt`, `nuxt3` | `NUXT_PUBLIC_*` |
 | Expo | `expo` | `EXPO_PUBLIC_*` |
-| Remix | `@remix-run/react` | `REMIX_PUBLIC_*` |
+| Remix | `@remix-run/react`, `@remix-run/node` | `REMIX_PUBLIC_*` |
 | Astro | `astro` | `PUBLIC_*` |
 | SvelteKit | `@sveltejs/kit` | `PUBLIC_*` |
-| Solid Start | `@solidjs/start` | `VITE_*` |
+| Solid Start | `@solidjs/start`, `solid-start` | `VITE_*` |
 
 ## How It Works
 
@@ -52,11 +52,11 @@ When both `frameworkInference` and `autoFingerprint` are enabled, the inferred e
 ## Standalone Usage
 
 ```typescript
-import { detectFrameworks, getFrameworkEnvVars } from "@visulima/task-runner";
+import { detectFrameworks, getFrameworkEnvVariables } from "@visulima/task-runner";
 
 const frameworks = await detectFrameworks("/path/to/package.json");
 // [{ name: "Next.js", envPrefixes: ["NEXT_PUBLIC_"] }]
 
-const envVars = await getFrameworkEnvVars("/path/to/package.json");
+const envVars = await getFrameworkEnvVariables("/path/to/package.json");
 // { NEXT_PUBLIC_API_URL: "https://...", NEXT_PUBLIC_GA_ID: "G-..." }
 ```

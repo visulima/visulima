@@ -18,9 +18,12 @@ A task graph consists of:
 ```typescript
 import { createTaskGraph } from "@visulima/task-runner";
 
-const taskGraph = createTaskGraph(tasks, projectGraph, {
-    target: "build",
-    dependsOn: ["^build"], // Run dependency builds first
+const taskGraph = createTaskGraph(tasks, {
+    projectGraph,
+    targetDefaults: {
+        build: { dependsOn: ["^build"] }, // Run dependency builds first
+    },
+    workspace,
 });
 ```
 
@@ -31,7 +34,7 @@ Tasks are identified by the format `project:target:configuration`:
 ```typescript
 import { getTaskId, parseTaskId } from "@visulima/task-runner";
 
-const id = getTaskId("my-app", "build", "production");
+const id = getTaskId({ project: "my-app", target: "build", configuration: "production" });
 // → "my-app:build:production"
 
 const parsed = parseTaskId("my-app:build");
@@ -71,8 +74,8 @@ const cycle = findCycle(taskGraph);
 const acyclicGraph = makeAcyclic(taskGraph);
 
 // Walk in topological order
-await walkTaskGraph(taskGraph, async (task) => {
-    console.log(`Processing ${task.id}`);
+walkTaskGraph(taskGraph, (taskId) => {
+    console.log(`Processing ${taskId}`);
 });
 ```
 
