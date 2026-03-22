@@ -18,7 +18,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/task-runner"
+        "directory": "packages/tooling/task-runner"
     },
     "funding": [
         {
@@ -47,6 +47,7 @@
     "files": [
         "dist",
         "binding.js",
+        "npm",
         "*.node",
         "README.md",
         "CHANGELOG.md"

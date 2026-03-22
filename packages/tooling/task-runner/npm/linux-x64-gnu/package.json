@@ -6,7 +6,7 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/task-runner-binding-linux-x64-gnu"
+        "directory": "packages/tooling/task-runner"
     },
     "license": "MIT",
     "author": {

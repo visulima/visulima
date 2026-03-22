@@ -1,27 +1,27 @@
 {
-    "name": "@visulima/task-runner-binding-win32-x64-msvc",
+    "name": "@visulima/task-runner-binding-darwin-x64",
     "version": "0.0.1",
-    "description": "Native binding for @visulima/task-runner (Windows x64)",
+    "description": "Native binding for @visulima/task-runner (macOS x64)",
     "homepage": "https://visulima.com",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/tooling/task-runner-binding-win32-x64-msvc"
+        "directory": "packages/tooling/task-runner"
     },
     "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "main": "task-runner-native.win32-x64-msvc.node",
+    "main": "task-runner-native.darwin-x64.node",
     "files": [
-        "task-runner-native.win32-x64-msvc.node"
+        "task-runner-native.darwin-x64.node"
     ],
     "engines": {
         "node": ">=20.19"
     },
     "os": [
-        "win32"
+        "darwin"
     ],
     "cpu": [
         "x64"
