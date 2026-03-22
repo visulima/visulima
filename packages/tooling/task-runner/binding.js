@@ -79,7 +79,6 @@ switch (platform) {
                     localFileExisted = existsSync(
                         join(
                             __dirname,
-                            "..",
                             "task-runner-native.linux-x64-musl.node"
                         )
                     );
@@ -96,7 +95,6 @@ switch (platform) {
                     localFileExisted = existsSync(
                         join(
                             __dirname,
-                            "..",
                             "task-runner-native.linux-x64-gnu.node"
                         )
                     );
@@ -116,7 +114,6 @@ switch (platform) {
                     localFileExisted = existsSync(
                         join(
                             __dirname,
-                            "..",
                             "task-runner-native.linux-arm64-musl.node"
                         )
                     );
@@ -133,7 +130,6 @@ switch (platform) {
                     localFileExisted = existsSync(
                         join(
                             __dirname,
-                            "..",
                             "task-runner-native.linux-arm64-gnu.node"
                         )
                     );
@@ -158,7 +154,6 @@ switch (platform) {
                 localFileExisted = existsSync(
                     join(
                         __dirname,
-                        "..",
                         "task-runner-native.win32-x64-msvc.node"
                     )
                 );
@@ -176,7 +171,6 @@ switch (platform) {
                 localFileExisted = existsSync(
                     join(
                         __dirname,
-                        "..",
                         "task-runner-native.win32-arm64-msvc.node"
                     )
                 );
