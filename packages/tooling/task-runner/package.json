@@ -46,7 +46,7 @@
     },
     "files": [
         "dist",
-        "npm",
+        "binding.js",
         "*.node",
         "README.md",
         "CHANGELOG.md"

@@ -42,11 +42,11 @@ switch (platform) {
         switch (arch) {
             case "x64":
                 localFileExisted = existsSync(
-                    join(__dirname, "..", "task-runner-native.darwin-x64.node")
+                    join(__dirname, "task-runner-native.darwin-x64.node")
                 );
                 try {
                     if (localFileExisted) {
-                        nativeBinding = require("../task-runner-native.darwin-x64.node");
+                        nativeBinding = require("./task-runner-native.darwin-x64.node");
                     } else {
                         nativeBinding = require("@visulima/task-runner-binding-darwin-x64");
                     }
@@ -56,11 +56,11 @@ switch (platform) {
                 break;
             case "arm64":
                 localFileExisted = existsSync(
-                    join(__dirname, "..", "task-runner-native.darwin-arm64.node")
+                    join(__dirname, "task-runner-native.darwin-arm64.node")
                 );
                 try {
                     if (localFileExisted) {
-                        nativeBinding = require("../task-runner-native.darwin-arm64.node");
+                        nativeBinding = require("./task-runner-native.darwin-arm64.node");
                     } else {
                         nativeBinding = require("@visulima/task-runner-binding-darwin-arm64");
                     }
@@ -85,7 +85,7 @@ switch (platform) {
                     );
                     try {
                         if (localFileExisted) {
-                            nativeBinding = require("../task-runner-native.linux-x64-musl.node");
+                            nativeBinding = require("./task-runner-native.linux-x64-musl.node");
                         } else {
                             nativeBinding = require("@visulima/task-runner-binding-linux-x64-musl");
                         }
@@ -102,7 +102,7 @@ switch (platform) {
                     );
                     try {
                         if (localFileExisted) {
-                            nativeBinding = require("../task-runner-native.linux-x64-gnu.node");
+                            nativeBinding = require("./task-runner-native.linux-x64-gnu.node");
                         } else {
                             nativeBinding = require("@visulima/task-runner-binding-linux-x64-gnu");
                         }
@@ -122,7 +122,7 @@ switch (platform) {
                     );
                     try {
                         if (localFileExisted) {
-                            nativeBinding = require("../task-runner-native.linux-arm64-musl.node");
+                            nativeBinding = require("./task-runner-native.linux-arm64-musl.node");
                         } else {
                             nativeBinding = require("@visulima/task-runner-binding-linux-arm64-musl");
                         }
@@ -139,7 +139,7 @@ switch (platform) {
                     );
                     try {
                         if (localFileExisted) {
-                            nativeBinding = require("../task-runner-native.linux-arm64-gnu.node");
+                            nativeBinding = require("./task-runner-native.linux-arm64-gnu.node");
                         } else {
                             nativeBinding = require("@visulima/task-runner-binding-linux-arm64-gnu");
                         }
@@ -164,7 +164,7 @@ switch (platform) {
                 );
                 try {
                     if (localFileExisted) {
-                        nativeBinding = require("../task-runner-native.win32-x64-msvc.node");
+                        nativeBinding = require("./task-runner-native.win32-x64-msvc.node");
                     } else {
                         nativeBinding = require("@visulima/task-runner-binding-win32-x64-msvc");
                     }
@@ -182,7 +182,7 @@ switch (platform) {
                 );
                 try {
                     if (localFileExisted) {
-                        nativeBinding = require("../task-runner-native.win32-arm64-msvc.node");
+                        nativeBinding = require("./task-runner-native.win32-arm64-msvc.node");
                     } else {
                         nativeBinding = require("@visulima/task-runner-binding-win32-arm64-msvc");
                     }

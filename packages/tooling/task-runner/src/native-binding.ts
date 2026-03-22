@@ -80,7 +80,7 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         // Load via the napi-generated binding loader which handles
         // platform detection and loads the correct .node binary
         // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        nativeBindings = require("../npm/binding.js") as NativeBindings;
+        nativeBindings = require("../binding.js") as NativeBindings;
     } catch {
         // Native addon not available - will use TypeScript fallbacks
         nativeBindings = undefined;

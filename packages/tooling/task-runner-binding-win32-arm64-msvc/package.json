@@ -1,21 +1,21 @@
 {
-    "name": "@visulima/task-runner-binding-win32-x64-msvc",
+    "name": "@visulima/task-runner-binding-win32-arm64-msvc",
     "version": "0.0.1",
-    "description": "Native binding for @visulima/task-runner (Windows x64)",
+    "description": "Native binding for @visulima/task-runner (Windows arm64)",
     "homepage": "https://visulima.com",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/task-runner"
+        "directory": "packages/tooling/task-runner-binding-win32-arm64-msvc"
     },
     "license": "MIT",
     "author": {
         "name": "Daniel Bannert",
         "email": "d.bannert@anolilab.de"
     },
-    "main": "task-runner-native.win32-x64-msvc.node",
+    "main": "task-runner-native.win32-arm64-msvc.node",
     "files": [
-        "task-runner-native.win32-x64-msvc.node"
+        "task-runner-native.win32-arm64-msvc.node"
     ],
     "engines": {
         "node": ">=20.19"
@@ -24,7 +24,7 @@
         "win32"
     ],
     "cpu": [
-        "x64"
+        "arm64"
     ],
     "publishConfig": {
         "access": "public",
