@@ -153,7 +153,7 @@ The package exports many building blocks for custom task runners:
 - **Caching**: `Cache`, `RemoteCache`, `FingerprintManager`
 - **Scheduling**: `TaskScheduler`, `TaskOrchestrator`
 - **Lockfile**: `LockfileHasher`, `parseNpmLockfile`, `parsePnpmLockfile`, `parseYarnLockfile`
-- **Framework**: `detectFrameworks`, `inferFrameworkEnvPatterns`, `getFrameworkEnvVars`
+- **Framework**: `detectFrameworks`, `inferFrameworkEnvPatterns`, `getFrameworkEnvVariables`
 - **Affected**: `getAffectedProjects`, `getChangedFiles`, `filterAffectedTasks`
 - **Visualization**: `toGraphvizDot`, `toGraphJson`, `toGraphHtml`, `toGraphAscii`
 - **Summary**: `generateRunSummary`, `writeRunSummary`
