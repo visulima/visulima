@@ -77,18 +77,13 @@ const loadNativeBindings = (): NativeBindings | undefined => {
     loadAttempted = true;
 
     try {
-        // Try napi v3 output location (package root, platform-specific name)
-        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require,import/no-dynamic-require
-        nativeBindings = require(`../task-runner-native.${process.platform}-${process.arch === "x64" ? "x86_64" : process.arch}.node`) as NativeBindings;
+        // Load via the napi-generated binding loader which handles
+        // platform detection and loads the correct .node binary
+        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
+        nativeBindings = require("../npm/binding.js") as NativeBindings;
     } catch {
-        try {
-            // Fallback: try the napi-generated binding.js (handles platform detection)
-            // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-            nativeBindings = require("../task-runner-native.js") as NativeBindings;
-        } catch {
-            // Native addon not available - will use TypeScript fallbacks
-            nativeBindings = undefined;
-        }
+        // Native addon not available - will use TypeScript fallbacks
+        nativeBindings = undefined;
     }
 
     return nativeBindings;

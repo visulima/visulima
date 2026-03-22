@@ -46,6 +46,7 @@
     },
     "files": [
         "dist",
+        "npm",
         "*.node",
         "README.md",
         "CHANGELOG.md"
