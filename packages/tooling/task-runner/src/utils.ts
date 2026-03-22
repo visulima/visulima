@@ -26,6 +26,7 @@ const hashStrings = (...values: string[]): string => {
 
     for (const v of values) {
         hash.update(v);
+        hash.update("\0");
     }
 
     return hash.digest("hex");

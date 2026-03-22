@@ -7,9 +7,8 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = { version = "2", default-features = false, features = ["napi4", "tokio_rt"] }
+napi = { version = "2", default-features = false, features = ["napi4"] }
 napi-derive = "2"
-sha2 = "0.10"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 walkdir = "2"
 rayon = "1"

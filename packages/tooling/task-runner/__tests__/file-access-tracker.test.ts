@@ -184,6 +184,6 @@ describe("generatePreloadScript", () => {
     it("should flush on process exit", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('process.on("exit"');
+        expect(script).toContain('process.on("beforeExit"');
     });
 });

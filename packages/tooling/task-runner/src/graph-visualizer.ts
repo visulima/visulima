@@ -14,7 +14,7 @@ interface GraphVisualizerOptions {
     /** Group tasks by project (default: true) */
     groupByProject?: boolean;
     /** Show task status colors (requires results) */
-    taskStatuses?: Map<string, "success" | "failure" | "skipped" | "local-cache" | "remote-cache" | "running" | "pending">;
+    taskStatuses?: Map<string, "success" | "failure" | "skipped" | "local-cache" | "local-cache-kept-existing" | "remote-cache" | "running" | "pending">;
 }
 
 // ─── Helper functions (defined before usage) ───────────────────────
@@ -31,6 +31,7 @@ const getNodeColor = (taskId: string, focused: Set<string> | undefined, statuses
             return "#FFB6C1";
         }
         case "local-cache":
+        case "local-cache-kept-existing":
         case "remote-cache": {
             return "#87CEEB";
         }
@@ -55,6 +56,7 @@ const getStatusIcon = (status?: string): string => {
             return "[FAIL] ";
         }
         case "local-cache":
+        case "local-cache-kept-existing":
         case "remote-cache": {
             return "[cache] ";
         }
@@ -214,7 +216,7 @@ interface GraphJson {
     roots: string[];
 }
 
-const toGraphJson = (taskGraph: TaskGraph, taskStatuses?: Map<string, string>): GraphJson => {
+const toGraphJson = (taskGraph: TaskGraph, taskStatuses?: Map<string, string>): { edges: GraphJson["edges"]; nodes: GraphJson["nodes"]; roots: string[] } => {
     const nodes = Object.values(taskGraph.tasks).map((task) => {
         return {
             configuration: task.target.configuration,
@@ -244,6 +246,15 @@ const toGraphJson = (taskGraph: TaskGraph, taskStatuses?: Map<string, string>): 
  */
 const toGraphHtml = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}): string => {
     const graphData = toGraphJson(taskGraph, options.taskStatuses);
+
+    // Apply focusedTasks filtering if specified
+    if (options.focusedTasks && options.focusedTasks.length > 0) {
+        const focused = new Set(options.focusedTasks);
+
+        graphData.nodes = graphData.nodes.filter((n) => focused.has(n.id));
+        graphData.edges = graphData.edges.filter((e) => focused.has(e.source) && focused.has(e.target));
+        graphData.roots = graphData.roots.filter((r) => focused.has(r));
+    }
 
     return String.raw`<!DOCTYPE html>
 <html lang="en">

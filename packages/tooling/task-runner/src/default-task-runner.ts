@@ -64,7 +64,12 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * }, context);
  * ```
  */
-const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, context: TaskRunnerContext): Promise<TaskResults> => {
+const defaultTaskRunner = async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _tasks: Task[],
+    options: TaskRunnerOptions,
+    context: TaskRunnerContext,
+): Promise<TaskResults> => {
     const { lifeCycle = new EmptyLifeCycle(), projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
 
     // Create the cache

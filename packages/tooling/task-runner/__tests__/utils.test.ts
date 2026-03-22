@@ -59,13 +59,13 @@ describe("hashFile", () => {
 
 describe("hashStrings", () => {
     it("should hash a single string", () => {
-        const expected = createHash("sha256").update("hello").digest("hex");
+        const expected = createHash("sha256").update("hello").update("\0").digest("hex");
 
         expect(hashStrings("hello")).toBe(expected);
     });
 
     it("should hash multiple strings deterministically", () => {
-        const expected = createHash("sha256").update("hello").update("world").digest("hex");
+        const expected = createHash("sha256").update("hello").update("\0").update("world").update("\0").digest("hex");
 
         expect(hashStrings("hello", "world")).toBe(expected);
     });

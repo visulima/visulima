@@ -351,6 +351,6 @@ fsp.readdir = async function(...args) {
     return origFspReaddir.apply(this, args);
 };
 
-// Flush and close the log stream on exit
-process.on("exit", () => { logStream.end(); });
+// Flush and close the log stream before exit
+process.on("beforeExit", () => { logStream.end(); });
 `;

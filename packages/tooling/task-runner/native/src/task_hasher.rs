@@ -60,6 +60,7 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 
     for (key, value) in &sorted_nodes {
         data.extend_from_slice(key.as_bytes());
+        data.push(0);
         data.extend_from_slice(value.as_bytes());
     }
 
@@ -73,6 +74,7 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 
         for (key, value) in &sorted {
             data.extend_from_slice(key.as_bytes());
+            data.push(0);
             data.extend_from_slice(value.as_bytes());
         }
     }
@@ -87,6 +89,7 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 
         for (key, value) in &sorted {
             data.extend_from_slice(key.as_bytes());
+            data.push(0);
             data.extend_from_slice(value.as_bytes());
         }
     }
@@ -100,6 +103,7 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 pub fn hash_env_var(name: String, value: String) -> String {
     let mut data = Vec::new();
     data.extend_from_slice(name.as_bytes());
+    data.push(0);
     data.extend_from_slice(value.as_bytes());
 
     let h = xxh3_128(&data);

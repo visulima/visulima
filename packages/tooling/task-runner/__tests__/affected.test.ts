@@ -29,4 +29,22 @@ describe(filterAffectedTasks, () => {
 
         expect(filtered).toEqual(["a:build", "b:test"]);
     });
+
+    it("should return empty array for empty taskIds", () => {
+        const filtered = filterAffectedTasks([], new Set(["app"]));
+
+        expect(filtered).toEqual([]);
+    });
+
+    it("should return empty array for empty affected set", () => {
+        const filtered = filterAffectedTasks(["app:build", "lib:test"], new Set());
+
+        expect(filtered).toEqual([]);
+    });
+
+    it("should not match task IDs without a colon separator", () => {
+        const filtered = filterAffectedTasks(["build"], new Set(["build"]));
+
+        expect(filtered).toEqual(["build"]);
+    });
 });

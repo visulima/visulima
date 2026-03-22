@@ -106,6 +106,9 @@ export const findCycles = (taskGraph: TaskGraph): string[][] => {
 /**
  * Walks the task graph in topological order (dependencies before dependents),
  * calling the callback for each task.
+ *
+ * Note: If the graph contains cycles, tasks involved in cycles will not be visited.
+ * Use `findCycle` to detect cycles before walking if complete traversal is required.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const walkTaskGraph = (taskGraph: TaskGraph, callback: (taskId: string) => void): void => {
