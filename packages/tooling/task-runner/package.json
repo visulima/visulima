@@ -45,12 +45,13 @@
         "./package.json": "./package.json"
     },
     "files": [
-        "dist",
+        "dist/**",
         "binding.js",
         "npm",
         "*.node",
         "README.md",
-        "CHANGELOG.md"
+        "CHANGELOG.md",
+        "LICENSE.md"
     ],
     "scripts": {
         "build": "packem build --development",
