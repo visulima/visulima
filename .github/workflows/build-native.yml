@@ -1,0 +1,197 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Build Native"
+
+on: # yamllint disable-line rule:truthy
+    # eslint-disable-next-line yml/no-empty-mapping-value
+    pull_request: # yamllint disable-line rule:empty-values
+        paths:
+            - "packages/tooling/task-runner/native/**"
+            - "packages/tooling/task-runner/npm/**"
+            - "packages/tooling/task-runner/package.json"
+            - "packages/tooling/task-runner/binding.js"
+            - ".github/workflows/build-native.yml"
+    push:
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
+        paths:
+            - "packages/tooling/task-runner/native/**"
+            - "packages/tooling/task-runner/npm/**"
+            - "packages/tooling/task-runner/package.json"
+            - "packages/tooling/task-runner/binding.js"
+            - ".github/workflows/build-native.yml"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+env:
+    CARGO_INCREMENTAL: 0
+
+defaults:
+    run:
+        working-directory: "packages/tooling/task-runner"
+
+jobs:
+    build:
+        name: "Build - ${{ matrix.settings.target }}"
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - target: "x86_64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "aarch64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "x86_64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                    - target: "x86_64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine"
+                    - target: "aarch64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64"
+                    - target: "aarch64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine"
+                    - target: "x86_64-pc-windows-msvc"
+                      os: "windows-latest"
+                    - target: "aarch64-pc-windows-msvc"
+                      os: "windows-latest"
+        runs-on: "${{ matrix.settings.os }}"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+
+            - name: "Setup Node.js"
+              if: "${{ !matrix.settings.docker }}"
+              uses: "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020" # v4.4.0
+              with:
+                  node-version: "22"
+
+            - name: "Install Rust toolchain"
+              if: "${{ !matrix.settings.docker }}"
+              uses: "dtolnay/rust-toolchain@stable"
+              with:
+                  targets: "${{ matrix.settings.target }}"
+
+            - name: "Rust cache"
+              if: "${{ !matrix.settings.docker }}"
+              uses: "Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6" # v2.7.8
+              with:
+                  workspaces: "packages/tooling/task-runner/native -> target"
+
+            - name: "Install pnpm"
+              uses: "pnpm/action-setup@fe02b34f77f8bc703c22d82ef19c587e31b29571" # v4.0.0
+
+            - name: "Install dependencies"
+              run: "pnpm install --frozen-lockfile --ignore-scripts"
+              working-directory: "."
+
+            # --- Native builds (non-Docker) ---
+
+            - name: "Build native (macOS / Windows)"
+              if: "${{ !matrix.settings.docker }}"
+              run: "pnpm build:native --target ${{ matrix.settings.target }}"
+
+            # --- Native builds (Docker for Linux cross-compilation) ---
+
+            - name: "Build native (Linux Docker)"
+              if: "${{ matrix.settings.docker }}"
+              uses: "addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185" # v3
+              with:
+                  image: "${{ matrix.settings.docker }}"
+                  options: >-
+                      --user 0:0
+                      -v ${{ github.workspace }}:/build
+                      -w /build/packages/tooling/task-runner
+                  run: |
+                      rustup target add ${{ matrix.settings.target }}
+                      npm run build:native -- --target ${{ matrix.settings.target }}
+
+            - name: "Upload artifact"
+              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              with:
+                  name: "bindings-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner/*.node"
+                  if-no-files-found: "error"
+
+    test-native:
+        name: "Test native - ${{ matrix.settings.target }}"
+        needs: "build"
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - target: "x86_64-apple-darwin"
+                      os: "macos-13"
+                    - target: "aarch64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "x86_64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                    - target: "x86_64-pc-windows-msvc"
+                      os: "windows-latest"
+        runs-on: "${{ matrix.settings.os }}"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+
+            - name: "Setup Node.js"
+              uses: "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020" # v4.4.0
+              with:
+                  node-version: "22"
+
+            - name: "Install pnpm"
+              uses: "pnpm/action-setup@fe02b34f77f8bc703c22d82ef19c587e31b29571" # v4.0.0
+
+            - name: "Install dependencies"
+              run: "pnpm install --frozen-lockfile --ignore-scripts"
+              working-directory: "."
+
+            - name: "Download artifact"
+              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
+              with:
+                  name: "bindings-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner"
+
+            - name: "Build TypeScript"
+              run: "pnpm build"
+
+            - name: "Run tests"
+              run: "pnpm test"
+
+    # This check runs once all build jobs have passed
+    build-native-required-check:
+        needs: ["build", "test-native"]
+        name: "Check Native Build"
+        if: "always() && (needs.build.result == 'success' || needs.build.result == 'skipped')"
+        runs-on: "ubuntu-24.04"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Check for failures"
+              if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
+              run: |
+                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
