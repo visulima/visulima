@@ -107,6 +107,7 @@ jobs:
                   node-version: "${{ matrix.node_version }}"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "(matrix.node_version != 22 && matrix.os != 'ubuntu-latest') || (matrix.node_version != 22 && matrix.os != 'macos-latest')"
+                  run-signatures-audit: false
 
             - name: "Setup Deno"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && matrix.deno_version"
