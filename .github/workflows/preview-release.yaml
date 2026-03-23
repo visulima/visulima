@@ -83,7 +83,7 @@ jobs:
 
             - name: "Move native artifacts to platform packages"
               if: "${{ steps.native-artifacts.outcome == 'success' }}"
-              run: "npx napi artifacts --output-dir . --npm-dir npm"
+              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
               working-directory: "packages/tooling/task-runner"
 
             - name: "Build"

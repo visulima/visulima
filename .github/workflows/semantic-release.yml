@@ -80,7 +80,7 @@ jobs:
                   rm -rf packages/tooling/task-runner/bindings-*/
 
             - name: "Move native artifacts to platform packages"
-              run: "npx napi artifacts --output-dir . --npm-dir npm"
+              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
               working-directory: "packages/tooling/task-runner"
 
             - name: "Build Production"
