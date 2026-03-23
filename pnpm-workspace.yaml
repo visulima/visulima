@@ -72,7 +72,9 @@ catalogs:
     swagger-ui-express: ^5.0.1
   build:
     '@cloudflare/vite-plugin': 1.30.0
+    '@netlify/vite-plugin-tanstack-start': 1.3.2
     '@optimize-lodash/rollup-plugin': 6.0.0
+    '@rolldown/plugin-babel': 0.2.2
     '@preact/preset-vite': 2.10.5
     '@sveltejs/vite-plugin-svelte': 7.0.0
     '@tailwindcss/vite': 4.2.2
