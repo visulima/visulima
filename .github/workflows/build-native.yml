@@ -79,26 +79,21 @@ jobs:
                   run-signatures-audit: false
 
             - name: "Install Rust toolchain"
-              uses: "dtolnay/rust-toolchain@stable"
+              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
               with:
-                  targets: "${{ matrix.settings.target }}"
+                  cache-key: "build-native"
+                  save-cache: "${{ github.ref_name == 'main' }}"
+                  tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
 
-            - name: "Rust cache"
-              uses: "Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6" # v2.7.8
-              with:
-                  workspaces: "packages/tooling/task-runner/native -> target"
+            - name: "Add Rust target"
+              run: "rustup target add ${{ matrix.settings.target }}"
+              working-directory: "."
 
-            - name: "Install Zig (Linux cross-compilation)"
-              if: "${{ matrix.settings.cross }}"
+            - name: "Install Zig (cross-compilation)"
+              if: "${{ matrix.settings.cross == '-x' }}"
               uses: "mlugg/setup-zig@v2"
               with:
                   version: "0.14.1"
-
-            - name: "Install cargo cross-compilation tools"
-              if: "${{ matrix.settings.cross }}"
-              uses: "taiki-e/install-action@v2"
-              with:
-                  tool: "cargo-zigbuild,cargo-xwin"
 
             - name: "Build native"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
