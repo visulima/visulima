@@ -1,3 +1,4 @@
+import type { ChildProcess } from "node:child_process";
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "@visulima/path";
@@ -31,6 +32,9 @@ export class TrackedTaskExecutor {
     readonly #tracker: FileAccessTracker;
 
     readonly #workspaceRoot: string;
+
+    /** Tracks active child processes for cleanup on abort */
+    readonly #activeProcesses = new Set<ChildProcess>();
 
     public constructor(workspaceRoot: string) {
         this.#workspaceRoot = workspaceRoot;
@@ -114,6 +118,8 @@ export class TrackedTaskExecutor {
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 async (_error, stdout, stderr) => {
+                    this.#activeProcesses.delete(child);
+
                     let accesses: FileAccess[] = [];
 
                     try {
@@ -135,7 +141,26 @@ export class TrackedTaskExecutor {
                     });
                 },
             );
+
+            this.#activeProcesses.add(child);
         });
+    }
+
+    /**
+     * Kills all active child processes. Called on abort/signal to prevent orphans.
+     */
+    public killAll(): void {
+        this.#tracker.killAll();
+
+        for (const child of this.#activeProcesses) {
+            try {
+                child.kill("SIGTERM");
+            } catch {
+                // Process may have already exited
+            }
+        }
+
+        this.#activeProcesses.clear();
     }
 
     /**

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { join } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
@@ -53,8 +53,11 @@ const sortObjectKeys = (object: Record<string, unknown>): Record<string, unknown
 /**
  * Recursively collects all file paths in a directory,
  * skipping directories in the ignored set.
+ *
+ * Tracks visited real paths to prevent infinite loops from symlink cycles.
  */
-const collectFiles = async (directory: string, ignoredDirectories: Set<string>): Promise<string[]> => {
+const collectFiles = async (directory: string, ignoredDirectories: Set<string>, visitedRealPaths?: Set<string>): Promise<string[]> => {
+    const visited = visitedRealPaths ?? new Set<string>();
     const results: string[] = [];
 
     try {
@@ -63,6 +66,15 @@ const collectFiles = async (directory: string, ignoredDirectories: Set<string>):
         if (directoryStat.isFile()) {
             return [directory];
         }
+
+        // Resolve real path to detect symlink cycles
+        const resolvedPath = await realpath(directory);
+
+        if (visited.has(resolvedPath)) {
+            return [];
+        }
+
+        visited.add(resolvedPath);
 
         const entries = await readdir(directory, { withFileTypes: true });
 
@@ -74,14 +86,14 @@ const collectFiles = async (directory: string, ignoredDirectories: Set<string>):
             const fullPath = join(directory, entry.name);
 
             if (entry.isDirectory()) {
-                return collectFiles(fullPath, ignoredDirectories);
+                return collectFiles(fullPath, ignoredDirectories, visited);
             }
 
             if (entry.isFile()) {
                 return [fullPath];
             }
 
-            // Follow symlinks
+            // Follow symlinks with cycle detection
             if (entry.isSymbolicLink()) {
                 try {
                     const linkStat = await stat(fullPath);
@@ -91,7 +103,7 @@ const collectFiles = async (directory: string, ignoredDirectories: Set<string>):
                     }
 
                     if (linkStat.isDirectory()) {
-                        return collectFiles(fullPath, ignoredDirectories);
+                        return collectFiles(fullPath, ignoredDirectories, visited);
                     }
                 } catch {
                     // Broken symlink

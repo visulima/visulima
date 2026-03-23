@@ -63,10 +63,17 @@ const hashFingerprint = (fingerprint: TaskFingerprint): string => {
     return hash.digest("hex");
 };
 
-const delay = (ms: number): Promise<void> =>
-    new Promise((resolve) => {
-        setTimeout(resolve, ms);
+/**
+ * A simple deferred promise that can be resolved externally.
+ */
+const createDeferred = (): { promise: Promise<void>; resolve: () => void } => {
+    let resolve!: () => void;
+    const promise = new Promise<void>((r) => {
+        resolve = r;
     });
+
+    return { promise, resolve };
+};
 
 /**
  * Orchestrates the execution of tasks, handling caching,
@@ -115,6 +122,12 @@ class TaskOrchestrator {
 
     readonly #startTime: number;
 
+    /** Tracks in-flight task promises so the execution loop can await them */
+    readonly #inFlightTasks = new Map<string, Promise<TaskResult>>();
+
+    /** Deferred that gets resolved whenever a task completes, waking the loop */
+    #taskCompletionSignal = createDeferred();
+
     #aborted = false;
 
     public constructor(options: TaskOrchestratorOptions) {
@@ -151,6 +164,9 @@ class TaskOrchestrator {
 
         const signalHandler = (): void => {
             this.#aborted = true;
+
+            // Kill any tracked child processes to prevent orphans
+            this.#trackedExecutor?.killAll();
         };
 
         process.on("SIGINT", signalHandler);
@@ -179,9 +195,13 @@ class TaskOrchestrator {
             const batch = this.#scheduler.getNextBatch();
 
             if (batch.length === 0) {
-                if (this.#scheduler.runningCount > 0) {
+                if (this.#inFlightTasks.size > 0) {
+                    // Wait for at least one in-flight task to complete instead of polling
                     // eslint-disable-next-line no-await-in-loop
-                    await delay(10);
+                    await this.#taskCompletionSignal.promise;
+
+                    // Reset the signal for the next wait
+                    this.#taskCompletionSignal = createDeferred();
                     continue;
                 }
 
@@ -199,38 +219,46 @@ class TaskOrchestrator {
 
             this.#lifeCycle.startTasks?.(batch);
 
-            const taskPromises = batch.map(
-                // eslint-disable-next-line no-confusing-arrow
-                (task) => this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task),
-            );
+            // Launch tasks concurrently and track them as in-flight
+            for (const task of batch) {
+                const taskPromise = (this.#autoFingerprint ? this.#processTaskWithFingerprint(task) : this.#processTask(task))
+                    .catch((error: unknown) => {
+                        const errorResult = createFailureResult(task, error, Date.now());
 
-            // eslint-disable-next-line no-await-in-loop
-            const results = await Promise.allSettled(taskPromises);
+                        this.#results.set(task.id, errorResult);
 
-            const taskResults: TaskResult[] = [];
+                        return errorResult;
+                    })
+                    .then((result) => {
+                        this.#inFlightTasks.delete(task.id);
+                        this.#scheduler.completeTask(task.id);
 
-            for (const [index, result] of results.entries()) {
-                const task = batch[index] as Task;
+                        this.#lifeCycle.endTasks?.([result]);
 
-                if (result.status === "fulfilled") {
-                    taskResults.push(result.value);
-                } else {
-                    const errorResult = createFailureResult(task, result.reason, Date.now());
+                        if (result.terminalOutput) {
+                            this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
+                        }
 
-                    taskResults.push(errorResult);
-                    this.#results.set(task.id, errorResult);
-                }
+                        // Wake the execution loop to schedule more tasks
+                        this.#taskCompletionSignal.resolve();
 
-                this.#scheduler.completeTask(task.id);
+                        return result;
+                    });
+
+                this.#inFlightTasks.set(task.id, taskPromise);
             }
 
-            this.#lifeCycle.endTasks?.(taskResults);
-
-            for (const result of taskResults) {
-                if (result.terminalOutput) {
-                    this.#lifeCycle.printTaskTerminalOutput?.(result.task, result.status, result.terminalOutput);
-                }
+            // Wait for at least one task to complete before scheduling more
+            if (this.#inFlightTasks.size > 0) {
+                // eslint-disable-next-line no-await-in-loop
+                await this.#taskCompletionSignal.promise;
+                this.#taskCompletionSignal = createDeferred();
             }
+        }
+
+        // Wait for any remaining in-flight tasks to finish
+        if (this.#inFlightTasks.size > 0) {
+            await Promise.all(this.#inFlightTasks.values());
         }
     }
 

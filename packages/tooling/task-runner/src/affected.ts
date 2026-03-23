@@ -1,7 +1,17 @@
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 
 // path utilities not needed - git returns workspace-relative paths
 import type { ProjectConfiguration, ProjectGraph } from "./types";
+
+/**
+ * Validates a git ref to prevent command injection.
+ * Only allows characters valid in git refs: alphanumeric, ., -, _, /, ~, ^
+ */
+const validateGitRef = (ref: string): void => {
+    if (!/^[a-zA-Z0-9._\-/~^@{}]+$/.test(ref)) {
+        throw new Error(`Invalid git ref: "${ref}". Only alphanumeric characters, dots, dashes, underscores, slashes, tildes, carets, and @ are allowed.`);
+    }
+};
 
 /**
  * Options for determining affected projects.
@@ -101,28 +111,53 @@ const expandAffected = (affectedProjects: Set<string>, projectGraph: ProjectGrap
 };
 
 /**
- * Gets the list of files changed between two git refs.
+ * Gets the merge-base between two refs.
  */
-const getChangedFiles = (workspaceRoot: string, base: string, head: string): Promise<string[]> =>
+const getMergeBase = (workspaceRoot: string, base: string, head: string): Promise<string> =>
     new Promise((resolve, reject) => {
-        // Use merge-base to handle diverged branches correctly
-        // eslint-disable-next-line sonarjs/os-command
-        exec(`git diff --name-only $(git merge-base ${base} ${head}) ${head}`, { cwd: workspaceRoot }, (error, stdout) => {
+        execFile("git", ["merge-base", base, head], { cwd: workspaceRoot }, (error, stdout) => {
             if (error) {
-                // Fallback: direct diff (for shallow clones)
-                // eslint-disable-next-line sonarjs/os-command
-                exec(`git diff --name-only ${base}...${head}`, { cwd: workspaceRoot }, (error2, stdout2) => {
-                    if (error2) {
-                        reject(error2);
-                    } else {
-                        resolve(stdout2.trim().split("\n").filter(Boolean));
-                    }
-                });
+                reject(error);
             } else {
-                resolve(stdout.trim().split("\n").filter(Boolean));
+                resolve(stdout.trim());
             }
         });
     });
+
+/**
+ * Gets the list of files changed between two git refs.
+ * Uses execFile with argument arrays to prevent command injection.
+ */
+const getChangedFiles = async (workspaceRoot: string, base: string, head: string): Promise<string[]> => {
+    validateGitRef(base);
+    validateGitRef(head);
+
+    try {
+        // Use merge-base to handle diverged branches correctly
+        const mergeBase = await getMergeBase(workspaceRoot, base, head);
+
+        return await new Promise((resolve, reject) => {
+            execFile("git", ["diff", "--name-only", mergeBase, head], { cwd: workspaceRoot }, (error, stdout) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(stdout.trim().split("\n").filter(Boolean));
+                }
+            });
+        });
+    } catch {
+        // Fallback: direct diff with ... syntax (for shallow clones)
+        return new Promise((resolve, reject) => {
+            execFile("git", ["diff", "--name-only", `${base}...${head}`], { cwd: workspaceRoot }, (error, stdout) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(stdout.trim().split("\n").filter(Boolean));
+                }
+            });
+        });
+    }
+};
 
 /**
  * Determines which projects are affected by changes between two git refs.

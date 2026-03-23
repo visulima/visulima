@@ -124,6 +124,9 @@ class Cache {
 
     readonly #maxCacheSize: number | undefined;
 
+    /** Serializes concurrent setTaskIndex writes to prevent lost updates */
+    #indexWriteQueue: Promise<void> = Promise.resolve();
+
     public constructor(options: CacheOptions) {
         this.#workspaceRoot = options.workspaceRoot;
         this.#cacheDirectory = options.cacheDirectory ?? join(options.workspaceRoot, ".task-runner-cache");
@@ -286,9 +289,17 @@ class Cache {
 
     /**
      * Stores the mapping from task ID to cache hash.
-     * Uses atomic write to prevent corruption from concurrent access.
+     * Uses a write queue to serialize concurrent writes and prevent lost updates.
+     * Each write is atomic (temp file + rename).
      */
     public async setTaskIndex(taskId: string, hash: string): Promise<void> {
+        // Serialize writes through a queue to prevent concurrent read-modify-write races
+        this.#indexWriteQueue = this.#indexWriteQueue.then(() => this.#writeTaskIndex(taskId, hash)).catch(() => {});
+
+        return this.#indexWriteQueue;
+    }
+
+    async #writeTaskIndex(taskId: string, hash: string): Promise<void> {
         const indexFile = join(this.#cacheDirectory, ".task-index.json");
         // eslint-disable-next-line sonarjs/pseudo-random
         const temporaryFile = join(this.#cacheDirectory, `.task-index-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.tmp`);

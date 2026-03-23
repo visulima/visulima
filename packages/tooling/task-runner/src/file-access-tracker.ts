@@ -1,3 +1,4 @@
+import type { ChildProcess } from "node:child_process";
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
@@ -35,6 +36,9 @@ export class FileAccessTracker {
     readonly #workspaceRoot: string;
 
     readonly #excludePatterns: RegExp[];
+
+    /** Tracks active child processes for cleanup on abort */
+    readonly #activeProcesses = new Set<ChildProcess>();
 
     public constructor(workspaceRoot: string, excludePatterns?: RegExp[]) {
         this.#workspaceRoot = resolve(workspaceRoot);
@@ -108,6 +112,8 @@ export class FileAccessTracker {
                     maxBuffer: 50 * 1024 * 1024, // 50MB
                 },
                 async (_error, stdout, stderr) => {
+                    this.#activeProcesses.delete(child);
+
                     let accesses: FileAccess[] = [];
 
                     try {
@@ -128,6 +134,8 @@ export class FileAccessTracker {
                     });
                 },
             );
+
+            this.#activeProcesses.add(child);
         });
     }
 
@@ -242,6 +250,21 @@ export class FileAccessTracker {
     }
 
     /**
+     * Kills all active child processes. Called on abort/signal to prevent orphans.
+     */
+    public killAll(): void {
+        for (const child of this.#activeProcesses) {
+            try {
+                child.kill("SIGTERM");
+            } catch {
+                // Process may have already exited
+            }
+        }
+
+        this.#activeProcesses.clear();
+    }
+
+    /**
      * Runs a command without file access tracking.
      */
     async #runWithoutTracking(
@@ -261,6 +284,8 @@ export class FileAccessTracker {
                     maxBuffer: 50 * 1024 * 1024,
                 },
                 (_error, stdout, stderr) => {
+                    this.#activeProcesses.delete(child);
+
                     _resolve({
                         accesses: [],
                         code: child.exitCode ?? 1,
@@ -268,6 +293,8 @@ export class FileAccessTracker {
                     });
                 },
             );
+
+            this.#activeProcesses.add(child);
         });
     }
 }

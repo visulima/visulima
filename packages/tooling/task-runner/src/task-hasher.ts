@@ -1,3 +1,4 @@
+import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "@visulima/path";
@@ -104,12 +105,44 @@ const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<s
     }
 };
 
-const hashRuntimeValue = (runtime: string): string => {
+/**
+ * Executes a runtime command and returns its output for hashing.
+ * Well-known commands (node -v) are handled inline for speed.
+ */
+const executeRuntimeCommand = (runtime: string): Promise<string> => {
     if (runtime === "node -v" || runtime === "node --version") {
-        return hashStrings(runtime, process.version);
+        return Promise.resolve(process.version);
     }
 
-    return hashStrings(runtime, `runtime:${runtime}`);
+    const parts = runtime.split(/\s+/);
+    const command = parts[0] as string;
+    const args = parts.slice(1);
+
+    return new Promise((resolve) => {
+        execFile(command, args, { timeout: 10_000 }, (error, stdout) => {
+            if (error) {
+                // If the command fails, use a sentinel value so the hash
+                // is stable (but different from any successful output)
+                resolve(`__runtime_error__:${runtime}`);
+            } else {
+                resolve(stdout.trim());
+            }
+        });
+    });
+};
+
+/** Cache for runtime command results (they don't change within a run) */
+const runtimeCache = new Map<string, string>();
+
+const hashRuntimeValue = async (runtime: string): Promise<string> => {
+    let output = runtimeCache.get(runtime);
+
+    if (output === undefined) {
+        output = await executeRuntimeCommand(runtime);
+        runtimeCache.set(runtime, output);
+    }
+
+    return hashStrings(runtime, output);
 };
 
 // Type guards
@@ -209,7 +242,8 @@ class InProcessTaskHasher implements TaskHasher {
                     nodes[filePath] = hash;
                 }
             } else if (isRuntimeInput(input)) {
-                runtime[input.runtime] = hashRuntimeValue(input.runtime);
+                // eslint-disable-next-line no-await-in-loop -- runtime inputs processed within sequential input loop
+                runtime[input.runtime] = await hashRuntimeValue(input.runtime);
             } else if (isEnvironmentInput(input)) {
                 runtime[`env:${input.env}`] = hashStrings(input.env, process.env[input.env] ?? "");
             } else if (isExternalDependencyInput(input)) {
@@ -256,13 +290,12 @@ class InProcessTaskHasher implements TaskHasher {
         };
     }
 
+    /**
+     * Hashes the command identity for a task.
+     * Always uses SHA-256 for consistency between native and non-native modes.
+     */
     #hashCommand(task: Task): string {
         const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
-
-        if (this.#native) {
-            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, overridesJson);
-        }
-
         const hash = createHash("sha256");
 
         hash.update(task.target.project);
@@ -454,36 +487,14 @@ class InProcessTaskHasher implements TaskHasher {
 
 /**
  * Computes the final hash for a task from its hash details.
- * Uses native Rust implementation when available.
+ *
+ * Always uses SHA-256 (not the native xxh3) to ensure consistent hashes
+ * regardless of whether the native addon is loaded. The native addon is
+ * only used for file hashing throughput, not for final task hash computation.
+ * This prevents cache invalidation when switching between native and
+ * TypeScript-only modes.
  */
 const computeTaskHash = (hashDetails: TaskHashDetails): string => {
-    const native = getNativeBindings();
-
-    if (native) {
-        const nodes = Object.keys(hashDetails.nodes)
-            .toSorted()
-            .map((key) => [key, hashDetails.nodes[key] as string]);
-
-        const implicitDeps = hashDetails.implicitDeps
-            ? Object.keys(hashDetails.implicitDeps)
-                .toSorted()
-                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
-            : undefined;
-
-        const runtime = hashDetails.runtime
-            ? Object.keys(hashDetails.runtime)
-                .toSorted()
-                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
-            : undefined;
-
-        return native.computeTaskHash({
-            command: hashDetails.command,
-            implicit_deps: implicitDeps,
-            nodes,
-            runtime,
-        });
-    }
-
     const hash = createHash("sha256");
 
     hash.update(hashDetails.command);
