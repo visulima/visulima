@@ -48,13 +48,13 @@ jobs:
                       os: "ubuntu-latest"
                     - target: "x86_64-unknown-linux-musl"
                       os: "ubuntu-latest"
-                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine"
+                      cross: "-x"
                     - target: "aarch64-unknown-linux-gnu"
                       os: "ubuntu-latest"
-                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64"
+                      cross: "--use-napi-cross"
                     - target: "aarch64-unknown-linux-musl"
                       os: "ubuntu-latest"
-                      docker: "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine"
+                      cross: "-x"
                     - target: "x86_64-pc-windows-msvc"
                       os: "windows-latest"
                     - target: "aarch64-pc-windows-msvc"
@@ -71,7 +71,6 @@ jobs:
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
 
             - name: "Setup resources and environment"
-              if: "${{ !matrix.settings.docker }}"
               id: "setup"
               uses: "anolilab/workflows/step/setup@main"
               with:
@@ -80,46 +79,29 @@ jobs:
                   run-signatures-audit: false
 
             - name: "Install Rust toolchain"
-              if: "${{ !matrix.settings.docker }}"
               uses: "dtolnay/rust-toolchain@stable"
               with:
                   targets: "${{ matrix.settings.target }}"
 
             - name: "Rust cache"
-              if: "${{ !matrix.settings.docker }}"
               uses: "Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6" # v2.7.8
               with:
                   workspaces: "packages/tooling/task-runner/native -> target"
 
-            - name: "Install pnpm (Docker builds)"
-              if: "${{ matrix.settings.docker }}"
-              uses: "pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061" # v4.2.0
-
-            - name: "Install dependencies (Docker builds)"
-              if: "${{ matrix.settings.docker }}"
-              run: "pnpm install --frozen-lockfile --ignore-scripts"
-              working-directory: "."
-
-            # --- Native builds (non-Docker) ---
-
-            - name: "Build native (macOS / Windows)"
-              if: "${{ !matrix.settings.docker }}"
-              run: "pnpm build:native --target ${{ matrix.settings.target }}"
-
-            # --- Native builds (Docker for Linux cross-compilation) ---
-
-            - name: "Build native (Linux Docker)"
-              if: "${{ matrix.settings.docker }}"
-              uses: "addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185" # v3
+            - name: "Install Zig (Linux cross-compilation)"
+              if: "${{ matrix.settings.cross }}"
+              uses: "mlugg/setup-zig@v2"
               with:
-                  image: "${{ matrix.settings.docker }}"
-                  options: >-
-                      --user 0:0
-                      -v ${{ github.workspace }}:/build
-                      -w /build/packages/tooling/task-runner
-                  run: |
-                      rustup target add ${{ matrix.settings.target }}
-                      npm run build:native -- --target ${{ matrix.settings.target }}
+                  version: "0.14.1"
+
+            - name: "Install cargo cross-compilation tools"
+              if: "${{ matrix.settings.cross }}"
+              uses: "taiki-e/install-action@v2"
+              with:
+                  tool: "cargo-zigbuild,cargo-xwin"
+
+            - name: "Build native"
+              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
 
             - name: "Upload artifact"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
