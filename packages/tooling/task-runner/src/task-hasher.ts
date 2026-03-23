@@ -214,25 +214,7 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         const inputs = this.#resolveInputs(task);
-        const negationPatterns: string[] = [];
-
-        // First pass: collect negation patterns
-        for (const input of inputs) {
-            if (isFileSetInput(input)) {
-                const project = this.#projects[task.target.project];
-                const projectRoot = project?.root ?? "";
-                const resolved = input.fileset.replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
-
-                if (resolved.startsWith("!")) {
-                    negationPatterns.push(
-                        resolved
-                            .slice(1)
-                            .replace(/\/\*\*\/\*$/, "")
-                            .replace(/\/\*$/, ""),
-                    );
-                }
-            }
-        }
+        const negationPatterns = this.#collectNegationPatterns(inputs, task.target.project);
 
         for (const input of inputs) {
             if (isFileSetInput(input)) {
@@ -352,6 +334,31 @@ class InProcessTaskHasher implements TaskHasher {
         }
 
         return result;
+    }
+
+    #collectNegationPatterns(inputs: InputDefinition[], projectName: string): string[] {
+        const project = this.#projects[projectName];
+        const projectRoot = project?.root ?? "";
+        const patterns: string[] = [];
+
+        for (const input of inputs) {
+            if (!isFileSetInput(input)) {
+                continue;
+            }
+
+            const resolved = input.fileset.replace("{projectRoot}", projectRoot).replace("{workspaceRoot}", ".");
+
+            if (resolved.startsWith("!")) {
+                patterns.push(
+                    resolved
+                        .slice(1)
+                        .replace(/\/\*\*\/\*$/, "")
+                        .replace(/\/\*$/, ""),
+                );
+            }
+        }
+
+        return patterns;
     }
 
     /**

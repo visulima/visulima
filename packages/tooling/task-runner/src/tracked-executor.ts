@@ -6,6 +6,7 @@ import { join } from "@visulima/path";
 import type { FileAccess } from "./file-access-tracker";
 import { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
 import type { Task, TaskExecutionOptions } from "./types";
+import { uniqueId } from "./utils";
 
 /**
  * Result of a tracked task execution.
@@ -94,10 +95,9 @@ export class TrackedTaskExecutor {
 
         await mkdir(cacheDirectory, { recursive: true });
 
-        // eslint-disable-next-line sonarjs/pseudo-random
-        const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const logFile = join(cacheDirectory, `preload-${uniqueId}.log`);
-        const preloadFile = join(cacheDirectory, `preload-${uniqueId}.mjs`);
+        const id = uniqueId();
+        const logFile = join(cacheDirectory, `preload-${id}.log`);
+        const preloadFile = join(cacheDirectory, `preload-${id}.mjs`);
 
         // Write the preload script
         const scriptContent = generatePreloadScript(logFile);

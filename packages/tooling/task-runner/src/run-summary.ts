@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "@visulima/path";
 
 import type { TaskGraph, TaskHashDetails, TaskResult, TaskResults } from "./types";
+import { uniqueId } from "./utils";
 
 /**
  * Summary of a single task execution.
@@ -106,8 +107,7 @@ const getCacheStatus = (result: TaskResult): "HIT" | "MISS" | "REMOTE_HIT" | "SK
  */
 const generateRunSummary = (results: TaskResults, taskGraph: TaskGraph, startTime: number): RunSummary => {
     const endTime = Date.now();
-    // eslint-disable-next-line sonarjs/pseudo-random
-    const id = `${new Date(startTime).toISOString().replaceAll(/[:.]/g, "-")}_${Math.random().toString(36).slice(2, 8)}`;
+    const id = `${new Date(startTime).toISOString().replaceAll(/[:.]/g, "-")}_${uniqueId()}`;
 
     const tasks: TaskSummary[] = [];
     let succeeded = 0;

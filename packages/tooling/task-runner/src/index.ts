@@ -102,4 +102,4 @@ export type {
 } from "./types";
 
 // Shared utilities
-export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "./utils";
+export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId } from "./utils";

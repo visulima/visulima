@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "@visulima/path";
 import { formatBytes, parseBytes } from "@visulima/humanizer";
 
 import type { TaskFingerprint } from "./fingerprint";
+import { uniqueId } from "./utils";
 
 /**
  * Represents a cached task result.
@@ -191,8 +192,7 @@ class Cache {
      */
     public async put(hash: string, terminalOutput: string, outputs: string[], code: number, fingerprint?: TaskFingerprint): Promise<void> {
         const cacheEntryDirectory = join(this.#cacheDirectory, hash);
-        // eslint-disable-next-line sonarjs/pseudo-random
-        const temporaryDirectory = join(this.#cacheDirectory, `.tmp-${hash}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`);
+        const temporaryDirectory = join(this.#cacheDirectory, `.tmp-${hash}-${uniqueId()}`);
 
         try {
             await mkdir(temporaryDirectory, { recursive: true });
@@ -301,8 +301,7 @@ class Cache {
 
     async #writeTaskIndex(taskId: string, hash: string): Promise<void> {
         const indexFile = join(this.#cacheDirectory, ".task-index.json");
-        // eslint-disable-next-line sonarjs/pseudo-random
-        const temporaryFile = join(this.#cacheDirectory, `.task-index-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.tmp`);
+        const temporaryFile = join(this.#cacheDirectory, `.task-index-${uniqueId()}.tmp`);
 
         let index: Record<string, string> = {};
 

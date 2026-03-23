@@ -165,20 +165,21 @@ describe("generatePreloadScript", () => {
         expect(script).toContain("/tmp/test-log.jsonl");
     });
 
-    it("should patch fs.readFileSync", () => {
+    it("should patch fs sync and async methods", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain("fs.readFileSync");
-        expect(script).toContain("_originalReadFileSync");
+        expect(script).toContain('"readFileSync"');
+        expect(script).toContain('"statSync"');
+        expect(script).toContain('"readdirSync"');
     });
 
     it("should patch fs/promises", () => {
         const script = generatePreloadScript("/tmp/log");
 
         expect(script).toContain('require("node:fs/promises")');
-        expect(script).toContain("fsp.readFile");
-        expect(script).toContain("fsp.stat");
-        expect(script).toContain("fsp.readdir");
+        expect(script).toContain('"readFile"');
+        expect(script).toContain('"stat"');
+        expect(script).toContain('"readdir"');
     });
 
     it("should flush on process exit", () => {

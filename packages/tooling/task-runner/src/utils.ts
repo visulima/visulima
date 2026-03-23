@@ -189,4 +189,11 @@ const readPackageDeps = async (
     }
 };
 
-export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys };
+/**
+ * Generates a unique ID for temporary files/directories.
+ * Not cryptographically secure — for cache entry naming only.
+ */
+// eslint-disable-next-line sonarjs/pseudo-random
+const uniqueId = (): string => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+export { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys, uniqueId };
