@@ -17,12 +17,6 @@ on: # yamllint disable-line rule:truthy
             - "next"
             - "alpha"
             - "beta"
-        paths:
-            - "packages/tooling/task-runner/native/**"
-            - "packages/tooling/task-runner/npm/**"
-            - "packages/tooling/task-runner/package.json"
-            - "packages/tooling/task-runner/binding.js"
-            - ".github/workflows/build-native.yml"
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
 concurrency:
