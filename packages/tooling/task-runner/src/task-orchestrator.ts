@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { join } from "@visulima/path";
 
 import type { Cache, CachedResult } from "./cache";
@@ -12,6 +11,7 @@ import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
 import type { LifeCycleInterface, Task, TaskExecutor, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
+import { createXxh3Hasher } from "./xxh3";
 
 /**
  * Options for the TaskOrchestrator.
@@ -37,7 +37,7 @@ interface TaskOrchestratorOptions {
 }
 
 const hashFingerprint = (fingerprint: TaskFingerprint): string => {
-    const hash = createHash("sha256");
+    const hash = createXxh3Hasher();
 
     hash.update(fingerprint.commandHash);
 
@@ -60,7 +60,7 @@ const hashFingerprint = (fingerprint: TaskFingerprint): string => {
         hash.update(fingerprint.envHashes[key] as string);
     }
 
-    return hash.digest("hex");
+    return hash.digest();
 };
 
 /**

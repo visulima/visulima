@@ -1,8 +1,8 @@
-import { createHash } from "node:crypto";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "@visulima/path";
 
 import { collectFiles } from "./utils";
+import { xxh3Hash } from "./xxh3";
 
 /**
  * Incremental file hasher that only re-hashes files that have changed
@@ -16,7 +16,7 @@ import { collectFiles } from "./utils";
  * optionally be persisted to disk for cross-process reuse.
  */
 interface FileSnapshot {
-    /** SHA-256 hash of file contents */
+    /** xxh3-128 hash of file contents */
     hash: string;
     /** Last modification time in milliseconds */
     mtimeMs: number;
@@ -163,7 +163,7 @@ class IncrementalFileHasher {
 
             // Slow path: re-read and re-hash the file
             const content = await readFile(filePath);
-            const hash = createHash("sha256").update(content).digest("hex");
+            const hash = xxh3Hash(content);
 
             this.#snapshot.set(filePath, {
                 hash,

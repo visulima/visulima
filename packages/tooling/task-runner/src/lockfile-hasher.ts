@@ -1,8 +1,8 @@
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "@visulima/path";
 
 import { readPackageDeps } from "./utils";
+import { createXxh3Hasher } from "./xxh3";
 
 /**
  * Resolved dependency entry from a lockfile.
@@ -260,7 +260,7 @@ class LockfileHasher {
         resolved.sort((a, b) => a.name.localeCompare(b.name));
 
         // Compute hash
-        const hash = createHash("sha256");
+        const hash = createXxh3Hasher();
 
         for (const dependency of resolved) {
             hash.update(`${dependency.name}@${dependency.version}`);
@@ -268,7 +268,7 @@ class LockfileHasher {
 
         return {
             dependencies: resolved,
-            hash: hash.digest("hex"),
+            hash: hash.digest(),
         };
     }
 

@@ -1,35 +1,35 @@
-import { createHash } from "node:crypto";
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import { join } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
+import { createXxh3Hasher, xxh3Hash } from "./xxh3";
 
 /**
- * Hashes a file's content using SHA-256.
+ * Hashes a file's content using xxh3-128.
  * Returns undefined if the file cannot be read.
  */
 const hashFile = async (filePath: string): Promise<string | undefined> => {
     try {
         const content = await readFile(filePath);
 
-        return createHash("sha256").update(content).digest("hex");
+        return xxh3Hash(content);
     } catch {
         return undefined;
     }
 };
 
 /**
- * Hashes one or more string values using SHA-256.
+ * Hashes one or more string values using xxh3-128.
  */
 const hashStrings = (...values: string[]): string => {
-    const hash = createHash("sha256");
+    const hash = createXxh3Hasher();
 
     for (const v of values) {
         hash.update(v);
         hash.update("\0");
     }
 
-    return hash.digest("hex");
+    return hash.digest();
 };
 
 /**

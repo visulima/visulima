@@ -1,5 +1,4 @@
 import { execFile } from "node:child_process";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "@visulima/path";
 
@@ -19,6 +18,8 @@ import type {
     TaskHashDetails,
 } from "./types";
 import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
+import type { Xxh3Hasher } from "./xxh3";
+import { createXxh3Hasher, xxh3Hash } from "./xxh3";
 
 /**
  * Interface for task hashers.
@@ -93,7 +94,7 @@ const getNativeBindings = () => {
 /**
  * Hashes sorted entries of a Record into a Hash object.
  */
-const hashSortedEntries = (hash: ReturnType<typeof createHash>, record: Record<string, string>, prefix?: string): void => {
+const hashSortedEntries = (hash: Xxh3Hasher, record: Record<string, string>, prefix?: string): void => {
     for (const key of Object.keys(record).toSorted()) {
         if (prefix) {
             hash.update(`${prefix}${key}\0`);
@@ -291,12 +292,18 @@ class InProcessTaskHasher implements TaskHasher {
     }
 
     /**
-     * Hashes the command identity for a task.
-     * Always uses SHA-256 for consistency between native and non-native modes.
+     * Hashes the command identity for a task using xxh3-128.
+     * Uses native Rust implementation when available, otherwise pure TS xxh3-ts.
+     * Both produce identical xxh3-128 output.
      */
     #hashCommand(task: Task): string {
         const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
-        const hash = createHash("sha256");
+
+        if (this.#native) {
+            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, overridesJson);
+        }
+
+        const hash = createXxh3Hasher();
 
         hash.update(task.target.project);
         hash.update(task.target.target);
@@ -307,7 +314,7 @@ class InProcessTaskHasher implements TaskHasher {
 
         hash.update(overridesJson);
 
-        return hash.digest("hex");
+        return hash.digest();
     }
 
     #resolveInputs(task: Task): InputDefinition[] {
@@ -415,7 +422,7 @@ class InProcessTaskHasher implements TaskHasher {
 
         try {
             const content = await readFile(filePath);
-            const hash = createHash("sha256").update(content).digest("hex");
+            const hash = xxh3Hash(content);
 
             this.#fileHashCache.set(filePath, hash);
 
@@ -446,7 +453,7 @@ class InProcessTaskHasher implements TaskHasher {
             return this.#globalHash;
         }
 
-        const hash = createHash("sha256");
+        const hash = createXxh3Hasher();
         let hasContent = false;
 
         // Hash global input files (parallelized)
@@ -473,7 +480,7 @@ class InProcessTaskHasher implements TaskHasher {
             hasContent = true;
         }
 
-        this.#globalHash = hasContent ? hash.digest("hex") : "";
+        this.#globalHash = hasContent ? hash.digest() : "";
 
         return this.#globalHash || undefined;
     }
@@ -487,15 +494,39 @@ class InProcessTaskHasher implements TaskHasher {
 
 /**
  * Computes the final hash for a task from its hash details.
- *
- * Always uses SHA-256 (not the native xxh3) to ensure consistent hashes
- * regardless of whether the native addon is loaded. The native addon is
- * only used for file hashing throughput, not for final task hash computation.
- * This prevents cache invalidation when switching between native and
- * TypeScript-only modes.
+ * Uses native Rust xxh3-128 when available, otherwise pure TS xxh3-ts.
+ * Both produce identical xxh3-128 hashes, ensuring cache compatibility
+ * regardless of whether the native addon is loaded.
  */
 const computeTaskHash = (hashDetails: TaskHashDetails): string => {
-    const hash = createHash("sha256");
+    const native = getNativeBindings();
+
+    if (native) {
+        const nodes = Object.keys(hashDetails.nodes)
+            .toSorted()
+            .map((key) => [key, hashDetails.nodes[key] as string]);
+
+        const implicitDeps = hashDetails.implicitDeps
+            ? Object.keys(hashDetails.implicitDeps)
+                .toSorted()
+                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
+            : undefined;
+
+        const runtime = hashDetails.runtime
+            ? Object.keys(hashDetails.runtime)
+                .toSorted()
+                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
+            : undefined;
+
+        return native.computeTaskHash({
+            command: hashDetails.command,
+            implicit_deps: implicitDeps,
+            nodes,
+            runtime,
+        });
+    }
+
+    const hash = createXxh3Hasher();
 
     hash.update(hashDetails.command);
     hashSortedEntries(hash, hashDetails.nodes);
@@ -508,7 +539,7 @@ const computeTaskHash = (hashDetails: TaskHashDetails): string => {
         hashSortedEntries(hash, hashDetails.runtime);
     }
 
-    return hash.digest("hex");
+    return hash.digest();
 };
 
 export { computeTaskHash, InProcessTaskHasher };
