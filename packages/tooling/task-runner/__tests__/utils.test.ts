@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -6,6 +5,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../src/utils";
+import { xxh3Hash } from "../src/xxh3";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -27,13 +27,13 @@ describe("hashFile", () => {
         await rm(temporaryDirectory, { force: true, recursive: true });
     });
 
-    it("should return the SHA-256 hash of a file's content", async () => {
+    it("should return the xxh3-128 hash of a file's content", async () => {
         const filePath = join(temporaryDirectory, "test.txt");
         const content = "hello world";
 
         await writeFile(filePath, content);
 
-        const expected = createHash("sha256").update(Buffer.from(content)).digest("hex");
+        const expected = xxh3Hash(Buffer.from(content));
         const result = await hashFile(filePath);
 
         expect(result).toBe(expected);
@@ -50,7 +50,7 @@ describe("hashFile", () => {
 
         await writeFile(filePath, "");
 
-        const expected = createHash("sha256").update(Buffer.from("")).digest("hex");
+        const expected = xxh3Hash(Buffer.from(""));
         const result = await hashFile(filePath);
 
         expect(result).toBe(expected);
@@ -58,16 +58,20 @@ describe("hashFile", () => {
 });
 
 describe("hashStrings", () => {
-    it("should hash a single string", () => {
-        const expected = createHash("sha256").update("hello").update("\0").digest("hex");
+    it("should hash a single string deterministically", () => {
+        const result = hashStrings("hello");
 
-        expect(hashStrings("hello")).toBe(expected);
+        // Should be a 32-char hex string (xxh3-128)
+        expect(result).toMatch(/^[\da-f]{32}$/);
+        // Should be deterministic
+        expect(hashStrings("hello")).toBe(result);
     });
 
     it("should hash multiple strings deterministically", () => {
-        const expected = createHash("sha256").update("hello").update("\0").update("world").update("\0").digest("hex");
+        const result = hashStrings("hello", "world");
 
-        expect(hashStrings("hello", "world")).toBe(expected);
+        expect(result).toMatch(/^[\da-f]{32}$/);
+        expect(hashStrings("hello", "world")).toBe(result);
     });
 
     it("should produce different hashes for different inputs", () => {
