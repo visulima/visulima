@@ -63,16 +63,18 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
@@ -91,7 +93,7 @@ jobs:
 
             - name: "Install Zig (cross-compilation)"
               if: "${{ matrix.settings.cross == '-x' }}"
-              uses: "mlugg/setup-zig@v2"
+              uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
               with:
                   version: "0.14.1"
 
@@ -124,16 +126,18 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native-test"
@@ -159,7 +163,7 @@ jobs:
         runs-on: "ubuntu-24.04"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
               with:
                   egress-policy: "audit"
 

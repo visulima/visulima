@@ -30,12 +30,14 @@ jobs:
         runs-on: "ubuntu-latest"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
 
             - name: "Install Rust toolchain"
               uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
