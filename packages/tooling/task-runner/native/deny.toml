@@ -2,7 +2,7 @@
 yanked = "warn"
 
 [licenses]
-unlicensed = "deny"
+version = 2
 allow = [
     "MIT",
     "Apache-2.0",
@@ -10,6 +10,7 @@ allow = [
     "BSD-2-Clause",
     "BSD-3-Clause",
     "Unicode-3.0",
+    "BSL-1.0",
 ]
 
 [bans]
