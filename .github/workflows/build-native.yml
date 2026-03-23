@@ -149,9 +149,6 @@ jobs:
                   name: "bindings-${{ matrix.settings.target }}"
                   path: "packages/tooling/task-runner"
 
-            - name: "Build TypeScript"
-              run: "pnpm build"
-
             - name: "Run native binding tests"
               run: "pnpm vitest run __tests__/native-binding.test.ts __tests__/xxh3.test.ts"
 
@@ -168,6 +165,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Check for failures"
+              working-directory: "."
               run: |
                   if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
                     echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
