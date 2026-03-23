@@ -63,14 +63,14 @@ jobs:
                   run-signatures-audit: false
 
             - name: "Download native build artifacts"
-              uses: "dawidd6/action-download-artifact@80620a5d27ce0ae443f0b56270f7e99e1659f5cf" # v2.28.0
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
               with:
                   workflow: "build-native.yml"
                   commit: "${{ github.sha }}"
                   name: "bindings-(.+)"
                   name_is_regexp: true
                   path: "packages/tooling/task-runner"
-                  if_no_artifact_found: "error"
+                  if_no_artifact_found: "fail"
                   allow_forks: false
 
             - name: "Flatten native binding artifacts"
