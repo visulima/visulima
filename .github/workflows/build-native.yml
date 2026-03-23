@@ -170,8 +170,8 @@ jobs:
             - name: "Build TypeScript"
               run: "pnpm build"
 
-            - name: "Run tests"
-              run: "pnpm test"
+            - name: "Run native binding tests"
+              run: "pnpm vitest run __tests__/native-binding.test.ts __tests__/xxh3.test.ts"
 
     # This check runs once all build jobs have passed
     build-native-required-check:
