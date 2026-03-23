@@ -28,11 +28,12 @@ describe("FileAccessTracker", () => {
     });
 
     describe("isSupported", () => {
-        it("should return true on Linux", () => {
+        it("should return false on non-Linux platforms", () => {
             const tracker = new FileAccessTracker(workspaceRoot);
 
-            // We're running on Linux in this environment
-            expect(tracker.isSupported()).toBe(process.platform === "linux");
+            if (process.platform !== "linux") {
+                expect(tracker.isSupported()).toBe(false);
+            }
         });
     });
 

@@ -1,10 +1,29 @@
 import type { ChildProcess } from "node:child_process";
-import { exec } from "node:child_process";
+import { exec, execFileSync } from "node:child_process";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
 import { join, resolve } from "@visulima/path";
 
 import { uniqueId } from "./utils";
+
+/**
+ * Lazily checks whether strace is available on the current system.
+ * Caches the result after the first call.
+ */
+let straceAvailable: boolean | undefined;
+
+const isStraceAvailable = (): boolean => {
+    if (straceAvailable === undefined) {
+        try {
+            execFileSync("strace", ["-V"], { stdio: "ignore" });
+            straceAvailable = true;
+        } catch {
+            straceAvailable = false;
+        }
+    }
+
+    return straceAvailable;
+};
 
 /**
  * Represents a file access recorded during task execution.
@@ -71,7 +90,7 @@ export class FileAccessTracker {
      */
     // eslint-disable-next-line class-methods-use-this
     public isSupported(): boolean {
-        return platform() === "linux";
+        return platform() === "linux" && isStraceAvailable();
     }
 
     /**

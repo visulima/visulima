@@ -1,4 +1,3 @@
-use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use xxhash_rust::xxh3::xxh3_128;
 use std::collections::BTreeMap;

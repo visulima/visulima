@@ -44,8 +44,10 @@ describe("TrackedTaskExecutor", () => {
     });
 
     describe("isStraceSupported", () => {
-        it("should return true on Linux", () => {
-            expect(executor.isStraceSupported).toBe(process.platform === "linux");
+        it("should return false on non-Linux platforms", () => {
+            if (process.platform !== "linux") {
+                expect(executor.isStraceSupported).toBe(false);
+            }
         });
     });
 
@@ -86,7 +88,7 @@ describe("TrackedTaskExecutor", () => {
         });
 
         it("should track file accesses on Linux", async () => {
-            if (process.platform !== "linux") {
+            if (!executor.isStraceSupported) {
                 return;
             }
 

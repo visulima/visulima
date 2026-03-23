@@ -168,7 +168,7 @@ pub fn hash_strings(inputs: Vec<String>) -> String {
     hash_bytes(&combined)
 }
 
-mod hex {
+pub(crate) mod hex {
     const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";
 
     pub fn encode(bytes: impl AsRef<[u8]>) -> String {
