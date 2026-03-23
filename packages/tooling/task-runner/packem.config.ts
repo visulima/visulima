@@ -15,4 +15,21 @@ export default defineConfig({
     },
     transformer,
     isolatedDeclarationTransformer,
+    cjsInterop: true,
+    validation: {
+        dependencies: {
+            unused: {
+                exclude: [
+                    "@visulima/task-runner-binding-darwin-arm64",
+                    "@visulima/task-runner-binding-darwin-x64",
+                    "@visulima/task-runner-binding-linux-arm64-gnu",
+                    "@visulima/task-runner-binding-linux-arm64-musl",
+                    "@visulima/task-runner-binding-linux-x64-gnu",
+                    "@visulima/task-runner-binding-linux-x64-musl",
+                    "@visulima/task-runner-binding-win32-arm64-msvc",
+                    "@visulima/task-runner-binding-win32-x64-msvc",
+                ],
+            },
+        },
+    },
 }) as BuildConfig;
