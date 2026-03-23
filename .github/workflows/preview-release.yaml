@@ -61,6 +61,22 @@ jobs:
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
 
+            - name: "Download native build artifacts"
+              uses: "dawidd6/action-download-artifact@80620a5d27ce0ae443f0b56270f7e99e1659f5cf" # v2.28.0
+              with:
+                  workflow: "build-native.yml"
+                  pr: "${{ github.event.pull_request.number }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "packages/tooling/task-runner"
+                  if_no_artifact_found: "warn"
+                  allow_forks: false
+
+            - name: "Move native artifacts to platform packages"
+              run: "npx napi artifacts --output-dir . --npm-dir npm"
+              working-directory: "packages/tooling/task-runner"
+              continue-on-error: true
+
             - name: "Build"
               shell: "bash"
               run: |
