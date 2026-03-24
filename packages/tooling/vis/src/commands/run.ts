@@ -104,8 +104,7 @@ const runCommand: Command = {
         const target = argument[0];
 
         if (!target) {
-            logger.error("Missing target. Usage: vis run <target>");
-            process.exit(1);
+            throw new Error("Missing target. Usage: vis run <target>");
         }
 
         const workspaceRoot = findWorkspaceRoot(cwd());
@@ -120,8 +119,7 @@ const runCommand: Command = {
             projectNames = projectNames.filter((name) => requested.includes(name));
 
             if (projectNames.length === 0) {
-                logger.error(`No matching projects found for: ${options.projects}`);
-                process.exit(1);
+                throw new Error(`No matching projects found for: ${String(options.projects)}`);
             }
         }
 
@@ -166,12 +164,12 @@ const runCommand: Command = {
         logger.info(`vis run ${target}  (${taskCount} task${taskCount === 1 ? "" : "s"})`);
 
         const runnerOptions: TaskRunnerOptions = {
-            ...config.taskRunnerOptions,
             cacheDirectory: options.cacheDir as string | undefined,
+            dryRun: options.dryRun as boolean,
             parallel: (options.parallel as number) ?? 3,
             skipNxCache: !options.cache,
-            dryRun: options.dryRun as boolean,
             summarize: options.summarize as boolean,
+            ...config.taskRunnerOptions,
         };
 
         const lifeCycle = new ConsoleLifeCycle();
@@ -200,8 +198,7 @@ const runCommand: Command = {
         }
 
         if (hasFailure) {
-            logger.error("Some tasks failed.");
-            process.exit(1);
+            throw new Error("Some tasks failed.");
         }
 
         logger.info("All tasks completed successfully.");

@@ -27,12 +27,6 @@ const affectedCommand: Command = {
             description: "Git head ref for comparison",
         },
         {
-            name: "projects",
-            alias: "p",
-            type: String,
-            description: "Comma-separated list of projects to filter",
-        },
-        {
             name: "parallel",
             type: Number,
             defaultValue: 3,
@@ -55,12 +49,11 @@ const affectedCommand: Command = {
         ["vis affected build", "Run build on affected projects"],
         ["vis affected test --base=main", "Run tests on projects changed since main"],
     ],
-    execute: async ({ argument, logger, runtime }) => {
+    execute: async ({ argument, logger, options, runtime }) => {
         const target = argument[0];
 
         if (!target) {
-            logger.error("Missing target. Usage: vis affected <target>");
-            process.exit(1);
+            throw new Error("Missing target. Usage: vis affected <target>");
         }
 
         const workspaceRoot = findWorkspaceRoot(cwd());
@@ -68,8 +61,8 @@ const affectedCommand: Command = {
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         const affectedOptions: AffectedOptions = {
-            base: "HEAD~1",
-            head: "HEAD",
+            base: options.base as string,
+            head: options.head as string,
             projectGraph,
             projects: workspace.projects,
             workspaceRoot,
@@ -91,10 +84,22 @@ const affectedCommand: Command = {
 
         logger.info(`Affected projects: ${result.affectedProjects.join(", ")}`);
 
-        // Delegate to run command with affected projects as filter
-        await runtime.runCommand("run", {
-            argv: [target, `--projects=${result.affectedProjects.join(",")}`],
-        });
+        // Forward relevant options to the run command
+        const argv: string[] = [target, `--projects=${result.affectedProjects.join(",")}`];
+
+        if (options.parallel !== undefined) {
+            argv.push(`--parallel=${String(options.parallel)}`);
+        }
+
+        if (!options.cache) {
+            argv.push("--no-cache");
+        }
+
+        if (options.dryRun) {
+            argv.push("--dry-run");
+        }
+
+        await runtime.runCommand("run", { argv });
     },
 };
 

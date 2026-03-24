@@ -167,13 +167,8 @@ const createTargetsFromScripts = (
         const defaults = targetDefaults?.[scriptName];
 
         targets[scriptName] = {
-            cache: defaults?.cache,
-            command: scriptCommand,
-            dependsOn: defaults?.dependsOn,
-            inputs: defaults?.inputs,
-            outputs: defaults?.outputs,
-            parallelism: defaults?.parallelism,
             ...defaults,
+            command: scriptCommand,
         };
     }
 
