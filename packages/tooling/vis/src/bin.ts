@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 
-import { exit, stderr } from "node:process";
+import { createCerebro } from "./cli";
 
-import { run } from "./cli";
+const cli = createCerebro();
 
-run().catch((error: unknown) => {
-    stderr.write(`\nvis: ${error instanceof Error ? error.message : String(error)}\n`);
-    exit(1);
-});
+await cli.run();

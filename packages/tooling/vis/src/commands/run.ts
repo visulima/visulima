@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
-import { cwd, stderr, stdout } from "node:process";
+import { cwd } from "node:process";
 
+import type { Command } from "@visulima/cerebro";
 import {
     ConsoleLifeCycle,
     createTaskGraph,
@@ -22,7 +23,6 @@ const createShellExecutor = (workspaceRoot: string) => {
         const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
         const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
 
-        // Get the command from task target
         const command = task.overrides["command"] as string | undefined;
 
         if (!command) {
@@ -49,123 +49,163 @@ const createShellExecutor = (workspaceRoot: string) => {
     };
 };
 
-/**
- * Implements the `vis run <target>` command.
- */
-const runCommand = async (positionals: string[], flags: Record<string, string | boolean>): Promise<void> => {
-    const target = positionals[0];
+const runCommand: Command = {
+    name: "run",
+    description: "Run a target across workspace projects",
+    argument: {
+        name: "target",
+        type: String,
+        description: "The target to run (e.g., build, test, lint)",
+    },
+    options: [
+        {
+            name: "projects",
+            alias: "p",
+            type: String,
+            description: "Comma-separated list of projects to run",
+        },
+        {
+            name: "parallel",
+            type: Number,
+            defaultValue: 3,
+            description: "Maximum number of parallel tasks",
+        },
+        {
+            name: "cache",
+            type: Boolean,
+            defaultValue: true,
+            description: "Enable caching (use --no-cache to disable)",
+        },
+        {
+            name: "cache-dir",
+            type: String,
+            description: "Custom cache directory",
+        },
+        {
+            name: "dry-run",
+            type: Boolean,
+            defaultValue: false,
+            description: "Show what would run without executing",
+        },
+        {
+            name: "summarize",
+            type: Boolean,
+            defaultValue: false,
+            description: "Generate a run summary after execution",
+        },
+    ],
+    examples: [
+        ["vis run build", "Run build on all projects"],
+        ["vis run test --projects=pkg-a,pkg-b", "Run test on specific projects"],
+        ["vis run build --parallel=5", "Run build with 5 parallel tasks"],
+        ["vis run build --no-cache", "Run build without caching"],
+    ],
+    execute: async ({ argument, logger, options }) => {
+        const target = argument[0];
 
-    if (!target) {
-        stderr.write("Error: Missing target. Usage: vis run <target>\n");
-        process.exit(1);
-    }
-
-    const workspaceRoot = findWorkspaceRoot(cwd());
-    const { config, workspace } = discoverWorkspace(workspaceRoot);
-    const projectGraph = buildProjectGraph(workspaceRoot, workspace);
-
-    // Determine which projects to run
-    let projectNames = Object.keys(workspace.projects);
-
-    if (typeof flags["projects"] === "string") {
-        const requestedProjects = flags["projects"].split(",").map((p) => p.trim());
-
-        projectNames = projectNames.filter((name) => requestedProjects.includes(name));
-
-        if (projectNames.length === 0) {
-            stderr.write(`Error: No matching projects found for: ${flags["projects"]}\n`);
+        if (!target) {
+            logger.error("Missing target. Usage: vis run <target>");
             process.exit(1);
         }
-    }
 
-    // Filter to projects that have this target
-    const projectsWithTarget = projectNames.filter((name) => {
-        const project = workspace.projects[name];
+        const workspaceRoot = findWorkspaceRoot(cwd());
+        const { config, workspace } = discoverWorkspace(workspaceRoot);
+        const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
-        return project?.targets?.[target] !== undefined;
-    });
+        let projectNames = Object.keys(workspace.projects);
 
-    if (projectsWithTarget.length === 0) {
-        stdout.write(`No projects have the "${target}" target.\n`);
+        if (options.projects) {
+            const requested = (options.projects as string).split(",").map((p: string) => p.trim());
 
-        return;
-    }
+            projectNames = projectNames.filter((name) => requested.includes(name));
 
-    // Create initial tasks
-    const initialTasks: Task[] = projectsWithTarget.map((projectName) => {
-        const project = workspace.projects[projectName];
-        const targetConfig = project?.targets?.[target];
-        const taskTarget: TaskTarget = { project: projectName, target };
-        const taskId = `${projectName}:${target}`;
-
-        return {
-            cache: targetConfig?.cache ?? config.targetDefaults?.[target]?.cache,
-            id: taskId,
-            outputs: targetConfig?.outputs ?? config.targetDefaults?.[target]?.outputs ?? [],
-            overrides: { command: targetConfig?.command },
-            parallelism: targetConfig?.parallelism ?? config.targetDefaults?.[target]?.parallelism,
-            projectRoot: project?.root,
-            target: taskTarget,
-        };
-    });
-
-    // Build the task graph
-    const taskGraph = createTaskGraph(initialTasks, {
-        projectGraph,
-        targetDefaults: config.targetDefaults,
-        workspace,
-    });
-
-    const taskCount = Object.keys(taskGraph.tasks).length;
-    const startTime = Date.now();
-
-    stdout.write(`\n  vis run ${target}  (${taskCount} task${taskCount === 1 ? "" : "s"})\n\n`);
-
-    // Build task runner options
-    const runnerOptions: TaskRunnerOptions = {
-        ...config.taskRunnerOptions,
-        parallel: typeof flags["parallel"] === "string" ? Number.parseInt(flags["parallel"], 10) : 3,
-        skipNxCache: flags["cache"] === false,
-        dryRun: flags["dry-run"] === true,
-        summarize: flags["summarize"] === true,
-    };
-
-    // Create lifecycle
-    const lifeCycle = new ConsoleLifeCycle();
-
-    // Run tasks
-    const taskExecutor = createShellExecutor(workspaceRoot);
-
-    const results = await defaultTaskRunner(initialTasks, runnerOptions, {
-        lifeCycle,
-        projectGraph,
-        taskExecutor,
-        taskGraph,
-        workspaceRoot,
-    });
-
-    // Write summary if requested
-    if (flags["summarize"] === true) {
-        const summary = generateRunSummary(results, taskGraph, startTime);
-
-        await writeRunSummary(summary, workspaceRoot);
-    }
-
-    // Check for failures
-    let hasFailure = false;
-
-    for (const [, result] of results) {
-        if (result.status === "failure") {
-            hasFailure = true;
+            if (projectNames.length === 0) {
+                logger.error(`No matching projects found for: ${options.projects}`);
+                process.exit(1);
+            }
         }
-    }
 
-    if (hasFailure) {
-        stderr.write("\nSome tasks failed.\n");
-        process.exit(1);
-    }
+        const projectsWithTarget = projectNames.filter((name) => {
+            const project = workspace.projects[name];
 
-    stdout.write("\nAll tasks completed successfully.\n");
+            return project?.targets?.[target] !== undefined;
+        });
+
+        if (projectsWithTarget.length === 0) {
+            logger.info(`No projects have the "${target}" target.`);
+
+            return;
+        }
+
+        const initialTasks: Task[] = projectsWithTarget.map((projectName) => {
+            const project = workspace.projects[projectName];
+            const targetConfig = project?.targets?.[target];
+            const taskTarget: TaskTarget = { project: projectName, target };
+            const taskId = `${projectName}:${target}`;
+
+            return {
+                cache: targetConfig?.cache ?? config.targetDefaults?.[target]?.cache,
+                id: taskId,
+                outputs: targetConfig?.outputs ?? config.targetDefaults?.[target]?.outputs ?? [],
+                overrides: { command: targetConfig?.command },
+                parallelism: targetConfig?.parallelism ?? config.targetDefaults?.[target]?.parallelism,
+                projectRoot: project?.root,
+                target: taskTarget,
+            };
+        });
+
+        const taskGraph = createTaskGraph(initialTasks, {
+            projectGraph,
+            targetDefaults: config.targetDefaults,
+            workspace,
+        });
+
+        const taskCount = Object.keys(taskGraph.tasks).length;
+        const startTime = Date.now();
+
+        logger.info(`vis run ${target}  (${taskCount} task${taskCount === 1 ? "" : "s"})`);
+
+        const runnerOptions: TaskRunnerOptions = {
+            ...config.taskRunnerOptions,
+            cacheDirectory: options.cacheDir as string | undefined,
+            parallel: (options.parallel as number) ?? 3,
+            skipNxCache: !options.cache,
+            dryRun: options.dryRun as boolean,
+            summarize: options.summarize as boolean,
+        };
+
+        const lifeCycle = new ConsoleLifeCycle();
+        const taskExecutor = createShellExecutor(workspaceRoot);
+
+        const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+            lifeCycle,
+            projectGraph,
+            taskExecutor,
+            taskGraph,
+            workspaceRoot,
+        });
+
+        if (options.summarize) {
+            const summary = generateRunSummary(results, taskGraph, startTime);
+
+            await writeRunSummary(summary, workspaceRoot);
+        }
+
+        let hasFailure = false;
+
+        for (const [, result] of results) {
+            if (result.status === "failure") {
+                hasFailure = true;
+            }
+        }
+
+        if (hasFailure) {
+            logger.error("Some tasks failed.");
+            process.exit(1);
+        }
+
+        logger.info("All tasks completed successfully.");
+    },
 };
 
 export { runCommand };

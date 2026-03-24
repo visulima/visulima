@@ -1,6 +1,5 @@
 // CLI
-export { parseArgs, run } from "./cli";
-export type { ParsedArgs } from "./cli";
+export { createCerebro } from "./cli";
 
 // Workspace discovery
 export { buildProjectGraph, discoverWorkspace, findWorkspaceRoot, readVisConfig, resolveWorkspacePatterns } from "./workspace";

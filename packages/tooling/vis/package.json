@@ -72,8 +72,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/task-runner": "workspace:*",
-        "@visulima/path": "workspace:*"
+        "@visulima/cerebro": "workspace:*",
+        "@visulima/path": "workspace:*",
+        "@visulima/task-runner": "workspace:*"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
