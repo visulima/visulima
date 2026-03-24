@@ -2,98 +2,51 @@ import { execSync } from "node:child_process";
 import { cwd } from "node:process";
 
 import type { Command } from "@visulima/cerebro";
-import {
-    ConsoleLifeCycle,
-    createTaskGraph,
-    defaultTaskRunner,
-    generateRunSummary,
-    writeRunSummary,
-    type Task,
-    type TaskRunnerOptions,
-    type TaskTarget,
-} from "@visulima/task-runner";
+import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
+import { ConsoleLifeCycle, createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace, findWorkspaceRoot } from "../workspace";
 
 /**
  * Creates a task executor that runs commands via shell.
  */
-const createShellExecutor = (workspaceRoot: string) => {
-    return async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
-        const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
-        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+const createShellExecutor = (workspaceRoot: string) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
+    const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
+    const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
 
-        const command = task.overrides["command"] as string | undefined;
+    const command = task.overrides["command"] as string | undefined;
 
-        if (!command) {
-            return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
-        }
+    if (!command) {
+        return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
+    }
 
-        try {
-            const output = execSync(command, {
-                cwd: resolvedCwd,
-                encoding: "utf8",
-                env: { ...process.env, ...options.env },
-                stdio: "pipe",
-            });
+    try {
+        // eslint-disable-next-line sonarjs/os-command -- command sourced from package.json scripts, not user input
+        const output = execSync(command, {
+            cwd: resolvedCwd,
+            encoding: "utf8",
+            env: { ...process.env, ...options.env },
+            stdio: "pipe",
+        });
 
-            return { code: 0, terminalOutput: output };
-        } catch (error: unknown) {
-            const execError = error as { status?: number; stderr?: string; stdout?: string };
+        return { code: 0, terminalOutput: output };
+    } catch (error: unknown) {
+        const execError = error as { status?: number; stderr?: string; stdout?: string };
 
-            return {
-                code: execError.status ?? 1,
-                terminalOutput: (execError.stdout ?? "") + (execError.stderr ?? ""),
-            };
-        }
-    };
+        return {
+            code: execError.status ?? 1,
+            terminalOutput: (execError.stdout ?? "") + (execError.stderr ?? ""),
+        };
+    }
 };
 
-const runCommand: Command = {
-    name: "run",
-    description: "Run a target across workspace projects",
+const run: Command = {
     argument: {
+        description: "The target to run (e.g., build, test, lint)",
         name: "target",
         type: String,
-        description: "The target to run (e.g., build, test, lint)",
     },
-    options: [
-        {
-            name: "projects",
-            alias: "p",
-            type: String,
-            description: "Comma-separated list of projects to run",
-        },
-        {
-            name: "parallel",
-            type: Number,
-            defaultValue: 3,
-            description: "Maximum number of parallel tasks",
-        },
-        {
-            name: "cache",
-            type: Boolean,
-            defaultValue: true,
-            description: "Enable caching (use --no-cache to disable)",
-        },
-        {
-            name: "cache-dir",
-            type: String,
-            description: "Custom cache directory",
-        },
-        {
-            name: "dry-run",
-            type: Boolean,
-            defaultValue: false,
-            description: "Show what would run without executing",
-        },
-        {
-            name: "summarize",
-            type: Boolean,
-            defaultValue: false,
-            description: "Generate a run summary after execution",
-        },
-    ],
+    description: "Run a target across workspace projects",
     examples: [
         ["vis run build", "Run build on all projects"],
         ["vis run test --projects=pkg-a,pkg-b", "Run test on specific projects"],
@@ -114,9 +67,9 @@ const runCommand: Command = {
         let projectNames = Object.keys(workspace.projects);
 
         if (options.projects) {
-            const requested = (options.projects as string).split(",").map((p: string) => p.trim());
+            const requested = new Set((options.projects as string).split(",").map((p: string) => p.trim()));
 
-            projectNames = projectNames.filter((name) => requested.includes(name));
+            projectNames = projectNames.filter((name) => requested.has(name));
 
             if (projectNames.length === 0) {
                 throw new Error(`No matching projects found for: ${String(options.projects)}`);
@@ -203,6 +156,44 @@ const runCommand: Command = {
 
         logger.info("All tasks completed successfully.");
     },
+    name: "run",
+    options: [
+        {
+            alias: "p",
+            description: "Comma-separated list of projects to run",
+            name: "projects",
+            type: String,
+        },
+        {
+            defaultValue: 3,
+            description: "Maximum number of parallel tasks",
+            name: "parallel",
+            type: Number,
+        },
+        {
+            defaultValue: true,
+            description: "Enable caching (use --no-cache to disable)",
+            name: "cache",
+            type: Boolean,
+        },
+        {
+            description: "Custom cache directory",
+            name: "cache-dir",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Show what would run without executing",
+            name: "dry-run",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Generate a run summary after execution",
+            name: "summarize",
+            type: Boolean,
+        },
+    ],
 };
 
-export { runCommand };
+export default run;

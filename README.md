@@ -116,6 +116,7 @@ Built with TypeScript and organized using Nx, Visulima provides modular, well-te
 | [@visulima/prisma-dmmf-transformer](packages/tooling/prisma-dmmf-transformer/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fprisma-dmmf-transformer?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fprisma-dmmf-transformer) | A generator for Prisma to generate a valid JSON Schema v7. |
 | [@visulima/task-runner](packages/tooling/task-runner/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftask-runner?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftask-runner) | A task runner with caching support for monorepo workspaces |
 | [@visulima/tsconfig](packages/tooling/tsconfig/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftsconfig?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftsconfig) | Find and/or parse the tsconfig.json file from a directory path. |
+| [@visulima/vis](packages/tooling/vis/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fvis?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fvis) | A CLI task runner for monorepo workspaces, powered by @visulima/task-runner |
 <!-- END_TABLE_PLACEHOLDER -->
 
 ## Getting Started

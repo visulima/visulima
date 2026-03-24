@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+
 import { join, resolve } from "@visulima/path";
 import type {
     ProjectConfiguration,
@@ -25,6 +26,12 @@ interface VisConfig {
     taskRunnerOptions?: Record<string, unknown>;
 }
 
+// eslint-disable-next-line sonarjs/slow-regex
+const TRAILING_SLASH_RE = /\/+$/;
+const DOUBLE_GLOB_SUFFIX_RE = /\/\*\*$/;
+const NESTED_GLOB_SUFFIX_RE = /\/\*\/\*$/;
+const QUOTES_RE = /^['"]|['"]$/g;
+
 /**
  * Reads and parses a JSON file.
  */
@@ -39,6 +46,73 @@ const readJsonFile = <T>(filePath: string): T | undefined => {
 };
 
 /**
+ * Recursively scans a directory for packages (directories containing package.json).
+ */
+const scanDirectoryRecursive = (directory: string, relativePath: string, base: string, results: string[]): void => {
+    for (const entry of readdirSync(directory)) {
+        if (entry === "node_modules" || entry === ".git") {
+            continue;
+        }
+
+        const fullPath = join(directory, entry);
+        const entryRelativePath = relativePath ? `${relativePath}/${entry}` : entry;
+
+        if (statSync(fullPath).isDirectory()) {
+            if (existsSync(join(fullPath, "package.json"))) {
+                results.push(`${base}/${entryRelativePath}`);
+            }
+
+            scanDirectoryRecursive(fullPath, entryRelativePath, base, results);
+        }
+    }
+};
+
+/**
+ * Resolves a simple glob pattern like "packages/*" to directories containing package.json.
+ */
+const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+    const base = cleanPattern.slice(0, -2);
+    const baseDirectory = resolve(workspaceRoot, base);
+
+    if (!existsSync(baseDirectory)) {
+        return;
+    }
+
+    for (const entry of readdirSync(baseDirectory)) {
+        const fullPath = join(baseDirectory, entry);
+
+        if (statSync(fullPath).isDirectory() && existsSync(join(fullPath, "package.json"))) {
+            results.push(join(base, entry));
+        }
+    }
+};
+
+/**
+ * Resolves a double glob pattern like "packages/**" or "packages/ * / *" to directories containing package.json.
+ */
+const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+    const base = cleanPattern.replace(DOUBLE_GLOB_SUFFIX_RE, "").replace(NESTED_GLOB_SUFFIX_RE, "");
+    const baseDirectory = resolve(workspaceRoot, base);
+
+    if (!existsSync(baseDirectory)) {
+        return;
+    }
+
+    scanDirectoryRecursive(baseDirectory, "", base, results);
+};
+
+/**
+ * Resolves an exact directory pattern.
+ */
+const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
+    const fullPath = resolve(workspaceRoot, cleanPattern);
+
+    if (existsSync(fullPath) && existsSync(join(fullPath, "package.json"))) {
+        results.push(cleanPattern);
+    }
+};
+
+/**
  * Resolves glob-like workspace patterns to actual directories.
  * Supports simple patterns like "packages/*" and "packages/**".
  */
@@ -46,64 +120,18 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
     const directories: string[] = [];
 
     for (const pattern of patterns) {
-        // Remove trailing slash
-        const cleanPattern = pattern.replace(/\/+$/, "");
+        const cleanPattern = pattern.replace(TRAILING_SLASH_RE, "");
 
-        // Skip negation patterns
         if (cleanPattern.startsWith("!")) {
             continue;
         }
 
-        // Handle simple glob: "packages/*"
         if (cleanPattern.endsWith("/*")) {
-            const base = cleanPattern.slice(0, -2);
-            const baseDir = resolve(workspaceRoot, base);
-
-            if (existsSync(baseDir)) {
-                for (const entry of readdirSync(baseDir)) {
-                    const fullPath = join(baseDir, entry);
-
-                    if (statSync(fullPath).isDirectory() && existsSync(join(fullPath, "package.json"))) {
-                        directories.push(join(base, entry));
-                    }
-                }
-            }
-        }
-        // Handle double glob: "packages/**" or "packages/*/*"
-        else if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
-            const base = cleanPattern.replace(/\/\*\*$/, "").replace(/\/\*\/\*$/, "");
-            const baseDir = resolve(workspaceRoot, base);
-
-            if (existsSync(baseDir)) {
-                const scanDir = (dir: string, relativePath: string): void => {
-                    for (const entry of readdirSync(dir)) {
-                        if (entry === "node_modules" || entry === ".git") {
-                            continue;
-                        }
-
-                        const fullPath = join(dir, entry);
-                        const relPath = relativePath ? `${relativePath}/${entry}` : entry;
-
-                        if (statSync(fullPath).isDirectory()) {
-                            if (existsSync(join(fullPath, "package.json"))) {
-                                directories.push(`${base}/${relPath}`);
-                            }
-
-                            scanDir(fullPath, relPath);
-                        }
-                    }
-                };
-
-                scanDir(baseDir, "");
-            }
-        }
-        // Exact directory
-        else {
-            const fullPath = resolve(workspaceRoot, cleanPattern);
-
-            if (existsSync(fullPath) && existsSync(join(fullPath, "package.json"))) {
-                directories.push(cleanPattern);
-            }
+            resolveSimpleGlob(workspaceRoot, cleanPattern, directories);
+        } else if (cleanPattern.endsWith("/**") || cleanPattern.endsWith("/*/*")) {
+            resolveDoubleGlob(workspaceRoot, cleanPattern, directories);
+        } else {
+            resolveExactDirectory(workspaceRoot, cleanPattern, directories);
         }
     }
 
@@ -134,8 +162,7 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
 
         if (inPackages) {
             if (trimmed.startsWith("- ")) {
-                // Remove quotes if present
-                const pattern = trimmed.slice(2).replace(/^['"]|['"]$/g, "");
+                const pattern = trimmed.slice(2).replaceAll(QUOTES_RE, "");
 
                 patterns.push(pattern);
             } else if (trimmed && !trimmed.startsWith("#")) {
@@ -150,9 +177,7 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
 /**
  * Reads vis.json configuration file from the workspace root.
  */
-const readVisConfig = (workspaceRoot: string): VisConfig => {
-    return readJsonFile<VisConfig>(join(workspaceRoot, "vis.json")) ?? {};
-};
+const readVisConfig = (workspaceRoot: string): VisConfig => readJsonFile<VisConfig>(join(workspaceRoot, "vis.json")) ?? {};
 
 /**
  * Creates script-based targets from package.json scripts.
@@ -199,10 +224,10 @@ const discoverWorkspace = (workspaceRoot: string): { config: VisConfig; workspac
     }
 
     // Resolve patterns to actual project directories
-    const projectDirs = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
+    const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
 
-    for (const projectDir of projectDirs) {
-        const packageJsonPath = join(workspaceRoot, projectDir, "package.json");
+    for (const projectDirectory of projectDirectories) {
+        const packageJsonPath = join(workspaceRoot, projectDirectory, "package.json");
         const pkg = readJsonFile<PackageJson>(packageJsonPath);
 
         if (!pkg?.name) {
@@ -210,15 +235,15 @@ const discoverWorkspace = (workspaceRoot: string): { config: VisConfig; workspac
         }
 
         // Check for project.json for additional configuration
-        const projectJsonPath = join(workspaceRoot, projectDir, "project.json");
+        const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
         const projectJson = readJsonFile<{ projectType?: "application" | "library"; sourceRoot?: string; tags?: string[] }>(projectJsonPath);
 
         const targets = pkg.scripts ? createTargetsFromScripts(pkg.scripts, config.targetDefaults) : {};
 
         projects[pkg.name] = {
             projectType: projectJson?.projectType ?? "library",
-            root: projectDir,
-            sourceRoot: projectJson?.sourceRoot ?? `${projectDir}/src`,
+            root: projectDirectory,
+            sourceRoot: projectJson?.sourceRoot ?? `${projectDirectory}/src`,
             tags: projectJson?.tags,
             targets,
         };
@@ -274,8 +299,8 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 /**
  * Finds the workspace root by searching up for pnpm-workspace.yaml or a root package.json with workspaces.
  */
-const findWorkspaceRoot = (startDir: string): string => {
-    let current = resolve(startDir);
+const findWorkspaceRoot = (startDirectory: string): string => {
+    let current = resolve(startDirectory);
 
     while (current !== "/") {
         if (existsSync(join(current, "pnpm-workspace.yaml"))) {

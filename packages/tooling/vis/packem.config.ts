@@ -17,4 +17,9 @@ export default defineConfig({
     transformer,
     isolatedDeclarationTransformer,
     cjsInterop: true,
+    validation: {
+        packageJson: {
+            exports: false,
+        }
+    }
 }) as BuildConfig;

@@ -84,14 +84,14 @@ vis run lint --dry-run
 vis run build --summarize
 ```
 
-| Option | Alias | Default | Description |
-|--------|-------|---------|-------------|
-| `--projects` | `-p` | all | Comma-separated list of projects to run |
-| `--parallel` | | `3` | Maximum number of parallel tasks |
-| `--cache` | | `true` | Enable caching (`--no-cache` to disable) |
-| `--cache-dir` | | | Custom cache directory |
-| `--dry-run` | | `false` | Show what would run without executing |
-| `--summarize` | | `false` | Generate a JSON run summary |
+| Option        | Alias | Default | Description                              |
+| ------------- | ----- | ------- | ---------------------------------------- |
+| `--projects`  | `-p`  | all     | Comma-separated list of projects to run  |
+| `--parallel`  |       | `3`     | Maximum number of parallel tasks         |
+| `--cache`     |       | `true`  | Enable caching (`--no-cache` to disable) |
+| `--cache-dir` |       |         | Custom cache directory                   |
+| `--dry-run`   |       | `false` | Show what would run without executing    |
+| `--summarize` |       | `false` | Generate a JSON run summary              |
 
 ### `vis affected <target>`
 
@@ -103,13 +103,13 @@ vis affected test --base=main
 vis affected lint --base=HEAD~5 --head=HEAD
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--base` | `HEAD~1` | Git base ref for comparison |
-| `--head` | `HEAD` | Git head ref for comparison |
-| `--parallel` | `3` | Maximum number of parallel tasks |
-| `--cache` | `true` | Enable caching (`--no-cache` to disable) |
-| `--dry-run` | `false` | Show what would run without executing |
+| Option       | Default  | Description                              |
+| ------------ | -------- | ---------------------------------------- |
+| `--base`     | `HEAD~1` | Git base ref for comparison              |
+| `--head`     | `HEAD`   | Git head ref for comparison              |
+| `--parallel` | `3`      | Maximum number of parallel tasks         |
+| `--cache`    | `true`   | Enable caching (`--no-cache` to disable) |
+| `--dry-run`  | `false`  | Show what would run without executing    |
 
 ### `vis graph`
 
@@ -122,10 +122,10 @@ vis graph --format=json --output=graph.json
 vis graph --format=html --output=graph.html
 ```
 
-| Option | Alias | Default | Description |
-|--------|-------|---------|-------------|
-| `--format` | `-f` | `ascii` | Output format: `ascii`, `dot`, `json`, `html` |
-| `--output` | `-o` | stdout | Write output to file instead of stdout |
+| Option     | Alias | Default | Description                                   |
+| ---------- | ----- | ------- | --------------------------------------------- |
+| `--format` | `-f`  | `ascii` | Output format: `ascii`, `dot`, `json`, `html` |
+| `--output` | `-o`  | stdout  | Write output to file instead of stdout        |
 
 ## Configuration
 
@@ -164,13 +164,13 @@ Create a `vis.json` file in your workspace root to configure target defaults and
 
 Target defaults apply to all projects that have a matching script in their `package.json`. They follow the same schema as `@visulima/task-runner`'s `TargetConfiguration`:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `dependsOn` | `(string \| object)[]` | Other targets this target depends on. Use `^build` to depend on dependency projects' `build` target |
-| `outputs` | `string[]` | Output file patterns. Use `{projectRoot}` as a placeholder |
-| `inputs` | `(string \| object)[]` | Input patterns for cache invalidation |
-| `cache` | `boolean` | Whether this target is cacheable |
-| `parallelism` | `boolean` | Whether this target supports parallel execution |
+| Property      | Type                   | Description                                                                                         |
+| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `dependsOn`   | `(string \| object)[]` | Other targets this target depends on. Use `^build` to depend on dependency projects' `build` target |
+| `outputs`     | `string[]`             | Output file patterns. Use `{projectRoot}` as a placeholder                                          |
+| `inputs`      | `(string \| object)[]` | Input patterns for cache invalidation                                                               |
+| `cache`       | `boolean`              | Whether this target is cacheable                                                                    |
+| `parallelism` | `boolean`              | Whether this target supports parallel execution                                                     |
 
 ## Workspace Discovery
 

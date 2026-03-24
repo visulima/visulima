@@ -142,6 +142,9 @@
 "package: tsconfig":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/tsconfig/**/*"
+"package: vis":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/**/*"
 "package: vite-overlay":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"

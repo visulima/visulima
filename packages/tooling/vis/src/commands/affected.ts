@@ -1,50 +1,18 @@
 import { cwd } from "node:process";
 
 import type { Command } from "@visulima/cerebro";
-import { getAffectedProjects, type AffectedOptions } from "@visulima/task-runner";
+import type { AffectedOptions } from "@visulima/task-runner";
+import { getAffectedProjects } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace, findWorkspaceRoot } from "../workspace";
 
-const affectedCommand: Command = {
-    name: "affected",
-    description: "Run a target only on projects affected by recent changes",
+const affected: Command = {
     argument: {
+        description: "The target to run (e.g., build, test, lint)",
         name: "target",
         type: String,
-        description: "The target to run (e.g., build, test, lint)",
     },
-    options: [
-        {
-            name: "base",
-            type: String,
-            defaultValue: "HEAD~1",
-            description: "Git base ref for comparison",
-        },
-        {
-            name: "head",
-            type: String,
-            defaultValue: "HEAD",
-            description: "Git head ref for comparison",
-        },
-        {
-            name: "parallel",
-            type: Number,
-            defaultValue: 3,
-            description: "Maximum number of parallel tasks",
-        },
-        {
-            name: "cache",
-            type: Boolean,
-            defaultValue: true,
-            description: "Enable caching (use --no-cache to disable)",
-        },
-        {
-            name: "dry-run",
-            type: Boolean,
-            defaultValue: false,
-            description: "Show what would run without executing",
-        },
-    ],
+    description: "Run a target only on projects affected by recent changes",
     examples: [
         ["vis affected build", "Run build on affected projects"],
         ["vis affected test --base=main", "Run tests on projects changed since main"],
@@ -101,6 +69,39 @@ const affectedCommand: Command = {
 
         await runtime.runCommand("run", { argv });
     },
+    name: "affected",
+    options: [
+        {
+            defaultValue: "HEAD~1",
+            description: "Git base ref for comparison",
+            name: "base",
+            type: String,
+        },
+        {
+            defaultValue: "HEAD",
+            description: "Git head ref for comparison",
+            name: "head",
+            type: String,
+        },
+        {
+            defaultValue: 3,
+            description: "Maximum number of parallel tasks",
+            name: "parallel",
+            type: Number,
+        },
+        {
+            defaultValue: true,
+            description: "Enable caching (use --no-cache to disable)",
+            name: "cache",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Show what would run without executing",
+            name: "dry-run",
+            type: Boolean,
+        },
+    ],
 };
 
-export { affectedCommand };
+export default affected;
