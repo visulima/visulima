@@ -8796,6 +8796,9 @@ importers:
       '@visulima/cerebro':
         specifier: workspace:*
         version: link:../../terminal/cerebro
+      '@visulima/find-ai-runner':
+        specifier: workspace:*
+        version: link:../find-ai-runner
       '@visulima/package':
         specifier: workspace:*
         version: link:../package
@@ -8808,6 +8811,9 @@ importers:
       '@visulima/task-runner':
         specifier: workspace:*
         version: link:../task-runner
+      jiti:
+        specifier: catalog:dev
+        version: 2.6.1
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
