@@ -1,8 +1,10 @@
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
+
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
 import { join } from "@visulima/path";
 
 import type { Task, TaskResult } from "./types";
-import { createXxh3Hasher, xxh3Hash } from "./xxh3";
 
 /**
  * Hashes a file's content using xxh3-128.

@@ -1,5 +1,10 @@
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
+
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import type { Xxh3Hasher } from "@shared/xxh3";
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
 import { join, relative, resolve } from "@visulima/path";
 
 import { getFrameworkEnvVariables } from "./framework-inference";
@@ -18,8 +23,6 @@ import type {
     TaskHashDetails,
 } from "./types";
 import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
-import type { Xxh3Hasher } from "./xxh3";
-import { createXxh3Hasher, xxh3Hash } from "./xxh3";
 
 /**
  * Interface for task hashers.

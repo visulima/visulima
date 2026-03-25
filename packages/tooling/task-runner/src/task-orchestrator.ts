@@ -1,3 +1,5 @@
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher } from "@shared/xxh3";
 import { join } from "@visulima/path";
 
 import type { Cache, CachedResult } from "./cache";
@@ -11,7 +13,6 @@ import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
 import type { LifeCycleInterface, Task, TaskExecutor, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
-import { createXxh3Hasher } from "./xxh3";
 
 /**
  * Options for the TaskOrchestrator.

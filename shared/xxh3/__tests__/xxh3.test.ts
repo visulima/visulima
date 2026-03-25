@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createXxh3Hasher, xxh3Hash } from "../src/xxh3";
+import { createXxh3Hasher, xxh3Hash } from "../xxh3";
 
 describe("xxh3Hash", () => {
     it("should return a 32-character hex string", () => {

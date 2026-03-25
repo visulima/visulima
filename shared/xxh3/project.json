@@ -1,0 +1,7 @@
+{
+    "name": "shared-xxh3",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "shared/xxh3",
+    "projectType": "library",
+    "tags": ["shared", "type:shared"]
+}

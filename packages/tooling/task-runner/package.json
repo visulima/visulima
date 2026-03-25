@@ -85,6 +85,7 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@napi-rs/cli": "^3.5.1",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@shared/xxh3": "workspace:*",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",

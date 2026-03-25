@@ -1,8 +1,10 @@
 import { readFile } from "node:fs/promises";
+
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { createXxh3Hasher } from "@shared/xxh3";
 import { join } from "@visulima/path";
 
 import { readPackageDeps } from "./utils";
-import { createXxh3Hasher } from "./xxh3";
 
 /**
  * Resolved dependency entry from a lockfile.

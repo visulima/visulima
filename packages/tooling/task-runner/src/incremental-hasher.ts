@@ -1,8 +1,10 @@
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
+import { xxh3Hash } from "@shared/xxh3";
 import { dirname, join, relative } from "@visulima/path";
 
 import { collectFiles } from "./utils";
-import { xxh3Hash } from "./xxh3";
 
 /**
  * Incremental file hasher that only re-hashes files that have changed

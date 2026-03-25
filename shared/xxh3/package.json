@@ -1,0 +1,9 @@
+{
+    "name": "@shared/xxh3",
+    "private": true,
+    "main": "./xxh3.ts",
+    "devDependencies": {
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}
