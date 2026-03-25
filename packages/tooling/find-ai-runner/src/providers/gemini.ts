@@ -6,7 +6,6 @@ const gemini: AiProviderConfig = {
     command: "gemini",
     defaultModel: "gemini-2.5-pro",
     envVariable: "GEMINI_PATH",
-    priority: 100,
 };
 
 export default gemini;

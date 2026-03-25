@@ -13,8 +13,6 @@ interface AiProviderConfig {
     defaultModel: string;
     /** Environment variable that can override the CLI path (e.g., `CLAUDE_PATH`). */
     envVariable: string;
-    /** Selection priority — higher means preferred when multiple providers are available. */
-    priority: number;
 }
 
 /** Information about a detected AI CLI provider. */
@@ -27,8 +25,6 @@ interface AiProviderInfo {
     name: AiProviderName;
     /** Absolute path to the CLI binary. */
     path?: string;
-    /** Selection priority. */
-    priority: number;
     /** Detected version string (e.g., `"1.2.3"`). */
     version?: string;
 }

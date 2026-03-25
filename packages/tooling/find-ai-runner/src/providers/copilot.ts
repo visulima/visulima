@@ -15,7 +15,6 @@ const copilot: AiProviderConfig = {
     command: "copilot",
     defaultModel: "",
     envVariable: "COPILOT_PATH",
-    priority: 50,
 };
 
 export default copilot;

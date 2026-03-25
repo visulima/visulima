@@ -1,0 +1,54 @@
+---
+title: Introduction
+description: "Detect and invoke AI CLI tools (Claude, Gemini, Codex, Copilot, Cursor, Crush, Amp, Kimi, Qwen, OpenCode, Droid) installed on the system"
+---
+
+# Find AI Runner
+
+**Detect and invoke AI CLI tools installed on the system.**
+
+`@visulima/find-ai-runner` provides a unified interface for discovering and running 11 popular AI CLI tools. It handles detection across multiple strategies, builds the correct CLI arguments for each provider, and executes prompts with configurable timeouts and models.
+
+## Key Features
+
+- **11 providers supported** — Amp, Claude, Codex, Copilot, Crush, Cursor, Droid, Gemini, Kimi, OpenCode, Qwen
+- **Three detection strategies** — Environment variables, system PATH lookup, and known installation paths
+- **Unified execution API** — Single `runProvider()` function works with any detected provider
+- **Cross-platform** — Works on Linux, macOS, and Windows
+- **Zero dependencies** — No runtime dependencies
+- **TypeScript first** — Full type safety with exported types
+
+## Quick Start
+
+```typescript
+import { detectAvailableProviders, runProvider } from "@visulima/find-ai-runner";
+
+// Find all installed AI CLI tools
+const available = detectAvailableProviders();
+console.log(`Found ${available.length} AI providers`);
+
+// Run a prompt against the first available provider
+const [provider] = available;
+
+if (provider) {
+    const result = await runProvider(provider, "Explain this error: Cannot read property 'foo' of undefined");
+    console.log(result.stdout);
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Set up find-ai-runner in your project
+    </Card>
+    <Card title="Usage" href="/usage">
+        Detection, execution, and configuration examples
+    </Card>
+    <Card title="Providers" href="/providers">
+        Supported AI CLI tools and their configuration
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

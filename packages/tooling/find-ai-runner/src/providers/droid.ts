@@ -15,7 +15,6 @@ const droid: AiProviderConfig = {
     command: "droid",
     defaultModel: "",
     envVariable: "DROID_PATH",
-    priority: 20,
 };
 
 export default droid;

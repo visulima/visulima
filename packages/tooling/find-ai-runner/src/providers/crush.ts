@@ -17,7 +17,6 @@ const crush: AiProviderConfig = {
     command: "crush",
     defaultModel: "",
     envVariable: "CRUSH_PATH",
-    priority: 35,
 };
 
 export default crush;

@@ -1,4 +1,3 @@
-// eslint-disable-next-line sonarjs/os-command -- uses execFileSync/spawn (not exec), no shell injection risk
 import type { SpawnOptionsWithoutStdio } from "node:child_process";
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -48,7 +47,6 @@ const whichCommand = (command: string): string | undefined => {
     try {
         const cmd = IS_WINDOWS ? "where" : "which";
 
-        // eslint-disable-next-line sonarjs/os-command -- execFileSync with array args, no shell injection
         const result = execFileSync(cmd, [command], {
             encoding: "utf8",
             stdio: ["pipe", "pipe", "pipe"],
@@ -90,10 +88,9 @@ const getKnownPaths = (command: string): string[] => {
     ];
 };
 
-/** Run `<command> --version` and extract the semver version string. */
+/** Run `&lt;command> --version` and extract the semver version string. */
 const detectVersion = (commandPath: string): string | undefined => {
     try {
-        // eslint-disable-next-line sonarjs/os-command -- execFileSync with known path, no shell
         const result = execFileSync(commandPath, ["--version"], {
             encoding: "utf8",
             stdio: ["pipe", "pipe", "pipe"],
@@ -112,16 +109,16 @@ const detectVersion = (commandPath: string): string | undefined => {
  * Detect whether a specific AI CLI provider is installed on the system.
  *
  * Detection strategies (tried in order):
- * 1. Environment variable (e.g., `CLAUDE_PATH`)
- * 2. `which`/`where` command lookup on PATH
- * 3. Known installation paths (`/opt/homebrew/bin/`, `~/.local/bin/`, etc.)
  *
+ * 1. Environment variable (e.g., `CLAUDE_PATH`).
+ * 2. `which`/`where` command lookup on PATH.
+ * 3. Known installation paths (`/opt/homebrew/bin/`, `~/.local/bin/`, etc.).
  * @param name - The provider to detect (e.g., `"claude"`, `"gemini"`).
  * @returns Provider info including availability, path, and version.
  */
 const detectProvider = (name: AiProviderName): AiProviderInfo => {
     const config = PROVIDERS[name];
-    const base: AiProviderInfo = { available: false, name, priority: config.priority };
+    const base: AiProviderInfo = { available: false, name };
 
     const envPath = process.env[config.envVariable];
 
@@ -154,40 +151,22 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
 
 /**
  * Detect all supported AI CLI providers (installed or not).
- *
  * @returns An array of provider info for all 11 supported providers.
  */
 const detectAllProviders = (): AiProviderInfo[] => PROVIDER_NAMES.map((name) => detectProvider(name));
 
 /**
  * Detect only the AI CLI providers that are installed on the system.
- *
  * @returns An array of provider info for available providers only.
  */
 const detectAvailableProviders = (): AiProviderInfo[] => detectAllProviders().filter((provider) => provider.available);
 
 /**
- * Get the highest-priority installed AI CLI provider.
- *
- * @returns The best available provider, or `undefined` if none found.
- */
-const getBestProvider = (): AiProviderInfo | undefined => {
-    const available = detectAvailableProviders();
-
-    if (available.length === 0) {
-        return undefined;
-    }
-
-    return available.toSorted((a, b) => b.priority - a.priority)[0];
-};
-
-/**
  * Build the CLI arguments array for a provider without executing.
  * Useful for previewing or logging what command would be run.
- *
- * @param name - The provider name.
- * @param prompt - The prompt text to send.
- * @param options - Optional model, maxTokens, and timeout overrides.
+ * @param name The provider name.
+ * @param prompt The prompt text to send.
+ * @param options Optional model, maxTokens, and timeout overrides.
  * @returns The arguments array to pass to the CLI binary.
  */
 const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOptions = {}): string[] => {
@@ -203,10 +182,9 @@ const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOption
  *
  * Uses Node.js `spawn` with stdin closed immediately for non-interactive execution.
  * The process environment is sanitized with `NO_COLOR=1` and `FORCE_COLOR=0` for clean output.
- *
- * @param provider - A detected provider (from `detectProvider` or `getBestProvider`).
- * @param prompt - The prompt text to send.
- * @param options - Optional model, maxTokens, and timeout overrides.
+ * @param provider - A detected provider (from `detectProvider` or `detectAvailableProviders`).
+ * @param prompt The prompt text to send.
+ * @param options Optional model, maxTokens, and timeout overrides.
  * @returns The stdout/stderr output from the CLI.
  * @throws If the provider is not available, times out, or exits with a non-zero code.
  */
@@ -224,7 +202,6 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
             stdio: ["pipe", "pipe", "pipe"],
         };
 
-        // eslint-disable-next-line sonarjs/os-command -- spawn with array args from known provider path, no shell injection
         const child = spawn(provider.path as string, cliArguments, spawnOptions);
 
         child.stdin?.end();
@@ -271,6 +248,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
     });
 };
 
-export { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, getBestProvider, PROVIDER_NAMES, PROVIDERS, runProvider };
+export { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDERS, runProvider };
 
+export { PROVIDER_NAMES } from "./constants";
 export { type AiProviderConfig, type AiProviderInfo, type AiProviderName, type AiRunOptions, type AiRunResult } from "./types";

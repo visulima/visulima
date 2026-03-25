@@ -15,7 +15,6 @@ const kimi: AiProviderConfig = {
     command: "kimi",
     defaultModel: "",
     envVariable: "KIMI_PATH",
-    priority: 25,
 };
 
 export default kimi;

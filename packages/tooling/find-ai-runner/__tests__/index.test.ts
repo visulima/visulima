@@ -4,16 +4,7 @@ import { existsSync } from "node:fs";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import type { AiProviderInfo } from "../src/index";
-import {
-    buildCliArgs,
-    detectAllProviders,
-    detectAvailableProviders,
-    detectProvider,
-    getBestProvider,
-    PROVIDER_NAMES,
-    PROVIDERS,
-    runProvider,
-} from "../src/index";
+import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
 
 vi.mock(import("node:child_process"), () => {
     return {
@@ -49,11 +40,6 @@ describe("pROVIDERS", () => {
         expect(PROVIDERS.droid).toBeDefined();
     });
 
-    it("should have gemini as highest priority", () => {
-        expect(PROVIDERS.gemini.priority).toBeGreaterThan(PROVIDERS.claude.priority);
-        expect(PROVIDERS.claude.priority).toBeGreaterThan(PROVIDERS.codex.priority);
-    });
-
     it("should define environment variables for each provider", () => {
         expect(PROVIDERS.claude.envVariable).toBe("CLAUDE_PATH");
         expect(PROVIDERS.gemini.envVariable).toBe("GEMINI_PATH");
@@ -70,7 +56,7 @@ describe("pROVIDERS", () => {
 
     it("should have buildArgs function for every provider", () => {
         for (const config of Object.values(PROVIDERS)) {
-            expect(typeof config.buildArgs).toBe("function");
+            expectTypeOf(config.buildArgs).toBeFunction();
         }
     });
 
@@ -88,9 +74,9 @@ describe("pROVIDERS", () => {
 });
 
 describe("pROVIDER_NAMES", () => {
-    it("should list all provider names in priority order", () => {
+    it("should list all provider names alphabetically", () => {
         expect(PROVIDER_NAMES).toHaveLength(11);
-        expect(PROVIDER_NAMES[0]).toBe("gemini");
+        expect(PROVIDER_NAMES[0]).toBe("amp");
         expect(PROVIDER_NAMES[1]).toBe("claude");
         expect(PROVIDER_NAMES[2]).toBe("codex");
     });
@@ -112,7 +98,6 @@ describe("detectProvider", () => {
 
         expect(result.available).toBe(false);
         expect(result.name).toBe("claude");
-        expect(result.priority).toBe(80);
         expect(result.path).toBeUndefined();
     });
 
@@ -308,10 +293,10 @@ describe("detectAllProviders", () => {
         expect(names).toContain("droid");
     });
 
-    it("should return in priority order (gemini first)", () => {
+    it("should return in alphabetical order", () => {
         const results = detectAllProviders();
 
-        expect(results[0]?.name).toBe("gemini");
+        expect(results[0]?.name).toBe("amp");
         expect(results[1]?.name).toBe("claude");
         expect(results[2]?.name).toBe("codex");
     });
@@ -364,65 +349,6 @@ describe("detectAvailableProviders", () => {
 
         expect(names).toContain("claude");
         expect(names).toContain("amp");
-    });
-});
-
-// --- getBestProvider ---
-
-describe("getBestProvider", () => {
-    beforeEach(() => {
-        vi.resetAllMocks();
-        mockExecFileSync.mockImplementation(() => {
-            throw new Error("not found");
-        });
-        mockExistsSync.mockReturnValue(false);
-    });
-
-    it("should return undefined when none available", () => {
-        expect(getBestProvider()).toBeUndefined();
-    });
-
-    it("should return highest priority prompt-supported provider", () => {
-        mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && (args?.[0] === "claude" || args?.[0] === "codex")) {
-                return `/usr/bin/${args?.[0] as string}\n`;
-            }
-
-            throw new Error("not found");
-        });
-
-        const best = getBestProvider();
-
-        expect(best?.name).toBe("claude");
-    });
-
-    it("should prefer higher priority when multiple available", () => {
-        mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && (args?.[0] === "amp" || args?.[0] === "codex")) {
-                return `/usr/bin/${args?.[0] as string}\n`;
-            }
-
-            throw new Error("not found");
-        });
-
-        const best = getBestProvider();
-
-        // codex (60) > amp (30)
-        expect(best?.name).toBe("codex");
-    });
-
-    it("should prefer gemini over claude when both available", () => {
-        mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
-            if (cmd === "which" && (args?.[0] === "claude" || args?.[0] === "gemini")) {
-                return `/usr/bin/${args?.[0] as string}\n`;
-            }
-
-            throw new Error("not found");
-        });
-
-        const best = getBestProvider();
-
-        expect(best?.name).toBe("gemini");
     });
 });
 
@@ -595,7 +521,6 @@ describe("runProvider", () => {
         const provider: AiProviderInfo = {
             available: false,
             name: "claude",
-            priority: 80,
         };
 
         await expect(runProvider(provider, "test")).rejects.toThrowError("not available");
@@ -605,7 +530,6 @@ describe("runProvider", () => {
         const provider: AiProviderInfo = {
             available: true,
             name: "claude",
-            priority: 80,
         };
 
         await expect(runProvider(provider, "test")).rejects.toThrowError("not available");

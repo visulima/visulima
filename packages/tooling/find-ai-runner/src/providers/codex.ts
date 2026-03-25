@@ -6,7 +6,6 @@ const codex: AiProviderConfig = {
     command: "codex",
     defaultModel: "o3",
     envVariable: "CODEX_PATH",
-    priority: 60,
 };
 
 export default codex;

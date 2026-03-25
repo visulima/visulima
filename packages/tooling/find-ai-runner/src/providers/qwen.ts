@@ -7,7 +7,6 @@ const qwen: AiProviderConfig = {
     command: "qwen",
     defaultModel: "",
     envVariable: "QWEN_PATH",
-    priority: 30,
 };
 
 export default qwen;

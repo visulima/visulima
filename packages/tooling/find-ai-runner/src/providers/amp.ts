@@ -7,7 +7,6 @@ const amp: AiProviderConfig = {
     command: "amp",
     defaultModel: "",
     envVariable: "AMP_PATH",
-    priority: 30,
 };
 
 export default amp;

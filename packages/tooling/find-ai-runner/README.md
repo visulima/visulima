@@ -53,7 +53,7 @@ pnpm add @visulima/find-ai-runner
 ### Detect all AI CLI tools
 
 ```typescript
-import { detectAllProviders, detectAvailableProviders, getBestProvider } from "@visulima/find-ai-runner";
+import { detectAllProviders, detectAvailableProviders } from "@visulima/find-ai-runner";
 
 // Detect all 11 supported providers (available or not)
 const all = detectAllProviders();
@@ -61,19 +61,15 @@ const all = detectAllProviders();
 // Only the ones installed on the system
 const available = detectAvailableProviders();
 console.log(available);
-// [{ name: "claude", available: true, path: "/usr/local/bin/claude", version: "1.2.3", priority: 80 }, ...]
-
-// Get the highest-priority available provider
-const best = getBestProvider();
-console.log(best?.name); // "gemini" (if installed)
+// [{ name: "claude", available: true, path: "/usr/local/bin/claude", version: "1.2.3" }, ...]
 ```
 
 ### Run a prompt
 
 ```typescript
-import { getBestProvider, runProvider } from "@visulima/find-ai-runner";
+import { detectAvailableProviders, runProvider } from "@visulima/find-ai-runner";
 
-const provider = getBestProvider();
+const [provider] = detectAvailableProviders();
 
 if (provider) {
     const result = await runProvider(provider, "Explain this error: TypeError: Cannot read property 'foo' of undefined");
@@ -96,11 +92,11 @@ if (claude.available) {
 ### Custom model and timeout
 
 ```typescript
-import { getBestProvider, runProvider } from "@visulima/find-ai-runner";
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
 
-const provider = getBestProvider();
+const provider = detectProvider("claude");
 
-if (provider) {
+if (provider.available) {
     const result = await runProvider(provider, "Analyze this dependency update", {
         model: "claude-opus-4-20250514",
         maxTokens: 8192,
@@ -111,19 +107,19 @@ if (provider) {
 
 ## Supported Providers
 
-| Provider | Command | Priority | Prompt Flags |
-|----------|---------|----------|-------------|
-| Gemini | `gemini` | 100 | `--sandbox -p` |
-| Claude | `claude` | 80 | `--dangerously-skip-permissions -p` |
-| Codex | `codex` | 60 | positional + `--approval-mode full-auto` |
-| Copilot | `copilot` | 50 | `-p --allow-all-tools` |
-| Cursor | `agent` | 40 | `-p --force` |
-| OpenCode | `opencode` | 35 | `run` subcommand |
-| Crush | `crush` | 35 | `run --yolo` |
-| Amp | `amp` | 30 | `-x --dangerously-allow-all` |
-| Qwen | `qwen` | 30 | `-p --yolo -o text` |
-| Kimi | `kimi` | 25 | `--quiet -p` |
-| Droid | `droid` | 20 | positional + `--skip-permissions-unsafe` |
+| Provider | Command    | Env Variable    | Default Model             | Prompt Flags                                    |
+| -------- | ---------- | --------------- | ------------------------- | ----------------------------------------------- |
+| Amp      | `amp`      | `AMP_PATH`      |                           | `-x --dangerously-allow-all`                    |
+| Claude   | `claude`   | `CLAUDE_PATH`   | `claude-sonnet-4-20250514`| `--dangerously-skip-permissions -p`             |
+| Codex    | `codex`    | `CODEX_PATH`    | `o3`                      | positional + `--approval-mode full-auto`        |
+| Copilot  | `copilot`  | `COPILOT_PATH`  |                           | `-p --allow-all-tools`                          |
+| Crush    | `crush`    | `CRUSH_PATH`    |                           | `run --yolo`                                    |
+| Cursor   | `agent`    | `CURSOR_PATH`   |                           | `-p --force`                                    |
+| Droid    | `droid`    | `DROID_PATH`    |                           | positional + `--skip-permissions-unsafe`        |
+| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro`          | `--sandbox -p`                                  |
+| Kimi     | `kimi`     | `KIMI_PATH`     |                           | `--quiet -p`                                    |
+| OpenCode | `opencode` | `OPENCODE_PATH` | `anthropic/claude-sonnet-4`| `run` subcommand                               |
+| Qwen     | `qwen`     | `QWEN_PATH`     |                           | `-p --yolo -o text`                             |
 
 ## Detection Strategies
 
@@ -143,10 +139,6 @@ Returns info for all 11 providers, whether installed or not.
 
 Returns only providers that are installed on the system.
 
-### `getBestProvider(): AiProviderInfo | undefined`
-
-Returns the highest-priority installed provider, or `undefined` if none found.
-
 ### `detectProvider(name: AiProviderName): AiProviderInfo`
 
 Detect a specific provider by name.
@@ -165,7 +157,7 @@ The full provider configuration map.
 
 ### `PROVIDER_NAMES: AiProviderName[]`
 
-All provider names in priority order.
+All supported provider names in alphabetical order.
 
 ## Supported Node.js Versions
 

@@ -15,7 +15,6 @@ const opencode: AiProviderConfig = {
     command: "opencode",
     defaultModel: "anthropic/claude-sonnet-4",
     envVariable: "OPENCODE_PATH",
-    priority: 35,
 };
 
 export default opencode;

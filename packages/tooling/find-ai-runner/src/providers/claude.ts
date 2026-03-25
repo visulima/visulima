@@ -6,7 +6,6 @@ const claude: AiProviderConfig = {
     command: "claude",
     defaultModel: "claude-sonnet-4-20250514",
     envVariable: "CLAUDE_PATH",
-    priority: 80,
 };
 
 export default claude;

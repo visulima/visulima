@@ -17,7 +17,6 @@ const cursor: AiProviderConfig = {
     command: "agent",
     defaultModel: "",
     envVariable: "CURSOR_PATH",
-    priority: 40,
 };
 
 export default cursor;

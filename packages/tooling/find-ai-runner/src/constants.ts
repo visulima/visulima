@@ -21,5 +21,5 @@ export const DEFAULT_MAX_TOKENS = 4096;
 /** Whether the current platform is Windows. */
 export const IS_WINDOWS: boolean = platform() === "win32";
 
-/** All provider names in descending priority order. */
-export const PROVIDER_NAMES: AiProviderName[] = ["gemini", "claude", "codex", "copilot", "cursor", "opencode", "crush", "amp", "qwen", "kimi", "droid"];
+/** All supported provider names in alphabetical order. */
+export const PROVIDER_NAMES: AiProviderName[] = ["amp", "claude", "codex", "copilot", "crush", "cursor", "droid", "gemini", "kimi", "opencode", "qwen"];
