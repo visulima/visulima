@@ -99,6 +99,22 @@ const hook: Command = {
                 break;
             }
 
+            case "migrate": {
+                const root = cwd();
+
+                const result = migrateFromHusky(root, hooksDirectory, logger);
+
+                if (result.isError) {
+                    throw new Error(result.message);
+                }
+
+                if (result.message) {
+                    logger.info(result.message);
+                }
+
+                break;
+            }
+
             case "uninstall": {
                 logger.info("Removing git hooks...");
 
@@ -115,22 +131,6 @@ const hook: Command = {
                 }
 
                 logger.info("Git hooks removed successfully.");
-                break;
-            }
-
-            case "migrate": {
-                const root = cwd();
-
-                const result = migrateFromHusky(root, hooksDirectory, logger);
-
-                if (result.isError) {
-                    throw new Error(result.message);
-                }
-
-                if (result.message) {
-                    logger.info(result.message);
-                }
-
                 break;
             }
 

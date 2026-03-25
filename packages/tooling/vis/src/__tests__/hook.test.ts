@@ -25,7 +25,7 @@ const countDirnameCalls = (script: string): number => {
  * Creates a temp directory with `git init` and returns cleanup helpers.
  * execSync used with hardcoded "git init" — no user input, safe for test setup.
  */
-const createTempGitRepo = (): { cleanup: () => void; restore: () => void; root: string } => {
+const createTemporaryGitRepo = (): { cleanup: () => void; restore: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-hook-test-"));
     const originalCwd = process.cwd();
 
@@ -44,7 +44,7 @@ const createTempGitRepo = (): { cleanup: () => void; restore: () => void; root: 
     };
 };
 
-const createTempDirectory = (): { cleanup: () => void; root: string } => {
+const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
     const root = mkdtempSync(join(tmpdir(), "vis-hook-test-"));
 
     return {
@@ -103,7 +103,7 @@ describe("hookScript", () => {
 
 describe("installHooks", () => {
     it.skipIf(process.platform === "win32")("should create internal dispatcher scripts but not user hooks", () => {
-        const { cleanup, root } = createTempGitRepo();
+        const { cleanup, root } = createTemporaryGitRepo();
 
         try {
             const result = installHooks(".vis-hooks");
@@ -125,7 +125,7 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should set core.hooksPath", () => {
-        const { cleanup } = createTempGitRepo();
+        const { cleanup } = createTemporaryGitRepo();
 
         try {
             installHooks(".vis-hooks");
@@ -139,7 +139,7 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should reject paths containing ..", () => {
-        const { cleanup } = createTempGitRepo();
+        const { cleanup } = createTemporaryGitRepo();
 
         try {
             const result = installHooks("../evil-dir");
@@ -152,7 +152,7 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should skip when VIS_GIT_HOOKS=0", () => {
-        const { cleanup } = createTempGitRepo();
+        const { cleanup } = createTemporaryGitRepo();
 
         try {
             process.env["VIS_GIT_HOOKS"] = "0";
@@ -168,7 +168,7 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should skip when core.hooksPath is already set to a different path", () => {
-        const { cleanup } = createTempGitRepo();
+        const { cleanup } = createTemporaryGitRepo();
 
         try {
             execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
@@ -183,7 +183,7 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should work with custom directory name", () => {
-        const { cleanup, root } = createTempGitRepo();
+        const { cleanup, root } = createTemporaryGitRepo();
 
         try {
             const result = installHooks(".my-hooks");
@@ -200,11 +200,12 @@ describe("installHooks", () => {
 
 describe("uninstallHooks", () => {
     it.skipIf(process.platform === "win32")("should unset core.hooksPath and remove internal directory", () => {
-        const { cleanup, root } = createTempGitRepo();
+        const { cleanup, root } = createTemporaryGitRepo();
 
         try {
             // Install first
             installHooks(".vis-hooks");
+
             expect(existsSync(join(root, ".vis-hooks", "_"))).toBe(true);
 
             // Uninstall
@@ -224,7 +225,7 @@ describe("uninstallHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should return message when no hooks path is configured", () => {
-        const { cleanup } = createTempGitRepo();
+        const { cleanup } = createTemporaryGitRepo();
 
         try {
             const result = uninstallHooks(".vis-hooks");
@@ -250,7 +251,7 @@ echo "hello"
         const result = transformHookScript(input);
 
         expect(result).not.toContain("common.sh");
-        expect(result).toContain('echo "hello"');
+        expect(result).toContain("echo \"hello\"");
         expect(result).toContain("#!/bin/sh");
     });
 
@@ -275,7 +276,7 @@ echo "done"
         const result = transformHookScript(input);
 
         expect(result).toContain("common.sh in a comment");
-        expect(result).not.toContain('. "$(dirname "$0")/common.sh"');
+        expect(result).not.toContain(". \"$(dirname \"$0\")/common.sh\"");
     });
 });
 
@@ -285,7 +286,7 @@ describe("detectHuskyDirectory", () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
-        temporary = createTempDirectory();
+        temporary = createTemporaryDirectory();
     });
 
     afterEach(() => {
@@ -328,7 +329,7 @@ describe("detectPackageManager", () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
-        temporary = createTempDirectory();
+        temporary = createTemporaryDirectory();
     });
 
     afterEach(() => {
@@ -383,7 +384,7 @@ describe("cleanPackageJsonScripts", () => {
     let temporary: { cleanup: () => void; root: string };
 
     beforeEach(() => {
-        temporary = createTempDirectory();
+        temporary = createTemporaryDirectory();
     });
 
     afterEach(() => {
@@ -391,15 +392,12 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should remove standalone husky script", () => {
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ scripts: { prepare: "husky" } }, undefined, 4),
-        );
+        writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ scripts: { prepare: "husky" } }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);
 
         expect(result.modified).toBe(true);
-        expect(result.removedScriptReferences).toContain('removed "prepare" script (was: "husky")');
+        expect(result.removedScriptReferences).toContain("removed \"prepare\" script (was: \"husky\")");
 
         const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
 
@@ -407,10 +405,7 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should remove standalone husky install script", () => {
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ scripts: { prepare: "husky install" } }, undefined, 4),
-        );
+        writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ scripts: { prepare: "husky install" } }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);
 
@@ -424,11 +419,15 @@ describe("cleanPackageJsonScripts", () => {
     it("should clean husky from compound (is-ci || husky) pattern", () => {
         writeFileSync(
             join(temporary.root, "package.json"),
-            JSON.stringify({
-                scripts: {
-                    postinstall: "(is-ci || husky || exit 0) && node scripts/setup.js",
+            JSON.stringify(
+                {
+                    scripts: {
+                        postinstall: "(is-ci || husky || exit 0) && node scripts/setup.js",
+                    },
                 },
-            }, undefined, 4),
+                undefined,
+                4,
+            ),
         );
 
         const result = cleanPackageJsonScripts(temporary.root);
@@ -443,9 +442,13 @@ describe("cleanPackageJsonScripts", () => {
     it("should clean husky && from compound commands", () => {
         writeFileSync(
             join(temporary.root, "package.json"),
-            JSON.stringify({
-                scripts: { prepare: "husky && lint-staged" },
-            }, undefined, 4),
+            JSON.stringify(
+                {
+                    scripts: { prepare: "husky && lint-staged" },
+                },
+                undefined,
+                4,
+            ),
         );
 
         const result = cleanPackageJsonScripts(temporary.root);
@@ -460,9 +463,13 @@ describe("cleanPackageJsonScripts", () => {
     it("should not modify scripts without husky references", () => {
         writeFileSync(
             join(temporary.root, "package.json"),
-            JSON.stringify({
-                scripts: { build: "tsc", test: "vitest" },
-            }, undefined, 4),
+            JSON.stringify(
+                {
+                    scripts: { build: "tsc", test: "vitest" },
+                },
+                undefined,
+                4,
+            ),
         );
 
         const result = cleanPackageJsonScripts(temporary.root);
@@ -478,10 +485,7 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should handle package.json without scripts field", () => {
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ name: "test" }, undefined, 4),
-        );
+        writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ name: "test" }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);
 

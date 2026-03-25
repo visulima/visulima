@@ -20,6 +20,6 @@ export default defineConfig({
     validation: {
         packageJson: {
             exports: false,
-        }
-    }
+        },
+    },
 }) as BuildConfig;

@@ -4,9 +4,11 @@ import { createCerebro } from "@visulima/cerebro";
 
 import pkg from "../package.json";
 import affectedCommand from "./commands/affected";
+import checkCommand from "./commands/check";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
 import runCommand from "./commands/run";
+import updateCommand from "./commands/update";
 
 if (module.enableCompileCache) {
     module.enableCompileCache();
@@ -21,5 +23,7 @@ cli.addCommand(runCommand);
 cli.addCommand(graphCommand);
 cli.addCommand(affectedCommand);
 cli.addCommand(hookCommand);
+cli.addCommand(updateCommand);
+cli.addCommand(checkCommand);
 
 await cli.run();

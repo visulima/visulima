@@ -9,7 +9,7 @@ import { installHooks } from "./install";
 
 const HUSKY_DIRECTORIES = [".husky", ".config/husky"];
 
-const COMMON_SH_SOURCE_RE = /^\. "\$\(dirname "\$0"\)\/common\.sh"\s*\n?/m;
+const COMMON_SH_SOURCE_RE = /^\. "\$\(dirname "\$0"\)\/common\.sh"\s*/m;
 
 /**
  * Detects which husky directory is in use, if any.
@@ -31,7 +31,7 @@ const detectHuskyDirectory = (root: string): string | undefined => {
 const readHuskyHooks = (root: string, huskyDirectory: string): Map<string, string> => {
     const hooks = new Map<string, string>();
     const fullPath = join(root, huskyDirectory);
-    const hookNames: Set<string> = new Set(HOOKS);
+    const hookNames = new Set<string>(HOOKS);
 
     for (const entry of readdirSync(fullPath)) {
         if (entry === "_" || entry === ".gitignore" || entry.startsWith(".")) {
@@ -175,7 +175,7 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
     }
 
     if (modified) {
-        writeFileSync(packageJsonPath, JSON.stringify(packageJson, undefined, 4) + "\n", "utf8");
+        writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, undefined, 4)}\n`, "utf8");
     }
 
     return { modified, removedScriptReferences };
@@ -184,11 +184,7 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
 /**
  * Migrates from husky to vis hooks.
  */
-const migrateFromHusky = (
-    root: string,
-    hooksDirectory: string,
-    logger: Console,
-): InstallResult => {
+const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console): InstallResult => {
     const huskyDirectory = detectHuskyDirectory(root);
 
     if (!huskyDirectory) {

@@ -24,6 +24,13 @@ interface VisConfig {
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
+    /** Update command defaults */
+    update?: {
+        exclude?: string[];
+        include?: string[];
+        prerelease?: boolean;
+        target?: "latest" | "minor" | "patch";
+    };
 }
 
 // eslint-disable-next-line sonarjs/slow-regex

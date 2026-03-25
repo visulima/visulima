@@ -1,15 +1,24 @@
-<div align="center">
-  <h3>Visulima vis</h3>
-  <p>
-  A CLI task runner for monorepo workspaces, powered by <a href="https://www.npmjs.com/package/@visulima/task-runner">@visulima/task-runner</a> and <a href="https://www.npmjs.com/package/@visulima/cerebro">@visulima/cerebro</a>.
-  </p>
-</div>
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="vis" />
+
+</a>
+
+<h3 align="center">A CLI task runner for monorepo workspaces</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
 <div align="center">
 
-[![typescript-image]][typescript-url] [![npm-image]][npm-url] [![license-image]][license-url]
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
 
 </div>
 
@@ -31,190 +40,100 @@
 - **Task caching**: Powered by `@visulima/task-runner` with local and remote caching support
 - **Dependency-aware scheduling**: Runs tasks in topological order with configurable parallelism
 - **Affected detection**: Only runs tasks for projects changed since a given git ref
+- **Catalog management**: Check and update dependencies in pnpm/bun workspace catalogs
+- **Security scanning**: Check for known vulnerabilities via OSV.dev
 - **Graph visualization**: View your project dependency graph in ASCII, DOT, JSON, or HTML
+- **Git hooks**: Install, manage, and migrate git hooks (husky migration supported)
 - **Configurable**: `vis.json` for target defaults, cache settings, and task runner options
 - **Built on Cerebro**: Uses `@visulima/cerebro` for a robust CLI experience with built-in help, version, and completion
 
 ## Install
 
-```bash
+```sh
 npm install @visulima/vis
 ```
 
-```bash
+```sh
 yarn add @visulima/vis
 ```
 
-```bash
+```sh
 pnpm add @visulima/vis
 ```
 
 ## Quick Start
 
-Run a target across all workspace projects:
-
 ```bash
+# Run a target across all workspace projects
 vis run build
-```
 
-Run tests only on projects affected by recent changes:
-
-```bash
+# Run tests only on affected projects
 vis affected test --base=main
-```
 
-Visualize the project dependency graph:
-
-```bash
+# Visualize the project dependency graph
 vis graph
+
+# Check for outdated catalog dependencies
+vis check
+
+# Check with security vulnerability scanning
+vis check --security
+
+# Update catalog dependencies interactively
+vis update --interactive
+
+# Install git hooks
+vis hook install
 ```
 
 ## Commands
 
-### `vis run <target>`
+| Command                  | Alias  | Description                                              |
+| ------------------------ | ------ | -------------------------------------------------------- |
+| `vis run <target>`       |        | Run a target across workspace projects with caching      |
+| `vis affected <target>`  |        | Run tasks only on projects affected by git changes       |
+| `vis graph`              |        | Visualize the project dependency graph                   |
+| `vis check [packages]`   | `c`    | Check for outdated dependencies in workspace catalogs    |
+| `vis update [packages]`  | `up`   | Update packages to their latest versions                 |
+| `vis hook <action>`      |        | Manage git hooks (install, uninstall, migrate)           |
 
-Run a target (e.g., `build`, `test`, `lint`) across workspace projects. Tasks are executed in dependency order with caching.
+## Documentation
 
-```bash
-vis run build
-vis run test --projects=@my/app,@my/lib
-vis run build --parallel=5
-vis run build --no-cache
-vis run lint --dry-run
-vis run build --summarize
-```
-
-| Option        | Alias | Default | Description                              |
-| ------------- | ----- | ------- | ---------------------------------------- |
-| `--projects`  | `-p`  | all     | Comma-separated list of projects to run  |
-| `--parallel`  |       | `3`     | Maximum number of parallel tasks         |
-| `--cache`     |       | `true`  | Enable caching (`--no-cache` to disable) |
-| `--cache-dir` |       |         | Custom cache directory                   |
-| `--dry-run`   |       | `false` | Show what would run without executing    |
-| `--summarize` |       | `false` | Generate a JSON run summary              |
-
-### `vis affected <target>`
-
-Detect which projects are affected by recent git changes and run a target only on those projects. Uses git diff to find changed files, maps them to projects, and includes transitively dependent projects.
-
-```bash
-vis affected build
-vis affected test --base=main
-vis affected lint --base=HEAD~5 --head=HEAD
-```
-
-| Option       | Default  | Description                              |
-| ------------ | -------- | ---------------------------------------- |
-| `--base`     | `HEAD~1` | Git base ref for comparison              |
-| `--head`     | `HEAD`   | Git head ref for comparison              |
-| `--parallel` | `3`      | Maximum number of parallel tasks         |
-| `--cache`    | `true`   | Enable caching (`--no-cache` to disable) |
-| `--dry-run`  | `false`  | Show what would run without executing    |
-
-### `vis graph`
-
-Visualize the project dependency graph in various formats.
-
-```bash
-vis graph
-vis graph --format=dot
-vis graph --format=json --output=graph.json
-vis graph --format=html --output=graph.html
-```
-
-| Option     | Alias | Default | Description                                   |
-| ---------- | ----- | ------- | --------------------------------------------- |
-| `--format` | `-f`  | `ascii` | Output format: `ascii`, `dot`, `json`, `html` |
-| `--output` | `-o`  | stdout  | Write output to file instead of stdout        |
-
-## Configuration
-
-Create a `vis.json` file in your workspace root to configure target defaults and task runner options:
-
-```json
-{
-    "targetDefaults": {
-        "build": {
-            "dependsOn": ["^build"],
-            "outputs": ["{projectRoot}/dist/**"],
-            "cache": true
-        },
-        "test": {
-            "dependsOn": ["build"],
-            "cache": true
-        },
-        "lint": {
-            "cache": true
-        }
-    },
-    "taskRunnerOptions": {
-        "parallel": 5,
-        "smartLockfileHashing": true,
-        "frameworkInference": true,
-        "remoteCache": {
-            "url": "https://cache.example.com",
-            "token": "my-token",
-            "teamId": "my-team"
-        }
-    }
-}
-```
-
-### Target Defaults
-
-Target defaults apply to all projects that have a matching script in their `package.json`. They follow the same schema as `@visulima/task-runner`'s `TargetConfiguration`:
-
-| Property      | Type                   | Description                                                                                         |
-| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `dependsOn`   | `(string \| object)[]` | Other targets this target depends on. Use `^build` to depend on dependency projects' `build` target |
-| `outputs`     | `string[]`             | Output file patterns. Use `{projectRoot}` as a placeholder                                          |
-| `inputs`      | `(string \| object)[]` | Input patterns for cache invalidation                                                               |
-| `cache`       | `boolean`              | Whether this target is cacheable                                                                    |
-| `parallelism` | `boolean`              | Whether this target supports parallel execution                                                     |
-
-## Workspace Discovery
-
-`vis` automatically discovers your workspace structure:
-
-1. **pnpm**: Reads `pnpm-workspace.yaml` for package patterns
-2. **npm/yarn**: Falls back to the `workspaces` field in root `package.json`
-3. **Project metadata**: Reads `project.json` files (Nx-compatible) for additional config like `projectType`, `sourceRoot`, and `tags`
-4. **Dependency graph**: Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`
-
-## Programmatic Usage
-
-You can also use `vis` programmatically:
-
-```typescript
-import { createCerebro, discoverWorkspace, buildProjectGraph, findWorkspaceRoot } from "@visulima/vis";
-
-// Use the CLI programmatically
-const cli = createCerebro();
-await cli.run();
-
-// Or use the workspace discovery API directly
-const workspaceRoot = findWorkspaceRoot(process.cwd());
-const { config, workspace } = discoverWorkspace(workspaceRoot);
-const projectGraph = buildProjectGraph(workspaceRoot, workspace);
-
-console.log(`Found ${Object.keys(workspace.projects).length} projects`);
-```
+For full documentation including command reference, configuration options, best practices, and CI/CD integration guides, see the [docs](./docs) folder.
 
 ## Supported Node.js Versions
 
 Libraries in this ecosystem make the best effort to track [Node.js' release schedule](https://github.com/nodejs/release#release-schedule).
+Here's [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
 ## Contributing
 
-If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md) guidelines.
+If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
 
 ## License
 
-The visulima vis is open-sourced software licensed under the [MIT][license-url]
+The visulima vis is open-sourced software licensed under the [MIT][license]
 
-[typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/vis?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/vis?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/vis
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: https://www.typescriptlang.org/
-[license-image]: https://img.shields.io/npm/l/@visulima/vis?color=blueviolet&style=for-the-badge
-[license-url]: LICENSE.md
-[npm-image]: https://img.shields.io/npm/v/@visulima/vis/latest.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@visulima/vis/v/latest

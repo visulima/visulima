@@ -69,8 +69,11 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@visulima/boxen": "workspace:*",
         "@visulima/cerebro": "workspace:*",
+        "@visulima/package": "workspace:*",
         "@visulima/path": "workspace:*",
+        "@visulima/tabular": "workspace:*",
         "@visulima/task-runner": "workspace:*"
     },
     "devDependencies": {

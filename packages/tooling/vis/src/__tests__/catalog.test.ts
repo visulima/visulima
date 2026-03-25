@@ -1,0 +1,2410 @@
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+
+import { join } from "@visulima/path";
+import { describe, expect, it, vi } from "vitest";
+
+import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../catalog";
+import {
+    applyCatalogUpdates,
+    checkOutdated,
+    createBackup,
+    detectJsonIndent,
+    extractPrefix,
+    fetchPackageVersions,
+    fetchVulnerabilities,
+    findTargetVersion,
+    formatOutdatedJson,
+    formatOutdatedMinimal,
+    formatOutdatedTable,
+    formatSummary,
+    getRegistryForPackage,
+    getUpdateType,
+    hasBackup,
+    hasCatalogs,
+    isNewer,
+    loadNpmrc,
+    matchesFilters,
+    matchesPattern,
+    parseBunCatalogs,
+    parseCatalogsFromYaml,
+    parseNpmrc,
+    parseVersion,
+    readCatalogs,
+    restoreFromBackup,
+} from "../catalog";
+
+// --- parseVersion ---
+
+describe("parseVersion", () => {
+    it("should parse basic version", () => {
+        expect(parseVersion("1.2.3")).toEqual({ major: 1, minor: 2, patch: 3, prerelease: "" });
+    });
+
+    it("should parse version with caret prefix", () => {
+        expect(parseVersion("^18.2.0")).toEqual({ major: 18, minor: 2, patch: 0, prerelease: "" });
+    });
+
+    it("should parse version with tilde prefix", () => {
+        expect(parseVersion("~5.3.0")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "" });
+    });
+
+    it("should parse version with >= prefix", () => {
+        expect(parseVersion(">=1.0.0")).toEqual({ major: 1, minor: 0, patch: 0, prerelease: "" });
+    });
+
+    it("should parse version with < prefix", () => {
+        expect(parseVersion("<2.0.0")).toEqual({ major: 2, minor: 0, patch: 0, prerelease: "" });
+    });
+
+    it("should parse prerelease version", () => {
+        expect(parseVersion("5.3.0-beta.1")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "beta.1" });
+    });
+
+    it("should parse prerelease with prefix", () => {
+        expect(parseVersion("^5.3.0-rc.2")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "rc.2" });
+    });
+
+    it("should parse large version numbers", () => {
+        expect(parseVersion("100.200.300")).toEqual({ major: 100, minor: 200, patch: 300, prerelease: "" });
+    });
+
+    it("should return undefined for wildcard", () => {
+        expect(parseVersion("*")).toBeUndefined();
+    });
+
+    it("should return undefined for workspace protocol", () => {
+        expect(parseVersion("workspace:*")).toBeUndefined();
+    });
+
+    it("should return undefined for non-version string", () => {
+        expect(parseVersion("latest")).toBeUndefined();
+    });
+
+    it("should return undefined for empty string", () => {
+        expect(parseVersion("")).toBeUndefined();
+    });
+
+    it("should return undefined for file protocol", () => {
+        expect(parseVersion("file:../my-lib")).toBeUndefined();
+    });
+
+    it("should return undefined for link protocol", () => {
+        expect(parseVersion("link:../my-lib")).toBeUndefined();
+    });
+});
+
+// --- extractPrefix ---
+
+describe("extractPrefix", () => {
+    it("should extract caret", () => {
+        expect(extractPrefix("^1.2.3")).toBe("^");
+    });
+
+    it("should extract tilde", () => {
+        expect(extractPrefix("~1.2.3")).toBe("~");
+    });
+
+    it("should extract >=", () => {
+        expect(extractPrefix(">=1.2.3")).toBe(">=");
+    });
+
+    it("should extract >", () => {
+        expect(extractPrefix(">1.2.3")).toBe(">");
+    });
+
+    it("should extract <=", () => {
+        expect(extractPrefix("<=1.2.3")).toBe("<=");
+    });
+
+    it("should extract <", () => {
+        expect(extractPrefix("<1.2.3")).toBe("<");
+    });
+
+    it("should return empty for exact version", () => {
+        expect(extractPrefix("1.2.3")).toBe("");
+    });
+
+    it("should return empty for prerelease without prefix", () => {
+        expect(extractPrefix("1.2.3-beta.1")).toBe("");
+    });
+
+    it("should return empty for empty string", () => {
+        expect(extractPrefix("")).toBe("");
+    });
+});
+
+// --- getUpdateType ---
+
+describe("getUpdateType", () => {
+    it("should detect major update", () => {
+        expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe("major");
+    });
+
+    it("should detect minor update", () => {
+        expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe("minor");
+    });
+
+    it("should detect patch update", () => {
+        expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 1, prerelease: "" })).toBe("patch");
+    });
+
+    it("should detect no update", () => {
+        expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe("none");
+    });
+
+    it("should classify major even when minor/patch also differ", () => {
+        expect(getUpdateType({ major: 1, minor: 5, patch: 3, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe("major");
+    });
+
+    it("should classify minor even when patch also differs", () => {
+        expect(getUpdateType({ major: 1, minor: 0, patch: 5, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe("minor");
+    });
+});
+
+// --- isNewer ---
+
+describe("isNewer", () => {
+    it("should detect newer major", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe(true);
+    });
+
+    it("should detect newer minor", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe(true);
+    });
+
+    it("should detect newer patch", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 1, prerelease: "" })).toBe(true);
+    });
+
+    it("should not be newer for same version", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(false);
+    });
+
+    it("should not be newer for older version", () => {
+        expect(isNewer({ major: 2, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(false);
+    });
+
+    it("should detect release as newer than prerelease of same version", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "beta.1" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(true);
+    });
+
+    it("should detect higher prerelease of same version as newer", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "alpha" }, { major: 1, minor: 0, patch: 0, prerelease: "beta" })).toBe(true);
+    });
+
+    it("should not consider lower prerelease as newer", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "beta" }, { major: 1, minor: 0, patch: 0, prerelease: "alpha" })).toBe(false);
+    });
+
+    it("should detect prerelease of higher major as newer", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "beta.1" })).toBe(true);
+    });
+
+    it("should not consider prerelease target newer when not a higher version", () => {
+        expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "beta.1" })).toBe(false);
+    });
+});
+
+// --- matchesPattern ---
+
+describe("matchesPattern", () => {
+    it("should match exact name", () => {
+        expect(matchesPattern("react", "react")).toBe(true);
+    });
+
+    it("should not match different name", () => {
+        expect(matchesPattern("react", "vue")).toBe(false);
+    });
+
+    it("should match wildcard suffix", () => {
+        expect(matchesPattern("eslint-plugin-react", "eslint*")).toBe(true);
+    });
+
+    it("should match scoped wildcard", () => {
+        expect(matchesPattern("@types/node", "@types/*")).toBe(true);
+    });
+
+    it("should not match scoped from different scope", () => {
+        expect(matchesPattern("@visulima/path", "@types/*")).toBe(false);
+    });
+
+    it("should match question mark for single char", () => {
+        expect(matchesPattern("react", "reac?")).toBe(true);
+    });
+
+    it("should match full wildcard", () => {
+        expect(matchesPattern("anything-at-all", "*")).toBe(true);
+    });
+
+    it("should match wildcard in middle", () => {
+        expect(matchesPattern("@visulima/path", "@*/path")).toBe(true);
+    });
+
+    it("should handle package names with dots", () => {
+        expect(matchesPattern("eslint.config", "eslint*")).toBe(true);
+    });
+
+    it("should not partially match", () => {
+        expect(matchesPattern("react-dom", "react")).toBe(false);
+    });
+
+    it("should handle empty pattern", () => {
+        expect(matchesPattern("react", "")).toBe(false);
+    });
+});
+
+// --- matchesFilters ---
+
+describe("matchesFilters", () => {
+    it("should include all when no filters", () => {
+        expect(matchesFilters("react", [], [])).toBe(true);
+    });
+
+    it("should exclude matching patterns", () => {
+        expect(matchesFilters("@types/node", [], ["@types/*"])).toBe(false);
+    });
+
+    it("should include only matching patterns", () => {
+        expect(matchesFilters("react", ["react*"], [])).toBe(true);
+        expect(matchesFilters("vue", ["react*"], [])).toBe(false);
+    });
+
+    it("should prioritize exclude over include", () => {
+        expect(matchesFilters("react", ["react*"], ["react"])).toBe(false);
+    });
+
+    it("should handle multiple include patterns", () => {
+        expect(matchesFilters("react", ["vue*", "react*"], [])).toBe(true);
+        expect(matchesFilters("angular", ["vue*", "react*"], [])).toBe(false);
+    });
+
+    it("should handle multiple exclude patterns", () => {
+        expect(matchesFilters("@types/node", [], ["@types/*", "eslint*"])).toBe(false);
+        expect(matchesFilters("eslint-plugin", [], ["@types/*", "eslint*"])).toBe(false);
+        expect(matchesFilters("react", [], ["@types/*", "eslint*"])).toBe(true);
+    });
+});
+
+// --- parseCatalogsFromYaml ---
+
+describe("parseCatalogsFromYaml", () => {
+    it("should parse default catalog", () => {
+        const yaml = `packages:
+  - "packages/*"
+catalog:
+  react: ^18.2.0
+  typescript: ~5.3.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.size).toBe(1);
+        expect(catalogs.has("default")).toBe(true);
+        expect(catalogs.get("default")!.get("react")).toBe("^18.2.0");
+        expect(catalogs.get("default")!.get("typescript")).toBe("~5.3.0");
+    });
+
+    it("should parse named catalogs", () => {
+        const yaml = `catalogs:
+  dev:
+    eslint: ^8.0.0
+    prettier: ^3.0.0
+  test:
+    vitest: ^1.0.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("dev")?.get("eslint")).toBe("^8.0.0");
+        expect(catalogs.get("dev")?.get("prettier")).toBe("^3.0.0");
+        expect(catalogs.get("test")?.get("vitest")).toBe("^1.0.0");
+    });
+
+    it("should parse both default and named catalogs", () => {
+        const yaml = `catalog:
+  react: ^18.2.0
+catalogs:
+  dev:
+    eslint: ^8.0.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("default")?.get("react")).toBe("^18.2.0");
+        expect(catalogs.get("dev")?.get("eslint")).toBe("^8.0.0");
+    });
+
+    it("should parse quoted scoped package names", () => {
+        const yaml = `catalog:
+  '@types/node': ^20.0.0
+  "@visulima/path": ^1.0.0
+  react: ^18.0.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+        const defaultCatalog = catalogs.get("default")!;
+
+        expect(defaultCatalog.get("@types/node")).toBe("^20.0.0");
+        expect(defaultCatalog.get("@visulima/path")).toBe("^1.0.0");
+        expect(defaultCatalog.get("react")).toBe("^18.0.0");
+    });
+
+    it("should parse exact versions without prefix", () => {
+        const yaml = `catalogs:
+  prod:
+    yaml: 2.8.3
+    type-fest: 5.5.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.get("prod")?.get("yaml")).toBe("2.8.3");
+        expect(catalogs.get("prod")?.get("type-fest")).toBe("5.5.0");
+    });
+
+    it("should parse quoted version values", () => {
+        const yaml = `catalog:
+  react: "^18.2.0"
+  typescript: '~5.3.0'
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+        const defaultCatalog = catalogs.get("default")!;
+
+        expect(defaultCatalog.get("react")).toBe("^18.2.0");
+        expect(defaultCatalog.get("typescript")).toBe("~5.3.0");
+    });
+
+    it("should handle inline comments after values", () => {
+        const yaml = `catalog:
+  react: ^18.2.0 # main framework
+  typescript: ~5.3.0 # type checking
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+        const defaultCatalog = catalogs.get("default")!;
+
+        // Value should not include the comment
+        expect(defaultCatalog.get("react")).toBe("^18.2.0");
+        expect(defaultCatalog.get("typescript")).toBe("~5.3.0");
+    });
+
+    it("should ignore comments", () => {
+        const yaml = `catalog:
+  # This is a comment
+  react: ^18.2.0
+  # typescript: ~5.3.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.get("default")?.size).toBe(1);
+        expect(catalogs.get("default")?.get("react")).toBe("^18.2.0");
+    });
+
+    it("should handle empty content", () => {
+        const catalogs = parseCatalogsFromYaml("");
+
+        expect(catalogs.size).toBe(0);
+    });
+
+    it("should handle YAML without catalogs", () => {
+        const yaml = `packages:
+  - "packages/*"
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.size).toBe(0);
+    });
+
+    it("should stop parsing catalog section when new top-level key appears", () => {
+        const yaml = `catalog:
+  react: ^18.2.0
+packages:
+  - "packages/*"
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.get("default")?.size).toBe(1);
+        expect(catalogs.get("default")?.get("react")).toBe("^18.2.0");
+    });
+
+    it("should not confuse 'catalogs:' with 'catalog:'", () => {
+        const yaml = `catalogs:
+  dev:
+    eslint: ^8.0.0
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+
+        expect(catalogs.has("default")).toBe(false);
+        expect(catalogs.has("dev")).toBe(true);
+    });
+
+    it("should handle workspace protocol entries (parsed as values)", () => {
+        const yaml = `catalog:
+  react: ^18.0.0
+  my-lib: workspace:*
+`;
+        const catalogs = parseCatalogsFromYaml(yaml);
+        const defaultCatalog = catalogs.get("default")!;
+
+        expect(defaultCatalog.get("react")).toBe("^18.0.0");
+        expect(defaultCatalog.get("my-lib")).toBe("workspace:*");
+    });
+});
+
+// --- findTargetVersion ---
+
+describe("findTargetVersion", () => {
+    const versions = ["1.0.0", "1.0.1", "1.1.0", "1.2.0", "2.0.0", "2.1.0", "3.0.0-beta.1"];
+
+    it("should find latest version", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "latest", false)).toBe("2.1.0");
+    });
+
+    it("should return undefined when already at latest", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^2.1.0", "latest", false)).toBeUndefined();
+    });
+
+    it("should find minor target version", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "minor", false)).toBe("1.2.0");
+    });
+
+    it("should find patch target version", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "patch", false)).toBe("1.0.1");
+    });
+
+    it("should return undefined when no patch available", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^1.2.0", "patch", false)).toBeUndefined();
+    });
+
+    it("should exclude prereleases by default", () => {
+        expect(findTargetVersion(versions, "3.0.0-beta.1", "^2.1.0", "latest", false)).toBeUndefined();
+    });
+
+    it("should include prereleases when enabled", () => {
+        expect(findTargetVersion(versions, "3.0.0-beta.1", "^2.1.0", "latest", true)).toBe("3.0.0-beta.1");
+    });
+
+    it("should return undefined for unparseable range", () => {
+        expect(findTargetVersion(versions, "2.1.0", "*", "latest", false)).toBeUndefined();
+    });
+
+    it("should handle minor target when no updates within major", () => {
+        expect(findTargetVersion(versions, "2.1.0", "^2.1.0", "minor", false)).toBeUndefined();
+    });
+
+    it("should return undefined for empty versions list", () => {
+        expect(findTargetVersion([], "2.1.0", "^1.0.0", "minor", false)).toBeUndefined();
+    });
+
+    it("should return undefined for empty latest string", () => {
+        expect(findTargetVersion(versions, "", "^1.0.0", "latest", false)).toBeUndefined();
+    });
+
+    it("should pick highest minor version when multiple available", () => {
+        const v = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "2.0.0"];
+
+        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false)).toBe("1.3.0");
+    });
+
+    it("should pick highest patch version when multiple available", () => {
+        const v = ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.1.0"];
+
+        expect(findTargetVersion(v, "1.1.0", "^1.0.0", "patch", false)).toBe("1.0.3");
+    });
+
+    it("should handle unsorted version input", () => {
+        const unsorted = ["2.0.0", "1.0.0", "1.2.0", "1.1.0", "1.0.1"];
+
+        expect(findTargetVersion(unsorted, "2.0.0", "^1.0.0", "minor", false)).toBe("1.2.0");
+    });
+
+    it("should filter out prerelease versions in minor mode", () => {
+        const v = ["1.0.0", "1.1.0", "1.2.0-beta.1", "2.0.0"];
+
+        expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false)).toBe("1.1.0");
+    });
+
+    it("should include prerelease versions in minor mode when enabled", () => {
+        const v = ["1.0.0", "1.1.0", "1.2.0-beta.1"];
+
+        expect(findTargetVersion(v, "1.2.0-beta.1", "^1.0.0", "minor", true)).toBe("1.2.0-beta.1");
+    });
+});
+
+// --- hasCatalogs ---
+
+describe("hasCatalogs", () => {
+    it("should detect default catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "pnpm-workspace.yaml"),
+            `packages:
+  - "packages/*"
+catalog:
+  react: ^18.0.0
+`,
+        );
+
+        expect(hasCatalogs(tmpDir)).toBe(true);
+    });
+
+    it("should detect named catalogs", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "pnpm-workspace.yaml"),
+            `packages:
+  - "packages/*"
+catalogs:
+  dev:
+    eslint: ^8.0.0
+`,
+        );
+
+        expect(hasCatalogs(tmpDir)).toBe(true);
+    });
+
+    it("should return false when no catalogs", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "pnpm-workspace.yaml"),
+            `packages:
+  - "packages/*"
+`,
+        );
+
+        expect(hasCatalogs(tmpDir)).toBe(false);
+    });
+
+    it("should return false when no pnpm-workspace.yaml", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasCatalogs(tmpDir)).toBe(false);
+    });
+});
+
+// --- readCatalogs ---
+
+describe("readCatalogs", () => {
+    it("should read catalogs from pnpm-workspace.yaml", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "pnpm-workspace.yaml"),
+            `catalog:
+  react: ^18.0.0
+catalogs:
+  dev:
+    eslint: ^8.0.0
+`,
+        );
+
+        const catalogs = readCatalogs(tmpDir);
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("default")?.get("react")).toBe("^18.0.0");
+        expect(catalogs.get("dev")?.get("eslint")).toBe("^8.0.0");
+    });
+
+    it("should return empty map when no file", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(readCatalogs(tmpDir).size).toBe(0);
+    });
+});
+
+// --- checkOutdated ---
+
+describe("checkOutdated", () => {
+    const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+            const packageName = url.replace("https://registry.npmjs.org/", "");
+            const data = responses[packageName];
+
+            if (!data || data === "error") {
+                return { ok: false, status: 404, statusText: "Not Found" } as Response;
+            }
+
+            const versionsObject: Record<string, unknown> = {};
+
+            for (const v of data.versions) {
+                versionsObject[v] = {};
+            }
+
+            return {
+                json: async () => { return { "dist-tags": { latest: data.latest }, versions: versionsObject }; },
+                ok: true,
+            } as Response;
+        });
+    };
+
+    it("should find outdated packages", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]!.packageName).toBe("react");
+        expect(result.outdated[0]!.targetVersion).toBe("19.0.0");
+        expect(result.outdated[0]!.newRange).toBe("^19.0.0");
+        expect(result.outdated[0]!.updateType).toBe("major");
+        expect(result.failed).toHaveLength(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty when all up to date", async () => {
+        mockFetch({
+            react: { latest: "18.2.0", versions: ["18.2.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should skip workspace: protocol entries", async () => {
+        mockFetch({});
+
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["any", "*"],
+                    ["linked", "link:../linked"],
+                    ["my-lib", "workspace:*"],
+                    ["my-other", "file:../other"],
+                ]),
+            ],
+        ]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(0);
+        // fetch should not have been called
+        expect(globalThis.fetch).not.toHaveBeenCalled();
+
+        vi.restoreAllMocks();
+    });
+
+    it("should respect include filter", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["react", "^18.0.0"],
+                    ["vue", "^3.0.0"],
+                ]),
+            ],
+        ]);
+        const options: CatalogCheckOptions = { exclude: [], include: ["react"], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]!.packageName).toBe("react");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should respect exclude filter", async () => {
+        mockFetch({
+            vue: { latest: "4.0.0", versions: ["3.0.0", "4.0.0"] },
+        });
+
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["react", "^18.0.0"],
+                    ["vue", "^3.0.0"],
+                ]),
+            ],
+        ]);
+        const options: CatalogCheckOptions = { exclude: ["react*"], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        // Only vue should be checked (react excluded)
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]!.packageName).toBe("vue");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should report failed fetches", async () => {
+        mockFetch({
+            react: "error",
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(0);
+        expect(result.failed).toContain("react");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should deduplicate fetches for same package across catalogs", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([
+            ["default", new Map([["react", "^18.0.0"]])],
+            ["dev", new Map([["react", "^18.0.0"]])],
+        ]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        // Two outdated entries (one per catalog) but fetch called once
+        expect(result.outdated).toHaveLength(2);
+        expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should respect target=minor", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.0.0", "18.1.0", "18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "minor" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]!.targetVersion).toBe("18.2.0");
+        expect(result.outdated[0]!.updateType).toBe("minor");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should respect target=patch", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.0.0", "18.0.1", "18.0.2", "18.1.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "patch" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]!.targetVersion).toBe("18.0.2");
+        expect(result.outdated[0]!.updateType).toBe("patch");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should call onProgress callback", async () => {
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const onProgress = vi.fn();
+
+        await checkOutdated(catalogs, options, undefined, onProgress);
+
+        expect(onProgress).toHaveBeenCalledWith(1, 1);
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- applyCatalogUpdates ---
+
+describe("applyCatalogUpdates", () => {
+    it("should update version in default catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `packages:
+  - "packages/*"
+catalog:
+  react: ^18.2.0
+  typescript: ~5.3.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.2.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("react: ^19.0.0");
+        expect(result).toContain("typescript: ~5.3.0");
+    });
+
+    it("should update version in named catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalogs:
+  dev:
+    eslint: ^8.0.0
+    prettier: ^3.0.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "dev",
+                currentRange: "^8.0.0",
+                newRange: "^9.0.0",
+                packageName: "eslint",
+                targetVersion: "9.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("eslint: ^9.0.0");
+        expect(result).toContain("prettier: ^3.0.0");
+    });
+
+    it("should preserve comments", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  # Main framework
+  react: ^18.2.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.2.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("# Main framework");
+        expect(result).toContain("react: ^19.0.0");
+    });
+
+    it("should update scoped package with single-quoted key", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  '@types/node': ^20.0.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^20.0.0",
+                newRange: "^22.0.0",
+                packageName: "@types/node",
+                targetVersion: "22.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("'@types/node': ^22.0.0");
+    });
+
+    it("should update scoped package with double-quoted key", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  "@types/node": ^20.0.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^20.0.0",
+                newRange: "^22.0.0",
+                packageName: "@types/node",
+                targetVersion: "22.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("\"@types/node\": ^22.0.0");
+    });
+
+    it("should update exact version without prefix", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalogs:
+  prod:
+    yaml: 2.8.3
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "prod",
+                currentRange: "2.8.3",
+                newRange: "2.9.0",
+                packageName: "yaml",
+                targetVersion: "2.9.0",
+                updateType: "minor",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("yaml: 2.9.0");
+    });
+
+    it("should update only the correct catalog when same package exists in multiple", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  react: ^18.0.0
+catalogs:
+  old:
+    react: ^17.0.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "old",
+                currentRange: "^17.0.0",
+                newRange: "^18.0.0",
+                packageName: "react",
+                targetVersion: "18.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+        const lines = result.split("\n");
+
+        // Default catalog should keep ^18.0.0 (not touched)
+        const catalogsIndex = lines.indexOf("catalogs:");
+        const defaultLine = lines.find((l, i) => l.includes("react:") && i < catalogsIndex);
+
+        expect(defaultLine).toContain("^18.0.0");
+
+        // Old catalog should be updated
+        const oldLine = lines.find((l, i) => i > catalogsIndex && l.includes("react:"));
+
+        expect(oldLine).toContain("^18.0.0");
+    });
+
+    it("should handle multiple updates at once", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  react: ^18.2.0
+  typescript: ~5.3.0
+  lodash: ^4.17.20
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.2.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+            {
+                catalogName: "default",
+                currentRange: "~5.3.0",
+                newRange: "~5.7.0",
+                packageName: "typescript",
+                targetVersion: "5.7.0",
+                updateType: "minor",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("react: ^19.0.0");
+        expect(result).toContain("typescript: ~5.7.0");
+        expect(result).toContain("lodash: ^4.17.20");
+    });
+
+    it("should not modify file when updates array is empty", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        const original = `catalog:
+  react: ^18.2.0
+`;
+
+        writeFileSync(filePath, original);
+        applyCatalogUpdates(tmpDir, []);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toBe(original);
+    });
+
+    it("should preserve packages section", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `packages:
+  - "packages/*"
+  - "apps/*"
+catalog:
+  react: ^18.2.0
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.2.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        expect(result).toContain("- \"packages/*\"");
+        expect(result).toContain("- \"apps/*\"");
+        expect(result).toContain("react: ^19.0.0");
+    });
+
+    it("should handle quoted version values", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(
+            filePath,
+            `catalog:
+  react: "^18.2.0"
+`,
+        );
+
+        applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.2.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const result = readFileSync(filePath, "utf8");
+
+        // Quotes around version should be preserved (replace happens inside)
+        expect(result).toContain("^19.0.0\"");
+    });
+});
+
+// --- Bun catalog support ---
+
+describe("parseBunCatalogs", () => {
+    it("should parse default catalog from package.json workspaces", () => {
+        const pkg = {
+            workspaces: {
+                catalog: { react: "^19.1.0", "react-dom": "^19.1.0" },
+                packages: ["packages/*"],
+            },
+        };
+        const catalogs = parseBunCatalogs(pkg);
+
+        expect(catalogs.size).toBe(1);
+        expect(catalogs.get("default")?.get("react")).toBe("^19.1.0");
+        expect(catalogs.get("default")?.get("react-dom")).toBe("^19.1.0");
+    });
+
+    it("should parse named catalogs from package.json workspaces", () => {
+        const pkg = {
+            workspaces: {
+                catalogs: {
+                    react17: { react: "^17.0.0" },
+                    testing: { jest: "^30.0.4", vitest: "^3.2.4" },
+                },
+            },
+        };
+        const catalogs = parseBunCatalogs(pkg);
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("testing")?.get("jest")).toBe("^30.0.4");
+        expect(catalogs.get("testing")?.get("vitest")).toBe("^3.2.4");
+        expect(catalogs.get("react17")?.get("react")).toBe("^17.0.0");
+    });
+
+    it("should parse both default and named catalogs", () => {
+        const pkg = {
+            workspaces: {
+                catalog: { react: "^19.1.0" },
+                catalogs: { testing: { vitest: "^3.2.4" } },
+                packages: ["packages/*"],
+            },
+        };
+        const catalogs = parseBunCatalogs(pkg);
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("default")?.get("react")).toBe("^19.1.0");
+        expect(catalogs.get("testing")?.get("vitest")).toBe("^3.2.4");
+    });
+
+    it("should return empty map when no catalogs", () => {
+        const pkg = { workspaces: { packages: ["packages/*"] } };
+        const catalogs = parseBunCatalogs(pkg);
+
+        expect(catalogs.size).toBe(0);
+    });
+
+    it("should return empty map when no workspaces", () => {
+        const pkg = {};
+        const catalogs = parseBunCatalogs(pkg);
+
+        expect(catalogs.size).toBe(0);
+    });
+});
+
+describe("hasCatalogs with bun", () => {
+    it("should detect bun catalogs in package.json", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                workspaces: {
+                    catalog: { react: "^19.1.0" },
+                    packages: ["packages/*"],
+                },
+            }),
+        );
+
+        expect(hasCatalogs(tmpDir, "bun")).toBe(true);
+    });
+
+    it("should detect bun named catalogs", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                workspaces: {
+                    catalogs: { testing: { vitest: "^3.0.0" } },
+                    packages: ["packages/*"],
+                },
+            }),
+        );
+
+        expect(hasCatalogs(tmpDir, "bun")).toBe(true);
+    });
+
+    it("should return false for bun without catalogs", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ workspaces: { packages: ["packages/*"] } }));
+
+        expect(hasCatalogs(tmpDir, "bun")).toBe(false);
+    });
+
+    it("should return false when no package.json", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasCatalogs(tmpDir, "bun")).toBe(false);
+    });
+});
+
+describe("readCatalogs with bun", () => {
+    it("should read bun catalogs from package.json", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify(
+                {
+                    workspaces: {
+                        catalog: { react: "^19.1.0", "react-dom": "^19.1.0" },
+                        catalogs: { testing: { vitest: "^3.2.4" } },
+                        packages: ["packages/*"],
+                    },
+                },
+                null,
+                2,
+            ),
+        );
+
+        const catalogs = readCatalogs(tmpDir, "bun");
+
+        expect(catalogs.size).toBe(2);
+        expect(catalogs.get("default")?.get("react")).toBe("^19.1.0");
+        expect(catalogs.get("testing")?.get("vitest")).toBe("^3.2.4");
+    });
+
+    it("should return empty map when no package.json", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(readCatalogs(tmpDir, "bun").size).toBe(0);
+    });
+});
+
+describe("detectJsonIndent", () => {
+    it("should detect 2-space indent", () => {
+        expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
+    });
+
+    it("should detect 4-space indent", () => {
+        expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
+    });
+
+    it("should default to 2 when no indentation found", () => {
+        expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
+    });
+});
+
+describe("applyCatalogUpdates with bun", () => {
+    it("should update version in bun default catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    name: "test-bun",
+                    workspaces: {
+                        catalog: { react: "^18.2.0", typescript: "~5.3.0" },
+                        packages: ["packages/*"],
+                    },
+                },
+                null,
+                2,
+            )}\n`,
+        );
+
+        applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.2.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        const result = JSON.parse(readFileSync(filePath, "utf8"));
+
+        expect(result.workspaces.catalog.react).toBe("^19.0.0");
+        expect(result.workspaces.catalog.typescript).toBe("~5.3.0");
+    });
+
+    it("should update version in bun named catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    workspaces: {
+                        catalogs: {
+                            testing: { jest: "^29.0.0", vitest: "^1.0.0" },
+                        },
+                    },
+                },
+                null,
+                2,
+            )}\n`,
+        );
+
+        applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "testing",
+                    currentRange: "^29.0.0",
+                    newRange: "^30.0.0",
+                    packageName: "jest",
+                    targetVersion: "30.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        const result = JSON.parse(readFileSync(filePath, "utf8"));
+
+        expect(result.workspaces.catalogs.testing.jest).toBe("^30.0.0");
+        expect(result.workspaces.catalogs.testing.vitest).toBe("^1.0.0");
+    });
+
+    it("should preserve JSON indent", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    workspaces: { catalog: { react: "^18.0.0" } },
+                },
+                null,
+                4,
+            )}\n`,
+        );
+
+        applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        const content = readFileSync(filePath, "utf8");
+
+        // Should use 4-space indent
+        expect(content).toContain("    \"workspaces\"");
+    });
+
+    it("should handle multiple updates in bun catalog", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    workspaces: {
+                        catalog: { react: "^18.0.0", "react-dom": "^18.0.0" },
+                        catalogs: { testing: { vitest: "^1.0.0" } },
+                    },
+                },
+                null,
+                2,
+            )}\n`,
+        );
+
+        applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react-dom",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+                {
+                    catalogName: "testing",
+                    currentRange: "^1.0.0",
+                    newRange: "^3.0.0",
+                    packageName: "vitest",
+                    targetVersion: "3.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        const result = JSON.parse(readFileSync(filePath, "utf8"));
+
+        expect(result.workspaces.catalog.react).toBe("^19.0.0");
+        expect(result.workspaces.catalog["react-dom"]).toBe("^19.0.0");
+        expect(result.workspaces.catalogs.testing.vitest).toBe("^3.0.0");
+    });
+
+    it("should preserve other package.json fields", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    name: "my-monorepo",
+                    private: true,
+                    scripts: { build: "echo build" },
+                    workspaces: {
+                        catalog: { react: "^18.0.0" },
+                        packages: ["packages/*"],
+                    },
+                },
+                null,
+                2,
+            )}\n`,
+        );
+
+        applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        const result = JSON.parse(readFileSync(filePath, "utf8"));
+
+        expect(result.name).toBe("my-monorepo");
+        expect(result.private).toBe(true);
+        expect(result.scripts.build).toBe("echo build");
+        expect(result.workspaces.packages).toEqual(["packages/*"]);
+        expect(result.workspaces.catalog.react).toBe("^19.0.0");
+    });
+});
+
+// --- .npmrc support ---
+
+describe("parseNpmrc", () => {
+    it("should parse default registry", () => {
+        const config = parseNpmrc("registry=https://custom.registry.com");
+
+        expect(config.defaultRegistry).toBe("https://custom.registry.com");
+    });
+
+    it("should parse scoped registry", () => {
+        const config = parseNpmrc("@myorg:registry=https://npm.myorg.com");
+
+        expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
+    });
+
+    it("should parse auth token", () => {
+        const config = parseNpmrc("//npm.myorg.com/:_authToken=secret123");
+
+        expect(config.authTokens.get("npm.myorg.com")).toBe("secret123");
+    });
+
+    it("should parse multiple entries", () => {
+        const content = `registry=https://custom.registry.com
+@myorg:registry=https://npm.myorg.com
+@another:registry=https://npm.another.com
+//npm.myorg.com/:_authToken=token1
+//npm.another.com/:_authToken=token2`;
+
+        const config = parseNpmrc(content);
+
+        expect(config.defaultRegistry).toBe("https://custom.registry.com");
+        expect(config.registries.size).toBe(2);
+        expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
+        expect(config.registries.get("@another")).toBe("https://npm.another.com");
+        expect(config.authTokens.size).toBe(2);
+        expect(config.authTokens.get("npm.myorg.com")).toBe("token1");
+    });
+
+    it("should ignore comments", () => {
+        const content = `# This is a comment
+; Another comment
+registry=https://custom.registry.com`;
+
+        const config = parseNpmrc(content);
+
+        expect(config.defaultRegistry).toBe("https://custom.registry.com");
+    });
+
+    it("should ignore empty lines", () => {
+        const content = `
+registry=https://custom.registry.com
+
+@myorg:registry=https://npm.myorg.com
+`;
+
+        const config = parseNpmrc(content);
+
+        expect(config.defaultRegistry).toBe("https://custom.registry.com");
+        expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
+    });
+
+    it("should handle empty content", () => {
+        const config = parseNpmrc("");
+
+        expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
+        expect(config.registries.size).toBe(0);
+        expect(config.authTokens.size).toBe(0);
+    });
+
+    it("should handle values with = in them", () => {
+        const config = parseNpmrc("//npm.myorg.com/:_authToken=abc=def==");
+
+        expect(config.authTokens.get("npm.myorg.com")).toBe("abc=def==");
+    });
+});
+
+describe("getRegistryForPackage", () => {
+    const config: NpmrcConfig = {
+        authTokens: new Map([["npm.myorg.com", "secret"]]),
+        defaultRegistry: "https://registry.npmjs.org",
+        registries: new Map([["@myorg", "https://npm.myorg.com"]]),
+    };
+
+    it("should return scoped registry for matching package", () => {
+        const result = getRegistryForPackage("@myorg/utils", config);
+
+        expect(result.url).toBe("https://npm.myorg.com");
+        expect(result.token).toBe("secret");
+    });
+
+    it("should return default registry for unscoped package", () => {
+        const result = getRegistryForPackage("react", config);
+
+        expect(result.url).toBe("https://registry.npmjs.org");
+        expect(result.token).toBeUndefined();
+    });
+
+    it("should return default registry for unmatched scope", () => {
+        const result = getRegistryForPackage("@other/pkg", config);
+
+        expect(result.url).toBe("https://registry.npmjs.org");
+    });
+});
+
+describe("loadNpmrc", () => {
+    it("should load project .npmrc", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(tmpDir, ".npmrc"), "@myorg:registry=https://npm.myorg.com\n");
+
+        const config = loadNpmrc(tmpDir);
+
+        expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
+    });
+
+    it("should return defaults when no .npmrc exists", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const config = loadNpmrc(tmpDir);
+
+        expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
+        expect(config.registries.size).toBe(0);
+    });
+});
+
+// --- fetchPackageVersions with timeout and registry ---
+
+describe("fetchPackageVersions", () => {
+    it("should use custom registry URL", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+
+            expect(url).toBe("https://custom.registry.com/react");
+
+            return {
+                json: async () => { return { "dist-tags": { latest: "19.0.0" }, versions: { "19.0.0": {} } }; },
+                ok: true,
+            } as Response;
+        });
+
+        const result = await fetchPackageVersions("react", { url: "https://custom.registry.com" });
+
+        expect(result.latest).toBe("19.0.0");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should pass auth token in header", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
+            const headers = init?.headers as Record<string, string>;
+
+            expect(headers["Authorization"]).toBe("Bearer mytoken");
+
+            return {
+                json: async () => { return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } }; },
+                ok: true,
+            } as Response;
+        });
+
+        await fetchPackageVersions("pkg", { authToken: "mytoken", url: "https://npm.example.com" });
+
+        vi.restoreAllMocks();
+    });
+
+    it("should abort on timeout", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
+            // Wait longer than timeout
+            await new Promise((resolve, reject) => {
+                const timer = setTimeout(resolve, 5000);
+
+                init?.signal?.addEventListener("abort", () => {
+                    clearTimeout(timer);
+                    reject(new DOMException("Aborted", "AbortError"));
+                });
+            });
+
+            return { json: async () => { return {}; }, ok: true } as Response;
+        });
+
+        await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrowError();
+
+        vi.restoreAllMocks();
+    });
+
+    it("should strip trailing slash from registry URL", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+
+            expect(url).toBe("https://custom.registry.com/react");
+
+            return {
+                json: async () => { return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } }; },
+                ok: true,
+            } as Response;
+        });
+
+        await fetchPackageVersions("react", { url: "https://custom.registry.com/" });
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- Backup & Rollback ---
+
+describe("createBackup", () => {
+    it("should create pnpm backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
+
+        const backupPath = createBackup(tmpDir);
+
+        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(readFileSync(backupPath!, "utf8")).toBe("catalog:\n  react: ^18.0.0\n");
+    });
+
+    it("should create bun backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
+
+        const backupPath = createBackup(tmpDir, "bun");
+
+        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(readFileSync(backupPath!, "utf8")).toContain("react");
+    });
+
+    it("should return undefined when file does not exist", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(createBackup(tmpDir)).toBeUndefined();
+    });
+});
+
+describe("restoreFromBackup", () => {
+    it("should restore pnpm file from backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        const backupPath = `${filePath}.bak`;
+
+        writeFileSync(backupPath, "catalog:\n  react: ^18.0.0\n");
+        writeFileSync(filePath, "catalog:\n  react: ^19.0.0\n");
+
+        const restored = restoreFromBackup(tmpDir);
+
+        expect(restored).toBe(true);
+        expect(readFileSync(filePath, "utf8")).toContain("^18.0.0");
+    });
+
+    it("should restore bun file from backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+        const backupPath = `${filePath}.bak`;
+
+        writeFileSync(backupPath, "{\"old\":true}");
+        writeFileSync(filePath, "{\"new\":true}");
+
+        const restored = restoreFromBackup(tmpDir, "bun");
+
+        expect(restored).toBe(true);
+        expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
+    });
+
+    it("should return false when no backup exists", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(restoreFromBackup(tmpDir)).toBe(false);
+    });
+});
+
+describe("hasBackup", () => {
+    it("should detect existing backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(tmpDir, "pnpm-workspace.yaml.bak"), "backup");
+
+        expect(hasBackup(tmpDir)).toBe(true);
+    });
+
+    it("should return false when no backup", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasBackup(tmpDir)).toBe(false);
+    });
+
+    it("should check bun backup path", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(join(tmpDir, "package.json.bak"), "backup");
+
+        expect(hasBackup(tmpDir, "bun")).toBe(true);
+        expect(hasBackup(tmpDir, "pnpm")).toBe(false);
+    });
+});
+
+// --- Output formatting ---
+
+describe("formatOutdatedJson", () => {
+    it("should produce valid JSON with outdated and failed", () => {
+        const result: CheckOutdatedResult = {
+            failed: ["broken-pkg"],
+            outdated: [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+        };
+        const json = formatOutdatedJson(result);
+        const parsed = JSON.parse(json);
+
+        expect(parsed.outdated).toHaveLength(1);
+        expect(parsed.outdated[0].packageName).toBe("react");
+        expect(parsed.failed).toEqual(["broken-pkg"]);
+    });
+
+    it("should produce valid JSON for empty results", () => {
+        const json = formatOutdatedJson({ failed: [], outdated: [] });
+        const parsed = JSON.parse(json);
+
+        expect(parsed.outdated).toHaveLength(0);
+        expect(parsed.failed).toHaveLength(0);
+    });
+});
+
+describe("formatOutdatedMinimal", () => {
+    it("should format one entry per line", () => {
+        const result = formatOutdatedMinimal([
+            {
+                catalogName: "default",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+            {
+                catalogName: "default",
+                currentRange: "~5.3.0",
+                newRange: "~5.7.0",
+                packageName: "typescript",
+                targetVersion: "5.7.0",
+                updateType: "minor",
+            },
+        ]);
+
+        const lines = result.split("\n");
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toContain("react");
+        expect(lines[0]).toContain("→");
+        expect(lines[1]).toContain("typescript");
+    });
+
+    it("should return empty string for no entries", () => {
+        expect(formatOutdatedMinimal([])).toBe("");
+    });
+});
+
+// --- applyCatalogUpdates with backup ---
+
+describe("applyCatalogUpdates with backup", () => {
+    it("should create backup by default", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
+
+        const backupPath = applyCatalogUpdates(tmpDir, [
+            {
+                catalogName: "default",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        expect(backupPath).toBe(`${filePath}.bak`);
+        // Backup should contain the OLD content
+        expect(readFileSync(backupPath!, "utf8")).toContain("^18.0.0");
+        // File should contain the NEW content
+        expect(readFileSync(filePath, "utf8")).toContain("^19.0.0");
+    });
+
+    it("should skip backup when backup=false", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+
+        writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
+
+        const backupPath = applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            undefined,
+            false,
+        );
+
+        expect(backupPath).toBeUndefined();
+        expect(readFileSync(filePath, "utf8")).toContain("^19.0.0");
+    });
+
+    it("should create backup for bun updates", () => {
+        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(tmpDir, "package.json");
+
+        writeFileSync(
+            filePath,
+            `${JSON.stringify(
+                {
+                    workspaces: { catalog: { react: "^18.0.0" } },
+                },
+                null,
+                2,
+            )}\n`,
+        );
+
+        const backupPath = applyCatalogUpdates(
+            tmpDir,
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            "bun",
+        );
+
+        expect(backupPath).toBe(`${filePath}.bak`);
+        expect(JSON.parse(readFileSync(backupPath!, "utf8")).workspaces.catalog.react).toBe("^18.0.0");
+        expect(JSON.parse(readFileSync(filePath, "utf8")).workspaces.catalog.react).toBe("^19.0.0");
+    });
+});
+
+// --- checkOutdated with npmrc ---
+
+describe("checkOutdated with npmrcConfig", () => {
+    it("should use scoped registry from npmrc", async () => {
+        const fetchCalls: string[] = [];
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+
+            fetchCalls.push(url);
+
+            return {
+                json: async () => { return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } }; },
+                ok: true,
+            } as Response;
+        });
+
+        const catalogs = new Map([["default", new Map([["@myorg/utils", "^1.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const npmrcConfig: NpmrcConfig = {
+            authTokens: new Map(),
+            defaultRegistry: "https://registry.npmjs.org",
+            registries: new Map([["@myorg", "https://npm.myorg.com"]]),
+        };
+
+        await checkOutdated(catalogs, options, npmrcConfig);
+
+        expect(fetchCalls[0]).toBe("https://npm.myorg.com/@myorg/utils");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should use default registry when no npmrcConfig", async () => {
+        const fetchCalls: string[] = [];
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            fetchCalls.push(typeof input === "string" ? input : input.toString());
+
+            return {
+                json: async () => { return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } }; },
+                ok: true,
+            } as Response;
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^1.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+
+        await checkOutdated(catalogs, options);
+
+        expect(fetchCalls[0]).toBe("https://registry.npmjs.org/react");
+
+        vi.restoreAllMocks();
+    });
+});
+
+// --- Security scanning (OSV.dev) ---
+
+describe("fetchVulnerabilities", () => {
+    it("should return vulnerabilities from OSV batch API", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    json: async () => {
+                        return {
+                            results: [
+                                {
+                                    vulns: [
+                                        {
+                                            affected: [{ ranges: [{ events: [{ introduced: "0" }, { fixed: "4.17.21" }] }] }],
+                                            id: "GHSA-1234-5678",
+                                            severity: [{ score: "7.5", type: "CVSS_V3" }],
+                                            summary: "Prototype Pollution",
+                                        },
+                                    ],
+                                },
+                                { vulns: [] },
+                            ],
+                        };
+                    },
+                    ok: true,
+                }) as Response,
+        );
+
+        const result = await fetchVulnerabilities([
+            { name: "lodash", version: "4.17.20" },
+            { name: "react", version: "18.2.0" },
+        ]);
+
+        expect(result.size).toBe(1);
+        expect(result.has("lodash")).toBe(true);
+        expect(result.has("react")).toBe(false);
+
+        const vulns = result.get("lodash")!;
+
+        expect(vulns).toHaveLength(1);
+        expect(vulns[0]!.id).toBe("GHSA-1234-5678");
+        expect(vulns[0]!.severity).toBe("HIGH");
+        expect(vulns[0]!.cvssScore).toBe(7.5);
+        expect(vulns[0]!.fixedVersions).toEqual(["4.17.21"]);
+        expect(vulns[0]!.summary).toBe("Prototype Pollution");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty map on API failure", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    ok: false,
+                    status: 500,
+                }) as Response,
+        );
+
+        const result = await fetchVulnerabilities([{ name: "lodash", version: "4.17.20" }]);
+
+        expect(result.size).toBe(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty map on network error", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
+            throw new Error("Network error");
+        });
+
+        const result = await fetchVulnerabilities([{ name: "lodash", version: "4.17.20" }]);
+
+        expect(result.size).toBe(0);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty map for empty input", async () => {
+        const result = await fetchVulnerabilities([]);
+
+        expect(result.size).toBe(0);
+    });
+
+    it("should map severity from database_specific", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    json: async () => {
+                        return {
+                            results: [
+                                {
+                                    vulns: [
+                                        {
+                                            database_specific: { severity: "CRITICAL" },
+                                            id: "GHSA-test",
+                                            summary: "Test",
+                                        },
+                                    ],
+                                },
+                            ],
+                        };
+                    },
+                    ok: true,
+                }) as Response,
+        );
+
+        const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
+
+        expect(result.get("pkg")![0]!.severity).toBe("CRITICAL");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should map CVSS score ranges correctly", async () => {
+        const makeResponse = (score: string) =>
+            ({
+                json: async () => {
+                    return {
+                        results: [
+                            {
+                                vulns: [
+                                    {
+                                        id: "GHSA-test",
+                                        severity: [{ score, type: "CVSS_V3" }],
+                                        summary: "Test",
+                                    },
+                                ],
+                            },
+                        ],
+                    };
+                },
+                ok: true,
+            }) as Response;
+
+        // CRITICAL >= 9.0
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("9.8"));
+
+        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("CRITICAL");
+
+        vi.restoreAllMocks();
+
+        // HIGH >= 7.0
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("7.0"));
+
+        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("HIGH");
+
+        vi.restoreAllMocks();
+
+        // MODERATE >= 4.0
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("4.0"));
+
+        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("MODERATE");
+
+        vi.restoreAllMocks();
+
+        // LOW < 4.0
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("2.5"));
+
+        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("LOW");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should extract multiple fixed versions from affected ranges", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    json: async () => {
+                        return {
+                            results: [
+                                {
+                                    vulns: [
+                                        {
+                                            affected: [
+                                                { ranges: [{ events: [{ introduced: "0" }, { fixed: "1.2.0" }] }] },
+                                                { ranges: [{ events: [{ introduced: "2.0.0" }, { fixed: "2.1.0" }] }] },
+                                            ],
+                                            id: "GHSA-test",
+                                            summary: "Test",
+                                        },
+                                    ],
+                                },
+                            ],
+                        };
+                    },
+                    ok: true,
+                }) as Response,
+        );
+
+        const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
+
+        expect(result.get("pkg")![0]!.fixedVersions).toEqual(["1.2.0", "2.1.0"]);
+
+        vi.restoreAllMocks();
+    });
+});
+
+describe("checkOutdated with security", () => {
+    it("should enrich outdated entries with vulnerability data when security=true", async () => {
+        let callCount = 0;
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+
+            // npm registry call
+            if (url.includes("registry.npmjs.org")) {
+                return {
+                    json: async () => {
+                        return {
+                            "dist-tags": { latest: "4.17.21" },
+                            versions: { "4.17.20": {}, "4.17.21": {} },
+                        };
+                    },
+                    ok: true,
+                } as Response;
+            }
+
+            // OSV API call
+            if (url.includes("osv.dev")) {
+                callCount++;
+
+                return {
+                    json: async () => {
+                        return {
+                            results: [
+                                {
+                                    vulns: [
+                                        {
+                                            affected: [{ ranges: [{ events: [{ introduced: "0" }, { fixed: "4.17.21" }] }] }],
+                                            id: "GHSA-sec-1234",
+                                            severity: [{ score: "7.5", type: "CVSS_V3" }],
+                                            summary: "Prototype Pollution in lodash",
+                                        },
+                                    ],
+                                },
+                            ],
+                        };
+                    },
+                    ok: true,
+                } as Response;
+            }
+
+            return { ok: false, status: 404 } as Response;
+        });
+
+        const catalogs = new Map([["default", new Map([["lodash", "^4.17.20"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, security: true, target: "latest" };
+        const { outdated } = await checkOutdated(catalogs, options);
+
+        expect(outdated).toHaveLength(1);
+        expect(outdated[0]!.vulnerabilities).toBeDefined();
+        expect(outdated[0]!.vulnerabilities).toHaveLength(1);
+        expect(outdated[0]!.vulnerabilities![0]!.id).toBe("GHSA-sec-1234");
+        expect(callCount).toBe(1);
+
+        vi.restoreAllMocks();
+    });
+
+    it("should not call OSV when security=false", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                ({
+                    json: async () => {
+                        return {
+                            "dist-tags": { latest: "2.0.0" },
+                            versions: { "1.0.0": {}, "2.0.0": {} },
+                        };
+                    },
+                    ok: true,
+                }) as Response,
+        );
+
+        const catalogs = new Map([["default", new Map([["react", "^1.0.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, security: false, target: "latest" };
+        const { outdated } = await checkOutdated(catalogs, options);
+
+        expect(outdated).toHaveLength(1);
+        expect(outdated[0]!.vulnerabilities).toBeUndefined();
+
+        // Only npm registry calls, no OSV
+        const { calls } = (globalThis.fetch as ReturnType<typeof vi.fn>).mock;
+
+        expect(calls.every((c: unknown[]) => !(c[0] as string).includes("osv.dev"))).toBe(true);
+
+        vi.restoreAllMocks();
+    });
+});
+
+describe("formatOutdatedTable with security", () => {
+    it("should show [SEC] prefix for entries with vulnerabilities", () => {
+        const logs: string[] = [];
+        const mockLogger = { info: (message: string) => logs.push(message) } as unknown as Console;
+
+        formatOutdatedTable(
+            [
+                {
+                    catalogName: "default",
+                    currentRange: "^4.17.20",
+                    newRange: "^4.17.21",
+                    packageName: "lodash",
+                    targetVersion: "4.17.21",
+                    updateType: "patch",
+                    vulnerabilities: [{ cvssScore: 7.5, fixedVersions: ["4.17.21"], id: "GHSA-1234", severity: "HIGH", summary: "Prototype Pollution" }],
+                },
+                {
+                    catalogName: "default",
+                    currentRange: "^18.0.0",
+                    newRange: "^19.0.0",
+                    packageName: "react",
+                    targetVersion: "19.0.0",
+                    updateType: "major",
+                },
+            ],
+            mockLogger,
+        );
+
+        const output = logs.join("\n");
+
+        expect(output).toContain("[SEC] lodash");
+        expect(output).toContain("HIGH GHSA-1234");
+        expect(output).toContain("Prototype Pollution");
+        expect(output).not.toContain("[SEC] react");
+    });
+});
+
+describe("formatSummary with security", () => {
+    it("should include vulnerability count in summary", () => {
+        const result = formatSummary([
+            {
+                catalogName: "default",
+                currentRange: "^4.17.20",
+                newRange: "^4.17.21",
+                packageName: "lodash",
+                targetVersion: "4.17.21",
+                updateType: "patch",
+                vulnerabilities: [{ cvssScore: 7.5, fixedVersions: [], id: "GHSA-1234", severity: "HIGH", summary: "test" }],
+            },
+            {
+                catalogName: "default",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        expect(result).toContain("1 major");
+        expect(result).toContain("1 patch");
+        expect(result).toContain("1 with vulnerabilities");
+    });
+
+    it("should not mention vulnerabilities when none found", () => {
+        const result = formatSummary([
+            {
+                catalogName: "default",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        expect(result).not.toContain("vulnerabilit");
+    });
+});

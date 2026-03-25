@@ -1,0 +1,112 @@
+---
+title: Git Hooks
+description: "Set up and manage git hooks with vis for your team"
+---
+
+# Git Hooks
+
+vis provides built-in git hook management as a lightweight alternative to tools like husky.
+
+## Getting Started
+
+### Installing Hooks
+
+```bash
+vis hook install
+```
+
+This configures `core.hooksPath` to point to your hooks directory (`.vis-hooks` by default).
+
+### Creating a Hook
+
+Create executable scripts in the hooks directory:
+
+```bash
+echo '#!/bin/sh
+pnpm run lint-staged' > .vis-hooks/pre-commit
+
+chmod +x .vis-hooks/pre-commit
+```
+
+### Commit the Hooks Directory
+
+Add the hooks directory to version control so the entire team shares the same hooks:
+
+```bash
+git add .vis-hooks/
+git commit -m "chore: add git hooks"
+```
+
+## Migrating from Husky
+
+If your project currently uses husky, vis can automatically migrate your hooks:
+
+```bash
+vis hook migrate
+```
+
+The migration:
+
+1. Detects your husky directory (`.husky` or `.husky/_`)
+2. Copies all hook scripts to the vis hooks directory
+3. Prompts for confirmation before making changes
+4. Removes the husky directory after migration
+
+## Disabling Hooks
+
+Temporarily disable hooks using the environment variable:
+
+```bash
+VIS_GIT_HOOKS=0 git commit -m "skip hooks"
+```
+
+For debugging hook issues:
+
+```bash
+VIS_GIT_HOOKS=2 git commit -m "debug hooks"
+```
+
+## Common Hook Recipes
+
+### Lint Staged Files
+
+```bash
+#!/bin/sh
+# .vis-hooks/pre-commit
+pnpm run lint-staged
+```
+
+### Validate Commit Messages
+
+```bash
+#!/bin/sh
+# .vis-hooks/commit-msg
+pnpm run commitlint --edit "$1"
+```
+
+### Run Type Checks Before Push
+
+```bash
+#!/bin/sh
+# .vis-hooks/pre-push
+pnpm run typecheck
+```
+
+### Check Dependencies Before Commit
+
+```bash
+#!/bin/sh
+# .vis-hooks/pre-commit
+vis check --exit-code --format minimal || {
+  echo "Outdated dependencies detected. Run 'vis check' for details."
+  exit 1
+}
+```
+
+## Uninstalling
+
+To remove vis hooks and reset git's `core.hooksPath`:
+
+```bash
+vis hook uninstall
+```

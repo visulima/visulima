@@ -11,7 +11,7 @@ import { DEFAULT_HOOKS_DIRECTORY, HOOKS } from "./constants";
  * depth 3 → dirname "$(dirname "$(dirname "$0"))"
  */
 const nestedDirname = (depth: number): string => {
-    let expression = '"$0"';
+    let expression = "\"$0\"";
 
     for (let index = 0; index < depth; index++) {
         expression = `"$(dirname ${expression})"`;
@@ -53,12 +53,12 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
     }
 
     if (directory.includes("..")) {
-        return { isError: true, message: '".." is not allowed in hooks directory path' };
+        return { isError: true, message: "\"..\" is not allowed in hooks directory path" };
     }
 
     const prefixResult = spawnSync("git", ["rev-parse", "--show-prefix"]);
 
-    if (prefixResult.status == null) {
+    if (prefixResult.status == undefined) {
         return { isError: true, message: "git command not found" };
     }
 
@@ -82,7 +82,7 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
 
     const { status, stderr } = spawnSync("git", ["config", "core.hooksPath", target]);
 
-    if (status == null) {
+    if (status == undefined) {
         return { isError: true, message: "git command not found" };
     }
 
