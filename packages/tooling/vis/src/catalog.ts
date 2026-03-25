@@ -1,8 +1,9 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-
 import { boxen } from "@visulima/boxen";
-import { join } from "@visulima/path";
+import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
+import { dirname, join } from "@visulima/path";
 import { createTable } from "@visulima/tabular";
+
+import { resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
 
@@ -24,6 +25,9 @@ const QUOTES_TRIM_REGEX = /^['"]|['"]$/g;
 const REGISTRY_PROTOCOL_REGEX = /^https?:\/\//;
 const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
+
+const VALID_DEP_TYPES = new Set(["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]);
+const VIS_BACKUP_DIR = ".vis-backup";
 
 // --- Types ---
 
@@ -60,6 +64,11 @@ interface CatalogCheckOptions {
     includePrerelease: boolean;
     security?: boolean;
     target: UpdateTarget;
+}
+
+interface ReadCatalogOptions {
+    dev?: boolean;
+    prod?: boolean;
 }
 
 // --- Version utilities ---
@@ -267,11 +276,11 @@ const parseCatalogsFromYaml = (content: string): Map<string, Map<string, string>
 const hasPnpmCatalogs = (workspaceRoot: string): boolean => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return false;
     }
 
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
 
     return CATALOG_SECTION_REGEX.test(content) || CATALOGS_SECTION_REGEX.test(content);
 };
@@ -279,11 +288,11 @@ const hasPnpmCatalogs = (workspaceRoot: string): boolean => {
 const readPnpmCatalogs = (workspaceRoot: string): Map<string, Map<string, string>> => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return new Map();
     }
 
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
 
     return parseCatalogsFromYaml(content);
 };
@@ -298,20 +307,20 @@ interface BunPackageJson {
     };
 }
 
-const readPackageJson = (filePath: string): BunPackageJson | undefined => {
-    if (!existsSync(filePath)) {
+const readPackageJsonSafe = (filePath: string): BunPackageJson | undefined => {
+    if (!isAccessibleSync(filePath)) {
         return undefined;
     }
 
     try {
-        return JSON.parse(readFileSync(filePath, "utf8")) as BunPackageJson;
+        return readJsonSync(filePath) as BunPackageJson;
     } catch {
         return undefined;
     }
 };
 
 const hasBunCatalogs = (workspaceRoot: string): boolean => {
-    const pkg = readPackageJson(join(workspaceRoot, "package.json"));
+    const pkg = readPackageJsonSafe(join(workspaceRoot, "package.json"));
 
     return !!(pkg?.workspaces?.catalog || pkg?.workspaces?.catalogs);
 };
@@ -335,13 +344,213 @@ const parseBunCatalogs = (pkg: BunPackageJson): Map<string, Map<string, string>>
 };
 
 const readBunCatalogs = (workspaceRoot: string): Map<string, Map<string, string>> => {
-    const pkg = readPackageJson(join(workspaceRoot, "package.json"));
+    const pkg = readPackageJsonSafe(join(workspaceRoot, "package.json"));
 
     if (!pkg) {
         return new Map();
     }
 
     return parseBunCatalogs(pkg);
+};
+
+// --- Catalog reading: npm/yarn (package.json deps) ---
+
+const parseCompositeCatalogName = (name: string): { depType: string; relativePath: string } | undefined => {
+    const colonIndex = name.lastIndexOf(":");
+
+    if (colonIndex === -1) {
+        return undefined;
+    }
+
+    const depType = name.slice(colonIndex + 1);
+
+    if (!VALID_DEP_TYPES.has(depType)) {
+        return undefined;
+    }
+
+    return { depType, relativePath: name.slice(0, colonIndex) };
+};
+
+const getDepTypesToInclude = (options?: ReadCatalogOptions): string[] => {
+    if (options?.dev) {
+        return ["devDependencies"];
+    }
+
+    if (options?.prod) {
+        return ["dependencies"];
+    }
+
+    return ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
+};
+
+const collectInternalPackageNames = (workspaceRoot: string, rootName: string | undefined, workspaceDirectories: string[]): Set<string> => {
+    const names = new Set<string>();
+
+    if (rootName) {
+        names.add(rootName);
+    }
+
+    for (const directory of workspaceDirectories) {
+        const pkgPath = join(workspaceRoot, directory, "package.json");
+
+        if (isAccessibleSync(pkgPath)) {
+            try {
+                const pkg = readJsonSync(pkgPath) as { name?: string };
+
+                if (pkg.name) {
+                    names.add(pkg.name);
+                }
+            } catch {
+                // skip invalid package.json
+            }
+        }
+    }
+
+    return names;
+};
+
+const filterExternalDeps = (deps: Record<string, string>, internalNames: Set<string>): Map<string, string> => {
+    const filtered = new Map<string, string>();
+
+    for (const [name, range] of Object.entries(deps)) {
+        if (internalNames.has(name)) {
+            continue;
+        }
+
+        if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:")) {
+            continue;
+        }
+
+        filtered.set(name, range);
+    }
+
+    return filtered;
+};
+
+const scanDirectoryDeps = (
+    workspaceRoot: string,
+    directory: string,
+    rootPkgPath: string,
+    depTypes: string[],
+    internalNames: Set<string>,
+    catalogs: Map<string, Map<string, string>>,
+): void => {
+    const pkgPath = directory === "." ? rootPkgPath : join(workspaceRoot, directory, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return;
+    }
+
+    let pkg: Record<string, unknown>;
+
+    try {
+        pkg = readJsonSync(pkgPath) as Record<string, unknown>;
+    } catch {
+        return;
+    }
+
+    for (const depType of depTypes) {
+        const deps = pkg[depType] as Record<string, string> | undefined;
+
+        if (!deps || typeof deps !== "object") {
+            continue;
+        }
+
+        const filtered = filterExternalDeps(deps, internalNames);
+
+        if (filtered.size > 0) {
+            catalogs.set(`${directory}:${depType}`, filtered);
+        }
+    }
+};
+
+const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions): Map<string, Map<string, string>> => {
+    const catalogs = new Map<string, Map<string, string>>();
+    const rootPkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(rootPkgPath)) {
+        return catalogs;
+    }
+
+    const rootPkg = readJsonSync(rootPkgPath) as {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+        name?: string;
+        optionalDependencies?: Record<string, string>;
+        peerDependencies?: Record<string, string>;
+        workspaces?: string[] | { packages: string[] };
+    };
+
+    let workspaceDirectories: string[] = [];
+    const workspacesField = rootPkg.workspaces;
+
+    if (workspacesField) {
+        const patterns = Array.isArray(workspacesField) ? workspacesField : workspacesField.packages;
+
+        workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+    }
+
+    const internalNames = collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
+    const depTypes = getDepTypesToInclude(options);
+    const directoriesToScan = [".", ...workspaceDirectories];
+
+    for (const directory of directoriesToScan) {
+        scanDirectoryDeps(workspaceRoot, directory, rootPkgPath, depTypes, internalNames, catalogs);
+    }
+
+    return catalogs;
+};
+
+const hasPackageJsonDeps = (workspaceRoot: string): boolean => {
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return false;
+    }
+
+    try {
+        const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
+
+        return !!(pkg.dependencies || pkg.devDependencies || pkg.peerDependencies || pkg.optionalDependencies);
+    } catch {
+        return false;
+    }
+};
+
+const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
+    const byFile = new Map<string, { depType: string; newRange: string; packageName: string }[]>();
+
+    for (const update of updates) {
+        const parsed = parseCompositeCatalogName(update.catalogName);
+
+        if (!parsed) {
+            continue;
+        }
+
+        const filePath = parsed.relativePath === "." ? join(workspaceRoot, "package.json") : join(workspaceRoot, parsed.relativePath, "package.json");
+
+        if (!byFile.has(filePath)) {
+            byFile.set(filePath, []);
+        }
+
+        const fileList = byFile.get(filePath);
+
+        if (fileList) {
+            fileList.push({ depType: parsed.depType, newRange: update.newRange, packageName: update.packageName });
+        }
+    }
+
+    for (const [filePath, fileUpdates] of byFile) {
+        const pkg = readJsonSync(filePath) as Record<string, Record<string, string>>;
+
+        for (const { depType, newRange, packageName } of fileUpdates) {
+            if (pkg[depType]) {
+                pkg[depType][packageName] = newRange;
+            }
+        }
+
+        writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
+    }
 };
 
 // --- Unified catalog API ---
@@ -353,12 +562,20 @@ const hasCatalogs = (workspaceRoot: string, packageManager?: string): boolean =>
         return hasBunCatalogs(workspaceRoot);
     }
 
+    if (packageManager === "npm" || packageManager === "yarn") {
+        return hasPackageJsonDeps(workspaceRoot);
+    }
+
     return hasPnpmCatalogs(workspaceRoot);
 };
 
-const readCatalogs = (workspaceRoot: string, packageManager?: string): Map<string, Map<string, string>> => {
+const readCatalogs = (workspaceRoot: string, packageManager?: string, options?: ReadCatalogOptions): Map<string, Map<string, string>> => {
     if (packageManager === "bun") {
         return readBunCatalogs(workspaceRoot);
+    }
+
+    if (packageManager === "npm" || packageManager === "yarn") {
+        return readPackageJsonDeps(workspaceRoot, options);
     }
 
     return readPnpmCatalogs(workspaceRoot);
@@ -434,13 +651,13 @@ const loadNpmrc = (workspaceRoot: string): NpmrcConfig => {
     // Load user-level ~/.npmrc first (lower precedence)
     const homeDirectory = process.env.HOME ?? process.env.USERPROFILE ?? "";
     const userNpmrc = join(homeDirectory, ".npmrc");
-    let config = homeDirectory && existsSync(userNpmrc) ? parseNpmrc(readFileSync(userNpmrc, "utf8")) : empty;
+    let config = homeDirectory && isAccessibleSync(userNpmrc) ? parseNpmrc(readFileSync(userNpmrc)) : empty;
 
     // Merge project-level .npmrc on top (higher precedence)
     const projectNpmrc = join(workspaceRoot, ".npmrc");
 
-    if (existsSync(projectNpmrc)) {
-        config = mergeNpmrcConfigs(config, parseNpmrc(readFileSync(projectNpmrc, "utf8")));
+    if (isAccessibleSync(projectNpmrc)) {
+        config = mergeNpmrcConfigs(config, parseNpmrc(readFileSync(projectNpmrc)));
     }
 
     return config;
@@ -900,40 +1117,104 @@ const getCatalogFilePath = (workspaceRoot: string, packageManager?: string): str
     return join(workspaceRoot, "pnpm-workspace.yaml");
 };
 
-const createBackup = (workspaceRoot: string, packageManager?: string): string | undefined => {
+const createPackageJsonBackup = (workspaceRoot: string, updates: OutdatedEntry[]): string | undefined => {
+    const backupDirectory = join(workspaceRoot, VIS_BACKUP_DIR);
+    const filesToBackup = new Set<string>();
+
+    for (const update of updates) {
+        const parsed = parseCompositeCatalogName(update.catalogName);
+
+        if (parsed) {
+            filesToBackup.add(parsed.relativePath === "." ? "package.json" : join(parsed.relativePath, "package.json"));
+        }
+    }
+
+    if (filesToBackup.size === 0) {
+        return undefined;
+    }
+
+    ensureDirSync(backupDirectory);
+
+    for (const relativePath of filesToBackup) {
+        const sourcePath = join(workspaceRoot, relativePath);
+
+        if (isAccessibleSync(sourcePath)) {
+            const destinationPath = join(backupDirectory, relativePath);
+            const destinationDirectory = dirname(destinationPath);
+
+            ensureDirSync(destinationDirectory);
+            writeFileSync(destinationPath, readFileSync(sourcePath));
+        }
+    }
+
+    return backupDirectory;
+};
+
+const createBackup = (workspaceRoot: string, packageManager?: string, updates?: OutdatedEntry[]): string | undefined => {
+    if ((packageManager === "npm" || packageManager === "yarn") && updates) {
+        return createPackageJsonBackup(workspaceRoot, updates);
+    }
+
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return undefined;
     }
 
     const backupPath = `${filePath}.bak`;
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
 
-    writeFileSync(backupPath, content, "utf8");
+    writeFileSync(backupPath, content);
 
     return backupPath;
 };
 
-const restoreFromBackup = (workspaceRoot: string, packageManager?: string): boolean => {
-    const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-    const backupPath = `${filePath}.bak`;
+const restorePackageJsonBackup = (workspaceRoot: string): boolean => {
+    const backupDirectory = join(workspaceRoot, VIS_BACKUP_DIR);
 
-    if (!existsSync(backupPath)) {
+    if (!isAccessibleSync(backupDirectory)) {
         return false;
     }
 
-    const content = readFileSync(backupPath, "utf8");
+    for (const entry of walkSync(backupDirectory, { includeDirs: false })) {
+        const relativePath = entry.path.slice(backupDirectory.length + 1);
+        const destinationPath = join(workspaceRoot, relativePath);
 
-    writeFileSync(filePath, content, "utf8");
+        writeFileSync(destinationPath, readFileSync(entry.path));
+    }
+
+    removeSync(backupDirectory);
+
+    return true;
+};
+
+const restoreFromBackup = (workspaceRoot: string, packageManager?: string): boolean => {
+    if (packageManager === "npm" || packageManager === "yarn") {
+        return restorePackageJsonBackup(workspaceRoot);
+    }
+
+    const filePath = getCatalogFilePath(workspaceRoot, packageManager);
+    const backupPath = `${filePath}.bak`;
+
+    if (!isAccessibleSync(backupPath)) {
+        return false;
+    }
+
+    const content = readFileSync(backupPath);
+
+    writeFileSync(filePath, content);
 
     return true;
 };
 
 const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
+    if (packageManager === "npm" || packageManager === "yarn") {
+        return isAccessibleSync(join(workspaceRoot, VIS_BACKUP_DIR));
+    }
+
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
 
-    return existsSync(`${filePath}.bak`);
+    return isAccessibleSync(`${filePath}.bak`);
 };
 
 // --- Output formatting ---
@@ -971,6 +1252,18 @@ const groupByCatalog = (entries: OutdatedEntry[]): Map<string, OutdatedEntry[]> 
     return grouped;
 };
 
+const formatCatalogDisplayName = (catalogName: string): string => {
+    const parsed = parseCompositeCatalogName(catalogName);
+
+    if (parsed) {
+        const location = parsed.relativePath === "." ? "root" : parsed.relativePath;
+
+        return `${location} (${parsed.depType})`;
+    }
+
+    return `Catalog: ${catalogName}`;
+};
+
 const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void => {
     const byCatalog = groupByCatalog(outdated);
 
@@ -992,7 +1285,9 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
             }
         }
 
-        logger.info(`Catalog: ${catalogName}\n${table.toString()}\n`);
+        const displayName = formatCatalogDisplayName(catalogName);
+
+        logger.info(`${displayName}\n${table.toString()}\n`);
     }
 };
 
@@ -1102,7 +1397,7 @@ const processYamlLineForUpdate = (
 
 const applyPnpmCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
     const lines = content.split("\n");
     const updateMap = buildUpdateMap(updates);
 
@@ -1129,7 +1424,7 @@ const applyPnpmCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
         result.push(processYamlLineForUpdate(line, section, currentCatalogName, updateMap));
     }
 
-    writeFileSync(filePath, result.join("\n"), "utf8");
+    writeFileSync(filePath, result.join("\n"));
 };
 
 const detectJsonIndent = (content: string): number | string => {
@@ -1151,9 +1446,7 @@ const detectJsonIndent = (content: string): number | string => {
 
 const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
     const filePath = join(workspaceRoot, "package.json");
-    const content = readFileSync(filePath, "utf8");
-    const pkg = JSON.parse(content) as BunPackageJson;
-    const indent = detectJsonIndent(content);
+    const pkg = readJsonSync(filePath) as BunPackageJson;
 
     for (const update of updates) {
         if (update.catalogName === "default") {
@@ -1169,17 +1462,19 @@ const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[])
         }
     }
 
-    writeFileSync(filePath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
+    writeJsonSync(filePath, pkg, { detectIndent: true, overwrite: true });
 };
 
 const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], packageManager?: string, backup = true): string | undefined => {
     let backupPath: string | undefined;
 
     if (backup) {
-        backupPath = createBackup(workspaceRoot, packageManager);
+        backupPath = createBackup(workspaceRoot, packageManager, updates);
     }
 
-    if (packageManager === "bun") {
+    if (packageManager === "npm" || packageManager === "yarn") {
+        applyPackageJsonUpdates(workspaceRoot, updates);
+    } else if (packageManager === "bun") {
         applyBunCatalogUpdates(workspaceRoot, updates);
     } else {
         applyPnpmCatalogUpdates(workspaceRoot, updates);
@@ -1318,12 +1613,14 @@ export type {
     OutdatedEntry,
     OutputFormat,
     ParsedVersion,
+    ReadCatalogOptions,
     SecurityVulnerability,
     UpdateTarget,
 };
 
 export {
     applyCatalogUpdates,
+    applyPackageJsonUpdates,
     checkOutdated,
     createBackup,
     detectJsonIndent,
@@ -1341,16 +1638,19 @@ export {
     groupByCatalog,
     hasBackup,
     hasCatalogs,
+    hasPackageJsonDeps,
     isNewer,
     loadNpmrc,
     matchesFilters,
     matchesPattern,
     parseBunCatalogs,
     parseCatalogsFromYaml,
+    parseCompositeCatalogName,
     parseNpmrc,
     parseVersion,
     promptPackageSelection,
     readCatalogs,
+    readPackageJsonDeps,
     restoreFromBackup,
     toFilterArray,
 };

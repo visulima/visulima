@@ -6,10 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AiAnalysisResult } from "../src/ai-analysis";
 
+const HEX_REGEX = /^[0-9a-f]+$/;
+
 // Mock homedir before importing the module under test
 const TEST_HOME = join(tmpdir(), `vis-cache-test-${String(process.pid)}-${String(Date.now())}`);
 
-vi.mock("node:os", async (importOriginal) => {
+vi.mock(import("node:os"), async (importOriginal) => {
     const original = await importOriginal<typeof import("node:os")>();
 
     return { ...original, homedir: () => TEST_HOME };
@@ -20,16 +22,16 @@ const { buildCacheKey, clearCache, getCachedAnalysis, getCacheStats, getTtlForAn
 
 const CACHE_DIR = join(TEST_HOME, ".vis", "cache", "ai");
 
-const makeResult = (overrides: Partial<AiAnalysisResult> = {}): AiAnalysisResult => ({
-    analysisType: "impact",
-    provider: "claude",
-    recommendations: [
-        { action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe update", riskLevel: "low" },
-    ],
-    summary: "All safe",
-    warnings: [],
-    ...overrides,
-});
+const makeResult = (overrides: Partial<AiAnalysisResult> = {}): AiAnalysisResult => {
+    return {
+        analysisType: "impact",
+        provider: "claude",
+        recommendations: [{ action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe update", riskLevel: "low" }],
+        summary: "All safe",
+        warnings: [],
+        ...overrides,
+    };
+};
 
 // --- Pure functions (no filesystem) ---
 
@@ -40,7 +42,7 @@ describe("buildCacheKey", () => {
         const key = buildCacheKey("claude", "impact", [{ currentRange: "^1.0.0", packageName: "react", targetVersion: "2.0.0" }]);
 
         expect(key).toHaveLength(32); // xxh3-128 hex
-        expect(key).toMatch(/^[0-9a-f]+$/);
+        expect(key).toMatch(HEX_REGEX);
     });
 
     it("should produce same key for same inputs", () => {
@@ -154,11 +156,15 @@ describe("filesystem cache", () => {
     it("should return undefined for expired entries", () => {
         expect.assertions(1);
 
-        writeFileSync(join(CACHE_DIR, "test-expired.json"), JSON.stringify({
-            createdAt: Date.now() - 120_000,
-            result: makeResult(),
-            ttlMs: 60_000,
-        }), "utf8");
+        writeFileSync(
+            join(CACHE_DIR, "test-expired.json"),
+            JSON.stringify({
+                createdAt: Date.now() - 120_000,
+                result: makeResult(),
+                ttlMs: 60_000,
+            }),
+            "utf8",
+        );
 
         expect(getCachedAnalysis("test-expired")).toBeUndefined();
     });
@@ -176,11 +182,15 @@ describe("filesystem cache", () => {
 
         const filePath = join(CACHE_DIR, "test-cleanup.json");
 
-        writeFileSync(filePath, JSON.stringify({
-            createdAt: Date.now() - 120_000,
-            result: makeResult(),
-            ttlMs: 60_000,
-        }), "utf8");
+        writeFileSync(
+            filePath,
+            JSON.stringify({
+                createdAt: Date.now() - 120_000,
+                result: makeResult(),
+                ttlMs: 60_000,
+            }),
+            "utf8",
+        );
 
         getCachedAnalysis("test-cleanup");
 

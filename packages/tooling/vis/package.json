@@ -76,6 +76,7 @@
         "@visulima/boxen": "workspace:*",
         "@visulima/cerebro": "workspace:*",
         "@visulima/find-ai-runner": "workspace:*",
+        "@visulima/fs": "workspace:*",
         "@visulima/package": "workspace:*",
         "@visulima/path": "workspace:*",
         "@visulima/tabular": "workspace:*",

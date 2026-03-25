@@ -26,7 +26,7 @@ import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
 import type { VisConfig } from "../workspace";
 
-type CatalogPackageManager = "bun" | "pnpm";
+type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
 type FilterOption = string | string[] | undefined;
 
 const buildCatalogCheckOptions = (
@@ -68,7 +68,7 @@ const applyCatalogAndInstall = async (
     logger: Console,
 ): Promise<void> => {
     const backupPath = applyCatalogUpdates(workspaceRoot, toApply, packageManager);
-    const targetFile = packageManager === "bun" ? "package.json" : "pnpm-workspace.yaml";
+    const targetFile = packageManager === "pnpm" ? "pnpm-workspace.yaml" : "package.json";
 
     logger.info(`\nUpdated ${targetFile}`);
 
@@ -89,7 +89,13 @@ const applyCatalogAndInstall = async (
     }
 
     if (options.install ?? true) {
-        const installCommand = packageManager === "bun" ? "bun install" : "pnpm install";
+        const installCommands: Record<string, string> = {
+            bun: "bun install",
+            npm: "npm install",
+            pnpm: "pnpm install",
+            yarn: "yarn install",
+        };
+        const installCommand = installCommands[packageManager] ?? `${packageManager} install`;
 
         logger.info(`Running ${installCommand}...\n`);
 
@@ -117,7 +123,10 @@ const executeCatalogUpdate = async (
 ): Promise<void> => {
     const configDefaults = visConfig.update ?? {};
     const npmrcConfig = loadNpmrc(workspaceRoot);
-    const catalogs = readCatalogs(workspaceRoot, packageManager);
+    const catalogs = readCatalogs(workspaceRoot, packageManager, {
+        dev: options.dev as boolean | undefined,
+        prod: options.prod as boolean | undefined,
+    });
 
     if (catalogs.size === 0) {
         logger.info("No catalogs found.");
@@ -289,21 +298,16 @@ const update: Command = {
 
         // Rollback mode
         if (options.rollback) {
-            if (packageManager !== "pnpm" && packageManager !== "bun") {
-                throw new Error("Rollback is only supported for pnpm or bun workspaces with catalogs.");
-            }
-
             if (!hasBackup(workspaceRoot, packageManager)) {
                 logger.info("No backup found. Run 'vis update' first to create a backup.");
 
                 return;
             }
 
-            const targetFile = packageManager === "bun" ? "package.json" : "pnpm-workspace.yaml";
             const restored = restoreFromBackup(workspaceRoot, packageManager);
 
             if (restored) {
-                logger.info(`Restored ${targetFile} from backup.`);
+                logger.info("Restored from backup.");
             } else {
                 throw new Error("Failed to restore from backup.");
             }
@@ -312,8 +316,7 @@ const update: Command = {
         }
 
         // Catalog mode: pnpm/bun with catalogs detected, unless --no-catalog
-        const supportsCatalogs = packageManager === "pnpm" || packageManager === "bun";
-        const useCatalogMode = supportsCatalogs && !options["no-catalog"] && hasCatalogs(workspaceRoot, packageManager);
+        const useCatalogMode = !options["no-catalog"] && hasCatalogs(workspaceRoot, packageManager);
 
         if (useCatalogMode) {
             await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument as string[], logger);

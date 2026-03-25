@@ -1,5 +1,5 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { join } from "@visulima/path";
@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../src/catalog";
 import {
     applyCatalogUpdates,
+    applyPackageJsonUpdates,
     checkOutdated,
     createBackup,
     detectJsonIndent,
@@ -24,15 +25,18 @@ import {
     getUpdateType,
     hasBackup,
     hasCatalogs,
+    hasPackageJsonDeps,
     isNewer,
     loadNpmrc,
     matchesFilters,
     matchesPattern,
     parseBunCatalogs,
     parseCatalogsFromYaml,
+    parseCompositeCatalogName,
     parseNpmrc,
     parseVersion,
     readCatalogs,
+    readPackageJsonDeps,
     restoreFromBackup,
 } from "../src/catalog";
 
@@ -2798,12 +2802,13 @@ describe("fetchChangelogInfo", () => {
     it("should return GitHub release URL when repo is on GitHub", async () => {
         expect.assertions(3);
 
-        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            ({
-                json: async () => ({ repository: { url: "git+https://github.com/facebook/react.git" } }),
-                ok: true,
-            }) as Response,
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+
+                ({
+                    json: async () => { return { repository: { url: "git+https://github.com/facebook/react.git" } }; },
+                    ok: true,
+                }) as Response,
         );
 
         const result = await fetchChangelogInfo([
@@ -2820,12 +2825,13 @@ describe("fetchChangelogInfo", () => {
     it("should fallback to npm URL when no repo info", async () => {
         expect.assertions(2);
 
-        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            ({
-                json: async () => ({}),
-                ok: true,
-            }) as Response,
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+
+                ({
+                    json: async () => { return {}; },
+                    ok: true,
+                }) as Response,
         );
 
         const result = await fetchChangelogInfo([
@@ -2841,9 +2847,10 @@ describe("fetchChangelogInfo", () => {
     it("should handle fetch failure gracefully", async () => {
         expect.assertions(2);
 
-        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            ({ ok: false, status: 404 }) as Response,
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+
+                ({ ok: false, status: 404 }) as Response,
         );
 
         const result = await fetchChangelogInfo([
@@ -2859,12 +2866,13 @@ describe("fetchChangelogInfo", () => {
     it("should handle non-GitHub repos", async () => {
         expect.assertions(2);
 
-        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            ({
-                json: async () => ({ repository: { url: "https://gitlab.com/my/repo.git" } }),
-                ok: true,
-            }) as Response,
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+
+                ({
+                    json: async () => { return { repository: { url: "https://gitlab.com/my/repo.git" } }; },
+                    ok: true,
+                }) as Response,
         );
 
         const result = await fetchChangelogInfo([
@@ -2884,9 +2892,8 @@ describe("fetchChangelogInfo", () => {
             const url = typeof input === "string" ? input : input.toString();
             const name = url.replace("https://registry.npmjs.org/", "");
 
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             return {
-                json: async () => ({ repository: { url: `git+https://github.com/owner/${name}.git` } }),
+                json: async () => { return { repository: { url: `git+https://github.com/owner/${name}.git` } }; },
                 ok: true,
             } as Response;
         });
@@ -2900,5 +2907,525 @@ describe("fetchChangelogInfo", () => {
         expect(result[0]?.releaseUrl).toContain("pkg-a");
 
         vi.restoreAllMocks();
+    });
+});
+
+// --- parseCompositeCatalogName ---
+
+describe("parseCompositeCatalogName", () => {
+    it("should parse valid composite name with root path", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName(".:dependencies")).toStrictEqual({ depType: "dependencies", relativePath: "." });
+    });
+
+    it("should parse valid composite name with nested path", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("packages/ui:devDependencies")).toStrictEqual({ depType: "devDependencies", relativePath: "packages/ui" });
+    });
+
+    it("should parse peerDependencies", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("apps/web:peerDependencies")).toStrictEqual({ depType: "peerDependencies", relativePath: "apps/web" });
+    });
+
+    it("should parse optionalDependencies", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("lib:optionalDependencies")).toStrictEqual({ depType: "optionalDependencies", relativePath: "lib" });
+    });
+
+    it("should return undefined for non-composite names", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("default")).toBeUndefined();
+    });
+
+    it("should return undefined for invalid dep type", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("packages/ui:scripts")).toBeUndefined();
+    });
+
+    it("should return undefined for empty string", () => {
+        expect.assertions(1);
+
+        expect(parseCompositeCatalogName("")).toBeUndefined();
+    });
+});
+
+// --- readPackageJsonDeps ---
+
+describe("readPackageJsonDeps", () => {
+    const createTemporaryWorkspace = (): string => mkdtempSync(join(tmpdir(), "vis-npm-test-"));
+
+    it("should read deps from a single-package root", () => {
+        expect.assertions(3);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { lodash: "^4.17.21", react: "^18.2.0" },
+                devDependencies: { typescript: "^5.0.0" },
+                name: "my-app",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+
+        expect(result.size).toBe(2);
+        expect(result.get(".:dependencies")).toStrictEqual(
+            new Map([
+                ["lodash", "^4.17.21"],
+                ["react", "^18.2.0"],
+            ]),
+        );
+        expect(result.get(".:devDependencies")).toStrictEqual(new Map([["typescript", "^5.0.0"]]));
+    });
+
+    it("should read deps from workspace packages", () => {
+        expect.assertions(3);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { shared: "^1.0.0" },
+                name: "my-monorepo",
+                workspaces: ["packages/*"],
+            }),
+        );
+
+        mkdirSync(join(root, "packages", "ui"), { recursive: true });
+        writeFileSync(
+            join(root, "packages", "ui", "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                devDependencies: { vitest: "^1.0.0" },
+                name: "@my/ui",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+
+        expect(result.get(".:dependencies")).toStrictEqual(new Map([["shared", "^1.0.0"]]));
+        expect(result.get("packages/ui:dependencies")).toStrictEqual(new Map([["react", "^18.0.0"]]));
+        expect(result.get("packages/ui:devDependencies")).toStrictEqual(new Map([["vitest", "^1.0.0"]]));
+    });
+
+    it("should skip workspace-internal packages", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                name: "my-monorepo",
+                workspaces: ["packages/*"],
+            }),
+        );
+
+        mkdirSync(join(root, "packages", "core"), { recursive: true });
+        writeFileSync(join(root, "packages", "core", "package.json"), JSON.stringify({ name: "@my/core" }));
+
+        mkdirSync(join(root, "packages", "app"), { recursive: true });
+        writeFileSync(
+            join(root, "packages", "app", "package.json"),
+            JSON.stringify({
+                dependencies: { "@my/core": "workspace:*", react: "^18.0.0" },
+                name: "@my/app",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+        const appDeps = result.get("packages/app:dependencies");
+
+        expect(appDeps?.has("react")).toBe(true);
+        expect(appDeps?.has("@my/core")).toBe(false);
+    });
+
+    it("should skip workspace:, file:, and link: protocols", () => {
+        expect.assertions(4);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: {
+                    "linked-pkg": "link:../linked",
+                    "local-pkg": "file:../local",
+                    react: "^18.0.0",
+                    "ws-pkg": "workspace:^1.0.0",
+                },
+                name: "my-app",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root);
+        const deps = result.get(".:dependencies");
+
+        expect(deps?.has("react")).toBe(true);
+        expect(deps?.has("local-pkg")).toBe(false);
+        expect(deps?.has("linked-pkg")).toBe(false);
+        expect(deps?.has("ws-pkg")).toBe(false);
+    });
+
+    it("should filter by dev option", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                devDependencies: { vitest: "^1.0.0" },
+                name: "my-app",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { dev: true });
+
+        expect(result.has(".:devDependencies")).toBe(true);
+        expect(result.has(".:dependencies")).toBe(false);
+    });
+
+    it("should filter by prod option", () => {
+        expect.assertions(2);
+
+        const root = createTemporaryWorkspace();
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                devDependencies: { vitest: "^1.0.0" },
+                name: "my-app",
+            }),
+        );
+
+        const result = readPackageJsonDeps(root, { prod: true });
+
+        expect(result.has(".:dependencies")).toBe(true);
+        expect(result.has(".:devDependencies")).toBe(false);
+    });
+
+    it("should return empty map for missing package.json", () => {
+        expect.assertions(1);
+
+        const root = createTemporaryWorkspace();
+
+        expect(readPackageJsonDeps(root).size).toBe(0);
+    });
+});
+
+// --- hasPackageJsonDeps ---
+
+describe("hasPackageJsonDeps", () => {
+    it("should return true when package.json has dependencies", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" } }));
+
+        expect(hasPackageJsonDeps(root)).toBe(true);
+    });
+
+    it("should return true when package.json has devDependencies", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ devDependencies: { vitest: "^1.0.0" } }));
+
+        expect(hasPackageJsonDeps(root)).toBe(true);
+    });
+
+    it("should return false when package.json has no deps", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "empty" }));
+
+        expect(hasPackageJsonDeps(root)).toBe(false);
+    });
+
+    it("should return false when no package.json exists", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-deps-"));
+
+        expect(hasPackageJsonDeps(root)).toBe(false);
+    });
+});
+
+// --- applyPackageJsonUpdates ---
+
+describe("applyPackageJsonUpdates", () => {
+    it("should update deps in root package.json", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^18.2.0" }, name: "app" }, undefined, 2));
+
+        applyPackageJsonUpdates(root, [
+            { catalogName: ".:dependencies", currentRange: "^18.2.0", newRange: "^19.0.0", packageName: "react", targetVersion: "19.0.0", updateType: "major" },
+        ]);
+
+        const updated = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+        expect(updated.dependencies.react).toBe("^19.0.0");
+        expect(updated.name).toBe("app");
+    });
+
+    it("should update deps in nested workspace package", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-"));
+
+        mkdirSync(join(root, "packages", "ui"), { recursive: true });
+        writeFileSync(join(root, "packages", "ui", "package.json"), JSON.stringify({ devDependencies: { vitest: "^1.0.0" }, name: "@my/ui" }, undefined, 2));
+
+        applyPackageJsonUpdates(root, [
+            {
+                catalogName: "packages/ui:devDependencies",
+                currentRange: "^1.0.0",
+                newRange: "^2.0.0",
+                packageName: "vitest",
+                targetVersion: "2.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const updated = JSON.parse(readFileSync(join(root, "packages", "ui", "package.json"), "utf8"));
+
+        expect(updated.devDependencies.vitest).toBe("^2.0.0");
+    });
+
+    it("should preserve JSON indentation", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { lodash: "^4.17.0" }, name: "app" }, undefined, 4));
+
+        applyPackageJsonUpdates(root, [
+            {
+                catalogName: ".:dependencies",
+                currentRange: "^4.17.0",
+                newRange: "^4.18.0",
+                packageName: "lodash",
+                targetVersion: "4.18.0",
+                updateType: "minor",
+            },
+        ]);
+
+        const content = readFileSync(join(root, "package.json"), "utf8");
+
+        // 4-space indent should be preserved
+        expect(content).toContain("    ");
+    });
+
+    it("should update multiple files in one call", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-apply-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" }, name: "root" }, undefined, 2));
+
+        mkdirSync(join(root, "packages", "app"), { recursive: true });
+        writeFileSync(join(root, "packages", "app", "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" }, name: "@my/app" }, undefined, 2));
+
+        applyPackageJsonUpdates(root, [
+            { catalogName: ".:dependencies", currentRange: "^18.0.0", newRange: "^19.0.0", packageName: "react", targetVersion: "19.0.0", updateType: "major" },
+            {
+                catalogName: "packages/app:dependencies",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major",
+            },
+        ]);
+
+        const rootPkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+        const appPkg = JSON.parse(readFileSync(join(root, "packages", "app", "package.json"), "utf8"));
+
+        expect(rootPkg.dependencies.react).toBe("^19.0.0");
+        expect(appPkg.dependencies.react).toBe("^19.0.0");
+    });
+});
+
+// --- npm/yarn backup and restore ---
+
+describe("npm/yarn backup and restore", () => {
+    it("should create and restore backup for npm", () => {
+        expect.assertions(3);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-backup-npm-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" }, name: "app" }, undefined, 2));
+
+        const updates = [
+            {
+                catalogName: ".:dependencies",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major" as const,
+            },
+        ];
+
+        applyCatalogUpdates(root, updates, "npm");
+
+        const afterUpdate = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+        expect(afterUpdate.dependencies.react).toBe("^19.0.0");
+        expect(hasBackup(root, "npm")).toBe(true);
+
+        restoreFromBackup(root, "npm");
+
+        const afterRestore = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+
+        expect(afterRestore.dependencies.react).toBe("^18.0.0");
+    });
+
+    it("should backup multiple package.json files", () => {
+        expect.assertions(3);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-backup-npm-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { lodash: "^4.17.0" }, name: "root" }, undefined, 2));
+
+        mkdirSync(join(root, "packages", "ui"), { recursive: true });
+        writeFileSync(join(root, "packages", "ui", "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" }, name: "@my/ui" }, undefined, 2));
+
+        const updates = [
+            {
+                catalogName: ".:dependencies",
+                currentRange: "^4.17.0",
+                newRange: "^4.18.0",
+                packageName: "lodash",
+                targetVersion: "4.18.0",
+                updateType: "minor" as const,
+            },
+            {
+                catalogName: "packages/ui:dependencies",
+                currentRange: "^18.0.0",
+                newRange: "^19.0.0",
+                packageName: "react",
+                targetVersion: "19.0.0",
+                updateType: "major" as const,
+            },
+        ];
+
+        applyCatalogUpdates(root, updates, "npm");
+
+        expect(hasBackup(root, "npm")).toBe(true);
+
+        restoreFromBackup(root, "npm");
+
+        const rootPkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+        const uiPkg = JSON.parse(readFileSync(join(root, "packages", "ui", "package.json"), "utf8"));
+
+        expect(rootPkg.dependencies.lodash).toBe("^4.17.0");
+        expect(uiPkg.dependencies.react).toBe("^18.0.0");
+    });
+
+    it("should report no backup when none exists for npm", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-backup-npm-"));
+
+        expect(hasBackup(root, "npm")).toBe(false);
+    });
+});
+
+// --- hasCatalogs for npm/yarn ---
+
+describe("hasCatalogs for npm/yarn", () => {
+    it("should return true for npm when package.json has deps", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-cat-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^18.0.0" } }));
+
+        expect(hasCatalogs(root, "npm")).toBe(true);
+    });
+
+    it("should return true for yarn when package.json has deps", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-cat-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ devDependencies: { vitest: "^1.0.0" } }));
+
+        expect(hasCatalogs(root, "yarn")).toBe(true);
+    });
+
+    it("should return false for npm when no deps exist", () => {
+        expect.assertions(1);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-has-cat-"));
+
+        writeFileSync(join(root, "package.json"), JSON.stringify({ name: "empty" }));
+
+        expect(hasCatalogs(root, "npm")).toBe(false);
+    });
+});
+
+// --- readCatalogs for npm/yarn ---
+
+describe("readCatalogs for npm/yarn", () => {
+    it("should return deps using composite keys for npm", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-read-cat-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                devDependencies: { vitest: "^1.0.0" },
+                name: "app",
+            }),
+        );
+
+        const catalogs = readCatalogs(root, "npm");
+
+        expect(catalogs.has(".:dependencies")).toBe(true);
+        expect(catalogs.has(".:devDependencies")).toBe(true);
+    });
+
+    it("should pass dev/prod options through for yarn", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-read-cat-"));
+
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                devDependencies: { vitest: "^1.0.0" },
+                name: "app",
+            }),
+        );
+
+        const catalogs = readCatalogs(root, "yarn", { dev: true });
+
+        expect(catalogs.has(".:devDependencies")).toBe(true);
+        expect(catalogs.has(".:dependencies")).toBe(false);
     });
 });

@@ -3,14 +3,7 @@ import { findPackageManagerSync } from "@visulima/package";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { OutdatedEntry } from "../catalog";
-import {
-    extractPrefix,
-    fetchPackageVersions,
-    fetchVulnerabilities,
-    getUpdateType,
-    parseVersion,
-    readCatalogs,
-} from "../catalog";
+import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../catalog";
 
 const VERSION_PREFIX_REGEX = /^[\^~>=<]+/;
 
@@ -44,10 +37,6 @@ const analyze: Command = {
         const targetVersionArgument = positionalArguments[1] as string | undefined;
         const { packageManager } = findPackageManagerSync(wsRoot);
 
-        if (packageManager !== "pnpm" && packageManager !== "bun") {
-            throw new Error("The analyze command requires pnpm or bun workspaces with catalogs.");
-        }
-
         // Find current version from catalogs
         let currentRange: string | undefined;
         let catalogName = "default";
@@ -64,7 +53,7 @@ const analyze: Command = {
         }
 
         if (!currentRange) {
-            throw new Error(`Package "${packageName}" not found in any catalog. Make sure it exists in your workspace catalogs.`);
+            throw new Error(`Package "${packageName}" not found in any catalog or package.json. Make sure it exists in your workspace dependencies.`);
         }
 
         // Resolve target version

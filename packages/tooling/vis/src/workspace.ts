@@ -1,5 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-
+import { isAccessibleSync, readFileSync, readJsonSync, walkSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
 import type {
     ProjectConfiguration,
@@ -54,15 +53,15 @@ const TRAILING_SLASH_RE = /\/+$/;
 const DOUBLE_GLOB_SUFFIX_RE = /\/\*\*$/;
 const NESTED_GLOB_SUFFIX_RE = /\/\*\/\*$/;
 const QUOTES_RE = /^['"]|['"]$/g;
+const NODE_MODULES_RE = /node_modules/;
+const DOT_GIT_RE = /\.git/;
 
 /**
- * Reads and parses a JSON file.
+ * Reads and parses a JSON file, returning undefined on failure.
  */
-const readJsonFile = <T>(filePath: string): T | undefined => {
+const readJsonFileSafe = <T>(filePath: string): T | undefined => {
     try {
-        const content = readFileSync(filePath, "utf8");
-
-        return JSON.parse(content) as T;
+        return readJsonSync(filePath) as T;
     } catch {
         return undefined;
     }
@@ -71,21 +70,16 @@ const readJsonFile = <T>(filePath: string): T | undefined => {
 /**
  * Recursively scans a directory for packages (directories containing package.json).
  */
-const scanDirectoryRecursive = (directory: string, relativePath: string, base: string, results: string[]): void => {
-    for (const entry of readdirSync(directory)) {
-        if (entry === "node_modules" || entry === ".git") {
+const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[]): void => {
+    for (const entry of walkSync(baseDirectory, { includeFiles: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+        if (entry.path === baseDirectory) {
             continue;
         }
 
-        const fullPath = join(directory, entry);
-        const entryRelativePath = relativePath ? `${relativePath}/${entry}` : entry;
+        if (isAccessibleSync(join(entry.path, "package.json"))) {
+            const relativePath = entry.path.slice(baseDirectory.length + 1);
 
-        if (statSync(fullPath).isDirectory()) {
-            if (existsSync(join(fullPath, "package.json"))) {
-                results.push(`${base}/${entryRelativePath}`);
-            }
-
-            scanDirectoryRecursive(fullPath, entryRelativePath, base, results);
+            results.push(`${base}/${relativePath}`);
         }
     }
 };
@@ -97,15 +91,17 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
     const base = cleanPattern.slice(0, -2);
     const baseDirectory = resolve(workspaceRoot, base);
 
-    if (!existsSync(baseDirectory)) {
+    if (!isAccessibleSync(baseDirectory)) {
         return;
     }
 
-    for (const entry of readdirSync(baseDirectory)) {
-        const fullPath = join(baseDirectory, entry);
+    for (const entry of walkSync(baseDirectory, { includeFiles: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+        if (entry.path === baseDirectory) {
+            continue;
+        }
 
-        if (statSync(fullPath).isDirectory() && existsSync(join(fullPath, "package.json"))) {
-            results.push(join(base, entry));
+        if (isAccessibleSync(join(entry.path, "package.json"))) {
+            results.push(join(base, entry.name));
         }
     }
 };
@@ -117,11 +113,11 @@ const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results:
     const base = cleanPattern.replace(DOUBLE_GLOB_SUFFIX_RE, "").replace(NESTED_GLOB_SUFFIX_RE, "");
     const baseDirectory = resolve(workspaceRoot, base);
 
-    if (!existsSync(baseDirectory)) {
+    if (!isAccessibleSync(baseDirectory)) {
         return;
     }
 
-    scanDirectoryRecursive(baseDirectory, "", base, results);
+    scanDirectoryRecursive(baseDirectory, base, results);
 };
 
 /**
@@ -130,7 +126,7 @@ const resolveDoubleGlob = (workspaceRoot: string, cleanPattern: string, results:
 const resolveExactDirectory = (workspaceRoot: string, cleanPattern: string, results: string[]): void => {
     const fullPath = resolve(workspaceRoot, cleanPattern);
 
-    if (existsSync(fullPath) && existsSync(join(fullPath, "package.json"))) {
+    if (isAccessibleSync(fullPath) && isAccessibleSync(join(fullPath, "package.json"))) {
         results.push(cleanPattern);
     }
 };
@@ -167,11 +163,11 @@ const resolveWorkspacePatterns = (workspaceRoot: string, patterns: string[]): st
 const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return undefined;
     }
 
-    const content = readFileSync(filePath, "utf8");
+    const content = readFileSync(filePath);
     const patterns: string[] = [];
     let inPackages = false;
 
@@ -226,7 +222,7 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
 
     // Find workspace patterns
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
-    const rootPkg = readJsonFile<PackageJson>(join(workspaceRoot, "package.json"));
+    const rootPkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, "package.json"));
 
     let workspacePatterns: string[] | undefined;
 
@@ -245,7 +241,7 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
 
     for (const projectDirectory of projectDirectories) {
         const packageJsonPath = join(workspaceRoot, projectDirectory, "package.json");
-        const pkg = readJsonFile<PackageJson>(packageJsonPath);
+        const pkg = readJsonFileSafe<PackageJson>(packageJsonPath);
 
         if (!pkg?.name) {
             continue;
@@ -253,7 +249,7 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
 
         // Check for project.json for additional configuration
         const projectJsonPath = join(workspaceRoot, projectDirectory, "project.json");
-        const projectJson = readJsonFile<{ projectType?: "application" | "library"; sourceRoot?: string; tags?: string[] }>(projectJsonPath);
+        const projectJson = readJsonFileSafe<{ projectType?: "application" | "library"; sourceRoot?: string; tags?: string[] }>(projectJsonPath);
 
         const targets = pkg.scripts ? createTargetsFromScripts(pkg.scripts, config.targetDefaults) : {};
 
@@ -287,7 +283,7 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
         dependencies[name] = [];
 
         // Read the package.json to find dependencies
-        const pkg = readJsonFile<PackageJson>(join(workspaceRoot, config.root, "package.json"));
+        const pkg = readJsonFileSafe<PackageJson>(join(workspaceRoot, config.root, "package.json"));
 
         if (!pkg) {
             continue;

@@ -3,15 +3,7 @@ import { findPackageManagerSync } from "@visulima/package";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
-import {
-    checkOutdated,
-    formatOutdatedMinimal,
-    formatOutdatedTable,
-    formatSummary,
-    loadNpmrc,
-    readCatalogs,
-    toFilterArray,
-} from "../catalog";
+import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummary, loadNpmrc, readCatalogs, toFilterArray } from "../catalog";
 
 const check: Command = {
     alias: "c",
@@ -20,7 +12,7 @@ const check: Command = {
         name: "packages",
         type: String,
     },
-    description: "Check for outdated dependencies in workspace catalogs (pnpm/bun)",
+    description: "Check for outdated dependencies in workspace packages",
     examples: [
         ["vis check", "Check all catalog dependencies"],
         ["vis check react", "Check specific packages"],
@@ -36,13 +28,12 @@ const check: Command = {
         const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
-        if (packageManager !== "pnpm" && packageManager !== "bun") {
-            throw new Error("The check command is only supported for pnpm or bun workspaces with catalogs.");
-        }
-
         const npmrcConfig = loadNpmrc(workspaceRoot);
         const configDefaults = visConfig?.update ?? {};
-        const catalogs = readCatalogs(workspaceRoot, packageManager);
+        const catalogs = readCatalogs(workspaceRoot, packageManager, {
+            dev: options.dev as boolean | undefined,
+            prod: options.prod as boolean | undefined,
+        });
 
         if (catalogs.size === 0) {
             logger.info("No catalogs found.");
@@ -167,6 +158,20 @@ const check: Command = {
             description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
             name: "ai-type",
             type: String,
+        },
+        {
+            alias: "D",
+            defaultValue: false,
+            description: "Check only devDependencies (npm/yarn mode)",
+            name: "dev",
+            type: Boolean,
+        },
+        {
+            alias: "P",
+            defaultValue: false,
+            description: "Check only dependencies (npm/yarn mode)",
+            name: "prod",
+            type: Boolean,
         },
     ],
 };
