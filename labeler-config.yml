@@ -52,6 +52,9 @@
 "package: error-handler":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/error-handler/**/*"
+"package: find-ai-runner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/find-ai-runner/**/*"
 "package: find-cache-dir":
     - changed-files:
           - any-glob-to-any-file: "packages/filesystem/find-cache-dir/**/*"
