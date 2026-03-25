@@ -118,11 +118,7 @@ const uninstallHuskyPackage = (root: string, logger: Console): boolean => {
  * Process a single script entry and apply husky cleanup.
  * Returns a description of the change, or undefined if unchanged.
  */
-const processScript = (
-    scripts: Record<string, string>,
-    scriptName: string,
-    scriptValue: string,
-): string | undefined => {
+const processScript = (scripts: Record<string, string>, scriptName: string, scriptValue: string): string | undefined => {
     const cleaned = cleanHuskyFromScript(scriptValue);
 
     if (cleaned === scriptValue) {

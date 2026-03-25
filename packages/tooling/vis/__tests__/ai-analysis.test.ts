@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import type { AiAnalysisResult, AnalysisType } from "../src/ai-analysis";
-import { buildAnalysisPrompt, extractJson, formatAiAnalysis, formatAiAnalysisJson, normalizeRecommendation, parseAiResponse, ruleBasedAnalysis } from "../src/ai-analysis";
+import type { AiAnalysisResult } from "../src/ai-analysis";
+import {
+    buildAnalysisPrompt,
+    extractJson,
+    formatAiAnalysis,
+    formatAiAnalysisJson,
+    normalizeRecommendation,
+    parseAiResponse,
+    ruleBasedAnalysis,
+} from "../src/ai-analysis";
 import type { OutdatedEntry } from "../src/catalog";
 
 const makeEntry = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {

@@ -41,11 +41,7 @@ const ensureCacheDirectory = (): void => {
 
 // --- Public API ---
 
-const buildCacheKey = (
-    provider: string,
-    analysisType: string,
-    outdated: Pick<OutdatedEntry, "currentRange" | "packageName" | "targetVersion">[],
-): string => {
+const buildCacheKey = (provider: string, analysisType: string, outdated: Pick<OutdatedEntry, "currentRange" | "packageName" | "targetVersion">[]): string => {
     const packages = outdated
         .map((entry) => {
             return { currentRange: entry.currentRange, name: entry.packageName, targetVersion: entry.targetVersion };
@@ -155,11 +151,4 @@ const clearCache = (): number => {
 
 export type { CacheEntry, CacheStats };
 
-export {
-    buildCacheKey,
-    clearCache,
-    getCachedAnalysis,
-    getCacheStats,
-    getTtlForAnalysisType,
-    setCachedAnalysis,
-};
+export { buildCacheKey, clearCache, getCachedAnalysis, getCacheStats, getTtlForAnalysisType, setCachedAnalysis };

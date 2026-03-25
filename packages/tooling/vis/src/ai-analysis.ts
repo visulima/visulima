@@ -317,9 +317,10 @@ const ruleBasedAnalysis = (outdated: OutdatedEntry[], analysisType: AnalysisType
 
 // --- Retry logic ---
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /* eslint-disable no-await-in-loop -- sequential retries with exponential backoff */
 const runWithRetry = async (provider: AiProviderInfo, prompt: string, retries: number = MAX_RETRIES): Promise<string> => {

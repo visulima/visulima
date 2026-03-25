@@ -3,10 +3,7 @@ import type { Command } from "@visulima/cerebro";
 /**
  * Map option keys from CLI kebab-case to lint-staged camelCase.
  */
-const mapOptions = (
-    options: Record<string, unknown>,
-    lintStagedOptions: Record<string, unknown>,
-): void => {
+const mapOptions = (options: Record<string, unknown>, lintStagedOptions: Record<string, unknown>): void => {
     const mappings: [string, string][] = [
         ["allow-empty", "allowEmpty"],
         ["continue-on-error", "continueOnError"],
@@ -77,7 +74,7 @@ const staged: Command = {
 
         try {
             // eslint-disable-next-line e18e/ban-dependencies -- lint-staged is the intended dependency for this feature
-            const imported = await import("lint-staged") as { default: (lsOptions: Record<string, unknown>) => Promise<boolean> };
+            const imported = (await import("lint-staged")) as { default: (lsOptions: Record<string, unknown>) => Promise<boolean> };
 
             lintStaged = imported.default;
         } catch {

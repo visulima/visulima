@@ -40,7 +40,7 @@ const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
 // eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
 const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
 
-const HUSKY_SCRIPT_PATTERNS: readonly RegExp[] = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];
+const HUSKY_SCRIPT_PATTERNS: ReadonlyArray<RegExp> = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];
 
 /**
  * Remove husky references from a single script value.

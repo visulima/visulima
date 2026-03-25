@@ -3,12 +3,7 @@ import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 
 import { findVisConfigFile } from "../../config";
-import {
-    LINT_STAGED_ALL_CONFIG_FILES,
-    LINT_STAGED_JSON_CONFIG_FILES,
-    LINT_STAGED_OTHER_CONFIG_FILES,
-    STALE_LINT_STAGED_PATTERNS,
-} from "./constants";
+import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, LINT_STAGED_OTHER_CONFIG_FILES, STALE_LINT_STAGED_PATTERNS } from "./constants";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
 import type { MigrationReport } from "./types";
 import { addManualStep, addMigrationWarning } from "./types";
@@ -27,8 +22,7 @@ interface MigrateLogger {
 /**
  * Check if a standalone lint-staged config file exists.
  */
-const hasStandaloneLintStagedConfig = (root: string): boolean =>
-    LINT_STAGED_ALL_CONFIG_FILES.some((file) => existsSync(join(root, file)));
+const hasStandaloneLintStagedConfig = (root: string): boolean => LINT_STAGED_ALL_CONFIG_FILES.some((file) => existsSync(join(root, file)));
 
 /**
  * Check if a standalone lint-staged config exists in a format that can't be
@@ -108,9 +102,7 @@ const parseLintStagedJsonFile = (filePath: string): Record<string, string | stri
 const generateStagedConfigSnippet = (config: Record<string, string | string[]>): string => {
     const entries = Object.entries(config)
         .map(([pattern, commands]) => {
-            const value = Array.isArray(commands)
-                ? `[${commands.map((c) => JSON.stringify(c)).join(", ")}]`
-                : JSON.stringify(commands);
+            const value = Array.isArray(commands) ? `[${commands.map((c) => JSON.stringify(c)).join(", ")}]` : JSON.stringify(commands);
 
             return `        ${JSON.stringify(pattern)}: ${value}`;
         })
@@ -122,11 +114,7 @@ const generateStagedConfigSnippet = (config: Record<string, string | string[]>):
 /**
  * Insert staged config into vis.config.ts. Creates the file if it doesn't exist.
  */
-const insertStagedIntoVisConfig = (
-    root: string,
-    config: Record<string, string | string[]>,
-    logger: MigrateLogger,
-): boolean => {
+const insertStagedIntoVisConfig = (root: string, config: Record<string, string | string[]>, logger: MigrateLogger): boolean => {
     const configPath = findVisConfigFile(root);
 
     if (configPath) {
@@ -299,11 +287,7 @@ const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => 
  * Extract lint-staged config from the detected source.
  * Returns the config or undefined if extraction fails or is unsupported.
  */
-const extractConfig = (
-    root: string,
-    source: string,
-    report: MigrationReport,
-): Record<string, string | string[]> | undefined => {
+const extractConfig = (root: string, source: string, report: MigrationReport): Record<string, string | string[]> | undefined => {
     if (source === "package.json") {
         return extractLintStagedFromPackageJson(root);
     }
@@ -347,12 +331,7 @@ const cleanupLintStagedArtifacts = (root: string, report: MigrationReport): void
 /**
  * Rewrite pre-commit hooks in known hook directories.
  */
-const rewriteHooks = (
-    root: string,
-    options: { silent?: boolean },
-    logger: MigrateLogger,
-    report: MigrationReport,
-): void => {
+const rewriteHooks = (root: string, options: { silent?: boolean }, logger: MigrateLogger, report: MigrationReport): void => {
     const hooksDirectories = [".vis-hooks", ".husky"];
 
     for (const hooksDirectory of hooksDirectories) {
@@ -392,12 +371,7 @@ const applyMigration = (
 /**
  * Migrates lint-staged configuration to vis.config.ts staged block.
  */
-const migrateLintStaged = (
-    root: string,
-    options: { dryRun: boolean; silent?: boolean },
-    logger: MigrateLogger,
-    report: MigrationReport,
-): boolean => {
+const migrateLintStaged = (root: string, options: { dryRun: boolean; silent?: boolean }, logger: MigrateLogger, report: MigrationReport): boolean => {
     const source = detectLintStagedConfig(root);
 
     if (!source) {

@@ -20,10 +20,7 @@ interface MigrateLogger {
 /**
  * Rewrite scripts in package.json to replace husky/lint-staged references.
  */
-const rewriteScripts = (
-    scripts: Record<string, string>,
-    report: MigrationReport,
-): { modified: boolean; scripts: Record<string, string> } => {
+const rewriteScripts = (scripts: Record<string, string>, report: MigrationReport): { modified: boolean; scripts: Record<string, string> } => {
     let modified = false;
     const result = { ...scripts };
 
@@ -61,12 +58,7 @@ const rewriteScripts = (
 /**
  * Rewrite a single package.json: remove replaced packages, add overrides, rewrite scripts.
  */
-const rewritePackageJson = (
-    root: string,
-    packageManager: PackageManagerType,
-    overrides: Record<string, string>,
-    report: MigrationReport,
-): void => {
+const rewritePackageJson = (root: string, packageManager: PackageManagerType, overrides: Record<string, string>, report: MigrationReport): void => {
     const packageJsonPath = join(root, "package.json");
 
     if (!existsSync(packageJsonPath)) {
@@ -151,12 +143,7 @@ const rewritePackageJson = (
 /**
  * Iterate over all workspace packages and rewrite their package.json files.
  */
-const migrateMonorepoPackages = (
-    root: string,
-    packageManager: PackageManagerType,
-    overrides: Record<string, string>,
-    report: MigrationReport,
-): void => {
+const migrateMonorepoPackages = (root: string, packageManager: PackageManagerType, overrides: Record<string, string>, report: MigrationReport): void => {
     try {
         const { workspace } = discoverWorkspace(root);
 
@@ -173,8 +160,7 @@ const migrateMonorepoPackages = (
 /**
  * Check if a YAML line ends the catalog section.
  */
-const isCatalogSectionEnd = (trimmed: string): boolean =>
-    trimmed.startsWith("- ") || (trimmed !== "" && !trimmed.includes(":") && !trimmed.startsWith("#"));
+const isCatalogSectionEnd = (trimmed: string): boolean => trimmed.startsWith("- ") || (trimmed !== "" && !trimmed.includes(":") && !trimmed.startsWith("#"));
 
 /**
  * Parse existing catalog entries from pnpm-workspace.yaml.
@@ -256,10 +242,7 @@ const insertCatalogEntries = (lines: string[], newEntries: string[], content: st
 /**
  * Update pnpm-workspace.yaml catalog with override entries.
  */
-const updatePnpmWorkspaceCatalog = (
-    root: string,
-    overrides: Record<string, string>,
-): void => {
+const updatePnpmWorkspaceCatalog = (root: string, overrides: Record<string, string>): void => {
     const filePath = join(root, "pnpm-workspace.yaml");
 
     if (!existsSync(filePath) || Object.keys(overrides).length === 0) {
