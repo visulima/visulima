@@ -1,3 +1,4 @@
+/* eslint-disable n/no-unsupported-features/node-builtins */
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
@@ -38,58 +39,86 @@ import {
 
 describe("parseVersion", () => {
     it("should parse basic version", () => {
-        expect(parseVersion("1.2.3")).toEqual({ major: 1, minor: 2, patch: 3, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion("1.2.3")).toStrictEqual({ major: 1, minor: 2, patch: 3, prerelease: "" });
     });
 
     it("should parse version with caret prefix", () => {
-        expect(parseVersion("^18.2.0")).toEqual({ major: 18, minor: 2, patch: 0, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion("^18.2.0")).toStrictEqual({ major: 18, minor: 2, patch: 0, prerelease: "" });
     });
 
     it("should parse version with tilde prefix", () => {
-        expect(parseVersion("~5.3.0")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion("~5.3.0")).toStrictEqual({ major: 5, minor: 3, patch: 0, prerelease: "" });
     });
 
     it("should parse version with >= prefix", () => {
-        expect(parseVersion(">=1.0.0")).toEqual({ major: 1, minor: 0, patch: 0, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion(">=1.0.0")).toStrictEqual({ major: 1, minor: 0, patch: 0, prerelease: "" });
     });
 
     it("should parse version with < prefix", () => {
-        expect(parseVersion("<2.0.0")).toEqual({ major: 2, minor: 0, patch: 0, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion("<2.0.0")).toStrictEqual({ major: 2, minor: 0, patch: 0, prerelease: "" });
     });
 
     it("should parse prerelease version", () => {
-        expect(parseVersion("5.3.0-beta.1")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "beta.1" });
+        expect.assertions(1);
+
+        expect(parseVersion("5.3.0-beta.1")).toStrictEqual({ major: 5, minor: 3, patch: 0, prerelease: "beta.1" });
     });
 
     it("should parse prerelease with prefix", () => {
-        expect(parseVersion("^5.3.0-rc.2")).toEqual({ major: 5, minor: 3, patch: 0, prerelease: "rc.2" });
+        expect.assertions(1);
+
+        expect(parseVersion("^5.3.0-rc.2")).toStrictEqual({ major: 5, minor: 3, patch: 0, prerelease: "rc.2" });
     });
 
     it("should parse large version numbers", () => {
-        expect(parseVersion("100.200.300")).toEqual({ major: 100, minor: 200, patch: 300, prerelease: "" });
+        expect.assertions(1);
+
+        expect(parseVersion("100.200.300")).toStrictEqual({ major: 100, minor: 200, patch: 300, prerelease: "" });
     });
 
     it("should return undefined for wildcard", () => {
+        expect.assertions(1);
+
         expect(parseVersion("*")).toBeUndefined();
     });
 
     it("should return undefined for workspace protocol", () => {
+        expect.assertions(1);
+
         expect(parseVersion("workspace:*")).toBeUndefined();
     });
 
     it("should return undefined for non-version string", () => {
+        expect.assertions(1);
+
         expect(parseVersion("latest")).toBeUndefined();
     });
 
     it("should return undefined for empty string", () => {
+        expect.assertions(1);
+
         expect(parseVersion("")).toBeUndefined();
     });
 
     it("should return undefined for file protocol", () => {
+        expect.assertions(1);
+
         expect(parseVersion("file:../my-lib")).toBeUndefined();
     });
 
     it("should return undefined for link protocol", () => {
+        expect.assertions(1);
+
         expect(parseVersion("link:../my-lib")).toBeUndefined();
     });
 });
@@ -98,38 +127,56 @@ describe("parseVersion", () => {
 
 describe("extractPrefix", () => {
     it("should extract caret", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("^1.2.3")).toBe("^");
     });
 
     it("should extract tilde", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("~1.2.3")).toBe("~");
     });
 
     it("should extract >=", () => {
+        expect.assertions(1);
+
         expect(extractPrefix(">=1.2.3")).toBe(">=");
     });
 
     it("should extract >", () => {
+        expect.assertions(1);
+
         expect(extractPrefix(">1.2.3")).toBe(">");
     });
 
     it("should extract <=", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("<=1.2.3")).toBe("<=");
     });
 
     it("should extract <", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("<1.2.3")).toBe("<");
     });
 
     it("should return empty for exact version", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("1.2.3")).toBe("");
     });
 
     it("should return empty for prerelease without prefix", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("1.2.3-beta.1")).toBe("");
     });
 
     it("should return empty for empty string", () => {
+        expect.assertions(1);
+
         expect(extractPrefix("")).toBe("");
     });
 });
@@ -138,26 +185,38 @@ describe("extractPrefix", () => {
 
 describe("getUpdateType", () => {
     it("should detect major update", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe("major");
     });
 
     it("should detect minor update", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe("minor");
     });
 
     it("should detect patch update", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 1, prerelease: "" })).toBe("patch");
     });
 
     it("should detect no update", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe("none");
     });
 
     it("should classify major even when minor/patch also differ", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 5, patch: 3, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe("major");
     });
 
     it("should classify minor even when patch also differs", () => {
+        expect.assertions(1);
+
         expect(getUpdateType({ major: 1, minor: 0, patch: 5, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe("minor");
     });
 });
@@ -166,42 +225,62 @@ describe("getUpdateType", () => {
 
 describe("isNewer", () => {
     it("should detect newer major", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "" })).toBe(true);
     });
 
     it("should detect newer minor", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 1, patch: 0, prerelease: "" })).toBe(true);
     });
 
     it("should detect newer patch", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 1, prerelease: "" })).toBe(true);
     });
 
     it("should not be newer for same version", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(false);
     });
 
     it("should not be newer for older version", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 2, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(false);
     });
 
     it("should detect release as newer than prerelease of same version", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "beta.1" }, { major: 1, minor: 0, patch: 0, prerelease: "" })).toBe(true);
     });
 
     it("should detect higher prerelease of same version as newer", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "alpha" }, { major: 1, minor: 0, patch: 0, prerelease: "beta" })).toBe(true);
     });
 
     it("should not consider lower prerelease as newer", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "beta" }, { major: 1, minor: 0, patch: 0, prerelease: "alpha" })).toBe(false);
     });
 
     it("should detect prerelease of higher major as newer", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 2, minor: 0, patch: 0, prerelease: "beta.1" })).toBe(true);
     });
 
     it("should not consider prerelease target newer when not a higher version", () => {
+        expect.assertions(1);
+
         expect(isNewer({ major: 1, minor: 0, patch: 0, prerelease: "" }, { major: 1, minor: 0, patch: 0, prerelease: "beta.1" })).toBe(false);
     });
 });
@@ -210,46 +289,68 @@ describe("isNewer", () => {
 
 describe("matchesPattern", () => {
     it("should match exact name", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("react", "react")).toBe(true);
     });
 
     it("should not match different name", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("react", "vue")).toBe(false);
     });
 
     it("should match wildcard suffix", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("eslint-plugin-react", "eslint*")).toBe(true);
     });
 
     it("should match scoped wildcard", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("@types/node", "@types/*")).toBe(true);
     });
 
     it("should not match scoped from different scope", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("@visulima/path", "@types/*")).toBe(false);
     });
 
     it("should match question mark for single char", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("react", "reac?")).toBe(true);
     });
 
     it("should match full wildcard", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("anything-at-all", "*")).toBe(true);
     });
 
     it("should match wildcard in middle", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("@visulima/path", "@*/path")).toBe(true);
     });
 
     it("should handle package names with dots", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("eslint.config", "eslint*")).toBe(true);
     });
 
     it("should not partially match", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("react-dom", "react")).toBe(false);
     });
 
     it("should handle empty pattern", () => {
+        expect.assertions(1);
+
         expect(matchesPattern("react", "")).toBe(false);
     });
 });
@@ -258,28 +359,40 @@ describe("matchesPattern", () => {
 
 describe("matchesFilters", () => {
     it("should include all when no filters", () => {
+        expect.assertions(1);
+
         expect(matchesFilters("react", [], [])).toBe(true);
     });
 
     it("should exclude matching patterns", () => {
+        expect.assertions(1);
+
         expect(matchesFilters("@types/node", [], ["@types/*"])).toBe(false);
     });
 
     it("should include only matching patterns", () => {
+        expect.assertions(2);
+
         expect(matchesFilters("react", ["react*"], [])).toBe(true);
         expect(matchesFilters("vue", ["react*"], [])).toBe(false);
     });
 
     it("should prioritize exclude over include", () => {
+        expect.assertions(1);
+
         expect(matchesFilters("react", ["react*"], ["react"])).toBe(false);
     });
 
     it("should handle multiple include patterns", () => {
+        expect.assertions(2);
+
         expect(matchesFilters("react", ["vue*", "react*"], [])).toBe(true);
         expect(matchesFilters("angular", ["vue*", "react*"], [])).toBe(false);
     });
 
     it("should handle multiple exclude patterns", () => {
+        expect.assertions(3);
+
         expect(matchesFilters("@types/node", [], ["@types/*", "eslint*"])).toBe(false);
         expect(matchesFilters("eslint-plugin", [], ["@types/*", "eslint*"])).toBe(false);
         expect(matchesFilters("react", [], ["@types/*", "eslint*"])).toBe(true);
@@ -290,6 +403,8 @@ describe("matchesFilters", () => {
 
 describe("parseCatalogsFromYaml", () => {
     it("should parse default catalog", () => {
+        expect.assertions(4);
+
         const yaml = `packages:
   - "packages/*"
 catalog:
@@ -300,11 +415,13 @@ catalog:
 
         expect(catalogs.size).toBe(1);
         expect(catalogs.has("default")).toBe(true);
-        expect(catalogs.get("default")!.get("react")).toBe("^18.2.0");
-        expect(catalogs.get("default")!.get("typescript")).toBe("~5.3.0");
+        expect(catalogs.get("default")?.get("react")).toBe("^18.2.0");
+        expect(catalogs.get("default")?.get("typescript")).toBe("~5.3.0");
     });
 
     it("should parse named catalogs", () => {
+        expect.assertions(4);
+
         const yaml = `catalogs:
   dev:
     eslint: ^8.0.0
@@ -321,6 +438,8 @@ catalog:
     });
 
     it("should parse both default and named catalogs", () => {
+        expect.assertions(3);
+
         const yaml = `catalog:
   react: ^18.2.0
 catalogs:
@@ -335,20 +454,24 @@ catalogs:
     });
 
     it("should parse quoted scoped package names", () => {
+        expect.assertions(3);
+
         const yaml = `catalog:
   '@types/node': ^20.0.0
   "@visulima/path": ^1.0.0
   react: ^18.0.0
 `;
         const catalogs = parseCatalogsFromYaml(yaml);
-        const defaultCatalog = catalogs.get("default")!;
+        const defaultCatalog = catalogs.get("default");
 
-        expect(defaultCatalog.get("@types/node")).toBe("^20.0.0");
-        expect(defaultCatalog.get("@visulima/path")).toBe("^1.0.0");
-        expect(defaultCatalog.get("react")).toBe("^18.0.0");
+        expect(defaultCatalog?.get("@types/node")).toBe("^20.0.0");
+        expect(defaultCatalog?.get("@visulima/path")).toBe("^1.0.0");
+        expect(defaultCatalog?.get("react")).toBe("^18.0.0");
     });
 
     it("should parse exact versions without prefix", () => {
+        expect.assertions(2);
+
         const yaml = `catalogs:
   prod:
     yaml: 2.8.3
@@ -361,31 +484,37 @@ catalogs:
     });
 
     it("should parse quoted version values", () => {
+        expect.assertions(2);
+
         const yaml = `catalog:
   react: "^18.2.0"
   typescript: '~5.3.0'
 `;
         const catalogs = parseCatalogsFromYaml(yaml);
-        const defaultCatalog = catalogs.get("default")!;
+        const defaultCatalog = catalogs.get("default");
 
-        expect(defaultCatalog.get("react")).toBe("^18.2.0");
-        expect(defaultCatalog.get("typescript")).toBe("~5.3.0");
+        expect(defaultCatalog?.get("react")).toBe("^18.2.0");
+        expect(defaultCatalog?.get("typescript")).toBe("~5.3.0");
     });
 
     it("should handle inline comments after values", () => {
+        expect.assertions(2);
+
         const yaml = `catalog:
   react: ^18.2.0 # main framework
   typescript: ~5.3.0 # type checking
 `;
         const catalogs = parseCatalogsFromYaml(yaml);
-        const defaultCatalog = catalogs.get("default")!;
+        const defaultCatalog = catalogs.get("default");
 
         // Value should not include the comment
-        expect(defaultCatalog.get("react")).toBe("^18.2.0");
-        expect(defaultCatalog.get("typescript")).toBe("~5.3.0");
+        expect(defaultCatalog?.get("react")).toBe("^18.2.0");
+        expect(defaultCatalog?.get("typescript")).toBe("~5.3.0");
     });
 
     it("should ignore comments", () => {
+        expect.assertions(2);
+
         const yaml = `catalog:
   # This is a comment
   react: ^18.2.0
@@ -398,12 +527,16 @@ catalogs:
     });
 
     it("should handle empty content", () => {
+        expect.assertions(1);
+
         const catalogs = parseCatalogsFromYaml("");
 
         expect(catalogs.size).toBe(0);
     });
 
     it("should handle YAML without catalogs", () => {
+        expect.assertions(1);
+
         const yaml = `packages:
   - "packages/*"
 `;
@@ -413,6 +546,8 @@ catalogs:
     });
 
     it("should stop parsing catalog section when new top-level key appears", () => {
+        expect.assertions(2);
+
         const yaml = `catalog:
   react: ^18.2.0
 packages:
@@ -425,6 +560,8 @@ packages:
     });
 
     it("should not confuse 'catalogs:' with 'catalog:'", () => {
+        expect.assertions(2);
+
         const yaml = `catalogs:
   dev:
     eslint: ^8.0.0
@@ -436,15 +573,17 @@ packages:
     });
 
     it("should handle workspace protocol entries (parsed as values)", () => {
+        expect.assertions(2);
+
         const yaml = `catalog:
   react: ^18.0.0
   my-lib: workspace:*
 `;
         const catalogs = parseCatalogsFromYaml(yaml);
-        const defaultCatalog = catalogs.get("default")!;
+        const defaultCatalog = catalogs.get("default");
 
-        expect(defaultCatalog.get("react")).toBe("^18.0.0");
-        expect(defaultCatalog.get("my-lib")).toBe("workspace:*");
+        expect(defaultCatalog?.get("react")).toBe("^18.0.0");
+        expect(defaultCatalog?.get("my-lib")).toBe("workspace:*");
     });
 });
 
@@ -454,74 +593,106 @@ describe("findTargetVersion", () => {
     const versions = ["1.0.0", "1.0.1", "1.1.0", "1.2.0", "2.0.0", "2.1.0", "3.0.0-beta.1"];
 
     it("should find latest version", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "latest", false)).toBe("2.1.0");
     });
 
     it("should return undefined when already at latest", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^2.1.0", "latest", false)).toBeUndefined();
     });
 
     it("should find minor target version", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "minor", false)).toBe("1.2.0");
     });
 
     it("should find patch target version", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^1.0.0", "patch", false)).toBe("1.0.1");
     });
 
     it("should return undefined when no patch available", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^1.2.0", "patch", false)).toBeUndefined();
     });
 
     it("should exclude prereleases by default", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "3.0.0-beta.1", "^2.1.0", "latest", false)).toBeUndefined();
     });
 
     it("should include prereleases when enabled", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "3.0.0-beta.1", "^2.1.0", "latest", true)).toBe("3.0.0-beta.1");
     });
 
     it("should return undefined for unparseable range", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "*", "latest", false)).toBeUndefined();
     });
 
     it("should handle minor target when no updates within major", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "2.1.0", "^2.1.0", "minor", false)).toBeUndefined();
     });
 
     it("should return undefined for empty versions list", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion([], "2.1.0", "^1.0.0", "minor", false)).toBeUndefined();
     });
 
     it("should return undefined for empty latest string", () => {
+        expect.assertions(1);
+
         expect(findTargetVersion(versions, "", "^1.0.0", "latest", false)).toBeUndefined();
     });
 
     it("should pick highest minor version when multiple available", () => {
+        expect.assertions(1);
+
         const v = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "2.0.0"];
 
         expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false)).toBe("1.3.0");
     });
 
     it("should pick highest patch version when multiple available", () => {
+        expect.assertions(1);
+
         const v = ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.1.0"];
 
         expect(findTargetVersion(v, "1.1.0", "^1.0.0", "patch", false)).toBe("1.0.3");
     });
 
     it("should handle unsorted version input", () => {
+        expect.assertions(1);
+
         const unsorted = ["2.0.0", "1.0.0", "1.2.0", "1.1.0", "1.0.1"];
 
         expect(findTargetVersion(unsorted, "2.0.0", "^1.0.0", "minor", false)).toBe("1.2.0");
     });
 
     it("should filter out prerelease versions in minor mode", () => {
+        expect.assertions(1);
+
         const v = ["1.0.0", "1.1.0", "1.2.0-beta.1", "2.0.0"];
 
         expect(findTargetVersion(v, "2.0.0", "^1.0.0", "minor", false)).toBe("1.1.0");
     });
 
     it("should include prerelease versions in minor mode when enabled", () => {
+        expect.assertions(1);
+
         const v = ["1.0.0", "1.1.0", "1.2.0-beta.1"];
 
         expect(findTargetVersion(v, "1.2.0-beta.1", "^1.0.0", "minor", true)).toBe("1.2.0-beta.1");
@@ -532,10 +703,12 @@ describe("findTargetVersion", () => {
 
 describe("hasCatalogs", () => {
     it("should detect default catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "pnpm-workspace.yaml"),
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
             `packages:
   - "packages/*"
 catalog:
@@ -543,14 +716,16 @@ catalog:
 `,
         );
 
-        expect(hasCatalogs(tmpDir)).toBe(true);
+        expect(hasCatalogs(temporaryDirectory)).toBe(true);
     });
 
     it("should detect named catalogs", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "pnpm-workspace.yaml"),
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
             `packages:
   - "packages/*"
 catalogs:
@@ -559,26 +734,30 @@ catalogs:
 `,
         );
 
-        expect(hasCatalogs(tmpDir)).toBe(true);
+        expect(hasCatalogs(temporaryDirectory)).toBe(true);
     });
 
     it("should return false when no catalogs", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "pnpm-workspace.yaml"),
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
             `packages:
   - "packages/*"
 `,
         );
 
-        expect(hasCatalogs(tmpDir)).toBe(false);
+        expect(hasCatalogs(temporaryDirectory)).toBe(false);
     });
 
     it("should return false when no pnpm-workspace.yaml", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(hasCatalogs(tmpDir)).toBe(false);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasCatalogs(temporaryDirectory)).toBe(false);
     });
 });
 
@@ -586,10 +765,12 @@ catalogs:
 
 describe("readCatalogs", () => {
     it("should read catalogs from pnpm-workspace.yaml", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "pnpm-workspace.yaml"),
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
             `catalog:
   react: ^18.0.0
 catalogs:
@@ -598,7 +779,7 @@ catalogs:
 `,
         );
 
-        const catalogs = readCatalogs(tmpDir);
+        const catalogs = readCatalogs(temporaryDirectory);
 
         expect(catalogs.size).toBe(2);
         expect(catalogs.get("default")?.get("react")).toBe("^18.0.0");
@@ -606,9 +787,11 @@ catalogs:
     });
 
     it("should return empty map when no file", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(readCatalogs(tmpDir).size).toBe(0);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(readCatalogs(temporaryDirectory).size).toBe(0);
     });
 });
 
@@ -641,6 +824,8 @@ describe("checkOutdated", () => {
     };
 
     it("should find outdated packages", async () => {
+        expect.assertions(6);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
         });
@@ -650,16 +835,18 @@ describe("checkOutdated", () => {
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
-        expect(result.outdated[0]!.packageName).toBe("react");
-        expect(result.outdated[0]!.targetVersion).toBe("19.0.0");
-        expect(result.outdated[0]!.newRange).toBe("^19.0.0");
-        expect(result.outdated[0]!.updateType).toBe("major");
+        expect(result.outdated[0]?.packageName).toBe("react");
+        expect(result.outdated[0]?.targetVersion).toBe("19.0.0");
+        expect(result.outdated[0]?.newRange).toBe("^19.0.0");
+        expect(result.outdated[0]?.updateType).toBe("major");
         expect(result.failed).toHaveLength(0);
 
         vi.restoreAllMocks();
     });
 
     it("should return empty when all up to date", async () => {
+        expect.assertions(1);
+
         mockFetch({
             react: { latest: "18.2.0", versions: ["18.2.0"] },
         });
@@ -674,6 +861,8 @@ describe("checkOutdated", () => {
     });
 
     it("should skip workspace: protocol entries", async () => {
+        expect.assertions(2);
+
         mockFetch({});
 
         const catalogs = new Map([
@@ -698,6 +887,8 @@ describe("checkOutdated", () => {
     });
 
     it("should respect include filter", async () => {
+        expect.assertions(2);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
         });
@@ -715,12 +906,14 @@ describe("checkOutdated", () => {
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
-        expect(result.outdated[0]!.packageName).toBe("react");
+        expect(result.outdated[0]?.packageName).toBe("react");
 
         vi.restoreAllMocks();
     });
 
     it("should respect exclude filter", async () => {
+        expect.assertions(2);
+
         mockFetch({
             vue: { latest: "4.0.0", versions: ["3.0.0", "4.0.0"] },
         });
@@ -739,12 +932,14 @@ describe("checkOutdated", () => {
 
         // Only vue should be checked (react excluded)
         expect(result.outdated).toHaveLength(1);
-        expect(result.outdated[0]!.packageName).toBe("vue");
+        expect(result.outdated[0]?.packageName).toBe("vue");
 
         vi.restoreAllMocks();
     });
 
     it("should report failed fetches", async () => {
+        expect.assertions(2);
+
         mockFetch({
             react: "error",
         });
@@ -760,6 +955,8 @@ describe("checkOutdated", () => {
     });
 
     it("should deduplicate fetches for same package across catalogs", async () => {
+        expect.assertions(2);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
         });
@@ -779,6 +976,8 @@ describe("checkOutdated", () => {
     });
 
     it("should respect target=minor", async () => {
+        expect.assertions(3);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.0.0", "18.1.0", "18.2.0", "19.0.0"] },
         });
@@ -788,13 +987,15 @@ describe("checkOutdated", () => {
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
-        expect(result.outdated[0]!.targetVersion).toBe("18.2.0");
-        expect(result.outdated[0]!.updateType).toBe("minor");
+        expect(result.outdated[0]?.targetVersion).toBe("18.2.0");
+        expect(result.outdated[0]?.updateType).toBe("minor");
 
         vi.restoreAllMocks();
     });
 
     it("should respect target=patch", async () => {
+        expect.assertions(3);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.0.0", "18.0.1", "18.0.2", "18.1.0", "19.0.0"] },
         });
@@ -804,20 +1005,22 @@ describe("checkOutdated", () => {
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
-        expect(result.outdated[0]!.targetVersion).toBe("18.0.2");
-        expect(result.outdated[0]!.updateType).toBe("patch");
+        expect(result.outdated[0]?.targetVersion).toBe("18.0.2");
+        expect(result.outdated[0]?.updateType).toBe("patch");
 
         vi.restoreAllMocks();
     });
 
     it("should call onProgress callback", async () => {
+        expect.assertions(1);
+
         mockFetch({
             react: { latest: "19.0.0", versions: ["18.0.0", "19.0.0"] },
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
         const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
-        const onProgress = vi.fn();
+        const onProgress = vi.fn<(current: number, total: number) => void>();
 
         await checkOutdated(catalogs, options, undefined, onProgress);
 
@@ -831,8 +1034,10 @@ describe("checkOutdated", () => {
 
 describe("applyCatalogUpdates", () => {
     it("should update version in default catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -844,7 +1049,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.2.0",
@@ -862,8 +1067,10 @@ catalog:
     });
 
     it("should update version in named catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -874,7 +1081,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "dev",
                 currentRange: "^8.0.0",
@@ -892,8 +1099,10 @@ catalog:
     });
 
     it("should preserve comments", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -903,7 +1112,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.2.0",
@@ -921,8 +1130,10 @@ catalog:
     });
 
     it("should update scoped package with single-quoted key", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -931,7 +1142,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^20.0.0",
@@ -948,8 +1159,10 @@ catalog:
     });
 
     it("should update scoped package with double-quoted key", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -958,7 +1171,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^20.0.0",
@@ -975,8 +1188,10 @@ catalog:
     });
 
     it("should update exact version without prefix", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -986,7 +1201,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "prod",
                 currentRange: "2.8.3",
@@ -1003,8 +1218,10 @@ catalog:
     });
 
     it("should update only the correct catalog when same package exists in multiple", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -1016,7 +1233,7 @@ catalogs:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "old",
                 currentRange: "^17.0.0",
@@ -1043,8 +1260,10 @@ catalogs:
     });
 
     it("should handle multiple updates at once", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -1055,7 +1274,7 @@ catalogs:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.2.0",
@@ -1082,14 +1301,16 @@ catalogs:
     });
 
     it("should not modify file when updates array is empty", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
         const original = `catalog:
   react: ^18.2.0
 `;
 
         writeFileSync(filePath, original);
-        applyCatalogUpdates(tmpDir, []);
+        applyCatalogUpdates(temporaryDirectory, []);
 
         const result = readFileSync(filePath, "utf8");
 
@@ -1097,8 +1318,10 @@ catalogs:
     });
 
     it("should preserve packages section", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -1110,7 +1333,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.2.0",
@@ -1129,8 +1352,10 @@ catalog:
     });
 
     it("should handle quoted version values", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(
             filePath,
@@ -1139,7 +1364,7 @@ catalog:
 `,
         );
 
-        applyCatalogUpdates(tmpDir, [
+        applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.2.0",
@@ -1161,6 +1386,8 @@ catalog:
 
 describe("parseBunCatalogs", () => {
     it("should parse default catalog from package.json workspaces", () => {
+        expect.assertions(3);
+
         const pkg = {
             workspaces: {
                 catalog: { react: "^19.1.0", "react-dom": "^19.1.0" },
@@ -1175,6 +1402,8 @@ describe("parseBunCatalogs", () => {
     });
 
     it("should parse named catalogs from package.json workspaces", () => {
+        expect.assertions(4);
+
         const pkg = {
             workspaces: {
                 catalogs: {
@@ -1192,6 +1421,8 @@ describe("parseBunCatalogs", () => {
     });
 
     it("should parse both default and named catalogs", () => {
+        expect.assertions(3);
+
         const pkg = {
             workspaces: {
                 catalog: { react: "^19.1.0" },
@@ -1207,6 +1438,8 @@ describe("parseBunCatalogs", () => {
     });
 
     it("should return empty map when no catalogs", () => {
+        expect.assertions(1);
+
         const pkg = { workspaces: { packages: ["packages/*"] } };
         const catalogs = parseBunCatalogs(pkg);
 
@@ -1214,6 +1447,8 @@ describe("parseBunCatalogs", () => {
     });
 
     it("should return empty map when no workspaces", () => {
+        expect.assertions(1);
+
         const pkg = {};
         const catalogs = parseBunCatalogs(pkg);
 
@@ -1223,10 +1458,12 @@ describe("parseBunCatalogs", () => {
 
 describe("hasCatalogs with bun", () => {
     it("should detect bun catalogs in package.json", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "package.json"),
+            join(temporaryDirectory, "package.json"),
             JSON.stringify({
                 workspaces: {
                     catalog: { react: "^19.1.0" },
@@ -1235,14 +1472,16 @@ describe("hasCatalogs with bun", () => {
             }),
         );
 
-        expect(hasCatalogs(tmpDir, "bun")).toBe(true);
+        expect(hasCatalogs(temporaryDirectory, "bun")).toBe(true);
     });
 
     it("should detect bun named catalogs", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "package.json"),
+            join(temporaryDirectory, "package.json"),
             JSON.stringify({
                 workspaces: {
                     catalogs: { testing: { vitest: "^3.0.0" } },
@@ -1251,30 +1490,36 @@ describe("hasCatalogs with bun", () => {
             }),
         );
 
-        expect(hasCatalogs(tmpDir, "bun")).toBe(true);
+        expect(hasCatalogs(temporaryDirectory, "bun")).toBe(true);
     });
 
     it("should return false for bun without catalogs", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ workspaces: { packages: ["packages/*"] } }));
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        expect(hasCatalogs(tmpDir, "bun")).toBe(false);
+        writeFileSync(join(temporaryDirectory, "package.json"), JSON.stringify({ workspaces: { packages: ["packages/*"] } }));
+
+        expect(hasCatalogs(temporaryDirectory, "bun")).toBe(false);
     });
 
     it("should return false when no package.json", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(hasCatalogs(tmpDir, "bun")).toBe(false);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasCatalogs(temporaryDirectory, "bun")).toBe(false);
     });
 });
 
 describe("readCatalogs with bun", () => {
     it("should read bun catalogs from package.json", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
-            join(tmpDir, "package.json"),
+            join(temporaryDirectory, "package.json"),
             JSON.stringify(
                 {
                     workspaces: {
@@ -1283,12 +1528,12 @@ describe("readCatalogs with bun", () => {
                         packages: ["packages/*"],
                     },
                 },
-                null,
+                undefined,
                 2,
             ),
         );
 
-        const catalogs = readCatalogs(tmpDir, "bun");
+        const catalogs = readCatalogs(temporaryDirectory, "bun");
 
         expect(catalogs.size).toBe(2);
         expect(catalogs.get("default")?.get("react")).toBe("^19.1.0");
@@ -1296,30 +1541,40 @@ describe("readCatalogs with bun", () => {
     });
 
     it("should return empty map when no package.json", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(readCatalogs(tmpDir, "bun").size).toBe(0);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(readCatalogs(temporaryDirectory, "bun").size).toBe(0);
     });
 });
 
 describe("detectJsonIndent", () => {
     it("should detect 2-space indent", () => {
+        expect.assertions(1);
+
         expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
     });
 
     it("should detect 4-space indent", () => {
+        expect.assertions(1);
+
         expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
     });
 
     it("should default to 2 when no indentation found", () => {
+        expect.assertions(1);
+
         expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
     });
 });
 
 describe("applyCatalogUpdates with bun", () => {
     it("should update version in bun default catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1331,13 +1586,13 @@ describe("applyCatalogUpdates with bun", () => {
                         packages: ["packages/*"],
                     },
                 },
-                null,
+                undefined,
                 2,
             )}\n`,
         );
 
         applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1358,8 +1613,10 @@ describe("applyCatalogUpdates with bun", () => {
     });
 
     it("should update version in bun named catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1371,13 +1628,13 @@ describe("applyCatalogUpdates with bun", () => {
                         },
                     },
                 },
-                null,
+                undefined,
                 2,
             )}\n`,
         );
 
         applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "testing",
@@ -1398,8 +1655,10 @@ describe("applyCatalogUpdates with bun", () => {
     });
 
     it("should preserve JSON indent", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(1);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1407,13 +1666,13 @@ describe("applyCatalogUpdates with bun", () => {
                 {
                     workspaces: { catalog: { react: "^18.0.0" } },
                 },
-                null,
+                undefined,
                 4,
             )}\n`,
         );
 
         applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1434,8 +1693,10 @@ describe("applyCatalogUpdates with bun", () => {
     });
 
     it("should handle multiple updates in bun catalog", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1446,13 +1707,13 @@ describe("applyCatalogUpdates with bun", () => {
                         catalogs: { testing: { vitest: "^1.0.0" } },
                     },
                 },
-                null,
+                undefined,
                 2,
             )}\n`,
         );
 
         applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1490,8 +1751,10 @@ describe("applyCatalogUpdates with bun", () => {
     });
 
     it("should preserve other package.json fields", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(5);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1505,13 +1768,13 @@ describe("applyCatalogUpdates with bun", () => {
                         packages: ["packages/*"],
                     },
                 },
-                null,
+                undefined,
                 2,
             )}\n`,
         );
 
         applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1530,7 +1793,7 @@ describe("applyCatalogUpdates with bun", () => {
         expect(result.name).toBe("my-monorepo");
         expect(result.private).toBe(true);
         expect(result.scripts.build).toBe("echo build");
-        expect(result.workspaces.packages).toEqual(["packages/*"]);
+        expect(result.workspaces.packages).toStrictEqual(["packages/*"]);
         expect(result.workspaces.catalog.react).toBe("^19.0.0");
     });
 });
@@ -1539,24 +1802,32 @@ describe("applyCatalogUpdates with bun", () => {
 
 describe("parseNpmrc", () => {
     it("should parse default registry", () => {
+        expect.assertions(1);
+
         const config = parseNpmrc("registry=https://custom.registry.com");
 
         expect(config.defaultRegistry).toBe("https://custom.registry.com");
     });
 
     it("should parse scoped registry", () => {
+        expect.assertions(1);
+
         const config = parseNpmrc("@myorg:registry=https://npm.myorg.com");
 
         expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
     });
 
     it("should parse auth token", () => {
+        expect.assertions(1);
+
         const config = parseNpmrc("//npm.myorg.com/:_authToken=secret123");
 
         expect(config.authTokens.get("npm.myorg.com")).toBe("secret123");
     });
 
     it("should parse multiple entries", () => {
+        expect.assertions(6);
+
         const content = `registry=https://custom.registry.com
 @myorg:registry=https://npm.myorg.com
 @another:registry=https://npm.another.com
@@ -1574,6 +1845,8 @@ describe("parseNpmrc", () => {
     });
 
     it("should ignore comments", () => {
+        expect.assertions(1);
+
         const content = `# This is a comment
 ; Another comment
 registry=https://custom.registry.com`;
@@ -1584,6 +1857,8 @@ registry=https://custom.registry.com`;
     });
 
     it("should ignore empty lines", () => {
+        expect.assertions(2);
+
         const content = `
 registry=https://custom.registry.com
 
@@ -1597,6 +1872,8 @@ registry=https://custom.registry.com
     });
 
     it("should handle empty content", () => {
+        expect.assertions(3);
+
         const config = parseNpmrc("");
 
         expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
@@ -1605,6 +1882,8 @@ registry=https://custom.registry.com
     });
 
     it("should handle values with = in them", () => {
+        expect.assertions(1);
+
         const config = parseNpmrc("//npm.myorg.com/:_authToken=abc=def==");
 
         expect(config.authTokens.get("npm.myorg.com")).toBe("abc=def==");
@@ -1619,6 +1898,8 @@ describe("getRegistryForPackage", () => {
     };
 
     it("should return scoped registry for matching package", () => {
+        expect.assertions(2);
+
         const result = getRegistryForPackage("@myorg/utils", config);
 
         expect(result.url).toBe("https://npm.myorg.com");
@@ -1626,6 +1907,8 @@ describe("getRegistryForPackage", () => {
     });
 
     it("should return default registry for unscoped package", () => {
+        expect.assertions(2);
+
         const result = getRegistryForPackage("react", config);
 
         expect(result.url).toBe("https://registry.npmjs.org");
@@ -1633,6 +1916,8 @@ describe("getRegistryForPackage", () => {
     });
 
     it("should return default registry for unmatched scope", () => {
+        expect.assertions(1);
+
         const result = getRegistryForPackage("@other/pkg", config);
 
         expect(result.url).toBe("https://registry.npmjs.org");
@@ -1641,18 +1926,22 @@ describe("getRegistryForPackage", () => {
 
 describe("loadNpmrc", () => {
     it("should load project .npmrc", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        writeFileSync(join(tmpDir, ".npmrc"), "@myorg:registry=https://npm.myorg.com\n");
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        const config = loadNpmrc(tmpDir);
+        writeFileSync(join(temporaryDirectory, ".npmrc"), "@myorg:registry=https://npm.myorg.com\n");
+
+        const config = loadNpmrc(temporaryDirectory);
 
         expect(config.registries.get("@myorg")).toBe("https://npm.myorg.com");
     });
 
     it("should return defaults when no .npmrc exists", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const config = loadNpmrc(tmpDir);
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const config = loadNpmrc(temporaryDirectory);
 
         expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
         expect(config.registries.size).toBe(0);
@@ -1663,6 +1952,8 @@ describe("loadNpmrc", () => {
 
 describe("fetchPackageVersions", () => {
     it("should use custom registry URL", async () => {
+        expect.assertions(2);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
             const url = typeof input === "string" ? input : input.toString();
 
@@ -1684,6 +1975,8 @@ describe("fetchPackageVersions", () => {
     });
 
     it("should pass auth token in header", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
             const headers = init?.headers as Record<string, string>;
 
@@ -1703,6 +1996,8 @@ describe("fetchPackageVersions", () => {
     });
 
     it("should abort on timeout", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(async (_input: RequestInfo | URL, init?: RequestInit) => {
             // Wait longer than timeout
             await new Promise((resolve, reject) => {
@@ -1722,12 +2017,14 @@ describe("fetchPackageVersions", () => {
             } as Response;
         });
 
-        await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrowError();
+        await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrowError("Aborted");
 
         vi.restoreAllMocks();
     });
 
     it("should strip trailing slash from registry URL", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
             const url = typeof input === "string" ? input : input.toString();
 
@@ -1751,94 +2048,112 @@ describe("fetchPackageVersions", () => {
 
 describe("createBackup", () => {
     it("should create pnpm backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
 
-        const backupPath = createBackup(tmpDir);
+        const backupPath = createBackup(temporaryDirectory);
 
         expect(backupPath).toBe(`${filePath}.bak`);
-        expect(readFileSync(backupPath!, "utf8")).toBe("catalog:\n  react: ^18.0.0\n");
+        expect(readFileSync(backupPath as string, "utf8")).toBe("catalog:\n  react: ^18.0.0\n");
     });
 
     it("should create bun backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
 
-        const backupPath = createBackup(tmpDir, "bun");
+        const backupPath = createBackup(temporaryDirectory, "bun");
 
         expect(backupPath).toBe(`${filePath}.bak`);
-        expect(readFileSync(backupPath!, "utf8")).toContain("react");
+        expect(readFileSync(backupPath as string, "utf8")).toContain("react");
     });
 
     it("should return undefined when file does not exist", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(createBackup(tmpDir)).toBeUndefined();
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(createBackup(temporaryDirectory)).toBeUndefined();
     });
 });
 
 describe("restoreFromBackup", () => {
     it("should restore pnpm file from backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
         const backupPath = `${filePath}.bak`;
 
         writeFileSync(backupPath, "catalog:\n  react: ^18.0.0\n");
         writeFileSync(filePath, "catalog:\n  react: ^19.0.0\n");
 
-        const restored = restoreFromBackup(tmpDir);
+        const restored = restoreFromBackup(temporaryDirectory);
 
         expect(restored).toBe(true);
         expect(readFileSync(filePath, "utf8")).toContain("^18.0.0");
     });
 
     it("should restore bun file from backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
         const backupPath = `${filePath}.bak`;
 
         writeFileSync(backupPath, "{\"old\":true}");
         writeFileSync(filePath, "{\"new\":true}");
 
-        const restored = restoreFromBackup(tmpDir, "bun");
+        const restored = restoreFromBackup(temporaryDirectory, "bun");
 
         expect(restored).toBe(true);
         expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
     });
 
     it("should return false when no backup exists", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(restoreFromBackup(tmpDir)).toBe(false);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(restoreFromBackup(temporaryDirectory)).toBe(false);
     });
 });
 
 describe("hasBackup", () => {
     it("should detect existing backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "pnpm-workspace.yaml.bak"), "backup");
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        expect(hasBackup(tmpDir)).toBe(true);
+        writeFileSync(join(temporaryDirectory, "pnpm-workspace.yaml.bak"), "backup");
+
+        expect(hasBackup(temporaryDirectory)).toBe(true);
     });
 
     it("should return false when no backup", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(1);
 
-        expect(hasBackup(tmpDir)).toBe(false);
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        expect(hasBackup(temporaryDirectory)).toBe(false);
     });
 
     it("should check bun backup path", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
+        expect.assertions(2);
 
-        writeFileSync(join(tmpDir, "package.json.bak"), "backup");
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        expect(hasBackup(tmpDir, "bun")).toBe(true);
-        expect(hasBackup(tmpDir, "pnpm")).toBe(false);
+        writeFileSync(join(temporaryDirectory, "package.json.bak"), "backup");
+
+        expect(hasBackup(temporaryDirectory, "bun")).toBe(true);
+        expect(hasBackup(temporaryDirectory, "pnpm")).toBe(false);
     });
 });
 
@@ -1846,6 +2161,8 @@ describe("hasBackup", () => {
 
 describe("formatOutdatedJson", () => {
     it("should produce valid JSON with outdated and failed", () => {
+        expect.assertions(3);
+
         const result: CheckOutdatedResult = {
             failed: ["broken-pkg"],
             outdated: [
@@ -1864,10 +2181,12 @@ describe("formatOutdatedJson", () => {
 
         expect(parsed.outdated).toHaveLength(1);
         expect(parsed.outdated[0].packageName).toBe("react");
-        expect(parsed.failed).toEqual(["broken-pkg"]);
+        expect(parsed.failed).toStrictEqual(["broken-pkg"]);
     });
 
     it("should produce valid JSON for empty results", () => {
+        expect.assertions(2);
+
         const json = formatOutdatedJson({ failed: [], outdated: [] });
         const parsed = JSON.parse(json);
 
@@ -1878,6 +2197,8 @@ describe("formatOutdatedJson", () => {
 
 describe("formatOutdatedMinimal", () => {
     it("should format one entry per line", () => {
+        expect.assertions(4);
+
         const result = formatOutdatedMinimal([
             {
                 catalogName: "default",
@@ -1906,6 +2227,8 @@ describe("formatOutdatedMinimal", () => {
     });
 
     it("should return empty string for no entries", () => {
+        expect.assertions(1);
+
         expect(formatOutdatedMinimal([])).toBe("");
     });
 });
@@ -1914,12 +2237,14 @@ describe("formatOutdatedMinimal", () => {
 
 describe("applyCatalogUpdates with backup", () => {
     it("should create backup by default", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
 
-        const backupPath = applyCatalogUpdates(tmpDir, [
+        const backupPath = applyCatalogUpdates(temporaryDirectory, [
             {
                 catalogName: "default",
                 currentRange: "^18.0.0",
@@ -1932,19 +2257,21 @@ describe("applyCatalogUpdates with backup", () => {
 
         expect(backupPath).toBe(`${filePath}.bak`);
         // Backup should contain the OLD content
-        expect(readFileSync(backupPath!, "utf8")).toContain("^18.0.0");
+        expect(readFileSync(backupPath as string, "utf8")).toContain("^18.0.0");
         // File should contain the NEW content
         expect(readFileSync(filePath, "utf8")).toContain("^19.0.0");
     });
 
     it("should skip backup when backup=false", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "pnpm-workspace.yaml");
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "pnpm-workspace.yaml");
 
         writeFileSync(filePath, "catalog:\n  react: ^18.0.0\n");
 
         const backupPath = applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1964,8 +2291,10 @@ describe("applyCatalogUpdates with backup", () => {
     });
 
     it("should create backup for bun updates", () => {
-        const tmpDir = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const filePath = join(tmpDir, "package.json");
+        expect.assertions(3);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+        const filePath = join(temporaryDirectory, "package.json");
 
         writeFileSync(
             filePath,
@@ -1973,13 +2302,13 @@ describe("applyCatalogUpdates with backup", () => {
                 {
                     workspaces: { catalog: { react: "^18.0.0" } },
                 },
-                null,
+                undefined,
                 2,
             )}\n`,
         );
 
         const backupPath = applyCatalogUpdates(
-            tmpDir,
+            temporaryDirectory,
             [
                 {
                     catalogName: "default",
@@ -1994,7 +2323,7 @@ describe("applyCatalogUpdates with backup", () => {
         );
 
         expect(backupPath).toBe(`${filePath}.bak`);
-        expect(JSON.parse(readFileSync(backupPath!, "utf8")).workspaces.catalog.react).toBe("^18.0.0");
+        expect(JSON.parse(readFileSync(backupPath as string, "utf8")).workspaces.catalog.react).toBe("^18.0.0");
         expect(JSON.parse(readFileSync(filePath, "utf8")).workspaces.catalog.react).toBe("^19.0.0");
     });
 });
@@ -2003,6 +2332,8 @@ describe("applyCatalogUpdates with backup", () => {
 
 describe("checkOutdated with npmrcConfig", () => {
     it("should use scoped registry from npmrc", async () => {
+        expect.assertions(1);
+
         const fetchCalls: string[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
@@ -2034,6 +2365,8 @@ describe("checkOutdated with npmrcConfig", () => {
     });
 
     it("should use default registry when no npmrcConfig", async () => {
+        expect.assertions(1);
+
         const fetchCalls: string[] = [];
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
@@ -2062,6 +2395,8 @@ describe("checkOutdated with npmrcConfig", () => {
 
 describe("fetchVulnerabilities", () => {
     it("should return vulnerabilities from OSV batch API", async () => {
+        expect.assertions(9);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
                 ({
@@ -2095,19 +2430,21 @@ describe("fetchVulnerabilities", () => {
         expect(result.has("lodash")).toBe(true);
         expect(result.has("react")).toBe(false);
 
-        const vulns = result.get("lodash")!;
+        const vulns = result.get("lodash");
 
         expect(vulns).toHaveLength(1);
-        expect(vulns[0]!.id).toBe("GHSA-1234-5678");
-        expect(vulns[0]!.severity).toBe("HIGH");
-        expect(vulns[0]!.cvssScore).toBe(7.5);
-        expect(vulns[0]!.fixedVersions).toEqual(["4.17.21"]);
-        expect(vulns[0]!.summary).toBe("Prototype Pollution");
+        expect(vulns?.[0]?.id).toBe("GHSA-1234-5678");
+        expect(vulns?.[0]?.severity).toBe("HIGH");
+        expect(vulns?.[0]?.cvssScore).toBe(7.5);
+        expect(vulns?.[0]?.fixedVersions).toStrictEqual(["4.17.21"]);
+        expect(vulns?.[0]?.summary).toBe("Prototype Pollution");
 
         vi.restoreAllMocks();
     });
 
     it("should return empty map on API failure", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
                 ({
@@ -2124,6 +2461,8 @@ describe("fetchVulnerabilities", () => {
     });
 
     it("should return empty map on network error", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(async () => {
             throw new Error("Network error");
         });
@@ -2136,12 +2475,16 @@ describe("fetchVulnerabilities", () => {
     });
 
     it("should return empty map for empty input", async () => {
+        expect.assertions(1);
+
         const result = await fetchVulnerabilities([]);
 
         expect(result.size).toBe(0);
     });
 
     it("should map severity from database_specific", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
                 ({
@@ -2166,12 +2509,14 @@ describe("fetchVulnerabilities", () => {
 
         const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
 
-        expect(result.get("pkg")![0]!.severity).toBe("CRITICAL");
+        expect(result.get("pkg")?.[0]?.severity).toBe("CRITICAL");
 
         vi.restoreAllMocks();
     });
 
     it("should map CVSS score ranges correctly", async () => {
+        expect.assertions(4);
+
         const makeResponse = (score: string) =>
             ({
                 json: async () => {
@@ -2195,33 +2540,43 @@ describe("fetchVulnerabilities", () => {
         // CRITICAL >= 9.0
         vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("9.8"));
 
-        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("CRITICAL");
+        const criticalResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
+
+        expect(criticalResult.get("a")?.[0]?.severity).toBe("CRITICAL");
 
         vi.restoreAllMocks();
 
         // HIGH >= 7.0
         vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("7.0"));
 
-        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("HIGH");
+        const highResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
+
+        expect(highResult.get("a")?.[0]?.severity).toBe("HIGH");
 
         vi.restoreAllMocks();
 
         // MODERATE >= 4.0
         vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("4.0"));
 
-        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("MODERATE");
+        const moderateResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
+
+        expect(moderateResult.get("a")?.[0]?.severity).toBe("MODERATE");
 
         vi.restoreAllMocks();
 
         // LOW < 4.0
         vi.spyOn(globalThis, "fetch").mockImplementation(async () => makeResponse("2.5"));
 
-        expect((await fetchVulnerabilities([{ name: "a", version: "1.0.0" }])).get("a")![0]!.severity).toBe("LOW");
+        const lowResult = await fetchVulnerabilities([{ name: "a", version: "1.0.0" }]);
+
+        expect(lowResult.get("a")?.[0]?.severity).toBe("LOW");
 
         vi.restoreAllMocks();
     });
 
     it("should extract multiple fixed versions from affected ranges", async () => {
+        expect.assertions(1);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
                 ({
@@ -2249,7 +2604,7 @@ describe("fetchVulnerabilities", () => {
 
         const result = await fetchVulnerabilities([{ name: "pkg", version: "1.0.0" }]);
 
-        expect(result.get("pkg")![0]!.fixedVersions).toEqual(["1.2.0", "2.1.0"]);
+        expect(result.get("pkg")?.[0]?.fixedVersions).toStrictEqual(["1.2.0", "2.1.0"]);
 
         vi.restoreAllMocks();
     });
@@ -2257,6 +2612,8 @@ describe("fetchVulnerabilities", () => {
 
 describe("checkOutdated with security", () => {
     it("should enrich outdated entries with vulnerability data when security=true", async () => {
+        expect.assertions(5);
+
         let callCount = 0;
 
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
@@ -2277,7 +2634,7 @@ describe("checkOutdated with security", () => {
 
             // OSV API call
             if (url.includes("osv.dev")) {
-                callCount++;
+                callCount += 1;
 
                 return {
                     json: async () => {
@@ -2308,15 +2665,17 @@ describe("checkOutdated with security", () => {
         const { outdated } = await checkOutdated(catalogs, options);
 
         expect(outdated).toHaveLength(1);
-        expect(outdated[0]!.vulnerabilities).toBeDefined();
-        expect(outdated[0]!.vulnerabilities).toHaveLength(1);
-        expect(outdated[0]!.vulnerabilities![0]!.id).toBe("GHSA-sec-1234");
+        expect(outdated[0]?.vulnerabilities).toBeDefined();
+        expect(outdated[0]?.vulnerabilities).toHaveLength(1);
+        expect(outdated[0]?.vulnerabilities?.[0]?.id).toBe("GHSA-sec-1234");
         expect(callCount).toBe(1);
 
         vi.restoreAllMocks();
     });
 
     it("should not call OSV when security=false", async () => {
+        expect.assertions(3);
+
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
                 ({
@@ -2335,7 +2694,7 @@ describe("checkOutdated with security", () => {
         const { outdated } = await checkOutdated(catalogs, options);
 
         expect(outdated).toHaveLength(1);
-        expect(outdated[0]!.vulnerabilities).toBeUndefined();
+        expect(outdated[0]?.vulnerabilities).toBeUndefined();
 
         // Only npm registry calls, no OSV
         const { calls } = (globalThis.fetch as ReturnType<typeof vi.fn>).mock;
@@ -2348,6 +2707,8 @@ describe("checkOutdated with security", () => {
 
 describe("formatOutdatedTable with security", () => {
     it("should show [SEC] prefix for entries with vulnerabilities", () => {
+        expect.assertions(4);
+
         const logs: string[] = [];
         const mockLogger = { info: (message: string) => logs.push(message) } as unknown as Console;
 
@@ -2385,6 +2746,8 @@ describe("formatOutdatedTable with security", () => {
 
 describe("formatSummary with security", () => {
     it("should include vulnerability count in summary", () => {
+        expect.assertions(3);
+
         const result = formatSummary([
             {
                 catalogName: "default",
@@ -2411,6 +2774,8 @@ describe("formatSummary with security", () => {
     });
 
     it("should not mention vulnerabilities when none found", () => {
+        expect.assertions(1);
+
         const result = formatSummary([
             {
                 catalogName: "default",

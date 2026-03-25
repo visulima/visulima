@@ -8,16 +8,22 @@ import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig } from "..
 
 describe("defineConfig", () => {
     it("should return the config object as-is", () => {
+        expect.assertions(1);
+
         const config = defineConfig({ update: { target: "minor" } });
 
-        expect(config).toEqual({ update: { target: "minor" } });
+        expect(config).toStrictEqual({ update: { target: "minor" } });
     });
 
     it("should return empty config", () => {
-        expect(defineConfig({})).toEqual({});
+        expect.assertions(1);
+
+        expect(defineConfig({})).toStrictEqual({});
     });
 
     it("should support all config sections", () => {
+        expect.assertions(2);
+
         const config = defineConfig({
             ai: { priority: { claude: 100 }, provider: "claude" },
             update: { exclude: ["@types/*"], format: "json", install: false, prerelease: true, security: true, target: "patch" },
@@ -30,6 +36,8 @@ describe("defineConfig", () => {
 
 describe("cONFIG_FILES", () => {
     it("should list all supported extensions", () => {
+        expect.assertions(6);
+
         expect(CONFIG_FILES).toContain("vis.config.ts");
         expect(CONFIG_FILES).toContain("vis.config.js");
         expect(CONFIG_FILES).toContain("vis.config.mjs");
@@ -39,12 +47,16 @@ describe("cONFIG_FILES", () => {
     });
 
     it("should check .ts first", () => {
+        expect.assertions(1);
+
         expect(CONFIG_FILES[0]).toBe("vis.config.ts");
     });
 });
 
 describe("findVisConfigFile", () => {
     it("should find vis.config.ts", () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.ts"), "export default {};");
@@ -53,6 +65,8 @@ describe("findVisConfigFile", () => {
     });
 
     it("should find vis.config.js", () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.js"), "module.exports = {};");
@@ -61,6 +75,8 @@ describe("findVisConfigFile", () => {
     });
 
     it("should prefer .ts over .js", () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.ts"), "export default {};");
@@ -70,6 +86,8 @@ describe("findVisConfigFile", () => {
     });
 
     it("should return undefined when no config found", () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         expect(findVisConfigFile(temporaryDirectory)).toBeUndefined();
@@ -78,13 +96,17 @@ describe("findVisConfigFile", () => {
 
 describe("loadVisConfig", () => {
     it("should return empty config when no file exists", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const config = await loadVisConfig(temporaryDirectory);
 
-        expect(config).toEqual({});
+        expect(config).toStrictEqual({});
     });
 
     it("should load a JavaScript config file", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default { update: { target: \"minor\" } };");
@@ -95,6 +117,8 @@ describe("loadVisConfig", () => {
     });
 
     it("should load a TypeScript config file", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(
@@ -112,6 +136,8 @@ export default config;
     });
 
     it("should support function-based config", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default () => ({ update: { security: true } });");
@@ -122,6 +148,8 @@ export default config;
     });
 
     it("should support async function-based config", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default async () => ({ ai: { provider: \"gemini\" } });");
@@ -132,6 +160,8 @@ export default config;
     });
 
     it("should load CJS config file", async () => {
+        expect.assertions(1);
+
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
         writeFileSync(join(temporaryDirectory, "vis.config.cjs"), "module.exports = { update: { format: \"json\" } };");

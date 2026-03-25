@@ -20,6 +20,8 @@ const makeEntry = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {
 
 describe("buildAnalysisPrompt", () => {
     it("should include package names and versions", () => {
+        expect.assertions(4);
+
         const prompt = buildAnalysisPrompt([makeEntry()]);
 
         expect(prompt).toContain("react");
@@ -29,6 +31,8 @@ describe("buildAnalysisPrompt", () => {
     });
 
     it("should include vulnerability info when present", () => {
+        expect.assertions(3);
+
         const prompt = buildAnalysisPrompt([
             makeEntry({
                 vulnerabilities: [{ cvssScore: 9.8, fixedVersions: ["2.0.0"], id: "GHSA-1234", severity: "CRITICAL", summary: "RCE" }],
@@ -41,12 +45,16 @@ describe("buildAnalysisPrompt", () => {
     });
 
     it("should not include vulnerability section when none", () => {
+        expect.assertions(1);
+
         const prompt = buildAnalysisPrompt([makeEntry()]);
 
         expect(prompt).not.toContain("VULNERABILITIES");
     });
 
     it("should request JSON response format", () => {
+        expect.assertions(2);
+
         const prompt = buildAnalysisPrompt([makeEntry()]);
 
         expect(prompt).toContain("JSON");
@@ -58,34 +66,46 @@ describe("buildAnalysisPrompt", () => {
 
 describe("extractJson", () => {
     it("should parse direct JSON", () => {
+        expect.assertions(1);
+
         const result = extractJson("{\"foo\": \"bar\"}");
 
-        expect(result).toEqual({ foo: "bar" });
+        expect(result).toStrictEqual({ foo: "bar" });
     });
 
     it("should extract from markdown code block", () => {
+        expect.assertions(1);
+
         const result = extractJson("Here is the analysis:\n```json\n{\"foo\": \"bar\"}\n```\nDone.");
 
-        expect(result).toEqual({ foo: "bar" });
+        expect(result).toStrictEqual({ foo: "bar" });
     });
 
     it("should extract from plain code block", () => {
+        expect.assertions(1);
+
         const result = extractJson("```\n{\"foo\": \"bar\"}\n```");
 
-        expect(result).toEqual({ foo: "bar" });
+        expect(result).toStrictEqual({ foo: "bar" });
     });
 
     it("should find JSON object in text", () => {
+        expect.assertions(1);
+
         const result = extractJson("Some text before {\"foo\": \"bar\"} and after");
 
-        expect(result).toEqual({ foo: "bar" });
+        expect(result).toStrictEqual({ foo: "bar" });
     });
 
     it("should return undefined for non-JSON", () => {
+        expect.assertions(1);
+
         expect(extractJson("no json here")).toBeUndefined();
     });
 
     it("should return undefined for empty string", () => {
+        expect.assertions(1);
+
         expect(extractJson("")).toBeUndefined();
     });
 });
@@ -94,6 +114,8 @@ describe("extractJson", () => {
 
 describe("normalizeRecommendation", () => {
     it("should normalize valid values", () => {
+        expect.assertions(4);
+
         const result = normalizeRecommendation({
             action: "update",
             breakingChanges: ["change1"],
@@ -110,23 +132,31 @@ describe("normalizeRecommendation", () => {
     });
 
     it("should default invalid action to review", () => {
+        expect.assertions(1);
+
         expect(normalizeRecommendation({ action: "invalid" }).action).toBe("review");
     });
 
     it("should default invalid riskLevel to medium", () => {
+        expect.assertions(1);
+
         expect(normalizeRecommendation({ riskLevel: "extreme" }).riskLevel).toBe("medium");
     });
 
     it("should default invalid effort to medium", () => {
+        expect.assertions(1);
+
         expect(normalizeRecommendation({ effort: "huge" }).effort).toBe("medium");
     });
 
     it("should default missing fields", () => {
+        expect.assertions(3);
+
         const result = normalizeRecommendation({});
 
         expect(result.package).toBe("");
         expect(result.reason).toBe("");
-        expect(result.breakingChanges).toEqual([]);
+        expect(result.breakingChanges).toStrictEqual([]);
     });
 });
 
@@ -134,6 +164,8 @@ describe("normalizeRecommendation", () => {
 
 describe("parseAiResponse", () => {
     it("should parse valid AI response", () => {
+        expect.assertions(4);
+
         const response = JSON.stringify({
             recommendations: [{ action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe", riskLevel: "low" }],
             summary: "All good",
@@ -149,6 +181,8 @@ describe("parseAiResponse", () => {
     });
 
     it("should handle invalid JSON gracefully", () => {
+        expect.assertions(3);
+
         const result = parseAiResponse("not json at all", "gemini");
 
         expect(result.provider).toBe("gemini");
@@ -157,6 +191,8 @@ describe("parseAiResponse", () => {
     });
 
     it("should handle response wrapped in markdown", () => {
+        expect.assertions(2);
+
         const json = JSON.stringify({
             recommendations: [{ action: "review", package: "lodash", reason: "major", riskLevel: "high" }],
             summary: "Review needed",
@@ -169,6 +205,8 @@ describe("parseAiResponse", () => {
     });
 
     it("should handle missing recommendations field", () => {
+        expect.assertions(2);
+
         const result = parseAiResponse("{\"summary\": \"test\"}", "codex");
 
         expect(result.recommendations).toHaveLength(0);
@@ -180,6 +218,8 @@ describe("parseAiResponse", () => {
 
 describe("ruleBasedAnalysis", () => {
     it("should classify patch updates as low risk", () => {
+        expect.assertions(2);
+
         const result = ruleBasedAnalysis([makeEntry({ updateType: "patch" })]);
 
         expect(result.recommendations[0]?.riskLevel).toBe("low");
@@ -187,18 +227,24 @@ describe("ruleBasedAnalysis", () => {
     });
 
     it("should classify minor updates as medium risk", () => {
+        expect.assertions(1);
+
         const result = ruleBasedAnalysis([makeEntry({ updateType: "minor" })]);
 
         expect(result.recommendations[0]?.riskLevel).toBe("medium");
     });
 
     it("should classify major updates as high risk", () => {
+        expect.assertions(1);
+
         const result = ruleBasedAnalysis([makeEntry({ updateType: "major" })]);
 
         expect(result.recommendations[0]?.riskLevel).toBe("high");
     });
 
     it("should detect known breaking changes for react", () => {
+        expect.assertions(2);
+
         const result = ruleBasedAnalysis([makeEntry({ packageName: "react", updateType: "major" })]);
 
         expect(result.recommendations[0]?.breakingChanges.length).toBeGreaterThan(0);
@@ -206,6 +252,8 @@ describe("ruleBasedAnalysis", () => {
     });
 
     it("should flag security-sensitive packages", () => {
+        expect.assertions(2);
+
         const result = ruleBasedAnalysis([makeEntry({ packageName: "jsonwebtoken", updateType: "major" })]);
 
         expect(result.recommendations[0]?.action).toBe("review");
@@ -213,6 +261,8 @@ describe("ruleBasedAnalysis", () => {
     });
 
     it("should prioritize security updates", () => {
+        expect.assertions(2);
+
         const result = ruleBasedAnalysis([
             makeEntry({
                 updateType: "patch",
@@ -225,12 +275,16 @@ describe("ruleBasedAnalysis", () => {
     });
 
     it("should use rule-engine as provider name", () => {
+        expect.assertions(1);
+
         const result = ruleBasedAnalysis([makeEntry()]);
 
         expect(result.provider).toBe("rule-engine");
     });
 
     it("should include fallback warning", () => {
+        expect.assertions(2);
+
         const result = ruleBasedAnalysis([makeEntry()]);
 
         expect(result.warnings).toHaveLength(1);
@@ -242,6 +296,8 @@ describe("ruleBasedAnalysis", () => {
 
 describe("formatAiAnalysis", () => {
     it("should include provider name in header", () => {
+        expect.assertions(3);
+
         const result: AiAnalysisResult = {
             provider: "claude",
             recommendations: [{ action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe", riskLevel: "low" }],
@@ -257,6 +313,8 @@ describe("formatAiAnalysis", () => {
     });
 
     it("should show breaking changes", () => {
+        expect.assertions(2);
+
         const result: AiAnalysisResult = {
             provider: "rule-engine",
             recommendations: [{ action: "review", breakingChanges: ["API changed"], effort: "medium", package: "react", reason: "major", riskLevel: "high" }],
@@ -271,6 +329,8 @@ describe("formatAiAnalysis", () => {
     });
 
     it("should show warnings", () => {
+        expect.assertions(1);
+
         const result: AiAnalysisResult = {
             provider: "rule-engine",
             recommendations: [],

@@ -19,9 +19,92 @@ const confirmPrompt = (question: string): Promise<boolean> =>
 
         rl.question(`${question} (y/N) `, (answer) => {
             rl.close();
-            resolve(answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes");
+            const trimmed = answer.trim().toLowerCase();
+
+            resolve(trimmed === "y" || trimmed === "yes");
         });
     });
+
+const executeInstall = async (hooksDirectory: string, logger: { info: (message: string) => void }): Promise<void> => {
+    const root = cwd();
+    const huskyDirectory = detectHuskyDirectory(root);
+
+    if (huskyDirectory) {
+        logger.info(`Existing husky installation found at ${huskyDirectory}/`);
+
+        const shouldMigrate = await confirmPrompt("Would you like to migrate your husky hooks to vis?");
+
+        if (shouldMigrate) {
+            const migrateResult = migrateFromHusky(root, hooksDirectory, logger as Console);
+
+            if (migrateResult.isError) {
+                throw new Error(migrateResult.message);
+            }
+
+            if (migrateResult.message) {
+                logger.info(migrateResult.message);
+            }
+
+            return;
+        }
+
+        logger.info("Aborting install. Remove husky first or run 'vis hook migrate' to migrate.");
+
+        return;
+    }
+
+    logger.info(`Installing git hooks in ${hooksDirectory}/...`);
+
+    const result = installHooks(hooksDirectory);
+
+    if (result.message) {
+        if (result.isError) {
+            throw new Error(result.message);
+        }
+
+        logger.info(result.message);
+
+        return;
+    }
+
+    if (!existsSync(join(root, hooksDirectory, "pre-commit"))) {
+        writeFileSync(join(root, hooksDirectory, "pre-commit"), "#!/usr/bin/env sh\n", { mode: 0o755 });
+    }
+
+    logger.info("Git hooks installed successfully.");
+};
+
+const executeMigrate = (hooksDirectory: string, logger: { info: (message: string) => void }): void => {
+    const root = cwd();
+
+    const result = migrateFromHusky(root, hooksDirectory, logger as Console);
+
+    if (result.isError) {
+        throw new Error(result.message);
+    }
+
+    if (result.message) {
+        logger.info(result.message);
+    }
+};
+
+const executeUninstall = (hooksDirectory: string, logger: { info: (message: string) => void }): void => {
+    logger.info("Removing git hooks...");
+
+    const result = uninstallHooks(hooksDirectory);
+
+    if (result.message) {
+        if (result.isError) {
+            throw new Error(result.message);
+        }
+
+        logger.info(result.message);
+
+        return;
+    }
+
+    logger.info("Git hooks removed successfully.");
+};
 
 const hook: Command = {
     argument: {
@@ -50,87 +133,17 @@ const hook: Command = {
 
         switch (action) {
             case "install": {
-                const root = cwd();
-                const huskyDirectory = detectHuskyDirectory(root);
-
-                if (huskyDirectory) {
-                    logger.info(`Existing husky installation found at ${huskyDirectory}/`);
-
-                    const shouldMigrate = await confirmPrompt("Would you like to migrate your husky hooks to vis?");
-
-                    if (shouldMigrate) {
-                        const migrateResult = migrateFromHusky(root, hooksDirectory, logger);
-
-                        if (migrateResult.isError) {
-                            throw new Error(migrateResult.message);
-                        }
-
-                        if (migrateResult.message) {
-                            logger.info(migrateResult.message);
-                        }
-
-                        return;
-                    }
-
-                    logger.info("Aborting install. Remove husky first or run 'vis hook migrate' to migrate.");
-
-                    return;
-                }
-
-                logger.info(`Installing git hooks in ${hooksDirectory}/...`);
-
-                const result = installHooks(hooksDirectory);
-
-                if (result.message) {
-                    if (result.isError) {
-                        throw new Error(result.message);
-                    }
-
-                    logger.info(result.message);
-
-                    return;
-                }
-
-                if (!existsSync(join(root, hooksDirectory, "pre-commit"))) {
-                    writeFileSync(join(root, hooksDirectory, "pre-commit"), "#!/usr/bin/env sh\n", { mode: 0o755 });
-                }
-
-                logger.info("Git hooks installed successfully.");
+                await executeInstall(hooksDirectory, logger);
                 break;
             }
 
             case "migrate": {
-                const root = cwd();
-
-                const result = migrateFromHusky(root, hooksDirectory, logger);
-
-                if (result.isError) {
-                    throw new Error(result.message);
-                }
-
-                if (result.message) {
-                    logger.info(result.message);
-                }
-
+                executeMigrate(hooksDirectory, logger);
                 break;
             }
 
             case "uninstall": {
-                logger.info("Removing git hooks...");
-
-                const result = uninstallHooks(hooksDirectory);
-
-                if (result.message) {
-                    if (result.isError) {
-                        throw new Error(result.message);
-                    }
-
-                    logger.info(result.message);
-
-                    return;
-                }
-
-                logger.info("Git hooks removed successfully.");
+                executeUninstall(hooksDirectory, logger);
                 break;
             }
 

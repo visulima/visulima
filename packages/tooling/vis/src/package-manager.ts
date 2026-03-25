@@ -1,4 +1,4 @@
-export interface UpdateCommandOptions {
+interface UpdateCommandOptions {
     dev: boolean;
     filters: string[];
     global: boolean;
@@ -12,7 +12,7 @@ export interface UpdateCommandOptions {
     workspaceRoot: boolean;
 }
 
-export interface ResolvedCommand {
+interface ResolvedCommand {
     args: string[];
     bin: string;
 }
@@ -163,7 +163,7 @@ const resolveBun = (options: UpdateCommandOptions): ResolvedCommand => {
     return { args, bin: "bun" };
 };
 
-export const resolveUpdateCommand = (
+const resolveUpdateCommand = (
     packageManager: "bun" | "npm" | "pnpm" | "yarn",
     version: string,
     options: UpdateCommandOptions,
@@ -200,7 +200,16 @@ export const resolveUpdateCommand = (
 
             break;
         }
+
+        default: {
+            const exhaustiveCheck: never = packageManager;
+
+            throw new Error(`Unsupported package manager: ${String(exhaustiveCheck)}`);
+        }
     }
 
     return { command, warnings };
 };
+
+export type { ResolvedCommand, UpdateCommandOptions };
+export { resolveUpdateCommand };

@@ -11,6 +11,13 @@ const HUSKY_DIRECTORIES = [".husky", ".config/husky"];
 
 const COMMON_SH_SOURCE_RE = /^\. "\$\(dirname "\$0"\)\/common\.sh"\s*/m;
 
+const HUSKY_STANDALONE_RE = /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g;
+const HUSKY_INSTALL_AND_RE = /\bhusky(?:\s+install)?\s*&&\s*/g;
+// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
+// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
+
 /**
  * Detects which husky directory is in use, if any.
  */
@@ -93,11 +100,11 @@ const uninstallHuskyPackage = (root: string, logger: Console): boolean => {
         yarn: ["yarn", "remove", "husky"],
     };
 
-    const [command, ...arguments_] = removeCommands[packageManager] as [string, ...string[]];
+    const [command, ...spawnArgs] = removeCommands[packageManager] as [string, ...string[]];
 
     logger.info(`Removing husky package via ${packageManager}...`);
 
-    const result = spawnSync(command, arguments_, {
+    const result = spawnSync(command, spawnArgs, {
         cwd: root,
         encoding: "utf8",
         stdio: "pipe",
@@ -115,6 +122,7 @@ const uninstallHuskyPackage = (root: string, logger: Console): boolean => {
 /**
  * Cleans husky references from package.json scripts.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- migration logic requires many conditional branches
 const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScriptReferences: string[] } => {
     const packageJsonPath = join(root, "package.json");
 
@@ -145,12 +153,7 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
             }
 
             // Remove husky from compound commands like "(is-ci || husky || exit 0) && other-stuff"
-            const huskyPatterns = [
-                /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g,
-                /\bhusky(?:\s+install)?\s*&&\s*/g,
-                /\s*&&\s*husky(?:\s+install)?/g,
-                /\s*\|\|\s*husky(?:\s+install)?/g,
-            ];
+            const huskyPatterns = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];
 
             let cleaned = scriptValue;
 
@@ -202,10 +205,12 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console)
 
     // Install vis hooks first (sets up core.hooksPath and dispatcher scripts)
     // Temporarily unset core.hooksPath if it points to husky so installHooks doesn't skip
+    // eslint-disable-next-line sonarjs/no-os-command-from-path
     const checkResult = spawnSync("git", ["config", "--local", "core.hooksPath"]);
     const existingPath = checkResult.status === 0 ? checkResult.stdout?.toString().trim() : "";
 
     if (existingPath && (existingPath === ".husky/_" || existingPath.startsWith(".husky"))) {
+        // eslint-disable-next-line sonarjs/no-os-command-from-path
         spawnSync("git", ["config", "--local", "--unset", "core.hooksPath"]);
     }
 
@@ -237,7 +242,7 @@ const migrateFromHusky = (root: string, hooksDirectory: string, logger: Console)
         const transformed = transformHookScript(content);
 
         writeFileSync(join(targetDirectory, hookName), transformed, { mode: 0o755 });
-        migratedCount++;
+        migratedCount += 1;
         logger.info(`  Migrated ${hookName}`);
     }
 

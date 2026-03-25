@@ -11,14 +11,17 @@ import { uninstallHooks } from "../src/commands/hook/uninstall";
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
+const DIRNAME_LINE_RE = /^d=(.+)$/m;
+const DIRNAME_COUNT_RE = /dirname/g;
+
 const countDirnameCalls = (script: string): number => {
-    const match = script.match(/^d=(.+)$/m);
+    const match = DIRNAME_LINE_RE.exec(script);
 
     if (!match) {
         return 0;
     }
 
-    return (match[1]?.match(/dirname/g) ?? []).length;
+    return (match[1]?.match(DIRNAME_COUNT_RE) ?? []).length;
 };
 
 /**
@@ -29,6 +32,7 @@ const createTemporaryGitRepo = (): { cleanup: () => void; restore: () => void; r
     const root = mkdtempSync(join(tmpdir(), "vis-hook-test-"));
     const originalCwd = process.cwd();
 
+    // eslint-disable-next-line sonarjs/no-os-command-from-path -- test setup
     execSync("git init", { cwd: root, stdio: "ignore" });
     process.chdir(root);
 
@@ -59,18 +63,24 @@ const createTemporaryDirectory = (): { cleanup: () => void; root: string } => {
 
 describe("hookScript", () => {
     it("should compute correct depth for simple dir", () => {
+        expect.assertions(1);
+
         const script = hookScript(".vis-hooks");
 
         expect(countDirnameCalls(script)).toBe(3);
     });
 
     it("should compute correct depth for nested dir", () => {
+        expect.assertions(1);
+
         const script = hookScript(".config/husky");
 
         expect(countDirnameCalls(script)).toBe(4);
     });
 
     it("should handle ./ prefix correctly", () => {
+        expect.assertions(2);
+
         const withDot = hookScript("./.config/husky");
         const withoutDot = hookScript(".config/husky");
 
@@ -79,6 +89,8 @@ describe("hookScript", () => {
     });
 
     it("should handle ./ prefix for simple dir", () => {
+        expect.assertions(2);
+
         const withDot = hookScript("./custom-hooks");
         const withoutDot = hookScript("custom-hooks");
 
@@ -87,12 +99,16 @@ describe("hookScript", () => {
     });
 
     it("should start with shebang", () => {
+        expect.assertions(1);
+
         const script = hookScript(".vis-hooks");
 
         expect(script.startsWith("#!/usr/bin/env sh")).toBe(true);
     });
 
     it("should include VIS_GIT_HOOKS environment variable checks", () => {
+        expect.assertions(1);
+
         const script = hookScript(".vis-hooks");
 
         expect(script).toContain("VIS_GIT_HOOKS");
@@ -103,6 +119,8 @@ describe("hookScript", () => {
 
 describe("installHooks", () => {
     it.skipIf(process.platform === "win32")("should create internal dispatcher scripts but not user hooks", () => {
+        expect.assertions(7);
+
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
@@ -125,11 +143,14 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should set core.hooksPath", () => {
+        expect.assertions(1);
+
         const { cleanup } = createTemporaryGitRepo();
 
         try {
             installHooks(".vis-hooks");
 
+            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
             const hooksPath = execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim();
 
             expect(hooksPath).toBe(".vis-hooks/_");
@@ -139,6 +160,8 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should reject paths containing ..", () => {
+        expect.assertions(2);
+
         const { cleanup } = createTemporaryGitRepo();
 
         try {
@@ -152,6 +175,8 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should skip when VIS_GIT_HOOKS=0", () => {
+        expect.assertions(2);
+
         const { cleanup } = createTemporaryGitRepo();
 
         try {
@@ -168,9 +193,12 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should skip when core.hooksPath is already set to a different path", () => {
+        expect.assertions(2);
+
         const { cleanup } = createTemporaryGitRepo();
 
         try {
+            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
             execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
 
             const result = installHooks(".vis-hooks");
@@ -183,6 +211,8 @@ describe("installHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should work with custom directory name", () => {
+        expect.assertions(2);
+
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
@@ -200,6 +230,8 @@ describe("installHooks", () => {
 
 describe("uninstallHooks", () => {
     it.skipIf(process.platform === "win32")("should unset core.hooksPath and remove internal directory", () => {
+        expect.assertions(5);
+
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
@@ -216,6 +248,7 @@ describe("uninstallHooks", () => {
             expect(existsSync(join(root, ".vis-hooks", "_"))).toBe(false);
 
             // core.hooksPath should be unset
+            // eslint-disable-next-line sonarjs/no-os-command-from-path -- test verification
             const checkResult = execSync("git config --local core.hooksPath 2>&1 || true", { encoding: "utf8" });
 
             expect(checkResult.trim()).toBe("");
@@ -225,6 +258,8 @@ describe("uninstallHooks", () => {
     });
 
     it.skipIf(process.platform === "win32")("should return message when no hooks path is configured", () => {
+        expect.assertions(2);
+
         const { cleanup } = createTemporaryGitRepo();
 
         try {
@@ -242,6 +277,8 @@ describe("uninstallHooks", () => {
 
 describe("transformHookScript", () => {
     it("should remove common.sh sourcing line", () => {
+        expect.assertions(3);
+
         const input = `#!/bin/sh
 
 . "$(dirname "$0")/common.sh"
@@ -256,6 +293,8 @@ echo "hello"
     });
 
     it("should leave scripts without common.sh unchanged", () => {
+        expect.assertions(1);
+
         const input = `#!/bin/sh
 
 echo "hello"
@@ -266,6 +305,8 @@ echo "hello"
     });
 
     it("should only remove the sourcing line, not other references", () => {
+        expect.assertions(2);
+
         const input = `#!/bin/sh
 
 . "$(dirname "$0")/common.sh"
@@ -294,18 +335,24 @@ describe("detectHuskyDirectory", () => {
     });
 
     it("should detect .husky directory", () => {
+        expect.assertions(1);
+
         mkdirSync(join(temporary.root, ".husky"));
 
         expect(detectHuskyDirectory(temporary.root)).toBe(".husky");
     });
 
     it("should detect .config/husky directory", () => {
+        expect.assertions(1);
+
         mkdirSync(join(temporary.root, ".config", "husky"), { recursive: true });
 
         expect(detectHuskyDirectory(temporary.root)).toBe(".config/husky");
     });
 
     it("should prefer .husky over .config/husky", () => {
+        expect.assertions(1);
+
         mkdirSync(join(temporary.root, ".husky"));
         mkdirSync(join(temporary.root, ".config", "husky"), { recursive: true });
 
@@ -313,10 +360,14 @@ describe("detectHuskyDirectory", () => {
     });
 
     it("should return undefined when no husky directory exists", () => {
+        expect.assertions(1);
+
         expect(detectHuskyDirectory(temporary.root)).toBeUndefined();
     });
 
     it("should ignore .husky if it is a file, not a directory", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, ".husky"), "not a directory");
 
         expect(detectHuskyDirectory(temporary.root)).toBeUndefined();
@@ -337,40 +388,54 @@ describe("detectPackageManager", () => {
     });
 
     it("should detect pnpm from pnpm-lock.yaml", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "pnpm-lock.yaml"), "");
 
         expect(detectPackageManager(temporary.root)).toBe("pnpm");
     });
 
     it("should detect pnpm from pnpm-workspace.yaml", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), "");
 
         expect(detectPackageManager(temporary.root)).toBe("pnpm");
     });
 
     it("should detect yarn from yarn.lock", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "yarn.lock"), "");
 
         expect(detectPackageManager(temporary.root)).toBe("yarn");
     });
 
     it("should detect bun from bun.lockb", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "bun.lockb"), "");
 
         expect(detectPackageManager(temporary.root)).toBe("bun");
     });
 
     it("should detect bun from bun.lock", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "bun.lock"), "");
 
         expect(detectPackageManager(temporary.root)).toBe("bun");
     });
 
     it("should default to npm when no lockfile found", () => {
+        expect.assertions(1);
+
         expect(detectPackageManager(temporary.root)).toBe("npm");
     });
 
     it("should prefer pnpm over yarn when both exist", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "pnpm-lock.yaml"), "");
         writeFileSync(join(temporary.root, "yarn.lock"), "");
 
@@ -392,6 +457,8 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should remove standalone husky script", () => {
+        expect.assertions(3);
+
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ scripts: { prepare: "husky" } }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);
@@ -405,6 +472,8 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should remove standalone husky install script", () => {
+        expect.assertions(2);
+
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ scripts: { prepare: "husky install" } }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);
@@ -417,6 +486,8 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should clean husky from compound (is-ci || husky) pattern", () => {
+        expect.assertions(2);
+
         writeFileSync(
             join(temporary.root, "package.json"),
             JSON.stringify(
@@ -440,6 +511,8 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should clean husky && from compound commands", () => {
+        expect.assertions(2);
+
         writeFileSync(
             join(temporary.root, "package.json"),
             JSON.stringify(
@@ -461,6 +534,8 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should not modify scripts without husky references", () => {
+        expect.assertions(2);
+
         writeFileSync(
             join(temporary.root, "package.json"),
             JSON.stringify(
@@ -479,12 +554,16 @@ describe("cleanPackageJsonScripts", () => {
     });
 
     it("should return not modified when no package.json exists", () => {
+        expect.assertions(1);
+
         const result = cleanPackageJsonScripts(temporary.root);
 
         expect(result.modified).toBe(false);
     });
 
     it("should handle package.json without scripts field", () => {
+        expect.assertions(1);
+
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ name: "test" }, undefined, 4));
 
         const result = cleanPackageJsonScripts(temporary.root);

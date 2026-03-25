@@ -29,33 +29,43 @@ const options = (overrides: Partial<UpdateCommandOptions> = {}): UpdateCommandOp
 describe("resolveUpdateCommand", () => {
     describe("global", () => {
         it("should always use npm for global updates regardless of detected PM", () => {
+            expect.assertions(2);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ global: true, packages: ["typescript"] }));
 
             expect(command.bin).toBe("npm");
-            expect(command.args).toEqual(["update", "--global", "typescript"]);
+            expect(command.args).toStrictEqual(["update", "--global", "typescript"]);
         });
     });
 
     describe("pnpm", () => {
         it("should resolve basic update", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ packages: ["react"] }));
 
-            expect(command).toEqual({ args: ["update", "react"], bin: "pnpm" });
+            expect(command).toStrictEqual({ args: ["update", "react"], bin: "pnpm" });
         });
 
         it("should resolve update all", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options());
 
-            expect(command).toEqual({ args: ["update"], bin: "pnpm" });
+            expect(command).toStrictEqual({ args: ["update"], bin: "pnpm" });
         });
 
         it("should resolve with --latest", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ latest: true, packages: ["react"] }));
 
             expect(command.args).toContain("--latest");
         });
 
         it("should resolve with filter before update", () => {
+            expect.assertions(2);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ filters: ["app"] }));
 
             const filterIndex = command.args.indexOf("--filter");
@@ -66,36 +76,48 @@ describe("resolveUpdateCommand", () => {
         });
 
         it("should resolve with --recursive", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ recursive: true }));
 
             expect(command.args).toContain("--recursive");
         });
 
         it("should resolve with --interactive", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ interactive: true }));
 
             expect(command.args).toContain("--interactive");
         });
 
         it("should resolve with --dev", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ dev: true }));
 
             expect(command.args).toContain("--dev");
         });
 
         it("should resolve with --no-optional", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ noOptional: true }));
 
             expect(command.args).toContain("--no-optional");
         });
 
         it("should resolve with --no-save", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ noSave: true }));
 
             expect(command.args).toContain("--no-save");
         });
 
         it("should resolve with workspace-root as filter", () => {
+            expect.assertions(2);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ workspaceRoot: true }));
 
             expect(command.args).toContain("--filter");
@@ -103,6 +125,8 @@ describe("resolveUpdateCommand", () => {
         });
 
         it("should resolve complex combo", () => {
+            expect.assertions(7);
+
             const { command } = resolveUpdateCommand(
                 "pnpm",
                 "9.0.0",
@@ -125,26 +149,34 @@ describe("resolveUpdateCommand", () => {
         });
 
         it("should resolve multiple packages with latest", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ latest: true, packages: ["react", "react-dom", "next"] }));
 
-            expect(command.args).toEqual(["update", "--latest", "react", "react-dom", "next"]);
+            expect(command.args).toStrictEqual(["update", "--latest", "react", "react-dom", "next"]);
         });
     });
 
     describe("yarn v1", () => {
         it("should use 'upgrade' command", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "1.22.19", options({ packages: ["react"] }));
 
-            expect(command).toEqual({ args: ["upgrade", "react"], bin: "yarn" });
+            expect(command).toStrictEqual({ args: ["upgrade", "react"], bin: "yarn" });
         });
 
         it("should resolve with --latest", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "1.22.19", options({ latest: true, packages: ["react"] }));
 
             expect(command.args).toContain("--latest");
         });
 
         it("should resolve filter with workspace prefix", () => {
+            expect.assertions(3);
+
             const { command } = resolveUpdateCommand("yarn", "1.22.19", options({ filters: ["app"], packages: ["react"] }));
 
             expect(command.args[0]).toBe("workspace");
@@ -155,24 +187,32 @@ describe("resolveUpdateCommand", () => {
 
     describe("yarn v2+ (Berry)", () => {
         it("should use 'up' command", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "4.1.0", options({ packages: ["react"] }));
 
-            expect(command).toEqual({ args: ["up", "react"], bin: "yarn" });
+            expect(command).toStrictEqual({ args: ["up", "react"], bin: "yarn" });
         });
 
         it("should resolve filter with workspaces foreach", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "4.1.0", options({ filters: ["app"] }));
 
-            expect(command.args).toEqual(["workspaces", "foreach", "--all", "--include", "app", "up"]);
+            expect(command.args).toStrictEqual(["workspaces", "foreach", "--all", "--include", "app", "up"]);
         });
 
         it("should resolve multiple filters", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "4.1.0", options({ filters: ["app", "lib"] }));
 
-            expect(command.args).toEqual(["workspaces", "foreach", "--all", "--include", "app", "--include", "lib", "up"]);
+            expect(command.args).toStrictEqual(["workspaces", "foreach", "--all", "--include", "app", "--include", "lib", "up"]);
         });
 
         it("should resolve recursive with workspaces foreach", () => {
+            expect.assertions(3);
+
             const { command } = resolveUpdateCommand("yarn", "4.1.0", options({ recursive: true }));
 
             expect(command.args).toContain("workspaces");
@@ -181,6 +221,8 @@ describe("resolveUpdateCommand", () => {
         });
 
         it("should resolve with --interactive", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("yarn", "4.1.0", options({ interactive: true }));
 
             expect(command.args).toContain("--interactive");
@@ -189,32 +231,42 @@ describe("resolveUpdateCommand", () => {
 
     describe("npm", () => {
         it("should resolve basic update", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ packages: ["react"] }));
 
-            expect(command).toEqual({ args: ["update", "react"], bin: "npm" });
+            expect(command).toStrictEqual({ args: ["update", "react"], bin: "npm" });
         });
 
         it("should resolve update all", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options());
 
-            expect(command).toEqual({ args: ["update"], bin: "npm" });
+            expect(command).toStrictEqual({ args: ["update"], bin: "npm" });
         });
 
         it("should warn about --latest", () => {
+            expect.assertions(2);
+
             const { warnings } = resolveUpdateCommand("npm", "10.0.0", options({ latest: true }));
 
             expect(warnings).toHaveLength(1);
-            expect(warnings[0]).toMatch(/--latest/);
+            expect(warnings[0]).toContain("--latest");
         });
 
         it("should warn about --interactive", () => {
+            expect.assertions(2);
+
             const { warnings } = resolveUpdateCommand("npm", "10.0.0", options({ interactive: true }));
 
             expect(warnings).toHaveLength(1);
-            expect(warnings[0]).toMatch(/--interactive/);
+            expect(warnings[0]).toContain("--interactive");
         });
 
         it("should resolve filter with --workspace", () => {
+            expect.assertions(2);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ filters: ["app"] }));
 
             expect(command.args).toContain("--workspace");
@@ -222,36 +274,48 @@ describe("resolveUpdateCommand", () => {
         });
 
         it("should resolve recursive with --workspaces", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ recursive: true }));
 
             expect(command.args).toContain("--workspaces");
         });
 
         it("should resolve workspace-root with --include-workspace-root", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ workspaceRoot: true }));
 
             expect(command.args).toContain("--include-workspace-root");
         });
 
         it("should resolve with --dev", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ dev: true }));
 
             expect(command.args).toContain("--dev");
         });
 
         it("should resolve with --production for prod", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ prod: true }));
 
             expect(command.args).toContain("--production");
         });
 
         it("should resolve with --no-optional", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ noOptional: true }));
 
             expect(command.args).toContain("--no-optional");
         });
 
         it("should resolve with --no-save", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("npm", "10.0.0", options({ noSave: true }));
 
             expect(command.args).toContain("--no-save");
@@ -260,18 +324,24 @@ describe("resolveUpdateCommand", () => {
 
     describe("bun", () => {
         it("should resolve basic update", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("bun", "1.0.0", options({ packages: ["react"] }));
 
-            expect(command).toEqual({ args: ["update", "react"], bin: "bun" });
+            expect(command).toStrictEqual({ args: ["update", "react"], bin: "bun" });
         });
 
         it("should resolve with --latest", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("bun", "1.0.0", options({ latest: true }));
 
             expect(command.args).toContain("--latest");
         });
 
         it("should resolve filter with --filter", () => {
+            expect.assertions(2);
+
             const { command } = resolveUpdateCommand("bun", "1.0.0", options({ filters: ["app"] }));
 
             expect(command.args).toContain("--filter");
@@ -281,12 +351,16 @@ describe("resolveUpdateCommand", () => {
 
     describe("latest flag via target option", () => {
         it("should pass --latest for pnpm when latest is true", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ latest: true }));
 
             expect(command.args).toContain("--latest");
         });
 
         it("should not pass --latest when latest is false", () => {
+            expect.assertions(1);
+
             const { command } = resolveUpdateCommand("pnpm", "9.0.0", options({ latest: false }));
 
             expect(command.args).not.toContain("--latest");
@@ -296,6 +370,8 @@ describe("resolveUpdateCommand", () => {
 
 describe("catalog integration", () => {
     it("should detect catalogs from YAML and filter packages", () => {
+        expect.assertions(4);
+
         const yaml = `catalog:
   react: ^18.2.0
   '@types/node': ^20.0.0
@@ -324,6 +400,8 @@ catalogs:
     });
 
     it("should apply prefix from current range to new version", () => {
+        expect.assertions(5);
+
         expect(extractPrefix("^18.2.0")).toBe("^");
         expect(extractPrefix("~5.3.0")).toBe("~");
         expect(extractPrefix(">=1.0.0")).toBe(">=");
