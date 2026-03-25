@@ -10,18 +10,21 @@ description: "A CLI task runner for monorepo workspaces with task caching, depen
 ## Key Features
 
 **Task Execution**
+
 - **Workspace-aware** - Automatically discovers projects from `pnpm-workspace.yaml` or `package.json` workspaces
 - **Task caching** - Local and remote caching powered by `@visulima/task-runner`
 - **Dependency-aware scheduling** - Runs tasks in topological order with configurable parallelism
 - **Affected detection** - Only runs tasks for projects changed since a given git ref
 
 **Dependency Management**
+
 - **Catalog check** - Detect outdated dependencies in pnpm/bun workspace catalogs
 - **Catalog update** - Update catalog entries with automatic backup and rollback
 - **Security scanning** - Check for known vulnerabilities via OSV.dev
 - **Package manager wrapper** - Unified update interface for pnpm, npm, yarn, and bun
 
 **Developer Experience**
+
 - **Graph visualization** - View your project dependency graph in ASCII, DOT, JSON, or HTML
 - **Git hooks** - Install, manage, and migrate git hooks (husky migration supported)
 - **Configurable** - `vis.json` for target defaults, cache settings, and update preferences
@@ -49,16 +52,16 @@ vis graph
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Set up vis in your workspace
-  </Card>
-  <Card title="Quick Start" href="/quick-start">
-    Get up and running in minutes
-  </Card>
-  <Card title="Commands" href="/commands/run">
-    Full command reference
-  </Card>
-  <Card title="Best Practices" href="/guides/best-practices">
-    Team workflows, security, and CI/CD patterns
-  </Card>
+    <Card title="Installation" href="/installation">
+        Set up vis in your workspace
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get up and running in minutes
+    </Card>
+    <Card title="Commands" href="/commands/run">
+        Full command reference
+    </Card>
+    <Card title="Best Practices" href="/guides/best-practices">
+        Team workflows, security, and CI/CD patterns
+    </Card>
 </Cards>

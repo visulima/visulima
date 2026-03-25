@@ -18,26 +18,26 @@ name: CI
 on: [pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for affected detection
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Full history for affected detection
 
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+            - run: pnpm install --frozen-lockfile
 
-      - name: Build affected projects
-        run: vis affected build --base=origin/main
+            - name: Build affected projects
+              run: vis affected build --base=origin/main
 
-      - name: Test affected projects
-        run: vis affected test --base=origin/main
+            - name: Test affected projects
+              run: vis affected test --base=origin/main
 ```
 
 ### Dependency Health Checks
@@ -47,34 +47,34 @@ Run scheduled dependency checks:
 ```yaml
 name: Dependency Check
 on:
-  schedule:
-    - cron: '0 9 * * 1'  # Every Monday at 9am
+    schedule:
+        - cron: "0 9 * * 1" # Every Monday at 9am
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+            - run: pnpm install --frozen-lockfile
 
-      - name: Check for outdated dependencies
-        run: vis check --format json > deps-report.json
+            - name: Check for outdated dependencies
+              run: vis check --format json > deps-report.json
 
-      - name: Security audit
-        run: vis check --security --exit-code
+            - name: Security audit
+              run: vis check --security --exit-code
 
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-report
-          path: deps-report.json
+            - name: Upload report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dependency-report
+                  path: deps-report.json
 ```
 
 ### Task Caching
@@ -85,10 +85,10 @@ Cache task runner artifacts between CI runs:
 - name: Cache vis task runner
   uses: actions/cache@v4
   with:
-    path: .task-runner-cache
-    key: vis-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-    restore-keys: |
-      vis-cache-${{ runner.os }}-
+      path: .task-runner-cache
+      key: vis-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      restore-keys: |
+          vis-cache-${{ runner.os }}-
 ```
 
 ## Enforcing Dependency Policies
@@ -114,6 +114,6 @@ Export JSON reports for monitoring dashboards or Slack notifications:
 ```yaml
 - name: Generate reports
   run: |
-    vis check --format json > check-results.json
-    vis check --security --format json > security-results.json
+      vis check --format json > check-results.json
+      vis check --security --format json > security-results.json
 ```

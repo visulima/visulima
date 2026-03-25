@@ -1,10 +1,8 @@
-import { cwd } from "node:process";
-
 import type { Command } from "@visulima/cerebro";
 import type { AffectedOptions } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
-import { buildProjectGraph, discoverWorkspace, findWorkspaceRoot } from "../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const affected: Command = {
     argument: {
@@ -17,15 +15,19 @@ const affected: Command = {
         ["vis affected build", "Run build on affected projects"],
         ["vis affected test --base=main", "Run tests on projects changed since main"],
     ],
-    execute: async ({ argument, logger, options, runtime }) => {
+    execute: async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }) => {
         const target = argument[0];
 
         if (!target) {
             throw new Error("Missing target. Usage: vis affected <target>");
         }
 
-        const workspaceRoot = findWorkspaceRoot(cwd());
-        const { workspace } = discoverWorkspace(workspaceRoot);
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+        }
+
+        const workspaceRoot = wsRoot;
+        const { workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         const affectedOptions: AffectedOptions = {

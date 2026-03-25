@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 // Also import catalog utilities for combined testing
-import { extractPrefix, matchesFilters, parseCatalogsFromYaml } from "../catalog";
-import type { UpdateCommandOptions } from "../package-manager";
-import { resolveUpdateCommand } from "../package-manager";
+import { extractPrefix, matchesFilters, parseCatalogsFromYaml } from "../src/catalog";
+import type { UpdateCommandOptions } from "../src/package-manager";
+import { resolveUpdateCommand } from "../src/package-manager";
 
 const defaultOptions: UpdateCommandOptions = {
     dev: false,

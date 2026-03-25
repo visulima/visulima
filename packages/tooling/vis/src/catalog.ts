@@ -195,17 +195,9 @@ const parseCatalogSection = (catalogs: Map<string, Map<string, string>>, trimmed
     }
 };
 
-const parseCatalogsSection = (
-    catalogs: Map<string, Map<string, string>>,
-    trimmed: string,
-    indent: number,
-    currentCatalogName: string,
-): string => {
+const parseCatalogsSection = (catalogs: Map<string, Map<string, string>>, trimmed: string, indent: number, currentCatalogName: string): string => {
     if (indent === 2 && trimmed.endsWith(":")) {
-        return trimmed
-            .slice(0, -1)
-            .trim()
-            .replaceAll(QUOTES_TRIM_REGEX, "");
+        return trimmed.slice(0, -1).trim().replaceAll(QUOTES_TRIM_REGEX, "");
     }
 
     if (indent >= 4 && currentCatalogName) {
@@ -642,7 +634,10 @@ const fetchVulnerabilities = async (
             const vulns = data.results[index]?.vulns;
 
             if (vulns && vulns.length > 0) {
-                result.set(packageInfo.name, vulns.map((vuln) => mapOsvVuln(vuln)));
+                result.set(
+                    packageInfo.name,
+                    vulns.map((vuln) => mapOsvVuln(vuln)),
+                );
             }
         }
 
@@ -657,10 +652,7 @@ const fetchVulnerabilities = async (
 
 // --- Target version resolution ---
 
-const sortVersionCandidates = (
-    a: { parsed: ParsedVersion; raw: string },
-    b: { parsed: ParsedVersion; raw: string },
-): number => {
+const sortVersionCandidates = (a: { parsed: ParsedVersion; raw: string }, b: { parsed: ParsedVersion; raw: string }): number => {
     if (a.parsed.major !== b.parsed.major) {
         return b.parsed.major - a.parsed.major;
     }
@@ -672,13 +664,7 @@ const sortVersionCandidates = (
     return b.parsed.patch - a.parsed.patch;
 };
 
-const findTargetVersion = (
-    versions: string[],
-    latest: string,
-    currentRange: string,
-    target: UpdateTarget,
-    includePrerelease: boolean,
-): string | undefined => {
+const findTargetVersion = (versions: string[], latest: string, currentRange: string, target: UpdateTarget, includePrerelease: boolean): string | undefined => {
     const current = parseVersion(currentRange);
 
     if (!current) {
@@ -705,7 +691,9 @@ const findTargetVersion = (
 
     // For minor/patch, find highest constrained version
     const candidates = versions
-        .map((v) => { return { parsed: parseVersion(v), raw: v }; })
+        .map((v) => {
+            return { parsed: parseVersion(v), raw: v };
+        })
         .filter((v): v is { parsed: ParsedVersion; raw: string } => {
             if (!v.parsed) {
                 return false;
@@ -854,10 +842,7 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
-const enrichWithSecurity = async (
-    outdated: OutdatedEntry[],
-    entries: { catalogName: string; packageName: string; range: string }[],
-): Promise<void> => {
+const enrichWithSecurity = async (outdated: OutdatedEntry[], entries: { catalogName: string; packageName: string; range: string }[]): Promise<void> => {
     // Check current versions for known vulnerabilities
     const packagesToScan = [
         ...new Map(
@@ -1077,11 +1062,7 @@ const buildUpdateMap = (updates: OutdatedEntry[]): Map<string, Map<string, { new
     return updateMap;
 };
 
-const applyLineUpdate = (
-    line: string,
-    trimmed: string,
-    catalogUpdates: Map<string, { newRange: string; oldRange: string }> | undefined,
-): string => {
+const applyLineUpdate = (line: string, trimmed: string, catalogUpdates: Map<string, { newRange: string; oldRange: string }> | undefined): string => {
     if (!catalogUpdates) {
         return line;
     }
@@ -1244,9 +1225,7 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
             .map((s) => Number.parseInt(s.trim(), 10) - 1)
             .filter((i) => i >= 0 && i < outdated.length);
 
-        return indices
-            .map((i) => outdated[i])
-            .filter((entry): entry is OutdatedEntry => entry !== undefined);
+        return indices.map((i) => outdated[i]).filter((entry): entry is OutdatedEntry => entry !== undefined);
     }
 
     // Unrecognized input — default to no updates for safety

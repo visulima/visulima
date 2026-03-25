@@ -88,14 +88,14 @@ vis hook install
 
 ## Commands
 
-| Command                  | Alias  | Description                                              |
-| ------------------------ | ------ | -------------------------------------------------------- |
-| `vis run <target>`       |        | Run a target across workspace projects with caching      |
-| `vis affected <target>`  |        | Run tasks only on projects affected by git changes       |
-| `vis graph`              |        | Visualize the project dependency graph                   |
-| `vis check [packages]`   | `c`    | Check for outdated dependencies in workspace catalogs    |
-| `vis update [packages]`  | `up`   | Update packages to their latest versions                 |
-| `vis hook <action>`      |        | Manage git hooks (install, uninstall, migrate)           |
+| Command                 | Alias | Description                                           |
+| ----------------------- | ----- | ----------------------------------------------------- |
+| `vis run <target>`      |       | Run a target across workspace projects with caching   |
+| `vis affected <target>` |       | Run tasks only on projects affected by git changes    |
+| `vis graph`             |       | Visualize the project dependency graph                |
+| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs |
+| `vis update [packages]` | `up`  | Update packages to their latest versions              |
+| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)        |
 
 ## Documentation
 

@@ -1,11 +1,10 @@
 import { execSync } from "node:child_process";
-import { cwd } from "node:process";
 
 import type { Command } from "@visulima/cerebro";
 import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
 import { ConsoleLifeCycle, createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
 
-import { buildProjectGraph, discoverWorkspace, findWorkspaceRoot } from "../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 /**
  * Creates a task executor that runs commands via shell.
@@ -53,15 +52,19 @@ const run: Command = {
         ["vis run build --parallel=5", "Run build with 5 parallel tasks"],
         ["vis run build --no-cache", "Run build without caching"],
     ],
-    execute: async ({ argument, logger, options }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const target = argument[0];
 
         if (!target) {
             throw new Error("Missing target. Usage: vis run <target>");
         }
 
-        const workspaceRoot = findWorkspaceRoot(cwd());
-        const { config, workspace } = discoverWorkspace(workspaceRoot);
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+        }
+
+        const workspaceRoot = wsRoot;
+        const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         let projectNames = Object.keys(workspace.projects);

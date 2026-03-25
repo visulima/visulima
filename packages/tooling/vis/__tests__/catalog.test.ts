@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { describe, expect, it, vi } from "vitest";
 
-import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../catalog";
+import type { CatalogCheckOptions, CheckOutdatedResult, NpmrcConfig } from "../src/catalog";
 import {
     applyCatalogUpdates,
     checkOutdated,
@@ -32,7 +32,7 @@ import {
     parseVersion,
     readCatalogs,
     restoreFromBackup,
-} from "../catalog";
+} from "../src/catalog";
 
 // --- parseVersion ---
 
@@ -632,7 +632,9 @@ describe("checkOutdated", () => {
             }
 
             return {
-                json: async () => { return { "dist-tags": { latest: data.latest }, versions: versionsObject }; },
+                json: async () => {
+                    return { "dist-tags": { latest: data.latest }, versions: versionsObject };
+                },
                 ok: true,
             } as Response;
         });
@@ -1667,7 +1669,9 @@ describe("fetchPackageVersions", () => {
             expect(url).toBe("https://custom.registry.com/react");
 
             return {
-                json: async () => { return { "dist-tags": { latest: "19.0.0" }, versions: { "19.0.0": {} } }; },
+                json: async () => {
+                    return { "dist-tags": { latest: "19.0.0" }, versions: { "19.0.0": {} } };
+                },
                 ok: true,
             } as Response;
         });
@@ -1686,7 +1690,9 @@ describe("fetchPackageVersions", () => {
             expect(headers["Authorization"]).toBe("Bearer mytoken");
 
             return {
-                json: async () => { return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } }; },
+                json: async () => {
+                    return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } };
+                },
                 ok: true,
             } as Response;
         });
@@ -1708,7 +1714,12 @@ describe("fetchPackageVersions", () => {
                 });
             });
 
-            return { json: async () => { return {}; }, ok: true } as Response;
+            return {
+                json: async () => {
+                    return {};
+                },
+                ok: true,
+            } as Response;
         });
 
         await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrowError();
@@ -1723,7 +1734,9 @@ describe("fetchPackageVersions", () => {
             expect(url).toBe("https://custom.registry.com/react");
 
             return {
-                json: async () => { return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } }; },
+                json: async () => {
+                    return { "dist-tags": { latest: "1.0.0" }, versions: { "1.0.0": {} } };
+                },
                 ok: true,
             } as Response;
         });
@@ -1998,7 +2011,9 @@ describe("checkOutdated with npmrcConfig", () => {
             fetchCalls.push(url);
 
             return {
-                json: async () => { return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } }; },
+                json: async () => {
+                    return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } };
+                },
                 ok: true,
             } as Response;
         });
@@ -2025,7 +2040,9 @@ describe("checkOutdated with npmrcConfig", () => {
             fetchCalls.push(typeof input === "string" ? input : input.toString());
 
             return {
-                json: async () => { return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } }; },
+                json: async () => {
+                    return { "dist-tags": { latest: "2.0.0" }, versions: { "1.0.0": {}, "2.0.0": {} } };
+                },
                 ok: true,
             } as Response;
         });

@@ -39,6 +39,10 @@
     "sideEffects": false,
     "type": "module",
     "exports": {
+        "./config": {
+            "types": "./dist/config.d.ts",
+            "default": "./dist/config.js"
+        },
         "./package.json": "./package.json"
     },
     "bin": {
@@ -70,7 +74,9 @@
     },
     "dependencies": {
         "@visulima/boxen": "workspace:*",
+        "jiti": "catalog:dev",
         "@visulima/cerebro": "workspace:*",
+        "@visulima/find-ai-runner": "workspace:*",
         "@visulima/package": "workspace:*",
         "@visulima/path": "workspace:*",
         "@visulima/tabular": "workspace:*",

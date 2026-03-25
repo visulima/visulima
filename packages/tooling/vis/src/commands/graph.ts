@@ -1,10 +1,9 @@
 import { writeFileSync } from "node:fs";
-import { cwd } from "node:process";
 
 import type { Command } from "@visulima/cerebro";
 import { projectGraphToDot } from "@visulima/task-runner";
 
-import { buildProjectGraph, discoverWorkspace, findWorkspaceRoot } from "../workspace";
+import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 const projectGraphToAscii = (projectGraph: {
     dependencies: Record<string, { target: string }[]>;
@@ -58,9 +57,13 @@ const graph: Command = {
         ["vis graph --format=dot", "Output in Graphviz DOT format"],
         ["vis graph --format=json --output=graph.json", "Save JSON graph to file"],
     ],
-    execute: async ({ logger, options }) => {
-        const workspaceRoot = findWorkspaceRoot(cwd());
-        const { workspace } = discoverWorkspace(workspaceRoot);
+    execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+        }
+
+        const workspaceRoot = wsRoot;
+        const { workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         const format = (options.format as string | undefined) ?? "ascii";

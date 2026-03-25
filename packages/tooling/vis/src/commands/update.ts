@@ -1,16 +1,17 @@
 import { execSync } from "node:child_process";
-import { cwd } from "node:process";
 
 import type { Command } from "@visulima/cerebro";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 
-import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
+import { formatAiAnalysis, runAiAnalysis } from "../ai-analysis";
+import type { CatalogCheckOptions, OutdatedEntry, UpdateTarget } from "../catalog";
 import {
     applyCatalogUpdates,
     checkOutdated,
     formatOutdatedJson,
     formatOutdatedMinimal,
     formatOutdatedTable,
+    formatSummary,
     hasBackup,
     hasCatalogs,
     loadNpmrc,
@@ -21,14 +22,14 @@ import {
 } from "../catalog";
 import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
-import { findWorkspaceRoot, readVisConfig } from "../workspace";
+import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "pnpm";
 type FilterOption = string | string[] | undefined;
 
 const buildCatalogCheckOptions = (
     options: Record<string, unknown>,
-    configDefaults: { exclude?: string[]; include?: string[]; prerelease?: boolean; target?: string },
+    configDefaults: { exclude?: string[]; format?: string; include?: string[]; install?: boolean; prerelease?: boolean; security?: boolean; target?: string },
     argument: string[],
 ): CatalogCheckOptions => {
     const target = (options.target as string) ?? configDefaults.target ?? "latest";
@@ -41,9 +42,20 @@ const buildCatalogCheckOptions = (
         exclude: [...toFilterArray(options.exclude as FilterOption), ...toFilterArray(configDefaults.exclude)],
         include: [...toFilterArray(options.include as FilterOption), ...toFilterArray(configDefaults.include), ...argument],
         includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-        security: options.security as boolean,
+        security: (options.security as boolean) || configDefaults.security || false,
         target: target as UpdateTarget,
     };
+};
+
+const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console): void => {
+    if (format === "json") {
+        process.stdout.write(`${formatOutdatedJson({ failed, outdated: entries })}\n`);
+    } else if (format === "minimal") {
+        process.stdout.write(`${formatOutdatedMinimal(entries)}\n`);
+    } else {
+        formatOutdatedTable(entries, logger);
+        logger.info(formatSummary(entries));
+    }
 };
 
 const applyCatalogAndInstall = (
@@ -70,7 +82,7 @@ const applyCatalogAndInstall = (
         }
     }
 
-    if (options.install !== false) {
+    if (options.install ?? true) {
         const installCommand = packageManager === "bun" ? "bun install" : "pnpm install";
 
         logger.info(`Running ${installCommand}...\n`);
@@ -91,11 +103,12 @@ const applyCatalogAndInstall = (
 const executeCatalogUpdate = async (
     workspaceRoot: string,
     packageManager: CatalogPackageManager,
+    visConfig: VisConfig,
     options: Record<string, unknown>,
     argument: string[],
     logger: Console,
 ): Promise<void> => {
-    const configDefaults = readVisConfig(workspaceRoot).update ?? {};
+    const configDefaults = visConfig.update ?? {};
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
 
@@ -127,19 +140,24 @@ const executeCatalogUpdate = async (
         return;
     }
 
-    if (options["dry-run"]) {
-        const format = (options.format as string) ?? "table";
+    const format = (options.format as string) ?? configDefaults.format ?? "table";
 
-        if (format === "json") {
-            process.stdout.write(`${formatOutdatedJson({ failed, outdated })}\n`);
-        } else if (format === "minimal") {
-            process.stdout.write(`${formatOutdatedMinimal(outdated)}\n`);
-        } else {
+    if (options["dry-run"]) {
+        if (format === "table") {
             logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
-            formatOutdatedTable(outdated, logger);
         }
 
+        writeFormattedOutput(outdated, failed, format, logger);
+
         return;
+    }
+
+    if (options.ai) {
+        const aiConfig = visConfig.ai;
+        const analysis = await runAiAnalysis(outdated, logger, aiConfig);
+
+        logger.info(formatAiAnalysis(analysis));
+        logger.info("");
     }
 
     let toApply = outdated;
@@ -155,9 +173,11 @@ const executeCatalogUpdate = async (
     }
 
     logger.info(`Updating ${String(toApply.length)} catalog dependencies...\n`);
-    formatOutdatedTable(toApply, logger);
+    writeFormattedOutput(toApply, [], format, logger);
 
-    applyCatalogAndInstall(workspaceRoot, packageManager, toApply, options, logger);
+    const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
+
+    applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
 };
 
 const executePmWrapper = (
@@ -232,9 +252,14 @@ const update: Command = {
         ["vis update --exclude '@types/*'", "Exclude packages by pattern"],
         ["vis update --changelog", "Show changelog links after updating"],
         ["vis update --rollback", "Restore catalog from last backup"],
+        ["vis update --ai", "Run AI analysis before applying updates"],
     ],
-    execute: async ({ argument, logger, options }) => {
-        const workspaceRoot = findWorkspaceRoot(cwd());
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+        }
+
+        const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
         // Rollback mode
@@ -266,7 +291,7 @@ const update: Command = {
         const useCatalogMode = supportsCatalogs && !options["no-catalog"] && hasCatalogs(workspaceRoot, packageManager);
 
         if (useCatalogMode) {
-            await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, options, argument as string[], logger);
+            await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument as string[], logger);
         } else {
             const version = getPackageManagerVersion(packageManager);
 
@@ -284,8 +309,7 @@ const update: Command = {
         },
         {
             alias: "t",
-            defaultValue: "latest",
-            description: "Update target: latest, minor, or patch (catalog mode)",
+            description: "Update target: latest, minor, or patch (default: latest, catalog mode)",
             name: "target",
             type: String,
         },
@@ -386,8 +410,7 @@ const update: Command = {
             type: Boolean,
         },
         {
-            defaultValue: "table",
-            description: "Output format: table, json, or minimal",
+            description: "Output format: table, json, or minimal (default: table)",
             name: "format",
             type: String,
         },
@@ -398,8 +421,7 @@ const update: Command = {
             type: Boolean,
         },
         {
-            defaultValue: true,
-            description: "Run pnpm install after catalog update (use --no-install to skip)",
+            description: "Run install after catalog update, --no-install to skip (default: true)",
             name: "install",
             type: Boolean,
         },
@@ -407,6 +429,12 @@ const update: Command = {
             defaultValue: false,
             description: "Restore catalog file from the last backup",
             name: "rollback",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Run AI analysis on outdated packages before updating (catalog mode)",
+            name: "ai",
             type: Boolean,
         },
     ],

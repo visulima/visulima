@@ -1,5 +1,3 @@
-import { cwd } from "node:process";
-
 import type { Command } from "@visulima/cerebro";
 import { findPackageManagerSync } from "@visulima/package";
 
@@ -14,7 +12,6 @@ import {
     readCatalogs,
     toFilterArray,
 } from "../catalog";
-import { findWorkspaceRoot, readVisConfig } from "../workspace";
 
 const check: Command = {
     alias: "c",
@@ -30,8 +27,12 @@ const check: Command = {
         ["vis check --target minor", "Only show minor/patch updates"],
         ["vis check --exclude '@types/*'", "Exclude packages by pattern"],
     ],
-    execute: async ({ argument, logger, options }) => {
-        const workspaceRoot = findWorkspaceRoot(cwd());
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
+        if (!wsRoot) {
+            throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+        }
+
+        const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
         if (packageManager !== "pnpm" && packageManager !== "bun") {
@@ -39,7 +40,7 @@ const check: Command = {
         }
 
         const npmrcConfig = loadNpmrc(workspaceRoot);
-        const configDefaults = readVisConfig(workspaceRoot).update ?? {};
+        const configDefaults = visConfig?.update ?? {};
         const catalogs = readCatalogs(workspaceRoot, packageManager);
 
         if (catalogs.size === 0) {
@@ -58,7 +59,7 @@ const check: Command = {
             exclude: [...toFilterArray(options.exclude as string | string[] | undefined), ...toFilterArray(configDefaults.exclude)],
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...(argument as string[])],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-            security: options.security as boolean,
+            security: (options.security as boolean) || configDefaults.security || false,
             target: target as UpdateTarget,
         };
 
@@ -82,7 +83,7 @@ const check: Command = {
             return;
         }
 
-        const format = (options.format as string) ?? "table";
+        const format = (options.format as string) ?? configDefaults.format ?? "table";
 
         if (format === "json") {
             process.stdout.write(`${formatOutdatedJson({ failed, outdated })}\n`);
@@ -101,8 +102,7 @@ const check: Command = {
     options: [
         {
             alias: "t",
-            defaultValue: "latest",
-            description: "Update target: latest, minor, or patch",
+            description: "Update target: latest, minor, or patch (default: latest)",
             name: "target",
             type: String,
         },
@@ -131,8 +131,7 @@ const check: Command = {
             type: Boolean,
         },
         {
-            defaultValue: "table",
-            description: "Output format: table, json, or minimal",
+            description: "Output format: table, json, or minimal (default: table)",
             name: "format",
             type: String,
         },

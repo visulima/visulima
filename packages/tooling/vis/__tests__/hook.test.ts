@@ -5,9 +5,9 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { hookScript, installHooks } from "../commands/hook/install";
-import { cleanPackageJsonScripts, detectHuskyDirectory, detectPackageManager, transformHookScript } from "../commands/hook/migrate";
-import { uninstallHooks } from "../commands/hook/uninstall";
+import { hookScript, installHooks } from "../src/commands/hook/install";
+import { cleanPackageJsonScripts, detectHuskyDirectory, detectPackageManager, transformHookScript } from "../src/commands/hook/migrate";
+import { uninstallHooks } from "../src/commands/hook/uninstall";
 
 // ─── Helpers ────────────────────────────────────────────────────────
 

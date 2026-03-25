@@ -20,6 +20,13 @@ interface PackageJson {
 }
 
 interface VisConfig {
+    /** AI analysis configuration */
+    ai?: {
+        /** Override default provider priority. Higher number = preferred. */
+        priority?: Record<string, number>;
+        /** Use a specific provider instead of auto-detecting (e.g., `"claude"`, `"gemini"`). */
+        provider?: string;
+    };
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
@@ -27,8 +34,11 @@ interface VisConfig {
     /** Update command defaults */
     update?: {
         exclude?: string[];
+        format?: "json" | "minimal" | "table";
         include?: string[];
+        install?: boolean;
         prerelease?: boolean;
+        security?: boolean;
         target?: "latest" | "minor" | "patch";
     };
 }
@@ -182,11 +192,6 @@ const readPnpmWorkspacePatterns = (workspaceRoot: string): string[] | undefined 
 };
 
 /**
- * Reads vis.json configuration file from the workspace root.
- */
-const readVisConfig = (workspaceRoot: string): VisConfig => readJsonFile<VisConfig>(join(workspaceRoot, "vis.json")) ?? {};
-
-/**
  * Creates script-based targets from package.json scripts.
  */
 const createTargetsFromScripts = (
@@ -210,8 +215,7 @@ const createTargetsFromScripts = (
 /**
  * Discovers all projects in the workspace and builds a WorkspaceConfiguration.
  */
-const discoverWorkspace = (workspaceRoot: string): { config: VisConfig; workspace: WorkspaceConfiguration } => {
-    const config = readVisConfig(workspaceRoot);
+const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { config: VisConfig; workspace: WorkspaceConfiguration } => {
     const projects: Record<string, ProjectConfiguration> = {};
 
     // Find workspace patterns
@@ -303,34 +307,5 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
     return { dependencies, nodes };
 };
 
-/**
- * Finds the workspace root by searching up for pnpm-workspace.yaml or a root package.json with workspaces.
- */
-const findWorkspaceRoot = (startDirectory: string): string => {
-    let current = resolve(startDirectory);
-
-    while (current !== "/") {
-        if (existsSync(join(current, "pnpm-workspace.yaml"))) {
-            return current;
-        }
-
-        const pkg = readJsonFile<PackageJson>(join(current, "package.json"));
-
-        if (pkg?.workspaces) {
-            return current;
-        }
-
-        const parent = resolve(current, "..");
-
-        if (parent === current) {
-            break;
-        }
-
-        current = parent;
-    }
-
-    throw new Error("Could not find workspace root. Expected pnpm-workspace.yaml or package.json with workspaces.");
-};
-
 export type { PackageJson, VisConfig };
-export { buildProjectGraph, discoverWorkspace, findWorkspaceRoot, readVisConfig, resolveWorkspacePatterns };
+export { buildProjectGraph, discoverWorkspace, resolveWorkspacePatterns };

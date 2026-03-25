@@ -32,29 +32,29 @@ vis update --rollback               # Restore catalog from last backup
 
 ## Options
 
-| Option             | Alias | Default  | Description                                              |
-| ------------------ | ----- | -------- | -------------------------------------------------------- |
-| `--latest`         | `-L`  | `false`  | Update to latest version (ignore semver range)           |
-| `--target`         | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch` (catalog)   |
-| `--dry-run`        | `-d`  | `false`  | Preview changes without applying                         |
-| `--global`         | `-g`  | `false`  | Update global packages                                   |
-| `--recursive`      | `-r`  | `false`  | Update recursively in all workspace packages             |
-| `--filter`         |       |          | Filter packages in monorepo                              |
-| `--workspace-root` | `-w`  | `false`  | Include workspace root                                   |
-| `--dev`            | `-D`  | `false`  | Update only devDependencies                              |
-| `--prod`           | `-P`  | `false`  | Update only dependencies                                 |
-| `--interactive`    | `-i`  | `false`  | Interactive mode                                         |
-| `--no-optional`    |       | `false`  | Don't update optionalDependencies                        |
-| `--no-save`        |       | `false`  | Update lockfile only                                     |
-| `--include`        |       |          | Glob pattern to include packages (repeatable, catalog)   |
-| `--exclude`        |       |          | Glob pattern to exclude packages (repeatable, catalog)   |
-| `--prerelease`     |       | `false`  | Include prerelease versions (catalog)                    |
-| `--security`       |       | `false`  | Check for known security vulnerabilities (OSV.dev)       |
-| `--no-catalog`     |       | `false`  | Skip catalog mode, use package manager directly          |
-| `--format`         |       | `table`  | Output format: `table`, `json`, or `minimal`             |
-| `--changelog`      |       | `false`  | Show changelog URLs for updated packages                 |
-| `--install`        |       | `true`   | Run install after catalog update (`--no-install` to skip)|
-| `--rollback`       |       | `false`  | Restore catalog file from the last backup                |
+| Option             | Alias | Default  | Description                                               |
+| ------------------ | ----- | -------- | --------------------------------------------------------- |
+| `--latest`         | `-L`  | `false`  | Update to latest version (ignore semver range)            |
+| `--target`         | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch` (catalog)    |
+| `--dry-run`        | `-d`  | `false`  | Preview changes without applying                          |
+| `--global`         | `-g`  | `false`  | Update global packages                                    |
+| `--recursive`      | `-r`  | `false`  | Update recursively in all workspace packages              |
+| `--filter`         |       |          | Filter packages in monorepo                               |
+| `--workspace-root` | `-w`  | `false`  | Include workspace root                                    |
+| `--dev`            | `-D`  | `false`  | Update only devDependencies                               |
+| `--prod`           | `-P`  | `false`  | Update only dependencies                                  |
+| `--interactive`    | `-i`  | `false`  | Interactive mode                                          |
+| `--no-optional`    |       | `false`  | Don't update optionalDependencies                         |
+| `--no-save`        |       | `false`  | Update lockfile only                                      |
+| `--include`        |       |          | Glob pattern to include packages (repeatable, catalog)    |
+| `--exclude`        |       |          | Glob pattern to exclude packages (repeatable, catalog)    |
+| `--prerelease`     |       | `false`  | Include prerelease versions (catalog)                     |
+| `--security`       |       | `false`  | Check for known security vulnerabilities (OSV.dev)        |
+| `--no-catalog`     |       | `false`  | Skip catalog mode, use package manager directly           |
+| `--format`         |       | `table`  | Output format: `table`, `json`, or `minimal`              |
+| `--changelog`      |       | `false`  | Show changelog URLs for updated packages                  |
+| `--install`        |       | `true`   | Run install after catalog update (`--no-install` to skip) |
+| `--rollback`       |       | `false`  | Restore catalog file from the last backup                 |
 
 ## Catalog Mode vs Package Manager Mode
 
