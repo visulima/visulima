@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { AiAnalysisResult } from "../src/ai-analysis";
-import { buildAnalysisPrompt, extractJson, formatAiAnalysis, normalizeRecommendation, parseAiResponse, ruleBasedAnalysis } from "../src/ai-analysis";
+import type { AiAnalysisResult, AnalysisType } from "../src/ai-analysis";
+import { buildAnalysisPrompt, extractJson, formatAiAnalysis, formatAiAnalysisJson, normalizeRecommendation, parseAiResponse, ruleBasedAnalysis } from "../src/ai-analysis";
 import type { OutdatedEntry } from "../src/catalog";
 
 const makeEntry = (overrides: Partial<OutdatedEntry> = {}): OutdatedEntry => {
@@ -172,7 +172,7 @@ describe("parseAiResponse", () => {
             warnings: [],
         });
 
-        const result = parseAiResponse(response, "claude");
+        const result = parseAiResponse(response, "claude", "impact");
 
         expect(result.provider).toBe("claude");
         expect(result.summary).toBe("All good");
@@ -183,7 +183,7 @@ describe("parseAiResponse", () => {
     it("should handle invalid JSON gracefully", () => {
         expect.assertions(3);
 
-        const result = parseAiResponse("not json at all", "gemini");
+        const result = parseAiResponse("not json at all", "gemini", "impact");
 
         expect(result.provider).toBe("gemini");
         expect(result.recommendations).toHaveLength(0);
@@ -198,7 +198,7 @@ describe("parseAiResponse", () => {
             summary: "Review needed",
         });
 
-        const result = parseAiResponse(`Here's my analysis:\n\`\`\`json\n${json}\n\`\`\``, "claude");
+        const result = parseAiResponse(`Here's my analysis:\n\`\`\`json\n${json}\n\`\`\``, "claude", "impact");
 
         expect(result.recommendations).toHaveLength(1);
         expect(result.summary).toBe("Review needed");
@@ -207,7 +207,7 @@ describe("parseAiResponse", () => {
     it("should handle missing recommendations field", () => {
         expect.assertions(2);
 
-        const result = parseAiResponse("{\"summary\": \"test\"}", "codex");
+        const result = parseAiResponse("{\"summary\": \"test\"}", "codex", "impact");
 
         expect(result.recommendations).toHaveLength(0);
         expect(result.summary).toBe("test");
@@ -299,6 +299,7 @@ describe("formatAiAnalysis", () => {
         expect.assertions(3);
 
         const result: AiAnalysisResult = {
+            analysisType: "impact",
             provider: "claude",
             recommendations: [{ action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe", riskLevel: "low" }],
             summary: "All safe",
@@ -316,6 +317,7 @@ describe("formatAiAnalysis", () => {
         expect.assertions(2);
 
         const result: AiAnalysisResult = {
+            analysisType: "impact",
             provider: "rule-engine",
             recommendations: [{ action: "review", breakingChanges: ["API changed"], effort: "medium", package: "react", reason: "major", riskLevel: "high" }],
             summary: "Review needed",
@@ -332,6 +334,7 @@ describe("formatAiAnalysis", () => {
         expect.assertions(1);
 
         const result: AiAnalysisResult = {
+            analysisType: "impact",
             provider: "rule-engine",
             recommendations: [],
             summary: "Done",
@@ -341,5 +344,133 @@ describe("formatAiAnalysis", () => {
         const output = formatAiAnalysis(result);
 
         expect(output).toContain("No AI provider available");
+    });
+});
+
+// --- Multiple analysis types ---
+
+describe("buildAnalysisPrompt with analysis types", () => {
+    const entry = makeEntry();
+
+    it("should build impact prompt by default", () => {
+        expect.assertions(1);
+
+        const prompt = buildAnalysisPrompt([entry]);
+
+        expect(prompt).toContain("Analyze the impact");
+    });
+
+    it("should build security prompt", () => {
+        expect.assertions(2);
+
+        const prompt = buildAnalysisPrompt([entry], "security");
+
+        expect(prompt).toContain("security implications");
+        expect(prompt).toContain("vulnerabilities");
+    });
+
+    it("should build compatibility prompt", () => {
+        expect.assertions(2);
+
+        const prompt = buildAnalysisPrompt([entry], "compatibility");
+
+        expect(prompt).toContain("compatibility");
+        expect(prompt).toContain("peer dependency");
+    });
+
+    it("should build recommend prompt", () => {
+        expect.assertions(2);
+
+        const prompt = buildAnalysisPrompt([entry], "recommend");
+
+        expect(prompt).toContain("recommendations");
+        expect(prompt).toContain("update order");
+    });
+});
+
+describe("ruleBasedAnalysis with analysis types", () => {
+    it("should include analysis type in result", () => {
+        expect.assertions(1);
+
+        const result = ruleBasedAnalysis([makeEntry()], "security");
+
+        expect(result.analysisType).toBe("security");
+    });
+
+    it("should include type in summary", () => {
+        expect.assertions(1);
+
+        const result = ruleBasedAnalysis([makeEntry()], "compatibility");
+
+        expect(result.summary).toContain("compatibility");
+    });
+});
+
+describe("parseAiResponse with analysis types", () => {
+    it("should include analysis type in result", () => {
+        expect.assertions(1);
+
+        const response = JSON.stringify({ recommendations: [], summary: "test" });
+        const result = parseAiResponse(response, "claude", "security");
+
+        expect(result.analysisType).toBe("security");
+    });
+});
+
+describe("formatAiAnalysis with analysis types", () => {
+    it("should show analysis type in header", () => {
+        expect.assertions(2);
+
+        const result: AiAnalysisResult = {
+            analysisType: "security",
+            provider: "claude",
+            recommendations: [],
+            summary: "Security check",
+            warnings: [],
+        };
+
+        const output = formatAiAnalysis(result);
+
+        expect(output).toContain("Security Analysis");
+        expect(output).toContain("claude");
+    });
+
+    it("should show compatibility type in header", () => {
+        expect.assertions(1);
+
+        const result: AiAnalysisResult = {
+            analysisType: "compatibility",
+            provider: "gemini",
+            recommendations: [],
+            summary: "Compat check",
+            warnings: [],
+        };
+
+        const output = formatAiAnalysis(result);
+
+        expect(output).toContain("Compatibility Analysis");
+    });
+});
+
+// --- formatAiAnalysisJson ---
+
+describe("formatAiAnalysisJson", () => {
+    it("should produce valid JSON", () => {
+        expect.assertions(3);
+
+        const result: AiAnalysisResult = {
+            analysisType: "impact",
+            provider: "claude",
+            recommendations: [{ action: "update", breakingChanges: [], effort: "low", package: "react", reason: "safe", riskLevel: "low" }],
+            summary: "All safe",
+            warnings: [],
+        };
+
+        const json = formatAiAnalysisJson(result);
+        const parsed = JSON.parse(json);
+
+        expect(parsed.provider).toBe("claude");
+        expect(parsed.analysisType).toBe("impact");
+        expect(parsed.recommendations).toHaveLength(1);
     });
 });

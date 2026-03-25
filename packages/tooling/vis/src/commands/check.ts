@@ -1,10 +1,10 @@
 import type { Command } from "@visulima/cerebro";
 import { findPackageManagerSync } from "@visulima/package";
 
+import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
 import {
     checkOutdated,
-    formatOutdatedJson,
     formatOutdatedMinimal,
     formatOutdatedTable,
     formatSummary,
@@ -27,6 +27,7 @@ const check: Command = {
         ["vis check --target minor", "Only show minor/patch updates"],
         ["vis check --exclude '@types/*'", "Exclude packages by pattern"],
     ],
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- command handler with multiple output formats
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -59,7 +60,7 @@ const check: Command = {
             exclude: [...toFilterArray(options.exclude as string | string[] | undefined), ...toFilterArray(configDefaults.exclude)],
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...(argument as string[])],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-            security: (options.security as boolean) || configDefaults.security || false,
+            security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
             target: target as UpdateTarget,
         };
 
@@ -85,13 +86,28 @@ const check: Command = {
 
         const format = (options.format as string) ?? configDefaults.format ?? "table";
 
+        // Run AI analysis if requested
+        const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
+        const aiResult = options.ai ? await runAiAnalysis(outdated, logger, visConfig?.ai, analysisType) : undefined;
+
         if (format === "json") {
-            process.stdout.write(`${formatOutdatedJson({ failed, outdated })}\n`);
+            const output: Record<string, unknown> = { failed, outdated };
+
+            if (aiResult) {
+                output.aiAnalysis = aiResult;
+            }
+
+            process.stdout.write(`${JSON.stringify(output, undefined, 2)}\n`);
         } else if (format === "minimal") {
             process.stdout.write(`${formatOutdatedMinimal(outdated)}\n`);
         } else {
             formatOutdatedTable(outdated, logger);
             logger.info(formatSummary(outdated));
+
+            if (aiResult) {
+                logger.info("");
+                logger.info(formatAiAnalysis(aiResult));
+            }
         }
 
         if (options["exit-code"] && outdated.length > 0) {
@@ -140,6 +156,17 @@ const check: Command = {
             description: "Exit with code 1 if outdated dependencies found (for CI)",
             name: "exit-code",
             type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Run AI analysis on outdated packages",
+            name: "ai",
+            type: Boolean,
+        },
+        {
+            description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
+            name: "ai-type",
+            type: String,
         },
     ],
 };

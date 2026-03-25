@@ -82,7 +82,7 @@ const parseVersion = (input: string): ParsedVersion | undefined => {
 const extractPrefix = (range: string): string => {
     const match = PREFIX_REGEX.exec(range);
 
-    return match ? match[1] : "";
+    return match?.[1] ?? "";
 };
 
 const getUpdateType = (current: ParsedVersion, target: ParsedVersion): "major" | "minor" | "none" | "patch" => {
@@ -396,7 +396,7 @@ const parseNpmrc = (content: string): NpmrcConfig => {
         // @scope:registry=url
         const scopeMatch = SCOPE_REGISTRY_REGEX.exec(key);
 
-        if (scopeMatch) {
+        if (scopeMatch?.[1]) {
             registries.set(scopeMatch[1], value);
             continue;
         }
@@ -410,7 +410,7 @@ const parseNpmrc = (content: string): NpmrcConfig => {
         // //registry.url/:_authToken=token
         const authMatch = AUTH_TOKEN_REGEX.exec(key);
 
-        if (authMatch) {
+        if (authMatch?.[1]) {
             authTokens.set(authMatch[1], value);
         }
     }
@@ -1140,7 +1140,13 @@ const detectJsonIndent = (content: string): number | string => {
     }
 
     // Preserve tabs as-is; for spaces, return the count
-    return match[1].includes("\t") ? match[1] : match[1].length;
+    const indent = match[1];
+
+    if (!indent) {
+        return 2;
+    }
+
+    return indent.includes("\t") ? indent : indent.length;
 };
 
 const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[]): void => {
@@ -1154,8 +1160,12 @@ const applyBunCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[])
             if (pkg.workspaces?.catalog) {
                 pkg.workspaces.catalog[update.packageName] = update.newRange;
             }
-        } else if (pkg.workspaces?.catalogs?.[update.catalogName]) {
-            pkg.workspaces.catalogs[update.catalogName][update.packageName] = update.newRange;
+        } else {
+            const catalogEntry = pkg.workspaces?.catalogs?.[update.catalogName];
+
+            if (catalogEntry) {
+                catalogEntry[update.packageName] = update.newRange;
+            }
         }
     }
 
@@ -1234,11 +1244,75 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
     return [];
 };
 
+// --- Changelog ---
+
+const GITHUB_REPO_REGEX = /github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git|\/|$)/;
+
+interface ChangelogInfo {
+    npmUrl: string;
+    packageName: string;
+    releaseUrl?: string;
+    repoUrl?: string;
+}
+
+const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number = 10_000): Promise<ChangelogInfo[]> => {
+    const results: ChangelogInfo[] = [];
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        const fetches = packages.map(async (entry): Promise<ChangelogInfo> => {
+            const npmUrl = `https://www.npmjs.com/package/${entry.packageName}`;
+
+            try {
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+
+                const response = await fetch(`https://registry.npmjs.org/${entry.packageName}`, {
+                    headers: { Accept: "application/json" },
+                    signal: controller.signal,
+                });
+
+                if (!response.ok) {
+                    return { npmUrl, packageName: entry.packageName };
+                }
+
+                const data = (await response.json()) as { repository?: { url?: string } };
+                const repoUrl = data.repository?.url;
+
+                if (!repoUrl) {
+                    return { npmUrl, packageName: entry.packageName };
+                }
+
+                const match = GITHUB_REPO_REGEX.exec(repoUrl);
+
+                if (!match) {
+                    return { npmUrl, packageName: entry.packageName, repoUrl };
+                }
+
+                const owner = match[1];
+                const repo = match[2];
+                const releaseUrl = `https://github.com/${owner}/${repo}/releases/tag/v${entry.targetVersion}`;
+
+                return { npmUrl, packageName: entry.packageName, releaseUrl, repoUrl: `https://github.com/${owner}/${repo}` };
+            } catch {
+                return { npmUrl, packageName: entry.packageName };
+            }
+        });
+
+        results.push(...await Promise.all(fetches));
+    } finally {
+        clearTimeout(timeout);
+    }
+
+    return results;
+};
+
 // --- All exports at end of file (import/exports-last) ---
 
 export type {
     CatalogCheckOptions,
     CatalogProvider,
+    ChangelogInfo,
     CheckOutdatedResult,
     NpmrcConfig,
     OutdatedEntry,
@@ -1254,6 +1328,7 @@ export {
     createBackup,
     detectJsonIndent,
     extractPrefix,
+    fetchChangelogInfo,
     fetchPackageVersions,
     fetchVulnerabilities,
     findTargetVersion,

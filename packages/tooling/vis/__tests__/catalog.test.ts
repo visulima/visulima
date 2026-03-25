@@ -12,6 +12,7 @@ import {
     createBackup,
     detectJsonIndent,
     extractPrefix,
+    fetchChangelogInfo,
     fetchPackageVersions,
     fetchVulnerabilities,
     findTargetVersion,
@@ -2788,5 +2789,116 @@ describe("formatSummary with security", () => {
         ]);
 
         expect(result).not.toContain("vulnerabilit");
+    });
+});
+
+// --- fetchChangelogInfo ---
+
+describe("fetchChangelogInfo", () => {
+    it("should return GitHub release URL when repo is on GitHub", async () => {
+        expect.assertions(3);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+            ({
+                json: async () => ({ repository: { url: "git+https://github.com/facebook/react.git" } }),
+                ok: true,
+            }) as Response,
+        );
+
+        const result = await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^18.0.0", newRange: "^19.0.0", packageName: "react", targetVersion: "19.0.0", updateType: "major" },
+        ]);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]?.releaseUrl).toBe("https://github.com/facebook/react/releases/tag/v19.0.0");
+        expect(result[0]?.repoUrl).toBe("https://github.com/facebook/react");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should fallback to npm URL when no repo info", async () => {
+        expect.assertions(2);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+            ({
+                json: async () => ({}),
+                ok: true,
+            }) as Response,
+        );
+
+        const result = await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "my-pkg", targetVersion: "2.0.0", updateType: "major" },
+        ]);
+
+        expect(result[0]?.releaseUrl).toBeUndefined();
+        expect(result[0]?.npmUrl).toBe("https://www.npmjs.com/package/my-pkg");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should handle fetch failure gracefully", async () => {
+        expect.assertions(2);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+            ({ ok: false, status: 404 }) as Response,
+        );
+
+        const result = await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "missing-pkg", targetVersion: "2.0.0", updateType: "major" },
+        ]);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]?.npmUrl).toBe("https://www.npmjs.com/package/missing-pkg");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should handle non-GitHub repos", async () => {
+        expect.assertions(2);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+            ({
+                json: async () => ({ repository: { url: "https://gitlab.com/my/repo.git" } }),
+                ok: true,
+            }) as Response,
+        );
+
+        const result = await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "gitlab-pkg", targetVersion: "2.0.0", updateType: "major" },
+        ]);
+
+        expect(result[0]?.releaseUrl).toBeUndefined();
+        expect(result[0]?.repoUrl).toBe("https://gitlab.com/my/repo.git");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should handle multiple packages in parallel", async () => {
+        expect.assertions(2);
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            const url = typeof input === "string" ? input : input.toString();
+            const name = url.replace("https://registry.npmjs.org/", "");
+
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
+            return {
+                json: async () => ({ repository: { url: `git+https://github.com/owner/${name}.git` } }),
+                ok: true,
+            } as Response;
+        });
+
+        const result = await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "pkg-a", targetVersion: "2.0.0", updateType: "major" },
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "pkg-b", targetVersion: "2.0.0", updateType: "major" },
+        ]);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]?.releaseUrl).toContain("pkg-a");
+
+        vi.restoreAllMocks();
     });
 });

@@ -74,13 +74,13 @@
     },
     "dependencies": {
         "@visulima/boxen": "workspace:*",
-        "jiti": "catalog:dev",
         "@visulima/cerebro": "workspace:*",
         "@visulima/find-ai-runner": "workspace:*",
         "@visulima/package": "workspace:*",
         "@visulima/path": "workspace:*",
         "@visulima/tabular": "workspace:*",
-        "@visulima/task-runner": "workspace:*"
+        "@visulima/task-runner": "workspace:*",
+        "jiti": "catalog:dev"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -89,6 +89,7 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@shared/xxh3": "workspace:*",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
@@ -104,6 +105,14 @@
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "lint-staged": ">=15.0.0"
+    },
+    "peerDependenciesMeta": {
+        "lint-staged": {
+            "optional": true
+        }
     },
     "engines": {
         "node": "^20.19.0 || >=22.12.0"

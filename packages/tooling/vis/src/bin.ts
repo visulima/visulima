@@ -3,10 +3,14 @@ import { findMonorepoRootSync } from "@visulima/package";
 
 import pkg from "../package.json";
 import affectedCommand from "./commands/affected";
+import aiCommand from "./commands/ai";
+import analyzeCommand from "./commands/analyze";
 import checkCommand from "./commands/check";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
+import migrateCommand from "./commands/migrate";
 import runCommand from "./commands/run";
+import stagedCommand from "./commands/staged";
 import updateCommand from "./commands/update";
 import { loadVisConfig } from "./config";
 
@@ -57,5 +61,9 @@ cli.addCommand(affectedCommand);
 cli.addCommand(hookCommand);
 cli.addCommand(updateCommand);
 cli.addCommand(checkCommand);
+cli.addCommand(aiCommand);
+cli.addCommand(analyzeCommand);
+cli.addCommand(migrateCommand);
+cli.addCommand(stagedCommand);
 
 await cli.run();

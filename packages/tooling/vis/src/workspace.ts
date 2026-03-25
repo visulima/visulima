@@ -22,11 +22,17 @@ interface PackageJson {
 interface VisConfig {
     /** AI analysis configuration */
     ai?: {
+        /** Cache TTL in milliseconds. Overrides default (1h / 30min for security). */
+        cacheTtl?: number;
         /** Override default provider priority. Higher number = preferred. */
         priority?: Record<string, number>;
         /** Use a specific provider instead of auto-detecting (e.g., `"claude"`, `"gemini"`). */
         provider?: string;
     };
+    /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
+    overrides?: Record<string, string>;
+    /** Staged file patterns and commands (replaces lint-staged) */
+    staged?: Record<string, string | string[]>;
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */

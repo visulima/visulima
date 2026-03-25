@@ -3,11 +3,13 @@ import { execSync } from "node:child_process";
 import type { Command } from "@visulima/cerebro";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 
-import { formatAiAnalysis, runAiAnalysis } from "../ai-analysis";
+import type { AiAnalysisResult } from "../ai-analysis";
+import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { CatalogCheckOptions, OutdatedEntry, UpdateTarget } from "../catalog";
 import {
     applyCatalogUpdates,
     checkOutdated,
+    fetchChangelogInfo,
     formatOutdatedJson,
     formatOutdatedMinimal,
     formatOutdatedTable,
@@ -42,7 +44,7 @@ const buildCatalogCheckOptions = (
         exclude: [...toFilterArray(options.exclude as FilterOption), ...toFilterArray(configDefaults.exclude)],
         include: [...toFilterArray(options.include as FilterOption), ...toFilterArray(configDefaults.include), ...argument],
         includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-        security: (options.security as boolean) || configDefaults.security || false,
+        security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
         target: target as UpdateTarget,
     };
 };
@@ -58,13 +60,13 @@ const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format
     }
 };
 
-const applyCatalogAndInstall = (
+const applyCatalogAndInstall = async (
     workspaceRoot: string,
     packageManager: CatalogPackageManager,
     toApply: OutdatedEntry[],
     options: Record<string, unknown>,
     logger: Console,
-): void => {
+): Promise<void> => {
     const backupPath = applyCatalogUpdates(workspaceRoot, toApply, packageManager);
     const targetFile = packageManager === "bun" ? "package.json" : "pnpm-workspace.yaml";
 
@@ -75,10 +77,14 @@ const applyCatalogAndInstall = (
     }
 
     if (options.changelog) {
-        logger.info("\nChangelogs:");
+        logger.info("\nFetching changelogs...");
 
-        for (const entry of toApply) {
-            logger.info(`  ${entry.packageName}: https://www.npmjs.com/package/${entry.packageName}`);
+        const changelogs = await fetchChangelogInfo(toApply);
+
+        for (const info of changelogs) {
+            const url = info.releaseUrl ?? info.repoUrl ?? info.npmUrl;
+
+            logger.info(`  ${info.packageName}: ${url}`);
         }
     }
 
@@ -100,6 +106,7 @@ const applyCatalogAndInstall = (
     }
 };
 
+/* eslint-disable sonarjs/cognitive-complexity */
 const executeCatalogUpdate = async (
     workspaceRoot: string,
     packageManager: CatalogPackageManager,
@@ -142,21 +149,39 @@ const executeCatalogUpdate = async (
 
     const format = (options.format as string) ?? configDefaults.format ?? "table";
 
-    if (options["dry-run"]) {
-        if (format === "table") {
-            logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
-        }
+    // AI analysis runs before dry-run check so it works in both modes
+    let aiResult: AiAnalysisResult | undefined;
 
-        writeFormattedOutput(outdated, failed, format, logger);
+    if (options.ai) {
+        const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
+
+        aiResult = await runAiAnalysis(outdated, logger, visConfig.ai, analysisType);
+    }
+
+    if (options["dry-run"]) {
+        if (format === "json") {
+            const output: Record<string, unknown> = { failed, outdated };
+
+            if (aiResult) {
+                output.aiAnalysis = aiResult;
+            }
+
+            process.stdout.write(`${JSON.stringify(output, undefined, 2)}\n`);
+        } else {
+            logger.info(`Would update ${String(outdated.length)} dependencies:\n`);
+            writeFormattedOutput(outdated, failed, format, logger);
+
+            if (aiResult) {
+                logger.info("");
+                logger.info(formatAiAnalysis(aiResult));
+            }
+        }
 
         return;
     }
 
-    if (options.ai) {
-        const aiConfig = visConfig.ai;
-        const analysis = await runAiAnalysis(outdated, logger, aiConfig);
-
-        logger.info(formatAiAnalysis(analysis));
+    if (aiResult && format !== "json") {
+        logger.info(formatAiAnalysis(aiResult));
         logger.info("");
     }
 
@@ -177,7 +202,7 @@ const executeCatalogUpdate = async (
 
     const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
-    applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
+    await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
 };
 
 const executePmWrapper = (
@@ -436,6 +461,11 @@ const update: Command = {
             description: "Run AI analysis on outdated packages before updating (catalog mode)",
             name: "ai",
             type: Boolean,
+        },
+        {
+            description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
+            name: "ai-type",
+            type: String,
         },
     ],
 };
