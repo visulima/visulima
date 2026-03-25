@@ -3,6 +3,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 
 import { join } from "@visulima/path";
 
+import { cleanHuskyFromScript } from "../migrate/constants";
+import type { PackageManagerType } from "../migrate/types";
 import type { InstallResult } from "./constants";
 import { HOOKS } from "./constants";
 import { installHooks } from "./install";
@@ -10,13 +12,6 @@ import { installHooks } from "./install";
 const HUSKY_DIRECTORIES = [".husky", ".config/husky"];
 
 const COMMON_SH_SOURCE_RE = /^\. "\$\(dirname "\$0"\)\/common\.sh"\s*/m;
-
-const HUSKY_STANDALONE_RE = /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g;
-const HUSKY_INSTALL_AND_RE = /\bhusky(?:\s+install)?\s*&&\s*/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
-const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
-const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
 
 /**
  * Detects which husky directory is in use, if any.
@@ -71,7 +66,7 @@ const transformHookScript = (content: string): string => content.replace(COMMON_
 /**
  * Detects the package manager used in the project.
  */
-const detectPackageManager = (root: string): "bun" | "npm" | "pnpm" | "yarn" => {
+const detectPackageManager = (root: string): PackageManagerType => {
     if (existsSync(join(root, "pnpm-lock.yaml")) || existsSync(join(root, "pnpm-workspace.yaml"))) {
         return "pnpm";
     }
@@ -120,9 +115,36 @@ const uninstallHuskyPackage = (root: string, logger: Console): boolean => {
 };
 
 /**
+ * Process a single script entry and apply husky cleanup.
+ * Returns a description of the change, or undefined if unchanged.
+ */
+const processScript = (
+    scripts: Record<string, string>,
+    scriptName: string,
+    scriptValue: string,
+): string | undefined => {
+    const cleaned = cleanHuskyFromScript(scriptValue);
+
+    if (cleaned === scriptValue) {
+        return undefined;
+    }
+
+    if (cleaned) {
+        // eslint-disable-next-line no-param-reassign -- mutating scripts object passed by caller
+        scripts[scriptName] = cleaned;
+
+        return `updated "${scriptName}" script`;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, no-param-reassign -- mutating scripts object passed by caller
+    delete scripts[scriptName];
+
+    return `removed "${scriptName}" script (was: "${scriptValue}")`;
+};
+
+/**
  * Cleans husky references from package.json scripts.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- migration logic requires many conditional branches
 const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScriptReferences: string[] } => {
     const packageJsonPath = join(root, "package.json");
 
@@ -132,9 +154,7 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
 
     const content = readFileSync(packageJsonPath, "utf8");
     const packageJson = JSON.parse(content) as Record<string, unknown>;
-    let modified = false;
     const removedScriptReferences: string[] = [];
-
     const scripts = packageJson["scripts"] as Record<string, string> | undefined;
 
     if (scripts) {
@@ -143,45 +163,19 @@ const cleanPackageJsonScripts = (root: string): { modified: boolean; removedScri
                 continue;
             }
 
-            // Remove standalone "husky" or "husky install" commands
-            if (scriptValue === "husky" || scriptValue === "husky install") {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete scripts[scriptName];
-                modified = true;
-                removedScriptReferences.push(`removed "${scriptName}" script (was: "${scriptValue}")`);
-                continue;
-            }
+            const change = processScript(scripts, scriptName, scriptValue);
 
-            // Remove husky from compound commands like "(is-ci || husky || exit 0) && other-stuff"
-            const huskyPatterns = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];
-
-            let cleaned = scriptValue;
-
-            for (const pattern of huskyPatterns) {
-                cleaned = cleaned.replace(pattern, "");
-            }
-
-            cleaned = cleaned.trim();
-
-            if (cleaned !== scriptValue) {
-                if (cleaned) {
-                    scripts[scriptName] = cleaned;
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                    delete scripts[scriptName];
-                }
-
-                modified = true;
-                removedScriptReferences.push(`updated "${scriptName}" script`);
+            if (change) {
+                removedScriptReferences.push(change);
             }
         }
     }
 
-    if (modified) {
+    if (removedScriptReferences.length > 0) {
         writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, undefined, 4)}\n`, "utf8");
     }
 
-    return { modified, removedScriptReferences };
+    return { modified: removedScriptReferences.length > 0, removedScriptReferences };
 };
 
 /**

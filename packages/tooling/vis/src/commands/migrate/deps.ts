@@ -4,20 +4,11 @@ import { join } from "@visulima/path";
 
 import type { VisConfig } from "../../workspace";
 import { discoverWorkspace } from "../../workspace";
-import { REPLACED_PACKAGES } from "./constants";
+import { cleanHuskyFromScript, REPLACED_PACKAGES } from "./constants";
 import { editJsonFile } from "./json";
-import type { MigrationReport } from "./types";
+import type { MigrationReport, PackageManagerType } from "./types";
 
-// Reuse husky script patterns from hook/migrate
-const HUSKY_STANDALONE_RE = /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g;
-const HUSKY_INSTALL_AND_RE = /\bhusky(?:\s+install)?\s*&&\s*/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
-const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
-const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
 const LINT_STAGED_CMD_RE = /\blint-staged\b/g;
-
-type PackageManagerType = "bun" | "npm" | "pnpm" | "yarn";
 
 interface MigrateLogger {
     info: (message: string) => void;
@@ -41,38 +32,27 @@ const rewriteScripts = (
             continue;
         }
 
-        // Remove standalone husky commands
-        if (value === "husky" || value === "husky install") {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete result[name];
-            modified = true;
-            report.rewrittenScriptCount += 1;
+        // Clean husky references using shared function
+        let cleaned = cleanHuskyFromScript(value);
+
+        // Replace lint-staged with vis staged
+        if (cleaned) {
+            cleaned = cleaned.replaceAll(LINT_STAGED_CMD_RE, "vis staged").trim() || undefined;
+        }
+
+        if (cleaned === value) {
             continue;
         }
 
-        let cleaned = value;
-
-        // Remove husky from compound commands
-        for (const pattern of [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE]) {
-            cleaned = cleaned.replace(pattern, "");
+        if (cleaned) {
+            result[name] = cleaned;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete result[name];
         }
 
-        // Replace lint-staged with vis staged
-        cleaned = cleaned.replaceAll(LINT_STAGED_CMD_RE, "vis staged");
-
-        cleaned = cleaned.trim();
-
-        if (cleaned !== value) {
-            if (cleaned) {
-                result[name] = cleaned;
-            } else {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete result[name];
-            }
-
-            modified = true;
-            report.rewrittenScriptCount += 1;
-        }
+        modified = true;
+        report.rewrittenScriptCount += 1;
     }
 
     return { modified, scripts: result };
@@ -279,7 +259,6 @@ const insertCatalogEntries = (lines: string[], newEntries: string[], content: st
 const updatePnpmWorkspaceCatalog = (
     root: string,
     overrides: Record<string, string>,
-    report: MigrationReport,
 ): void => {
     const filePath = join(root, "pnpm-workspace.yaml");
 
@@ -306,8 +285,6 @@ const updatePnpmWorkspaceCatalog = (
     const result = insertCatalogEntries(lines, newEntries, content);
 
     writeFileSync(filePath, result.join("\n"), "utf8");
-
-    report.rewrittenScriptCount += newEntries.length;
 };
 
 /* eslint-enable no-param-reassign */
@@ -344,7 +321,7 @@ const migrateDeps = (
 
     // Update pnpm catalog if applicable
     if (packageManager === "pnpm") {
-        updatePnpmWorkspaceCatalog(root, overrides, report);
+        updatePnpmWorkspaceCatalog(root, overrides);
     }
 };
 

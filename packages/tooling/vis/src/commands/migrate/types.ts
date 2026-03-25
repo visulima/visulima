@@ -43,5 +43,7 @@ const addManualStep = (report: MigrationReport | undefined, step: string): void 
     report.manualSteps.push(step);
 };
 
-export type { MigrateLogger, MigrationReport };
+type PackageManagerType = "bun" | "npm" | "pnpm" | "yarn";
+
+export type { MigrateLogger, MigrationReport, PackageManagerType };
 export { addManualStep, addMigrationWarning, createMigrationReport };

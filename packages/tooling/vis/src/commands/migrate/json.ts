@@ -30,10 +30,22 @@ const isJsonFile = (filePath: string): boolean => {
     }
 };
 
+const INDENT_RE = /\n([ \t]+)"/;
+
+/**
+ * Detect the indentation used in a JSON file by looking at the first indented line.
+ */
+const detectJsonIndent = (content: string): number => {
+    const match = INDENT_RE.exec(content);
+
+    return match?.[1]?.length ?? 4;
+};
+
 /**
  * Edits a JSON file in place using a mutator function.
  * The mutator receives the parsed data and should return the modified data,
  * or undefined to skip writing. Returns true if the file was modified.
+ * Preserves the original indentation style.
  */
 const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined): boolean => {
     if (!existsSync(filePath)) {
@@ -56,9 +68,11 @@ const editJsonFile = <T>(filePath: string, mutator: (data: T) => T | undefined):
         return false;
     }
 
-    writeFileSync(filePath, `${JSON.stringify(result, undefined, 4)}\n`, "utf8");
+    const indent = detectJsonIndent(content);
+
+    writeFileSync(filePath, `${JSON.stringify(result, undefined, indent)}\n`, "utf8");
 
     return true;
 };
 
-export { editJsonFile, isJsonFile, readJsonFile };
+export { detectJsonIndent, editJsonFile, isJsonFile, readJsonFile };

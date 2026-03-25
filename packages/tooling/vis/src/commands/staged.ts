@@ -57,19 +57,19 @@ const staged: Command = {
         ["vis staged --no-stash", "Run without backup stash"],
         ["vis staged --diff HEAD~1", "Run against a specific diff"],
     ],
-    execute: async ({ logger, options, visConfig }) => {
+    execute: async ({ options, visConfig }) => {
         const config = (visConfig ?? {}) as Record<string, unknown>;
         const stagedConfig = config["staged"] as Record<string, string | string[]> | undefined;
 
         if (!stagedConfig) {
-            logger.error("No \"staged\" config found in vis.config.ts. Please add a staged config:\n");
-            logger.info("  // vis.config.ts");
-            logger.info("  import { defineConfig } from \"@visulima/vis/config\";\n");
-            logger.info("  export default defineConfig({");
-            logger.info("    staged: { '*': 'vis check --fix' },");
-            logger.info("  });");
-            // eslint-disable-next-line unicorn/no-process-exit -- CLI command must exit with error code
-            process.exit(1);
+            throw new Error(
+                "No \"staged\" config found in vis.config.ts. Please add a staged config:\n\n"
+                + "  // vis.config.ts\n"
+                + "  import { defineConfig } from \"@visulima/vis/config\";\n\n"
+                + "  export default defineConfig({\n"
+                + "    staged: { '*': 'vis check --fix' },\n"
+                + "  });",
+            );
         }
 
         // Dynamically import lint-staged
@@ -81,9 +81,7 @@ const staged: Command = {
 
             lintStaged = imported.default;
         } catch {
-            logger.error("lint-staged is required but not installed. Run: pnpm add -D lint-staged");
-            // eslint-disable-next-line unicorn/no-process-exit -- CLI command must exit with error code
-            process.exit(1);
+            throw new Error("lint-staged is required but not installed. Run: pnpm add -D lint-staged");
         }
 
         const lintStagedOptions: Record<string, unknown> = {

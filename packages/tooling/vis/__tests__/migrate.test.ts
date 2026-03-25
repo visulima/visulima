@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_STAGED_CONFIG, LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, REPLACED_PACKAGES, STALE_LINT_STAGED_PATTERNS } from "../src/commands/migrate/constants";
+import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, REPLACED_PACKAGES, STALE_LINT_STAGED_PATTERNS } from "../src/commands/migrate/constants";
 import { migrateDeps, rewritePackageJson, rewriteScripts, updatePnpmWorkspaceCatalog } from "../src/commands/migrate/deps";
 import { editJsonFile, isJsonFile, readJsonFile } from "../src/commands/migrate/json";
 import {
@@ -20,7 +20,6 @@ import {
     migrateLintStaged,
     parseLintStagedJsonFile,
     removeLintStagedConfigFiles,
-    removeLintStagedDependency,
     removeLintStagedFromPackageJson,
     rewritePreCommitHook,
 } from "../src/commands/migrate/lint-staged";
@@ -506,29 +505,64 @@ describe("removeLintStagedFromPackageJson", () => {
         temporary.cleanup();
     });
 
-    it("should remove lint-staged key", () => {
-        expect.assertions(2);
+    it("should remove lint-staged config key and dependency in one pass", () => {
+        expect.assertions(4);
 
         writeFileSync(
             join(temporary.root, "package.json"),
-            JSON.stringify({ "lint-staged": { "*.ts": "eslint" }, name: "test" }, undefined, 4),
+            JSON.stringify({
+                devDependencies: { "lint-staged": "^15.0.0" },
+                "lint-staged": { "*.ts": "eslint" },
+                name: "test",
+            }, undefined, 4),
         );
 
         const result = removeLintStagedFromPackageJson(temporary.root);
 
-        expect(result).toBe(true);
+        expect(result.configRemoved).toBe(true);
+        expect(result.dependencyRemoved).toBe(true);
 
         const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
 
         expect(pkg["lint-staged"]).toBeUndefined();
+        expect(pkg.devDependencies["lint-staged"]).toBeUndefined();
     });
 
-    it("should return false when no lint-staged key", () => {
-        expect.assertions(1);
+    it("should remove from dependencies (not just devDependencies)", () => {
+        expect.assertions(2);
+
+        writeFileSync(
+            join(temporary.root, "package.json"),
+            JSON.stringify({ dependencies: { "lint-staged": "^15.0.0" } }, undefined, 4),
+        );
+
+        const result = removeLintStagedFromPackageJson(temporary.root);
+
+        expect(result.dependencyRemoved).toBe(true);
+
+        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
+
+        expect(pkg.dependencies["lint-staged"]).toBeUndefined();
+    });
+
+    it("should return both false when nothing to remove", () => {
+        expect.assertions(2);
 
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ name: "test" }));
 
-        expect(removeLintStagedFromPackageJson(temporary.root)).toBe(false);
+        const result = removeLintStagedFromPackageJson(temporary.root);
+
+        expect(result.configRemoved).toBe(false);
+        expect(result.dependencyRemoved).toBe(false);
+    });
+
+    it("should return both false when no package.json", () => {
+        expect.assertions(2);
+
+        const result = removeLintStagedFromPackageJson(temporary.root);
+
+        expect(result.configRemoved).toBe(false);
+        expect(result.dependencyRemoved).toBe(false);
     });
 });
 
@@ -558,48 +592,6 @@ describe("removeLintStagedConfigFiles", () => {
         expect(existsSync(join(temporary.root, ".lintstagedrc.json"))).toBe(false);
         expect(existsSync(join(temporary.root, ".lintstagedrc"))).toBe(false);
         expect(report.removedConfigCount).toBe(2);
-    });
-});
-
-// ─── removeLintStagedDependency (unit) ─────────────────────────────
-
-describe("removeLintStagedDependency", () => {
-    let temporary: { cleanup: () => void; root: string };
-
-    beforeEach(() => {
-        temporary = createTemporaryDirectory();
-    });
-
-    afterEach(() => {
-        temporary.cleanup();
-    });
-
-    it("should remove lint-staged from devDependencies", () => {
-        expect.assertions(2);
-
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ devDependencies: { eslint: "^9.0.0", "lint-staged": "^15.0.0" } }, undefined, 4),
-        );
-
-        const result = removeLintStagedDependency(temporary.root);
-
-        expect(result).toBe(true);
-
-        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
-
-        expect(pkg.devDependencies["lint-staged"]).toBeUndefined();
-    });
-
-    it("should return false when lint-staged not in dependencies", () => {
-        expect.assertions(1);
-
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ devDependencies: { eslint: "^9.0.0" } }),
-        );
-
-        expect(removeLintStagedDependency(temporary.root)).toBe(false);
     });
 });
 
@@ -685,7 +677,7 @@ describe("rewritePreCommitHook", () => {
         expect(rewritePreCommitHook(temporary.root, ".vis-hooks")).toBe(false);
     });
 
-    it("should append vis staged if no lint-staged line found", () => {
+    it("should return false if no lint-staged line found (no mutation)", () => {
         expect.assertions(2);
 
         mkdirSync(join(temporary.root, ".vis-hooks"), { recursive: true });
@@ -693,11 +685,11 @@ describe("rewritePreCommitHook", () => {
 
         const result = rewritePreCommitHook(temporary.root, ".vis-hooks");
 
-        expect(result).toBe(true);
+        expect(result).toBe(false);
 
         const content = readFileSync(join(temporary.root, ".vis-hooks", "pre-commit"), "utf8");
 
-        expect(content).toContain("vis staged");
+        expect(content).not.toContain("vis staged");
     });
 
     it("should return false when no pre-commit hook exists", () => {
@@ -1144,43 +1136,6 @@ describe("insertStagedIntoVisConfig edge cases", () => {
     });
 });
 
-// ─── removeLintStagedDependency edge cases (unit) ─────────────────
-
-describe("removeLintStagedDependency edge cases", () => {
-    let temporary: { cleanup: () => void; root: string };
-
-    beforeEach(() => {
-        temporary = createTemporaryDirectory();
-    });
-
-    afterEach(() => {
-        temporary.cleanup();
-    });
-
-    it("should remove lint-staged from dependencies (not just devDependencies)", () => {
-        expect.assertions(2);
-
-        writeFileSync(
-            join(temporary.root, "package.json"),
-            JSON.stringify({ dependencies: { "lint-staged": "^15.0.0" } }, undefined, 4),
-        );
-
-        const result = removeLintStagedDependency(temporary.root);
-
-        expect(result).toBe(true);
-
-        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
-
-        expect(pkg.dependencies["lint-staged"]).toBeUndefined();
-    });
-
-    it("should return false when no package.json exists", () => {
-        expect.assertions(1);
-
-        expect(removeLintStagedDependency(temporary.root)).toBe(false);
-    });
-});
-
 // ─── rewriteScripts edge cases (unit) ─────────────────────────────
 
 describe("rewriteScripts edge cases", () => {
@@ -1340,9 +1295,7 @@ describe("updatePnpmWorkspaceCatalog", () => {
             "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n",
         );
 
-        const report = createMigrationReport();
-
-        updatePnpmWorkspaceCatalog(temporary.root, { prettier: "^3.0.0" }, report);
+        updatePnpmWorkspaceCatalog(temporary.root, { prettier: "^3.0.0" });
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
 
@@ -1358,9 +1311,7 @@ describe("updatePnpmWorkspaceCatalog", () => {
             "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n",
         );
 
-        const report = createMigrationReport();
-
-        updatePnpmWorkspaceCatalog(temporary.root, { eslint: "^10.0.0" }, report);
+        updatePnpmWorkspaceCatalog(temporary.root, { eslint: "^10.0.0" });
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
         const matches = content.match(/eslint/g);
@@ -1371,26 +1322,21 @@ describe("updatePnpmWorkspaceCatalog", () => {
     it("should do nothing when no pnpm-workspace.yaml", () => {
         expect.assertions(1);
 
-        const report = createMigrationReport();
+        updatePnpmWorkspaceCatalog(temporary.root, { pkg: "^1.0.0" });
 
-        updatePnpmWorkspaceCatalog(temporary.root, { pkg: "^1.0.0" }, report);
-
-        expect(report.rewrittenScriptCount).toBe(0);
+        expect(existsSync(join(temporary.root, "pnpm-workspace.yaml"))).toBe(false);
     });
 
     it("should do nothing when overrides is empty", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(temporary.root, "pnpm-workspace.yaml"),
-            "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n",
-        );
+        const original = "packages:\n  - packages/*\ncatalog:\n  eslint: \"^9.0.0\"\n";
 
-        const report = createMigrationReport();
+        writeFileSync(join(temporary.root, "pnpm-workspace.yaml"), original);
 
-        updatePnpmWorkspaceCatalog(temporary.root, {}, report);
+        updatePnpmWorkspaceCatalog(temporary.root, {});
 
-        expect(report.rewrittenScriptCount).toBe(0);
+        expect(readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8")).toBe(original);
     });
 
     it("should create catalog section if missing", () => {
@@ -1401,9 +1347,7 @@ describe("updatePnpmWorkspaceCatalog", () => {
             "packages:\n  - packages/*\n",
         );
 
-        const report = createMigrationReport();
-
-        updatePnpmWorkspaceCatalog(temporary.root, { newpkg: "^1.0.0" }, report);
+        updatePnpmWorkspaceCatalog(temporary.root, { newpkg: "^1.0.0" });
 
         const content = readFileSync(join(temporary.root, "pnpm-workspace.yaml"), "utf8");
 
@@ -1514,12 +1458,6 @@ describe("constants", () => {
         for (const file of LINT_STAGED_JSON_CONFIG_FILES) {
             expect(LINT_STAGED_ALL_CONFIG_FILES).toContain(file);
         }
-    });
-
-    it("should have default staged config", () => {
-        expect.assertions(1);
-
-        expect(DEFAULT_STAGED_CONFIG).toStrictEqual({ "*": "vis check --fix" });
     });
 
     it("should have lint-staged patterns that match common invocations", () => {

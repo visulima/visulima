@@ -9,7 +9,7 @@ import {
     LINT_STAGED_OTHER_CONFIG_FILES,
     STALE_LINT_STAGED_PATTERNS,
 } from "./constants";
-import { isJsonFile, readJsonFile } from "./json";
+import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
 import type { MigrationReport } from "./types";
 import { addManualStep, addMigrationWarning } from "./types";
 
@@ -169,26 +169,51 @@ const insertStagedIntoVisConfig = (
 // ─── Cleanup ────────────────────────────────────────────────────────
 
 /**
- * Remove `lint-staged` key from package.json.
+ * Remove `lint-staged` key, config, and dependency from package.json in a single read/write.
+ * Returns which removals were performed.
  */
-const removeLintStagedFromPackageJson = (root: string): boolean => {
+const removeLintStagedFromPackageJson = (root: string): { configRemoved: boolean; dependencyRemoved: boolean } => {
     const packageJsonPath = join(root, "package.json");
+    const result = { configRemoved: false, dependencyRemoved: false };
 
     if (!existsSync(packageJsonPath)) {
-        return false;
+        return result;
     }
 
     const content = readFileSync(packageJsonPath, "utf8");
     const pkg = JSON.parse(content) as Record<string, unknown>;
+    let modified = false;
 
-    if (!pkg["lint-staged"]) {
-        return false;
+    // Remove lint-staged config key
+    if (pkg["lint-staged"]) {
+        delete pkg["lint-staged"];
+        modified = true;
+        result.configRemoved = true;
     }
 
-    delete pkg["lint-staged"];
-    writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, 4)}\n`, "utf8");
+    // Remove lint-staged from dependencies
+    const devDeps = pkg["devDependencies"] as Record<string, string> | undefined;
+    const deps = pkg["dependencies"] as Record<string, string> | undefined;
 
-    return true;
+    if (devDeps?.["lint-staged"]) {
+        delete devDeps["lint-staged"];
+        modified = true;
+        result.dependencyRemoved = true;
+    }
+
+    if (deps?.["lint-staged"]) {
+        delete deps["lint-staged"];
+        modified = true;
+        result.dependencyRemoved = true;
+    }
+
+    if (modified) {
+        const indent = detectJsonIndent(content);
+
+        writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, indent)}\n`, "utf8");
+    }
+
+    return result;
 };
 
 /**
@@ -204,37 +229,6 @@ const removeLintStagedConfigFiles = (root: string, report: MigrationReport): voi
             report.removedConfigCount += 1;
         }
     }
-};
-
-/**
- * Remove `lint-staged` from devDependencies in package.json.
- */
-const removeLintStagedDependency = (root: string): boolean => {
-    const packageJsonPath = join(root, "package.json");
-
-    if (!existsSync(packageJsonPath)) {
-        return false;
-    }
-
-    const content = readFileSync(packageJsonPath, "utf8");
-    const pkg = JSON.parse(content) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
-    let modified = false;
-
-    if (pkg.devDependencies?.["lint-staged"]) {
-        delete pkg.devDependencies["lint-staged"];
-        modified = true;
-    }
-
-    if (pkg.dependencies?.["lint-staged"]) {
-        delete pkg.dependencies["lint-staged"];
-        modified = true;
-    }
-
-    if (modified) {
-        writeFileSync(packageJsonPath, `${JSON.stringify(pkg, undefined, 4)}\n`, "utf8");
-    }
-
-    return modified;
 };
 
 // ─── Pre-commit hook rewriting ──────────────────────────────────────
@@ -270,11 +264,12 @@ const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => 
                 const match = pattern.exec(trimmed);
 
                 if (match) {
+                    const indent = line.slice(0, line.length - line.trimStart().length);
                     const envPrefix = match[1]?.trim() ?? "";
                     const rest = trimmed.slice(match[0].length).trim();
                     const parts = [envPrefix, "vis staged", rest].filter(Boolean);
 
-                    result.push(parts.join(" "));
+                    result.push(`${indent}${parts.join(" ")}`);
                     replaced = true;
                     matched = true;
                     break;
@@ -289,11 +284,11 @@ const rewritePreCommitHook = (root: string, hooksDirectory: string): boolean => 
         result.push(line);
     }
 
-    if (replaced) {
-        writeFileSync(hookPath, result.join("\n"));
-    } else {
-        writeFileSync(hookPath, `${result.join("\n").trimEnd()}\nvis staged\n`);
+    if (!replaced) {
+        return false;
     }
+
+    writeFileSync(hookPath, result.join("\n"));
 
     return true;
 };
@@ -315,7 +310,7 @@ const extractConfig = (
 
     const filePath = join(root, source);
 
-    if (!(LINT_STAGED_JSON_CONFIG_FILES as readonly string[]).includes(source)) {
+    if (!(LINT_STAGED_JSON_CONFIG_FILES as ReadonlyArray<string>).includes(source)) {
         addMigrationWarning(report, `${source} cannot be auto-migrated — please add "staged" config to vis.config.ts manually`);
         addManualStep(report, `Manually convert ${source} to staged config in vis.config.ts`);
 
@@ -336,15 +331,17 @@ const extractConfig = (
  */
 /* eslint-disable no-param-reassign -- tracking migration progress */
 const cleanupLintStagedArtifacts = (root: string, report: MigrationReport): void => {
-    if (removeLintStagedFromPackageJson(root)) {
+    const { configRemoved, dependencyRemoved } = removeLintStagedFromPackageJson(root);
+
+    if (configRemoved) {
         report.inlinedLintStagedConfigCount += 1;
     }
 
-    removeLintStagedConfigFiles(root, report);
-
-    if (removeLintStagedDependency(root)) {
+    if (dependencyRemoved) {
         report.removedPackageCount += 1;
     }
+
+    removeLintStagedConfigFiles(root, report);
 };
 
 /**
@@ -375,7 +372,7 @@ const rewriteHooks = (
 const applyMigration = (
     root: string,
     config: Record<string, string | string[]>,
-    options: { dryRun: boolean; silent?: boolean },
+    options: { silent?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): void => {
@@ -467,7 +464,6 @@ export {
     migrateLintStaged,
     parseLintStagedJsonFile,
     removeLintStagedConfigFiles,
-    removeLintStagedDependency,
     removeLintStagedFromPackageJson,
     rewritePreCommitHook,
 };

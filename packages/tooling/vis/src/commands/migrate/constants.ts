@@ -32,11 +32,40 @@ const STALE_LINT_STAGED_PATTERNS: ReadonlyArray<RegExp> = [
 // Packages removed during migration
 const REPLACED_PACKAGES = ["husky", "lint-staged"] as const;
 
-// Default staged config when none exists
-const DEFAULT_STAGED_CONFIG: Record<string, string> = { "*": "vis check --fix" };
+// Husky script patterns — shared between hook/migrate and migrate/deps
+const HUSKY_STANDALONE_RE = /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g;
+const HUSKY_INSTALL_AND_RE = /\bhusky(?:\s+install)?\s*&&\s*/g;
+// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
+// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
+
+const HUSKY_SCRIPT_PATTERNS: readonly RegExp[] = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];
+
+/**
+ * Remove husky references from a single script value.
+ * Returns the cleaned script, or undefined if the entire script should be removed.
+ */
+const cleanHuskyFromScript = (scriptValue: string): string | undefined => {
+    // Remove standalone husky commands entirely
+    if (scriptValue === "husky" || scriptValue === "husky install") {
+        return undefined;
+    }
+
+    let cleaned = scriptValue;
+
+    for (const pattern of HUSKY_SCRIPT_PATTERNS) {
+        cleaned = cleaned.replace(pattern, "");
+    }
+
+    cleaned = cleaned.trim();
+
+    return cleaned === scriptValue ? scriptValue : cleaned || undefined;
+};
 
 export {
-    DEFAULT_STAGED_CONFIG,
+    cleanHuskyFromScript,
+    HUSKY_SCRIPT_PATTERNS,
     LINT_STAGED_ALL_CONFIG_FILES,
     LINT_STAGED_JSON_CONFIG_FILES,
     LINT_STAGED_OTHER_CONFIG_FILES,
