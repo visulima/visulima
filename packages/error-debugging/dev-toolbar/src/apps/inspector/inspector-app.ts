@@ -284,14 +284,12 @@ const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string
 
     button.type = "button";
     button.title = title;
-    // Match main toolbar: size-8 (32px), icon wrapper size-6 (24px), svg 18px
+    // Match main toolbar app buttons: content-sized by size-6 (24px) icon wrapper, p-0 m-0
     button.style.cssText = [
         "position:relative",
         "display:flex",
         "justify-content:center",
         "align-items:center",
-        "width:32px",
-        "height:32px",
         "border:0",
         "white-space:nowrap",
         "padding:0",
@@ -302,7 +300,7 @@ const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string
         "transition:all 150ms",
     ].join(";");
 
-    // Icon wrapper matching main toolbar's size-6 > [&_svg]:size-4.5
+    // Icon wrapper matching main toolbar's size-6 (24px) > [&_svg]:size-4.5 (18px)
     const iconWrap = document.createElement("div");
 
     iconWrap.style.cssText = "width:24px;height:24px;display:flex;align-items:center;justify-content:center;user-select:none;";
@@ -360,7 +358,7 @@ const showToast = (message: string, type: "error" | "success" = "success"): void
         "border-radius:4px",
         `background:${type === "success" ? "#22c55e" : "#ef4444"}`,
         "color:#fff",
-        "font:12px/1 system-ui,-apple-system,sans-serif",
+        'font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
         "font-weight:600",
         "pointer-events:none",
         "opacity:0",
@@ -417,7 +415,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
         `box-shadow:${pillShadow}`,
         "pointer-events:auto",
         "user-select:none",
-        "font:13px/1.6 system-ui,-apple-system,sans-serif",
+        'font:13px/1.6 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
     ].join(";");
     badge.addEventListener("click", (e) => e.stopPropagation());
     badge.addEventListener("mousedown", (e) => e.stopPropagation());
@@ -482,7 +480,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
         for (let col = 0; col < 2; col++) {
             const dot = document.createElement("div");
 
-            dot.style.cssText = `width:3px;height:3px;border-radius:50%;background:${c.muted};`;
+            dot.style.cssText = `width:2px;height:2px;border-radius:50%;background:${c.muted};`;
             dotRow.append(dot);
         }
 
@@ -516,8 +514,6 @@ const createFloatingBadge = (onCancel: () => void): void => {
                 "display:flex",
                 "justify-content:center",
                 "align-items:center",
-                "width:32px",
-                "height:32px",
                 "border:0",
                 "white-space:nowrap",
                 "padding:0",
@@ -570,7 +566,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     // ── Separator between modes and tools ──
     const modeSeparator = document.createElement("span");
 
-    modeSeparator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    modeSeparator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(196,181,253,0.2)" : "rgba(124,58,237,0.2)"};flex-shrink:0;`;
     badge.append(modeSeparator);
 
     // ── Freeze button (P) ──
@@ -655,7 +651,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
                 "display:flex",
                 "align-items:center",
                 "gap:8px",
-                "font:12px/1 system-ui,-apple-system,sans-serif",
+                'font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace',
                 `color:${c.fg}`,
                 "pointer-events:auto",
             ].join(";");
@@ -713,7 +709,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
     // ── Separator ──
     const separator = document.createElement("span");
 
-    separator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};margin:0 2px;flex-shrink:0;`;
+    separator.style.cssText = `width:1px;height:20px;background:${isDark ? "rgba(196,181,253,0.2)" : "rgba(124,58,237,0.2)"};flex-shrink:0;`;
     badge.append(separator);
 
     // ── Close button ──
