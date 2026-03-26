@@ -628,7 +628,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            expect(screen.getByRole("textbox")).toBeInTheDocument();
+            expect(screen.getByRole("combobox")).toBeInTheDocument();
         });
 
         it("does not render search input when searchable=false", async () => {
@@ -652,7 +652,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            expect(screen.getByRole("textbox")).toHaveAttribute("aria-label", "Search options");
+            expect(screen.getByRole("combobox")).toHaveAttribute("aria-label", "Search options");
         });
     });
 
@@ -701,7 +701,7 @@ describe("select", () => {
 
             expect(screen.getAllByRole("option")).toHaveLength(3);
 
-            const input = screen.getByRole("textbox");
+            const input = screen.getByRole("combobox");
 
             await act(async () => {
                 fireEvent.input(input, { target: { value: "ban" } });
@@ -720,7 +720,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            const input = screen.getByRole("textbox");
+            const input = screen.getByRole("combobox");
 
             await act(async () => {
                 fireEvent.input(input, { target: { value: "CHERRY" } });
@@ -739,7 +739,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            const input = screen.getByRole("textbox");
+            const input = screen.getByRole("combobox");
 
             await act(async () => {
                 fireEvent.input(input, { target: { value: "xyz" } });
@@ -758,7 +758,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            const input = screen.getByRole("textbox");
+            const input = screen.getByRole("combobox");
 
             await act(async () => {
                 fireEvent.input(input, { target: { value: "ban" } });
@@ -791,7 +791,7 @@ describe("select", () => {
                 fireEvent.click(screen.getByRole("button"));
             });
 
-            const input = screen.getByRole("textbox");
+            const input = screen.getByRole("combobox");
 
             await act(async () => {
                 fireEvent.input(input, { target: { value: "cher" } });
