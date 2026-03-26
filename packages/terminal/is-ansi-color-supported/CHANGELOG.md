@@ -1,3 +1,15 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.5...@visulima/is-ansi-color-supported@3.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **is-ansi-color-supported:** migrate deps to pnpm catalogs ([426b1cc](https://github.com/visulima/visulima/commit/426b1cc246a502c29180d2340ef2f1edc4e345dd))
+* **is-ansi-color-supported:** update dependencies ([9e61102](https://github.com/visulima/visulima/commit/9e61102fda7078094f88f9ccadd2965ad7816231))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.4...@visulima/is-ansi-color-supported@3.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
