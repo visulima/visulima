@@ -3,6 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/iso-locale/src",
     "projectType": "library",
-    "tags": ["iso", "type:package"],
+    "tags": ["iso", "type:package", "category:internationalization"],
     "implicitDependencies": []
 }

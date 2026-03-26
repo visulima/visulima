@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "string",
-        "type:package"
+        "type:package",
+        "category:data"
     ],
     "implicitDependencies": []
 }

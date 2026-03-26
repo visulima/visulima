@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "path",
-        "type:package"
+        "type:package",
+        "category:file-system"
     ],
     "implicitDependencies": []
 }

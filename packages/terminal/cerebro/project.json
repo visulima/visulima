@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "cerebro",
-        "type:package"
+        "type:package",
+        "category:cli-terminal"
     ],
     "implicitDependencies": [
         "terminal/command-line-args"

@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "type:package",
-        "api-platform"
+        "api-platform",
+        "category:api-web"
     ],
     "implicitDependencies": [
         "api/connect",

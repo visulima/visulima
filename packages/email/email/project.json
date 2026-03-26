@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "email",
-        "type:package"
+        "type:package",
+        "category:communication"
     ],
     "implicitDependencies": [
         "filesystem/fs",

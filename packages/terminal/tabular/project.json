@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "tabular",
-        "type:package"
+        "type:package",
+        "category:cli-terminal"
     ],
     "implicitDependencies": [
         "data-manipulation/string"

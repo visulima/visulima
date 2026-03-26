@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "command-line-args",
-        "type:package"
+        "type:package",
+        "category:cli-terminal"
     ],
     "implicitDependencies": [
         "error-debugging/error"

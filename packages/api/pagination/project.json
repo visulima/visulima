@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "type:package",
-        "pagination"
+        "pagination",
+        "category:api-web"
     ],
     "implicitDependencies": []
 }

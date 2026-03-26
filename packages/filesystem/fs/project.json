@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "type:package",
-        "fs"
+        "fs",
+        "category:file-system"
     ],
     "implicitDependencies": [
         "error-debugging/error",

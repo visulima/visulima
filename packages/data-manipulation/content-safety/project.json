@@ -3,6 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/content-safety/src",
     "projectType": "library",
-    "tags": ["content-safety", "type:package"],
+    "tags": ["content-safety", "type:package", "category:data"],
     "implicitDependencies": []
 }
