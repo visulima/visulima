@@ -1,3 +1,10 @@
+## @visulima/vis [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.1...@visulima/vis@1.0.0-alpha.2) (2026-03-26)
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.2
+
 ## @visulima/vis 1.0.0-alpha.1 (2026-03-26)
 
 ### Features
