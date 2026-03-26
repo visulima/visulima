@@ -5,12 +5,6 @@ name: "Build Native"
 on: # yamllint disable-line rule:truthy
     # eslint-disable-next-line yml/no-empty-mapping-value
     pull_request: # yamllint disable-line rule:empty-values
-        paths:
-            - "packages/tooling/task-runner/native/**"
-            - "packages/tooling/task-runner/npm/**"
-            - "packages/tooling/task-runner/package.json"
-            - "packages/tooling/task-runner/binding.js"
-            - ".github/workflows/build-native.yml"
     push:
         branches:
             - "main"
@@ -34,8 +28,39 @@ defaults:
         working-directory: "packages/tooling/task-runner"
 
 jobs:
+    files-changed:
+        name: "Detect native file changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        outputs:
+            native: "${{ steps.changes.outputs.native }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Check for native file changes"
+              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
+              id: "changes"
+              with:
+                  filters: |
+                      native:
+                        - 'packages/tooling/task-runner/native/**'
+                        - 'packages/tooling/task-runner/npm/**'
+                        - 'packages/tooling/task-runner/package.json'
+                        - 'packages/tooling/task-runner/binding.js'
+                        - '.github/workflows/build-native.yml'
+
     build:
         name: "Build - ${{ matrix.settings.target }}"
+        needs: "files-changed"
+        if: "needs.files-changed.outputs.native == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'"
         strategy:
             fail-fast: false
             matrix:
@@ -154,7 +179,7 @@ jobs:
 
     # This check runs once all build jobs have passed
     build-native-required-check:
-        needs: ["build", "test-native"]
+        needs: ["files-changed", "build", "test-native"]
         name: "Check Native Build"
         if: "always()"
         runs-on: "ubuntu-24.04"
