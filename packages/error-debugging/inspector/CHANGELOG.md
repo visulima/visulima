@@ -1,3 +1,21 @@
+## @visulima/inspector [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.4...@visulima/inspector@2.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **inspector:** update function toString tests for Node.js 22+ compatibility ([40750b7](https://github.com/visulima/visulima/commit/40750b730d4d4736e63bc3452fd5c2989b423fea))
+* **inspector:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([d5a8d64](https://github.com/visulima/visulima/commit/d5a8d64ee8a469a27ad3ba93128750cd10428ff2))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **inspector:** update dependencies ([2db0b99](https://github.com/visulima/visulima/commit/2db0b999a83881a982fc9032df0fd871926aaf5f))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+
 ## @visulima/inspector [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.3...@visulima/inspector@2.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
