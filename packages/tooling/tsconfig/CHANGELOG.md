@@ -1,3 +1,22 @@
+## @visulima/tsconfig [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.4...@visulima/tsconfig@3.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **tsconfig:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([420ce4a](https://github.com/visulima/visulima/commit/420ce4a0c075f78520fb9434ea83c9b6e301b571))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **tsconfig:** migrate deps to pnpm catalogs ([ab6e375](https://github.com/visulima/visulima/commit/ab6e37535ba3a575d0d0ddeee72560d8e560bccc))
+* **tsconfig:** update dependencies ([bf73f34](https://github.com/visulima/visulima/commit/bf73f340b2059d0bf74d836154d7e3a65a8e2c0a))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/tsconfig [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.3...@visulima/tsconfig@3.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
