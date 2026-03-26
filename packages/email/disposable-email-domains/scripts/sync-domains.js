@@ -130,7 +130,7 @@ const updateContributingSourcesTable = async (repositories, stats, packageRootPa
                 success,
             };
         })
-        .filter((row) => row !== null)
+        .filter(Boolean)
         .toSorted((a, b) => b.domainsCount - a.domainsCount)
         .map((row) => `| ${row.repoName} | ${row.domains} | ${row.success} | ${row.performance} |`);
 
