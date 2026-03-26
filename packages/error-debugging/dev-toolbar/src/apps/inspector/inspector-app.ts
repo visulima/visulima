@@ -17,6 +17,7 @@ import {
 import { loadSettings } from "./annotation-settings";
 import { deepElementFromPoint, getElementBoundingBoxes, getElementLabel, getElementsInRect, pierceElementFromPoint } from "./element-utils";
 import { isFrozen, originalSetTimeout, toggleFreeze } from "./freeze-animations";
+import { areRulersVisible, createRulers, isRulerElement, removeRulers } from "./rulers";
 // ─── Theme palette ─────────────────────────────────────────────────────────────
 // These elements live in document.body (outside the shadow DOM), so CSS variables
 // from the toolbar's :host are not available. We resolve the theme from the same
@@ -244,6 +245,9 @@ const setCrosshairCursor = (active: boolean): void => {
             `#__vdt_clear_confirm, #__vdt_clear_confirm * { cursor: auto !important; }`,
             `#__vdt_clear_confirm button { cursor: pointer !important; }`,
             `#__vdt_area_outline { cursor: auto !important; }`,
+            `#__vdt_ruler_h { cursor: s-resize !important; }`,
+            `#__vdt_ruler_v { cursor: e-resize !important; }`,
+            `.__vdt_guideline { cursor: row-resize !important; }`,
         ].join(" ");
     } else if (style) {
         style.remove();
@@ -276,6 +280,7 @@ const SVG_CLEAR = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18
 const SVG_CLOSE = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
 const SVG_INSPECT = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"/><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/></svg>`;
 const SVG_ANNOTATE = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`;
+const SVG_RULER = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>`;
 
 let markersVisible = true;
 
@@ -284,6 +289,8 @@ const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string
 
     button.type = "button";
     button.title = title;
+    // Store active state on the element so pointerout reads current (not stale) value
+    button.dataset.active = active ? "1" : "";
     // Match main toolbar app buttons: content-sized by size-6 (24px) icon wrapper, p-0 m-0
     button.style.cssText = [
         "position:relative",
@@ -312,8 +319,10 @@ const makeToolbarButton = (c: InspectorPalette, svgString: string, title: string
         button.style.color = c.primary;
     });
     button.addEventListener("pointerout", () => {
-        button.style.background = active ? `${c.primary}1f` : "transparent";
-        button.style.color = active ? c.primary : c.muted;
+        const isActive = button.dataset.active === "1";
+
+        button.style.background = isActive ? `${c.primary}1f` : "transparent";
+        button.style.color = isActive ? c.primary : c.muted;
     });
     button.addEventListener("pointerdown", () => {
         button.style.transform = "scale(0.94)";
@@ -582,6 +591,7 @@ const createFloatingBadge = (onCancel: () => void): void => {
             // When frozen: show play icon (click to resume). When not: show pause icon (click to pause).
             setButtonIcon(freezeButton, frozen ? SVG_PLAY : SVG_PAUSE);
             freezeButton.title = frozen ? "Resume animations (P)" : "Pause animations (P)";
+            freezeButton.dataset.active = frozen ? "1" : "";
             freezeButton.style.color = frozen ? c.primary : c.muted;
             freezeButton.style.background = frozen ? `${c.primary}22` : "transparent";
         },
@@ -600,6 +610,9 @@ const createFloatingBadge = (onCancel: () => void): void => {
 
         setButtonIcon(visButton, markersVisible ? SVG_EYE : SVG_EYE_OFF);
         visButton.title = markersVisible ? "Hide markers (H)" : "Show markers (H)";
+        visButton.dataset.active = markersVisible ? "" : "1";
+        visButton.style.color = markersVisible ? c.muted : c.primary;
+        visButton.style.background = markersVisible ? "transparent" : `${c.primary}22`;
     });
 
     badge.append(visButton);
@@ -627,6 +640,30 @@ const createFloatingBadge = (onCancel: () => void): void => {
     });
 
     badge.append(copyButton);
+
+    // ── Rulers toggle (R) ──
+    const rulersActive = areRulersVisible();
+    const rulerButton = makeToolbarButton(
+        c,
+        SVG_RULER,
+        "Toggle rulers (R)",
+        () => {
+            if (areRulersVisible()) {
+                removeRulers();
+                rulerButton.dataset.active = "";
+                rulerButton.style.color = c.muted;
+                rulerButton.style.background = "transparent";
+            } else {
+                createRulers(c);
+                rulerButton.dataset.active = "1";
+                rulerButton.style.color = c.primary;
+                rulerButton.style.background = `${c.primary}22`;
+            }
+        },
+        rulersActive,
+    );
+
+    badge.append(rulerButton);
 
     // ── Clear all (X) with confirmation bar ──
     const CONFIRM_BAR_ID = "__vdt_clear_confirm";
@@ -1284,6 +1321,7 @@ export const startGlobalInspection = (onCancel: () => void): void => {
             document.removeEventListener("keyup", handleModifierKeyUp);
             window.removeEventListener("blur", handleModifierBlur);
             setCrosshairCursor(false);
+            removeRulers();
             removeFloatingBadge();
             inspectionCleanup = undefined;
         },
@@ -1294,7 +1332,7 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
                 (event.target as Element | undefined);
 
-            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target)) {
+            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target) || isRulerElement(target)) {
                 return;
             }
 
@@ -1420,6 +1458,17 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 return;
             }
 
+            // R — toggle rulers
+            if (key === "r") {
+                event.preventDefault();
+
+                const rulerBtn = document.querySelector<HTMLButtonElement>(`#${BADGE_ID} button[title*="rulers"]`);
+
+                rulerBtn?.click();
+
+                return;
+            }
+
             // X — clear all
             if (key === "x") {
                 event.preventDefault();
@@ -1432,8 +1481,12 @@ export const startGlobalInspection = (onCancel: () => void): void => {
         handleMouseDown(event: MouseEvent): void {
             const target = (event.composedPath()[0] || event.target) as HTMLElement;
 
-            // Skip on toolbar, markers, popups
+            // Skip on toolbar, markers, popups, rulers
             if (target.closest?.(`#${BADGE_ID}`) || target.closest?.(`#${RESULT_ID}`) || target.classList?.contains("__vdt_annotation_marker")) {
+                return;
+            }
+
+            if (isRulerElement(target)) {
                 return;
             }
 
@@ -1503,7 +1556,7 @@ export const startGlobalInspection = (onCancel: () => void): void => {
                 (piercing ? pierceElementFromPoint(event.clientX, event.clientY) : deepElementFromPoint(event.clientX, event.clientY)) ??
                 (event.target as Element | undefined);
 
-            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target)) {
+            if (!target || isInsideDevToolbar(target) || isOverBadge(target) || isOverResultPopup(target) || isOverAnnotationOverlay(target) || isRulerElement(target)) {
                 hideOverlay();
 
                 return;
