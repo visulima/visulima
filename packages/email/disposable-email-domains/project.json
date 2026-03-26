@@ -5,7 +5,8 @@
     "projectType": "library",
     "tags": [
         "disposable-email-domains",
-        "type:package"
+        "type:package",
+        "category:internationalization"
     ],
     "implicitDependencies": [
         "terminal/tabular"

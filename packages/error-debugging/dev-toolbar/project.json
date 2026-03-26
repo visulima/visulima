@@ -3,6 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/error-debugging/dev-toolbar/src",
     "projectType": "library",
-    "tags": ["dev-toolbar", "type:package"],
+    "tags": ["dev-toolbar", "type:package", "category:dev-tools"],
     "implicitDependencies": []
 }

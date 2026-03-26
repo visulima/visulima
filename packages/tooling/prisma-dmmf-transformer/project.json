@@ -6,7 +6,8 @@
     "tags": [
         "type:package",
         "prisma",
-        "prisma-dmmf-transformer"
+        "prisma-dmmf-transformer",
+        "category:dev-tools"
     ],
     "implicitDependencies": []
 }

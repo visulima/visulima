@@ -3,6 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/tooling/vis/src",
     "projectType": "application",
-    "tags": ["vis", "type:package"],
+    "tags": ["vis", "type:package", "category:dev-tools"],
     "implicitDependencies": ["task-runner"]
 }
