@@ -1,5 +1,6 @@
 {
     "name": "@shared/xxh3",
+    "version": "0.0.0",
     "private": true,
     "main": "./xxh3.ts",
     "devDependencies": {

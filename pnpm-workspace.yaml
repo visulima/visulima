@@ -60,15 +60,15 @@ catalogs:
     '@hono/swagger-ui': ^0.6.1
     '@hono/zod-openapi': 1.2.3
     '@koa/router': 15.4.0
-    '@prisma/client': 7.5.0
-    '@prisma/generator-helper': 7.5.0
-    '@prisma/internals': 7.5.0
+    '@prisma/client': 6.19.2
+    '@prisma/generator-helper': 6.19.2
+    '@prisma/internals': 6.19.2
     '@visulima/prisma-dmmf-transformer': 3.0.0-alpha.5
     express: ^5.2.1
     fastify: ^5.8.2
     hono: 4.12.8
     koa: ^3.1.2
-    prisma: 7.5.0
+    prisma: 6.19.2
     swagger-ui-express: ^5.0.1
   build:
     '@cloudflare/vite-plugin': 1.30.0
