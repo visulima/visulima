@@ -1,3 +1,21 @@
+## @visulima/colorize [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.5...@visulima/colorize@2.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **colorize:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([65da9d0](https://github.com/visulima/visulima/commit/65da9d038280a836a925fc264186506841b89add))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **colorize:** migrate deps to pnpm catalogs ([72117a7](https://github.com/visulima/visulima/commit/72117a7e915e99b81517a67a61bce44bf58bc23e))
+* **colorize:** update dependencies ([ec10901](https://github.com/visulima/visulima/commit/ec109011e995724aaff2276344c18619c4c96ad9))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/colorize [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.4...@visulima/colorize@2.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
