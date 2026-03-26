@@ -1,3 +1,15 @@
+## @visulima/pagination [5.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.6...@visulima/pagination@5.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **pagination:** migrate deps to pnpm catalogs ([ddb084e](https://github.com/visulima/visulima/commit/ddb084e6376edf13378862ea2d2196edcc24d310))
+* **pagination:** update dependencies ([31339af](https://github.com/visulima/visulima/commit/31339afb17bf8e0c3d0b4a4e9d7ec9645db2dda8))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/pagination [5.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.5...@visulima/pagination@5.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
