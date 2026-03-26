@@ -1,3 +1,22 @@
+## @visulima/tabular [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.6...@visulima/tabular@4.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **tabular:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([09e45ee](https://github.com/visulima/visulima/commit/09e45eefea41e619a46e37242dfbe0fe2910ed9c))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **tabular:** migrate deps to pnpm catalogs ([3586a84](https://github.com/visulima/visulima/commit/3586a84cd27b48aaf6ba330cf5f62c50ef9d79df))
+* **tabular:** update dependencies ([9cd0d59](https://github.com/visulima/visulima/commit/9cd0d592e798f7878794a579e28dfd8780a23ba8))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+* **@visulima/string:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/tabular [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.5...@visulima/tabular@4.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
