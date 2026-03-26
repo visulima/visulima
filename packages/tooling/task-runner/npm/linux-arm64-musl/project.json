@@ -1,0 +1,7 @@
+{
+    "name": "task-runner-binding-linux-arm64-musl",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "tags": ["task-runner", "type:native-binding"],
+    "implicitDependencies": ["task-runner"]
+}
