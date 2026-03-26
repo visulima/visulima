@@ -1,3 +1,36 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.4...@visulima/jsdoc-open-api@3.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **jsdoc-open-api:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([4f97e12](https://github.com/visulima/visulima/commit/4f97e125a8f84a5e8b9691b72e2f9c56c5d3a69b))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **cerebro,prisma-dmmf-transformer,jsdoc-open-api:** add comprehensive Fumadocs documentation ([891b308](https://github.com/visulima/visulima/commit/891b308a34bca2765a4a97ea450648d20d90e0cf))
+
+### Miscellaneous Chores
+
+* **api:** remove empty peerDependencies and optionalDependencies ([85142fa](https://github.com/visulima/visulima/commit/85142fa76729c238a59ac48265b5e33e31183abb))
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* **jsdoc-open-api:** migrate deps to pnpm catalogs ([9a673ca](https://github.com/visulima/visulima/commit/9a673ca0d8235d0ff28a6fe9b150cf2ee37e78a4))
+* **jsdoc-open-api:** update dependencies ([5a1248f](https://github.com/visulima/visulima/commit/5a1248f8fa408fc81bb07a5bf9ce8430b89c1f57))
+* **jsdoc-open-api:** update dependencies ([f5d2a31](https://github.com/visulima/visulima/commit/f5d2a31a8fd163c321915a779c661b758b3e6f73))
+* **jsdoc-open-api:** update tests, docs, and source formatting ([9526ec8](https://github.com/visulima/visulima/commit/9526ec8ebb3e0e506d50b2f6035faf0cbcaca205))
+* sorting package.json ([430ed68](https://github.com/visulima/visulima/commit/430ed683d3e38e4c5c5530f787ca832f083b17e4))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **jsdoc-open-api:** replace read-pkg-up with @visulima/fs and migrate to packem ([be668e4](https://github.com/visulima/visulima/commit/be668e4dc21a3394bcdb22aecf416f9c27e08e0d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.3...@visulima/jsdoc-open-api@3.0.0-alpha.4) (2026-01-17)
 
 ### Bug Fixes
