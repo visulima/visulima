@@ -1,3 +1,15 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.5...@visulima/prisma-dmmf-transformer@3.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **prisma-dmmf-transformer:** migrate deps to pnpm catalogs ([1935571](https://github.com/visulima/visulima/commit/1935571714ad77f4e788576471aad33129e872d3))
+* **prisma-dmmf-transformer:** update dependencies ([b593097](https://github.com/visulima/visulima/commit/b5930970ddb1f88a0bf8524ce660700e054c5da9))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.4...@visulima/prisma-dmmf-transformer@3.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
