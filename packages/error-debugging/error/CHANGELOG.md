@@ -1,3 +1,21 @@
+## @visulima/error [6.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.5...@visulima/error@6.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **error:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([1e8ce4c](https://github.com/visulima/visulima/commit/1e8ce4c2b70b9ed58668311f1e38d49a5205a15a))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **error:** migrate deps to pnpm catalogs ([3feaa2b](https://github.com/visulima/visulima/commit/3feaa2b908b770635f0652132382841b05e9e6e3))
+* **error:** update dependencies ([09611be](https://github.com/visulima/visulima/commit/09611be27152da54c6d1354fe584eee3f902b34b))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/error [6.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.4...@visulima/error@6.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
