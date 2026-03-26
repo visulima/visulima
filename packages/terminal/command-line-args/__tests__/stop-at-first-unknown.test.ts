@@ -45,6 +45,100 @@ describe("stop at first unknown", () => {
         });
     });
 
+    it("should parse known options after a defaultOption positional value", () => {
+        expect.assertions(1);
+
+        // Simulates: `cli run build --root=/tmp --parallel=5`
+        // The defaultOption captures "build" as the positional argument.
+        // Known options --root and --parallel should still be parsed, not dropped.
+        const optionDefinitions = [
+            { defaultOption: true, multiple: true, name: "target" },
+            { name: "root", type: String },
+            { name: "parallel", type: Number },
+        ];
+        const argv = ["build", "--root", "/tmp", "--parallel", "5"];
+        const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            parallel: 5,
+            root: "/tmp",
+            target: ["build"],
+        });
+    });
+
+    it("should parse known options before and after a defaultOption positional value", () => {
+        expect.assertions(1);
+
+        // Simulates: `cli run --parallel=5 build --root=/tmp`
+        // Options should be parsed regardless of position relative to positional args.
+        const optionDefinitions = [
+            { defaultOption: true, multiple: true, name: "target" },
+            { name: "root", type: String },
+            { name: "parallel", type: Number },
+        ];
+        const argv = ["--parallel", "5", "build", "--root", "/tmp"];
+        const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            parallel: 5,
+            root: "/tmp",
+            target: ["build"],
+        });
+    });
+
+    it("should still stop at truly unknown options after a defaultOption positional value", () => {
+        expect.assertions(1);
+
+        // Known options after the positional should be parsed,
+        // but truly unknown options should trigger stop behavior.
+        const optionDefinitions = [
+            { defaultOption: true, multiple: true, name: "target" },
+            { name: "root", type: String },
+        ];
+        const argv = ["build", "--root", "/tmp", "--unknown-flag", "value"];
+        const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            _unknown: ["--unknown-flag", "value"],
+            root: "/tmp",
+            target: ["build"],
+        });
+    });
+
+    it("should handle options with = notation after a defaultOption positional value", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { defaultOption: true, multiple: true, name: "target" },
+            { name: "root", type: String },
+        ];
+        const argv = ["build", "--root=/tmp/workspace"];
+        const result = commandLineArgs(optionDefinitions, { argv, partial: true, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            root: "/tmp/workspace",
+            target: ["build"],
+        });
+    });
+
+    it("should parse camelCase options after a defaultOption positional value", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [
+            { defaultOption: true, multiple: true, name: "target" },
+            { name: "cache-dir", type: String },
+            { name: "dry-run", type: Boolean },
+        ];
+        const argv = ["build", "--cache-dir", "/tmp", "--dry-run"];
+        const result = commandLineArgs(optionDefinitions, { argv, camelCase: true, partial: true, stopAtFirstUnknown: true });
+
+        expect(result).toStrictEqual({
+            cacheDir: "/tmp",
+            dryRun: true,
+            target: ["build"],
+        });
+    });
+
     it("with short option group should use correct argv index", () => {
         expect.assertions(1);
 
