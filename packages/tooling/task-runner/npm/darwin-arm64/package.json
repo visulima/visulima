@@ -17,12 +17,6 @@
     "files": [
         "task-runner-native.darwin-arm64.node"
     ],
-    "devDependencies": {
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
-        "conventional-changelog-conventionalcommits": "catalog:dev",
-        "semantic-release": "catalog:cli"
-    },
     "engines": {
         "node": ">=20.19 <=25.x"
     },

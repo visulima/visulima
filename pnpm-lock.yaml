@@ -183,6 +183,9 @@ catalogs:
     '@remix-run/headers':
       specifier: 0.19.0
       version: 0.19.0
+    '@semantic-release/exec':
+      specifier: ^7.1.0
+      version: 7.1.0
     '@shikijs/langs':
       specifier: ^4.0.2
       version: 4.0.2
@@ -1808,7 +1811,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 22.0.2(f3fb4ac68127cb8dbb320fa2f7b0d066)
+        version: 22.0.2(7ad8a1395cffea8a4f5a40ac9db8594b)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -2213,16 +2216,16 @@ importers:
   packages/api/api-platform:
     dependencies:
       '@visulima/connect':
-        specifier: workspace:*
+        specifier: 4.0.0-alpha.6
         version: link:../connect
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.5
         version: link:../jsdoc-open-api
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       accepts:
         specifier: catalog:prod
@@ -2334,7 +2337,7 @@ importers:
         specifier: catalog:types
         version: 5.28.5(@swc/core@1.15.11)(esbuild@0.27.4)
       '@visulima/crud':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../crud
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -2588,10 +2591,10 @@ importers:
   packages/api/crud:
     dependencies:
       '@visulima/pagination':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.7
         version: link:../pagination
       '@visulima/prisma-dmmf-transformer':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../tooling/prisma-dmmf-transformer
       http-errors:
         specifier: catalog:prod
@@ -2839,7 +2842,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -3688,7 +3691,7 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../../terminal/colorize
       '@visulima/packem':
         specifier: catalog:dev
@@ -3838,7 +3841,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/tabular':
-        specifier: workspace:*
+        specifier: 4.0.0-alpha.7
         version: link:../../terminal/tabular
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -3883,7 +3886,7 @@ importers:
   packages/email/email:
     dependencies:
       '@visulima/disposable-email-domains':
-        specifier: workspace:*
+        specifier: 1.0.0-alpha.10
         version: link:../disposable-email-domains
       html-to-text:
         specifier: catalog:prod
@@ -3938,16 +3941,16 @@ importers:
         specifier: catalog:types
         version: 7.0.11
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -4587,7 +4590,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -4635,10 +4638,10 @@ importers:
         specifier: catalog:prod
         version: 2.3.0
       '@visulima/boxen':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../terminal/boxen
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../error
       http-errors:
         specifier: catalog:prod
@@ -4780,7 +4783,7 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../../terminal/colorize
       '@visulima/packem':
         specifier: catalog:dev
@@ -4877,7 +4880,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../error
       ai:
         specifier: ^4.0.0 || ^5.0.0
@@ -4935,7 +4938,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -5038,7 +5041,7 @@ importers:
         specifier: '>=2.52.2'
         version: 2.55.0(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.54.1)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)))(svelte@5.54.1)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../../terminal/colorize
       elysia:
         specifier: '>=1.0'
@@ -5087,22 +5090,22 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../error
       '@visulima/fmt':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../../terminal/fmt
       '@visulima/inspector':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.5
         version: link:../inspector
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(8aee5a41c3b45604e5858580cd399c84)
       '@visulima/redact':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../data-manipulation/redact
       '@visulima/string':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -5291,7 +5294,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -5339,7 +5342,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../error
       fastest-levenshtein:
         specifier: catalog:prod
@@ -5403,7 +5406,7 @@ importers:
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -5892,13 +5895,13 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../fs
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -5943,7 +5946,7 @@ importers:
   packages/filesystem/fs:
     dependencies:
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../path
       type-fest:
         specifier: catalog:prod
@@ -5968,7 +5971,7 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
@@ -6165,7 +6168,7 @@ importers:
         specifier: catalog:prod
         version: 3.1.0
       '@visulima/pagination':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.7
         version: link:../../api/pagination
       file-type:
         specifier: catalog:prod
@@ -6256,16 +6259,16 @@ importers:
         specifier: catalog:dev
         version: 2.3.1
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/humanizer':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/humanizer
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -6353,7 +6356,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 22.0.2(d6d29e28c67c3b6b904edfd0d7b14e20)
+        version: 22.0.2(ec4acb6205bbd3faab6eedb7f55b7cf6)
       '@anolilab/semantic-release-pnpm':
         specifier: catalog:dev
         version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
@@ -6455,7 +6458,7 @@ importers:
         version: 0.1.1(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-vue:
         specifier: catalog:lint
-        version: 10.8.0(@stylistic/eslint-plugin@5.9.0(eslint@10.1.0(jiti@2.6.1)))(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.1.0(jiti@2.6.1)))
+        version: 10.8.0(@stylistic/eslint-plugin@5.9.0(eslint@10.1.0(jiti@2.6.1)))(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.1.0(jiti@2.6.1)))
       happy-dom:
         specifier: catalog:dev
         version: 20.8.4
@@ -7276,13 +7279,13 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../colorize
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -7363,16 +7366,16 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../colorize
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@visulima/string':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -7438,10 +7441,10 @@ importers:
   packages/terminal/cerebro:
     dependencies:
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../colorize
       '@visulima/tabular':
-        specifier: workspace:*
+        specifier: 4.0.0-alpha.7
         version: link:../tabular
       fastest-levenshtein:
         specifier: catalog:prod
@@ -7472,28 +7475,28 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/boxen':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../boxen
       '@visulima/command-line-args':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.5
         version: link:../command-line-args
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../../error-debugging/error
       '@visulima/find-cache-dir':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.5
         version: link:../../filesystem/find-cache-dir
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/pail':
-        specifier: workspace:*
+        specifier: 4.0.0-alpha.8
         version: link:../../error-debugging/pail
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@visulima/string':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -7634,7 +7637,7 @@ importers:
   packages/terminal/colorize:
     dependencies:
       '@visulima/is-ansi-color-supported':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../is-ansi-color-supported
     devDependencies:
       '@anolilab/eslint-config':
@@ -7843,7 +7846,7 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/error':
-        specifier: workspace:*
+        specifier: 6.0.0-alpha.6
         version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
@@ -8090,13 +8093,13 @@ importers:
         specifier: catalog:types
         version: 25.5.0
       '@visulima/colorize':
-        specifier: workspace:*
+        specifier: 2.0.0-alpha.6
         version: link:../colorize
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.60(9c00e61992e166bb7c26fd2f92987071)
       '@visulima/string':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -8243,10 +8246,10 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       json5:
         specifier: catalog:prod
@@ -8449,10 +8452,10 @@ importers:
   packages/tooling/task-runner:
     dependencies:
       '@visulima/humanizer':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../data-manipulation/humanizer
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
     devDependencies:
       '@anolilab/eslint-config':
@@ -8476,6 +8479,9 @@ importers:
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 11.4.0
+      '@semantic-release/exec':
+        specifier: catalog:dev
+        version: 7.1.0(semantic-release@25.0.3(typescript@5.9.3))
       '@shared/xxh3':
         specifier: workspace:*
         version: link:../../../shared/xxh3
@@ -8550,133 +8556,29 @@ importers:
         specifier: workspace:*
         version: link:npm/win32-x64-msvc
 
-  packages/tooling/task-runner/npm/darwin-arm64:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/darwin-arm64: {}
 
-  packages/tooling/task-runner/npm/darwin-x64:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/darwin-x64: {}
 
-  packages/tooling/task-runner/npm/linux-arm64-gnu:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/linux-arm64-gnu: {}
 
-  packages/tooling/task-runner/npm/linux-arm64-musl:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/linux-arm64-musl: {}
 
-  packages/tooling/task-runner/npm/linux-x64-gnu:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/linux-x64-gnu: {}
 
-  packages/tooling/task-runner/npm/linux-x64-musl:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/linux-x64-musl: {}
 
-  packages/tooling/task-runner/npm/win32-arm64-msvc:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/win32-arm64-msvc: {}
 
-  packages/tooling/task-runner/npm/win32-x64-msvc:
-    devDependencies:
-      '@anolilab/semantic-release-pnpm':
-        specifier: catalog:dev
-        version: 5.0.0(@types/node@25.5.0)(yaml@2.8.3)
-      '@anolilab/semantic-release-preset':
-        specifier: catalog:dev
-        version: 13.1.1(@anolilab/semantic-release-pnpm@5.0.0(@types/node@25.5.0)(yaml@2.8.3))(semantic-release@25.0.3(typescript@5.9.3))(yaml@2.8.3)
-      conventional-changelog-conventionalcommits:
-        specifier: catalog:dev
-        version: 9.3.0
-      semantic-release:
-        specifier: catalog:cli
-        version: 25.0.3(typescript@5.9.3)
+  packages/tooling/task-runner/npm/win32-x64-msvc: {}
 
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       jsonc-parser:
         specifier: catalog:prod
@@ -8798,28 +8700,28 @@ importers:
   packages/tooling/vis:
     dependencies:
       '@visulima/boxen':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.7
         version: link:../../terminal/boxen
       '@visulima/cerebro':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.8
         version: link:../../terminal/cerebro
       '@visulima/find-ai-runner':
-        specifier: workspace:*
+        specifier: 1.0.0-alpha.1
         version: link:../find-ai-runner
       '@visulima/fs':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../../filesystem/fs
       '@visulima/package':
-        specifier: workspace:*
+        specifier: 5.0.0-alpha.5
         version: link:../package
       '@visulima/path':
-        specifier: workspace:*
+        specifier: 3.0.0-alpha.6
         version: link:../../filesystem/path
       '@visulima/tabular':
-        specifier: workspace:*
+        specifier: 4.0.0-alpha.7
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: workspace:*
+        specifier: 1.0.0-alpha.1
         version: link:../task-runner
       jiti:
         specifier: catalog:dev
@@ -31495,6 +31397,92 @@ snapshots:
       - vitest
       - yaml
 
+  '@anolilab/eslint-config@22.0.2(7ad8a1395cffea8a4f5a40ac9db8594b)':
+    dependencies:
+      '@e18e/eslint-plugin': 0.2.0(eslint@10.1.0(jiti@2.6.1))
+      '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.1.0(jiti@2.6.1))
+      '@eslint/compat': 2.0.2(eslint@10.1.0(jiti@2.6.1))
+      '@eslint/js': 10.0.1(eslint@10.1.0(jiti@2.6.1))
+      '@eslint/markdown': 7.5.1
+      '@html-eslint/eslint-plugin': 0.56.0(eslint@10.1.0(jiti@2.6.1))(jiti@2.6.1)
+      '@html-eslint/parser': 0.56.0(jiti@2.6.1)
+      '@stylistic/eslint-plugin': 5.9.0(eslint@10.1.0(jiti@2.6.1))
+      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/types': 8.56.0
+      '@visulima/fs': 4.1.0(yaml@2.8.3)
+      '@visulima/package': 4.1.7(@types/node@25.5.0)
+      '@visulima/tsconfig': 2.1.3(yaml@2.8.3)
+      '@vitest/eslint-plugin': 1.6.9(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0)
+      confusing-browser-globals: 1.0.11
+      eslint: 10.1.0(jiti@2.6.1)
+      eslint-config-flat-gitignore: 2.2.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-flat-config-utils: 2.1.4
+      eslint-import-resolver-node: 0.3.9
+      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))
+      eslint-merge-processors: 2.0.0(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-antfu: 3.2.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-compat: 6.2.0(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-es-x: 9.4.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-html: 8.1.4
+      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-jsdoc: 61.7.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-jsonc: 2.21.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-n: 17.24.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.1.0(jiti@2.6.1))(typescript-eslint@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
+      eslint-plugin-no-only-tests: 3.3.0
+      eslint-plugin-no-secrets: 2.2.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-perfectionist: 4.15.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-pnpm: 1.5.0(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-promise: 7.2.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-regexp: 2.10.0(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-security: 3.0.1
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-sonarjs: 3.0.7(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-toml: 0.13.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-unicorn: 62.0.0(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.1(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-yml: 1.19.1(eslint@10.1.0(jiti@2.6.1))
+      globals: 17.3.0
+      jsonc-eslint-parser: 3.1.0
+      parse-gitignore: 2.0.0
+      semver: 7.7.4
+      toml-eslint-parser: 1.0.3
+      typescript-eslint: 8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      yaml-eslint-parser: 2.0.0
+    optionalDependencies:
+      '@eslint-react/eslint-plugin': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      '@eslint/css': 1.0.0
+      '@tanstack/eslint-plugin-query': 5.91.4(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-playwright: 2.10.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react: 7.37.5(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react-hooks: 7.0.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react-perf: 3.3.3(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react-refresh: 0.5.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-storybook: 10.3.1(eslint@10.1.0(jiti@2.6.1))(storybook@10.3.1(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
+      eslint-plugin-testing-library: 7.16.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.1.0(jiti@2.6.1))
+      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
+      eslint-plugin-zod: 3.1.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)(zod@3.25.76)
+      tailwind-csstree: 0.1.4
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - '@eslint/json'
+      - '@types/node'
+      - '@typescript-eslint/eslint-plugin'
+      - '@typescript-eslint/utils'
+      - eslint-plugin-import
+      - jiti
+      - oxlint
+      - supports-color
+      - vitest
+      - yaml
+
   '@anolilab/eslint-config@22.0.2(85b34c7cb37ce1eba3463483bf43aaee)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.1.0(jiti@2.6.1))
@@ -31665,91 +31653,6 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/eslint-config@22.0.2(d6d29e28c67c3b6b904edfd0d7b14e20)':
-    dependencies:
-      '@e18e/eslint-plugin': 0.2.0(eslint@10.1.0(jiti@2.6.1))
-      '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/compat': 2.0.2(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/js': 10.0.1(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/markdown': 7.5.1
-      '@html-eslint/eslint-plugin': 0.56.0(eslint@10.1.0(jiti@2.6.1))(jiti@2.6.1)
-      '@html-eslint/parser': 0.56.0(jiti@2.6.1)
-      '@stylistic/eslint-plugin': 5.9.0(eslint@10.1.0(jiti@2.6.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/types': 8.56.0
-      '@visulima/fs': 4.1.0(yaml@2.8.3)
-      '@visulima/package': 4.1.7(@types/node@25.5.0)
-      '@visulima/tsconfig': 2.1.3(yaml@2.8.3)
-      '@vitest/eslint-plugin': 1.6.9(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0)
-      confusing-browser-globals: 1.0.11
-      eslint: 10.1.0(jiti@2.6.1)
-      eslint-config-flat-gitignore: 2.2.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-flat-config-utils: 2.1.4
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.1(@typescript-eslint/utils@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))
-      eslint-merge-processors: 2.0.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-antfu: 3.2.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-compat: 6.2.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-es-x: 9.4.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-html: 8.1.4
-      eslint-plugin-import-x: 4.16.1(@typescript-eslint/utils@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-jsdoc: 61.7.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-jsonc: 2.21.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-n: 17.24.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.1.0(jiti@2.6.1))(typescript-eslint@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(typescript@5.9.3)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.2.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-perfectionist: 4.15.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-pnpm: 1.5.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-promise: 7.2.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-regexp: 2.10.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-security: 3.0.1
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-sonarjs: 3.0.7(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-toml: 0.13.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-unicorn: 62.0.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.57.1(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-yml: 1.19.1(eslint@10.1.0(jiti@2.6.1))
-      globals: 17.3.0
-      jsonc-eslint-parser: 3.1.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.4
-      toml-eslint-parser: 1.0.3
-      typescript-eslint: 8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      yaml-eslint-parser: 2.0.0
-    optionalDependencies:
-      '@eslint-react/eslint-plugin': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      '@eslint/css': 0.14.1
-      '@tanstack/eslint-plugin-query': 5.95.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-playwright: 2.10.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react: 7.37.5(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-hooks: 7.0.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-perf: 3.3.3(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-refresh: 0.5.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-testing-library: 7.16.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 3.1.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)(zod@3.25.76)
-      tailwind-csstree: 0.1.4
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - jiti
-      - oxlint
-      - supports-color
-      - vitest
-      - yaml
-
   '@anolilab/eslint-config@22.0.2(e4d9f8e95af9295155e1c62c8fad71c5)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.1.0(jiti@2.6.1))
@@ -31836,7 +31739,7 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/eslint-config@22.0.2(f3fb4ac68127cb8dbb320fa2f7b0d066)':
+  '@anolilab/eslint-config@22.0.2(ec4acb6205bbd3faab6eedb7f55b7cf6)':
     dependencies:
       '@e18e/eslint-plugin': 0.2.0(eslint@10.1.0(jiti@2.6.1))
       '@eslint-community/eslint-plugin-eslint-comments': 4.6.0(eslint@10.1.0(jiti@2.6.1))
@@ -31893,8 +31796,8 @@ snapshots:
       yaml-eslint-parser: 2.0.0
     optionalDependencies:
       '@eslint-react/eslint-plugin': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
-      '@eslint/css': 1.0.0
-      '@tanstack/eslint-plugin-query': 5.91.4(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      '@eslint/css': 0.14.1
+      '@tanstack/eslint-plugin-query': 5.95.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-playwright: 2.10.1(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@10.1.0(jiti@2.6.1))
@@ -31903,7 +31806,6 @@ snapshots:
       eslint-plugin-react-perf: 3.3.3(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-react-refresh: 0.5.2(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-storybook: 10.3.1(eslint@10.1.0(jiti@2.6.1))(storybook@10.3.1(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
       eslint-plugin-testing-library: 7.16.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
@@ -45753,7 +45655,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))
@@ -46588,7 +46490,7 @@ snapshots:
       eslint: 10.1.0(jiti@2.6.1)
       validate-html-nesting: 1.2.2
 
-  eslint-plugin-vue@10.8.0(@stylistic/eslint-plugin@5.9.0(eslint@10.1.0(jiti@2.6.1)))(@typescript-eslint/parser@8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.1.0(jiti@2.6.1))):
+  eslint-plugin-vue@10.8.0(@stylistic/eslint-plugin@5.9.0(eslint@10.1.0(jiti@2.6.1)))(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))(vue-eslint-parser@10.4.0(eslint@10.1.0(jiti@2.6.1))):
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.1.0(jiti@2.6.1))
       eslint: 10.1.0(jiti@2.6.1)
@@ -46600,7 +46502,7 @@ snapshots:
       xml-name-validator: 4.0.0
     optionalDependencies:
       '@stylistic/eslint-plugin': 5.9.0(eslint@10.1.0(jiti@2.6.1))
-      '@typescript-eslint/parser': 8.56.0(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)
 
   eslint-plugin-yml@1.19.1(eslint@10.1.0(jiti@2.6.1)):
     dependencies:
@@ -56160,7 +56062,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
