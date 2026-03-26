@@ -1,3 +1,29 @@
+## @visulima/api-platform [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.5...@visulima/api-platform@4.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **api-platform:** fixed wrong deps ([f211dbd](https://github.com/visulima/visulima/commit/f211dbd287677413cd18cba3f8ee50cf7fc5eb7f))
+* **api-platform:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([daa2b0b](https://github.com/visulima/visulima/commit/daa2b0bfb491b42bc83c369fec2dcd7950f082b0))
+* updated deps and migrated web app build deps to pnpm catalog ([dd4f515](https://github.com/visulima/visulima/commit/dd4f5153a07d0e46de0b3fc091878d66bb70f2d3))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **api-platform:** fix express dependency version ([96b02fa](https://github.com/visulima/visulima/commit/96b02fa5d8337d4016af8f38d44c85c39b62e7ee))
+* **api-platform:** migrate deps to pnpm catalogs ([fc2f357](https://github.com/visulima/visulima/commit/fc2f357d29e707f98d373b94931277fa8a4527d5))
+* **api-platform:** update dependencies ([015c8b6](https://github.com/visulima/visulima/commit/015c8b69930dde52443bdce50d034bc04b2c3986))
+* **api:** remove empty peerDependencies and optionalDependencies ([85142fa](https://github.com/visulima/visulima/commit/85142fa76729c238a59ac48265b5e33e31183abb))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.6
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+* **@visulima/crud:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/api-platform [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.4...@visulima/api-platform@4.0.0-alpha.5) (2026-03-06)
 
 ### Miscellaneous Chores
