@@ -1,3 +1,15 @@
+## @visulima/find-cache-dir [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.5...@visulima/find-cache-dir@3.0.0-alpha.6) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/find-cache-dir [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.4...@visulima/find-cache-dir@3.0.0-alpha.5) (2026-03-26)
 
 ### Bug Fixes
