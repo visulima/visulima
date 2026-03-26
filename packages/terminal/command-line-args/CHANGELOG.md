@@ -1,3 +1,21 @@
+## @visulima/command-line-args [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.4...@visulima/command-line-args@2.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **command-line-args:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([956db26](https://github.com/visulima/visulima/commit/956db26c5324081a099db9d3961e27274c0572d2))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **command-line-args:** migrate deps to pnpm catalogs ([42a7190](https://github.com/visulima/visulima/commit/42a71907350c02ae8e0fb21e22fc3c95d49a3950))
+* **command-line-args:** update dependencies ([31201e3](https://github.com/visulima/visulima/commit/31201e3ae4321e760588e5e4fa75459ee1a0e682))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+
 ## @visulima/command-line-args [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.3...@visulima/command-line-args@2.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
