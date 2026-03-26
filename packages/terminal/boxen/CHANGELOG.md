@@ -1,3 +1,23 @@
+## @visulima/boxen [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.6...@visulima/boxen@3.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **boxen:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([e413000](https://github.com/visulima/visulima/commit/e413000f12a46a452568b18868d39e60db249afd))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **boxen:** migrate deps to pnpm catalogs ([869ea80](https://github.com/visulima/visulima/commit/869ea8004d7fd96253d7eb8dfa004f3880b48303))
+* **boxen:** update dependencies ([a06e27a](https://github.com/visulima/visulima/commit/a06e27ac2d27942e729d9aa18be54fed6b2c6742))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+* **@visulima/string:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/boxen [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.5...@visulima/boxen@3.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
