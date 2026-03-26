@@ -1,3 +1,21 @@
+## @visulima/source-map [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.4...@visulima/source-map@3.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **source-map:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([7e284d9](https://github.com/visulima/visulima/commit/7e284d9aee4c2e739fe18ec189a98fa7f9df4dde))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **source-map:** migrate deps to pnpm catalogs ([6385d4e](https://github.com/visulima/visulima/commit/6385d4e5f9d888ec5d7e4c95612867b33aa2dae7))
+* **source-map:** update dependencies ([d9f3e0e](https://github.com/visulima/visulima/commit/d9f3e0e2fa055e7340a8cfaf4600573e15b5be29))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/source-map [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.3...@visulima/source-map@3.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
