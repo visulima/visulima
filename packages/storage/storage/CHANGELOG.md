@@ -1,3 +1,26 @@
+## @visulima/storage [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.8...@visulima/storage@1.0.0-alpha.9) (2026-03-26)
+
+### Bug Fixes
+
+* **storage:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([ff79afe](https://github.com/visulima/visulima/commit/ff79afe26f1941eab24cff80477d8c18aaec65e9))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **storage:** migrate deps to pnpm catalogs ([7dfea89](https://github.com/visulima/visulima/commit/7dfea8981d74cd84317133242d2ab5a31f3f98b7))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.7
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.7
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/storage [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.7...@visulima/storage@1.0.0-alpha.8) (2026-03-16)
 
 ### Bug Fixes
