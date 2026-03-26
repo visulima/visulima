@@ -1,3 +1,23 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.9...@visulima/disposable-email-domains@1.0.0-alpha.10) (2026-03-26)
+
+### Bug Fixes
+
+* **disposable-email-domains:** filter undefined rows in contributing sources table ([75597ec](https://github.com/visulima/visulima/commit/75597ec3bc4197e5dc1d019b793af1412cc8e93b))
+* **disposable-email-domains:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([790a46e](https://github.com/visulima/visulima/commit/790a46e7319953e5e2b7f65441055a6751706416))
+* updated domain list ([f97866b](https://github.com/visulima/visulima/commit/f97866b9649f6ccae86accf4ab1c56e73817c882))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **disposable-email-domains:** migrate deps to pnpm catalogs ([df9093b](https://github.com/visulima/visulima/commit/df9093b6c1b2af6a0ac8f113cbbf740cb2b1cea1))
+* **disposable-email-domains:** update dependencies ([76c89aa](https://github.com/visulima/visulima/commit/76c89aa5864af118a4f956ea18b77266f40d72b1))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.7
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.8...@visulima/disposable-email-domains@1.0.0-alpha.9) (2026-03-06)
 
 ### Bug Fixes
