@@ -1,3 +1,22 @@
+## @visulima/cerebro [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.8...@visulima/cerebro@3.0.0-alpha.9) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.7
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.8
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.8
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.6
+* **@visulima/error:** upgraded to 6.0.0-alpha.7
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.6
+* **@visulima/pail:** upgraded to 4.0.0-alpha.9
+* **@visulima/path:** upgraded to 3.0.0-alpha.7
+* **@visulima/string:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/cerebro [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.7...@visulima/cerebro@3.0.0-alpha.8) (2026-03-26)
 
 ### Bug Fixes

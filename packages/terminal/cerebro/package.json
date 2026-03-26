@@ -1,6 +1,6 @@
 {
   "name": "@visulima/cerebro",
-  "version": "3.0.0-alpha.8",
+  "version": "3.0.0-alpha.9",
   "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
   "keywords": [
     "visulima",
@@ -120,8 +120,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@visulima/colorize": "2.0.0-alpha.6",
-    "@visulima/tabular": "4.0.0-alpha.7",
+    "@visulima/colorize": "2.0.0-alpha.7",
+    "@visulima/tabular": "4.0.0-alpha.8",
     "fastest-levenshtein": "catalog:prod"
   },
   "devDependencies": {
@@ -133,14 +133,14 @@
     "@bomb.sh/tab": "catalog:dev",
     "@total-typescript/ts-reset": "catalog:dev",
     "@types/node": "catalog:types",
-    "@visulima/boxen": "3.0.0-alpha.7",
-    "@visulima/command-line-args": "2.0.0-alpha.5",
-    "@visulima/error": "6.0.0-alpha.6",
-    "@visulima/find-cache-dir": "3.0.0-alpha.5",
+    "@visulima/boxen": "3.0.0-alpha.8",
+    "@visulima/command-line-args": "2.0.0-alpha.6",
+    "@visulima/error": "6.0.0-alpha.7",
+    "@visulima/find-cache-dir": "3.0.0-alpha.6",
     "@visulima/packem": "catalog:dev",
-    "@visulima/pail": "4.0.0-alpha.8",
-    "@visulima/path": "3.0.0-alpha.6",
-    "@visulima/string": "3.0.0-alpha.7",
+    "@visulima/pail": "4.0.0-alpha.9",
+    "@visulima/path": "3.0.0-alpha.7",
+    "@visulima/string": "3.0.0-alpha.8",
     "@vitest/coverage-v8": "catalog:test",
     "ci-info": "catalog:dev",
     "commander": "catalog:dev",
@@ -157,9 +157,9 @@
   },
   "peerDependencies": {
     "@bomb.sh/tab": "catalog:peer",
-    "@visulima/boxen": "3.0.0-alpha.7",
-    "@visulima/find-cache-dir": "3.0.0-alpha.5",
-    "@visulima/pail": "4.0.0-alpha.8",
+    "@visulima/boxen": "3.0.0-alpha.8",
+    "@visulima/find-cache-dir": "3.0.0-alpha.6",
+    "@visulima/pail": "4.0.0-alpha.9",
     "github-slugger": "catalog:peer"
   },
   "peerDependenciesMeta": {
