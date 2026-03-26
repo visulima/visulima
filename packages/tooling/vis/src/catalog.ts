@@ -559,26 +559,32 @@ type CatalogProvider = "bun" | "pnpm";
 
 const hasCatalogs = (workspaceRoot: string, packageManager?: string): boolean => {
     if (packageManager === "bun") {
-        return hasBunCatalogs(workspaceRoot);
+        return hasBunCatalogs(workspaceRoot) || hasPackageJsonDeps(workspaceRoot);
     }
 
     if (packageManager === "npm" || packageManager === "yarn") {
         return hasPackageJsonDeps(workspaceRoot);
     }
 
-    return hasPnpmCatalogs(workspaceRoot);
+    // pnpm: try catalogs first, fall back to package.json deps
+    return hasPnpmCatalogs(workspaceRoot) || hasPackageJsonDeps(workspaceRoot);
 };
 
 const readCatalogs = (workspaceRoot: string, packageManager?: string, options?: ReadCatalogOptions): Map<string, Map<string, string>> => {
     if (packageManager === "bun") {
-        return readBunCatalogs(workspaceRoot);
+        const catalogs = readBunCatalogs(workspaceRoot);
+
+        return catalogs.size > 0 ? catalogs : readPackageJsonDeps(workspaceRoot, options);
     }
 
     if (packageManager === "npm" || packageManager === "yarn") {
         return readPackageJsonDeps(workspaceRoot, options);
     }
 
-    return readPnpmCatalogs(workspaceRoot);
+    // pnpm: try catalogs first, fall back to package.json deps
+    const catalogs = readPnpmCatalogs(workspaceRoot);
+
+    return catalogs.size > 0 ? catalogs : readPackageJsonDeps(workspaceRoot, options);
 };
 
 // --- .npmrc support ---

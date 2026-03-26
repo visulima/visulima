@@ -3428,4 +3428,46 @@ describe("readCatalogs for npm/yarn", () => {
         expect(catalogs.has(".:devDependencies")).toBe(true);
         expect(catalogs.has(".:dependencies")).toBe(false);
     });
+
+    it("should fall back to package.json deps for pnpm without catalogs", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-read-cat-"));
+
+        // pnpm-workspace.yaml with no catalog section
+        writeFileSync(join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { react: "^18.0.0" },
+                name: "app",
+            }),
+        );
+
+        const catalogs = readCatalogs(root, "pnpm");
+
+        expect(catalogs.size).toBeGreaterThan(0);
+        expect(catalogs.has(".:dependencies")).toBe(true);
+    });
+
+    it("should fall back to package.json deps for bun without catalogs", () => {
+        expect.assertions(2);
+
+        const root = mkdtempSync(join(tmpdir(), "vis-read-cat-"));
+
+        // package.json with workspaces but no catalog field
+        writeFileSync(
+            join(root, "package.json"),
+            JSON.stringify({
+                dependencies: { lodash: "^4.17.0" },
+                name: "app",
+                workspaces: { packages: ["packages/*"] },
+            }),
+        );
+
+        const catalogs = readCatalogs(root, "bun");
+
+        expect(catalogs.size).toBeGreaterThan(0);
+        expect(catalogs.has(".:dependencies")).toBe(true);
+    });
 });
