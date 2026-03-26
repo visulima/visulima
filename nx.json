@@ -91,5 +91,6 @@
     },
     "parallel": 5,
     "defaultBase": "main",
-    "$schema": "./node_modules/nx/schemas/nx-schema.json"
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "analytics": false
 }
