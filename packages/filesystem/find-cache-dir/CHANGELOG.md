@@ -1,3 +1,26 @@
+## @visulima/find-cache-dir [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.4...@visulima/find-cache-dir@3.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **find-cache-dir:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([b0db740](https://github.com/visulima/visulima/commit/b0db74081d4338962844c356101ed9b5e19eca5a))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **find-cache-dir:** migrate deps to pnpm catalogs ([78b4664](https://github.com/visulima/visulima/commit/78b4664ab3d919483e78e363bc828a6d94cf4798))
+* **find-cache-dir:** update dependencies ([bef8212](https://github.com/visulima/visulima/commit/bef82127bee109dc3daf5f809350c72d401e9e44))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/find-cache-dir [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.3...@visulima/find-cache-dir@3.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
