@@ -2,13 +2,20 @@
 import type InteractiveManager from "./interactive/interactive-manager";
 
 const CHAR_GRADIENTS: Record<string, string[]> = {
+    braille: ["⣿", "⡷", "⢾", "⠤"],
     default: ["█", "▓", "▒", "░"],
     rect: ["▬", "▮", "▯", "▭"],
 };
 
+// Braille characters for pill-shaped progress bars
+const BRAILLE_FULL = "⣿"; // U+28FF — all 8 dots
+const BRAILLE_CAP_LEFT = "⢾"; // U+28BE — rounded left end
+const BRAILLE_CAP_RIGHT = "⡷"; // U+2877 — rounded right end
+const BRAILLE_EMPTY = "⠤"; // U+2824 — subtle dot track
+
 const BAR_REGEX = /\[([^[\]]*)\]/u;
 
-export type ProgressBarStyle = "shades_classic" | "shades_grey" | "rect" | "filled" | "solid" | "ascii" | "custom";
+export type ProgressBarStyle = "shades_classic" | "shades_grey" | "rect" | "filled" | "solid" | "ascii" | "braille" | "custom";
 
 export interface ProgressBarOptions {
     barCompleteChar?: string | string[];
@@ -17,6 +24,9 @@ export interface ProgressBarOptions {
     current?: number;
     format?: string;
     fps?: number;
+    peak?: number;
+    peakChar?: string;
+    roundedCaps?: boolean;
     style?: ProgressBarStyle;
     total: number;
     width?: number;
@@ -58,6 +68,9 @@ export const getBarChar = (char: string | undefined, style: ProgressBarStyle, co
     switch (style) {
         case "ascii": {
             return complete ? "#" : "-";
+        }
+        case "braille": {
+            return complete ? BRAILLE_FULL : BRAILLE_EMPTY;
         }
         case "filled": {
             return complete ? "█" : " ";
@@ -129,10 +142,11 @@ export class ProgressBar {
         const isIncompleteArray = Array.isArray(options.barIncompleteChar);
         const isGradientMode = isCompleteArray || isIncompleteArray;
 
-        const completeChar = isCompleteArray ? options.barCompleteChar : getBarChar(options.barCompleteChar as string | undefined, "shades_classic");
+        const effectiveStyle = options.style ?? "shades_classic";
+        const completeChar = isCompleteArray ? options.barCompleteChar : getBarChar(options.barCompleteChar as string | undefined, effectiveStyle);
         const incompleteChar = isIncompleteArray
             ? options.barIncompleteChar
-            : getBarChar(options.barIncompleteChar as string | undefined, "shades_classic", false);
+            : getBarChar(options.barIncompleteChar as string | undefined, effectiveStyle, false);
 
         this.options = {
             barCompleteChar: completeChar,
@@ -180,6 +194,14 @@ export class ProgressBar {
     }
 
     /**
+     * Sets the peak marker position.
+     * @param peak The peak value (in the same scale as total)
+     */
+    public setPeak(peak: number): void {
+        this.options.peak = peak;
+    }
+
+    /**
      * Increments the progress bar by a specified step.
      * @param step Amount to increment (default: 1)
      * @param payload Optional payload data to merge with existing data
@@ -202,6 +224,8 @@ export class ProgressBar {
 
         // Handle both string and array types for bar characters
         let bar: string;
+
+        const useCaps = this.options.roundedCaps === true || (this.options.roundedCaps === undefined && this.options.style === "braille");
 
         if (Array.isArray(this.options.barCompleteChar) || Array.isArray(this.options.barIncompleteChar)) {
             // Gradient array mode
@@ -237,7 +261,36 @@ export class ProgressBar {
             const completeChar = typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█";
             const incompleteChar = typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░";
 
-            bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
+            // Peak marker support
+            const peakPos = this.calculatePeakPosition(width, total, filled);
+            const peakChar = this.options.peakChar ?? completeChar;
+
+            if (peakPos !== undefined) {
+                let barContent = "";
+
+                for (let i = 0; i < width; i += 1) {
+                    if (i === peakPos) {
+                        barContent += peakChar;
+                    } else if (i < filled) {
+                        barContent += completeChar;
+                    } else {
+                        barContent += incompleteChar;
+                    }
+                }
+
+                bar = barContent;
+            } else {
+                bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
+            }
+        }
+
+        // Apply rounded caps (pill shape) — replaces first and last characters
+        if (useCaps && width >= 2) {
+            const chars = [...bar];
+
+            chars[0] = BRAILLE_CAP_LEFT;
+            chars[chars.length - 1] = BRAILLE_CAP_RIGHT;
+            bar = chars.join("");
         }
 
         let format = this.options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
@@ -291,6 +344,23 @@ export class ProgressBar {
         if (this.interactiveManager) {
             this.interactiveManager.unhook(false);
         }
+    }
+
+    private calculatePeakPosition(width: number, total: number, filled: number): number | undefined {
+        const { peak } = this.options;
+
+        if (peak === undefined || peak <= 0) {
+            return undefined;
+        }
+
+        let peakPos = Math.max(0, Math.min(width - 1, Math.floor((peak / total) * width)));
+
+        // Peak must be at least at the fill boundary
+        if (peakPos < filled - 1) {
+            peakPos = filled - 1;
+        }
+
+        return peakPos;
     }
 
     private calculateETA(): number {
@@ -554,7 +624,8 @@ export class MultiProgressBar {
         }
 
         // Get character gradient based on bar style
-        const charGradient = CHAR_GRADIENTS[this.options.style === "rect" ? "rect" : "default"];
+        const gradientKey = this.options.style === "rect" ? "rect" : this.options.style === "braille" ? "braille" : "default";
+        const charGradient = CHAR_GRADIENTS[gradientKey];
         const char = charGradient?.[Math.min(stack.length - 1, charGradient.length - 1)] ?? "█";
 
         // Find bar with smallest progress (highest priority for visibility)

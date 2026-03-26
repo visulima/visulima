@@ -594,3 +594,290 @@ describe("progressBar gradient mode", () => {
         expect(output).toBeDefined();
     });
 });
+
+describe("braille style", () => {
+    it("should return correct chars for braille style", () => {
+        expect.assertions(2);
+        expect(getBarChar(undefined, "braille", true)).toBe("⣿");
+        expect(getBarChar(undefined, "braille", false)).toBe("⠤");
+    });
+
+    it("should render a braille bar with filled and empty characters", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 5,
+            style: "braille",
+            total: 10,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("⣿");
+        expect(result).toContain("⠤");
+    });
+
+    it("should auto-enable rounded caps for braille style", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 5,
+            style: "braille",
+            total: 10,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        // First char should be left cap, last char in bar should be right cap
+        expect(result).toContain("⢾");
+        expect(result).toContain("⡷");
+    });
+
+    it("should allow disabling rounded caps explicitly", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 5,
+            roundedCaps: false,
+            style: "braille",
+            total: 10,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).not.toContain("⢾");
+        expect(result).not.toContain("⡷");
+    });
+
+    it("should allow enabling rounded caps on non-braille styles", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 5,
+            roundedCaps: true,
+            style: "shades_classic",
+            total: 10,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("⢾");
+        expect(result).toContain("⡷");
+    });
+
+    it("should not apply caps when width < 2", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 1,
+            style: "braille",
+            total: 10,
+            width: 1,
+        });
+
+        const result = bar.render();
+
+        expect(result).not.toContain("⢾");
+        expect(result).not.toContain("⡷");
+    });
+
+    it("should render full braille bar at 100%", () => {
+        expect.assertions(3);
+
+        const bar = new ProgressBar({
+            current: 10,
+            style: "braille",
+            total: 10,
+            width: 10,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("⢾");
+        expect(result).toContain("⡷");
+        expect(result).not.toContain("⠤"); // No empty chars
+    });
+
+    it("should render empty braille bar at 0%", () => {
+        expect.assertions(3);
+
+        const bar = new ProgressBar({
+            current: 0,
+            style: "braille",
+            total: 10,
+            width: 10,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("⢾"); // Still has caps
+        expect(result).toContain("⡷");
+        expect(result).toContain("⠤"); // Empty chars in between
+    });
+
+    it("should apply braille style via applyStyleToOptions", () => {
+        expect.assertions(2);
+
+        const options = {
+            style: "braille" as const,
+            total: 100,
+        };
+        const result = applyStyleToOptions(options) as any;
+
+        expect(result.barCompleteChar).toBe("⣿");
+        expect(result.barIncompleteChar).toBe("⠤");
+    });
+});
+
+describe("peak marker", () => {
+    it("should render a peak marker at the specified position", () => {
+        expect.assertions(3);
+
+        const bar = new ProgressBar({
+            current: 30,
+            peak: 80,
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("▏");
+        expect(result).toContain("30%");
+        expect(result).toContain("30/100");
+    });
+
+    it("should place peak at fill boundary when peak < current", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            current: 50,
+            format: "[{bar}]",
+            peak: 10,
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        // Peak should be forced to at least the fill boundary
+        expect(result).toContain("▏");
+    });
+
+    it("should not render peak marker when peak is 0", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            current: 50,
+            format: "[{bar}]",
+            peak: 0,
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).not.toContain("▏");
+    });
+
+    it("should not render peak marker when peak is undefined", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            current: 50,
+            format: "[{bar}]",
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).not.toContain("▏");
+    });
+
+    it("should use completeChar as default peakChar", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            current: 30,
+            format: "[{bar}]",
+            peak: 80,
+            style: "ascii",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+        const barContent = result.slice(1, -1); // Strip brackets
+
+        // Peak char defaults to completeChar "#" — the bar should have # at peak position
+        // 80% of 20 = position 16
+        expect(barContent[16]).toBe("#");
+    });
+
+    it("should update peak via setPeak", () => {
+        expect.assertions(2);
+
+        const bar = new ProgressBar({
+            current: 30,
+            format: "[{bar}]",
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        // Initially no peak
+        expect(bar.render()).not.toContain("▏");
+
+        bar.setPeak(80);
+
+        expect(bar.render()).toContain("▏");
+    });
+
+    it("should combine peak marker with braille style and rounded caps", () => {
+        expect.assertions(4);
+
+        const bar = new ProgressBar({
+            current: 30,
+            peak: 70,
+            peakChar: "⡿",
+            style: "braille",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+
+        expect(result).toContain("⢾"); // Left cap
+        expect(result).toContain("⡷"); // Right cap
+        expect(result).toContain("⡿"); // Peak marker
+        expect(result).toContain("30%");
+    });
+
+    it("should clamp peak to bar width boundary", () => {
+        expect.assertions(1);
+
+        const bar = new ProgressBar({
+            current: 50,
+            format: "[{bar}]",
+            peak: 200,
+            peakChar: "▏",
+            total: 100,
+            width: 20,
+        });
+
+        const result = bar.render();
+        const barContent = result.slice(1, -1); // Strip brackets
+
+        // Peak at 200% should be clamped to last position (width - 1 = 19)
+        expect(barContent[19]).toBe("▏");
+    });
+});
