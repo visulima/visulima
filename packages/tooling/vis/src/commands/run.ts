@@ -1,8 +1,13 @@
 import { execSync } from "node:child_process";
+import { resolve } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
-import { ConsoleLifeCycle, createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
+import { CompositeLifeCycle, createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
+
+import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
+import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
+import { SummaryLifeCycle } from "../tui/summary-life-cycle";
 
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
@@ -59,12 +64,16 @@ const run: Command = {
             throw new Error("Missing target. Usage: vis run <target>");
         }
 
-        if (!wsRoot) {
+        // Allow --cwd to override auto-detected workspace root
+        const cwdOption = options.cwd as string | undefined;
+        const workspaceRoot = cwdOption ? resolve(process.cwd(), cwdOption) : wsRoot;
+
+        if (!workspaceRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
-        const workspaceRoot = wsRoot;
-        const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        // When --cwd overrides the workspace root, use a fresh config instead of the auto-detected one
+        const { config, workspace } = discoverWorkspace(workspaceRoot, cwdOption ? {} : visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         let projectNames = Object.keys(workspace.projects);
@@ -114,10 +123,7 @@ const run: Command = {
             workspace,
         });
 
-        const taskCount = Object.keys(taskGraph.tasks).length;
         const startTime = Date.now();
-
-        logger.info(`vis run ${target}  (${taskCount} task${taskCount === 1 ? "" : "s"})`);
 
         const runnerOptions: TaskRunnerOptions = {
             cacheDirectory: options.cacheDir as string | undefined,
@@ -128,7 +134,26 @@ const run: Command = {
             ...config.taskRunnerOptions,
         };
 
-        const lifeCycle = new ConsoleLifeCycle();
+        const isTTY = process.stdout.isTTY && !process.env["CI"];
+        const lifecycleOptions = {
+            args: { parallel: runnerOptions.parallel, targets: [target] },
+            projectNames: projectsWithTarget,
+            tasks: initialTasks,
+        };
+
+        let lifeCycle;
+        let renderIsDone: Promise<void> | undefined;
+
+        if (isTTY) {
+            const summaryLifeCycle = new SummaryLifeCycle();
+            const dynamic = createDynamicOutputRenderer(lifecycleOptions);
+
+            lifeCycle = new CompositeLifeCycle([dynamic.lifeCycle, summaryLifeCycle]);
+            renderIsDone = dynamic.renderIsDone;
+        } else {
+            lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
+        }
+
         const taskExecutor = createShellExecutor(workspaceRoot);
 
         const results = await defaultTaskRunner(initialTasks, runnerOptions, {
@@ -138,6 +163,10 @@ const run: Command = {
             taskGraph,
             workspaceRoot,
         });
+
+        if (renderIsDone) {
+            await renderIsDone;
+        }
 
         if (options.summarize) {
             const summary = generateRunSummary(results, taskGraph, startTime);
@@ -156,11 +185,14 @@ const run: Command = {
         if (hasFailure) {
             throw new Error("Some tasks failed.");
         }
-
-        logger.info("All tasks completed successfully.");
     },
     name: "run",
     options: [
+        {
+            description: "Override workspace root directory",
+            name: "cwd",
+            type: String,
+        },
         {
             alias: "p",
             description: "Comma-separated list of projects to run",
