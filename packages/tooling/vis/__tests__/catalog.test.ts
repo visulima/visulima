@@ -1946,10 +1946,20 @@ describe("loadNpmrc", () => {
         expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
-        const config = loadNpmrc(temporaryDirectory);
 
-        expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
-        expect(config.registries.size).toBe(0);
+        // Isolate from host ~/.npmrc by pointing HOME to a directory without one
+        const originalHome = process.env.HOME;
+
+        process.env.HOME = temporaryDirectory;
+
+        try {
+            const config = loadNpmrc(temporaryDirectory);
+
+            expect(config.defaultRegistry).toBe("https://registry.npmjs.org");
+            expect(config.registries.size).toBe(0);
+        } finally {
+            process.env.HOME = originalHome;
+        }
     });
 });
 
