@@ -1,3 +1,29 @@
+## @visulima/email [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.10...@visulima/email@1.0.0-alpha.11) (2026-03-26)
+
+### Bug Fixes
+
+* **docs:** correct code examples found during verification ([8e4f8c4](https://github.com/visulima/visulima/commit/8e4f8c4b0b1664c232fe5ae721b771c72d29a152))
+* **email:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([4c5c008](https://github.com/visulima/visulima/commit/4c5c008d5c65b3ee26225448eb0a7d6a90a47f5e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* add missing documentation pages for email, string, and storage-client ([623f8af](https://github.com/visulima/visulima/commit/623f8afd2ea03dd2805fb2d7a9d10083571224bb))
+
+### Miscellaneous Chores
+
+* **email:** migrate deps to pnpm catalogs ([487ca7a](https://github.com/visulima/visulima/commit/487ca7abb6db86498e4993afb0cd0113d005af23))
+* **email:** update dependencies ([f7fb112](https://github.com/visulima/visulima/commit/f7fb1124a030474af12592992bbd95db29db53c1))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.10
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/email [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.9...@visulima/email@1.0.0-alpha.10) (2026-03-06)
 
 ### Bug Fixes
