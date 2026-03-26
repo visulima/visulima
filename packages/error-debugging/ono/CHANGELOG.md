@@ -1,3 +1,16 @@
+## @visulima/ono [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.6...@visulima/ono@2.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **ono:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([2e4ff1a](https://github.com/visulima/visulima/commit/2e4ff1a1ae8f849f9fb4cf26e7b58446bb47c1f1))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/ono [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.5...@visulima/ono@2.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
