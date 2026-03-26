@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "4.0.0-alpha.5",
+    "version": "4.0.0-alpha.6",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "anolilab",
@@ -141,10 +141,10 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/connect": "workspace:*",
-        "@visulima/fs": "workspace:*",
-        "@visulima/jsdoc-open-api": "workspace:*",
-        "@visulima/path": "workspace:*",
+        "@visulima/connect": "4.0.0-alpha.6",
+        "@visulima/fs": "5.0.0-alpha.5",
+        "@visulima/jsdoc-open-api": "3.0.0-alpha.5",
+        "@visulima/path": "3.0.0-alpha.6",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",
         "http-errors": "catalog:prod",
@@ -183,7 +183,7 @@
         "@types/react-dom": "catalog:types",
         "@types/swagger-ui-react": "^4.18.3",
         "@types/webpack": "catalog:types",
-        "@visulima/crud": "workspace:*",
+        "@visulima/crud": "3.0.0-alpha.7",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "chalk": "catalog:dev",
@@ -232,7 +232,7 @@
     "peerDependencies": {
         "@hapi/hapi": "catalog:peer",
         "@koa/router": "catalog:backend",
-        "@visulima/crud": "workspace:*",
+        "@visulima/crud": "3.0.0-alpha.7",
         "chalk": "catalog:peer",
         "commander": "catalog:peer",
         "cors": "catalog:peer",
