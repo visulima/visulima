@@ -1,0 +1,144 @@
+---
+title: API Reference
+description: Full API reference for all exported functions and types
+---
+
+# API Reference
+
+## Task Runner
+
+### `defaultTaskRunner(tasks, options, context)`
+
+The main entry point. Returns `Promise<TaskResults>`.
+
+## Task Graph
+
+### `createTaskGraph(tasks, options)`
+
+Creates a dependency-ordered task graph from task definitions. `options` is a `CreateTaskGraphOptions` object with `projectGraph`, `targetDefaults?`, and `workspace`.
+
+### `getTaskId(target)`
+
+Creates a task ID string from a `TaskTarget` object (`"project:target:configuration"`).
+
+### `parseTaskId(id)`
+
+Parses a task ID into `{ project, target, configuration? }`.
+
+### Graph Utilities
+
+- `findCycle(graph)` - Returns first cycle found, or undefined
+- `findCycles(graph)` - Returns all cycles
+- `makeAcyclic(graph)` - Removes cycle-forming edges
+- `walkTaskGraph(graph, fn)` - Walk in topological order
+- `getDependentTasks(graph, taskId)` - Find all tasks depending on a task
+- `getTransitiveDependencies(graph, taskId)` - Find all transitive deps
+- `getLeafTasks(graph)` - Find tasks with no dependencies
+- `reverseTaskGraph(graph)` - Reverse edge directions
+
+## Hashing
+
+### `InProcessTaskHasher`
+
+Computes task hashes from explicit input declarations.
+
+```typescript
+const hasher = new InProcessTaskHasher({
+    workspaceRoot,
+    projects,
+    namedInputs,
+    targetDefaults,
+    envVars,
+    globalInputs,
+    globalEnv,
+    smartLockfileHashing,
+    frameworkInference,
+});
+
+const details = await hasher.hashTask(task);
+```
+
+### `computeTaskHash(hashDetails)`
+
+Computes a final SHA-256 hash from `TaskHashDetails`.
+
+### `IncrementalFileHasher`
+
+mtime-based file hasher that only re-hashes changed files.
+
+```typescript
+const hasher = new IncrementalFileHasher({
+    workspaceRoot,
+    snapshotPath: "node_modules/.cache/task-runner/file-snapshot.json", // default
+});
+
+const hashes = await hasher.hashDirectory("packages/my-app/src");
+```
+
+## Cache
+
+### `Cache`
+
+Local file-based cache with LRU eviction.
+
+- `get(hash)` - Retrieve cached result
+- `put(hash, output, outputs, code, fingerprint?)` - Store result
+- `restoreOutputs(hash, outputs)` - Restore build artifacts
+- `clear()` - Clear entire cache
+
+### `RemoteCache`
+
+Turborepo-compatible HTTP cache client.
+
+- `retrieve(hash, localCacheDirectory)` - Download from remote
+- `store(hash, localCacheDirectory)` - Upload to remote
+
+## Lockfile
+
+### `LockfileHasher`
+
+Smart lockfile parser that hashes per-package dependency versions.
+
+- `hashForPackage(packageJsonPath)` - Returns `PackageLockfileHash | undefined`
+- `lockfileType` - Detected format (`"npm" | "pnpm" | "yarn" | undefined`)
+
+### Lockfile Parsers
+
+- `parseNpmLockfile(content)` - Parse package-lock.json
+- `parsePnpmLockfile(content)` - Parse pnpm-lock.yaml
+- `parseYarnLockfile(content)` - Parse yarn.lock
+
+## Framework Inference
+
+- `detectFrameworks(packageJsonPath)` - Returns detected frameworks
+- `inferFrameworkEnvPatterns(workspaceRoot, projects)` - Returns env patterns
+- `getFrameworkEnvVariables(packageJsonPath, env?)` - Returns matching env vars
+
+## Affected Detection
+
+- `getChangedFiles(workspaceRoot, base, head)` - Git diff to get changed file paths
+- `getAffectedProjects(options)` - Detect affected projects from git changes (`AffectedOptions`)
+- `filterAffectedTasks(taskIds, affectedProjects)` - Filter task IDs by affected project set
+
+## Visualization
+
+- `toGraphvizDot(graph, options?)` - DOT format
+- `toGraphJson(graph, options?)` - JSON format
+- `toGraphHtml(graph, options?)` - Self-contained HTML
+- `toGraphAscii(graph, options?)` - ASCII tree
+- `projectGraphToDot(projectGraph)` - Project graph DOT
+
+## Run Summary
+
+- `generateRunSummary(results, taskGraph, startTime)` - Create summary
+- `writeRunSummary(summary, workspaceRoot)` - Write to disk
+
+## Lifecycle
+
+- `ConsoleLifeCycle` - Logs events to console
+- `EmptyLifeCycle` - No-op implementation
+- `CompositeLifeCycle` - Combines multiple lifecycles
+
+## Types
+
+Key interfaces: `Task`, `TaskGraph`, `TaskResult`, `TaskRunnerOptions`, `TaskRunnerContext`, `ProjectGraph`, `ProjectConfiguration`, `TargetConfiguration`, `TaskHashDetails`, `InputDefinition`, `TaskFingerprint`, `CacheMissReason`, `RunSummary`, `DetectedFramework`.

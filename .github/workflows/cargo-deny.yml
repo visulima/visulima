@@ -1,0 +1,50 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Cargo Deny"
+
+on: # yamllint disable-line rule:truthy
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - "packages/tooling/task-runner/native/Cargo.lock"
+            - "packages/tooling/task-runner/native/deny.toml"
+            - ".github/workflows/cargo-deny.yml"
+    push:
+        branches:
+            - "main"
+        paths:
+            - "packages/tooling/task-runner/native/Cargo.lock"
+            - "packages/tooling/task-runner/native/deny.toml"
+            - ".github/workflows/cargo-deny.yml"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+    deny:
+        name: "Cargo Deny"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Install Rust toolchain"
+              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
+              with:
+                  restore-cache: false
+                  tools: "cargo-deny"
+
+            - name: "Run cargo deny"
+              run: "cargo deny check"
+              working-directory: "packages/tooling/task-runner/native"

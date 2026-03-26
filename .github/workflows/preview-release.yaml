@@ -51,6 +51,7 @@ jobs:
               with:
                   node-version: "22.x"
                   cache-prefix: "preview-release"
+                  run-signatures-audit: false
 
             # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
             - name: "Get changed files"
@@ -60,6 +61,40 @@ jobs:
                   files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
                   base_sha: "${{ steps.setSHAs.outputs.base }}"
                   separator: ","
+
+            - name: "Wait for Build Native workflow"
+              uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
+              timeout-minutes: 30
+              with:
+                  ref: "${{ github.event.pull_request.head.sha }}"
+                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
+                  wait-interval: 30 # seconds
+                  check-name: "Check Native Build"
+                  allowed-conclusions: "success,skipped,neutral"
+
+            - name: "Download native build artifacts"
+              id: "native-artifacts"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  workflow: "build-native.yml"
+                  pr: "${{ github.event.pull_request.number }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "packages/tooling/task-runner"
+                  if_no_artifact_found: "ignore"
+                  allow_forks: false
+
+            - name: "Flatten native binding artifacts"
+              if: "${{ steps.native-artifacts.outcome == 'success' }}"
+              shell: "bash"
+              run: |
+                  find packages/tooling/task-runner -name "*.node" -path "*/bindings-*/*" -exec mv {} packages/tooling/task-runner/ \;
+                  rm -rf packages/tooling/task-runner/bindings-*/
+
+            - name: "Move native artifacts to platform packages"
+              if: "${{ steps.native-artifacts.outcome == 'success' }}"
+              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
+              working-directory: "packages/tooling/task-runner"
 
             - name: "Build"
               shell: "bash"

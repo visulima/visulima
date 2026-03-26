@@ -1,0 +1,66 @@
+---
+title: "vis run"
+description: "Run a target across workspace projects with caching and dependency ordering"
+---
+
+# vis run
+
+Run a target (e.g., `build`, `test`, `lint`) across workspace projects. Tasks are executed in dependency order with caching.
+
+## Usage
+
+```bash
+vis run <target> [options]
+```
+
+## Examples
+
+```bash
+vis run build
+vis run test --projects=@my/app,@my/lib
+vis run build --parallel=5
+vis run build --no-cache
+vis run lint --dry-run
+vis run build --summarize
+```
+
+## Options
+
+| Option        | Alias | Default | Description                              |
+| ------------- | ----- | ------- | ---------------------------------------- |
+| `--projects`  | `-p`  | all     | Comma-separated list of projects to run  |
+| `--parallel`  |       | `3`     | Maximum number of parallel tasks         |
+| `--cache`     |       | `true`  | Enable caching (`--no-cache` to disable) |
+| `--cache-dir` |       |         | Custom cache directory                   |
+| `--dry-run`   |       | `false` | Show what would run without executing    |
+| `--summarize` |       | `false` | Generate a JSON run summary              |
+
+## How It Works
+
+1. **Discovery** — Reads workspace configuration to find all projects
+2. **Graph** — Builds a dependency graph from each project's `package.json`
+3. **Filter** — Selects projects matching `--projects` (or all)
+4. **Order** — Sorts tasks topologically so dependencies run first
+5. **Cache** — Checks cache for each task; skips if inputs haven't changed
+6. **Execute** — Runs tasks in parallel up to `--parallel` limit
+7. **Store** — Caches results for subsequent runs
+
+## Configuration
+
+Set target defaults in `vis.json`:
+
+```json
+{
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/dist/**"],
+            "cache": true
+        },
+        "test": {
+            "dependsOn": ["build"],
+            "cache": true
+        }
+    }
+}
+```

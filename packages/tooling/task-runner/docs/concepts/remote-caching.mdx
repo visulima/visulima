@@ -1,0 +1,59 @@
+---
+title: Remote Caching
+description: Share cache across machines with Turborepo-compatible HTTP protocol
+---
+
+# Remote Caching
+
+Remote caching allows team members and CI machines to share cached task results. The task runner implements the Turborepo v8 artifacts protocol, making it compatible with Vercel Remote Cache and self-hosted alternatives.
+
+## Configuration
+
+```typescript
+const results = await defaultTaskRunner(tasks, {
+    remoteCache: {
+        url: "https://cache.example.com",
+        token: process.env.CACHE_TOKEN,
+        teamId: "my-team",
+        read: true,   // Enable remote reads (default)
+        write: true,  // Enable remote writes (default)
+    },
+}, context);
+```
+
+## How It Works
+
+1. **Local miss** - Task hash not found in local cache
+2. **Remote check** - `GET /v8/artifacts/{hash}` with bearer token
+3. **Remote hit** - Download artifact, store locally, replay result
+4. **Remote miss** - Execute task normally
+5. **Upload** - `PUT /v8/artifacts/{hash}` (fire-and-forget, non-blocking)
+
+## Environment Variables
+
+You can also configure via environment variables (compatible with Turborepo):
+
+```bash
+TURBO_API=https://cache.example.com
+TURBO_TEAM=my-team
+TURBO_TOKEN=your-auth-token
+```
+
+## Self-Hosted Options
+
+Any server implementing the Turborepo v8 artifacts API works:
+
+- [ducktors/turborepo-remote-cache](https://github.com/ducktors/turborepo-remote-cache) - Node.js, supports S3/GCS/Azure
+- Vercel Remote Cache - Free on all plans
+
+## Protocol
+
+```
+PUT /v8/artifacts/{hash}?teamId={team}  → Upload cached artifact
+GET /v8/artifacts/{hash}?teamId={team}  → Download cached artifact
+POST /v8/artifacts/events               → Analytics (optional)
+
+Headers:
+  Authorization: Bearer {token}
+  Content-Type: application/octet-stream
+```

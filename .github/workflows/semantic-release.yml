@@ -62,6 +62,27 @@ jobs:
                   cache-prefix: "semantic-release"
                   run-signatures-audit: false
 
+            - name: "Download native build artifacts"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "packages/tooling/task-runner"
+                  if_no_artifact_found: "fail"
+                  allow_forks: false
+
+            - name: "Flatten native binding artifacts"
+              shell: "bash"
+              run: |
+                  find packages/tooling/task-runner -name "*.node" -path "*/bindings-*/*" -exec mv {} packages/tooling/task-runner/ \;
+                  rm -rf packages/tooling/task-runner/bindings-*/
+
+            - name: "Move native artifacts to platform packages"
+              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
+              working-directory: "packages/tooling/task-runner"
+
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
 

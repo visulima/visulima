@@ -1,0 +1,130 @@
+---
+title: Configuration
+description: "Full reference for vis.json configuration options"
+---
+
+# Configuration
+
+Create a `vis.json` file in your workspace root to configure target defaults, task runner options, and update preferences.
+
+## Target Defaults
+
+Target defaults apply to all projects that have a matching script in their `package.json`:
+
+```json
+{
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/dist/**"],
+            "inputs": ["{projectRoot}/src/**"],
+            "cache": true,
+            "parallelism": true
+        },
+        "test": {
+            "dependsOn": ["build"],
+            "cache": true
+        },
+        "lint": {
+            "cache": true
+        }
+    }
+}
+```
+
+| Property      | Type                   | Description                                                                                         |
+| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `dependsOn`   | `(string \| object)[]` | Other targets this target depends on. Use `^build` to depend on dependency projects' `build` target |
+| `outputs`     | `string[]`             | Output file patterns. Use `{projectRoot}` as a placeholder                                          |
+| `inputs`      | `(string \| object)[]` | Input patterns for cache invalidation                                                               |
+| `cache`       | `boolean`              | Whether this target is cacheable                                                                    |
+| `parallelism` | `boolean`              | Whether this target supports parallel execution                                                     |
+
+## Task Runner Options
+
+Configure the underlying task runner behavior:
+
+```json
+{
+    "taskRunnerOptions": {
+        "parallel": 5,
+        "smartLockfileHashing": true,
+        "frameworkInference": true,
+        "remoteCache": {
+            "url": "https://cache.example.com",
+            "token": "my-token",
+            "teamId": "my-team"
+        }
+    }
+}
+```
+
+| Option                 | Type      | Default | Description                                     |
+| ---------------------- | --------- | ------- | ----------------------------------------------- |
+| `parallel`             | `number`  | `3`     | Maximum number of parallel tasks                |
+| `smartLockfileHashing` | `boolean` | `false` | Per-package lockfile hashing for better caching |
+| `frameworkInference`   | `boolean` | `false` | Auto-detect framework environment variables     |
+| `remoteCache.url`      | `string`  |         | Remote cache server URL                         |
+| `remoteCache.token`    | `string`  |         | Authentication token                            |
+| `remoteCache.teamId`   | `string`  |         | Team or namespace identifier                    |
+
+## Update Defaults
+
+Set defaults for `vis check` and `vis update` to avoid repeating options:
+
+```json
+{
+    "update": {
+        "target": "minor",
+        "include": ["@company/*"],
+        "exclude": ["legacy-*", "deprecated-*"],
+        "prerelease": false
+    }
+}
+```
+
+| Property     | Type       | Default    | Description                            |
+| ------------ | ---------- | ---------- | -------------------------------------- |
+| `target`     | `string`   | `"latest"` | Default update target                  |
+| `include`    | `string[]` | `[]`       | Glob patterns to always include        |
+| `exclude`    | `string[]` | `[]`       | Glob patterns to always exclude        |
+| `prerelease` | `boolean`  | `false`    | Whether to include prerelease versions |
+
+## Full Example
+
+```json
+{
+    "targetDefaults": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/dist/**"],
+            "cache": true
+        },
+        "test": {
+            "dependsOn": ["build"],
+            "cache": true
+        },
+        "lint": {
+            "cache": true
+        }
+    },
+    "taskRunnerOptions": {
+        "parallel": 5,
+        "smartLockfileHashing": true,
+        "frameworkInference": true
+    },
+    "update": {
+        "target": "minor",
+        "exclude": ["legacy-*"]
+    }
+}
+```
+
+## Workspace Discovery
+
+`vis` automatically discovers your workspace structure:
+
+1. **pnpm** — Reads `pnpm-workspace.yaml` for package patterns
+2. **npm/yarn** — Falls back to the `workspaces` field in root `package.json`
+3. **Project metadata** — Reads `project.json` files (Nx-compatible) for additional config like `projectType`, `sourceRoot`, and `tags`
+4. **Dependency graph** — Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`

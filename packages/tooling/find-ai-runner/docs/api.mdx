@@ -1,0 +1,150 @@
+---
+title: API Reference
+description: "Complete API reference for @visulima/find-ai-runner"
+---
+
+# API Reference
+
+## Functions
+
+### `detectAllProviders()`
+
+Returns info for all 11 supported providers, whether installed or not.
+
+```typescript
+function detectAllProviders(): AiProviderInfo[];
+```
+
+### `detectAvailableProviders()`
+
+Returns only providers that are installed on the system.
+
+```typescript
+function detectAvailableProviders(): AiProviderInfo[];
+```
+
+### `detectProvider(name)`
+
+Detect a specific provider by name. Returns provider info including availability, path, version, and detection method.
+
+```typescript
+function detectProvider(name: AiProviderName): AiProviderInfo;
+```
+
+### `buildCliArgs(name, prompt, options?)`
+
+Build the CLI arguments array for a provider without executing. Useful for previewing or logging what command would be run.
+
+```typescript
+function buildCliArgs(name: AiProviderName, prompt: string, options?: AiRunOptions): string[];
+```
+
+### `runProvider(provider, prompt, options?)`
+
+Execute a prompt against a detected provider. Uses `spawn` with stdin closed immediately for non-interactive execution. The process environment is sanitized with `NO_COLOR=1` and `FORCE_COLOR=0` for clean output.
+
+```typescript
+function runProvider(provider: AiProviderInfo, prompt: string, options?: AiRunOptions): Promise<AiRunResult>;
+```
+
+**Throws:**
+- If the provider is not available
+- If the process times out
+- If the process exits with a non-zero code
+
+## Constants
+
+### `PROVIDERS`
+
+The full provider configuration map.
+
+```typescript
+const PROVIDERS: Record<AiProviderName, AiProviderConfig>;
+```
+
+### `PROVIDER_NAMES`
+
+All supported provider names in alphabetical order.
+
+```typescript
+const PROVIDER_NAMES: AiProviderName[];
+// ["amp", "claude", "codex", "copilot", "crush", "cursor", "droid", "gemini", "kimi", "opencode", "qwen"]
+```
+
+## Types
+
+### `AiProviderName`
+
+Union of all supported provider name strings.
+
+```typescript
+type AiProviderName = "amp" | "claude" | "codex" | "copilot" | "crush" | "cursor" | "droid" | "gemini" | "kimi" | "opencode" | "qwen";
+```
+
+### `AiProviderInfo`
+
+Information about a detected AI CLI provider.
+
+```typescript
+interface AiProviderInfo {
+    /** Provider name. */
+    name: AiProviderName;
+    /** Whether the provider was found on the system. */
+    available: boolean;
+    /** How the provider was detected. */
+    detectionMethod?: "envvar" | "which" | "known-path";
+    /** Absolute path to the CLI binary. */
+    path?: string;
+    /** Detected version string (e.g., "1.2.3"). */
+    version?: string;
+}
+```
+
+### `AiProviderConfig`
+
+Configuration for an AI CLI provider.
+
+```typescript
+interface AiProviderConfig {
+    /** Primary CLI command name. */
+    command: string;
+    /** Alternate CLI command names to try. */
+    alternateCommands: string[];
+    /** Environment variable that can override the CLI path. */
+    envVariable: string;
+    /** Default model to use if none specified. Empty string means provider-default. */
+    defaultModel: string;
+    /** Builds the CLI arguments array for a given prompt, model, and max tokens. */
+    buildArgs: (prompt: string, model: string, maxTokens: number) => string[];
+}
+```
+
+### `AiRunOptions`
+
+Options for running a prompt against an AI provider.
+
+```typescript
+interface AiRunOptions {
+    /** Model override (e.g., "claude-opus-4-20250514"). */
+    model?: string;
+    /** Maximum tokens in the response. Defaults to 4096. */
+    maxTokens?: number;
+    /** Timeout in milliseconds. Defaults to 300000 (5 minutes). */
+    timeoutMs?: number;
+}
+```
+
+### `AiRunResult`
+
+Result from running a prompt against an AI provider.
+
+```typescript
+interface AiRunResult {
+    /** Which provider was used. */
+    provider: AiProviderName;
+    /** Standard output from the CLI (the AI response). */
+    stdout: string;
+    /** Standard error output from the CLI. */
+    stderr: string;
+}
+```

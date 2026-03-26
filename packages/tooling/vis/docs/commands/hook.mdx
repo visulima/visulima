@@ -1,0 +1,89 @@
+---
+title: "vis hook"
+description: "Manage git hooks for your workspace"
+---
+
+# vis hook
+
+Manage git hooks for your workspace. Supports installing, uninstalling, and migrating from husky.
+
+## Usage
+
+```bash
+vis hook <action> [options]
+```
+
+## Actions
+
+### install
+
+Install git hooks by configuring `core.hooksPath` to point to your hooks directory:
+
+```bash
+vis hook install
+```
+
+### uninstall
+
+Remove git hooks and reset `core.hooksPath`:
+
+```bash
+vis hook uninstall
+```
+
+### migrate
+
+Migrate existing husky hooks to vis:
+
+```bash
+vis hook migrate
+```
+
+The migration automatically detects your husky directory, copies hook scripts, and prompts for confirmation.
+
+## Options
+
+| Option        | Default      | Description            |
+| ------------- | ------------ | ---------------------- |
+| `--hooks-dir` | `.vis-hooks` | Custom hooks directory |
+
+## Environment Variables
+
+| Variable          | Description                   |
+| ----------------- | ----------------------------- |
+| `VIS_GIT_HOOKS=0` | Disable git hooks             |
+| `VIS_GIT_HOOKS=2` | Enable debug output for hooks |
+
+## Supported Hooks
+
+vis supports all standard git hooks:
+
+- `pre-commit`
+- `pre-merge-commit`
+- `prepare-commit-msg`
+- `commit-msg`
+- `post-commit`
+- `applypatch-msg`
+- `pre-applypatch`
+- `post-applypatch`
+- `pre-rebase`
+- `post-rewrite`
+- `post-checkout`
+- `post-merge`
+- `pre-push`
+- `pre-auto-gc`
+
+## Creating Hook Scripts
+
+After installing, create executable scripts in your hooks directory:
+
+```bash
+vis hook install
+
+echo '#!/bin/sh
+pnpm run lint-staged' > .vis-hooks/pre-commit
+
+chmod +x .vis-hooks/pre-commit
+```
+
+Commit the hooks directory to version control so all team members use the same hooks.

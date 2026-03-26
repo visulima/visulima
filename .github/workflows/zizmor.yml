@@ -1,0 +1,54 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Zizmor"
+
+on: # yamllint disable-line rule:truthy
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - ".github/workflows/**"
+    push:
+        branches:
+            - "main"
+        paths:
+            - ".github/workflows/**"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+    zizmor:
+        name: "Zizmor"
+        runs-on: "ubuntu-latest"
+        permissions:
+            security-events: "write"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Install zizmor"
+              uses: "taiki-e/install-action@06203676c62f0d3c765be3f2fcfbebbcb02d09f5" # v2.69.6
+              with:
+                  tool: "zizmor"
+
+            - name: "Run zizmor"
+              run: "zizmor --format sarif . > results.sarif"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+            - name: "Upload SARIF file"
+              uses: "github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3" # v3.34.1
+              with:
+                  sarif_file: "results.sarif"
+                  category: "zizmor"

@@ -1,0 +1,16 @@
+{
+    "pages": [
+        "index",
+        "installation",
+        "quick-start",
+        {
+            "title": "Commands",
+            "pages": ["commands/run", "commands/affected", "commands/graph", "commands/check", "commands/update", "commands/hook"]
+        },
+        "configuration",
+        {
+            "title": "Guides",
+            "pages": ["guides/best-practices", "guides/ci-cd", "guides/git-hooks"]
+        }
+    ]
+}
