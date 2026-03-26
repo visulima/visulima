@@ -1,3 +1,15 @@
+## @visulima/iso-locale [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.3...@visulima/iso-locale@1.0.0-alpha.4) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **iso-locale:** migrate deps to pnpm catalogs ([77a0af9](https://github.com/visulima/visulima/commit/77a0af94f3ee1c405cfca1df1db16af6c6b288ea))
+* **iso-locale:** update dependencies ([171ce31](https://github.com/visulima/visulima/commit/171ce31272306c952d35018dea8ec4072f11cd52))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/iso-locale [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.2...@visulima/iso-locale@1.0.0-alpha.3) (2026-03-06)
 
 ### Bug Fixes
