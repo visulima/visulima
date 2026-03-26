@@ -1,3 +1,17 @@
+## @visulima/email [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.11...@visulima/email@1.0.0-alpha.12) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.11
+* **@visulima/error:** upgraded to 6.0.0-alpha.7
+* **@visulima/fs:** upgraded to 5.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/email [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.10...@visulima/email@1.0.0-alpha.11) (2026-03-26)
 
 ### Bug Fixes
