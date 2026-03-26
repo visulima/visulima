@@ -1,3 +1,25 @@
+## @visulima/pail [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.7...@visulima/pail@4.0.0-alpha.8) (2026-03-26)
+
+### Bug Fixes
+
+* **pail:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([8423dd7](https://github.com/visulima/visulima/commit/8423dd779fbea0acff8f090e548a423e46d761fd))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **pail:** migrate deps to pnpm catalogs ([b2acd86](https://github.com/visulima/visulima/commit/b2acd864a40d0b2cc8eaf4e531cb2dedfd54181a))
+* update license ([b2d306c](https://github.com/visulima/visulima/commit/b2d306cfeb1eabfd9e24880cb9198f6360724d82))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.6
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.5
+* **@visulima/redact:** upgraded to 3.0.0-alpha.6
+* **@visulima/string:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/pail [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.6...@visulima/pail@4.0.0-alpha.7) (2026-03-16)
 
 ### Features
