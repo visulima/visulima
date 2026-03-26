@@ -1,3 +1,31 @@
+## @visulima/cerebro [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.7...@visulima/cerebro@3.0.0-alpha.8) (2026-03-26)
+
+### Bug Fixes
+
+* **cerebro:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([6647854](https://github.com/visulima/visulima/commit/6647854b69a518466318af623938c0435f3a2579))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **cerebro:** migrate deps to pnpm catalogs ([75cfac0](https://github.com/visulima/visulima/commit/75cfac01080464cc07279164520177472aff3b13))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.7
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.7
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.5
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.5
+* **@visulima/pail:** upgraded to 4.0.0-alpha.8
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+* **@visulima/string:** upgraded to 3.0.0-alpha.7
+
 ## @visulima/cerebro [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.6...@visulima/cerebro@3.0.0-alpha.7) (2026-03-16)
 
 ### Miscellaneous Chores
