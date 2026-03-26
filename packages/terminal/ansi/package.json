@@ -1,6 +1,6 @@
 {
   "name": "@visulima/ansi",
-  "version": "4.0.0-alpha.5",
+  "version": "4.0.0-alpha.6",
   "description": "ANSI escape codes for some terminal swag.",
   "keywords": [
     "alternative-screen",
@@ -182,9 +182,9 @@
     "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
     "@total-typescript/ts-reset": "catalog:dev",
     "@types/node": "catalog:types",
-    "@visulima/colorize": "workspace:*",
+    "@visulima/colorize": "2.0.0-alpha.6",
     "@visulima/packem": "catalog:dev",
-    "@visulima/path": "workspace:*",
+    "@visulima/path": "3.0.0-alpha.6",
     "@vitest/coverage-v8": "catalog:test",
     "@vitest/ui": "catalog:test",
     "ansi-regex": "catalog:dev",

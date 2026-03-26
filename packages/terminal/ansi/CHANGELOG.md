@@ -1,3 +1,26 @@
+## @visulima/ansi [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.5...@visulima/ansi@4.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **ansi:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([9778bbb](https://github.com/visulima/visulima/commit/9778bbb1d8786feba0d467f846930838297d9ca4))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **ansi:** migrate deps to pnpm catalogs ([2bdd466](https://github.com/visulima/visulima/commit/2bdd466ce1aa69d28bc88d952dfae65b6fc73c17))
+* **ansi:** update dependencies ([0959eea](https://github.com/visulima/visulima/commit/0959eea366d3908c13196575a1d3bda17a1bf0aa))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/ansi [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.4...@visulima/ansi@4.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
