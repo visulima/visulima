@@ -1,3 +1,15 @@
+## @visulima/path [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.5...@visulima/path@3.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **path:** migrate deps to pnpm catalogs ([aced0d8](https://github.com/visulima/visulima/commit/aced0d88d37ff54859708e18d9ebe3f0af756c74))
+* **path:** update dependencies ([f749b0c](https://github.com/visulima/visulima/commit/f749b0cdc4d9a1ba1ea4f25bfc3305c9368eea06))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/path [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.4...@visulima/path@3.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
