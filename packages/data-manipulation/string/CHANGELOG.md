@@ -1,3 +1,30 @@
+## @visulima/string [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.6...@visulima/string@3.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **docs:** correct code examples found during verification ([8e4f8c4](https://github.com/visulima/visulima/commit/8e4f8c4b0b1664c232fe5ae721b771c72d29a152))
+* **string:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([767788d](https://github.com/visulima/visulima/commit/767788de6a58ab0d9980f295829de40a7d19bef8))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* add missing documentation pages for email, string, and storage-client ([623f8af](https://github.com/visulima/visulima/commit/623f8afd2ea03dd2805fb2d7a9d10083571224bb))
+
+### Miscellaneous Chores
+
+* **string:** migrate deps to pnpm catalogs ([ae5e04a](https://github.com/visulima/visulima/commit/ae5e04a8823320f54dd0da351f9168a58fa5926c))
+* **string:** update dependencies ([ac1b54e](https://github.com/visulima/visulima/commit/ac1b54e55d33bd1bd381a8d59f664cd7911a4fc3))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+
 ## @visulima/string [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.5...@visulima/string@3.0.0-alpha.6) (2026-03-06)
 
 ### Bug Fixes
