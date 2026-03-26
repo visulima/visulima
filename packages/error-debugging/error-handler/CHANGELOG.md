@@ -1,3 +1,20 @@
+## @visulima/error-handler [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.8...@visulima/error-handler@2.0.0-alpha.9) (2026-03-26)
+
+### Bug Fixes
+
+* **error-handler:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([d453330](https://github.com/visulima/visulima/commit/d4533305f56a3e6f06e7381f639aa89ce4ae477b))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **error-handler:** migrate deps to pnpm catalogs ([cc75436](https://github.com/visulima/visulima/commit/cc75436984973d46084af7aa592cb5bf45736b30))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.7
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+
 ## @visulima/error-handler [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.7...@visulima/error-handler@2.0.0-alpha.8) (2026-03-16)
 
 ### Bug Fixes
