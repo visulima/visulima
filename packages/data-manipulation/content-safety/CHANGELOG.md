@@ -1,3 +1,15 @@
+## @visulima/content-safety [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.2...@visulima/content-safety@1.0.0-alpha.3) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **content-safety:** migrate deps to pnpm catalogs ([d7c2bd4](https://github.com/visulima/visulima/commit/d7c2bd4e0658dbd47e847a36e1b1d13f4f76d801))
+* **content-safety:** update dependencies ([c6213f5](https://github.com/visulima/visulima/commit/c6213f50f9b5b7a0b4e7765560c0a80b7b4223be))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/content-safety [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.1...@visulima/content-safety@1.0.0-alpha.2) (2026-03-06)
 
 ### Bug Fixes
