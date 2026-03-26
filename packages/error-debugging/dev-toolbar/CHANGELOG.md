@@ -1,3 +1,45 @@
+## @visulima/dev-toolbar [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.5...@visulima/dev-toolbar@1.0.0-alpha.6) (2026-03-26)
+
+### Features
+
+* **dev-toolbar:** add accessibility info capture to inspector ([2b98ee6](https://github.com/visulima/visulima/commit/2b98ee6249759d1d2c42504354ebf3a92db4a6e6))
+* **dev-toolbar:** add custom Select component replacing native <select> ([c9c8685](https://github.com/visulima/visulima/commit/c9c8685ea3a05c28ea89d5f5d852d56bc8cbcad0))
+* **dev-toolbar:** add viewport rulers with draggable guidelines to inspector ([9df079a](https://github.com/visulima/visulima/commit/9df079a83563b1afc617d76df78259082ea98817))
+* **dev-toolbar:** add visual annotation system with MCP agent integration ([be88cfe](https://github.com/visulima/visulima/commit/be88cfe30f3f624075167762e9c9780653dd34e9))
+* **dev-toolbar:** redesign annotation popups, add toast notifications, improve docs ([cca080f](https://github.com/visulima/visulima/commit/cca080fc6098a692e681ee5b140f8c5c3a810a2c))
+
+### Bug Fixes
+
+* **api-platform:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([daa2b0b](https://github.com/visulima/visulima/commit/daa2b0bfb491b42bc83c369fec2dcd7950f082b0))
+* **dev-toolbar:** address code review findings across toolbar components ([449a300](https://github.com/visulima/visulima/commit/449a300226e4ccaee52ad258d5eccf6f77a72343))
+* **dev-toolbar:** align inspector floating badge with main toolbar styling ([8ea1814](https://github.com/visulima/visulima/commit/8ea1814b596126b71231fd124c036f1e450275ef))
+* **dev-toolbar:** audit Select component, add tests, fix pre-existing type error ([c8452d3](https://github.com/visulima/visulima/commit/c8452d3b495e9707579490155e6689c40cff9568))
+* **dev-toolbar:** auto-detect TanStack Start and shield Preact from React Compiler ([6e9fa57](https://github.com/visulima/visulima/commit/6e9fa571ded1ff53d8809cee47fb404897320e9f))
+* **dev-toolbar:** fix coordinate bugs, orphaned elements, and doc inaccuracies ([efa9c54](https://github.com/visulima/visulima/commit/efa9c544c9a8591c6efe6fd4a9995b411c054f54))
+* **dev-toolbar:** open inspector popup at click point and add visible drag handle ([c012aed](https://github.com/visulima/visulima/commit/c012aed47eeabf2047d5a7a7e46cab807de902f3))
+* **dev-toolbar:** prevent querySelector crash on area selection element paths ([ecd64d4](https://github.com/visulima/visulima/commit/ecd64d4b418e74cc582da0cd5efdb9f5e8e95d2b))
+* **dev-toolbar:** resolve all TypeScript, ESLint, and Prettier errors in annotation system ([2fae465](https://github.com/visulima/visulima/commit/2fae4658017d61262293a41bef13348bbfc70e41))
+* **dev-toolbar:** use correct ARIA role in select search tests ([2e1ddfe](https://github.com/visulima/visulima/commit/2e1ddfed1b49697a2d772c5a6b61bf3b6538a43b))
+* **dev-toolbar:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([26ea008](https://github.com/visulima/visulima/commit/26ea00878218a34f89587fb9a2157cb379e98733))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **dev-toolbar:** update examples to use native Vite 8 resolve.tsconfigPaths ([d54d3f7](https://github.com/visulima/visulima/commit/d54d3f71714fc600e4b965e1ab2bdbe0cc442ba6))
+
+### Miscellaneous Chores
+
+* **dev-toolbar:** migrate deps to pnpm catalogs ([a43badc](https://github.com/visulima/visulima/commit/a43badcc8cd19d9c3c9cda4b2d75e272d76d51c8))
+* **dev-toolbar:** update dependencies ([8cac2a2](https://github.com/visulima/visulima/commit/8cac2a2068d902ee8196f8e1f50d658644be7e70))
+* update gen file ([8794258](https://github.com/visulima/visulima/commit/87942584bc22cab96a14094d2ec46ec667179490))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **dev-toolbar:** use native Vite 8 tsconfigPaths in cloudflare example ([fb15d1d](https://github.com/visulima/visulima/commit/fb15d1df62040853a36e7926382765e902380d3a))
+* **dev-toolbar:** use native Vite 8 tsconfigPaths in tanstack-start example ([d89aef7](https://github.com/visulima/visulima/commit/d89aef7c2ba4a8443897d3f7cb9ada494d38d2c4))
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.4...@visulima/dev-toolbar@1.0.0-alpha.5) (2026-03-06)
 
 ### Features
