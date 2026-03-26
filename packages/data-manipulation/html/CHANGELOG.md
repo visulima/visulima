@@ -1,3 +1,16 @@
+## @visulima/html [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.4...@visulima/html@1.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* move JSR dependencies from catalog to package.json ([579468b](https://github.com/visulima/visulima/commit/579468bc7c1e0980b8dae413fa44cf56b9073b6f))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **html:** migrate deps to pnpm catalogs ([18e9713](https://github.com/visulima/visulima/commit/18e97133d72cd7f9ca1fb0636790f8f9aa9dbe81))
+* **html:** update dependencies ([2d72396](https://github.com/visulima/visulima/commit/2d72396550bbc39e24624aed55a32e4c93d51aec))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/html [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.3...@visulima/html@1.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
