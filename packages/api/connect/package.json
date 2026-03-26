@@ -15,7 +15,7 @@
     "http2",
     "zod"
   ],
-  "homepage": "https://www.visulima.com/docs/package/connect",
+  "homepage": "https://visulima.com/packages/connect/",
   "bugs": {
     "url": "https://github.com/visulima/visulima/issues"
   },

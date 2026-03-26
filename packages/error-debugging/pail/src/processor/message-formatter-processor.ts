@@ -6,7 +6,7 @@ import type { Meta, StringifyAwareProcessor } from "../types";
 /**
  * Message Formatter Processor.
  *
- * A processor that formats log messages using the {@link https://www.visulima.com/docs/package/fmt|@visulima/fmt} library.
+ * A processor that formats log messages using the {@link https://visulima.com/packages/fmt/|@visulima/fmt} library.
  * Supports custom formatters, string interpolation, and complex object formatting.
  * Processes both the main message and contextual data.
  * @template L - The log level type

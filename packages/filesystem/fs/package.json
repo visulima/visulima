@@ -53,7 +53,7 @@
     "brotli",
     "gzip"
   ],
-  "homepage": "https://www.visulima.com/docs/package/fs",
+  "homepage": "https://visulima.com/packages/fs/",
   "bugs": {
     "url": "https://github.com/visulima/visulima/issues"
   },
