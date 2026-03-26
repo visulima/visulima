@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.6...@visulima/dev-toolbar@1.0.0-alpha.7) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.5...@visulima/dev-toolbar@1.0.0-alpha.6) (2026-03-26)
 
 ### Features
