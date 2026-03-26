@@ -1,3 +1,23 @@
+## @visulima/pail [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.8...@visulima/pail@4.0.0-alpha.9) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Miscellaneous Chores
+
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.7
+* **@visulima/error:** upgraded to 6.0.0-alpha.7
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.7
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.6
+* **@visulima/redact:** upgraded to 3.0.0-alpha.7
+* **@visulima/string:** upgraded to 3.0.0-alpha.8
+
 ## @visulima/pail [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.7...@visulima/pail@4.0.0-alpha.8) (2026-03-26)
 
 ### Bug Fixes
