@@ -1,3 +1,26 @@
+## @visulima/storage-client [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.7...@visulima/storage-client@1.0.0-alpha.8) (2026-03-26)
+
+### Bug Fixes
+
+* **docs:** correct code examples found during verification ([8e4f8c4](https://github.com/visulima/visulima/commit/8e4f8c4b0b1664c232fe5ae721b771c72d29a152))
+* **storage-client:** guard setInterval against unmounted component and migrate deps to pnpm catalogs ([a6618bc](https://github.com/visulima/visulima/commit/a6618bc7b3f866592a73ba79bf310ffe272f253a))
+* **storage-client:** resolve TanStack Query v5.94+ source-only packages in tests ([1c1b39f](https://github.com/visulima/visulima/commit/1c1b39fd4b259768ffd5b18eb676a146ce5bfb40))
+* updated deps and migrated web app build deps to pnpm catalog ([dd4f515](https://github.com/visulima/visulima/commit/dd4f5153a07d0e46de0b3fc091878d66bb70f2d3))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* add missing documentation pages for email, string, and storage-client ([623f8af](https://github.com/visulima/visulima/commit/623f8afd2ea03dd2805fb2d7a9d10083571224bb))
+
+### Miscellaneous Chores
+
+* **storage-client:** update dependencies ([7976708](https://github.com/visulima/visulima/commit/7976708758d06d3424a0a659b7f074cd25f9b1b9))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **storage-client:** replace vite-tsconfig-paths with native Vite 8 resolve.tsconfigPaths ([7d528f1](https://github.com/visulima/visulima/commit/7d528f1a6d3b1b9ec93c891e89af7bdbf78d090c))
+
 ## @visulima/storage-client [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.6...@visulima/storage-client@1.0.0-alpha.7) (2026-03-06)
 
 ### Bug Fixes
