@@ -11,6 +11,9 @@ on: # yamllint disable-line rule:truthy
             - "opened"
             - "closed"
 
+permissions:
+    contents: "read"
+
 jobs:
     allo-allo:
         uses: "anolilab/workflows/.github/workflows/allo-allo.yml@main"
