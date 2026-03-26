@@ -1,0 +1,125 @@
+---
+title: Usage
+description: "How to detect, configure, and run AI CLI tools with find-ai-runner"
+---
+
+# Usage
+
+## Detecting Providers
+
+### Detect all providers
+
+Returns info for all 11 providers, whether installed or not:
+
+```typescript
+import { detectAllProviders } from "@visulima/find-ai-runner";
+
+const all = detectAllProviders();
+
+for (const provider of all) {
+    console.log(`${provider.name}: ${provider.available ? "installed" : "not found"}`);
+}
+```
+
+### Detect available providers only
+
+Returns only providers that are installed on the system:
+
+```typescript
+import { detectAvailableProviders } from "@visulima/find-ai-runner";
+
+const available = detectAvailableProviders();
+console.log(available);
+// [{ name: "claude", available: true, path: "/usr/local/bin/claude", version: "1.2.3" }, ...]
+```
+
+### Detect a specific provider
+
+```typescript
+import { detectProvider } from "@visulima/find-ai-runner";
+
+const claude = detectProvider("claude");
+
+if (claude.available) {
+    console.log(`Claude found at ${claude.path}, version ${claude.version}`);
+    console.log(`Detection method: ${claude.detectionMethod}`); // "envvar", "which", or "known-path"
+}
+```
+
+## Running Prompts
+
+### Basic execution
+
+```typescript
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+
+if (provider.available) {
+    const result = await runProvider(provider, "Explain this error: TypeError: Cannot read property 'foo' of undefined");
+    console.log(result.stdout);
+}
+```
+
+### Custom model and timeout
+
+```typescript
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+
+if (provider.available) {
+    const result = await runProvider(provider, "Analyze this dependency update", {
+        model: "claude-opus-4-20250514",
+        maxTokens: 8192,
+        timeoutMs: 60_000,
+    });
+
+    console.log(result.stdout);
+    console.log(`Provider used: ${result.provider}`);
+}
+```
+
+### Preview CLI arguments
+
+Build the CLI arguments without executing, useful for logging or debugging:
+
+```typescript
+import { buildCliArgs } from "@visulima/find-ai-runner";
+
+const args = buildCliArgs("claude", "Explain this code", {
+    model: "claude-sonnet-4-20250514",
+    maxTokens: 4096,
+});
+
+console.log(args);
+// ["--dangerously-skip-permissions", "--model", "claude-sonnet-4-20250514", "--output-format", "text", "-p", "Explain this code"]
+```
+
+## Detection Strategies
+
+Providers are detected using three strategies, tried in order:
+
+1. **Environment variable** — Each provider has a dedicated env var (e.g., `CLAUDE_PATH`, `GEMINI_PATH`) that can point to the CLI binary
+2. **`which`/`where` command** — Looks up the command on the system PATH
+3. **Known paths** — Checks common installation directories:
+   - `/opt/homebrew/bin/` (macOS Homebrew)
+   - `/usr/local/bin/` (system-wide)
+   - `~/.npm-global/bin/` (npm global)
+   - `~/.local/bin/` (user-local)
+   - `~/.cargo/bin/` (Rust/Cargo)
+   - Windows: `%APPDATA%\npm\`, `%LOCALAPPDATA%\Programs\`, `%ProgramFiles%\`
+
+## Environment Variable Overrides
+
+Override the detected path for any provider by setting its environment variable:
+
+```bash
+export CLAUDE_PATH=/custom/path/to/claude
+export GEMINI_PATH=/opt/custom/gemini
+```
+
+This is useful for:
+- Using a specific version of a provider
+- Testing with a mock/wrapper script
+- Corporate environments with non-standard installation paths

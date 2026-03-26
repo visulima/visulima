@@ -17,21 +17,26 @@ const json = execSync(
     `pnpm exec nx show projects --affected --exclude=*-bench,docs,storybook,shared-utils --files=${process.env.CHANGED_FILES} --json`,
 ).toString("utf8");
 
-/** @type {Array<{ path: string, private: boolean, peerDependencies?: Record<string, string> }>} */
-const affectedRepoPackages = JSON.parse(json);
+/** @type {string[]} */
+const affectedProjects = JSON.parse(json);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const packagesPath = join(__dirname, "..", "packages");
+const rootPath = join(__dirname, "..");
 
-const packages = affectedRepoPackages.map((path) => {
-    const packageJsonPath = join(packagesPath, path, "package.json");
+const packages = affectedProjects.map((projectName) => {
+    // Ask NX for the actual project root, since project names may not match directory paths
+    const projectJson = JSON.parse(
+        execSync(`pnpm exec nx show project ${projectName} --json`, { encoding: "utf8" }),
+    );
+    const projectRoot = join(rootPath, projectJson.root);
+    const packageJsonPath = join(projectRoot, "package.json");
 
     if (!existsSync(packageJsonPath)) {
-        throw new Error(`package.json not found at ${packageJsonPath}`);
+        throw new Error(`package.json not found at ${packageJsonPath} (project: ${projectName})`);
     }
 
-    return join(packagesPath, path);
+    return projectRoot;
 });
 
 if (packages.length > 0) {

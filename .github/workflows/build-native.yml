@@ -1,0 +1,197 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Build Native"
+
+on: # yamllint disable-line rule:truthy
+    # eslint-disable-next-line yml/no-empty-mapping-value
+    pull_request: # yamllint disable-line rule:empty-values
+    push:
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+env:
+    CARGO_INCREMENTAL: 0
+
+defaults:
+    run:
+        working-directory: "packages/tooling/task-runner"
+
+jobs:
+    files-changed:
+        name: "Detect native file changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        outputs:
+            native: "${{ steps.changes.outputs.native }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Check for native file changes"
+              uses: "dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36" # v3.0.2
+              id: "changes"
+              with:
+                  filters: |
+                      native:
+                        - 'packages/tooling/task-runner/native/**'
+                        - 'packages/tooling/task-runner/npm/**'
+                        - 'packages/tooling/task-runner/package.json'
+                        - 'packages/tooling/task-runner/binding.js'
+                        - '.github/workflows/build-native.yml'
+
+    build:
+        name: "Build - ${{ matrix.settings.target }}"
+        needs: "files-changed"
+        if: "needs.files-changed.outputs.native == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'"
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - target: "x86_64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "aarch64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "x86_64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                    - target: "x86_64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      cross: "-x"
+                    - target: "aarch64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                      cross: "--use-napi-cross"
+                    - target: "aarch64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      cross: "-x"
+                    - target: "x86_64-pc-windows-msvc"
+                      os: "windows-latest"
+                    - target: "aarch64-pc-windows-msvc"
+                      os: "windows-latest"
+        runs-on: "${{ matrix.settings.os }}"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
+              with:
+                  node-version: "22"
+                  cache-prefix: "build-native"
+                  run-signatures-audit: false
+
+            - name: "Install Rust toolchain"
+              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
+              with:
+                  cache-key: "build-native"
+                  save-cache: "${{ github.ref_name == 'main' }}"
+                  tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
+
+            - name: "Add Rust target"
+              run: "rustup target add ${{ matrix.settings.target }}"
+              working-directory: "."
+
+            - name: "Install Zig (cross-compilation)"
+              if: "${{ matrix.settings.cross == '-x' }}"
+              uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
+              with:
+                  version: "0.14.1"
+
+            - name: "Build native"
+              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+
+            - name: "Upload artifact"
+              uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
+              with:
+                  name: "bindings-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner/*.node"
+                  if-no-files-found: "error"
+
+    test-native:
+        name: "Test native - ${{ matrix.settings.target }}"
+        needs: "build"
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - target: "x86_64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "aarch64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "x86_64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                    - target: "x86_64-pc-windows-msvc"
+                      os: "windows-latest"
+        runs-on: "${{ matrix.settings.os }}"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
+              with:
+                  node-version: "22"
+                  cache-prefix: "build-native-test"
+                  run-signatures-audit: false
+
+            - name: "Download artifact"
+              uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
+              with:
+                  name: "bindings-${{ matrix.settings.target }}"
+                  path: "packages/tooling/task-runner"
+
+            - name: "Run native binding tests"
+              run: "pnpm vitest run __tests__/native-binding.test.ts __tests__/xxh3.test.ts"
+
+    # This check runs once all build jobs have passed
+    build-native-required-check:
+        needs: ["files-changed", "build", "test-native"]
+        name: "Check Native Build"
+        if: "always()"
+        runs-on: "ubuntu-24.04"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Check for failures"
+              working-directory: "."
+              run: |
+                  if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+                    echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
+                  fi

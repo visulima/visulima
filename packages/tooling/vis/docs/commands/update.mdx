@@ -1,0 +1,89 @@
+---
+title: "vis update"
+description: "Update packages to their latest versions with catalog support"
+---
+
+# vis update
+
+Update packages to their latest versions. Automatically uses **catalog mode** for pnpm/bun workspaces with catalogs, or wraps the native package manager otherwise.
+
+**Alias:** `vis up`
+
+## Usage
+
+```bash
+vis update [packages] [options]
+```
+
+## Examples
+
+```bash
+vis update react                    # Update react within semver range
+vis up react -L                     # Update react to latest
+vis update -i                       # Interactive mode
+vis update --filter app             # Update in specific workspace
+vis update -r                       # Update in all workspaces
+vis update --target minor           # Only apply minor/patch updates (catalog)
+vis update --dry-run                # Preview changes without applying
+vis update --exclude '@types/*'     # Exclude packages by pattern
+vis update --changelog              # Show changelog links after updating
+vis update --rollback               # Restore catalog from last backup
+```
+
+## Options
+
+| Option             | Alias | Default  | Description                                               |
+| ------------------ | ----- | -------- | --------------------------------------------------------- |
+| `--latest`         | `-L`  | `false`  | Update to latest version (ignore semver range)            |
+| `--target`         | `-t`  | `latest` | Update target: `latest`, `minor`, or `patch` (catalog)    |
+| `--dry-run`        | `-d`  | `false`  | Preview changes without applying                          |
+| `--global`         | `-g`  | `false`  | Update global packages                                    |
+| `--recursive`      | `-r`  | `false`  | Update recursively in all workspace packages              |
+| `--filter`         |       |          | Filter packages in monorepo                               |
+| `--workspace-root` | `-w`  | `false`  | Include workspace root                                    |
+| `--dev`            | `-D`  | `false`  | Update only devDependencies                               |
+| `--prod`           | `-P`  | `false`  | Update only dependencies                                  |
+| `--interactive`    | `-i`  | `false`  | Interactive mode                                          |
+| `--no-optional`    |       | `false`  | Don't update optionalDependencies                         |
+| `--no-save`        |       | `false`  | Update lockfile only                                      |
+| `--include`        |       |          | Glob pattern to include packages (repeatable, catalog)    |
+| `--exclude`        |       |          | Glob pattern to exclude packages (repeatable, catalog)    |
+| `--prerelease`     |       | `false`  | Include prerelease versions (catalog)                     |
+| `--security`       |       | `false`  | Check for known security vulnerabilities (OSV.dev)        |
+| `--no-catalog`     |       | `false`  | Skip catalog mode, use package manager directly           |
+| `--format`         |       | `table`  | Output format: `table`, `json`, or `minimal`              |
+| `--changelog`      |       | `false`  | Show changelog URLs for updated packages                  |
+| `--install`        |       | `true`   | Run install after catalog update (`--no-install` to skip) |
+| `--rollback`       |       | `false`  | Restore catalog file from the last backup                 |
+
+## Catalog Mode vs Package Manager Mode
+
+### Catalog Mode (pnpm/bun)
+
+When catalogs are detected in `pnpm-workspace.yaml` or `package.json`, vis directly updates the catalog entries. This mode:
+
+- Reads catalog definitions from the workspace config
+- Checks the npm registry for newer versions
+- Updates the catalog file in place
+- Creates a backup before modifying
+- Optionally runs `pnpm install` or `bun install` after updating
+
+### Package Manager Mode
+
+When catalogs are not available (or `--no-catalog` is used), vis wraps the native package manager's update command. Supported package managers:
+
+- **pnpm** — Full feature support
+- **npm** — Basic support
+- **yarn v1** — Limited support
+- **yarn berry** — Full support
+- **bun** — Partial support
+
+## Backup and Rollback
+
+Every catalog update automatically creates a backup. To restore:
+
+```bash
+vis update --rollback
+```
+
+The backup is stored alongside the catalog file (e.g., `pnpm-workspace.yaml.backup`).

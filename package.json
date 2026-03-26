@@ -7,7 +7,8 @@
     "type": "module",
     "workspaces": [
         "packages/*/*",
-        "apps/*"
+        "apps/*",
+        "shared/*"
     ],
     "scripts": {
         "bench:cerebro": "pnpm --filter \"cerebro-bench\" run test:bench",

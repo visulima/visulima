@@ -1,0 +1,53 @@
+---
+title: "vis graph"
+description: "Visualize the project dependency graph"
+---
+
+# vis graph
+
+Visualize the project dependency graph in various formats.
+
+## Usage
+
+```bash
+vis graph [options]
+```
+
+## Examples
+
+```bash
+vis graph
+vis graph --format=dot
+vis graph --format=json --output=graph.json
+vis graph --format=html --output=graph.html
+```
+
+## Options
+
+| Option     | Alias | Default | Description                                   |
+| ---------- | ----- | ------- | --------------------------------------------- |
+| `--format` | `-f`  | `ascii` | Output format: `ascii`, `dot`, `json`, `html` |
+| `--output` | `-o`  | stdout  | Write output to file instead of stdout        |
+
+## Output Formats
+
+### ASCII (default)
+
+Prints a tree-style representation to the terminal. Best for quick inspections.
+
+### DOT
+
+Outputs Graphviz DOT format. Render with:
+
+```bash
+vis graph --format=dot --output=graph.dot
+dot -Tpng graph.dot -o graph.png
+```
+
+### JSON
+
+Machine-readable format listing nodes and edges. Useful for custom tooling.
+
+### HTML
+
+Self-contained HTML file with an interactive graph visualization.

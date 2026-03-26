@@ -1,0 +1,73 @@
+---
+title: Auto-Fingerprinting
+description: Vite Task-style automatic input detection
+---
+
+# Auto-Fingerprinting
+
+Auto-fingerprinting eliminates the need for manual input configuration. Instead of declaring which files affect a task, the runner automatically tracks which files a task actually accesses during execution.
+
+## How It Works
+
+1. **First run** - Execute the task while tracking file system access
+2. **Record fingerprint** - Store content hashes of all accessed files
+3. **Subsequent runs** - Validate the fingerprint against current file state
+4. **Cache hit** - If all files are unchanged, replay cached result
+5. **Cache miss** - Re-execute and update the fingerprint
+
+## Enable Auto-Fingerprinting
+
+```typescript
+const results = await defaultTaskRunner(tasks, {
+    autoFingerprint: true,
+    fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
+    cacheDiagnostics: true,
+}, context);
+```
+
+## What Gets Tracked
+
+The fingerprint captures:
+
+- **File reads** - Content hashes of all files opened during execution
+- **Missing files** - Files that were probed but didn't exist (creating them later invalidates the cache)
+- **Directory listings** - If a command scans a directory (e.g., glob for `*.test.ts`), adding/removing files invalidates the cache
+- **Environment variables** - Matching the configured patterns
+- **Command arguments** - Task overrides and configuration
+
+## File Access Tracking
+
+On Linux, file accesses are tracked via `strace` (intercepting `open`, `openat`, `stat`, `getdents` syscalls). On other platforms, a preload script patches `fs` module calls.
+
+## Cache Miss Diagnostics
+
+When `cacheDiagnostics` is enabled, the runner explains exactly why a cache miss occurred:
+
+```
+Cache miss reasons:
+  - File modified: src/index.ts
+  - Environment variable changed: NODE_ENV
+  - Directory contents changed: src/components
+```
+
+## Untracked Environment Variables
+
+Some env vars should be available to tasks but not affect the cache (e.g., CI build IDs):
+
+```typescript
+{
+    autoFingerprint: true,
+    fingerprintEnvPatterns: ["VITE_*", "CI_*"],
+    untrackedEnvVars: ["CI_BUILD_ID", "CI_JOB_URL"],
+}
+```
+
+## Comparison with Nx-style
+
+| Aspect | Nx-style | Auto-fingerprint |
+|--------|----------|-----------------|
+| Configuration | Manual input declarations | Zero-config |
+| Accuracy | May miss files or include too many | Tracks exact files |
+| First run | Hash computed upfront | Must execute to build fingerprint |
+| Performance | Faster cache checks | Slightly slower (validates all files) |
+| Remote cache | Full support | Local only |
