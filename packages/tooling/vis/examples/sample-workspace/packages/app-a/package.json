@@ -1,0 +1,13 @@
+{
+    "name": "app-a",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building app-a...' && sleep 1 && echo 'app-a built!'",
+        "test": "echo 'Testing app-a...' && sleep 0.5 && echo 'app-a tests passed!'",
+        "lint": "echo 'Linting app-a...' && echo 'No lint errors.'"
+    },
+    "dependencies": {
+        "lib-b": "1.0.0"
+    }
+}

@@ -71,7 +71,7 @@ const readJsonFileSafe = <T>(filePath: string): T | undefined => {
  * Recursively scans a directory for packages (directories containing package.json).
  */
 const scanDirectoryRecursive = (baseDirectory: string, base: string, results: string[]): void => {
-    for (const entry of walkSync(baseDirectory, { includeFiles: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+    for (const entry of walkSync(baseDirectory, { includeFiles: false, includeSymlinks: false, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
         if (entry.path === baseDirectory) {
             continue;
         }
@@ -95,7 +95,7 @@ const resolveSimpleGlob = (workspaceRoot: string, cleanPattern: string, results:
         return;
     }
 
-    for (const entry of walkSync(baseDirectory, { includeFiles: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
+    for (const entry of walkSync(baseDirectory, { includeFiles: false, includeSymlinks: false, maxDepth: 1, skip: [NODE_MODULES_RE, DOT_GIT_RE] })) {
         if (entry.path === baseDirectory) {
             continue;
         }
