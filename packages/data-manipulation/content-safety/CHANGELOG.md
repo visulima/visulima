@@ -1,3 +1,9 @@
+## @visulima/content-safety [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.3...@visulima/content-safety@1.0.0-alpha.4) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
 ## @visulima/content-safety [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.2...@visulima/content-safety@1.0.0-alpha.3) (2026-03-26)
 
 ### Bug Fixes
