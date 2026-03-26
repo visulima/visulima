@@ -817,4 +817,164 @@ describe("cli", () => {
             expect(() => new Cli("MyCLI", { logger: console })).not.toThrow();
         });
     });
+
+    describe("options after positional arguments", () => {
+        it("should parse options placed after the positional argument", async () => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+
+            // Simulates: `cli run build --root=/tmp`
+            const cli = new Cli("MyCLI", { argv: ["run", "build", "--root", "/tmp"] });
+
+            cli.addCommand({
+                argument: { name: "target", type: String },
+                execute,
+                name: "run",
+                options: [
+                    { name: "root", type: String },
+                ],
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(execute).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    argument: ["build"],
+                    options: expect.objectContaining({
+                        root: "/tmp",
+                    }),
+                }),
+            );
+        });
+
+        it("should parse options with = notation after the positional argument", async () => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+
+            // Simulates: `cli run build --root=/tmp`
+            const cli = new Cli("MyCLI", { argv: ["run", "build", "--root=/tmp"] });
+
+            cli.addCommand({
+                argument: { name: "target", type: String },
+                execute,
+                name: "run",
+                options: [
+                    { name: "root", type: String },
+                ],
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(execute).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    argument: ["build"],
+                    options: expect.objectContaining({
+                        root: "/tmp",
+                    }),
+                }),
+            );
+        });
+
+        it("should parse kebab-case options after positional argument with camelCase conversion", async () => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+
+            // Simulates: `cli run build --cache-dir=/tmp --dry-run`
+            const cli = new Cli("MyCLI", { argv: ["run", "build", "--cache-dir", "/tmp", "--dry-run"] });
+
+            cli.addCommand({
+                argument: { name: "target", type: String },
+                execute,
+                name: "run",
+                options: [
+                    { name: "cache-dir", type: String },
+                    { name: "dry-run", type: Boolean },
+                ],
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(execute).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    argument: ["build"],
+                    options: expect.objectContaining({
+                        cacheDir: "/tmp",
+                        dryRun: true,
+                    }),
+                }),
+            );
+        });
+
+        it("should parse options both before and after the positional argument", async () => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+
+            // Simulates: `cli run --parallel=5 build --root=/tmp`
+            const cli = new Cli("MyCLI", { argv: ["run", "--parallel", "5", "build", "--root", "/tmp"] });
+
+            cli.addCommand({
+                argument: { name: "target", type: String },
+                execute,
+                name: "run",
+                options: [
+                    { name: "root", type: String },
+                    { name: "parallel", type: Number },
+                ],
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(execute).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    argument: ["build"],
+                    options: expect.objectContaining({
+                        parallel: 5,
+                        root: "/tmp",
+                    }),
+                }),
+            );
+        });
+
+        it("should parse options with default values alongside post-positional options", async () => {
+            expect.assertions(2);
+
+            const execute = vi.fn();
+
+            // Simulates: `cli run build --root=/tmp` (parallel has a defaultValue)
+            const cli = new Cli("MyCLI", { argv: ["run", "build", "--root", "/tmp"] });
+
+            cli.addCommand({
+                argument: { name: "target", type: String },
+                execute,
+                name: "run",
+                options: [
+                    { name: "root", type: String },
+                    { defaultValue: 3, name: "parallel", type: Number },
+                    { defaultValue: false, name: "dry-run", type: Boolean },
+                ],
+            });
+
+            await cli.run({ shouldExitProcess: false });
+
+            expect(execute).toHaveBeenCalledTimes(1);
+            expect(execute).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    argument: ["build"],
+                    options: expect.objectContaining({
+                        dryRun: false,
+                        parallel: 3,
+                        root: "/tmp",
+                    }),
+                }),
+            );
+        });
+    });
 });
