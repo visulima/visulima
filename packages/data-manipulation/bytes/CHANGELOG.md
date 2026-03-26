@@ -1,3 +1,20 @@
+## @visulima/bytes [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.5...@visulima/bytes@3.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* move JSR dependencies from catalog to package.json ([579468b](https://github.com/visulima/visulima/commit/579468bc7c1e0980b8dae413fa44cf56b9073b6f))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **bytes:** migrate deps to pnpm catalogs ([1eeed04](https://github.com/visulima/visulima/commit/1eeed04471f41e15943a6d17a301f060da1adaf0))
+* **bytes:** update dependencies ([9cab689](https://github.com/visulima/visulima/commit/9cab689e5b93267cd4c23dc07e9e107a9524b41e))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
 ## @visulima/bytes [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.4...@visulima/bytes@3.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
