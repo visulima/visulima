@@ -321,7 +321,9 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                     values[optionName] = value;
                 }
             }
-        } else if (token.kind === "positional" && options.stopAtFirstUnknown && !consumedPositionalIndices.has(token.index)) {
+        } else if (token.kind === "positional" && options.stopAtFirstUnknown && !consumedPositionalIndices.has(token.index) && !defaultOptionDefinition) {
+            // Only stop on unconsumed positionals when there is no defaultOption to absorb them.
+            // When a defaultOption exists, positionals are collected in the second pass below.
             debugLog(debugEnabled, `Found unconsumed positional token at index ${token.index}, stopping processing`, "resolver");
             output._unknown = argv.slice(token.index);
             break;
@@ -337,6 +339,25 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
     }
 
+    // When stopAtFirstUnknown is set, find the argv index of the first truly unknown option.
+    // Positionals before this point can be consumed by defaultOption; positionals at or after belong to _unknown.
+    let stopAtUnknownArgvIndex = Number.POSITIVE_INFINITY;
+
+    if (options.stopAtFirstUnknown && !stoppedByTerminator) {
+        for (const token of tokens) {
+            if (
+                token.kind === "option"
+                && !definitionMap.has(token.name || "")
+                && !aliasMap.has(token.name || "")
+                && (!options.caseInsensitive
+                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
+            ) {
+                stopAtUnknownArgvIndex = token.index;
+                break;
+            }
+        }
+    }
+
     // Handle defaultOption
     if (defaultOptionDefinition) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -344,7 +365,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         const positionalTokens: ArgumentToken[] = [];
 
         for (const token of tokens) {
-            if (token.kind === "positional" && !consumedPositionalIndices.has(token.index)) {
+            // Only consume positionals that appear before any unknown option
+            if (token.kind === "positional" && !consumedPositionalIndices.has(token.index) && token.index < stopAtUnknownArgvIndex) {
                 positionalValues.push(token.value);
                 positionalTokens.push(token);
             }
