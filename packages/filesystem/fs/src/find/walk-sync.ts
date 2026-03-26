@@ -118,12 +118,14 @@ export default function* walkSync(
                         name: entry.name,
                         path: normalize(path),
                     };
+
+                    continue;
                 } else {
                     continue;
                 }
             }
 
-            if (entry.isSymbolicLink() || entry.isDirectory()) {
+            if (entry.isDirectory()) {
                 yield* walkSync(path, {
                     extensions,
                     followSymlinks,
