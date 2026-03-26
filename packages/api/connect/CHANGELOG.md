@@ -1,3 +1,20 @@
+## @visulima/connect [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.5...@visulima/connect@4.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **connect:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([7edea03](https://github.com/visulima/visulima/commit/7edea03b564d19f7393f01138b74ac1239562dd9))
+* **web:** enhance copy-package-docs with asset copying, link rewriting, and broken link removal ([05e481f](https://github.com/visulima/visulima/commit/05e481f8280ba889d241a645f29c573554822f3d))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **connect:** migrate deps to pnpm catalogs ([30a087b](https://github.com/visulima/visulima/commit/30a087b2f08bfe17b733cf0bdd969f1638189fca))
+* **connect:** update dependencies ([a9ec468](https://github.com/visulima/visulima/commit/a9ec4689533c84c075519c2622f48854ceb05a0d))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
 ## @visulima/connect [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.4...@visulima/connect@4.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
