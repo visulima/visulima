@@ -1,3 +1,13 @@
+## @visulima/deep-clone [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.7...@visulima/deep-clone@4.0.0-alpha.8) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Miscellaneous Chores
+
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+
 ## @visulima/deep-clone [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.6...@visulima/deep-clone@4.0.0-alpha.7) (2026-03-26)
 
 ### Bug Fixes
