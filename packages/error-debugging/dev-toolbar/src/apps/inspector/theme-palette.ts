@@ -28,7 +28,7 @@ export interface AnnotationPalette extends BasePalette {
 }
 
 const BASE_DARK: BasePalette = {
-    bg: "#18181b",
+    bg: "#212121",
     btnBg: "rgba(196,181,253,0.08)",
     btnBgHover: "rgba(196,181,253,0.16)",
     btnBorder: "rgba(196,181,253,0.25)",
@@ -36,11 +36,11 @@ const BASE_DARK: BasePalette = {
     fg: "#fafafa",
     muted: "#a1a1aa",
     primary: "#c4b5fd",
-    shadow: "0 8px 32px rgba(0,0,0,.75)",
+    shadow: "0 6px 24px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.5)",
 };
 
 const BASE_LIGHT: BasePalette = {
-    bg: "#ffffff",
+    bg: "#f2f2f2",
     btnBg: "rgba(124,58,237,0.08)",
     btnBgHover: "rgba(124,58,237,0.16)",
     btnBorder: "rgba(124,58,237,0.25)",
@@ -48,7 +48,7 @@ const BASE_LIGHT: BasePalette = {
     fg: "#18181b",
     muted: "#52525b",
     primary: "#7c3aed",
-    shadow: "0 8px 32px rgba(0,0,0,.15)",
+    shadow: "0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.08)",
 };
 
 export const INSPECTOR_DARK: InspectorPalette = {

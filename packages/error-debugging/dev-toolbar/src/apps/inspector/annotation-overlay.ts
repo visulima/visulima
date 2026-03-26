@@ -88,7 +88,7 @@ const showToast = (message: string, type: "error" | "success" = "success"): void
 
     toast.id = TOAST_ID;
     toast.textContent = message;
-    toast.style.cssText = `position:fixed;z-index:2147483648;bottom:1rem;right:1rem;padding:6px 14px;background:${type === "success" ? "#22c55e" : "#ef4444"};color:#fff;font:12px/1 system-ui,-apple-system,sans-serif;font-weight:600;pointer-events:none;opacity:0;transition:opacity 0.2s,transform 0.2s;transform:translateY(4px);`;
+    toast.style.cssText = `position:fixed;z-index:2147483648;bottom:1rem;right:1rem;padding:6px 14px;background:${type === "success" ? "#22c55e" : "#ef4444"};color:#fff;font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace;font-weight:600;pointer-events:none;opacity:0;transition:opacity 0.2s,transform 0.2s;transform:translateY(4px);`;
     document.body.append(toast);
     requestAnimationFrame(() => { toast.style.opacity = "1"; toast.style.transform = "translateY(0)"; });
     setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 200); }, 1500);
