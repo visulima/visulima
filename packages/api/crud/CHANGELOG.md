@@ -1,3 +1,22 @@
+## @visulima/crud [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.6...@visulima/crud@3.0.0-alpha.7) (2026-03-26)
+
+### Bug Fixes
+
+* **crud:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([fb71c3e](https://github.com/visulima/visulima/commit/fb71c3e9291ddb1ba23c3352ee80dd302a97addb))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **crud:** migrate deps to pnpm catalogs ([795d1f4](https://github.com/visulima/visulima/commit/795d1f4de3c5454ca7dbe50fa8ededf461ce50cb))
+* **crud:** update dependencies ([6a27669](https://github.com/visulima/visulima/commit/6a27669a93b37084c4fed9f0a4f23cbde70f1f90))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.7
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/crud [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.5...@visulima/crud@3.0.0-alpha.6) (2026-03-06)
 
 ### Documentation
