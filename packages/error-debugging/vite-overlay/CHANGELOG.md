@@ -1,3 +1,26 @@
+## @visulima/vite-overlay [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.8...@visulima/vite-overlay@2.0.0-alpha.9) (2026-03-26)
+
+### Bug Fixes
+
+* **vite-overlay:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([cf5aedc](https://github.com/visulima/visulima/commit/cf5aedcc8621fedf4a1b4f39b574699292f85a5a))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* **vite-overlay:** migrate deps to pnpm catalogs ([7553183](https://github.com/visulima/visulima/commit/7553183ae573d60405ab9f5227106eca8073f85c))
+* **vite-overlay:** update dependencies ([d93e9e0](https://github.com/visulima/visulima/commit/d93e9e06cc4563c9c9a087515b6701598057b2b3))
+
+### Code Refactoring
+
+* **vite-overlay:** replace vite-tsconfig-paths with native Vite 8 resolve.tsconfigPaths ([3d1e454](https://github.com/visulima/visulima/commit/3d1e454fd7d2e7178df2c795d50ad93927635a74))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/vite-overlay [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.7...@visulima/vite-overlay@2.0.0-alpha.8) (2026-03-06)
 
 ### Bug Fixes
