@@ -30,7 +30,7 @@
         "swagger",
         "openapi"
     ],
-    "homepage": "https://www.visulima.com/docs/package/api-platform",
+    "homepage": "https://visulima.com/packages/api-platform/",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",

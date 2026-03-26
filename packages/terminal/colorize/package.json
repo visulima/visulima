@@ -55,7 +55,7 @@
     "xterm",
     "yellow"
   ],
-  "homepage": "https://www.visulima.com/docs/package/colorize",
+  "homepage": "https://visulima.com/packages/colorize/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/visulima/visulima.git",

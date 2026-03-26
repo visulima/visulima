@@ -55,7 +55,7 @@
     "warning-logging",
     "winston"
   ],
-  "homepage": "https://www.visulima.com/docs/package/pail",
+  "homepage": "https://visulima.com/packages/pail/",
   "bugs": {
     "url": "https://github.com/visulima/visulima/issues"
   },

@@ -32,7 +32,7 @@
     "shell",
     "command-line"
   ],
-  "homepage": "https://www.visulima.com/docs/package/is-ansi-color-supported",
+  "homepage": "https://visulima.com/packages/is-ansi-color-supported/",
   "bugs": {
     "url": "https://github.com/visulima/visulima/issues"
   },

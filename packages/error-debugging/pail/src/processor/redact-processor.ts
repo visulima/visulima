@@ -7,7 +7,7 @@ import type { Meta, Processor } from "../types";
  * Redact Processor.
  *
  * A processor that redacts sensitive information from log messages and metadata.
- * Uses the {@link https://www.visulima.com/docs/package/redact|@visulima/redact} library to identify and mask sensitive data like
+ * Uses the {@link https://visulima.com/packages/redact/|@visulima/redact} library to identify and mask sensitive data like
  * passwords, API keys, credit card numbers, and other PII.
  * @template L - The log level type
  * @example
