@@ -1,10 +1,10 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 import { resolve } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { walk } from "../../../src";
+import { walk, walkSync } from "../../../src";
 import type { WalkEntry, WalkOptions } from "../../../src/types";
 
 const fixture = resolve(fileURLToPath(import.meta.url), "../../../../__fixtures__/walk");
@@ -242,5 +242,77 @@ describe(walk, () => {
         await assertWalkPaths("match", [".", "z"], {
             skip: isWindows ? [String.raw`**\[xy]`] : ["**/[xy]"],
         });
+    });
+
+    it("should not crash on symlinks pointing to files with default options", async () => {
+        const temporaryDirectory = resolve(fixture, "_tmp_symlink_file_test");
+
+        await mkdir(resolve(temporaryDirectory, "subdir"), { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+        await writeFile(resolve(temporaryDirectory, "subdir", "nested.txt"), "world");
+
+        try {
+            // Default options: followSymlinks=false, includeSymlinks=true
+            // This should NOT throw ENOTDIR when encountering a symlink to a file
+            const entries = await getEntries(temporaryDirectory);
+
+            const paths = entries.map(({ path }) => path);
+
+            expect(paths).toContain(resolve(temporaryDirectory, "subdir"));
+            expect(paths).toContain(resolve(temporaryDirectory, "real-file.txt"));
+            // The symlink entry should be yielded but not recursed into
+            expect(paths).toContain(resolve(temporaryDirectory, "link-to-file.txt"));
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("should not crash on symlinks pointing to files with includeFiles=false", async () => {
+        const temporaryDirectory = resolve(fixture, "_tmp_symlink_nofiles_test");
+
+        await mkdir(resolve(temporaryDirectory, "subdir"), { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            // includeFiles=false with default includeSymlinks=true
+            // Should not crash when the symlink points to a file
+            const entries = await getEntries(temporaryDirectory, { includeFiles: false });
+
+            const paths = entries.map(({ path }) => path);
+
+            expect(paths).toContain(resolve(temporaryDirectory));
+            expect(paths).toContain(resolve(temporaryDirectory, "subdir"));
+            // Symlink to file should still be yielded (includeSymlinks is true)
+            expect(paths).toContain(resolve(temporaryDirectory, "link-to-file.txt"));
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("walkSync should not crash on symlinks pointing to files", () => {
+        const temporaryDirectory = resolve(fixture, "_tmp_symlink_sync_test");
+        const { mkdirSync, writeFileSync, symlinkSync, rmSync } = require("node:fs");
+
+        mkdirSync(resolve(temporaryDirectory, "subdir"), { recursive: true });
+        writeFileSync(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        symlinkSync(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries: WalkEntry[] = [];
+
+            for (const entry of walkSync(temporaryDirectory)) {
+                entries.push(entry);
+            }
+
+            const paths = entries.map(({ path }) => path);
+
+            expect(paths).toContain(resolve(temporaryDirectory, "subdir"));
+            expect(paths).toContain(resolve(temporaryDirectory, "real-file.txt"));
+            expect(paths).toContain(resolve(temporaryDirectory, "link-to-file.txt"));
+        } finally {
+            rmSync(temporaryDirectory, { recursive: true });
+        }
     });
 });

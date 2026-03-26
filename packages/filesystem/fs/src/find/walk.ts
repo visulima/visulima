@@ -120,12 +120,14 @@ export default async function* walk(
                         name: entry.name,
                         path,
                     };
+
+                    continue;
                 } else {
                     continue;
                 }
             }
 
-            if (entry.isSymbolicLink() || entry.isDirectory()) {
+            if (entry.isDirectory()) {
                 yield* walk(path, {
                     extensions,
                     followSymlinks,
