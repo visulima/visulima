@@ -1,3 +1,19 @@
+## @visulima/fmt [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.5...@visulima/fmt@2.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **fmt:** migrate deps to pnpm catalogs ([92bf4f0](https://github.com/visulima/visulima/commit/92bf4f07f6e64923f5739bd4cfe0d84349f17752))
+* **fmt:** update dependencies ([3e7b109](https://github.com/visulima/visulima/commit/3e7b1098a0403211311e49bc9e22c7523c39cfc7))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
 ## @visulima/fmt [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.4...@visulima/fmt@2.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
