@@ -69,19 +69,18 @@ jobs:
                   commit: "${{ github.sha }}"
                   name: "bindings-(.+)"
                   name_is_regexp: true
-                  path: "packages/tooling/task-runner"
+                  path: "packages/tooling/task-runner/artifacts"
                   if_no_artifact_found: "fail"
                   allow_forks: false
 
-            - name: "Flatten native binding artifacts"
+            - name: "Distribute native artifacts to platform packages"
               shell: "bash"
-              run: |
-                  find packages/tooling/task-runner -name "*.node" -path "*/bindings-*/*" -exec mv {} packages/tooling/task-runner/ \;
-                  rm -rf packages/tooling/task-runner/bindings-*/
-
-            - name: "Move native artifacts to platform packages"
-              run: "pnpm exec napi artifacts --output-dir . --npm-dir npm"
               working-directory: "packages/tooling/task-runner"
+              run: |
+                  find artifacts -name "*.node" -exec mv {} . \;
+                  rm -rf artifacts/
+                  pnpm exec napi artifacts --output-dir . --npm-dir npm
+                  rm -f *.node
 
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
@@ -111,4 +110,4 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm exec multi-semantic-release"
+              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**'"

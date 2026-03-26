@@ -47,8 +47,6 @@
     "files": [
         "dist/**",
         "binding.js",
-        "npm",
-        "*.node",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
@@ -85,6 +83,7 @@
         "@arethetypeswrong/cli": "catalog:dev",
         "@napi-rs/cli": "^3.5.1",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
         "@shared/xxh3": "workspace:*",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
