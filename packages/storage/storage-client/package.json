@@ -98,7 +98,6 @@
     "test:ui": "vitest --ui --coverage.enabled=true",
     "test:watch": "vitest"
   },
-  "dependencies": {},
   "devDependencies": {
     "@anolilab/eslint-config": "catalog:lint",
     "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -109,7 +108,7 @@
     "@sveltejs/vite-plugin-svelte": "catalog:build",
     "@tanstack/eslint-plugin-query": "catalog:lint",
     "@tanstack/react-query": ">=5.94.4",
-    "@tanstack/solid-query": ">=5.94.4",
+    "@tanstack/solid-query": "5.91.4",
     "@tanstack/svelte-query": ">=6.1.6",
     "@tanstack/vue-query": ">=5.94.4",
     "@testing-library/react": "catalog:test",
@@ -161,7 +160,6 @@
     "svelte": ">=3.0.0",
     "vue": ">=3.0.0"
   },
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.21 <=25.x"
   },
