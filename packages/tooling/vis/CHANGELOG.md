@@ -1,3 +1,21 @@
+## @visulima/vis [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.2...@visulima/vis@1.0.0-alpha.3) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.8
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.9
+* **@visulima/find-ai-runner:** upgraded to 1.0.0-alpha.2
+* **@visulima/fs:** upgraded to 5.0.0-alpha.6
+* **@visulima/package:** upgraded to 5.0.0-alpha.6
+* **@visulima/path:** upgraded to 3.0.0-alpha.7
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.8
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.3
+
 ## @visulima/vis [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.1...@visulima/vis@1.0.0-alpha.2) (2026-03-26)
 
 
