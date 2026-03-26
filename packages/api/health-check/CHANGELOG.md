@@ -1,3 +1,15 @@
+## @visulima/health-check [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.5...@visulima/health-check@4.0.0-alpha.6) (2026-03-26)
+
+### Bug Fixes
+
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **health-check:** migrate deps to pnpm catalogs ([e06d861](https://github.com/visulima/visulima/commit/e06d86139e9440dcadaaf09075bc0b905f4ac3e1))
+* **health-check:** update dependencies ([d6a1887](https://github.com/visulima/visulima/commit/d6a188719248b52d9b5b2cc526b4ee0d0d2b469d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
 ## @visulima/health-check [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.4...@visulima/health-check@4.0.0-alpha.5) (2026-03-06)
 
 ### Bug Fixes
