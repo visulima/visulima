@@ -1,3 +1,22 @@
+## @visulima/package [5.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.4...@visulima/package@5.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **package:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([e409128](https://github.com/visulima/visulima/commit/e409128c02a6d801dd385ae845c1ab28ca5c09da))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **package:** migrate deps to pnpm catalogs ([301fac4](https://github.com/visulima/visulima/commit/301fac41be88df7469155649467921a72ca740a6))
+* **package:** update dependencies ([fb1a43d](https://github.com/visulima/visulima/commit/fb1a43de0fd345806d76aec660d48c627d576083))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.5
+* **@visulima/path:** upgraded to 3.0.0-alpha.6
+
 ## @visulima/package [5.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.3...@visulima/package@5.0.0-alpha.4) (2026-03-06)
 
 ### Bug Fixes
