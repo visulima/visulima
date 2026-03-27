@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/fs": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

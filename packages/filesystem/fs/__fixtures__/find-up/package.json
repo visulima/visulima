@@ -1,8 +1,5 @@
 {
   "name": "empty",
   "private": true,
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }
