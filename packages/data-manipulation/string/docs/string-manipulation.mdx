@@ -220,6 +220,73 @@ interface AlignTextOptions {
 }
 ```
 
+## Text Indentation
+
+Utilities for adding, removing, and normalizing indentation in strings.
+
+### Indent
+
+Add indentation to each line in a string.
+
+```typescript
+import { indent } from "@visulima/string";
+
+// Default: 1 space
+indent("Unicorns\nRainbows"); // ' Unicorns\n Rainbows'
+
+// 4 spaces
+indent("Unicorns\nRainbows", 4); // '    Unicorns\n    Rainbows'
+
+// Custom character
+indent("Unicorns\nRainbows", 1, { indent: "♥" }); // '♥Unicorns\n♥Rainbows'
+
+// Include empty lines
+indent("Unicorns\n\nRainbows", 1, { includeEmptyLines: true });
+// ' Unicorns\n \n Rainbows'
+```
+
+### Strip Indent
+
+Remove common leading whitespace from all lines.
+
+```typescript
+import { stripIndent } from "@visulima/string";
+
+stripIndent("\n\tunicorn\n\t\tdog\n");
+// '\nunicorn\n\tdog\n'
+
+stripIndent("\n  unicorn\n    dog\n");
+// '\nunicorn\n  dog\n'
+```
+
+### Dedent
+
+Strip common indentation and trim leading/trailing blank lines.
+
+```typescript
+import { dedent } from "@visulima/string";
+
+dedent("\n\tunicorn\n\t\tdog\n");
+// 'unicorn\n\tdog'
+
+dedent("\n  unicorn\n    dog\n");
+// 'unicorn\n  dog'
+```
+
+### Redent
+
+Strip redundant indentation and re-indent with a given count.
+
+```typescript
+import { redent } from "@visulima/string";
+
+redent("\n  foo\n    bar\n", 1);
+// '\n foo\n   bar\n'
+
+redent("\n foo\n  bar\n", 5, { indent: "-" });
+// '\n-----foo\n------bar\n'
+```
+
 ## Indentation Removal (Outdent)
 
 The `outdent` function removes leading indentation while preserving relative indentation.

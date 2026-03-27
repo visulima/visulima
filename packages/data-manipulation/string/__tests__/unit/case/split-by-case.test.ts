@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import { bgRed } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 

@@ -1,3 +1,4 @@
+/* eslint-disable e18e/ban-dependencies */
 import { kebabCase } from "@visulima/string/dist/case/case";
 import { kebabCase as caseAnythingKebabCase } from "case-anything";
 import { kebabCase as changeCaseKebab } from "change-case";

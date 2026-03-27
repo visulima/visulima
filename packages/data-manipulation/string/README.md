@@ -55,8 +55,11 @@
     - Split by separators (foo-bar → ["foo", "bar"])
     - Preserve known acronyms (XMLHttpRequest → ["XML", "Http", "Request"])
 - **Text Indentation**:
-    - `outdent`: Remove leading indentation while preserving relative indentation
-    - Handles template literals and string inputs
+    - `indent`: Add indentation to each line in a string
+    - `stripIndent`: Strip common leading whitespace from all lines
+    - `dedent`: Strip indent and trim leading/trailing blank lines
+    - `redent`: Strip redundant indentation and re-indent
+    - `outdent`: Remove indentation from template literals
     - Normalizes newlines across platforms
     - Configurable trimming behavior
 - **String Analysis**:
@@ -66,6 +69,9 @@
 - **String Width Calculation**:
     - `getStringWidth`: Calculate visual width of strings with Unicode support
     - `getStringTruncatedWidth`: Width calculation with smart truncation
+    - `isFullwidthCodePoint`: Check if a code point is fullwidth
+    - `eastAsianWidth`: Get character width (1 or 2) for a code point
+    - `eastAsianWidthType`: Get East Asian Width category for a code point
     - Handles CJK characters, emojis, ANSI codes, and more
     - Configurable character width settings
     - Support for zero-width and combining characters

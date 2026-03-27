@@ -25,20 +25,20 @@ import { distance } from "@visulima/string";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `a` | `string` | The first string. |
-| `b` | `string` | The second string. |
+| Parameter | Type     | Description        |
+| --------- | -------- | ------------------ |
+| `a`       | `string` | The first string.  |
+| `b`       | `string` | The second string. |
 
 **Returns:** `number` -- The edit distance between the two strings.
 
 **Examples:**
 
 ```typescript
-distance("hello", "hello");       // 0
-distance("hello", "hallo");       // 1
-distance("kitten", "sitting");    // 3
-distance("", "hello");            // 5
+distance("hello", "hello"); // 0
+distance("hello", "hallo"); // 1
+distance("kitten", "sitting"); // 3
+distance("", "hello"); // 5
 ```
 
 ---
@@ -61,18 +61,18 @@ import { closest } from "@visulima/string";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `target` | `string` | The target string to match against. |
-| `candidates` | `ReadonlyArray<string>` | Array of candidate strings. |
+| Parameter    | Type                    | Description                         |
+| ------------ | ----------------------- | ----------------------------------- |
+| `target`     | `string`                | The target string to match against. |
+| `candidates` | `ReadonlyArray<string>` | Array of candidate strings.         |
 
 **Returns:** `string` -- The closest matching string from the candidates array.
 
 **Examples:**
 
 ```typescript
-closest("aple", ["apple", "banana"]);   // 'apple'
-closest("ornge", ["apple", "orange"]);  // 'orange'
+closest("aple", ["apple", "banana"]); // 'apple'
+closest("ornge", ["apple", "orange"]); // 'orange'
 ```
 
 ---
@@ -82,11 +82,7 @@ closest("ornge", ["apple", "orange"]);  // 'orange'
 Finds the N closest matches from an array using Levenshtein distance.
 
 ```typescript
-function closestN(
-    target: string,
-    candidates: ReadonlyArray<string>,
-    n: number
-): (string | undefined)[];
+function closestN(target: string, candidates: ReadonlyArray<string>, n: number): (string | undefined)[];
 ```
 
 **Import:**
@@ -97,11 +93,11 @@ import { closestN } from "@visulima/string";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `target` | `string` | The target string to match against. |
-| `candidates` | `ReadonlyArray<string>` | Array of candidate strings. |
-| `n` | `number` | Number of closest matches to return. |
+| Parameter    | Type                    | Description                          |
+| ------------ | ----------------------- | ------------------------------------ |
+| `target`     | `string`                | The target string to match against.  |
+| `candidates` | `ReadonlyArray<string>` | Array of candidate strings.          |
+| `n`          | `number`                | Number of closest matches to return. |
 
 **Returns:** `(string | undefined)[]` -- Array of the N closest matches, sorted by distance. Entries may be `undefined` if `n` is larger than the candidates array.
 
@@ -124,11 +120,7 @@ closestN("appl", options, 3);
 Finds the most similar string from an array of strings. Unlike `closest`, this function supports case-insensitive matching and custom comparison functions.
 
 ```typescript
-function closestString(
-    givenWord: string,
-    possibleWords: ReadonlyArray<string>,
-    options?: ClosestStringOptions
-): string | undefined;
+function closestString(givenWord: string, possibleWords: ReadonlyArray<string>, options?: ClosestStringOptions): string | undefined;
 ```
 
 **Import:**
@@ -139,11 +131,11 @@ import { closestString } from "@visulima/string/closest-string";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `givenWord` | `string` | The string to measure distance against. |
+| Parameter       | Type                    | Description                                                                       |
+| --------------- | ----------------------- | --------------------------------------------------------------------------------- |
+| `givenWord`     | `string`                | The string to measure distance against.                                           |
 | `possibleWords` | `ReadonlyArray<string>` | The string array to pick the closest string from. Must contain at least one word. |
-| `options` | `ClosestStringOptions` | Optional configuration. |
+| `options`       | `ClosestStringOptions`  | Optional configuration.                                                           |
 
 **Returns:** `string | undefined` -- The closest string from `possibleWords`.
 
@@ -198,10 +190,7 @@ interface ClosestStringOptions {
 Takes a string and generates a comparator function to determine which of two strings is more similar to the given one. The returned function is designed to be used with `Array.prototype.sort()` or `Array.prototype.toSorted()`.
 
 ```typescript
-function compareSimilarity(
-    givenWord: string,
-    options?: CompareSimilarityOptions
-): (a: string, b: string) => number;
+function compareSimilarity(givenWord: string, options?: CompareSimilarityOptions): (a: string, b: string) => number;
 ```
 
 **Import:**
@@ -212,12 +201,13 @@ import { compareSimilarity } from "@visulima/string/compare-similarity";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `givenWord` | `string` | The string to measure distance against. |
-| `options` | `CompareSimilarityOptions` | Optional configuration. |
+| Parameter   | Type                       | Description                             |
+| ----------- | -------------------------- | --------------------------------------- |
+| `givenWord` | `string`                   | The string to measure distance against. |
+| `options`   | `CompareSimilarityOptions` | Optional configuration.                 |
 
 **Returns:** `(a: string, b: string) => number` -- A comparator function that returns:
+
 - A negative number if `a` is more similar to `givenWord` than `b`
 - A positive number if `b` is more similar
 - `0` if they are equally similar
@@ -230,9 +220,11 @@ const sortedWords = words.toSorted(compareSimilarity("hep"));
 // ['help', 'hi', 'hello']
 
 // Case-sensitive
-const sorted = words.toSorted(compareSimilarity("HEP", {
-    caseSensitive: true,
-}));
+const sorted = words.toSorted(
+    compareSimilarity("HEP", {
+        caseSensitive: true,
+    }),
+);
 ```
 
 ### CompareSimilarityOptions
@@ -260,11 +252,7 @@ interface CompareSimilarityOptions {
 Sorts a string array by similarity to a given string. Returns a new sorted copy -- the original array is not mutated.
 
 ```typescript
-function wordSimilaritySort(
-    givenWord: string,
-    possibleWords: ReadonlyArray<string>,
-    options?: WordSimilaritySortOptions
-): string[];
+function wordSimilaritySort(givenWord: string, possibleWords: ReadonlyArray<string>, options?: WordSimilaritySortOptions): string[];
 ```
 
 **Import:**
@@ -275,11 +263,11 @@ import { wordSimilaritySort } from "@visulima/string/word-similarity-sort";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `givenWord` | `string` | The string to measure distance against. |
-| `possibleWords` | `ReadonlyArray<string>` | The string array to sort. This array is not mutated. |
-| `options` | `WordSimilaritySortOptions` | Optional configuration. |
+| Parameter       | Type                        | Description                                          |
+| --------------- | --------------------------- | ---------------------------------------------------- |
+| `givenWord`     | `string`                    | The string to measure distance against.              |
+| `possibleWords` | `ReadonlyArray<string>`     | The string array to sort. This array is not mutated. |
+| `options`       | `WordSimilaritySortOptions` | Optional configuration.                              |
 
 **Returns:** `string[]` -- A sorted copy of `possibleWords`, with the most similar words first.
 

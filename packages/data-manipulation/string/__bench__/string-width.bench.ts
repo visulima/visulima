@@ -1,3 +1,4 @@
+/* eslint-disable e18e/ban-dependencies */
 import stringWidth from "string-width";
 import { bench, describe } from "vitest";
 

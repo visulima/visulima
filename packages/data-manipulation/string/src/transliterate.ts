@@ -18,7 +18,7 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
     const replaceArray: OptionReplaceArray = [];
 
     for (const key of Object.keys(option as OptionReplaceObject)) {
-        if (Object.prototype.hasOwnProperty.call(option, key)) {
+        if (Object.hasOwn(option, key)) {
             const value = (option as OptionReplaceObject)[key];
 
             // Ensure value is a string before pushing
@@ -159,7 +159,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
                 s = opt.unknown; // Should be rare if char is valid
             } else {
                 const codePointString = String(currentActualCodePoint);
-                const found = Object.prototype.hasOwnProperty.call(currentCharmap, codePointString);
+                const found = Object.hasOwn(currentCharmap, codePointString);
 
                 if (found) {
                     s = currentCharmap[codePointString as keyof Charmap];
@@ -173,9 +173,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
 
             // Fallback if s is still undefined or became null (e.g. from charmap)
 
-            if (s === undefined || s === null) {
-                s = opt.unknown;
-            }
+            s ??= opt.unknown;
         }
 
         const determinedCharWasChinese = !isIgnored && isCurrentCharChinese;

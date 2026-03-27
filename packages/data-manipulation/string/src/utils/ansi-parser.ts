@@ -38,7 +38,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
 
     let currentText = "";
     let isInsideEscape = false;
-    let isInsideLinkEscape = false;
     let escapeBuffer = "";
     let currentUrl = "";
     let isInHyperlink = false;
@@ -80,7 +79,7 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
             // Check for hyperlink sequence
             const escapeInfo = checkEscapeSequence(chars, index);
 
-            isInsideLinkEscape = escapeInfo.isInsideLinkEscape;
+            const { isInsideLinkEscape } = escapeInfo;
 
             if (isInsideLinkEscape) {
                 // Extract URL from hyperlink sequence
@@ -120,7 +119,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 index = urlEnd;
                 isInHyperlink = true;
                 isInsideEscape = false;
-                isInsideLinkEscape = false;
                 escapeBuffer = "";
 
                 continue;
@@ -143,7 +141,6 @@ export const processAnsiString = (string: string, options: ProcessAnsiStringOpti
                 isInHyperlink = false;
                 currentUrl = "";
 
-                // eslint-disable-next-line sonarjs/updated-loop-counter
                 index += 1; // Skip the backslash
                 isInsideEscape = false;
                 escapeBuffer = "";

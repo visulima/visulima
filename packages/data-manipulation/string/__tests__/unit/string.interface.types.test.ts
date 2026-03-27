@@ -21,13 +21,13 @@ describe("string Interface Augmentations", () => {
         it("should handle single string argument", () => {
             const input = "hello";
 
-            expectTypeOf(input.concat("world")).toEqualTypeOf<"helloworld">();
+            expectTypeOf([...input, ..."world"]).toEqualTypeOf<"helloworld">();
         });
 
         it("should handle multiple string arguments", () => {
             const input = "hello";
 
-            expectTypeOf(input.concat(" ", "world")).toEqualTypeOf<"hello world">();
+            expectTypeOf([...input, ..." ", ..."world"]).toEqualTypeOf<"hello world">();
         });
 
         it.todo("should handle array of strings");

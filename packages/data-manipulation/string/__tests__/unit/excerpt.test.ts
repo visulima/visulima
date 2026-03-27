@@ -114,12 +114,12 @@ describe(excerpt, () => {
             expect(() => {
                 // @ts-expect-error - Testing invalid input
                 excerpt(null, 10);
-            }).toThrow(TypeError);
+            }).toThrowError(TypeError);
 
             expect(() => {
                 // @ts-expect-error - Testing invalid input
                 excerpt("<p>test</p>", "10");
-            }).toThrow(TypeError);
+            }).toThrowError(TypeError);
         });
     });
 });

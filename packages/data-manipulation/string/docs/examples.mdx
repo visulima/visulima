@@ -21,12 +21,7 @@ const apiResponse = {
     phone_number: "555-1234",
 };
 
-const camelCaseKeys = Object.fromEntries(
-    Object.entries(apiResponse).map(([key, value]) => [
-        camelCase(key),
-        value,
-    ])
-);
+const camelCaseKeys = Object.fromEntries(Object.entries(apiResponse).map(([key, value]) => [camelCase(key), value]));
 // { userName: 'John', emailAddress: 'john@example.com', phoneNumber: '555-1234' }
 
 // Convert camelCase to snake_case for API requests
@@ -35,12 +30,7 @@ const requestBody = {
     emailAddress: "jane@example.com",
 };
 
-const snakeCaseKeys = Object.fromEntries(
-    Object.entries(requestBody).map(([key, value]) => [
-        snakeCase(key),
-        value,
-    ])
-);
+const snakeCaseKeys = Object.fromEntries(Object.entries(requestBody).map(([key, value]) => [snakeCase(key), value]));
 // { user_name: 'Jane', email_address: 'jane@example.com' }
 ```
 
@@ -51,10 +41,7 @@ Generate CSS class names from component props.
 ```typescript
 import { kebabCase } from "@visulima/string/case";
 
-function generateClassName(
-    component: string,
-    modifiers: Record<string, boolean>
-): string {
+function generateClassName(component: string, modifiers: Record<string, boolean>): string {
     const base = kebabCase(component);
     const activeModifiers = Object.entries(modifiers)
         .filter(([, active]) => active)
@@ -78,16 +65,8 @@ Map configuration objects to environment variable names.
 ```typescript
 import { constantCase } from "@visulima/string/case";
 
-function configToEnvVars(
-    config: Record<string, string>,
-    prefix: string = "APP"
-): Record<string, string> {
-    return Object.fromEntries(
-        Object.entries(config).map(([key, value]) => [
-            `${prefix}_${constantCase(key)}`,
-            value,
-        ])
-    );
+function configToEnvVars(config: Record<string, string>, prefix: string = "APP"): Record<string, string> {
+    return Object.fromEntries(Object.entries(config).map(([key, value]) => [`${prefix}_${constantCase(key)}`, value]));
 }
 
 configToEnvVars({
@@ -143,10 +122,7 @@ Suggest the correct command when users make typos.
 import { closestString } from "@visulima/string/closest-string";
 import { wordSimilaritySort } from "@visulima/string/word-similarity-sort";
 
-const commands = [
-    "init", "build", "dev", "start", "test",
-    "lint", "format", "deploy", "publish",
-];
+const commands = ["init", "build", "dev", "start", "test", "lint", "format", "deploy", "publish"];
 
 function suggestCommand(input: string): string {
     const match = closestString(input, commands);
@@ -158,9 +134,9 @@ function suggestCommand(input: string): string {
     return `Did you mean: ${match}?`;
 }
 
-suggestCommand("biuld");    // 'Did you mean: build?'
-suggestCommand("tset");     // 'Did you mean: test?'
-suggestCommand("publsh");   // 'Did you mean: publish?'
+suggestCommand("biuld"); // 'Did you mean: build?'
+suggestCommand("tset"); // 'Did you mean: test?'
+suggestCommand("publsh"); // 'Did you mean: publish?'
 
 // Show multiple suggestions
 function suggestCommands(input: string, count: number = 3): string[] {
@@ -178,16 +154,10 @@ Build aligned columns in terminal output using string width.
 ```typescript
 import { getStringWidth } from "@visulima/string/get-string-width";
 
-function formatTable(
-    headers: string[],
-    rows: string[][],
-    padding: number = 2
-): string {
+function formatTable(headers: string[], rows: string[][], padding: number = 2): string {
     // Calculate column widths
     const colWidths = headers.map((header, colIndex) => {
-        const cellWidths = rows.map(
-            (row) => getStringWidth(row[colIndex] ?? "")
-        );
+        const cellWidths = rows.map((row) => getStringWidth(row[colIndex] ?? ""));
         return Math.max(getStringWidth(header), ...cellWidths);
     });
 
@@ -196,18 +166,14 @@ function formatTable(
         cells
             .map((cell, i) => {
                 const width = getStringWidth(cell);
-                const pad = " ".repeat(
-                    (colWidths[i] ?? 0) - width + padding
-                );
+                const pad = " ".repeat((colWidths[i] ?? 0) - width + padding);
                 return cell + pad;
             })
             .join("");
 
     // Build table
     const headerLine = formatRow(headers);
-    const separator = colWidths
-        .map((w) => "-".repeat(w + padding))
-        .join("");
+    const separator = colWidths.map((w) => "-".repeat(w + padding)).join("");
     const bodyLines = rows.map((row) => formatRow(row));
 
     return [headerLine, separator, ...bodyLines].join("\n");
@@ -219,7 +185,7 @@ const table = formatTable(
         ["John", "USA", "New York"],
         ["Tanaka", "Japan", "Tokyo"],
         ["Ahmed", "Egypt", "Cairo"],
-    ]
+    ],
 );
 
 console.log(table);
@@ -238,20 +204,9 @@ Build a fuzzy search with ranked results.
 import { wordSimilaritySort } from "@visulima/string/word-similarity-sort";
 import { distance } from "@visulima/string";
 
-const products = [
-    "iPhone 15 Pro",
-    "iPhone 15 Pro Max",
-    "Samsung Galaxy S24",
-    "Samsung Galaxy S24 Ultra",
-    "Google Pixel 8",
-    "Google Pixel 8 Pro",
-    "OnePlus 12",
-];
+const products = ["iPhone 15 Pro", "iPhone 15 Pro Max", "Samsung Galaxy S24", "Samsung Galaxy S24 Ultra", "Google Pixel 8", "Google Pixel 8 Pro", "OnePlus 12"];
 
-function searchProducts(
-    query: string,
-    maxResults: number = 5
-): string[] {
+function searchProducts(query: string, maxResults: number = 5): string[] {
     if (query.length < 2) return [];
 
     // Sort by similarity, then filter out poor matches
@@ -262,10 +217,7 @@ function searchProducts(
     // Only return results with reasonable distance
     return sorted
         .filter((product) => {
-            const d = distance(
-                query.toLowerCase(),
-                product.toLowerCase()
-            );
+            const d = distance(query.toLowerCase(), product.toLowerCase());
             // Allow distance up to half the query length
             return d <= Math.max(query.length * 0.6, 3);
         })
@@ -284,16 +236,10 @@ searchProducts("pixel");
 Truncate strings to fit terminal width while preserving Unicode and ANSI codes.
 
 ```typescript
-import {
-    getStringTruncatedWidth,
-} from "@visulima/string/get-string-truncated-width";
+import { getStringTruncatedWidth } from "@visulima/string/get-string-truncated-width";
 import { getStringWidth } from "@visulima/string/get-string-width";
 
-function truncateForTerminal(
-    text: string,
-    maxWidth: number,
-    ellipsis: string = "..."
-): string {
+function truncateForTerminal(text: string, maxWidth: number, ellipsis: string = "..."): string {
     const width = getStringWidth(text);
 
     if (width <= maxWidth) {
@@ -336,8 +282,8 @@ function wrapWithDirection(text: string): string {
     return text;
 }
 
-wrapWithDirection("Hello");     // 'Hello'
-wrapWithDirection("مرحبا");     // '<span dir="rtl">مرحبا</span>'
+wrapWithDirection("Hello"); // 'Hello'
+wrapWithDirection("مرحبا"); // '<span dir="rtl">مرحبا</span>'
 ```
 
 ## Testing Colored CLI Output
@@ -347,10 +293,7 @@ Test that your CLI produces correctly colored output.
 ```typescript
 import { expect, describe, it } from "vitest";
 import { toEqualAnsi } from "@visulima/string/test/vitest";
-import {
-    formatAnsiString,
-    compareAnsiStrings,
-} from "@visulima/string/test/utils";
+import { formatAnsiString, compareAnsiStrings } from "@visulima/string/test/utils";
 
 expect.extend({ toEqualAnsi });
 
@@ -450,9 +393,18 @@ import { closestString } from "@visulima/string/closest-string";
 import { closestN } from "@visulima/string";
 
 const dictionary = [
-    "hello", "world", "computer", "program",
-    "algorithm", "function", "variable", "constant",
-    "interface", "abstract", "implement", "typescript",
+    "hello",
+    "world",
+    "computer",
+    "program",
+    "algorithm",
+    "function",
+    "variable",
+    "constant",
+    "interface",
+    "abstract",
+    "implement",
+    "typescript",
 ];
 
 function spellCheck(word: string): {

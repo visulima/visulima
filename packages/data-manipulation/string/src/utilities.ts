@@ -1,10 +1,5 @@
 import type { Interval, IntervalArray } from "./types";
 
-/**
- * @deprecated This will be removed in the next major version.
- */
-export { default as LRUCache } from "./utils/lru-cache";
-
 const RE_REGEXP_SPECIAL = /[.*+?^${}()|[\]\\]/g;
 
 // prettier-ignore
@@ -103,3 +98,8 @@ export const findStringOccurrences = (source: string, needles: string[]): Interv
 
     return merged;
 };
+
+/**
+ * @deprecated This will be removed in the next major version.
+ */
+export { default as LRUCache } from "./utils/lru-cache";

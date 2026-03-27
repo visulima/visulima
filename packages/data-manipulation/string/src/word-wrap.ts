@@ -4,6 +4,9 @@ import { checkEscapeSequence, processAnsiString } from "./utils/ansi-parser";
 import AnsiStateTracker from "./utils/ansi-state-tracker";
 import preserveAnsi from "./utils/preserve-ansi";
 
+const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
+const RE_WHITESPACE_ONLY = /^\s+$/;
+
 /**
  * Helper function to reset ANSI sequences at line breaks
  * @param currentLine Current line of text
@@ -293,7 +296,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
 
     // Split by space but preserve ANSI escape sequences
     // This is crucial for the test case with "\u001B[1D" between words
-    const tokens = inputToProcess.split(/(?=\s)|(?<=\s)/);
+    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
     const rows: string[] = [];
 
     let currentLine = "";
@@ -303,7 +306,7 @@ const wrapWithWordBoundaries = (string: string, width: number, trim: boolean): s
     // Process each token (word or space)
     while (index < tokens.length) {
         const token = tokens[index] as string;
-        const isSpace = /^\s+$/.test(token);
+        const isSpace = RE_WHITESPACE_ONLY.test(token);
         const tokenVisibleWidth = getStringWidth(token);
 
         // Skip empty tokens
@@ -374,7 +377,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
         return [];
     }
 
-    const tokens = inputToProcess.split(/(?=\s)|(?<=\s)/);
+    const tokens = inputToProcess.split(RE_SPLIT_WHITESPACE);
     const rows: string[] = [];
 
     let currentLine = "";
@@ -383,7 +386,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
 
     while (index < tokens.length) {
         const token = tokens[index] as string;
-        const isSpace = /^\s+$/.test(token);
+        const isSpace = RE_WHITESPACE_ONLY.test(token);
         const tokenVisibleWidth = getStringWidth(token);
 
         if (token.length === 0) {
@@ -410,7 +413,7 @@ const wrapAndBreakWords = (string: string, width: number, trim: boolean): string
                     rows.push(brokenLines[brokenLineIndex] as string);
                 }
 
-                currentLine = brokenLines[brokenLines.length - 1] as string;
+                currentLine = brokenLines.at(-1) as string;
                 currentWidth = getStringWidth(currentLine);
             } else {
                 currentLine = ""; // Should not happen if tokenVisibleWidth > 0

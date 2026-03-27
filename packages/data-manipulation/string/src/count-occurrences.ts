@@ -1,3 +1,5 @@
+/* eslint-disable import/prefer-default-export */
+
 /**
  * Get the count of `substring` in `value`.
  * @param value Content to search in.
@@ -34,4 +36,3 @@ export const countOccurrences = (value: string, substring: string): number => {
 
     return count;
 };
-

@@ -2,7 +2,7 @@
  * Thai romanization rules
  * @see https://en.wikipedia.org/wiki/Romanization_of_Thai
  */
-const THAI_REPLACEMENT: [string, string, string][] = [
+const THAI_REPLACEMENT: [string, string, string?][] = [
     ["เฅียะ", "khia"],
     ["เฅืยะ", "khuea"],
     ["เฅือย", "khueai"],

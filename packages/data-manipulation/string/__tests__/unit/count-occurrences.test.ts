@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import { describe, expect, it } from "vitest";
 
 import { countOccurrences } from "../../src/count-occurrences";
@@ -16,7 +17,7 @@ describe("countOccurrences function", () => {
         expect(() => {
             // @ts-expect-error: incorrect value.
             countOccurrences("test", 0);
-        }).toThrow(/Expected character/);
+        }).toThrowError(/Expected character/);
     });
 
     it("should return 0 for empty source string", () => {
@@ -30,7 +31,7 @@ describe("countOccurrences function", () => {
 
         expect(() => {
             countOccurrences("test", "");
-        }).toThrow(/Expected non-empty substring/);
+        }).toThrowError(/Expected non-empty substring/);
     });
 
     it("should count single character occurrences", () => {
@@ -57,4 +58,3 @@ describe("countOccurrences function", () => {
         expect(countOccurrences("a🤔b🤔c", "🤔")).toBe(2);
     });
 });
-

@@ -326,6 +326,50 @@ interface StringTruncatedWidthOptions extends StringWidthOptions {
 }
 ```
 
+## Character Width Utilities
+
+### isFullwidthCodePoint
+
+Check if a code point is a fullwidth or wide character.
+
+```typescript
+import { isFullwidthCodePoint } from "@visulima/string";
+
+isFullwidthCodePoint("あ".codePointAt(0)); // true (Japanese)
+isFullwidthCodePoint("谢".codePointAt(0)); // true (Chinese)
+isFullwidthCodePoint("고".codePointAt(0)); // true (Korean)
+isFullwidthCodePoint("a".codePointAt(0)); // false (ASCII)
+isFullwidthCodePoint(Number.NaN); // false
+```
+
+### eastAsianWidth
+
+Get the character width (1 or 2) for a Unicode code point based on East Asian Width.
+
+```typescript
+import { eastAsianWidth } from "@visulima/string";
+
+eastAsianWidth("あ".codePointAt(0)); // 2 (fullwidth)
+eastAsianWidth("a".codePointAt(0)); // 1 (narrow)
+
+// With ambiguous option
+eastAsianWidth("±".codePointAt(0), { ambiguousAsWide: true }); // 2
+```
+
+### eastAsianWidthType
+
+Get the East Asian Width category for a code point.
+
+```typescript
+import { eastAsianWidthType } from "@visulima/string";
+
+eastAsianWidthType("あ".codePointAt(0)); // 'wide'
+eastAsianWidthType("Ａ".codePointAt(0)); // 'fullwidth'
+eastAsianWidthType("a".codePointAt(0)); // 'narrow'
+eastAsianWidthType("a".codePointAt(0)); // 'narrow'
+// Returns: 'fullwidth' | 'halfwidth' | 'wide' | 'narrow' | 'neutral' | 'ambiguous'
+```
+
 ## Use Cases
 
 ### Terminal Output

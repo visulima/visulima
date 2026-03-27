@@ -12,10 +12,7 @@ Detailed API reference for visual string width calculation and truncation functi
 Calculate the visual width of a string, taking into account Unicode characters, emojis, ANSI escape codes, combining marks, and East Asian width properties.
 
 ```typescript
-function getStringWidth(
-    input: string,
-    options?: StringWidthOptions
-): number;
+function getStringWidth(input: string, options?: StringWidthOptions): number;
 ```
 
 **Import:**
@@ -26,9 +23,9 @@ import { getStringWidth } from "@visulima/string/get-string-width";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `input` | `string` | The string to calculate the width for. |
+| Parameter | Type                 | Description                                   |
+| --------- | -------------------- | --------------------------------------------- |
+| `input`   | `string`             | The string to calculate the width for.        |
 | `options` | `StringWidthOptions` | Optional configuration for width calculation. |
 
 **Returns:** `number` -- The calculated visual width of the string.
@@ -37,29 +34,29 @@ import { getStringWidth } from "@visulima/string/get-string-width";
 
 ```typescript
 // Basic ASCII
-getStringWidth("hello");               // 5
+getStringWidth("hello"); // 5
 
 // CJK characters (width 2 each)
-getStringWidth("你好");                 // 4
-getStringWidth("あいう");               // 6
+getStringWidth("你好"); // 4
+getStringWidth("あいう"); // 6
 
 // Emojis (width 2 each)
-getStringWidth("👋");                   // 2
-getStringWidth("👨‍👩‍👧‍👦");       // 2 (ZWJ family emoji)
+getStringWidth("👋"); // 2
+getStringWidth("👨‍👩‍👧‍👦"); // 2 (ZWJ family emoji)
 
 // ANSI escape codes (ignored by default)
-getStringWidth("\x1b[31mRed\x1b[39m");  // 3
+getStringWidth("\x1b[31mRed\x1b[39m"); // 3
 
 // Combining characters
-getStringWidth("e\u0301");              // 1 (e with combining acute accent)
-getStringWidth("\u0e01\u0e31");          // 1 (Thai character with vowel mark)
+getStringWidth("e\u0301"); // 1 (e with combining acute accent)
+getStringWidth("\u0e01\u0e31"); // 1 (Thai character with vowel mark)
 
 // Mixed content
-getStringWidth("Hello 世界");           // 9
+getStringWidth("Hello 世界"); // 9
 
 // Custom widths
-getStringWidth("hello", { regularWidth: 2 });  // 10
-getStringWidth("👋👋", { emojiWidth: 1 });      // 2
+getStringWidth("hello", { regularWidth: 2 }); // 10
+getStringWidth("👋👋", { emojiWidth: 1 }); // 2
 ```
 
 **How it works:** Internally, `getStringWidth` delegates to `getStringTruncatedWidth` with `limit: Infinity` and no ellipsis, returning only the `width` field from the result.
@@ -71,26 +68,23 @@ getStringWidth("👋👋", { emojiWidth: 1 });      // 2
 Configuration options for string width calculation. This type excludes truncation-related options.
 
 ```typescript
-type StringWidthOptions = Omit<
-    StringTruncatedWidthOptions,
-    "ellipsis" | "ellipsisWidth" | "limit"
->;
+type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">;
 ```
 
 Effective properties:
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `ambiguousIsNarrow` | `boolean` | `false` | Treat [ambiguous width characters](https://www.unicode.org/reports/tr11/#Ambiguous) as narrow (width 1) instead of wide (width 2). |
-| `ansiWidth` | `number` | `0` | Width assigned to ANSI escape sequences. |
-| `controlWidth` | `number` | `0` | Width assigned to control characters. |
-| `countAnsiEscapeCodes` | `boolean` | `false` | Whether to count ANSI escape code characters in width calculation. |
-| `emojiWidth` | `number` | `2` | Width assigned to emoji characters. |
-| `fullWidth` | `number` | `2` | Width assigned to full-width characters. |
-| `halfWidth` | `number` | `1` | Width assigned to half-width characters. |
-| `regularWidth` | `number` | `1` | Width assigned to regular ASCII characters. |
-| `tabWidth` | `number` | `8` | Width assigned to tab characters. |
-| `wideWidth` | `number` | `2` | Width assigned to wide characters (CJK). |
+| Property               | Type      | Default | Description                                                                                                                        |
+| ---------------------- | --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `ambiguousIsNarrow`    | `boolean` | `false` | Treat [ambiguous width characters](https://www.unicode.org/reports/tr11/#Ambiguous) as narrow (width 1) instead of wide (width 2). |
+| `ansiWidth`            | `number`  | `0`     | Width assigned to ANSI escape sequences.                                                                                           |
+| `controlWidth`         | `number`  | `0`     | Width assigned to control characters.                                                                                              |
+| `countAnsiEscapeCodes` | `boolean` | `false` | Whether to count ANSI escape code characters in width calculation.                                                                 |
+| `emojiWidth`           | `number`  | `2`     | Width assigned to emoji characters.                                                                                                |
+| `fullWidth`            | `number`  | `2`     | Width assigned to full-width characters.                                                                                           |
+| `halfWidth`            | `number`  | `1`     | Width assigned to half-width characters.                                                                                           |
+| `regularWidth`         | `number`  | `1`     | Width assigned to regular ASCII characters.                                                                                        |
+| `tabWidth`             | `number`  | `8`     | Width assigned to tab characters.                                                                                                  |
+| `wideWidth`            | `number`  | `2`     | Width assigned to wide characters (CJK).                                                                                           |
 
 ---
 
@@ -99,10 +93,7 @@ Effective properties:
 Calculate the visual width of a string with optional truncation support. Handles various Unicode character types including combining marks, emoji sequences, ANSI escape codes, and East Asian characters.
 
 ```typescript
-function getStringTruncatedWidth(
-    input: string,
-    options?: StringTruncatedWidthOptions
-): StringTruncatedWidthResult;
+function getStringTruncatedWidth(input: string, options?: StringTruncatedWidthOptions): StringTruncatedWidthResult;
 ```
 
 **Import:**
@@ -113,9 +104,9 @@ import { getStringTruncatedWidth } from "@visulima/string/get-string-truncated-w
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `input` | `string` | The string to calculate the width for. |
+| Parameter | Type                          | Description                                                  |
+| --------- | ----------------------------- | ------------------------------------------------------------ |
+| `input`   | `string`                      | The string to calculate the width for.                       |
 | `options` | `StringTruncatedWidthOptions` | Optional configuration for width calculation and truncation. |
 
 **Returns:** `StringTruncatedWidthResult` -- An object containing width, truncation status, and index information.

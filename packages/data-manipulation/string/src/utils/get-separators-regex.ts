@@ -5,6 +5,8 @@ import LRUCache from "./lru-cache";
  */
 const regexCache = new LRUCache<string, RegExp>(1000);
 
+const RE_ESCAPE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+
 /**
  * Creates or retrieves a cached regex for custom separators
  * @param separators Array of separator strings to create a regex pattern from
@@ -17,7 +19,7 @@ const getSeparatorsRegex = (separators: ReadonlyArray<string>): RegExp => {
         return regexCache.get(key) as RegExp;
     }
 
-    const pattern = separators.map((s) => s.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)).join("|");
+    const pattern = separators.map((s) => s.replaceAll(RE_ESCAPE_SPECIAL, String.raw`\$&`)).join("|");
     const regex = new RegExp(pattern, "g");
 
     regexCache.set(key, regex);
