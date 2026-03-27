@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { strip } from "@visulima/ansi";
 import boxen from "boxen";
-import indentString from "indent-string";
+import { indent as indentString } from "@visulima/string";
 import cliBoxes from "cli-boxes";
 import colorizeDefault from "@visulima/colorize";
 import { render, Box, Text } from "../../src/ink/index.js";

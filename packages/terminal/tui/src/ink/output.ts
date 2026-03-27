@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth, slice as sliceAnsi } from "@visulima/string";
-import isFullwidthCodePoint from "is-fullwidth-code-point";
+import { isFullwidthCodePoint } from "@visulima/string";
 import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, type StyledChar, tokenize } from "@alcalzone/ansi-tokenize";
 import { type OutputTransformer } from "./render-node-to-output.js";
 

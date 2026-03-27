@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth } from "@visulima/string";
-import indentString from "indent-string";
-import isFullwidthCodePoint from "is-fullwidth-code-point";
+import { indent as indentString } from "@visulima/string";
+import { isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 import wrapText from "./wrap-text.js";
 import getMaxWidth from "./get-max-width.js";
