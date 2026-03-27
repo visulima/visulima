@@ -7,6 +7,9 @@ const segmentCache = new LRUCache<string, StyledSegment[]>(100);
 
 const defaultSegmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
 
+// eslint-disable-next-line no-control-regex
+const RE_ASCII_ONLY = /^[\u0000-\u007F]*$/;
+
 /** Represents a segment of text with its associated ANSI styling sequences. */
 type StyledSegment = {
     after: string; // ANSI sequences that close styling for this segment
@@ -546,8 +549,7 @@ export const slice: (inputString: string, startIndex?: number, endIndex?: number
 
     if (!inputString.includes("\u001B")) {
         // ASCII-only strings can be sliced directly
-        // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-        if (/^[\u0000-\u007F]*$/.test(inputString)) {
+        if (RE_ASCII_ONLY.test(inputString)) {
             return inputString.slice(startIndex, endIndex);
         }
 
