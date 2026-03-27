@@ -1,10 +1,9 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { distance } from "fastest-levenshtein";
 
-export { closest, distance } from "fastest-levenshtein";
-
 export const closestN = (string_: string, array: ReadonlyArray<string>, n: number): (string | undefined)[] => {
-    const distances: number[] = Array.from({ length: n }, () => Infinity);
-    const values: (string | undefined)[] = Array.from({ length: n }, () => undefined);
+    const distances = Array.from({ length: n }).fill(Infinity) as number[];
+    const values = Array.from({ length: n }).fill(undefined) as (string | undefined)[];
 
     for (const candidateValue of array) {
         let currentDistance = distance(string_, candidateValue);
@@ -25,3 +24,5 @@ export const closestN = (string_: string, array: ReadonlyArray<string>, n: numbe
 
     return values;
 };
+
+export { closest, distance } from "fastest-levenshtein";

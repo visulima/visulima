@@ -11,6 +11,7 @@ const IS_UPPERCASE = /^[A-Z][A-Z0-9]*$/; // Checks for all caps, allowing unders
 const WHITESPACE_REGEX = /\s+/;
 const IS_NUMERIC = /^\d+$/;
 const IS_CAMEL_CASE_LIKE = /^[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)+$/;
+const IS_LOWERCASE_START = /^[a-z]/;
 const CONTAINS_PUNCTUATION_MID_WORD = /[.!?;:,](?!\s|$)/;
 
 /**
@@ -81,7 +82,7 @@ const identifyCase = <T extends string = string>(value?: T): IdentifyCase<T> => 
         return "title";
     }
 
-    if (words.length > 1 && IS_PASCAL_CASE.test(words[0] as string) && /^[a-z]/.test(words[1] as string)) {
+    if (words.length > 1 && IS_PASCAL_CASE.test(words[0] as string) && IS_LOWERCASE_START.test(words[1] as string)) {
         return "sentence";
     }
 

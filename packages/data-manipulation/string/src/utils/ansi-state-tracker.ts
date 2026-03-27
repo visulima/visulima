@@ -1,3 +1,6 @@
+// eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
+const RE_ANSI_CODE = /\x1B\[(\d+)m/;
+
 /**
  * Tracks ANSI color state to ensure proper color continuation across text operations
  */
@@ -16,8 +19,7 @@ class AnsiStateTracker {
 
     public processEscape(sequence: string): void {
         // Extract the numeric code from the sequence
-        // eslint-disable-next-line no-control-regex, unicorn/no-hex-escape, sonarjs/no-control-regex
-        const match = /\x1B\[(\d+)m/.exec(sequence);
+        const match = RE_ANSI_CODE.exec(sequence);
 
         if (!match) {
             return;

@@ -1,3 +1,4 @@
+/* eslint-disable e18e/ban-dependencies */
 import { snakeCase } from "@visulima/string/dist/case/case";
 import { snakeCase as caseAnythingSnakeCase } from "case-anything";
 import { snakeCase as changeCaseSnake } from "change-case";

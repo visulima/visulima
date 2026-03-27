@@ -38,6 +38,8 @@ import getSeparatorsRegex from "../utils/get-separators-regex";
 import splitByEmoji from "../utils/split-by-emoji";
 import type { LocaleOptions, SplitByCase } from "./types";
 
+const RE_SLOVENIAN_SPECIAL = /[ČŠŽĐ]/i;
+
 // Fast lookup tables for performance optimization
 const isUpperCode = new Uint8Array(128);
 const isLowerCode = new Uint8Array(128);
@@ -257,7 +259,7 @@ const splitCamelCaseFast = (s: string, knownAcronyms: Set<string> = new Set()): 
         if (newStart !== start) {
             // An acronym was found and processed, skip to the position after it
             start = newStart;
-            /* eslint-disable-next-line sonarjs/updated-loop-counter, @typescript-eslint/no-loop-func */
+            /* eslint-disable-next-line sonarjs/updated-loop-counter */
             index = start - 1; // Set to start-1 so next iteration (after index++) resumes at start
             continue;
         }
@@ -502,7 +504,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             ) {
                 finalResult.push((result[index] as string) + (result[index + 1] as string));
                 // Skip the next segment since we merged it by incrementing in the loop
-                // eslint-disable-next-line sonarjs/updated-loop-counter
+
                 index += 1;
             } else {
                 finalResult.push(result[index] as string);
@@ -651,7 +653,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
             const isUpperCaseChar = char === (char as string).toLocaleUpperCase(locale);
 
             // Special handling for Slovenian characters
-            const isSpecialChar = /[ČŠŽĐ]/i.test(char);
+            const isSpecialChar = RE_SLOVENIAN_SPECIAL.test(char);
             const nextIsUpper = index < width_ - 1 && chars[index + 1] === (chars[index + 1] as string).toLocaleUpperCase(locale);
 
             // Split on case transitions and special characters
@@ -874,7 +876,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
                 currentSegment = "";
 
                 // Keep case-tracking consistent by basing previousIsUpper on the acronym tail.
-                const lastAcronymChar = acronym[acronym.length - 1];
+                const lastAcronymChar = acronym.at(-1);
 
                 if (lastAcronymChar) {
                     previousIsUpper = lastAcronymChar === lastAcronymChar.toLocaleUpperCase(locale);
@@ -886,7 +888,7 @@ const splitCamelCaseLocale = (s: string, locale: NodeLocale, knownAcronyms: Set<
 
         if (acronymLength > 0) {
             // Adjust index to skip past the acronym (loop will increment by 1)
-            // eslint-disable-next-line sonarjs/updated-loop-counter
+
             index += acronymLength - 1;
             continue;
         }
@@ -1040,7 +1042,7 @@ export const splitByCase = <T extends string = string>(input: T, options: SplitO
     }
 
     const parts: string[] = [];
-    let workingInput = cleanedInput;
+    let workingInput: string = cleanedInput;
     // Use regex directly if it already has global flag to avoid ReDoS from reconstructing user-provided regex patterns
     // When adding 'g' flag, reconstruct only when necessary (note: user-provided RegExp sources are not validated for ReDoS)
     const regex = separatorRegex.flags.includes("g") ? separatorRegex : new RegExp(separatorRegex.source, `${separatorRegex.flags}g`);

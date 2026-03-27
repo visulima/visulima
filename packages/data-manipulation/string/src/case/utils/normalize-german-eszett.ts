@@ -1,3 +1,5 @@
+const RE_GERMAN_DOUBLE_S = /(?<![a-zß])SS(?![a-z])/g;
+
 /**
  * Converts German "SS" to "ß" when appropriate for German locales.
  * This is used to handle special cases in German text where "SS" should be converted to "ß".
@@ -11,6 +13,6 @@
 const normalizeGermanEszett = (value: string): string =>
     // Replace "SS" with "ß" only when both letters are uppercase
     // This uses a positive lookbehind to ensure we don't convert "ss" or "Ss"
-    value.replaceAll(/(?<![a-zß])SS(?![a-z])/g, "ß");
+    value.replaceAll(RE_GERMAN_DOUBLE_S, "ß");
 
 export default normalizeGermanEszett;

@@ -1,3 +1,4 @@
+/* eslint-disable e18e/ban-dependencies */
 import { camelCase } from "@visulima/string/dist/case/case";
 import { camelCase as caseAnythingCamelCase } from "case-anything";
 import { camelCase as changeCaseCamel } from "change-case";

@@ -25,31 +25,31 @@ import slugify from "@visulima/string/slugify";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `input` | `string` | The string to convert into a slug. |
-| `options` | `SlugifyOptions` | Optional configuration options. |
+| Parameter | Type             | Description                        |
+| --------- | ---------------- | ---------------------------------- |
+| `input`   | `string`         | The string to convert into a slug. |
+| `options` | `SlugifyOptions` | Optional configuration options.    |
 
 **Returns:** `string` -- The generated URL-friendly slug.
 
 **Examples:**
 
 ```typescript
-slugify("Hello World!");          // 'hello-world'
-slugify("Creme Brulee");          // 'creme-brulee'
-slugify("foo & bar * baz");       // 'foo-bar-baz'
+slugify("Hello World!"); // 'hello-world'
+slugify("Creme Brulee"); // 'creme-brulee'
+slugify("foo & bar * baz"); // 'foo-bar-baz'
 
 // Chinese support
-slugify("你好 World!");            // 'ni-hao-world'
+slugify("你好 World!"); // 'ni-hao-world'
 
 // Custom separator
-slugify("foo bar baz", { separator: "_" });  // 'foo_bar_baz'
+slugify("foo bar baz", { separator: "_" }); // 'foo_bar_baz'
 
 // Uppercase
-slugify("foo bar", { lowercase: false, uppercase: true });  // 'FOO-BAR'
+slugify("foo bar", { lowercase: false, uppercase: true }); // 'FOO-BAR'
 
 // Preserve case
-slugify("Foo Bar", { lowercase: false });  // 'Foo-Bar'
+slugify("Foo Bar", { lowercase: false }); // 'Foo-Bar'
 ```
 
 **Edge cases:**
@@ -156,10 +156,10 @@ import { transliterate } from "@visulima/string";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `source` | `string` | The string to transliterate. |
-| `options` | `OptionsTransliterate` | Optional configuration. |
+| Parameter | Type                   | Description                  |
+| --------- | ---------------------- | ---------------------------- |
+| `source`  | `string`               | The string to transliterate. |
+| `options` | `OptionsTransliterate` | Optional configuration.      |
 
 **Returns:** `string` -- The transliterated ASCII string.
 
@@ -167,14 +167,14 @@ import { transliterate } from "@visulima/string";
 
 ```typescript
 // European
-transliterate("Creme brulee");    // 'Creme brulee'
-transliterate("Dusseldorf");      // 'Dusseldorf'
+transliterate("Creme brulee"); // 'Creme brulee'
+transliterate("Dusseldorf"); // 'Dusseldorf'
 
 // Cyrillic
-transliterate("Москва");          // 'Moskva'
+transliterate("Москва"); // 'Moskva'
 
 // Chinese (with spacing)
-transliterate("你好世界");         // 'Ni Hao Shi Jie'
+transliterate("你好世界"); // 'Ni Hao Shi Jie'
 
 // Chinese (without spacing)
 transliterate("你好世界", { fixChineseSpacing: false });
@@ -191,7 +191,7 @@ transliterate("Don't change THIS", {
 }); // "Dont change THIS"
 
 // Unknown characters
-transliterate("a🚀b", { unknown: "[?]" });  // 'a[?]b'
+transliterate("a🚀b", { unknown: "[?]" }); // 'a[?]b'
 ```
 
 ---

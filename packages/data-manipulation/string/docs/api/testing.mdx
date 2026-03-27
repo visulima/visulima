@@ -12,10 +12,7 @@ Detailed API reference for the ANSI string testing and comparison utilities.
 A Vitest custom matcher for comparing ANSI-encoded strings. Provides detailed error output when strings do not match, showing both the visible content and the underlying escape codes.
 
 ```typescript
-function toEqualAnsi(
-    actual: string,
-    expected: string
-): ExpectationResult;
+function toEqualAnsi(actual: string, expected: string): ExpectationResult;
 ```
 
 **Import:**
@@ -26,10 +23,10 @@ import { toEqualAnsi } from "@visulima/string/test/vitest";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `actual` | `string` | The actual ANSI string received. |
-| `expected` | `string` | The expected ANSI string. |
+| Parameter  | Type     | Description                      |
+| ---------- | -------- | -------------------------------- |
+| `actual`   | `string` | The actual ANSI string received. |
+| `expected` | `string` | The expected ANSI string.        |
 
 **Returns:** `ExpectationResult` -- An object with `pass` (boolean) and `message` (function returning a string).
 
@@ -54,6 +51,7 @@ it("should match colored output", () => {
 ```
 
 **Error output:** When the assertion fails, the message includes:
+
 - Visible content of both strings (with ANSI codes stripped)
 - Escape codes shown as visible characters
 - JSON-encoded representation
@@ -112,18 +110,18 @@ import { formatAnsiString } from "@visulima/string/test/utils";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type     | Description                |
+| ------------ | -------- | -------------------------- |
 | `ansiString` | `string` | The ANSI string to format. |
 
 **Returns:** An object with the following properties:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `ansi` | `string` | The original ANSI string, unchanged. |
-| `stripped` | `string` | The string with all ANSI/VT control characters removed (using `node:util.stripVTControlCharacters`). |
-| `visible` | `string` | The string with escape characters replaced by the literal text `\u001B` so they are visible. |
-| `json` | `string` | The `JSON.stringify` output, showing all escape codes as `\u001b` sequences. |
+| Property           | Type     | Description                                                                                                          |
+| ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `ansi`             | `string` | The original ANSI string, unchanged.                                                                                 |
+| `stripped`         | `string` | The string with all ANSI/VT control characters removed (using `node:util.stripVTControlCharacters`).                 |
+| `visible`          | `string` | The string with escape characters replaced by the literal text `\u001B` so they are visible.                         |
+| `json`             | `string` | The `JSON.stringify` output, showing all escape codes as `\u001b` sequences.                                         |
 | `lengthDifference` | `number` | The difference in `.length` between the original and stripped string, indicating how many characters are ANSI codes. |
 
 **Examples:**
@@ -132,11 +130,11 @@ import { formatAnsiString } from "@visulima/string/test/utils";
 const colored = "\x1b[31mError\x1b[39m";
 const formatted = formatAnsiString(colored);
 
-formatted.ansi;              // '\x1b[31mError\x1b[39m'
-formatted.stripped;          // 'Error'
-formatted.visible;           // '\\u001B[31mError\\u001B[39m'
-formatted.json;              // '"\\u001b[31mError\\u001b[39m"'
-formatted.lengthDifference;  // 9
+formatted.ansi; // '\x1b[31mError\x1b[39m'
+formatted.stripped; // 'Error'
+formatted.visible; // '\\u001B[31mError\\u001B[39m'
+formatted.json; // '"\\u001b[31mError\\u001b[39m"'
+formatted.lengthDifference; // 9
 ```
 
 ---
@@ -146,10 +144,7 @@ formatted.lengthDifference;  // 9
 Creates a detailed comparison result for two ANSI strings. This is the underlying implementation used by `toEqualAnsi`.
 
 ```typescript
-function expectAnsiStrings(
-    actual: string,
-    expected: string
-): ExpectationResult;
+function expectAnsiStrings(actual: string, expected: string): ExpectationResult;
 ```
 
 **Import:**
@@ -160,9 +155,9 @@ import { expectAnsiStrings } from "@visulima/string/test/utils";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `actual` | `string` | The actual ANSI string. |
+| Parameter  | Type     | Description               |
+| ---------- | -------- | ------------------------- |
+| `actual`   | `string` | The actual ANSI string.   |
 | `expected` | `string` | The expected ANSI string. |
 
 **Returns:** `ExpectationResult` -- The same result type as `toEqualAnsi`.
@@ -170,13 +165,10 @@ import { expectAnsiStrings } from "@visulima/string/test/utils";
 **Examples:**
 
 ```typescript
-const result = expectAnsiStrings(
-    "\x1b[31mError\x1b[39m",
-    "\x1b[32mError\x1b[39m"
-);
+const result = expectAnsiStrings("\x1b[31mError\x1b[39m", "\x1b[32mError\x1b[39m");
 
-result.pass;       // false (different color codes)
-result.message();  // Detailed diff message
+result.pass; // false (different color codes)
+result.message(); // Detailed diff message
 ```
 
 ---
@@ -188,7 +180,7 @@ Performs a detailed comparison between two ANSI strings, returning structured da
 ```typescript
 function compareAnsiStrings(
     actual: string,
-    expected: string
+    expected: string,
 ): {
     actual: ReturnType<typeof formatAnsiString>;
     ansiEqual: boolean;
@@ -213,34 +205,31 @@ import { compareAnsiStrings } from "@visulima/string/test/utils";
 
 **Parameters:**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `actual` | `string` | The actual ANSI string. |
+| Parameter  | Type     | Description               |
+| ---------- | -------- | ------------------------- |
+| `actual`   | `string` | The actual ANSI string.   |
 | `expected` | `string` | The expected ANSI string. |
 
 **Returns:** An object with:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `actual` | `object` | The `formatAnsiString` result for the actual string. |
-| `expected` | `object` | The `formatAnsiString` result for the expected string. |
-| `ansiEqual` | `boolean` | Whether the full strings (including ANSI codes) are identical. |
+| Property        | Type      | Description                                                     |
+| --------------- | --------- | --------------------------------------------------------------- |
+| `actual`        | `object`  | The `formatAnsiString` result for the actual string.            |
+| `expected`      | `object`  | The `formatAnsiString` result for the expected string.          |
+| `ansiEqual`     | `boolean` | Whether the full strings (including ANSI codes) are identical.  |
 | `strippedEqual` | `boolean` | Whether the visible content (ANSI codes stripped) is identical. |
-| `summary` | `object` | Aggregate comparison data including lengths and equality flags. |
+| `summary`       | `object`  | Aggregate comparison data including lengths and equality flags. |
 
 **Examples:**
 
 ```typescript
-const result = compareAnsiStrings(
-    "\x1b[31mError\x1b[39m",
-    "\x1b[32mError\x1b[39m"
-);
+const result = compareAnsiStrings("\x1b[31mError\x1b[39m", "\x1b[32mError\x1b[39m");
 
-result.ansiEqual;     // false
+result.ansiEqual; // false
 result.strippedEqual; // true (both say "Error")
-result.summary.actualLength;          // 14
-result.summary.actualStrippedLength;  // 5
-result.summary.expectedLength;        // 14
+result.summary.actualLength; // 14
+result.summary.actualStrippedLength; // 5
+result.summary.expectedLength; // 14
 result.summary.expectedStrippedLength; // 5
 ```
 

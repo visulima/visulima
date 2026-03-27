@@ -116,7 +116,7 @@ export const RE_VALID_HYPERLINKS: RegExp = /\u001B\]8;[^\u0007\u001B]*(?:\u0007|
 /**
  * Regular expression for control characters
  */
-// eslint-disable-next-line no-control-regex, regexp/no-obscure-range, sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex, regexp/no-obscure-range
 export const RE_CONTROL: RegExp = /[\u0000-\u0008\n-\u001F\u007F-\u009F]{1,1000}/y;
 
 /**
@@ -132,7 +132,7 @@ export const RE_SEPARATORS: RegExp = /[-_./\s]+/g;
 /**
  * Fast ANSI regex for quick checks
  */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex
 export const RE_FAST_ANSI: RegExp = /(\u001B\[[0-9;]*[a-z])/i;
 
 /** Regular expression to match characters belonging to the Arabic script. */

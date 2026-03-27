@@ -67,4 +67,3 @@ describe("direction function", () => {
         expect(direction("")).toBe("neutral");
     });
 });
-

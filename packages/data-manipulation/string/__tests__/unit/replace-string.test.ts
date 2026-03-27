@@ -1,3 +1,4 @@
+/* eslint-disable e18e/prefer-static-regex */
 import { describe, expect, it } from "vitest";
 
 import replaceString from "../../src/replace-string";
