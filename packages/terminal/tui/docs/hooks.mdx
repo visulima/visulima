@@ -1,0 +1,248 @@
+---
+title: Hooks
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useMouse, useTextInput, useScrollable, useFocus, useApp, and more"
+---
+
+# Hooks
+
+Use these hooks inside components rendered with `render()`. Hooks that rely on the full app event emitter are marked as `render()`-mode only.
+
+```tsx
+import { useApp, useFocus, useFocusManager, useInput, useMouse, usePaste, useScrollable, useTextInput } from "@visulima/tui/react";
+```
+
+## `useInput`
+
+Subscribe to keyboard input.
+
+```tsx
+useInput((input, key) => {
+    if (key.upArrow) moveUp();
+    if (key.downArrow) moveDown();
+    if (key.return) submit();
+    if (key.escape) cancel();
+    if (key.ctrl && input === "c") exit();
+});
+```
+
+### `key` Fields
+
+| Field        | Type      |
+| ------------ | --------- |
+| `upArrow`    | `boolean` |
+| `downArrow`  | `boolean` |
+| `leftArrow`  | `boolean` |
+| `rightArrow` | `boolean` |
+| `return`     | `boolean` |
+| `backspace`  | `boolean` |
+| `delete`     | `boolean` |
+| `pageUp`     | `boolean` |
+| `pageDown`   | `boolean` |
+| `home`       | `boolean` |
+| `end`        | `boolean` |
+| `tab`        | `boolean` |
+| `shift`      | `boolean` |
+| `escape`     | `boolean` |
+| `ctrl`       | `boolean` |
+| `meta`       | `boolean` |
+
+## `usePaste`
+
+Subscribe to bracketed paste events.
+
+```tsx
+usePaste((text) => {
+    handlePaste(text);
+});
+```
+
+When at least one active `usePaste` listener exists, pasted text is routed to `usePaste` and not forwarded to `useInput`. If no paste listener is active, paste falls back to `useInput`.
+
+### Options
+
+```tsx
+usePaste(handler, { isActive: false });
+```
+
+| Option     | Type      | Default |
+| ---------- | --------- | ------- |
+| `isActive` | `boolean` | `true`  |
+
+## `useMouse` (Ratatat-only)
+
+Subscribe to mouse events.
+
+```tsx
+useMouse((event) => {
+    // event.button: left | right | middle | scrollUp | scrollDown
+    // event.x, event.y are 0-based terminal coordinates
+    if (event.button === "left") onClick(event.x, event.y);
+});
+```
+
+### Event Shape
+
+| Field    | Type      | Notes                                 |
+| -------- | --------- | ------------------------------------- |
+| `x`      | `number`  | 0-based column                        |
+| `y`      | `number`  | 0-based row                           |
+| `button` | `string`  | left/right/middle/scrollUp/scrollDown |
+| `shift`  | `boolean` | modifier                              |
+| `ctrl`   | `boolean` | modifier                              |
+| `meta`   | `boolean` | modifier                              |
+
+## `useTextInput` (Ratatat-only)
+
+Managed text input with cursor and editing shortcuts.
+
+```tsx
+const { value, cursor, clear } = useTextInput({
+    onSubmit: (v) => send(v),
+});
+
+return (
+    <Text>
+        {value.slice(0, cursor)}
+        <Text inverse>{value[cursor] ?? " "}</Text>
+        {value.slice(cursor + 1)}
+    </Text>
+);
+```
+
+### Options
+
+| Option         | Type                  | Default |
+| -------------- | --------------------- | ------- |
+| `initialValue` | `string`              | `''`    |
+| `onSubmit`     | `(v: string) => void` | —       |
+| `onChange`     | `(v: string) => void` | —       |
+| `isActive`     | `boolean`             | `true`  |
+
+### Return Value
+
+| Field      | Type                  |
+| ---------- | --------------------- |
+| `value`    | `string`              |
+| `cursor`   | `number`              |
+| `setValue` | `(v: string) => void` |
+| `clear`    | `() => void`          |
+
+Supported editing keys: arrows, Home/End, Backspace/Delete, Ctrl+A/E/U/K/W, Enter, paste.
+
+## `useScrollable` (Ratatat-only)
+
+Virtual scrolling state for fixed-height viewports.
+
+```tsx
+const viewportHeight = 20;
+const scroll = useScrollable({
+    viewportHeight,
+    contentHeight: items.length,
+});
+
+useInput((_input, key) => {
+    if (key.upArrow) scroll.scrollUp();
+    if (key.downArrow) scroll.scrollDown();
+    if (key.pageUp) scroll.scrollBy(-10);
+    if (key.pageDown) scroll.scrollBy(10);
+    if (key.home) scroll.scrollToTop();
+    if (key.end) scroll.scrollToBottom();
+});
+
+const visible = items.slice(scroll.offset, scroll.offset + viewportHeight);
+```
+
+### Return Value
+
+`offset`, `scrollUp`, `scrollDown`, `scrollBy`, `scrollToTop`, `scrollToBottom`, `atTop`, `atBottom`.
+
+## `useFocus`
+
+Register a focusable component.
+
+```tsx
+const { isFocused, focus } = useFocus({ id: "search", autoFocus: true });
+```
+
+Tab/Shift+Tab focus cycling is wired automatically by `render()`.
+
+## `useFocusManager`
+
+Programmatic focus control.
+
+```tsx
+const { focusNext, focusPrevious, focus, activeId, enableFocus, disableFocus } = useFocusManager();
+```
+
+## `useApp`
+
+Lifecycle controls.
+
+```tsx
+const { exit, quit } = useApp();
+```
+
+`exit()` and `quit()` are equivalent.
+
+## `useWindowSize`
+
+Returns `{ columns, rows }` and updates on terminal resize.
+
+```tsx
+const { columns, rows } = useWindowSize();
+```
+
+> This hook relies on the full app event emitter and is intended for `render()` mode.
+
+## `useStdout` / `useStderr`
+
+Write outside the rendered frame.
+
+```tsx
+const { write } = useStdout();
+const { write: writeErr } = useStderr();
+
+write("log line\n");
+writeErr("warning\n");
+```
+
+## `useStdin`
+
+Access stdin and raw mode controls.
+
+```tsx
+const { stdin, setRawMode, isRawModeSupported } = useStdin();
+```
+
+## `useBoxMetrics`
+
+Read computed layout metrics from a `Box` ref.
+
+```tsx
+const ref = useRef(null);
+const { width, height, left, top, hasMeasured } = useBoxMetrics(ref);
+
+return <Box ref={ref}>...</Box>;
+```
+
+Returns zeroed metrics until first layout pass.
+
+> This hook relies on the full app event emitter and is intended for `render()` mode.
+
+## `measureElement`
+
+Imperative element measurement.
+
+```tsx
+const { width, height } = measureElement(ref.current);
+```
+
+## Compatibility Stubs
+
+### `useIsScreenReaderEnabled`
+
+Always returns `false`.
+
+### `useCursor`
+
+Returns `{ setCursorPosition }`, currently a no-op stub.

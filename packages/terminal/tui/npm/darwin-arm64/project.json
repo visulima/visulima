@@ -1,0 +1,6 @@
+{
+    "name": "tui-binding-darwin-arm64",
+    "projectType": "library",
+    "tags": ["tui", "type:native-binding"],
+    "implicitDependencies": ["tui"]
+}

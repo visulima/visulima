@@ -1,0 +1,147 @@
+---
+title: Components
+description: "Reference for all React components in @visulima/tui/react: Box, Text, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
+---
+
+# Components
+
+`@visulima/tui` exposes Ink-compatible core components plus Ratatat-only additions.
+
+```tsx
+import { Box, Newline, ProgressBar, Spacer, Spinner, Static, Text, Transform } from "@visulima/tui/react";
+```
+
+## `Box`
+
+Layout primitive backed by Yoga.
+
+```tsx
+<Box
+    flexDirection="row" // row | column | row-reverse | column-reverse
+    flexGrow={1}
+    flexShrink={1}
+    width={40}
+    height={10}
+    minWidth={10}
+    minHeight={4}
+    padding={1}
+    paddingX={2}
+    margin={1}
+    gap={1}
+    alignItems="center"
+    justifyContent="space-between"
+    borderStyle="round" // single | double | round | bold | classic | singleDouble | doubleSingle
+    borderColor="cyan"
+    borderTop={true}
+    borderRight={true}
+    borderBottom={true}
+    borderLeft={true}
+>
+    {children}
+</Box>
+```
+
+Notes:
+
+- `Box` defaults to `flexDirection="row"` unless you set it explicitly.
+- Border side toggles (`borderTop`, etc.) are supported.
+- `borderColor` is rendered; per-side border colors are currently not applied.
+
+## `Text`
+
+Renders styled text.
+
+```tsx
+<Text
+    color="cyan" // named, #rrggbb, rgb(r,g,b), or ANSI index 0-255
+    backgroundColor="blue"
+    bold
+    italic
+    underline
+    strikethrough
+    dim
+    inverse
+>
+    Hello world
+</Text>
+```
+
+`dimColor` is supported as an Ink-compat alias for `dim`.
+
+## `Newline`
+
+```tsx
+<Newline />
+<Newline count={2} />
+```
+
+## `Spacer`
+
+```tsx
+<Box flexDirection="row">
+    <Text>Left</Text>
+    <Spacer />
+    <Text>Right</Text>
+</Box>
+```
+
+## `Static`
+
+Append-only region for completed items and log lines.
+
+```tsx
+<Static items={completedTasks}>
+    {(task) => (
+        <Box key={task.id}>
+            <Text color="green">✓ {task.name}</Text>
+        </Box>
+    )}
+</Static>
+```
+
+`Static` only appends new tail items from `items`.
+
+## `Transform`
+
+Applies a transform function to the collected text output of its subtree.
+
+```tsx
+<Transform transform={(s) => s.toUpperCase()}>
+    <Text>hello world</Text>
+</Transform>
+```
+
+## `Spinner` (Ratatat-only)
+
+```tsx
+<Spinner />
+<Spinner color="cyan" />
+<Spinner frames={["-", "\\", "|", "/"]} interval={100} />
+```
+
+Props (plus all `Text` props):
+
+| Prop       | Type       | Default        |
+| ---------- | ---------- | -------------- |
+| `frames`   | `string[]` | Braille frames |
+| `interval` | `number`   | `80`           |
+
+## `ProgressBar` (Ratatat-only)
+
+```tsx
+<ProgressBar value={42} />
+<ProgressBar value={downloaded} max={total} width={30} color="green" />
+<ProgressBar value={50} showPercentage={false} />
+```
+
+Props (plus all `Text` props):
+
+| Prop             | Type      | Default  |
+| ---------------- | --------- | -------- |
+| `value`          | `number`  | required |
+| `max`            | `number`  | `100`    |
+| `width`          | `number`  | `20`     |
+| `completeChar`   | `string`  | `'█'`    |
+| `incompleteChar` | `string`  | `'░'`    |
+| `bracket`        | `boolean` | `true`   |
+| `showPercentage` | `boolean` | `true`   |

@@ -1,0 +1,6 @@
+{
+    "name": "tui-binding-linux-x64-gnu",
+    "projectType": "library",
+    "tags": ["tui", "type:native-binding"],
+    "implicitDependencies": ["tui"]
+}

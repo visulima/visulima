@@ -1,0 +1,92 @@
+// @ts-nocheck — reconciler createContainer arity varies between React versions
+import React from "react";
+import { LayoutNode } from "./layout.js";
+import { RatatatReconciler } from "./reconciler.js";
+import { renderTreeToBuffer } from "./renderer.js";
+import { RatatatContext } from "./hooks.js";
+import { FocusProvider } from "./focus.js";
+import { Cell } from "../core/index.js";
+
+export interface RenderToStringOptions {
+    /** Width of the virtual terminal in columns. @default 80 */
+    columns?: number;
+    /** Height of the virtual terminal in rows. @default 24 */
+    rows?: number;
+}
+
+/**
+ * Render a React element to a plain string synchronously.
+ * No TTY, no stdin, no alternate screen — pure layout + buffer read-back.
+ *
+ * Useful for testing, documentation generation, and any scenario where
+ * you need rendered output as a string without a live terminal.
+ *
+ * Notes:
+ * - Terminal hooks (useInput, useApp, useStdin, useStdout, useStderr,
+ *   useFocus, useFocusManager) return safe no-op defaults — they do not throw.
+ * - useEffect callbacks run but state updates they trigger do not affect output.
+ * - useLayoutEffect callbacks fire synchronously and DO affect output.
+ */
+export function renderToString(element: React.ReactElement, options?: RenderToStringOptions): string {
+    const cols = options?.columns ?? 80;
+    const rows = options?.rows ?? 24;
+
+    const rootNode = new LayoutNode();
+    rootNode.yogaNode.setWidth(cols);
+    rootNode.yogaNode.setHeight(rows);
+
+    // No-op app/input stubs — hooks need a context but nothing should actually run
+    const noopContext = {
+        app: null as any,
+        input: null as any,
+        writeStdout: (_t: string) => {},
+        writeStderr: (_t: string) => {},
+    };
+
+    const wrapped = React.createElement(RatatatContext.Provider, { value: noopContext }, React.createElement(FocusProvider, null, element));
+
+    // Create container in legacy (synchronous) mode
+    const container = RatatatReconciler.createContainer(
+        rootNode,
+        0, // LegacyRoot
+        null,
+        false,
+        null,
+        "renderToString",
+        () => {},
+        null,
+    );
+
+    // Render synchronously
+    RatatatReconciler.updateContainerSync(wrapped as any, container, null, () => {});
+    RatatatReconciler.flushSyncWork();
+
+    // Layout and paint into a buffer
+    rootNode.calculateLayout(cols, rows);
+    const buffer = new Uint32Array(cols * rows * 2);
+    renderTreeToBuffer(rootNode, buffer, cols, rows);
+
+    // Read buffer back to string — trim trailing spaces from each row,
+    // then strip empty trailing rows
+    const lines: string[] = [];
+    for (let row = 0; row < rows; row++) {
+        let line = "";
+        for (let col = 0; col < cols; col++) {
+            const ch = buffer[(row * cols + col) * 2];
+            line += Cell.getChar(ch);
+        }
+        lines.push(line.trimEnd());
+    }
+
+    // Remove trailing empty lines
+    while (lines.length > 0 && lines[lines.length - 1] === "") {
+        lines.pop();
+    }
+
+    // Teardown: unmount the tree so reconciler cleans up
+    RatatatReconciler.updateContainerSync(null as any, container, null, () => {});
+    RatatatReconciler.flushSyncWork();
+    rootNode.destroy();
+
+    return lines.join("\n");
+}

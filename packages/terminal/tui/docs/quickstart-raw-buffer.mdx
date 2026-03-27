@@ -1,0 +1,174 @@
+---
+title: "Quickstart: Raw-Buffer Mode"
+description: "Drive the Rust renderer directly from TypeScript without React or Yoga"
+---
+
+# Quickstart: Raw-Buffer Mode
+
+Drive the Rust renderer directly — no React, no Yoga, no JSX.
+
+Use this mode when you want explicit control over every terminal cell.
+
+```bash npm2yarn
+npm install @visulima/tui
+```
+
+## Minimal Example
+
+```ts
+import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
+
+const { cols, rows } = terminalSize();
+const guard = new TerminalGuard();
+const renderer = new Renderer(cols, rows);
+
+// 2 u32 slots per cell: [codepoint, attrCode]
+let buf = new Uint32Array(cols * rows * 2);
+let frame = 0;
+
+const loop = setInterval(() => {
+    buf.fill(0);
+
+    const text = `Hello! Frame ${frame++}`;
+    for (let i = 0; i < text.length; i++) {
+        const idx = (2 * cols + 2 + i) * 2;
+        buf[idx] = text.codePointAt(i)!;
+        buf[idx + 1] = (1 << 16) | (2 << 8) | 6; // bold | bg=green(2) | fg=cyan(6)
+    }
+
+    renderer.render(buf);
+}, 16);
+
+process.on("SIGINT", () => {
+    clearInterval(loop);
+    guard.leave();
+    process.exit(0);
+});
+```
+
+Run it:
+
+```bash
+node --import @oxc-node/core/register app.ts
+```
+
+## Buffer Contract
+
+Each terminal cell uses two consecutive `u32` values:
+
+```text
+buf[idx * 2]     = Unicode codepoint
+buf[idx * 2 + 1] = attr code
+```
+
+Cell index for `(col, row)`:
+
+```ts
+const idx = row * cols + col;
+```
+
+### Attr Code Format
+
+```text
+attr = (styleBits << 16) | (bg << 8) | fg
+```
+
+`fg` and `bg` are ANSI 256-color indices (`0-255`).
+
+Style bitmask:
+
+| Bit | Style         |
+| --- | ------------- |
+| 1   | Bold          |
+| 2   | Dim           |
+| 4   | Italic        |
+| 8   | Underline     |
+| 16  | Blink         |
+| 32  | Invert        |
+| 64  | Hidden        |
+| 128 | Strikethrough |
+
+Example attr values:
+
+```ts
+const plain = 0;
+const boldCyan = (1 << 16) | 6;
+const redOnBlue = (4 << 8) | 1; // fg red(1), bg blue(4)
+const dimGreen = (2 << 16) | 2;
+```
+
+## `TerminalGuard`
+
+`TerminalGuard` controls terminal lifecycle (raw mode, alternate screen, cursor visibility).
+
+```ts
+const guard = new TerminalGuard(); // no mouse/paste tracking
+const guardWithMouse = new TerminalGuard(true); // enable mouse + bracketed paste tracking
+```
+
+Always call `guard.leave()` on shutdown.
+
+## `Renderer`
+
+```ts
+const renderer = new Renderer(cols, rows);
+
+renderer.render(buf); // diff + write
+renderer.resize(cols, rows);
+renderer.renderDiff(buf); // returns ANSI string
+renderer.writeRaw("\x1b[2J");
+```
+
+`renderer.render()` only emits changed cells.
+
+## Resize Handling
+
+```ts
+process.on("SIGWINCH", () => {
+    const { cols, rows } = terminalSize();
+    renderer.resize(cols, rows);
+    buf = new Uint32Array(cols * rows * 2);
+});
+```
+
+## Inline Mode: `createInlineLoop()`
+
+```ts
+import { createInlineLoop } from "@visulima/tui/core";
+
+const loop = createInlineLoop(
+    (buf, cols, rows, frame) => {
+        buf.fill(0);
+        const msg = `frame ${frame}`;
+        for (let i = 0; i < msg.length; i++) {
+            const idx = i * 2;
+            buf[idx] = msg.codePointAt(i)!;
+            buf[idx + 1] = 6; // cyan fg
+        }
+    },
+    {
+        rows: 4,
+        fps: 30,
+        onExit: "preserve",
+    },
+);
+
+loop.start();
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Raw Buffer API" href="/raw-buffer">
+        Deep dive: buffer format, helpers, clearing strategies
+    </Card>
+    <Card title="TypeScript Buffer Guide" href="/ts-buffer-guide">
+        Indexing, packing attributes, and drawing helpers
+    </Card>
+    <Card title="Examples" href="/examples">
+        Raw-buffer demo apps
+    </Card>
+    <Card title="Rendering Modes" href="/rendering-modes">
+        Compare React, raw-buffer, and inline modes
+    </Card>
+</Cards>
