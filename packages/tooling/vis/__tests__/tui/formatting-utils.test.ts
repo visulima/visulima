@@ -1,15 +1,16 @@
-import { describe, expect, it } from "vitest";
-
 import type { Task } from "@visulima/task-runner";
+import { describe, expect, it } from "vitest";
 
 import { formatFlags, formatTargetsAndProjects } from "../../src/tui/formatting-utils";
 
-const createTask = (project: string, target: string): Task => ({
-    id: `${project}:${target}`,
-    outputs: [],
-    overrides: {},
-    target: { project, target },
-});
+const createTask = (project: string, target: string): Task => {
+    return {
+        id: `${project}:${target}`,
+        outputs: [],
+        overrides: {},
+        target: { project, target },
+    };
+};
 
 describe("tui/formatting-utils", () => {
     describe("formatFlags", () => {
@@ -28,7 +29,7 @@ describe("tui/formatting-utils", () => {
         it("should format an object flag as JSON", () => {
             const result = formatFlags("", "config", { key: "val" });
 
-            expect(result).toBe('--config={"key":"val"}');
+            expect(result).toBe("--config={\"key\":\"val\"}");
         });
 
         it("should format positional arguments (underscore flag)", () => {
@@ -71,12 +72,7 @@ describe("tui/formatting-utils", () => {
         });
 
         it("should pluralize dependent tasks", () => {
-            const tasks = [
-                createTask("app-a", "build"),
-                createTask("lib-b", "build"),
-                createTask("lib-c", "build"),
-                createTask("lib-d", "build"),
-            ];
+            const tasks = [createTask("app-a", "build"), createTask("lib-b", "build"), createTask("lib-c", "build"), createTask("lib-d", "build")];
             const result = formatTargetsAndProjects(["app-a"], ["build"], tasks);
 
             expect(result).toContain("and 3 tasks they depend on");

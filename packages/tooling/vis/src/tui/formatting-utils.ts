@@ -17,9 +17,9 @@ const formatValue = (value: unknown): string => {
 
 /**
  * Formats a CLI flag for display output.
- * @param leftPad - Padding string
- * @param flag - The flag name
- * @param value - The flag value
+ * @param leftPad Padding string
+ * @param flag The flag name
+ * @param value The flag value
  */
 export const formatFlags = (leftPad: string, flag: string, value: unknown): string => {
     // Positional arguments (the '_' key from minimist-style parsers)
@@ -39,12 +39,12 @@ export const formatFlags = (leftPad: string, flag: string, value: unknown): stri
  * - "target build for 3 projects and 2 tasks they depend on"
  */
 export const formatTargetsAndProjects = (projectNames: string[], targets: string[], tasks: Task[]): string => {
-    const uniqueTargets = [...new Set(tasks.map((t) => t.target.target))];
-    const uniqueProjects = [...new Set(tasks.map((t) => t.target.project))];
+    const uniqueTargets = new Set(new Set(tasks.map((t) => t.target.target)));
+    const uniqueProjects = new Set(new Set(tasks.map((t) => t.target.project)));
 
     // Filter to only targets/projects that are actually in the task list
-    const matchedTargets = targets.filter((t) => uniqueTargets.includes(t));
-    const matchedProjects = projectNames.filter((p) => uniqueProjects.includes(p));
+    const matchedTargets = targets.filter((t) => uniqueTargets.has(t));
+    const matchedProjects = projectNames.filter((p) => uniqueProjects.has(p));
 
     // Tasks that aren't directly requested (dependency tasks)
     const dependentTaskCount = tasks.length - matchedProjects.length * matchedTargets.length;
@@ -54,11 +54,7 @@ export const formatTargetsAndProjects = (projectNames: string[], targets: string
 
     let projectLabel: string;
 
-    if (matchedProjects.length === 1) {
-        projectLabel = `project ${matchedProjects[0]}`;
-    } else {
-        projectLabel = `${matchedProjects.length} projects`;
-    }
+    projectLabel = matchedProjects.length === 1 ? `project ${matchedProjects[0]}` : `${matchedProjects.length} projects`;
 
     let result = `${targetLabel} ${targetList} for ${projectLabel}`;
 

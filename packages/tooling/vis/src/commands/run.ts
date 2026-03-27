@@ -1,18 +1,18 @@
-import { execSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { resolve } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
-import { CompositeLifeCycle, createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
+import { createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
 
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
-import { SummaryLifeCycle } from "../tui/summary-life-cycle";
-
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 /**
- * Creates a task executor that runs commands via shell.
+ * Creates an async task executor that runs commands via shell.
+ * Uses spawn instead of execSync so the event loop stays unblocked,
+ * allowing the TUI render interval to update spinners and durations.
  */
 const createShellExecutor = (workspaceRoot: string) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
     const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
@@ -24,24 +24,39 @@ const createShellExecutor = (workspaceRoot: string) => async (task: Task, option
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
-    try {
-        // eslint-disable-next-line sonarjs/os-command -- command sourced from package.json scripts, not user input
-        const output = execSync(command, {
+    return new Promise<{ code: number; terminalOutput: string }>((resolvePromise) => {
+        const chunks: string[] = [];
+
+        // command sourced from package.json scripts, not user input
+        const child = spawn(command, {
             cwd: resolvedCwd,
-            encoding: "utf8",
             env: { ...process.env, ...options.env },
+            shell: true,
             stdio: "pipe",
         });
 
-        return { code: 0, terminalOutput: output };
-    } catch (error: unknown) {
-        const execError = error as { status?: number; stderr?: string; stdout?: string };
+        child.stdout?.on("data", (data: Buffer) => {
+            chunks.push(data.toString());
+        });
 
-        return {
-            code: execError.status ?? 1,
-            terminalOutput: (execError.stdout ?? "") + (execError.stderr ?? ""),
-        };
-    }
+        child.stderr?.on("data", (data: Buffer) => {
+            chunks.push(data.toString());
+        });
+
+        child.on("close", (code) => {
+            resolvePromise({
+                code: code ?? 0,
+                terminalOutput: chunks.join(""),
+            });
+        });
+
+        child.on("error", (error) => {
+            resolvePromise({
+                code: 1,
+                terminalOutput: chunks.join("") + (error.message ?? ""),
+            });
+        });
+    });
 };
 
 const run: Command = {
@@ -145,10 +160,9 @@ const run: Command = {
         let renderIsDone: Promise<void> | undefined;
 
         if (isTTY) {
-            const summaryLifeCycle = new SummaryLifeCycle();
             const dynamic = createDynamicOutputRenderer(lifecycleOptions);
 
-            lifeCycle = new CompositeLifeCycle([dynamic.lifeCycle, summaryLifeCycle]);
+            lifeCycle = dynamic.lifeCycle;
             renderIsDone = dynamic.renderIsDone;
         } else {
             lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);

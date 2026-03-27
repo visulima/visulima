@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "build": "echo 'Building lib-b...' && sleep 0.8 && echo 'lib-b built!'",
-        "test": "echo 'Testing lib-b...' && sleep 0.3 && echo 'lib-b tests passed!'",
-        "lint": "echo 'Linting lib-b...' && echo 'No lint errors.'"
+        "lint": "echo 'Linting lib-b...' && echo 'No lint errors.'",
+        "test": "echo 'Testing lib-b...' && sleep 0.3 && echo 'lib-b tests passed!'"
     },
     "dependencies": {
         "lib-c": "1.0.0"

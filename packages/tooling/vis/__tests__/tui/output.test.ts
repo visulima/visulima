@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import { strip } from "@visulima/colorize";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CLIOutput } from "../../src/tui/output";
 
@@ -28,9 +27,9 @@ describe("tui/CLIOutput", () => {
 
     describe("getSeparator", () => {
         it("should return a separator string", () => {
-            const sep = strip(output.getSeparator());
+            const separator = strip(output.getSeparator());
 
-            expect(sep.length).toBeGreaterThan(0);
+            expect(separator.length).toBeGreaterThan(0);
         });
     });
 
@@ -47,25 +46,25 @@ describe("tui/CLIOutput", () => {
         it("should return green icon for success", () => {
             const icon = output.getStatusIcon("success");
 
-            expect(icon).toBeTruthy();
+            expect(icon).toBe(true);
         });
 
         it("should return green icon for cache statuses", () => {
-            expect(output.getStatusIcon("local-cache")).toBeTruthy();
-            expect(output.getStatusIcon("local-cache-kept-existing")).toBeTruthy();
-            expect(output.getStatusIcon("remote-cache")).toBeTruthy();
+            expect(output.getStatusIcon("local-cache")).toBe(true);
+            expect(output.getStatusIcon("local-cache-kept-existing")).toBe(true);
+            expect(output.getStatusIcon("remote-cache")).toBe(true);
         });
 
         it("should return red icon for failure", () => {
             const icon = output.getStatusIcon("failure");
 
-            expect(icon).toBeTruthy();
+            expect(icon).toBe(true);
         });
 
         it("should return dim icon for skipped", () => {
             const icon = output.getStatusIcon("skipped");
 
-            expect(icon).toBeTruthy();
+            expect(icon).toBe(true);
         });
     });
 
@@ -125,7 +124,7 @@ describe("tui/CLIOutput", () => {
         it("should write output to stdout", () => {
             output.logCommandOutput("app:build", "success", "build output here");
 
-            expect(writeSpy).toHaveBeenCalled();
+            expect(writeSpy).toHaveBeenCalledWith();
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 
@@ -165,7 +164,7 @@ describe("tui/CLIOutput", () => {
         it("should write lines to stdout", () => {
             output.overwriteLines(0, ["line1", "line2"]);
 
-            expect(writeSpy).toHaveBeenCalled();
+            expect(writeSpy).toHaveBeenCalledWith();
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 
@@ -177,7 +176,7 @@ describe("tui/CLIOutput", () => {
             output.overwriteLines(3, ["new line"]);
 
             // Should have written erase sequences + new content
-            expect(writeSpy).toHaveBeenCalled();
+            expect(writeSpy).toHaveBeenCalledWith();
         });
     });
 });
