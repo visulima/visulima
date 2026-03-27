@@ -1,5 +1,5 @@
 import { forwardRef, useContext, type PropsWithChildren, type ForwardRefExoticComponent, type RefAttributes } from "react";
-import { type Except } from "type-fest";
+import type { Except } from "type-fest";
 import { type Styles } from "../styles.js";
 import { type DOMElement } from "../dom.js";
 import { accessibilityContext } from "./AccessibilityContext.js";

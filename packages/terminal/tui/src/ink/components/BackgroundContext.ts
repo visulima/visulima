@@ -1,5 +1,5 @@
 import { createContext, type Context } from "react";
-import { type LiteralUnion } from "type-fest";
+import type { LiteralUnion } from "type-fest";
 import { type ForegroundColorName } from "ansi-styles";
 
 export type BackgroundColor = LiteralUnion<ForegroundColorName, string>;

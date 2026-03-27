@@ -1,5 +1,5 @@
 import { type ReactNode, type Key, type Ref } from "react";
-import { type Except } from "type-fest";
+import type { Except } from "type-fest";
 import { type DOMElement } from "./dom.js";
 import { type Styles } from "./styles.js";
 
