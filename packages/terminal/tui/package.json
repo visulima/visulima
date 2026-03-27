@@ -98,8 +98,6 @@
         "code-excerpt": "^4.0.0",
         "es-toolkit": "^1.45.1",
         "eventemitter3": "^5.0.4",
-        "indent-string": "^5.0.0",
-        "is-fullwidth-code-point": "^5.1.0",
         "is-in-ci": "^2.0.0",
         "patch-console": "^2.0.0",
         "scheduler": "^0.27.0",

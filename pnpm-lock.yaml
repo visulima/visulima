@@ -8217,12 +8217,6 @@ importers:
       eventemitter3:
         specifier: ^5.0.4
         version: 5.0.4
-      indent-string:
-        specifier: ^5.0.0
-        version: 5.0.0
-      is-fullwidth-code-point:
-        specifier: ^5.1.0
-        version: 5.1.0
       is-in-ci:
         specifier: ^2.0.0
         version: 2.0.0
