@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/humanizer": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

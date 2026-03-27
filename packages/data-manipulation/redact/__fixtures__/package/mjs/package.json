@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/redact": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

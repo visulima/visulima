@@ -124,7 +124,6 @@
     "test:ui": "vitest --ui --coverage.enabled=true",
     "test:watch": "vitest"
   },
-  "dependencies": {},
   "devDependencies": {
     "@anolilab/eslint-config": "catalog:lint",
     "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -147,8 +146,6 @@
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
   },
-  "peerDependencies": {},
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.21 <=25.*"
   },
