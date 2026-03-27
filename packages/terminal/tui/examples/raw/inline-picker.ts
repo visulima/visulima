@@ -5,7 +5,7 @@
  * The selected file is printed to stdout after exit and stays
  * in the terminal scrollback.
  *
- * Run: node --import @oxc-node/core/register examples-raw/inline-picker.ts
+ * Run: node --import @oxc-node/core/register examples/raw/inline-picker.ts
  *
  * Controls:
  *   ↑ / ↓   navigate

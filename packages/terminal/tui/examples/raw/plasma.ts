@@ -7,7 +7,7 @@
  *
  * Direct Uint32Array buffer painting — no React, no Yoga, no reconciler.
  *
- * Run: node --import @oxc-node/core/register examples-raw/plasma.ts
+ * Run: node --import @oxc-node/core/register examples/raw/plasma.ts
  *
  * Controls:
  *   Ctrl+C   quit

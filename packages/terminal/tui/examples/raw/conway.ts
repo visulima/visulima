@@ -4,7 +4,7 @@
  * Direct Uint32Array buffer painting — no React, no Yoga, no reconciler.
  * The Rust diff engine handles all terminal output.
  *
- * Run: node --import @oxc-node/core/register examples-raw/conway.ts
+ * Run: node --import @oxc-node/core/register examples/raw/conway.ts
  *
  * Controls:
  *   Ctrl+C   quit
