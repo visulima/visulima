@@ -11,7 +11,5 @@
     "@visulima/ono": "workspace:*",
     "hono": "catalog:backend"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

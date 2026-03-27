@@ -9,7 +9,5 @@
   "dependencies": {
     "@visulima/ono": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

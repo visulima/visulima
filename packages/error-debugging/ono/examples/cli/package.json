@@ -10,7 +10,5 @@
     "@visulima/colorize": "workspace:*",
     "@visulima/ono": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

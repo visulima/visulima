@@ -89,7 +89,6 @@
     "test:watch": "vitest",
     "ts:coverage": "typescript-coverage-report"
   },
-  "dependencies": {},
   "devDependencies": {
     "@anolilab/eslint-config": "catalog:lint",
     "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -117,8 +116,6 @@
     "vitest": "catalog:test",
     "webdriverio": "catalog:dev"
   },
-  "peerDependencies": {},
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },

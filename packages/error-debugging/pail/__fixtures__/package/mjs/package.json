@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/pail": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

@@ -16,7 +16,5 @@
     "typescript": "catalog:tsc",
     "vite": "catalog:build",
     "vite-plugin-solid": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
