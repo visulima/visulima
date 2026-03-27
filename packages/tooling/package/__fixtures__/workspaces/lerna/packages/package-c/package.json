@@ -1,7 +1,4 @@
 {
   "name": "package-c",
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

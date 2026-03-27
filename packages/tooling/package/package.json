@@ -152,8 +152,6 @@
     "vitest": "catalog:test",
     "yarn": "catalog:dev"
   },
-  "peerDependencies": {},
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },
