@@ -6,7 +6,7 @@
  *
  * Direct Uint32Array buffer painting — no React, no Yoga, no reconciler.
  *
- * Run: node --import @oxc-node/core/register examples-raw/ascii-3d.ts
+ * Run: node --import @oxc-node/core/register examples/raw/ascii-3d.ts
  *
  * Controls:
  *   Ctrl+C   quit
