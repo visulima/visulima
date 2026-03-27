@@ -107,6 +107,7 @@ Built with TypeScript and organized using Nx, Visulima provides modular, well-te
 | [@visulima/fmt](packages/terminal/fmt/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffmt?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffmt) | Util.format-like string formatting utility. |
 | [@visulima/is-ansi-color-supported](packages/terminal/is-ansi-color-supported/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fis-ansi-color-supported?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fis-ansi-color-supported) | Detect whether a terminal or browser supports ansi colors. |
 | [@visulima/tabular](packages/terminal/tabular/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftabular?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftabular) | Create beautiful ASCII tables and grids with customizable borders, padding, and alignment. Supports Unicode, colors, and ANSI escape codes. |
+| [@visulima/tui](packages/terminal/tui/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ftui?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ftui) | React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API |
 
 ### Tooling
 
