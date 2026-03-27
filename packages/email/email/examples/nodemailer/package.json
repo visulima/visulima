@@ -18,7 +18,5 @@
     "@types/node": "catalog:types",
     "tsx": "catalog:dev",
     "typescript": "catalog:tsc"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
