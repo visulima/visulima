@@ -41,7 +41,7 @@
         [
             "@semantic-release/exec",
             {
-                "prepareCmd": "node publish-native-addons.mjs ${nextRelease.version}"
+                "prepareCmd": "node ../../../scripts/publish-native-addons.mjs ${nextRelease.version}"
             }
         ],
         "@anolilab/semantic-release-pnpm",

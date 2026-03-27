@@ -28,12 +28,6 @@
 "package: crud":
     - changed-files:
           - any-glob-to-any-file: "packages/api/crud/**/*"
-"package: darwin-arm64":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-arm64/**/*"
-"package: darwin-x64":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-x64/**/*"
 "package: deep-clone":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"
@@ -85,18 +79,6 @@
 "package: jsdoc-open-api":
     - changed-files:
           - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
-"package: linux-arm64-gnu":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-gnu/**/*"
-"package: linux-arm64-musl":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-musl/**/*"
-"package: linux-x64-gnu":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-gnu/**/*"
-"package: linux-x64-musl":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-musl/**/*"
 "package: nuxt":
     - changed-files:
           - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"
@@ -142,21 +124,66 @@
 "package: task-runner":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/task-runner/**/*"
+"package: task-runner/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-arm64/**/*"
+"package: task-runner/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-x64/**/*"
+"package: task-runner/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-gnu/**/*"
+"package: task-runner/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-musl/**/*"
+"package: task-runner/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-gnu/**/*"
+"package: task-runner/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-musl/**/*"
+"package: task-runner/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-arm64-msvc/**/*"
+"package: task-runner/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-x64-msvc/**/*"
 "package: tsconfig":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/tsconfig/**/*"
+"package: tui":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/**/*"
+"package: tui/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/darwin-arm64/**/*"
+"package: tui/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/darwin-x64/**/*"
+"package: tui/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-arm64-gnu/**/*"
+"package: tui/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-arm64-musl/**/*"
+"package: tui/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-x64-gnu/**/*"
+"package: tui/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-x64-musl/**/*"
+"package: tui/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/win32-arm64-msvc/**/*"
+"package: tui/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/win32-x64-msvc/**/*"
 "package: vis":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/**/*"
 "package: vite-overlay":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
-"package: win32-arm64-msvc":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-arm64-msvc/**/*"
-"package: win32-x64-msvc":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-x64-msvc/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"

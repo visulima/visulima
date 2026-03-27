@@ -74,12 +74,40 @@ function readPairsFromFs() {
     // Find all packages recursively
     const packagePaths = findPackages(packagesDir, packagesDir);
 
+    // Count occurrences of each base package name to detect duplicates
+    /** @type {Map<string, string[]>} */
+    const nameToPathsMap = new Map();
+    for (const packagePath of packagePaths) {
+        const packageName = basename(packagePath);
+        const existing = nameToPathsMap.get(packageName) || [];
+        existing.push(packagePath);
+        nameToPathsMap.set(packageName, existing);
+    }
+
     /** @type {Array<LabelerPair>} */
     const pairs = packagePaths.map((packagePath) => {
-        // Extract just the package name (skip group folder)
-        // e.g., "api/api-platform" -> "api-platform"
         const packageName = basename(packagePath);
-        const label = `package: ${packageName}`;
+        const paths = nameToPathsMap.get(packageName) || [];
+
+        // If there are duplicates, disambiguate by including the parent package name
+        // e.g., "terminal/tui/npm/darwin-arm64" -> "package: tui/darwin-arm64"
+        //        "tooling/task-runner/npm/darwin-arm64" -> "package: task-runner/darwin-arm64"
+        let label;
+        if (paths.length > 1) {
+            // Find the parent package: walk up from the npm/ directory
+            const parts = packagePath.split("/");
+            const npmIndex = parts.lastIndexOf("npm");
+            if (npmIndex >= 1) {
+                const parentName = parts[npmIndex - 1];
+                label = `package: ${parentName}/${packageName}`;
+            } else {
+                // Fallback: use the full relative path
+                label = `package: ${packagePath.replaceAll("/", "-")}`;
+            }
+        } else {
+            label = `package: ${packageName}`;
+        }
+
         const globPath = `packages/${packagePath}/**/*`;
         return [label, globPath];
     });
