@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import chalk from "chalk";
+import colorizeDefault from "@visulima/colorize";
 import boxen from "boxen";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Box, Text, Static, Transform, Newline, Spacer, renderToString } from "../../src/ink/index.js";
@@ -151,12 +151,12 @@ it("render box with border", () => {
 
 it("render colored text", () => {
     const output = renderToString(<Text color="green">Green</Text>);
-    expect(output).toBe(chalk.green("Green"));
+    expect(output).toBe(colorizeDefault.green("Green"));
 });
 
 it("render bold text", () => {
     const output = renderToString(<Text bold>Bold</Text>);
-    expect(output).toBe(chalk.bold("Bold"));
+    expect(output).toBe(colorizeDefault.bold("Bold"));
 });
 
 // ── Text wrapping and columns ───────────────────────────

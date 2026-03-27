@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import ansiEscapes from "ansi-escapes";
+import { cursorDown, cursorNextLine, cursorTo, cursorUp, eraseLines } from "@visulima/ansi";
 import logUpdate from "../../src/ink/log-update.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
@@ -66,7 +66,7 @@ it("incremental rendering - surgical updates", () => {
     render("Line 1\nUpdated\nLine 3\n");
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
-    expect(secondCall.includes(ansiEscapes.cursorNextLine)).toBe(true);
+    expect(secondCall.includes(cursorNextLine())).toBe(true);
     expect(secondCall.includes("Updated")).toBe(true);
     expect(secondCall.includes("Line 1")).toBe(false);
     expect(secondCall.includes("Line 3")).toBe(false);
@@ -83,7 +83,7 @@ it("incremental rendering - clears extra lines when output shrinks", () => {
     render("Line 1\n");
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
-    expect(secondCall.includes(ansiEscapes.eraseLines(2))).toBe(true);
+    expect(secondCall.includes(eraseLines(2))).toBe(true);
 });
 
 it("incremental rendering - when output grows", () => {
@@ -97,7 +97,7 @@ it("incremental rendering - when output grows", () => {
     render("Line 1\nLine 2\nLine 3\n");
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
-    expect(secondCall.includes(ansiEscapes.cursorNextLine)).toBe(true);
+    expect(secondCall.includes(cursorNextLine())).toBe(true);
     expect(secondCall.includes("Line 2")).toBe(true);
     expect(secondCall.includes("Line 3")).toBe(true);
     expect(secondCall.includes("Line 1")).toBe(false);
@@ -129,7 +129,7 @@ it("incremental rendering - shrinking output keeps screen tight", () => {
 
     const thirdCall = stdout.get();
 
-    expect(thirdCall).toBe(ansiEscapes.eraseLines(2) + ansiEscapes.cursorUp(1) + ansiEscapes.cursorNextLine);
+    expect(thirdCall).toBe(eraseLines(2) + cursorUp(1) + cursorNextLine());
 });
 
 it("incremental rendering - clear() fully resets incremental state", () => {
@@ -145,7 +145,7 @@ it("incremental rendering - clear() fully resets incremental state", () => {
 
     const afterClear = stdout.get();
 
-    expect(afterClear).toBe(ansiEscapes.eraseLines(0) + "Line 1\n");
+    expect(afterClear).toBe(eraseLines(0) + "Line 1\n");
 });
 
 it("incremental rendering - done() resets before next render", () => {
@@ -161,7 +161,7 @@ it("incremental rendering - done() resets before next render", () => {
 
     const afterDone = stdout.get();
 
-    expect(afterDone).toBe(ansiEscapes.eraseLines(0) + "Line 1\n");
+    expect(afterDone).toBe(eraseLines(0) + "Line 1\n");
 });
 
 it("incremental rendering - multiple consecutive clear() calls (should be harmless no-ops)", () => {
@@ -180,7 +180,7 @@ it("incremental rendering - multiple consecutive clear() calls (should be harmle
 
     render("New content\n");
     const afterClears = stdout.get();
-    expect(afterClears).toBe(ansiEscapes.eraseLines(0) + "New content\n");
+    expect(afterClears).toBe(eraseLines(0) + "New content\n");
 });
 
 it("incremental rendering - sync() followed by update (assert incremental path is used)", () => {
@@ -197,7 +197,7 @@ it("incremental rendering - sync() followed by update (assert incremental path i
     expect((stdout.write as any).mock.calls.length).toBe(1);
 
     const firstCall = (stdout.write as any).mock.calls[0][0] as string;
-    expect(firstCall.includes(ansiEscapes.cursorNextLine)).toBe(true);
+    expect(firstCall.includes(cursorNextLine())).toBe(true);
     expect(firstCall.includes("Updated")).toBe(true);
     expect(firstCall.includes("Line 1")).toBe(false);
     expect(firstCall.includes("Line 3")).toBe(false);
@@ -226,7 +226,7 @@ it("standard rendering - positions cursor after output when cursorPosition is se
 
     const written = (stdout.write as any).mock.calls[0][0] as string;
     expect(written.includes("Line 3")).toBe(true);
-    expect(written.endsWith(ansiEscapes.cursorUp(2) + ansiEscapes.cursorTo(5) + showCursorEscape)).toBe(true);
+    expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
 });
 
 it("standard rendering - hides cursor before erase when cursor was previously shown", () => {
@@ -240,7 +240,7 @@ it("standard rendering - hides cursor before erase when cursor was previously sh
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
     expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
-    expect(secondCall.endsWith(ansiEscapes.cursorUp(1) + ansiEscapes.cursorTo(0) + showCursorEscape)).toBe(true);
+    expect(secondCall.endsWith(cursorUp(1) + cursorTo(0) + showCursorEscape)).toBe(true);
 });
 
 it("standard rendering - no cursor positioning when cursorPosition is undefined", () => {
@@ -261,7 +261,7 @@ it("standard rendering - cursor position at second-to-last line emits cursorUp(1
     render("Line 1\nLine 2\nLine 3\n");
 
     const written = (stdout.write as any).mock.calls[0][0] as string;
-    expect(written.endsWith(ansiEscapes.cursorUp(1) + ansiEscapes.cursorTo(3) + showCursorEscape)).toBe(true);
+    expect(written.endsWith(cursorUp(1) + cursorTo(3) + showCursorEscape)).toBe(true);
 });
 
 for (const { name, incremental } of renderingModes) {
@@ -275,8 +275,8 @@ for (const { name, incremental } of renderingModes) {
 
         const clearCall = (stdout.write as any).mock.calls[1][0] as string;
         expect(clearCall.includes(hideCursorEscape)).toBe(true);
-        expect(clearCall.includes(ansiEscapes.cursorDown(3))).toBe(true);
-        expect(clearCall.includes(ansiEscapes.eraseLines(4))).toBe(true);
+        expect(clearCall.includes(cursorDown(3))).toBe(true);
+        expect(clearCall.includes(eraseLines(4))).toBe(true);
     });
 }
 
@@ -305,7 +305,7 @@ it("incremental rendering - positions cursor after surgical updates", () => {
     render("Line 1\nLine 2\nLine 3\n");
 
     const written = (stdout.write as any).mock.calls[0][0] as string;
-    expect(written.endsWith(ansiEscapes.cursorUp(2) + ansiEscapes.cursorTo(5) + showCursorEscape)).toBe(true);
+    expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
 });
 
 it("incremental rendering - positions cursor after update", () => {
@@ -321,7 +321,7 @@ it("incremental rendering - positions cursor after update", () => {
     render("Line 1\nUpdated\nLine 3\n");
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
-    expect(secondCall.endsWith(ansiEscapes.cursorUp(3) + ansiEscapes.cursorTo(2) + showCursorEscape)).toBe(true);
+    expect(secondCall.endsWith(cursorUp(3) + cursorTo(2) + showCursorEscape)).toBe(true);
 });
 
 for (const { name, incremental } of renderingModes) {
@@ -338,7 +338,7 @@ for (const { name, incremental } of renderingModes) {
         expect((stdout.write as any).mock.calls.length).toBe(2);
         const secondCall = (stdout.write as any).mock.calls[1][0] as string;
         expect(secondCall.includes(showCursorEscape)).toBe(true);
-        expect(secondCall.endsWith(ansiEscapes.cursorTo(3) + showCursorEscape)).toBe(true);
+        expect(secondCall.endsWith(cursorTo(3) + showCursorEscape)).toBe(true);
     });
 }
 
@@ -354,7 +354,7 @@ it("standard rendering - returns to bottom before erase when cursor was position
 
     const secondCall = (stdout.write as any).mock.calls[1][0] as string;
     expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
-    expect(secondCall.includes(ansiEscapes.cursorDown(3))).toBe(true);
+    expect(secondCall.includes(cursorDown(3))).toBe(true);
     expect(secondCall.includes("Line A")).toBe(true);
 });
 
@@ -371,7 +371,7 @@ for (const { name, incremental } of renderingModes) {
 
         const afterSync = stdout.get();
         expect(afterSync.includes(hideCursorEscape)).toBe(false);
-        expect(afterSync.includes(ansiEscapes.cursorDown(3))).toBe(false);
+        expect(afterSync.includes(cursorDown(3))).toBe(false);
     });
 }
 

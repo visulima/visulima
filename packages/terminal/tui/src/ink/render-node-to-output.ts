@@ -1,4 +1,5 @@
-import widestLine from "widest-line";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getStringWidth } from "@visulima/string";
 import indentString from "indent-string";
 import isFullwidthCodePoint from "is-fullwidth-code-point";
 import Yoga from "yoga-layout";
@@ -195,7 +196,7 @@ const renderNodeToOutput = (
                 const maxWidth = getMaxWidth(yogaNode);
 
                 if (mightExceedWidth(text, maxWidth)) {
-                    const currentWidth = widestLine(text);
+                    const currentWidth = Math.max(...text.split("\n").map(line => getStringWidth(line)));
                     if (currentWidth > maxWidth) {
                         const textWrap = node.style.textWrap ?? "wrap";
                         text = wrapText(text, maxWidth, textWrap);

@@ -3,7 +3,7 @@ import * as path from "node:path";
 import url from "node:url";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { run } from "../helpers/ink-run.js";
 
 const require = createRequire(import.meta.url);

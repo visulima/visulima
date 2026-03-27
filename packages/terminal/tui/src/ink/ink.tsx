@@ -3,7 +3,8 @@ import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
 import { type ReactNode } from "react";
 import { throttle, type DebouncedFunc } from "es-toolkit/compat";
-import ansiEscapes from "ansi-escapes";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ALT_SCREEN_OFF, ALT_SCREEN_ON, eraseLines, resetTerminal } from "@visulima/ansi";
 import isInCi from "is-in-ci";
 import autoBind from "auto-bind";
 import { onExit as signalExit } from "signal-exit";
@@ -17,7 +18,8 @@ if (!(console as any).Console) {
 import { LegacyRoot, ConcurrentRoot } from "react-reconciler/constants.js";
 import { type FiberRoot } from "react-reconciler";
 import Yoga from "yoga-layout";
-import wrapAnsi from "wrap-ansi";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { wordWrap } from "@visulima/string";
 import { getWindowSize } from "./utils.js";
 import reconciler from "./reconciler.js";
 import render from "./renderer.js";
@@ -538,7 +540,7 @@ export default class Ink {
 
             if (hasStaticOutput) {
                 // We need to erase the main output before writing new static output
-                const erase = this.lastOutputHeight > 0 ? ansiEscapes.eraseLines(this.lastOutputHeight) : "";
+                const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
                 this.options.stdout.write(erase + staticOutput);
                 // After erasing, the last output is gone, so we should reset its height
                 this.lastOutputHeight = 0;
@@ -554,16 +556,17 @@ export default class Ink {
 
             const terminalWidth = getWindowSize(this.options.stdout).columns;
 
-            const wrappedOutput = wrapAnsi(output, terminalWidth, {
+            const wrappedOutput = wordWrap(output, {
+                width: terminalWidth,
                 trim: false,
-                hard: true,
-            });
+                wrapMode: "BREAK_WORDS",
+            }).replace(/\n$/, "");
 
             // If we haven't erased yet, do it now.
             if (hasStaticOutput) {
                 this.options.stdout.write(wrappedOutput);
             } else {
-                const erase = this.lastOutputHeight > 0 ? ansiEscapes.eraseLines(this.lastOutputHeight) : "";
+                const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
                 this.options.stdout.write(erase + wrappedOutput);
             }
 
@@ -745,7 +748,7 @@ export default class Ink {
                 // buffer switch adds fragile lifecycle-specific behavior, so Ink keeps
                 // alternate-screen teardown intentionally simple and best-effort.
                 if (this.alternateScreen) {
-                    this.writeBestEffort(this.options.stdout, ansiEscapes.exitAlternativeScreen);
+                    this.writeBestEffort(this.options.stdout, ALT_SCREEN_OFF);
                     this.writeBestEffort(this.options.stdout, showCursorEscape);
                     this.alternateScreen = false;
                 }
@@ -904,7 +907,7 @@ export default class Ink {
         this.alternateScreen = this.resolveAlternateScreenOption(enabled, this.interactive);
 
         if (this.alternateScreen) {
-            this.writeBestEffort(this.options.stdout, ansiEscapes.enterAlternativeScreen);
+            this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
             this.writeBestEffort(this.options.stdout, hideCursorEscape);
         }
     }
@@ -980,7 +983,7 @@ export default class Ink {
                 this.options.stdout.write(bsu);
             }
 
-            this.options.stdout.write(ansiEscapes.clearTerminal + this.fullStaticOutput + output);
+            this.options.stdout.write(resetTerminal + this.fullStaticOutput + output);
             this.lastOutput = output;
             this.lastOutputToRender = outputToRender;
             this.lastOutputHeight = outputHeight;

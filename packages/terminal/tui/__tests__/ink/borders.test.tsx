@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { strip } from "@visulima/ansi";
 import boxen from "boxen";
 import indentString from "indent-string";
 import cliBoxes from "cli-boxes";
-import chalk from "chalk";
+import colorizeDefault from "@visulima/colorize";
 import { render, Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -25,12 +26,12 @@ it("single node - full width box with colorful border", () => {
         </Box>,
     );
 
-    expect(output).toBe(
-        boxen("Hello World", {
+    expect(strip(output)).toBe(
+        strip(boxen("Hello World", {
             width: 100,
             borderStyle: "round",
             borderColor: "green",
-        }),
+        })),
     );
 });
 
@@ -159,12 +160,12 @@ it("multiple nodes - full width box with colorful border", () => {
         </Box>,
     );
 
-    expect(output).toBe(
-        boxen("Hello World", {
+    expect(strip(output)).toBe(
+        strip(boxen("Hello World", {
             width: 100,
             borderStyle: "round",
             borderColor: "green",
-        }),
+        })),
     );
 });
 
@@ -408,12 +409,12 @@ it("render border after update", () => {
 
     rerender(<Test borderColor="green" />);
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(
-        boxen("Hello World", {
+    expect(strip((stdout.write as any).mock.calls.at(-1)[0])).toBe(
+        strip(boxen("Hello World", {
             width: 100,
             borderStyle: "round",
             borderColor: "green",
-        }),
+        })),
     );
 
     rerender(<Test />);
@@ -600,7 +601,7 @@ it("change color of top border", () => {
     expect(output).toBe(
         [
             "Above",
-            chalk.green(`${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`),
+            colorizeDefault.green(`${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`),
             `${cliBoxes.round.left}Content${cliBoxes.round.right}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
@@ -624,7 +625,7 @@ it("change color of bottom border", () => {
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
             `${cliBoxes.round.left}Content${cliBoxes.round.right}`,
-            chalk.green(`${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`),
+            colorizeDefault.green(`${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`),
             "Below",
         ].join("\n"),
     );
@@ -645,7 +646,7 @@ it("change color of left border", () => {
         [
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
-            `${chalk.green(cliBoxes.round.left)}Content${cliBoxes.round.right}`,
+            `${colorizeDefault.green(cliBoxes.round.left)}Content${cliBoxes.round.right}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
         ].join("\n"),
@@ -667,7 +668,7 @@ it("change color of right border", () => {
         [
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
-            `${cliBoxes.round.left}Content${chalk.green(cliBoxes.round.right)}`,
+            `${cliBoxes.round.left}Content${colorizeDefault.green(cliBoxes.round.right)}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
         ].join("\n"),
@@ -702,12 +703,12 @@ it("dim border color", () => {
         </Box>,
     );
 
-    expect(output).toBe(
-        boxen("Content", {
+    expect(strip(output)).toBe(
+        strip(boxen("Content", {
             width: 100,
             borderStyle: "round",
             dimBorder: true,
-        }),
+        })),
     );
 });
 
@@ -725,7 +726,7 @@ it("dim top border color", () => {
     expect(output).toBe(
         [
             "Above",
-            chalk.dim(`${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`),
+            colorizeDefault.dim(`${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`),
             `${cliBoxes.round.left}Content${cliBoxes.round.right}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
@@ -749,7 +750,7 @@ it("dim bottom border color", () => {
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
             `${cliBoxes.round.left}Content${cliBoxes.round.right}`,
-            chalk.dim(`${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`),
+            colorizeDefault.dim(`${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`),
             "Below",
         ].join("\n"),
     );
@@ -770,7 +771,7 @@ it("dim left border color", () => {
         [
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
-            `${chalk.dim(cliBoxes.round.left)}Content${cliBoxes.round.right}`,
+            `${colorizeDefault.dim(cliBoxes.round.left)}Content${cliBoxes.round.right}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
         ].join("\n"),
@@ -792,7 +793,7 @@ it("dim right border color", () => {
         [
             "Above",
             `${cliBoxes.round.topLeft}${cliBoxes.round.top.repeat(7)}${cliBoxes.round.topRight}`,
-            `${cliBoxes.round.left}Content${chalk.dim(cliBoxes.round.right)}`,
+            `${cliBoxes.round.left}Content${colorizeDefault.dim(cliBoxes.round.right)}`,
             `${cliBoxes.round.bottomLeft}${cliBoxes.round.bottom.repeat(7)}${cliBoxes.round.bottomRight}`,
             "Below",
         ].join("\n"),
@@ -808,10 +809,10 @@ it("borderDimColor does not dim styled child Text touching left edge", () => {
         </Box>,
     );
 
-    const styledText = chalk.bold(chalk.blue("styled text"));
+    const styledText = colorizeDefault.bold(colorizeDefault.blue("styled text"));
     expect(output.includes(styledText)).toBe(true);
 
-    const dimmedTopBorder = chalk.dim(cliBoxes.round.topLeft + cliBoxes.round.top.repeat(11) + cliBoxes.round.topRight);
+    const dimmedTopBorder = colorizeDefault.dim(cliBoxes.round.topLeft + cliBoxes.round.top.repeat(11) + cliBoxes.round.topRight);
     expect(output.includes(dimmedTopBorder)).toBe(true);
 });
 
@@ -864,11 +865,11 @@ it("render border after update - concurrent", async () => {
 
     await rerenderAsync(<Test borderColor="green" />);
 
-    expect(getOutput()).toBe(
-        boxen("Hello World", {
+    expect(strip(getOutput())).toBe(
+        strip(boxen("Hello World", {
             width: 100,
             borderStyle: "round",
             borderColor: "green",
-        }),
+        })),
     );
 });

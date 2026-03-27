@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import chalk from "chalk";
+import colorizeDefault from "@visulima/colorize";
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -85,7 +85,7 @@ it("row - align colored text node when text is squashed", () => {
         </Box>,
     );
 
-    expect(output).toBe(`    ${chalk.green("X")}`);
+    expect(output).toBe(`    ${colorizeDefault.green("X")}`);
 });
 
 it("column - align text to center", () => {

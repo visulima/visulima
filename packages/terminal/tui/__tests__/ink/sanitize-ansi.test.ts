@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import sanitizeAnsi from "../../src/ink/sanitize-ansi.js";
 
 it("preserve plain text", () => {

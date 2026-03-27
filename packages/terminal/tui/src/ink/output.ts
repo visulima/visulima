@@ -1,5 +1,5 @@
-import sliceAnsi from "slice-ansi";
-import stringWidth from "string-width";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getStringWidth, slice as sliceAnsi } from "@visulima/string";
 import isFullwidthCodePoint from "is-fullwidth-code-point";
 import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, type StyledChar, tokenize } from "@alcalzone/ansi-tokenize";
 import { type OutputTransformer } from "./render-node-to-output.js";
@@ -83,7 +83,7 @@ export class OutputCaches {
     getStringWidth(text: string): number {
         let cached = this.widths.get(text);
         if (cached === undefined) {
-            cached = stringWidth(text);
+            cached = getStringWidth(text);
             this.setCacheEntry(this.widths, text, cached);
         }
 

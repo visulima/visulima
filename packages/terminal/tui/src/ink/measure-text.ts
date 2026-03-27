@@ -1,4 +1,5 @@
-import widestLine from "widest-line";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getStringWidth } from "@visulima/string";
 
 const cache = new Map<string, Output>();
 
@@ -21,7 +22,7 @@ const measureText = (text: string): Output => {
         return cachedDimensions;
     }
 
-    const width = widestLine(text);
+    const width = Math.max(...text.split("\n").map(line => getStringWidth(line)));
     const height = text.split("\n").length;
     const dimensions = { width, height };
     cache.set(text, dimensions);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import chalk from "chalk";
-import stripAnsi from "strip-ansi";
+import colorizeDefault from "@visulima/colorize";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { render, Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -25,20 +25,16 @@ it("<Text> with null children", () => {
 
 it("text with standard color", () => {
     const output = renderToString(<Text color="green">Test</Text>);
-    expect(output).toBe(chalk.green("Test"));
+    expect(output).toBe(colorizeDefault.green("Test"));
 });
 
 it("text with dim+bold", () => {
-    const originalLevel = chalk.level;
-    chalk.level = 3;
-
     const output = renderToString(
         <Text dimColor bold>
             Test
         </Text>,
     );
 
-    chalk.level = originalLevel;
     expect(stripAnsi(output)).toBe("Test");
     expect(output).not.toBe("Test");
 });
@@ -49,47 +45,47 @@ it("text with dimmed color", () => {
             Test
         </Text>,
     );
-    expect(output).toBe(chalk.green.dim("Test"));
+    expect(output).toBe(colorizeDefault.green.dim("Test"));
 });
 
 it("text with hex color", () => {
     const output = renderToString(<Text color="#FF8800">Test</Text>);
-    expect(output).toBe(chalk.hex("#FF8800")("Test"));
+    expect(output).toBe(colorizeDefault.hex("#FF8800")("Test"));
 });
 
 it("text with rgb color", () => {
     const output = renderToString(<Text color="rgb(255, 136, 0)">Test</Text>);
-    expect(output).toBe(chalk.rgb(255, 136, 0)("Test"));
+    expect(output).toBe(colorizeDefault.rgb(255, 136, 0)("Test"));
 });
 
 it("text with ansi256 color", () => {
     const output = renderToString(<Text color="ansi256(194)">Test</Text>);
-    expect(output).toBe(chalk.ansi256(194)("Test"));
+    expect(output).toBe(colorizeDefault.ansi256(194)("Test"));
 });
 
 it("text with standard background color", () => {
     const output = renderToString(<Text backgroundColor="green">Test</Text>);
-    expect(output).toBe(chalk.bgGreen("Test"));
+    expect(output).toBe(colorizeDefault.bgGreen("Test"));
 });
 
 it("text with hex background color", () => {
     const output = renderToString(<Text backgroundColor="#FF8800">Test</Text>);
-    expect(output).toBe(chalk.bgHex("#FF8800")("Test"));
+    expect(output).toBe(colorizeDefault.bgHex("#FF8800")("Test"));
 });
 
 it("text with rgb background color", () => {
     const output = renderToString(<Text backgroundColor="rgb(255, 136, 0)">Test</Text>);
-    expect(output).toBe(chalk.bgRgb(255, 136, 0)("Test"));
+    expect(output).toBe(colorizeDefault.bgRgb(255, 136, 0)("Test"));
 });
 
 it("text with ansi256 background color", () => {
     const output = renderToString(<Text backgroundColor="ansi256(194)">Test</Text>);
-    expect(output).toBe(chalk.bgAnsi256(194)("Test"));
+    expect(output).toBe(colorizeDefault.bgAnsi256(194)("Test"));
 });
 
 it("text with inversion", () => {
     const output = renderToString(<Text inverse>Test</Text>);
-    expect(output).toBe(chalk.inverse("Test"));
+    expect(output).toBe(colorizeDefault.inverse("Test"));
 });
 
 it("text with empty-to-nonempty sibling does not wrap", () => {
@@ -311,32 +307,28 @@ it("<Text> with null children - concurrent", async () => {
 
 it("text with standard color - concurrent", async () => {
     const output = await renderToStringAsync(<Text color="green">Test</Text>);
-    expect(output).toBe(chalk.green("Test"));
+    expect(output).toBe(colorizeDefault.green("Test"));
 });
 
 it("text with dim+bold - concurrent", async () => {
-    const originalLevel = chalk.level;
-    chalk.level = 3;
-
     const output = await renderToStringAsync(
         <Text dimColor bold>
             Test
         </Text>,
     );
 
-    chalk.level = originalLevel;
     expect(stripAnsi(output)).toBe("Test");
     expect(output).not.toBe("Test");
 });
 
 it("text with hex color - concurrent", async () => {
     const output = await renderToStringAsync(<Text color="#FF8800">Test</Text>);
-    expect(output).toBe(chalk.hex("#FF8800")("Test"));
+    expect(output).toBe(colorizeDefault.hex("#FF8800")("Test"));
 });
 
 it("text with inversion - concurrent", async () => {
     const output = await renderToStringAsync(<Text inverse>Test</Text>);
-    expect(output).toBe(chalk.inverse("Test"));
+    expect(output).toBe(colorizeDefault.inverse("Test"));
 });
 
 it("remeasure text when text is changed - concurrent", async () => {

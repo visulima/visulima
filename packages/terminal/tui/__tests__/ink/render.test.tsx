@@ -7,8 +7,8 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 import { vi } from "vitest";
 import { type ReactElement, type ReactNode, PureComponent, useEffect, useState } from "react";
-import ansiEscapes from "ansi-escapes";
-import stripAnsi from "strip-ansi";
+import { eraseLines, resetTerminal } from "@visulima/ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import boxen from "boxen";
 import delay from "delay";
 import { render, Box, Text, useApp, useCursor, useInput } from "../../src/ink/index.js";
@@ -105,7 +105,7 @@ const getContentWrites = (writeSpy: any): string[] =>
 it.skipIf(!ptyAvailable)("do not erase screen", async () => {
     const ps = term("erase", ["4"]);
     await ps.waitForExit();
-    expect(ps.output.includes(ansiEscapes.clearTerminal)).toBe(false);
+    expect(ps.output.includes(resetTerminal)).toBe(false);
 
     for (const letter of ["A", "B", "C"]) {
         expect(ps.output.includes(letter)).toBe(true);
@@ -116,7 +116,7 @@ it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than view
     const ps = term("erase-with-static", ["4"]);
 
     await ps.waitForExit();
-    expect(ps.output.includes(ansiEscapes.clearTerminal)).toBe(false);
+    expect(ps.output.includes(resetTerminal)).toBe(false);
 
     for (const letter of ["A", "B", "C", "D", "E", "F"]) {
         expect(ps.output.includes(letter)).toBe(true);
@@ -126,7 +126,7 @@ it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than view
 it.skipIf(!ptyAvailable)("erase screen", async () => {
     const ps = term("erase", ["3"]);
     await ps.waitForExit();
-    expect(ps.output.includes(ansiEscapes.clearTerminal)).toBe(true);
+    expect(ps.output.includes(resetTerminal)).toBe(true);
 
     for (const letter of ["A", "B", "C"]) {
         expect(ps.output.includes(letter)).toBe(true);
@@ -137,7 +137,7 @@ it.skipIf(!ptyAvailable)("clear output", async () => {
     const ps = term("clear");
     await ps.waitForExit();
 
-    const secondFrame = ps.output.split(ansiEscapes.eraseLines(4))[1];
+    const secondFrame = ps.output.split(eraseLines(4))[1];
 
     for (const letter of ["A", "B", "C"]) {
         expect(secondFrame?.includes(letter)).toBe(false);
@@ -148,7 +148,7 @@ it.skipIf(!ptyAvailable)("intercept console methods and display result above out
     const ps = term("console");
     await ps.waitForExit();
 
-    const frames = ps.output.split(ansiEscapes.eraseLines(2)).map((line) => {
+    const frames = ps.output.split(eraseLines(2)).map((line) => {
         return stripAnsi(line);
     });
 

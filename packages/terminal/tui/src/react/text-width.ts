@@ -1,13 +1,14 @@
-import stringWidth from "string-width";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { getStringWidth as visulimaGetStringWidth } from "@visulima/string";
 
 /** Display width of a single Unicode code point (at least 1 cell). */
 export function getCodePointWidth(char: string): number {
-    return Math.max(1, stringWidth(char));
+    return Math.max(1, visulimaGetStringWidth(char));
 }
 
 /** Display width of a full string (sums grapheme widths). */
 export function getStringWidth(text: string): number {
-    return stringWidth(text);
+    return visulimaGetStringWidth(text);
 }
 
 /**

@@ -1,6 +1,6 @@
 import { Suspense, act, useEffect, useState } from "react";
 import { describe, expect, it } from "vitest";
-import ansiEscapes from "ansi-escapes";
+import { cursorTo } from "@visulima/ansi";
 import delay from "delay";
 import { render, Box, Text, useInput, useCursor, useStdout, useStderr } from "../../src/ink/index.js";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
@@ -84,7 +84,7 @@ it("cursor is shown at specified position after render", async () => {
 
     const firstRenderOutput = getWriteCalls(stdout).join("");
     expect(firstRenderOutput.includes(showCursorEscape)).toBe(true);
-    expect(firstRenderOutput.includes(ansiEscapes.cursorTo(2))).toBe(true);
+    expect(firstRenderOutput.includes(cursorTo(2))).toBe(true);
 
     unmount();
 });
@@ -117,7 +117,7 @@ it("cursor follows text input", async () => {
 
     const allOutput = getWriteCalls(stdout).join("");
     expect(allOutput.includes(showCursorEscape)).toBe(true);
-    expect(allOutput.includes(ansiEscapes.cursorTo(3))).toBe(true);
+    expect(allOutput.includes(cursorTo(3))).toBe(true);
 
     unmount();
 });
@@ -139,7 +139,7 @@ it("cursor moves on space input even when output is identical", async () => {
     expect((stdout.write as any).mock.calls.length).toBeGreaterThan(afterA);
 
     const allOutput = getWriteCalls(stdout).join("");
-    expect(allOutput.includes(ansiEscapes.cursorTo(4))).toBe(true);
+    expect(allOutput.includes(cursorTo(4))).toBe(true);
 
     unmount();
 });

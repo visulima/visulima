@@ -1,12 +1,13 @@
-import chalk, { type ForegroundColorName, type BackgroundColorName } from "chalk";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import colorizeDefault, { type AnsiColors, type ColorizeType } from "@visulima/colorize";
 
 type ColorType = "foreground" | "background";
 
 const rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
 const ansiRegex = /^ansi256\(\s?(\d+)\s?\)$/;
 
-const isNamedColor = (color: string): color is ForegroundColorName => {
-    return color in chalk;
+const isNamedColor = (color: string): color is AnsiColors => {
+    return color in colorizeDefault;
 };
 
 const colorize = (str: string, color: string | undefined, type: ColorType): string => {
@@ -16,16 +17,16 @@ const colorize = (str: string, color: string | undefined, type: ColorType): stri
 
     if (isNamedColor(color)) {
         if (type === "foreground") {
-            return chalk[color](str);
+            return (colorizeDefault as unknown as Record<string, ColorizeType>)[color]!(str);
         }
 
-        const methodName = `bg${color[0]!.toUpperCase() + color.slice(1)}` as BackgroundColorName;
+        const methodName = `bg${color[0]!.toUpperCase() + color.slice(1)}`;
 
-        return chalk[methodName](str);
+        return (colorizeDefault as unknown as Record<string, ColorizeType>)[methodName]!(str);
     }
 
     if (color.startsWith("#")) {
-        return type === "foreground" ? chalk.hex(color)(str) : chalk.bgHex(color)(str);
+        return type === "foreground" ? colorizeDefault.hex(color as `#${string}`)(str) : colorizeDefault.bgHex(color as `#${string}`)(str);
     }
 
     if (color.startsWith("ansi256")) {
@@ -37,7 +38,7 @@ const colorize = (str: string, color: string | undefined, type: ColorType): stri
 
         const value = Number(matches[1]);
 
-        return type === "foreground" ? chalk.ansi256(value)(str) : chalk.bgAnsi256(value)(str);
+        return type === "foreground" ? colorizeDefault.ansi256(value)(str) : colorizeDefault.bgAnsi256(value)(str);
     }
 
     if (color.startsWith("rgb")) {
@@ -51,7 +52,7 @@ const colorize = (str: string, color: string | undefined, type: ColorType): stri
         const secondValue = Number(matches[2]);
         const thirdValue = Number(matches[3]);
 
-        return type === "foreground" ? chalk.rgb(firstValue, secondValue, thirdValue)(str) : chalk.bgRgb(firstValue, secondValue, thirdValue)(str);
+        return type === "foreground" ? colorizeDefault.rgb(firstValue, secondValue, thirdValue)(str) : colorizeDefault.bgRgb(firstValue, secondValue, thirdValue)(str);
     }
 
     return str;
