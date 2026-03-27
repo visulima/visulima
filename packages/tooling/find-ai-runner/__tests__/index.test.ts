@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
-import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AiProviderInfo } from "../src/index";
 import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
@@ -56,7 +56,7 @@ describe("pROVIDERS", () => {
 
     it("should have buildArgs function for every provider", () => {
         for (const config of Object.values(PROVIDERS)) {
-            expectTypeOf(config.buildArgs).toBeFunction();
+            expect(typeof config.buildArgs).toBe("function");
         }
     });
 

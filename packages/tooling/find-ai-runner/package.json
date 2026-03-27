@@ -53,6 +53,9 @@
         },
         "./package.json": "./package.json"
     },
+    "bin": {
+        "find-ai-runner": "./dist/cli.js"
+    },
     "files": [
         "dist/**",
         "README.md",
