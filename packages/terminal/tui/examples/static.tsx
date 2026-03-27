@@ -1,21 +1,21 @@
 /**
  * static.tsx — port of the Ink `static` example
  *
- * Demonstrates <Static>: items accumulate above the dynamic UI and are never
+ * Demonstrates &lt;Static>: items accumulate above the dynamic UI and are never
  * re-rendered. The progress bar at the bottom updates live while tests complete.
  *
  * Run: node --import @oxc-node/core/register examples/static.tsx
  */
-import React, { useState, useEffect } from "react";
-import { render, Box, Text, Static } from "@visulima/tui/react";
+import { Box, render, Static, Text } from "@visulima/tui/react";
+import React, { useEffect, useState } from "react";
 
 type TestResult = {
     id: number;
-    title: string;
     passed: boolean;
+    title: string;
 };
 
-function App() {
+const App = () => {
     const [tests, setTests] = useState<TestResult[]>([]);
 
     useEffect(() => {
@@ -23,15 +23,17 @@ function App() {
         const TOTAL = 12;
 
         const run = () => {
-            if (count >= TOTAL) return;
+            if (count >= TOTAL)
+                return;
 
             const passed = Math.random() > 0.15; // ~85% pass rate
-            setTests((prev) => [
-                ...prev,
+
+            setTests((previous) => [
+                ...previous,
                 {
                     id: count,
-                    title: `Test #${count + 1}: ${passed ? "passes" : "fails"}`,
                     passed,
+                    title: `Test #${count + 1}: ${passed ? "passes" : "fails"}`,
                 },
             ]);
             count++;
@@ -56,29 +58,46 @@ function App() {
                 {(test) => (
                     <Box key={test.id}>
                         <Text color={test.passed ? "green" : "red"}>
-                            {test.passed ? "✔" : "✘"} {test.title}
+                            {test.passed ? "✔" : "✘"}
+                            {" "}
+                            {test.title}
                         </Text>
                     </Box>
                 )}
             </Static>
 
             {/* Dynamic region — live progress */}
-            <Box marginTop={1} flexDirection="column">
+            <Box flexDirection="column" marginTop={1}>
                 <Box>
                     <Text dimColor>
-                        Running tests... {done}/{TOTAL}
+                        Running tests...
+                        {" "}
+                        {done}
+                        /
+                        {TOTAL}
                         {done === TOTAL ? " — done!" : ""}
                     </Text>
                 </Box>
                 {done > 0 && (
                     <Box>
-                        <Text color="green">{passed} passed</Text>
-                        {failed > 0 && <Text color="red"> {failed} failed</Text>}
+                        <Text color="green">
+                            {passed}
+                            {" "}
+                            passed
+                        </Text>
+                        {failed > 0 && (
+                            <Text color="red">
+                                {" "}
+                                {failed}
+                                {" "}
+                                failed
+                            </Text>
+                        )}
                     </Box>
                 )}
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

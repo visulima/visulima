@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth as visulimaGetStringWidth } from "@visulima/string";
 
 /** Display width of a single Unicode code point (at least 1 cell). */
@@ -19,8 +18,11 @@ export function getStringWidth(text: string): number {
  * - Empty lines still occupy one visual row.
  */
 export function countWrappedRowsForLine(line: string, width: number): number {
-    if (width <= 0) return 0;
-    if (line.length === 0) return 1;
+    if (width <= 0)
+        return 0;
+
+    if (line.length === 0)
+        return 1;
 
     let rows = 1;
     let col = 0;
@@ -50,7 +52,9 @@ export function measureTextBlock(text: string, wrapWidth: number): { maxLineWidt
 
     for (const line of lines) {
         const lineWidth = getStringWidth(line);
-        if (lineWidth > maxLineWidth) maxLineWidth = lineWidth;
+
+        if (lineWidth > maxLineWidth)
+            maxLineWidth = lineWidth;
 
         wrappedRows += wrapWidth > 0 ? countWrappedRowsForLine(line, wrapWidth) : 0;
     }

@@ -1,4 +1,6 @@
-import { PureComponent, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { PureComponent } from "react";
+
 import ErrorOverview from "./ErrorOverview.js";
 
 type Props = {
@@ -16,7 +18,7 @@ export default class ErrorBoundary extends PureComponent<Props, State> {
     static displayName = "InternalErrorBoundary";
 
     static getDerivedStateFromError(error: Error): State {
-        return { error: error };
+        return { error };
     }
 
     override state: State = {

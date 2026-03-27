@@ -1,15 +1,17 @@
-import Yoga, { type Node as YogaNode } from "yoga-layout";
+import type { Node as YogaNode } from "yoga-layout";
+import Yoga from "yoga-layout";
+
 import measureText from "./measure-text.js";
-import { type Styles } from "./styles.js";
-import wrapText from "./wrap-text.js";
+import type { OutputTransformer } from "./render-node-to-output.js";
 import squashTextNodes from "./squash-text-nodes.js";
-import { type OutputTransformer } from "./render-node-to-output.js";
+import type { Styles } from "./styles.js";
+import wrapText from "./wrap-text.js";
 
 type InkNode = {
-    parentNode: DOMElement | undefined;
-    yogaNode?: YogaNode;
     internal_static?: boolean;
+    parentNode: DOMElement | undefined;
     style: Styles;
+    yogaNode?: YogaNode;
 };
 
 type LayoutListener = () => void;
@@ -19,13 +21,9 @@ export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-virtual-te
 
 export type NodeNames = ElementNames | TextName;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type DOMElement = {
-    nodeName: ElementNames;
+export type DOMElement = InkNode & {
     attributes: Record<string, DOMNodeAttribute>;
     childNodes: DOMNode[];
-    internal_transform?: OutputTransformer;
-
     internal_accessibility?: {
         role?:
             | "button"
@@ -58,22 +56,24 @@ export type DOMElement = {
             selected?: boolean;
         };
     };
+    internal_layoutListeners?: Set<LayoutListener>;
+
+    internal_transform?: OutputTransformer;
 
     // Internal properties
     isStaticDirty?: boolean;
-    staticNode?: DOMElement;
+    nodeName: ElementNames;
     onComputeLayout?: () => void;
-    onRender?: () => void;
     onImmediateRender?: () => void;
-    internal_layoutListeners?: Set<LayoutListener>;
-} & InkNode;
+    onRender?: () => void;
+    staticNode?: DOMElement;
+};
 
-export type TextNode = {
+export type TextNode = InkNode & {
     nodeName: TextName;
     nodeValue: string;
-} & InkNode;
+};
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export type DOMNode<T = { nodeName: NodeNames }> = T extends {
     nodeName: infer U;
 }
@@ -82,19 +82,18 @@ export type DOMNode<T = { nodeName: NodeNames }> = T extends {
         : DOMElement
     : never;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export type DOMNodeAttribute = boolean | string | number;
 
 export const createNode = (nodeName: ElementNames): DOMElement => {
     const node: DOMElement = {
-        nodeName,
-        style: {},
         attributes: {},
         childNodes: [],
-        parentNode: undefined,
-        yogaNode: nodeName === "ink-virtual-text" ? undefined : Yoga.Node.create(),
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+
         internal_accessibility: {},
+        nodeName,
+        parentNode: undefined,
+        style: {},
+        yogaNode: nodeName === "ink-virtual-text" ? undefined : Yoga.Node.create(),
     };
 
     if (nodeName === "ink-text") {
@@ -129,16 +128,18 @@ export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, before
     newChildNode.parentNode = node;
 
     const index = node.childNodes.indexOf(beforeChildNode);
-    if (index >= 0) {
-        node.childNodes.splice(index, 0, newChildNode);
-        if (newChildNode.yogaNode) {
-            node.yogaNode?.insertChild(newChildNode.yogaNode, index);
-        }
-    } else {
+
+    if (index === -1) {
         node.childNodes.push(newChildNode);
 
         if (newChildNode.yogaNode) {
             node.yogaNode?.insertChild(newChildNode.yogaNode, node.yogaNode.getChildCount());
+        }
+    } else {
+        node.childNodes.splice(index, 0, newChildNode);
+
+        if (newChildNode.yogaNode) {
+            node.yogaNode?.insertChild(newChildNode.yogaNode, index);
         }
     }
 
@@ -155,7 +156,8 @@ export const removeChildNode = (node: DOMElement, removeNode: DOMNode): void => 
     removeNode.parentNode = undefined;
 
     const index = node.childNodes.indexOf(removeNode);
-    if (index >= 0) {
+
+    if (index !== -1) {
         node.childNodes.splice(index, 1);
     }
 
@@ -167,6 +169,7 @@ export const removeChildNode = (node: DOMElement, removeNode: DOMNode): void => 
 export const setAttribute = (node: DOMElement, key: string, value: DOMNodeAttribute): void => {
     if (key === "internal_accessibility") {
         node.internal_accessibility = value as DOMElement["internal_accessibility"];
+
         return;
     }
 
@@ -182,9 +185,9 @@ export const createTextNode = (text: string): TextNode => {
     const node: TextNode = {
         nodeName: "#text",
         nodeValue: text,
-        yogaNode: undefined,
         parentNode: undefined,
         style: {},
+        yogaNode: undefined,
     };
 
     setTextNodeValue(node, text);
@@ -192,7 +195,7 @@ export const createTextNode = (text: string): TextNode => {
     return node;
 };
 
-const measureTextNode = function (node: DOMNode, width: number): { width: number; height: number } {
+const measureTextNode = function (node: DOMNode, width: number): { height: number; width: number } {
     const text = node.nodeName === "#text" ? node.nodeValue : squashTextNodes(node);
 
     const dimensions = measureText(text);
@@ -225,6 +228,7 @@ const findClosestYogaNode = (node?: DOMNode): YogaNode | undefined => {
 const markNodeAsDirty = (node?: DOMNode): void => {
     // Mark closest Yoga node as dirty to measure text dimensions again
     const yogaNode = findClosestYogaNode(node);
+
     yogaNode?.markDirty();
 };
 
@@ -237,7 +241,7 @@ export const setTextNodeValue = (node: TextNode, text: string): void => {
     markNodeAsDirty(node);
 };
 
-export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): (() => void) => {
+export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): () => void => {
     if (rootNode.nodeName !== "ink-root") {
         return () => {};
     }

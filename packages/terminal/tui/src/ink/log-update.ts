@@ -1,12 +1,13 @@
-import { type Writable } from "node:stream";
-// eslint-disable-next-line import/no-extraneous-dependencies
+import type { Writable } from "node:stream";
+
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
+
+import type { CursorPosition } from "./cursor-helpers.js";
 import {
-    type CursorPosition,
-    cursorPositionChanged,
-    buildCursorSuffix,
     buildCursorOnlySequence,
+    buildCursorSuffix,
     buildReturnToBottomPrefix,
+    cursorPositionChanged,
     hideCursorEscape,
 } from "./cursor-helpers.js";
 
@@ -15,17 +16,17 @@ export type { CursorPosition } from "./cursor-helpers.js";
 export type LogUpdate = {
     clear: () => void;
     done: () => void;
-    reset: () => void;
-    sync: (str: string) => void;
-    setCursorPosition: (position: CursorPosition | undefined) => void;
     isCursorDirty: () => boolean;
-    willRender: (str: string) => boolean;
-    (str: string): boolean;
+    reset: () => void;
+    setCursorPosition: (position: CursorPosition | undefined) => void;
+    sync: (string_: string) => void;
+    willRender: (string_: string) => boolean;
+    (string_: string): boolean;
 };
 
 // Count visible lines in a string, ignoring the trailing empty element
 // that `split('\n')` produces when the string ends with '\n'.
-const visibleLineCount = (lines: string[], str: string): number => (str.endsWith("\n") ? lines.length - 1 : lines.length);
+const visibleLineCount = (lines: string[], string_: string): number => string_.endsWith("\n") ? lines.length - 1 : lines.length;
 
 const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdate => {
     let previousLineCount = 0;
@@ -37,12 +38,13 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
     let cursorWasShown = false;
 
     const getActiveCursor = () => (cursorDirty ? cursorPosition : undefined);
-    const hasChanges = (str: string, activeCursor: CursorPosition | undefined): boolean => {
+    const hasChanges = (string_: string, activeCursor: CursorPosition | undefined): boolean => {
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
-        return str !== previousOutput || cursorChanged;
+
+        return string_ !== previousOutput || cursorChanged;
     };
 
-    const render = (str: string) => {
+    const render = (string_: string) => {
         if (!showCursor && !hasHiddenCursor) {
             stream.write(cursorHide);
             hasHiddenCursor = true;
@@ -51,41 +53,45 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         // Only use cursor if setCursorPosition was called since last render.
         // This ensures stale positions don't persist after component unmount.
         const activeCursor = getActiveCursor();
+
         cursorDirty = false;
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
 
-        if (!hasChanges(str, activeCursor)) {
+        if (!hasChanges(string_, activeCursor)) {
             return false;
         }
 
-        const lines = str.split("\n");
-        const visibleCount = visibleLineCount(lines, str);
+        const lines = string_.split("\n");
+        const visibleCount = visibleLineCount(lines, string_);
         const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
 
-        if (str === previousOutput && cursorChanged) {
+        if (string_ === previousOutput && cursorChanged) {
             stream.write(
                 buildCursorOnlySequence({
-                    cursorWasShown,
-                    previousLineCount,
-                    previousCursorPosition,
-                    visibleLineCount: visibleCount,
                     cursorPosition: activeCursor,
+                    cursorWasShown,
+                    previousCursorPosition,
+                    previousLineCount,
+                    visibleLineCount: visibleCount,
                 }),
             );
         } else {
-            previousOutput = str;
+            previousOutput = string_;
             const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
-            stream.write(returnPrefix + eraseLines(previousLineCount) + str + cursorSuffix);
+
+            stream.write(returnPrefix + eraseLines(previousLineCount) + string_ + cursorSuffix);
             previousLineCount = lines.length;
         }
 
         previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
         cursorWasShown = activeCursor !== undefined;
+
         return true;
     };
 
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
+
         stream.write(prefix + eraseLines(previousLineCount));
         previousOutput = "";
         previousLineCount = 0;
@@ -112,12 +118,14 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         cursorWasShown = false;
     };
 
-    render.sync = (str: string) => {
+    render.sync = (string_: string) => {
         const activeCursor = cursorDirty ? cursorPosition : undefined;
+
         cursorDirty = false;
 
-        const lines = str.split("\n");
-        previousOutput = str;
+        const lines = string_.split("\n");
+
+        previousOutput = string_;
         previousLineCount = lines.length;
 
         if (!activeCursor && cursorWasShown) {
@@ -125,7 +133,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         }
 
         if (activeCursor) {
-            stream.write(buildCursorSuffix(visibleLineCount(lines, str), activeCursor));
+            stream.write(buildCursorSuffix(visibleLineCount(lines, string_), activeCursor));
         }
 
         previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
@@ -138,7 +146,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
     };
 
     render.isCursorDirty = () => cursorDirty;
-    render.willRender = (str: string) => hasChanges(str, getActiveCursor());
+    render.willRender = (string_: string) => hasChanges(string_, getActiveCursor());
 
     return render;
 };
@@ -153,12 +161,13 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
     let cursorWasShown = false;
 
     const getActiveCursor = () => (cursorDirty ? cursorPosition : undefined);
-    const hasChanges = (str: string, activeCursor: CursorPosition | undefined): boolean => {
+    const hasChanges = (string_: string, activeCursor: CursorPosition | undefined): boolean => {
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
-        return str !== previousOutput || cursorChanged;
+
+        return string_ !== previousOutput || cursorChanged;
     };
 
-    const render = (str: string) => {
+    const render = (string_: string) => {
         if (!showCursor && !hasHiddenCursor) {
             stream.write(cursorHide);
             hasHiddenCursor = true;
@@ -167,55 +176,58 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         // Only use cursor if setCursorPosition was called since last render.
         // This ensures stale positions don't persist after component unmount.
         const activeCursor = getActiveCursor();
+
         cursorDirty = false;
         const cursorChanged = cursorPositionChanged(activeCursor, previousCursorPosition);
 
-        if (!hasChanges(str, activeCursor)) {
+        if (!hasChanges(string_, activeCursor)) {
             return false;
         }
 
-        const nextLines = str.split("\n");
-        const visibleCount = visibleLineCount(nextLines, str);
+        const nextLines = string_.split("\n");
+        const visibleCount = visibleLineCount(nextLines, string_);
         const previousVisible = visibleLineCount(previousLines, previousOutput);
 
-        if (str === previousOutput && cursorChanged) {
+        if (string_ === previousOutput && cursorChanged) {
             stream.write(
                 buildCursorOnlySequence({
-                    cursorWasShown,
-                    previousLineCount: previousLines.length,
-                    previousCursorPosition,
-                    visibleLineCount: visibleCount,
                     cursorPosition: activeCursor,
+                    cursorWasShown,
+                    previousCursorPosition,
+                    previousLineCount: previousLines.length,
+                    visibleLineCount: visibleCount,
                 }),
             );
             previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
             cursorWasShown = activeCursor !== undefined;
+
             return true;
         }
 
         const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLines.length, previousCursorPosition);
 
-        if (str === "\n" || previousOutput.length === 0) {
+        if (string_ === "\n" || previousOutput.length === 0) {
             const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
-            stream.write(returnPrefix + eraseLines(previousLines.length) + str + cursorSuffix);
+
+            stream.write(returnPrefix + eraseLines(previousLines.length) + string_ + cursorSuffix);
             cursorWasShown = activeCursor !== undefined;
             previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
-            previousOutput = str;
+            previousOutput = string_;
             previousLines = nextLines;
+
             return true;
         }
 
-        const hasTrailingNewline = str.endsWith("\n");
+        const hasTrailingNewline = string_.endsWith("\n");
 
         // We aggregate all chunks for incremental rendering into a buffer, and then write them to stdout at the end.
-        const buffer: string[] = [];
-
-        buffer.push(returnPrefix);
+        const buffer: string[] = [returnPrefix];
 
         // Clear extra lines if the current content's line count is lower than the previous.
         if (visibleCount < previousVisible) {
             const previousHadTrailingNewline = previousOutput.endsWith("\n");
             const extraSlot = previousHadTrailingNewline ? 1 : 0;
+
             buffer.push(eraseLines(previousVisible - visibleCount + extraSlot), cursorUp(visibleCount));
         } else {
             buffer.push(cursorUp(previousVisible - 1));
@@ -236,29 +248,32 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             }
 
             buffer.push(
-                cursorTo(0) +
-                    nextLines[i] +
-                    eraseLineEnd +
-                    // Don't append newline after the last line when the input
-                    // has no trailing newline (fullscreen mode).
-                    (isLastLine && !hasTrailingNewline ? "" : "\n"),
+                cursorTo(0)
+                + nextLines[i]
+                + eraseLineEnd
+                // Don't append newline after the last line when the input
+                // has no trailing newline (fullscreen mode).
+                + (isLastLine && !hasTrailingNewline ? "" : "\n"),
             );
         }
 
         const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
+
         buffer.push(cursorSuffix);
 
         stream.write(buffer.join(""));
 
         cursorWasShown = activeCursor !== undefined;
         previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
-        previousOutput = str;
+        previousOutput = string_;
         previousLines = nextLines;
+
         return true;
     };
 
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLines.length, previousCursorPosition);
+
         stream.write(prefix + eraseLines(previousLines.length));
         previousOutput = "";
         previousLines = [];
@@ -285,12 +300,14 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         cursorWasShown = false;
     };
 
-    render.sync = (str: string) => {
+    render.sync = (string_: string) => {
         const activeCursor = cursorDirty ? cursorPosition : undefined;
+
         cursorDirty = false;
 
-        const lines = str.split("\n");
-        previousOutput = str;
+        const lines = string_.split("\n");
+
+        previousOutput = string_;
         previousLines = lines;
 
         if (!activeCursor && cursorWasShown) {
@@ -298,7 +315,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         }
 
         if (activeCursor) {
-            stream.write(buildCursorSuffix(visibleLineCount(lines, str), activeCursor));
+            stream.write(buildCursorSuffix(visibleLineCount(lines, string_), activeCursor));
         }
 
         previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
@@ -311,12 +328,12 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
     };
 
     render.isCursorDirty = () => cursorDirty;
-    render.willRender = (str: string) => hasChanges(str, getActiveCursor());
+    render.willRender = (string_: string) => hasChanges(string_, getActiveCursor());
 
     return render;
 };
 
-const create = (stream: Writable, { showCursor = false, incremental = false }: { showCursor?: boolean; incremental?: boolean } = {}): LogUpdate => {
+const create = (stream: Writable, { incremental = false, showCursor = false }: { incremental?: boolean; showCursor?: boolean } = {}): LogUpdate => {
     if (incremental) {
         return createIncremental(stream, { showCursor });
     }
@@ -324,5 +341,6 @@ const create = (stream: Writable, { showCursor = false, incremental = false }: {
     return createStandard(stream, { showCursor });
 };
 
-const logUpdate: { create: typeof create } = { create: create };
+const logUpdate: { create: typeof create } = { create };
+
 export default logUpdate;

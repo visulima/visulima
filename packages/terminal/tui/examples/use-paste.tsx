@@ -13,28 +13,30 @@
  * Run: node --import @oxc-node/core/register examples/use-paste.tsx
  */
 
+import { Box, render, Text, useApp, useInput, usePaste } from "@visulima/tui/react";
 import React, { useState } from "react";
-import { render, Box, Text, useApp, useInput, usePaste } from "@visulima/tui/react";
 
 type EventLine = {
     id: number;
-    source: "usePaste" | "useInput";
     payload: string;
+    source: "usePaste" | "useInput";
 };
 
 function normalizeNewlines(text: string) {
-    return text.replace(/\r\n?/g, "\n");
+    return text.replaceAll(/\r\n?/g, "\n");
 }
 
-function App() {
+const App = () => {
     const { exit } = useApp();
     const [pasteActive, setPasteActive] = useState(true);
     const [events, setEvents] = useState<EventLine[]>([]);
 
     const pushEvent = (source: EventLine["source"], payload: string) => {
         const normalized = normalizeNewlines(payload);
-        setEvents((prev) => {
-            const next = [...prev, { id: prev.length + 1, source, payload: normalized }];
+
+        setEvents((previous) => {
+            const next = [...previous, { id: previous.length + 1, payload: normalized, source }];
+
             // Keep a bounded log so giant pastes don't consume the full UI forever.
             return next.slice(-16);
         });
@@ -50,16 +52,19 @@ function App() {
     useInput((input, key) => {
         if (key.escape || input === "q" || (key.ctrl && input === "c")) {
             exit();
+
             return;
         }
 
         if (input === "p") {
             setPasteActive((v) => !v);
+
             return;
         }
 
         if (input === "c") {
             setEvents([]);
+
             return;
         }
 
@@ -80,8 +85,9 @@ function App() {
             </Text>
 
             <Text>
-                paste handler:{" "}
-                <Text color={pasteActive ? "green" : "yellow"} bold>
+                paste handler:
+                {" "}
+                <Text bold color={pasteActive ? "green" : "yellow"}>
                     {pasteActive ? "active" : "inactive"}
                 </Text>
                 <Text dim> · active routes paste to usePaste; inactive falls back to useInput</Text>
@@ -90,36 +96,57 @@ function App() {
             <Text dim>p toggle paste handler · c clear log · q/Esc quit · paste multiline text to test channel routing</Text>
 
             <Box flexDirection="column" gap={1}>
-                <Box borderStyle="round" borderColor="cyan" paddingX={1} paddingY={1} flexDirection="column" gap={1}>
+                <Box borderColor="cyan" borderStyle="round" flexDirection="column" gap={1} paddingX={1} paddingY={1}>
                     <Text bold>What active/inactive means</Text>
                     <Text>
-                        • <Text color="green">active</Text>: paste is delivered as one chunk to <Text color="green">usePaste</Text>
+                        •
+                        {" "}
+                        <Text color="green">active</Text>
+                        : paste is delivered as one chunk to
+                        {" "}
+                        <Text color="green">usePaste</Text>
                     </Text>
                     <Text>
-                        • <Text color="yellow">inactive</Text>: no paste listeners, so paste falls back to <Text color="yellow">useInput</Text>
+                        •
+                        {" "}
+                        <Text color="yellow">inactive</Text>
+                        : no paste listeners, so paste falls back to
+                        {" "}
+                        <Text color="yellow">useInput</Text>
                     </Text>
                     <Text dim>this keeps old apps working while giving prompts/editors a clean paste channel</Text>
                     <Box flexDirection="row" gap={3}>
                         <Text>
-                            usePaste events: <Text color="green">{pasteCount}</Text>
+                            usePaste events:
+                            {" "}
+                            <Text color="green">{pasteCount}</Text>
                         </Text>
                         <Text>
-                            useInput events: <Text color="yellow">{inputCount}</Text>
+                            useInput events:
+                            {" "}
+                            <Text color="yellow">{inputCount}</Text>
                         </Text>
                     </Box>
                 </Box>
 
-                <Box borderStyle="round" borderColor="gray" paddingX={1} paddingY={1} flexDirection="column" gap={1}>
+                <Box borderColor="gray" borderStyle="round" flexDirection="column" gap={1} paddingX={1} paddingY={1}>
                     <Text bold>Events</Text>
 
                     {events.length === 0 && <Text dim>(no events yet)</Text>}
 
                     {events.map((item) => {
                         const lines = item.payload.split("\n");
+
                         return (
-                            <Box key={item.id} flexDirection="column">
-                                <Text color={item.source === "usePaste" ? "green" : "yellow"} bold>
-                                    [{item.source}] len={item.payload.length} lines={lines.length}
+                            <Box flexDirection="column" key={item.id}>
+                                <Text bold color={item.source === "usePaste" ? "green" : "yellow"}>
+                                    [
+                                    {item.source}
+                                    ] len=
+                                    {item.payload.length}
+                                    {" "}
+                                    lines=
+                                    {lines.length}
                                 </Text>
                                 {/* Text nodes are single-line in the current renderer; render payload as explicit lines. */}
                                 <Box flexDirection="column">
@@ -135,6 +162,6 @@ function App() {
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

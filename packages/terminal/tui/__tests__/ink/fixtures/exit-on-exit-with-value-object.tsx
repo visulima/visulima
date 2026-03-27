@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
+
 import { render, Text, useApp } from "../../../src/ink/index.js";
 
-function Test() {
+const Test = () => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -11,8 +12,9 @@ function Test() {
     });
 
     return <Text>Testing</Text>;
-}
+};
 
 const app = render(<Test />);
 const result = await app.waitUntilExit();
+
 console.log(`result:${(result as { message: string }).message}`);

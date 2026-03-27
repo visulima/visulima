@@ -1,16 +1,17 @@
 import EventEmitter from "eventemitter3";
 
 export interface MouseEvent {
-    x: number;
-    y: number;
     button: "left" | "right" | "middle" | "scrollUp" | "scrollDown";
-    shift: boolean;
     ctrl: boolean;
     meta: boolean;
+    shift: boolean;
+    x: number;
+    y: number;
 }
 
 export class InputParser extends EventEmitter {
     private _boundHandleData: ((data: string) => void) | null = null;
+
     private _pasteBuffer: string | null = null;
 
     constructor(private stdin: NodeJS.ReadStream) {
@@ -26,6 +27,7 @@ export class InputParser extends EventEmitter {
         if (typeof this.stdin.setRawMode === "function") {
             this.stdin.setRawMode(true);
         }
+
         this.stdin.resume();
         this.stdin.setEncoding("utf8");
         this._boundHandleData = this.handleData.bind(this);
@@ -36,7 +38,9 @@ export class InputParser extends EventEmitter {
         if (typeof this.stdin.setRawMode === "function") {
             this.stdin.setRawMode(false);
         }
+
         this.stdin.pause();
+
         if (this._boundHandleData) {
             this.stdin.removeListener("data", this._boundHandleData);
             this._boundHandleData = null;
@@ -47,33 +51,37 @@ export class InputParser extends EventEmitter {
         // 1. Ctrl+C → exit
         if (data === "\u0003") {
             this.emit("exit");
+
             return;
         }
 
         // 2. Bracketed paste: \x1b[200~ ... \x1b[201~
         // Terminals send a start marker, the pasted text (possibly in multiple chunks),
         // and an end marker. We buffer everything between the markers.
-        if (data.includes("\u001b[200~") || this._pasteBuffer !== null) {
+        if (data.includes("\u001B[200~") || this._pasteBuffer !== null) {
             // Could arrive as one chunk or across multiple data events
             if (this._pasteBuffer === null) {
                 // Start of paste — strip the opening marker, begin buffering
-                this._pasteBuffer = data.replace("\u001b[200~", "");
+                this._pasteBuffer = data.replace("\u001B[200~", "");
             } else {
                 this._pasteBuffer += data;
             }
 
-            if (this._pasteBuffer.includes("\u001b[201~")) {
+            if (this._pasteBuffer.includes("\u001B[201~")) {
                 // End marker arrived — emit the complete paste text.
                 // Ink-compatible behavior:
                 // - if a paste listener exists (usePaste/useTextInput), keep paste on that channel
                 // - otherwise, fall back to normal input channel so useInput still receives pasted text
-                const text = this._pasteBuffer.replace("\u001b[201~", "");
+                const text = this._pasteBuffer.replace("\u001B[201~", "");
+
                 this._pasteBuffer = null;
                 this.emit("paste", text);
+
                 if (this.listenerCount("paste") === 0) {
                     this.emit("data", text);
                 }
             }
+
             return;
         }
 
@@ -81,96 +89,123 @@ export class InputParser extends EventEmitter {
         // Excludes \t (9), \n (10), \r (13) which are handled as named keys below
         if (data.length === 1) {
             const code = data.charCodeAt(0);
+
             if (code >= 1 && code <= 26 && code !== 3 && code !== 9 && code !== 10 && code !== 13) {
                 const letter = String.fromCharCode(code + 96); // 1→'a', 2→'b', etc.
+
                 this.emit("ctrl", letter);
                 this.emit("data", data, { ctrl: true });
+
                 return;
             }
         }
 
         // 4. Arrow keys
-        if (data === "\u001b[A") {
+        if (data === "\u001B[A") {
             this.emit("keydown", "up");
+
             return;
         }
-        if (data === "\u001b[B") {
+
+        if (data === "\u001B[B") {
             this.emit("keydown", "down");
+
             return;
         }
-        if (data === "\u001b[C") {
+
+        if (data === "\u001B[C") {
             this.emit("keydown", "right");
+
             return;
         }
-        if (data === "\u001b[D") {
+
+        if (data === "\u001B[D") {
             this.emit("keydown", "left");
+
             return;
         }
 
         // 5. Tab / Shift+Tab
         if (data === "\t") {
             this.emit("keydown", "tab");
+
             return;
         }
-        if (data === "\u001b[Z") {
+
+        if (data === "\u001B[Z") {
             this.emit("keydown", "shift-tab");
+
             return;
         }
 
         // 6. Escape (bare \x1b — not followed by anything)
-        if (data === "\u001b") {
+        if (data === "\u001B") {
             this.emit("keydown", "escape");
+
             return;
         }
 
         // 7. Enter/Return
         if (data === "\r" || data === "\n") {
             this.emit("keydown", "enter");
+
             return;
         }
 
         // 8. Backspace / Delete
-        if (data === "\u007f") {
+        if (data === "\u007F") {
             this.emit("keydown", "backspace");
+
             return;
         }
-        if (data === "\u001b[3~") {
+
+        if (data === "\u001B[3~") {
             this.emit("keydown", "delete");
+
             return;
         }
 
         // 9. Page Up / Page Down / Home / End
-        if (data === "\u001b[5~") {
+        if (data === "\u001B[5~") {
             this.emit("keydown", "pageUp");
+
             return;
         }
-        if (data === "\u001b[6~") {
+
+        if (data === "\u001B[6~") {
             this.emit("keydown", "pageDown");
+
             return;
         }
-        if (data === "\u001b[H" || data === "\u001b[1~") {
+
+        if (data === "\u001B[H" || data === "\u001B[1~") {
             this.emit("keydown", "home");
+
             return;
         }
-        if (data === "\u001b[F" || data === "\u001b[4~") {
+
+        if (data === "\u001B[F" || data === "\u001B[4~") {
             this.emit("keydown", "end");
+
             return;
         }
 
         // 10. Meta (Alt) key combos: \x1b + single char
-        if (data.length === 2 && data[0] === "\u001b") {
+        if (data.length === 2 && data[0] === "\u001B") {
             this.emit("meta", data[1]);
             this.emit("data", data, { meta: true });
+
             return;
         }
 
         // 11. Mouse tracking (SGR 1006: \x1b[<button;x;yM or m)
-        if (data.startsWith("\u001b[<")) {
-            const match = data.match(/\u001b\[<(\d+);(\d+);(\d+)([Mm])/);
+        if (data.startsWith("\u001B[<")) {
+            const match = data.match(/\u001B\[<(\d+);(\d+);(\d+)(M)/i);
+
             if (match) {
-                const buttonCode = parseInt(match[1]!);
-                const x = parseInt(match[2]!) - 1; // SGR is 1-indexed
-                const y = parseInt(match[3]!) - 1;
+                const buttonCode = Number.parseInt(match[1]!);
+                const x = Number.parseInt(match[2]!) - 1; // SGR is 1-indexed
+                const y = Number.parseInt(match[3]!) - 1;
                 const isRelease = match[4] === "m";
 
                 // Modifier bits in buttonCode: bit 2=shift, bit 3=meta, bit 4=ctrl
@@ -181,19 +216,29 @@ export class InputParser extends EventEmitter {
                 const base = buttonCode & ~(4 | 8 | 16); // strip modifier bits
 
                 let button: MouseEvent["button"] | null = null;
-                if (base === 0 && !isRelease) button = "left";
-                else if (base === 1 && !isRelease) button = "middle";
-                else if (base === 2 && !isRelease) button = "right";
-                else if (base === 64) button = "scrollUp";
-                else if (base === 65) button = "scrollDown";
+
+                if (base === 0 && !isRelease)
+                    button = "left";
+                else if (base === 1 && !isRelease)
+                    button = "middle";
+                else if (base === 2 && !isRelease)
+                    button = "right";
+                else if (base === 64)
+                    button = "scrollUp";
+                else if (base === 65)
+                    button = "scrollDown";
 
                 if (button) {
-                    const event: MouseEvent = { x, y, button, shift, ctrl, meta };
+                    const event: MouseEvent = { button, ctrl, meta, shift, x, y };
+
                     this.emit("mouse", event);
+
                     // Back-compat: legacy 'click' event for left button press
-                    if (button === "left") this.emit("click", { x, y });
+                    if (button === "left")
+                        this.emit("click", { x, y });
                 }
             }
+
             return;
         }
 

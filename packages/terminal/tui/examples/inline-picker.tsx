@@ -7,9 +7,8 @@
  * Run: node --import @oxc-node/core/register examples/inline-picker.tsx
  */
 
+import { Box, renderInline, Text, useApp, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
-import { Box, Text, renderInline } from "@visulima/tui/react";
-import { useInput, useApp } from "@visulima/tui/react";
 
 const ITEMS = [
     "src/app.ts",
@@ -27,17 +26,22 @@ interface PickerProps {
     onSelect: (item: string | null) => void;
 }
 
-function Picker({ onSelect }: PickerProps) {
+const Picker = ({ onSelect }: PickerProps) => {
     const [selected, setSelected] = useState(0);
     const { quit } = useApp();
 
     useInput((_input, key) => {
-        if (key.upArrow) setSelected((s) => Math.max(0, s - 1));
-        if (key.downArrow) setSelected((s) => Math.min(ITEMS.length - 1, s + 1));
+        if (key.upArrow)
+            setSelected((s) => Math.max(0, s - 1));
+
+        if (key.downArrow)
+            setSelected((s) => Math.min(ITEMS.length - 1, s + 1));
+
         if (key.return) {
             onSelect(ITEMS[selected]!);
             quit();
         }
+
         if (key.escape || (key.ctrl && _input === "c")) {
             onSelect(null);
             quit();
@@ -45,14 +49,14 @@ function Picker({ onSelect }: PickerProps) {
     });
 
     return (
-        <Box flexDirection="column" borderStyle="single" borderColor={238} width="100%">
+        <Box borderColor={238} borderStyle="single" flexDirection="column" width="100%">
             <Box paddingX={1}>
                 <Text fg={51}>pick a file</Text>
             </Box>
             <Box flexDirection="column">
                 {ITEMS.map((item, i) => (
                     <Box key={item} paddingX={1}>
-                        <Text fg={i === selected ? 231 : 250} bg={i === selected ? 19 : 0}>
+                        <Text bg={i === selected ? 19 : 0} fg={i === selected ? 231 : 250}>
                             {i === selected ? "› " : "  "}
                             {item}
                         </Text>
@@ -64,7 +68,7 @@ function Picker({ onSelect }: PickerProps) {
             </Box>
         </Box>
     );
-}
+};
 
 let result: string | null = null;
 
@@ -74,9 +78,10 @@ const { waitUntilExit } = renderInline(
             result = item;
         }}
     />,
-    { rows: ITEMS.length + 4, onExit: "destroy" },
+    { onExit: "destroy", rows: ITEMS.length + 4 },
 );
 
 waitUntilExit().then(() => {
-    if (result) process.stdout.write(`\nSelected: ${result}\n`);
+    if (result)
+        process.stdout.write(`\nSelected: ${result}\n`);
 });

@@ -24,24 +24,24 @@ for (let y = 0; y < boardHeight; y++) {
 
 const nextState = gameReducer(
     {
-        snake,
         food: { x: 0, y: 0 },
-        score: snake.length - initialSnakeLength,
-        gameOver: false,
-        won: false,
         frame: 42,
+        gameOver: false,
+        score: snake.length - initialSnakeLength,
+        snake,
+        won: false,
     },
     {
-        type: "tick",
         direction: "left",
+        type: "tick",
     },
 );
 
 console.log(
     JSON.stringify({
         gameOver: nextState.gameOver,
-        won: nextState.won,
         score: nextState.score,
         snakeLength: nextState.snake.length,
+        won: nextState.won,
     }),
 );

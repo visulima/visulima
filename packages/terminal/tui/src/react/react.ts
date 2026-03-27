@@ -1,38 +1,37 @@
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
-import { RatatatApp, InputParser, createInlineLoop, terminalSize, type InlineOptions } from "../core/index.js";
+
+import type { InlineOptions } from "../core/index.js";
+import { createInlineLoop, InputParser, RatatatApp, terminalSize } from "../core/index.js";
+import { FocusProvider, useFocusManager } from "./focus.js";
+import { RatatatContext, useInput } from "./hooks.js";
 import { LayoutNode } from "./layout.js";
 import { RatatatReconciler, setOnAfterCommit } from "./reconciler.js";
 import { renderTreeToBuffer } from "./renderer.js";
-import { RatatatContext, useInput } from "./hooks.js";
-import { FocusProvider, useFocusManager } from "./focus.js";
-
-import { Styles } from "./styles.js";
+import type { Styles } from "./styles.js";
 
 export interface BoxProps extends Styles {
-    children?: React.ReactNode;
     bg?: number;
+    children?: React.ReactNode;
     fg?: number;
     styles?: number;
 }
 
 export interface TextProps extends Styles {
-    children?: React.ReactNode;
-    fg?: number;
     bg?: number;
-    styles?: number;
+    children?: React.ReactNode;
     /** Ink compat alias for `dim` */
     dimColor?: boolean;
+    fg?: number;
+    styles?: number;
 }
 
-export const Box: React.FC<BoxProps> = (props) => {
-    return React.createElement("box", props, props.children);
-};
+export const Box: React.FC<BoxProps> = (props) => React.createElement("box", props, props.children);
 
-export const Text: React.FC<TextProps> = (props) => {
+export const Text: React.FC<TextProps> = (props) =>
     // Wrap simple strings inside a text layout node
-    return React.createElement("text", props, props.children);
-};
+    React.createElement("text", props, props.children)
+;
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 
@@ -42,7 +41,8 @@ export interface SpinnerProps extends Omit<TextProps, "children"> {
     /**
      * Animation frames. Defaults to Braille spinner frames.
      */
-    frames?: readonly string[];
+    frames?: ReadonlyArray<string>;
+
     /**
      * Interval between frame updates in milliseconds.
      * Default: 80ms
@@ -52,7 +52,6 @@ export interface SpinnerProps extends Omit<TextProps, "children"> {
 
 /**
  * Animated single-character spinner.
- *
  * @example
  * ```tsx
  * <Spinner color="cyan" />
@@ -64,10 +63,13 @@ export const Spinner: React.FC<SpinnerProps> = ({ frames = DEFAULT_SPINNER_FRAME
     const [index, setIndex] = React.useState(0);
 
     React.useEffect(() => {
-        if (interval <= 0 || resolvedFrames.length <= 1) return;
+        if (interval <= 0 || resolvedFrames.length <= 1)
+            return;
+
         const timer = setInterval(() => {
-            setIndex((prev) => (prev + 1) % resolvedFrames.length);
+            setIndex((previous) => (previous + 1) % resolvedFrames.length);
         }, interval);
+
         return () => clearInterval(timer);
     }, [interval, resolvedFrames]);
 
@@ -77,25 +79,24 @@ export const Spinner: React.FC<SpinnerProps> = ({ frames = DEFAULT_SPINNER_FRAME
 // ─── ProgressBar ──────────────────────────────────────────────────────────────
 
 export interface ProgressBarProps extends Omit<TextProps, "children"> {
-    /** Current value. */
-    value: number;
-    /** Maximum value. Default: 100 */
-    max?: number;
-    /** Number of cells used for the bar body. Default: 20 */
-    width?: number;
+    /** Wrap bar body with surrounding brackets. Default: true */
+    bracket?: boolean;
     /** Character used for the completed segment. Default: █ */
     completeChar?: string;
     /** Character used for the remaining segment. Default: ░ */
     incompleteChar?: string;
-    /** Wrap bar body with surrounding brackets. Default: true */
-    bracket?: boolean;
+    /** Maximum value. Default: 100 */
+    max?: number;
     /** Render percentage text after the bar. Default: true */
     showPercentage?: boolean;
+    /** Current value. */
+    value: number;
+    /** Number of cells used for the bar body. Default: 20 */
+    width?: number;
 }
 
 /**
  * Terminal progress bar with optional percentage suffix.
- *
  * @example
  * ```tsx
  * <ProgressBar value={42} color="green" />
@@ -103,13 +104,13 @@ export interface ProgressBarProps extends Omit<TextProps, "children"> {
  * ```
  */
 export const ProgressBar: React.FC<ProgressBarProps> = ({
-    value,
-    max = 100,
-    width = 20,
+    bracket = true,
     completeChar = "█",
     incompleteChar = "░",
-    bracket = true,
+    max = 100,
     showPercentage = true,
+    value,
+    width = 20,
     ...textProps
 }) => {
     const safeMax = max > 0 ? max : 1;
@@ -129,36 +130,34 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 
 /**
  * Renders a newline character — equivalent to a line break in the layout.
- * Ink-compatible: <Newline count={2} />
+ * Ink-compatible: &lt;Newline count={2} />
  */
 export interface NewlineProps {
     count?: number;
 }
-export const Newline: React.FC<NewlineProps> = ({ count = 1 }) => {
-    return React.createElement(Text, {}, "\n".repeat(count));
-};
+export const Newline: React.FC<NewlineProps> = ({ count = 1 }) => React.createElement(Text, {}, "\n".repeat(count));
 
 /**
  * Flexible spacer that fills available space in the parent flex container.
- * Ink-compatible: <Spacer />
+ * Ink-compatible: &lt;Spacer />
  */
-export const Spacer: React.FC = () => {
-    return React.createElement(Box, { flexGrow: 1 });
-};
+export const Spacer: React.FC = () => React.createElement(Box, { flexGrow: 1 });
 
 /**
  * Applies a string transformation to its children's text content.
  * The transform function receives the concatenated text of all children
  * and must return the transformed string.
- * Ink-compatible: <Transform transform={s => s.toUpperCase()}>{children}</Transform>
+ * Ink-compatible: &lt;Transform transform={s => s.toUpperCase()}>{children}&lt;/Transform>
  */
 export interface TransformProps {
-    transform: (s: string, index: number) => string;
     children?: React.ReactNode;
+    transform: (s: string, index: number) => string;
 }
-export const Transform: React.FC<TransformProps> = ({ transform, children }) => {
-    if (children === undefined || children === null) return null;
-    return React.createElement("box", { transform, flexShrink: 1 }, children);
+export const Transform: React.FC<TransformProps> = ({ children, transform }) => {
+    if (children === undefined || children === null)
+        return null;
+
+    return React.createElement("box", { flexShrink: 1, transform }, children);
 };
 
 /**
@@ -166,11 +165,15 @@ export const Transform: React.FC<TransformProps> = ({ transform, children }) => 
  * Must live inside FocusProvider to access FocusContext.
  */
 const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { focusNext, focusPrevious, disableFocus, enableFocus } = useFocusManager();
+    const { disableFocus, enableFocus, focusNext, focusPrevious } = useFocusManager();
 
     useInput((_input, key) => {
-        if (key.tab && !key.shift) focusNext();
-        if (key.tab && key.shift) focusPrevious();
+        if (key.tab && !key.shift)
+            focusNext();
+
+        if (key.tab && key.shift)
+            focusPrevious();
+
         if (key.escape) {
             disableFocus();
             enableFocus();
@@ -185,27 +188,27 @@ const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 export interface RenderOptions {
     /** Ignored — Ratatat is always concurrent */
     concurrent?: boolean;
-    /** Target frames per second for the render loop. Default: 60 */
-    maxFps?: number;
-    /** Ignored — Ratatat always patches console */
-    patchConsole?: boolean;
+    /** Ignored */
+    debug?: boolean;
     /** Ignored — Ctrl+C always exits */
     exitOnCtrlC?: boolean;
     /** Ignored */
     incrementalRendering?: boolean;
-    /** Ignored */
-    debug?: boolean;
+    /** Target frames per second for the render loop. Default: 60 */
+    maxFps?: number;
+    /** Ignored — Ratatat always patches console */
+    patchConsole?: boolean;
 }
 
 /** Return value of render() — Ink-compatible instance handle */
 export interface Instance {
-    rerender: (element: React.ReactElement) => void;
-    unmount: () => void;
-    waitUntilExit: () => Promise<void>;
     /** ratatat-internal: direct app access */
     app: RatatatApp;
     /** ratatat-internal: input parser */
     input: InputParser;
+    rerender: (element: React.ReactElement) => void;
+    unmount: () => void;
+    waitUntilExit: () => Promise<void>;
 }
 
 export function render(element: React.ReactElement, options?: RenderOptions): Instance {
@@ -213,7 +216,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     const input = new InputParser(process.stdin);
 
     const rootNode = new LayoutNode();
-    const { width, height } = app.getSize();
+    const { height, width } = app.getSize();
 
     rootNode.yogaNode.setWidth(width);
     rootNode.yogaNode.setHeight(height);
@@ -231,18 +234,18 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     );
 
     // Wrap element — reused on rerender()
-    const wrap = (el: React.ReactElement) =>
+    const wrap = (element_: React.ReactElement) =>
         React.createElement(
             RatatatContext.Provider,
             {
                 value: {
                     app,
                     input,
-                    writeStdout: (t: string) => app.writeStdout(t),
                     writeStderr: (t: string) => app.writeStderr(t),
+                    writeStdout: (t: string) => app.writeStdout(t),
                 },
             },
-            React.createElement(FocusProvider, null, React.createElement(TabHandler, null, el)),
+            React.createElement(FocusProvider, null, React.createElement(TabHandler, null, element_)),
         );
 
     RatatatReconciler.updateContainer(wrap(element) as any, container, null, () => {});
@@ -256,6 +259,7 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     // Decouples painting from React's scheduler — no dependency on resetAfterCommit
     // firing reliably for timer-driven updates (setTimeout, setInterval, streaming).
     let pendingCommit = false;
+
     setOnAfterCommit(() => {
         pendingCommit = true;
     });
@@ -304,18 +308,23 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
     const onSigwinch = () => {
         const width = process.stdout.columns || 80;
         const height = process.stdout.rows || 24;
+
         app.resize(width, height);
         rootNode.yogaNode.setWidth(width);
         rootNode.yogaNode.setHeight(height);
         app.emit("resize");
         paintNow();
     };
+
     process.on("SIGWINCH", onSigwinch);
 
     // Paint the initial frame (after start() sets isRunning = true)
     paintNow();
 
     return {
+        // Internal access — not part of Ink's public API but useful for ratatat-native code
+        app,
+        input,
         /** Re-render with a new root element */
         rerender(newElement: React.ReactElement) {
             RatatatReconciler.updateContainer(wrap(newElement) as any, container, null, () => {});
@@ -328,9 +337,6 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
         waitUntilExit() {
             return exitPromise;
         },
-        // Internal access — not part of Ink's public API but useful for ratatat-native code
-        app,
-        input,
     };
 }
 
@@ -338,9 +344,9 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
 
 export interface InlineInstance {
     /** Unmount the React tree and stop the render loop */
-    unmount(): void;
+    unmount: () => void;
     /** Resolves when the loop exits */
-    waitUntilExit(): Promise<void>;
+    waitUntilExit: () => Promise<void>;
 }
 
 /**
@@ -350,7 +356,6 @@ export interface InlineInstance {
  *
  * The root Box is sized to `cols × rows`. Use `useInput` and `useApp`
  * exactly as in a full-screen render.
- *
  * @example
  * ```tsx
  * const { waitUntilExit } = renderInline(<Picker />, { rows: 12, onExit: 'destroy' })
@@ -360,11 +365,12 @@ export interface InlineInstance {
 export function renderInline(element: React.ReactElement, options?: InlineOptions & { maxFps?: number }): InlineInstance {
     const size = terminalSize();
     const reservedRows = options?.rows ?? 10;
-    const cols = size.cols;
+    const { cols } = size;
     const rows = Math.min(reservedRows, size.rows);
 
     const input = new InputParser(process.stdin);
     const rootNode = new LayoutNode();
+
     rootNode.yogaNode.setWidth(cols);
     rootNode.yogaNode.setHeight(rows);
 
@@ -372,30 +378,31 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
     const stdoutLines: string[] = [];
     const stderrLines: string[] = [];
     const appLike = {
-        writeStdout: (t: string) => stdoutLines.push(t),
-        writeStderr: (t: string) => stderrLines.push(t),
         quit: () => loop.stop(),
+        writeStderr: (t: string) => stderrLines.push(t),
+        writeStdout: (t: string) => stdoutLines.push(t),
     };
 
     const container = RatatatReconciler.createContainer(rootNode, 0, null, false, null, "", (error: Error) => console.error(error), null);
 
-    const wrap = (el: React.ReactElement) =>
+    const wrap = (element_: React.ReactElement) =>
         React.createElement(
             RatatatContext.Provider,
             {
                 value: {
                     app: appLike as any,
                     input,
-                    writeStdout: appLike.writeStdout,
                     writeStderr: appLike.writeStderr,
+                    writeStdout: appLike.writeStdout,
                 },
             },
-            React.createElement(FocusProvider, null, React.createElement(TabHandler, null, el)),
+            React.createElement(FocusProvider, null, React.createElement(TabHandler, null, element_)),
         );
 
     RatatatReconciler.updateContainer(wrap(element) as any, container, null, () => {});
 
     let pendingCommit = false;
+
     setOnAfterCommit(() => {
         pendingCommit = true;
     });
@@ -406,7 +413,7 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
             renderTreeToBuffer(rootNode, buf, w, h);
             pendingCommit = false;
         },
-        { ...options, rows, fps: options?.maxFps ?? options?.fps ?? 60 },
+        { ...options, fps: options?.maxFps ?? options?.fps ?? 60, rows },
     );
 
     // Ctrl+C → clean exit
@@ -419,8 +426,12 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
 
     // Flush buffered stdout/stderr after the inline region is gone
     process.on("exit", () => {
-        if (stdoutLines.length) process.stdout.write(stdoutLines.join(""));
-        if (stderrLines.length) process.stderr.write(stderrLines.join(""));
+        if (stdoutLines.length > 0)
+            process.stdout.write(stdoutLines.join(""));
+
+        if (stderrLines.length > 0)
+            process.stderr.write(stderrLines.join(""));
+
         resolveExit();
     });
 

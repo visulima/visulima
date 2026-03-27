@@ -14,8 +14,8 @@
  *   q / Esc / Ctrl+C   quit
  */
 // @ts-nocheck
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { render, Box, Text, useWindowSize, useApp, useInput } from "@visulima/tui/react";
+import { Box, render, Text, useApp, useInput, useWindowSize } from "@visulima/tui/react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── FPS counter ─────────────────────────────────────────────────────────────
 
@@ -28,6 +28,7 @@ function useFps() {
         frames.current++;
         const now = Date.now();
         const elapsed = now - last.current;
+
         if (elapsed >= 500) {
             setFps(Math.round((frames.current / elapsed) * 1000));
             frames.current = 0;
@@ -45,7 +46,7 @@ function useFps() {
 const ANSI_INDICES = [1, 2, 3, 4, 5, 6, 7];
 
 const CHARS = "█▓▒░▪▫●○◆◇";
-const CHAR_CODES = Array.from(CHARS).map((c) => c.codePointAt(0)!);
+const CHAR_CODES = Array.from(CHARS, (c) => c.codePointAt(0)!);
 
 // ─── Direct buffer painter ────────────────────────────────────────────────────
 // Writes grid cells directly to the Uint32Array back-buffer, bypassing React.
@@ -55,14 +56,16 @@ const CHAR_CODES = Array.from(CHARS).map((c) => c.codePointAt(0)!);
 function paintGrid(buffer: Uint32Array, cols: number, rows: number, headerRows: number, frame: number) {
     for (let y = headerRows; y < rows; y++) {
         const gridY = y - headerRows;
+
         for (let x = 0; x < cols; x++) {
-            const idx = (y * cols + x) * 2;
-            const fgIdx = (x + gridY + frame) % ANSI_INDICES.length;
-            const charIdx = (x * 3 + gridY * 7 + frame) % CHAR_CODES.length;
-            const fg = ANSI_INDICES[fgIdx];
+            const index = (y * cols + x) * 2;
+            const fgIndex = (x + gridY + frame) % ANSI_INDICES.length;
+            const charIndex = (x * 3 + gridY * 7 + frame) % CHAR_CODES.length;
+            const fg = ANSI_INDICES[fgIndex];
+
             // attr = (styles<<16) | (bg<<8) | fg  — bg=255 (terminal default)
-            buffer[idx] = CHAR_CODES[charIdx];
-            buffer[idx + 1] = (0 << 16) | (255 << 8) | fg;
+            buffer[index] = CHAR_CODES[charIndex];
+            buffer[index + 1] = (0 << 16) | (255 << 8) | fg;
         }
     }
 }
@@ -72,35 +75,46 @@ function paintGrid(buffer: Uint32Array, cols: number, rows: number, headerRows: 
 // StatsBar is: 1 (top border) + 1 (content) + 1 (bottom border) + 1 (marginBottom) = 4 rows
 const HEADER_ROWS = 4;
 
-function StatsBar({ fps, frame, cols, rows }: { fps: number; frame: number; cols: number; rows: number }) {
+const StatsBar = ({ cols, fps, frame, rows }: { cols: number; fps: number; frame: number; rows: number }) => {
     const gridRows = Math.max(1, rows - HEADER_ROWS);
     const gridCols = Math.max(1, cols);
+
     return (
-        <Box borderStyle="round" borderColor="cyan" paddingX={2} marginBottom={1} flexShrink={0}>
+        <Box borderColor="cyan" borderStyle="round" flexShrink={0} marginBottom={1} paddingX={2}>
             <Text bold color="cyan">
-                Ratatat stress test{"  "}
+                Ratatat stress test
+                {"  "}
             </Text>
             <Text>
-                {String(fps).padStart(3)} updates/sec
+                {String(fps).padStart(3)}
+                {" "}
+                updates/sec
                 {"  "}
-                Frame: <Text color="white">{String(frame).padStart(7)}</Text>
+                Frame:
+                {" "}
+                <Text color="white">{String(frame).padStart(7)}</Text>
                 {"  "}
-                Terminal:{" "}
+                Terminal:
+                {" "}
                 <Text color="white">
-                    {cols}×{rows}
+                    {cols}
+                    ×
+                    {rows}
                 </Text>
                 {"  "}
-                Cells/frame: <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
+                Cells/frame:
+                {" "}
+                <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
                 {"  "}
                 <Text dim>q / Esc / Ctrl+C to exit</Text>
             </Text>
         </Box>
     );
-}
+};
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-function StressTest() {
+const StressTest = () => {
     const { columns, rows } = useWindowSize();
     const { fps, tick } = useFps();
     const [frame, setFrame] = useState(0);
@@ -117,24 +131,31 @@ function StressTest() {
         let handle: ReturnType<typeof setTimeout>;
 
         let loopFrame = 0;
+
         function loop() {
-            if (!running) return;
+            if (!running)
+                return;
+
             loopFrame++;
             setFrame((f) => {
                 tick();
+
                 return f + 1;
             });
+
             // Prevent MaxPerformanceEntryBufferExceededWarning
-            if (loopFrame % 10000 === 0) {
+            if (loopFrame % 10_000 === 0) {
                 try {
                     performance.clearMeasures();
                     performance.clearMarks();
                 } catch {}
             }
+
             handle = setTimeout(loop, 0);
         }
 
         loop();
+
         return () => {
             running = false;
             clearTimeout(handle);
@@ -146,11 +167,14 @@ function StressTest() {
     // render() exposes the app, and the app exposes getBuffer().
     useEffect(() => {
         const app = (globalThis as any).__ratatatApp;
-        if (!app) return;
+
+        if (!app)
+            return;
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             paintGrid(buffer, w, h, HEADER_ROWS, (globalThis as any).__ratatatFrame ?? 0);
         });
+
         return unsub;
     }, []);
 
@@ -160,13 +184,14 @@ function StressTest() {
     });
 
     return (
-        <Box flexDirection="column" width={columns} height={rows}>
-            <StatsBar fps={fps} frame={frame} cols={columns} rows={rows} />
+        <Box flexDirection="column" height={rows} width={columns}>
+            <StatsBar cols={columns} fps={fps} frame={frame} rows={rows} />
             {/* Grid rows are NOT rendered as React components — painted directly to buffer above */}
         </Box>
     );
-}
+};
 
 // Expose app globally so the StressTest component can hook into it
 const { app } = render(<StressTest />);
+
 (globalThis as any).__ratatatApp = app;

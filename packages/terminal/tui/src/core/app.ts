@@ -1,17 +1,26 @@
-import { Renderer, TerminalGuard, type RendererInstance, type TerminalGuardInstance } from "./native-binding.js";
 import EventEmitter from "eventemitter3";
 
-const DEC_2026_ON = "\x1b[?2026h";
-const DEC_2026_OFF = "\x1b[?2026l";
+import type { RendererInstance, TerminalGuardInstance } from "./native-binding.js";
+import { Renderer, TerminalGuard } from "./native-binding.js";
+
+const DEC_2026_ON = "\u001B[?2026h";
+const DEC_2026_OFF = "\u001B[?2026l";
 
 export class RatatatApp extends EventEmitter {
     private renderer: RendererInstance;
+
     private terminal: TerminalGuardInstance | null = null;
+
     private backBuffer: Uint32Array;
+
     private width: number;
+
     private height: number;
+
     private isRunning: boolean = false;
+
     private stdoutBuffer: string[] = [];
+
     private stderrBuffer: string[] = [];
 
     constructor() {
@@ -27,7 +36,8 @@ export class RatatatApp extends EventEmitter {
 
     /** Enters raw mode + alternate screen. Does NOT start any render loop. */
     start(): void {
-        if (this.isRunning) return;
+        if (this.isRunning)
+            return;
 
         // Enter raw mode, alternate screen, mouse tracking, and bracketed paste (RAII guard)
         this.terminal = new TerminalGuard(true);
@@ -45,11 +55,13 @@ export class RatatatApp extends EventEmitter {
         this.isRunning = false;
         this.terminal?.leave();
         this.terminal = null;
+
         // Flush buffered output now that the alternate screen is gone
         if (this.stdoutBuffer.length > 0) {
             process.stdout.write(this.stdoutBuffer.join(""));
             this.stdoutBuffer = [];
         }
+
         if (this.stderrBuffer.length > 0) {
             process.stderr.write(this.stderrBuffer.join(""));
             this.stderrBuffer = [];
@@ -86,8 +98,8 @@ export class RatatatApp extends EventEmitter {
     }
 
     /** Returns current terminal dimensions. */
-    getSize(): { width: number; height: number } {
-        return { width: this.width, height: this.height };
+    getSize(): { height: number; width: number } {
+        return { height: this.height, width: this.width };
     }
 
     /** Update terminal dimensions (called on SIGWINCH). */
@@ -104,12 +116,13 @@ export class RatatatApp extends EventEmitter {
      * that needs to overlay React output (animated graphs, overlays, FPS counters).
      * Multiple listeners are supported — they fire in registration order.
      */
-    private beforeFlushListeners: Array<(buffer: Uint32Array, width: number, height: number) => void> = [];
+    private beforeFlushListeners: ((buffer: Uint32Array, width: number, height: number) => void)[] = [];
 
-    onBeforeFlush(fn: (buffer: Uint32Array, width: number, height: number) => void): () => void {
-        this.beforeFlushListeners.push(fn);
+    onBeforeFlush(function_: (buffer: Uint32Array, width: number, height: number) => void): () => void {
+        this.beforeFlushListeners.push(function_);
+
         return () => {
-            this.beforeFlushListeners = this.beforeFlushListeners.filter((f) => f !== fn);
+            this.beforeFlushListeners = this.beforeFlushListeners.filter((f) => f !== function_);
         };
     }
 
@@ -118,14 +131,18 @@ export class RatatatApp extends EventEmitter {
      * and directly on resize for immediate response.
      */
     paintNow(calculateLayout: (w: number, h: number) => void, renderToBuffer: (buf: Uint32Array, w: number, h: number) => void): void {
-        if (!this.isRunning) return;
+        if (!this.isRunning)
+            return;
+
         calculateLayout(this.width, this.height);
         renderToBuffer(this.backBuffer, this.width, this.height);
-        for (const fn of this.beforeFlushListeners) {
-            fn(this.backBuffer, this.width, this.height);
+
+        for (const function_ of this.beforeFlushListeners) {
+            function_(this.backBuffer, this.width, this.height);
         }
 
         this.renderer.writeRaw(DEC_2026_ON);
+
         try {
             this.renderer.render(this.backBuffer);
         } finally {

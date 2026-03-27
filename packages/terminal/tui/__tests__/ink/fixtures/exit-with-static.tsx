@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
+
 import { render, Static, Text, useApp } from "../../../src/ink/index.js";
 
-function Test() {
+const Test = () => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -14,7 +15,7 @@ function Test() {
             <Text>Dynamic</Text>
         </>
     );
-}
+};
 
 const app = render(<Test />);
 

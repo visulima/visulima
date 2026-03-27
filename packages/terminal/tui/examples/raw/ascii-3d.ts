@@ -21,21 +21,22 @@ const SHADE_CHARS = " .,:;irsXA253hMHGS#9B&@";
 
 // Per-face vibrant palettes (dark -> bright)
 const FACE_PALETTES = {
-    px: [88, 124, 160, 196, 203, 210], // red
     nx: [17, 18, 19, 20, 27, 33], // blue
-    py: [22, 28, 34, 40, 46, 82], // green
     ny: [53, 89, 125, 161, 197, 205], // magenta
-    pz: [58, 94, 130, 166, 208, 214], // orange
     nz: [23, 30, 37, 44, 51, 87], // cyan
+    px: [88, 124, 160, 196, 203, 210], // red
+    py: [22, 28, 34, 40, 46, 82], // green
+    pz: [58, 94, 130, 166, 208, 214], // orange
 } as const;
 
 // ─── Geometry (cube surface point cloud) ─────────────────────────────────────
 
 type Vec3 = { x: number; y: number; z: number };
-type SurfacePoint = { p: Vec3; n: Vec3 };
+type SurfacePoint = { n: Vec3; p: Vec3 };
 
 function norm(v: Vec3): Vec3 {
     const m = Math.hypot(v.x, v.y, v.z) || 1;
+
     return { x: v.x / m, y: v.y / m, z: v.z / m };
 }
 
@@ -49,14 +50,7 @@ function makeCubeSurface(step = 0.16): SurfacePoint[] {
     // 6 faces: x=±1, y=±1, z=±1
     for (let u = -1; u <= 1.0001; u += step) {
         for (let v = -1; v <= 1.0001; v += step) {
-            pts.push({ p: { x: 1, y: u, z: v }, n: { x: 1, y: 0, z: 0 } });
-            pts.push({ p: { x: -1, y: u, z: v }, n: { x: -1, y: 0, z: 0 } });
-
-            pts.push({ p: { x: u, y: 1, z: v }, n: { x: 0, y: 1, z: 0 } });
-            pts.push({ p: { x: u, y: -1, z: v }, n: { x: 0, y: -1, z: 0 } });
-
-            pts.push({ p: { x: u, y: v, z: 1 }, n: { x: 0, y: 0, z: 1 } });
-            pts.push({ p: { x: u, y: v, z: -1 }, n: { x: 0, y: 0, z: -1 } });
+            pts.push({ n: { x: 1, y: 0, z: 0 }, p: { x: 1, y: u, z: v } }, { n: { x: -1, y: 0, z: 0 }, p: { x: -1, y: u, z: v } }, { n: { x: 0, y: 1, z: 0 }, p: { x: u, y: 1, z: v } }, { n: { x: 0, y: -1, z: 0 }, p: { x: u, y: -1, z: v } }, { n: { x: 0, y: 0, z: 1 }, p: { x: u, y: v, z: 1 } }, { n: { x: 0, y: 0, z: -1 }, p: { x: u, y: v, z: -1 } });
         }
     }
 
@@ -76,7 +70,7 @@ const CUBE_CORNERS: Vec3[] = [
     { x: -1, y: 1, z: 1 },
 ];
 
-const CUBE_EDGES: Array<[number, number]> = [
+const CUBE_EDGES: [number, number][] = [
     [0, 1],
     [1, 2],
     [2, 3],
@@ -122,9 +116,9 @@ function clamp01(v: number): number {
 type FaceKey = keyof typeof FACE_PALETTES;
 
 type ProjectedPoint = {
+    depth: number;
     sx: number;
     sy: number;
-    depth: number;
 };
 
 function faceKeyFromNormal(n: Vec3): FaceKey {
@@ -132,21 +126,29 @@ function faceKeyFromNormal(n: Vec3): FaceKey {
     const ay = Math.abs(n.y);
     const az = Math.abs(n.z);
 
-    if (ax >= ay && ax >= az) return n.x >= 0 ? "px" : "nx";
-    if (ay >= ax && ay >= az) return n.y >= 0 ? "py" : "ny";
+    if (ax >= ay && ax >= az)
+        return n.x >= 0 ? "px" : "nx";
+
+    if (ay >= ax && ay >= az)
+        return n.y >= 0 ? "py" : "ny";
+
     return n.z >= 0 ? "pz" : "nz";
 }
 
 function projectPoint(p: Vec3, cols: number, rows: number, cameraZ: number, fov: number, xScale: number, yScale: number): ProjectedPoint | null {
     const zc = p.z + cameraZ;
-    if (zc <= 0.05) return null;
+
+    if (zc <= 0.05)
+        return null;
 
     const inv = fov / zc;
     const sx = Math.floor(cols * 0.5 + p.x * inv * xScale);
     const sy = Math.floor(rows * 0.5 - p.y * inv * yScale);
-    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1) return null;
 
-    return { sx, sy, depth: 1 / zc };
+    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1)
+        return null;
+
+    return { depth: 1 / zc, sx, sy };
 }
 
 function drawEdge(buf: Uint32Array, cols: number, rows: number, a: ProjectedPoint, b: ProjectedPoint, zBuf: Float32Array) {
@@ -159,13 +161,15 @@ function drawEdge(buf: Uint32Array, cols: number, rows: number, a: ProjectedPoin
         const x = Math.round(a.sx + dx * t);
         const y = Math.round(a.sy + dy * t);
 
-        if (x < 0 || x >= cols || y < 1 || y >= rows - 1) continue;
+        if (x < 0 || x >= cols || y < 1 || y >= rows - 1)
+            continue;
 
         const depth = a.depth + (b.depth - a.depth) * t;
-        const idx = y * cols + x;
+        const index = y * cols + x;
 
         // Skip edge points clearly behind already-rendered face points.
-        if (depth + 0.004 < zBuf[idx]!) continue;
+        if (depth + 0.004 < zBuf[index]!)
+            continue;
 
         setCell(buf, cols, x, y, "#", 231, 0, 1);
     }
@@ -181,6 +185,7 @@ function tickFps() {
     frames++;
     const now = performance.now();
     const dt = now - fpsStart;
+
     if (dt >= 1000) {
         fps = Math.round((frames / dt) * 1000);
         frames = 0;
@@ -190,7 +195,7 @@ function tickFps() {
 
 // ─── Paint ────────────────────────────────────────────────────────────────────
 
-const LIGHT_DIR = norm({ x: 0.4, y: 0.3, z: 1.0 });
+const LIGHT_DIR = norm({ x: 0.4, y: 0.3, z: 1 });
 
 let zBuf = new Float32Array(0);
 let zCols = 0;
@@ -224,52 +229,63 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
     const xScale = rows * 0.9;
     const yScale = rows * 0.45;
 
-    for (let i = 0; i < CUBE_POINTS.length; i++) {
-        const sp = CUBE_POINTS[i]!;
+    for (const CUBE_POINT of CUBE_POINTS) {
+        const sp = CUBE_POINT!;
 
         // Scale cube from [-1,1] -> slightly larger terminal footprint
         const p = rotateXYZ({ x: sp.p.x * 1.25, y: sp.p.y * 1.25, z: sp.p.z * 1.25 }, ax, ay, az);
         const n = norm(rotateXYZ(sp.n, ax, ay, az));
 
         const proj = projectPoint(p, cols, rows, cameraZ, fov, xScale, yScale);
-        if (!proj) continue;
+
+        if (!proj)
+            continue;
 
         // Depth test (larger = closer)
-        const idx = proj.sy * cols + proj.sx;
-        if (proj.depth <= zBuf[idx]!) continue;
-        zBuf[idx] = proj.depth;
+        const index = proj.sy * cols + proj.sx;
+
+        if (proj.depth <= zBuf[index]!)
+            continue;
+
+        zBuf[index] = proj.depth;
 
         // Lambert shading + ambient floor + contrast curve.
         const lit = Math.max(0, dot(n, LIGHT_DIR));
         const lum = clamp01(0.24 + Math.pow(lit, 0.8) * 0.86);
 
-        const charIdx = Math.min(SHADE_CHARS.length - 1, Math.floor(lum * (SHADE_CHARS.length - 1)));
+        const charIndex = Math.min(SHADE_CHARS.length - 1, Math.floor(lum * (SHADE_CHARS.length - 1)));
 
         const faceKey = faceKeyFromNormal(n);
         const palette = FACE_PALETTES[faceKey];
-        const colorIdx = Math.min(palette.length - 1, Math.floor(lum * (palette.length - 1)));
+        const colorIndex = Math.min(palette.length - 1, Math.floor(lum * (palette.length - 1)));
 
-        setCell(buf, cols, proj.sx, proj.sy, SHADE_CHARS[charIdx]!, palette[colorIdx]!, 0, lum > 0.72 ? 1 : 0);
+        setCell(buf, cols, proj.sx, proj.sy, SHADE_CHARS[charIndex]!, palette[colorIndex]!, 0, lum > 0.72 ? 1 : 0);
     }
 
     // Edge overlay for clearer silhouette/definition.
-    const projectedCorners: Array<ProjectedPoint | null> = Array.from({ length: CUBE_CORNERS.length }, () => null);
-    for (let i = 0; i < CUBE_CORNERS.length; i++) {
-        const c = CUBE_CORNERS[i]!;
+    const projectedCorners: (ProjectedPoint | null)[] = Array.from({ length: CUBE_CORNERS.length }).fill(null);
+
+    for (const [i, CUBE_CORNER] of CUBE_CORNERS.entries()) {
+        const c = CUBE_CORNER!;
         const p = rotateXYZ({ x: c.x * 1.25, y: c.y * 1.25, z: c.z * 1.25 }, ax, ay, az);
+
         projectedCorners[i] = projectPoint(p, cols, rows, cameraZ, fov, xScale, yScale);
     }
 
-    for (let i = 0; i < CUBE_EDGES.length; i++) {
-        const [a, b] = CUBE_EDGES[i]!;
+    for (const CUBE_EDGE of CUBE_EDGES) {
+        const [a, b] = CUBE_EDGE!;
         const pa = projectedCorners[a];
         const pb = projectedCorners[b];
-        if (!pa || !pb) continue;
+
+        if (!pa || !pb)
+            continue;
+
         drawEdge(buf, cols, rows, pa, pb, zBuf);
     }
 
     // HUD
     const title = ` ASCII 3D cube  |  ${fps || "--"} FPS  |  ${cols}x${rows}  |  Ctrl+C quit `;
+
     for (let i = 0; i < Math.min(title.length, cols); i++) {
         setCell(buf, cols, i, 0, title[i]!, 250);
     }
@@ -278,4 +294,5 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
 const loop = createLoop(paint, 60);
+
 loop.start();

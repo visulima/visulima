@@ -1,19 +1,19 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/terminal-resize
+import { Box, render, Text, useWindowSize } from "@visulima/tui/react";
 import React from "react";
-import { render, Box, Text, useWindowSize } from "@visulima/tui/react";
 
-if (typeof global !== "undefined" && !global.document) {
-    global.document = { createElement: () => ({}), addEventListener: () => {}, removeEventListener: () => {} };
-    global.window = global;
-    Object.defineProperty(global, "navigator", {
+if (globalThis.global !== undefined && !globalThis.document) {
+    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.window = globalThis;
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
         value: { scheduling: { isInputPending: () => false } },
         writable: true,
-        configurable: true,
     });
 }
 
-function TerminalResizeExample() {
+const TerminalResizeExample = () => {
     const { columns, rows } = useWindowSize();
 
     return (
@@ -21,13 +21,19 @@ function TerminalResizeExample() {
             <Text bold color="cyan">
                 Terminal Size
             </Text>
-            <Text>Columns: {columns}</Text>
-            <Text>Rows: {rows}</Text>
+            <Text>
+                Columns:
+                {columns}
+            </Text>
+            <Text>
+                Rows:
+                {rows}
+            </Text>
             <Box marginTop={1}>
                 <Text dim>Resize your terminal to see the values update. Press Ctrl+C to exit.</Text>
             </Box>
         </Box>
     );
-}
+};
 
 render(<TerminalResizeExample />);

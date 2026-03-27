@@ -1,29 +1,38 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/use-input
+import { Box, render, Text, useApp, useInput } from "@visulima/tui/react";
 import React from "react";
-import { render, useInput, useApp, Box, Text } from "@visulima/tui/react";
 
-if (typeof global !== "undefined" && !global.document) {
-    global.document = { createElement: () => ({}), addEventListener: () => {}, removeEventListener: () => {} };
-    global.window = global;
-    Object.defineProperty(global, "navigator", {
+if (globalThis.global !== undefined && !globalThis.document) {
+    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.window = globalThis;
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
         value: { scheduling: { isInputPending: () => false } },
         writable: true,
-        configurable: true,
     });
 }
 
-function Robot() {
+const Robot = () => {
     const { exit } = useApp();
     const [x, setX] = React.useState(1);
     const [y, setY] = React.useState(1);
 
     useInput((input, key) => {
-        if (input === "q") exit();
-        if (key.leftArrow) setX((x) => Math.max(1, x - 1));
-        if (key.rightArrow) setX((x) => Math.min(20, x + 1));
-        if (key.upArrow) setY((y) => Math.max(1, y - 1));
-        if (key.downArrow) setY((y) => Math.min(10, y + 1));
+        if (input === "q")
+            exit();
+
+        if (key.leftArrow)
+            setX((x) => Math.max(1, x - 1));
+
+        if (key.rightArrow)
+            setX((x) => Math.min(20, x + 1));
+
+        if (key.upArrow)
+            setY((y) => Math.max(1, y - 1));
+
+        if (key.downArrow)
+            setY((y) => Math.min(10, y + 1));
     });
 
     return (
@@ -34,6 +43,6 @@ function Robot() {
             </Box>
         </Box>
     );
-}
+};
 
 render(<Robot />);

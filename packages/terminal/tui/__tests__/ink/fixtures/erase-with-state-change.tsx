@@ -1,8 +1,10 @@
 import process from "node:process";
-import React, { useEffect, useState } from "react";
-import { Box, Text, render } from "../../../src/ink/index.js";
 
-function Erase() {
+import React, { useEffect, useState } from "react";
+
+import { Box, render, Text } from "../../../src/ink/index.js";
+
+const Erase = () => {
     const [show, setShow] = useState(true);
 
     useEffect(() => {
@@ -17,16 +19,18 @@ function Erase() {
 
     return (
         <Box flexDirection="column">
-            {show ? (
-                <>
-                    <Text>A</Text>
-                    <Text>B</Text>
-                    <Text>C</Text>
-                </>
-            ) : null}
+            {show
+                ? (
+                    <>
+                        <Text>A</Text>
+                        <Text>B</Text>
+                        <Text>C</Text>
+                    </>
+                )
+                : null}
         </Box>
     );
-}
+};
 
 process.stdout.rows = Number(process.argv[2]);
 render(<Erase />);

@@ -1,8 +1,10 @@
 import process from "node:process";
-import React, { useEffect } from "react";
-import { Box, Text, render, useApp } from "../../../src/ink/index.js";
 
-function Fullscreen() {
+import React, { useEffect } from "react";
+
+import { Box, render, Text, useApp } from "../../../src/ink/index.js";
+
+const Fullscreen = () => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -20,14 +22,14 @@ function Fullscreen() {
     const rows = Number(process.argv[2]) || 5;
 
     return (
-        <Box height={rows} flexDirection="column">
+        <Box flexDirection="column" height={rows}>
             <Box flexGrow={1}>
                 <Text>Full-screen: top</Text>
             </Box>
             <Text>Bottom line (should be usable)</Text>
         </Box>
     );
-}
+};
 
 // Set terminal size from argument
 process.stdout.rows = Number(process.argv[2]) || 5;

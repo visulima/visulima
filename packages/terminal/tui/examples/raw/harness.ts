@@ -21,14 +21,14 @@ import { Renderer, TerminalGuard } from "@visulima/tui/core";
 export type PaintFn = (buf: Uint32Array, cols: number, rows: number, frame: number) => void;
 
 export interface Loop {
-    start(): void;
-    stop(): void;
+    start: () => void;
+    stop: () => void;
 }
 
 export function createLoop(paint: PaintFn, fps = 60): Loop {
     const guard = new TerminalGuard();
     let { cols, rows } = guard.getSize();
-    let renderer = new Renderer(cols, rows);
+    const renderer = new Renderer(cols, rows);
     let buf = new Uint32Array(cols * rows * 2);
     let frame = 0;
     let timer: ReturnType<typeof setInterval> | null = null;
@@ -36,6 +36,7 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
 
     function resize() {
         const size = guard.getSize();
+
         cols = size.cols;
         rows = size.rows;
         renderer.resize(cols, rows);
@@ -49,13 +50,19 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
     }
 
     function stop() {
-        if (!running) return;
+        if (!running)
+            return;
+
         running = false;
-        if (timer) clearInterval(timer);
+
+        if (timer)
+            clearInterval(timer);
+
         // Restore Node's stream raw mode before guard.leave() restores OS flags
         try {
             process.stdin.setRawMode?.(false);
         } catch {}
+
         process.stdin.pause();
         guard.leave();
         process.exit(0);
@@ -70,7 +77,8 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
         process.stdin.setRawMode?.(true);
         process.stdin.resume();
         process.stdin.on("data", (data: Buffer) => {
-            if (data[0] === 3) stop(); // ETX = Ctrl+C
+            if (data[0] === 3)
+                stop(); // ETX = Ctrl+C
         });
 
         process.on("SIGINT", stop);
@@ -91,9 +99,10 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
  *   styles — StyleMasks bitmask (optional)
  */
 export function setCell(buf: Uint32Array, cols: number, x: number, y: number, char: string, fg = 255, bg = 0, styles = 0) {
-    const idx = (y * cols + x) * 2;
-    buf[idx] = char.charCodeAt(0);
-    buf[idx + 1] = ((styles & 0xff) << 16) | ((bg & 0xff) << 8) | (fg & 0xff);
+    const index = (y * cols + x) * 2;
+
+    buf[index] = char.charCodeAt(0);
+    buf[index + 1] = ((styles & 0xff) << 16) | ((bg & 0xff) << 8) | (fg & 0xff);
 }
 
 /**

@@ -1,4 +1,4 @@
-import { type DOMElement } from "./dom.js";
+import type { DOMElement } from "./dom.js";
 import sanitizeAnsi from "./sanitize-ansi.js";
 
 // Squashing text nodes allows to combine multiple text nodes into one and write

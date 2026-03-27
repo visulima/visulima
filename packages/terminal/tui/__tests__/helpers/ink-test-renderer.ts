@@ -1,5 +1,7 @@
 import { act } from "react";
-import { render, type Instance } from "../../src/ink/index.js";
+
+import type { Instance } from "../../src/ink/index.js";
+import { render } from "../../src/ink/index.js";
 import createStdout from "./ink-create-stdout.js";
 
 type TestRenderOptions = {
@@ -8,9 +10,9 @@ type TestRenderOptions = {
 };
 
 export type TestInstance = Instance & {
-    stdout: ReturnType<typeof createStdout>;
     getOutput: () => string;
     rerenderAsync: (node: React.ReactNode) => Promise<void>;
+    stdout: ReturnType<typeof createStdout>;
 };
 
 export async function renderAsync(node: React.ReactNode, options: TestRenderOptions = {}): Promise<TestInstance> {
@@ -20,22 +22,22 @@ export async function renderAsync(node: React.ReactNode, options: TestRenderOpti
 
     await act(async () => {
         instance = render(node, {
-            stdout,
-            debug: true,
             concurrent: true,
+            debug: true,
             isScreenReaderEnabled: options.isScreenReaderEnabled,
+            stdout,
         });
     });
 
     return {
         ...instance,
-        stdout,
         getOutput: () => stdout.get(),
         async rerenderAsync(newNode: React.ReactNode) {
             await act(async () => {
                 instance.rerender(newNode);
             });
         },
+        stdout,
     };
 }
 
@@ -43,18 +45,18 @@ export function renderSync(node: React.ReactNode, options: TestRenderOptions = {
     const stdout = createStdout(options.columns ?? 100);
 
     const instance = render(node, {
-        stdout,
-        debug: true,
         concurrent: false,
+        debug: true,
         isScreenReaderEnabled: options.isScreenReaderEnabled,
+        stdout,
     });
 
     return {
         ...instance,
-        stdout,
         getOutput: () => stdout.get(),
         async rerenderAsync(newNode: React.ReactNode) {
             instance.rerender(newNode);
         },
+        stdout,
     };
 }

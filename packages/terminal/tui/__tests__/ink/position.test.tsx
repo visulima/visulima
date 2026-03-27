@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
-import { Box, Text, render } from "../../src/ink/index.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { expect, it } from "vitest";
+
+import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
 it("absolute position with top and left offsets", () => {
     const output = renderToString(
-        <Box width={5} height={3}>
-            <Box position="absolute" top={1} left={2}>
+        <Box height={3} width={5}>
+            <Box left={2} position="absolute" top={1}>
                 <Text>X</Text>
             </Box>
         </Box>,
@@ -17,8 +18,8 @@ it("absolute position with top and left offsets", () => {
 
 it("absolute position with bottom and right offsets", () => {
     const output = renderToString(
-        <Box width={6} height={4}>
-            <Box position="absolute" bottom={1} right={1}>
+        <Box height={4} width={6}>
+            <Box bottom={1} position="absolute" right={1}>
                 <Text>X</Text>
             </Box>
         </Box>,
@@ -29,8 +30,8 @@ it("absolute position with bottom and right offsets", () => {
 
 it("absolute position with percentage offsets", () => {
     const output = renderToString(
-        <Box width={6} height={4}>
-            <Box position="absolute" top="50%" left="50%">
+        <Box height={4} width={6}>
+            <Box left="50%" position="absolute" top="50%">
                 <Text>X</Text>
             </Box>
         </Box>,
@@ -41,8 +42,8 @@ it("absolute position with percentage offsets", () => {
 
 it("absolute position with percentage bottom and right offsets", () => {
     const output = renderToString(
-        <Box width={6} height={4}>
-            <Box position="absolute" bottom="50%" right="50%">
+        <Box height={4} width={6}>
+            <Box bottom="50%" position="absolute" right="50%">
                 <Text>X</Text>
             </Box>
         </Box>,
@@ -54,7 +55,7 @@ it("absolute position with percentage bottom and right offsets", () => {
 it("relative position offsets visual position while keeping flow", () => {
     const output = renderToString(
         <Box width={5}>
-            <Box position="relative" left={2}>
+            <Box left={2} position="relative">
                 <Text>A</Text>
             </Box>
             <Text>B</Text>
@@ -67,7 +68,7 @@ it("relative position offsets visual position while keeping flow", () => {
 it("static position ignores offsets", () => {
     const output = renderToString(
         <Box width={5}>
-            <Box position="static" left={2}>
+            <Box left={2} position="static">
                 <Text>A</Text>
             </Box>
             <Text>B</Text>
@@ -80,7 +81,7 @@ it("static position ignores offsets", () => {
 it("static position ignores percentage offsets", () => {
     const output = renderToString(
         <Box width={5}>
-            <Box position="static" left="50%">
+            <Box left="50%" position="static">
                 <Text>A</Text>
             </Box>
             <Text>B</Text>
@@ -93,103 +94,99 @@ it("static position ignores percentage offsets", () => {
 it("clears top offset on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ top }: { readonly top?: number }) {
-        return (
-            <Box width={5} height={3}>
-                <Box position="absolute" top={top} left={2}>
-                    <Text>X</Text>
-                </Box>
+    const Test = ({ top }: { readonly top?: number }) => (
+        <Box height={3} width={5}>
+            <Box left={2} position="absolute" top={top}>
+                <Text>X</Text>
             </Box>
-        );
-    }
+        </Box>
+    );
 
     const { rerender } = render(<Test top={1} />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n  X\n");
 
     rerender(<Test top={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("  X\n\n");
 });
 
 it("clears percentage top and left offsets on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ top, left }: { readonly top?: string; readonly left?: string }) {
-        return (
-            <Box width={6} height={4}>
-                <Box position="absolute" top={top} left={left}>
-                    <Text>X</Text>
-                </Box>
+    const Test = ({ left, top }: { readonly left?: string; readonly top?: string }) => (
+        <Box height={4} width={6}>
+            <Box left={left} position="absolute" top={top}>
+                <Text>X</Text>
             </Box>
-        );
-    }
+        </Box>
+    );
 
-    const { rerender } = render(<Test top="50%" left="50%" />, {
-        stdout,
+    const { rerender } = render(<Test left="50%" top="50%" />, {
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n\n   X\n");
 
-    rerender(<Test top={undefined} left={undefined} />);
+    rerender(<Test left={undefined} top={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("X\n\n\n");
 });
 
 it("clears percentage top and left offsets when props are omitted on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ showOffsets }: { readonly showOffsets: boolean }) {
-        return (
-            <Box width={6} height={4}>
-                <Box position="absolute" {...(showOffsets ? { top: "50%" as const, left: "50%" as const } : {})}>
-                    <Text>X</Text>
-                </Box>
+    const Test = ({ showOffsets }: { readonly showOffsets: boolean }) => (
+        <Box height={4} width={6}>
+            <Box position="absolute" {...(showOffsets ? { left: "50%" as const, top: "50%" as const } : {})}>
+                <Text>X</Text>
             </Box>
-        );
-    }
+        </Box>
+    );
 
     const { rerender } = render(<Test showOffsets />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n\n   X\n");
 
     rerender(<Test showOffsets={false} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("X\n\n\n");
 });
 
 it("clears bottom and right offsets on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ bottom, right }: { readonly bottom?: number; readonly right?: number }) {
-        return (
-            <Box width={6} height={4}>
-                <Box position="absolute" bottom={bottom} right={right}>
-                    <Text>X</Text>
-                </Box>
+    const Test = ({ bottom, right }: { readonly bottom?: number; readonly right?: number }) => (
+        <Box height={4} width={6}>
+            <Box bottom={bottom} position="absolute" right={right}>
+                <Text>X</Text>
             </Box>
-        );
-    }
+        </Box>
+    );
 
     const { rerender } = render(<Test bottom={1} right={1} />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n\n    X\n");
 
     rerender(<Test bottom={undefined} right={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("X\n\n\n");
 });
 
 it("absolute position with top and left offsets - concurrent", async () => {
     const output = await renderToStringAsync(
-        <Box width={5} height={3}>
-            <Box position="absolute" top={1} left={2}>
+        <Box height={3} width={5}>
+            <Box left={2} position="absolute" top={1}>
                 <Text>X</Text>
             </Box>
         </Box>,

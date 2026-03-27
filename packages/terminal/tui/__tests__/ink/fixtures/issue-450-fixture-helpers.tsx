@@ -1,28 +1,30 @@
 import process from "node:process";
+
 import React, { useEffect, useState } from "react";
-import { Box, Static, Text, render, useApp } from "../../../src/ink/index.js";
+
+import { Box, render, Static, Text, useApp } from "../../../src/ink/index.js";
 
 type RerenderFixtureOptions = {
     readonly completionMarker?: string;
     readonly frameLimit?: number;
+    readonly heightForFrame: (rows: number, frameCount: number) => number;
     readonly includeStaticLine?: boolean;
     readonly rowsFallback?: number;
-    readonly heightForFrame: (rows: number, frameCount: number) => number;
 };
 
-function Issue450RerenderFixtureComponent({
+const Issue450RerenderFixtureComponent = ({
     completionMarker,
     frameLimit,
-    includeStaticLine,
     heightForFrame,
+    includeStaticLine,
     rows,
 }: {
     readonly completionMarker?: string;
     readonly frameLimit: number;
-    readonly includeStaticLine: boolean;
     readonly heightForFrame: (rows: number, frameCount: number) => number;
+    readonly includeStaticLine: boolean;
     readonly rows: number;
-}) {
+}) => {
     const { exit } = useApp();
     const [frameCount, setFrameCount] = useState(0);
     const targetHeight = heightForFrame(rows, frameCount);
@@ -54,7 +56,7 @@ function Issue450RerenderFixtureComponent({
     return (
         <>
             {includeStaticLine ? <Static items={["#450 static line"]}>{(item) => <Text key={item}>{item}</Text>}</Static> : null}
-            <Box height={targetHeight} flexDirection="column">
+            <Box flexDirection="column" height={targetHeight}>
                 <Text>#450 top</Text>
                 <Box flexGrow={1}>
                     <Text>{`frame ${frameCount}`}</Text>
@@ -63,45 +65,46 @@ function Issue450RerenderFixtureComponent({
             </Box>
         </>
     );
-}
+};
 
 export const runIssue450RerenderFixture = ({
     completionMarker,
     frameLimit = 8,
+    heightForFrame,
     includeStaticLine = false,
     rowsFallback = 6,
-    heightForFrame,
 }: RerenderFixtureOptions): void => {
     const rows = Number(process.argv[2]) || rowsFallback;
+
     process.stdout.rows = rows;
 
     render(
         <Issue450RerenderFixtureComponent
             completionMarker={completionMarker}
             frameLimit={frameLimit}
-            includeStaticLine={includeStaticLine}
             heightForFrame={heightForFrame}
+            includeStaticLine={includeStaticLine}
             rows={rows}
         />,
     );
 };
 
 type InitialFixtureOptions = {
-    readonly rowsFallback?: number;
-    readonly renderedMarker: string;
     readonly lineCount: number;
     readonly linePrefix: string;
+    readonly renderedMarker: string;
+    readonly rowsFallback?: number;
 };
 
-function Issue450InitialFixtureComponent({
-    renderedMarker,
+const Issue450InitialFixtureComponent = ({
     lineCount,
     linePrefix,
+    renderedMarker,
 }: {
-    readonly renderedMarker: string;
     readonly lineCount: number;
     readonly linePrefix: string;
-}) {
+    readonly renderedMarker: string;
+}) => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -116,16 +119,18 @@ function Issue450InitialFixtureComponent({
     }, [exit, renderedMarker]);
 
     const lines = [];
+
     for (let lineNumber = 1; lineNumber <= lineCount; lineNumber++) {
         lines.push(<Text key={lineNumber}>{`${linePrefix} line ${lineNumber}`}</Text>);
     }
 
     return <Box flexDirection="column">{lines}</Box>;
-}
+};
 
-export const runIssue450InitialFixture = ({ rowsFallback = 3, renderedMarker, lineCount, linePrefix }: InitialFixtureOptions): void => {
+export const runIssue450InitialFixture = ({ lineCount, linePrefix, renderedMarker, rowsFallback = 3 }: InitialFixtureOptions): void => {
     const rows = Number(process.argv[2]) || rowsFallback;
+
     process.stdout.rows = rows;
 
-    render(<Issue450InitialFixtureComponent renderedMarker={renderedMarker} lineCount={lineCount} linePrefix={linePrefix} />);
+    render(<Issue450InitialFixtureComponent lineCount={lineCount} linePrefix={linePrefix} renderedMarker={renderedMarker} />);
 };

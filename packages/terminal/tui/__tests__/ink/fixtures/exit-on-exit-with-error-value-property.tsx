@@ -1,19 +1,21 @@
 import React, { useEffect } from "react";
+
 import { render, Text, useApp } from "../../../src/ink/index.js";
 
-function Test() {
+const Test = () => {
     const { exit } = useApp();
 
     useEffect(() => {
         setTimeout(() => {
             const error = new Error("errored");
+
             (error as Error & { value: string }).value = "hello from error";
             exit(error);
         }, 500);
     }, []);
 
     return <Text>Testing</Text>;
-}
+};
 
 const app = render(<Test />);
 

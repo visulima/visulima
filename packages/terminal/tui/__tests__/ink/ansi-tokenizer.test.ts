@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { tokenizeAnsi } from "../../src/ink/ansi-tokenizer.js";
 
 it("tokenize plain text", () => {
@@ -13,8 +14,10 @@ it("tokenize ESC CSI SGR sequence", () => {
     expect(tokens[2]).toEqual({ type: "text", value: "B" });
 
     const csiToken = tokens[1];
+
     if (csiToken?.type !== "csi") {
         expect.fail();
+
         return;
     }
 
@@ -30,6 +33,7 @@ it("tokenize C1 CSI sequence", () => {
 
     if (csiToken?.type !== "csi") {
         expect.fail();
+
         return;
     }
 
@@ -44,8 +48,10 @@ it("tokenize OSC control string with ST terminator", () => {
     const oscToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+
     if (oscToken?.type !== "osc") {
         expect.fail();
+
         return;
     }
 
@@ -57,8 +63,10 @@ it("tokenize tmux DCS passthrough as one control string token", () => {
     const dcsToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "dcs", "text"]);
+
     if (dcsToken?.type !== "dcs") {
         expect.fail();
+
         return;
     }
 
@@ -98,8 +106,10 @@ it("tokenize ESC ST sequence as ESC token", () => {
     const escToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "esc", "text"]);
+
     if (escToken?.type !== "esc") {
         expect.fail();
+
         return;
     }
 
@@ -113,8 +123,10 @@ it("tokenize C1 OSC with C1 ST terminator", () => {
     const oscToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+
     if (oscToken?.type !== "osc") {
         expect.fail();
+
         return;
     }
 
@@ -126,8 +138,10 @@ it("tokenize C1 OSC with ESC ST terminator", () => {
     const oscToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+
     if (oscToken?.type !== "osc") {
         expect.fail();
+
         return;
     }
 
@@ -139,8 +153,10 @@ it("tokenize C1 SGR CSI sequence", () => {
     const csiToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "csi", "text"]);
+
     if (csiToken?.type !== "csi") {
         expect.fail();
+
         return;
     }
 
@@ -173,12 +189,14 @@ it("tokenize DCS with BEL in payload until ST terminator", () => {
     const dcsToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "dcs", "text"]);
+
     if (dcsToken?.type !== "dcs") {
         expect.fail();
+
         return;
     }
 
-    expect(dcsToken.value.includes("\u0007")).toBe(true);
+    expect(dcsToken.value).toContain("\u0007");
     expect(dcsToken.value.endsWith("\u001B\\")).toBe(true);
 });
 
@@ -187,8 +205,10 @@ it("tokenize C1 OSC control string with BEL terminator", () => {
     const oscToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+
     if (oscToken?.type !== "osc") {
         expect.fail();
+
         return;
     }
 
@@ -200,8 +220,10 @@ it("tokenize ESC SOS control string with ST terminator", () => {
     const sosToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+
     if (sosToken?.type !== "sos") {
         expect.fail();
+
         return;
     }
 
@@ -213,8 +235,10 @@ it("tokenize ESC SOS control string with C1 ST terminator", () => {
     const sosToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+
     if (sosToken?.type !== "sos") {
         expect.fail();
+
         return;
     }
 
@@ -226,8 +250,10 @@ it("tokenize C1 SOS control string with C1 ST terminator", () => {
     const sosToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+
     if (sosToken?.type !== "sos") {
         expect.fail();
+
         return;
     }
 
@@ -239,8 +265,10 @@ it("tokenize C1 SOS control string with ESC ST terminator", () => {
     const sosToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+
     if (sosToken?.type !== "sos") {
         expect.fail();
+
         return;
     }
 
@@ -288,12 +316,14 @@ it("tokenize SOS with escaped ESC in payload until final ST terminator", () => {
     const sosToken = tokens[1];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+
     if (sosToken?.type !== "sos") {
         expect.fail();
+
         return;
     }
 
-    expect(sosToken.value.includes("\u001B\u001B\\")).toBe(true);
+    expect(sosToken.value).toContain("\u001B\u001B\\");
     expect(sosToken.value.endsWith("\u001B\\")).toBe(true);
 });
 
@@ -303,13 +333,16 @@ it("tokenize standalone C1 controls as c1 tokens", () => {
     const c1Token2 = tokens[3];
 
     expect(tokens.map((token) => token.type)).toEqual(["text", "c1", "text", "c1", "text"]);
+
     if (c1Token1?.type !== "c1") {
         expect.fail();
+
         return;
     }
 
     if (c1Token2?.type !== "c1") {
         expect.fail();
+
         return;
     }
 

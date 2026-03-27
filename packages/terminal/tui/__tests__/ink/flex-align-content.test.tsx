@@ -1,11 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { Box, Text, render } from "../../src/ink/index.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { expect, it } from "vitest";
+
+import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
 const renderWithAlignContent = (alignContent: NonNullable<React.ComponentProps<typeof Box>["alignContent"]>): string =>
     renderToString(
-        <Box width={2} height={6} flexWrap="wrap" alignContent={alignContent}>
+        <Box alignContent={alignContent} flexWrap="wrap" height={6} width={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>
@@ -24,13 +25,14 @@ for (const [alignContent, expectedOutput] of [
 ] as const) {
     it(`align content ${alignContent}`, () => {
         const output = renderWithAlignContent(alignContent);
+
         expect(output).toBe(expectedOutput);
     });
 }
 
 it("align content defaults to flex-start", () => {
     const output = renderToString(
-        <Box width={2} height={6} flexWrap="wrap">
+        <Box flexWrap="wrap" height={6} width={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>
@@ -43,7 +45,7 @@ it("align content defaults to flex-start", () => {
 
 it("align content does not add extra spacing when there is no free cross-axis space", () => {
     const output = renderToString(
-        <Box width={2} height={2} flexWrap="wrap" alignContent="center">
+        <Box alignContent="center" flexWrap="wrap" height={2} width={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>
@@ -57,81 +59,78 @@ it("align content does not add extra spacing when there is no free cross-axis sp
 it("clears alignContent on rerender to default flex-start", () => {
     const stdout = createStdout();
 
-    function Test({ alignContent }: { readonly alignContent?: React.ComponentProps<typeof Box>["alignContent"] }) {
-        return (
-            <Box width={2} height={6} flexWrap="wrap" alignContent={alignContent}>
-                <Text>A</Text>
-                <Text>B</Text>
-                <Text>C</Text>
-                <Text>D</Text>
-            </Box>
-        );
-    }
+    const Test = ({ alignContent }: { readonly alignContent?: React.ComponentProps<typeof Box>["alignContent"] }) => (
+        <Box alignContent={alignContent} flexWrap="wrap" height={6} width={2}>
+            <Text>A</Text>
+            <Text>B</Text>
+            <Text>C</Text>
+            <Text>D</Text>
+        </Box>
+    );
 
     const { rerender } = render(<Test alignContent="center" />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n\nAB\nCD\n\n");
 
     rerender(<Test alignContent={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AB\nCD\n\n\n\n");
 });
 
 it("clears alignContent from stretch on rerender to default flex-start", () => {
     const stdout = createStdout();
 
-    function Test({ alignContent }: { readonly alignContent?: React.ComponentProps<typeof Box>["alignContent"] }) {
-        return (
-            <Box width={2} height={6} flexWrap="wrap" alignContent={alignContent}>
-                <Text>A</Text>
-                <Text>B</Text>
-                <Text>C</Text>
-                <Text>D</Text>
-            </Box>
-        );
-    }
+    const Test = ({ alignContent }: { readonly alignContent?: React.ComponentProps<typeof Box>["alignContent"] }) => (
+        <Box alignContent={alignContent} flexWrap="wrap" height={6} width={2}>
+            <Text>A</Text>
+            <Text>B</Text>
+            <Text>C</Text>
+            <Text>D</Text>
+        </Box>
+    );
 
     const { rerender } = render(<Test alignContent="stretch" />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AB\n\n\nCD\n\n");
 
     rerender(<Test alignContent={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AB\nCD\n\n\n\n");
 });
 
 it("clears alignContent when prop is omitted on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ showAlignContent }: { readonly showAlignContent: boolean }) {
-        return (
-            <Box width={2} height={6} flexWrap="wrap" {...(showAlignContent ? { alignContent: "center" as const } : {})}>
-                <Text>A</Text>
-                <Text>B</Text>
-                <Text>C</Text>
-                <Text>D</Text>
-            </Box>
-        );
-    }
+    const Test = ({ showAlignContent }: { readonly showAlignContent: boolean }) => (
+        <Box flexWrap="wrap" height={6} width={2} {...(showAlignContent ? { alignContent: "center" as const } : {})}>
+            <Text>A</Text>
+            <Text>B</Text>
+            <Text>C</Text>
+            <Text>D</Text>
+        </Box>
+    );
 
     const { rerender } = render(<Test showAlignContent />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("\n\nAB\nCD\n\n");
 
     rerender(<Test showAlignContent={false} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AB\nCD\n\n\n\n");
 });
 
 it("align content center - concurrent", async () => {
     const output = await renderToStringAsync(
-        <Box width={2} height={6} flexWrap="wrap" alignContent="center">
+        <Box alignContent="center" flexWrap="wrap" height={6} width={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>

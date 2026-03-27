@@ -1,15 +1,13 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { getStringWidth } from "@visulima/string";
-import { indent as indentString } from "@visulima/string";
-import { isFullwidthCodePoint } from "@visulima/string";
+import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
-import wrapText from "./wrap-text.js";
+
+import type { DOMElement } from "./dom.js";
 import getMaxWidth from "./get-max-width.js";
-import squashTextNodes from "./squash-text-nodes.js";
-import renderBorder from "./render-border.js";
-import renderBackground from "./render-background.js";
-import { type DOMElement } from "./dom.js";
 import type Output from "./output.js";
+import renderBackground from "./render-background.js";
+import renderBorder from "./render-border.js";
+import squashTextNodes from "./squash-text-nodes.js";
+import wrapText from "./wrap-text.js";
 
 // If parent container is `<Box>`, text nodes will be treated as separate nodes in
 // the tree and will have their own coordinates in the layout.
@@ -23,6 +21,7 @@ const applyPaddingToText = (node: DOMElement, text: string): string => {
     if (yogaNode) {
         const offsetX = yogaNode.getComputedLeft();
         const offsetY = yogaNode.getComputedTop();
+
         text = "\n".repeat(offsetY) + indentString(text, offsetX);
     }
 
@@ -37,12 +36,14 @@ const nonAsciiProbeLength = 16;
 
 const hasNonAsciiInProbe = (text: string): boolean => {
     let index = 0;
+
     for (const character of text) {
         if (character > "\u007F") {
             return true;
         }
 
         index++;
+
         if (index >= nonAsciiProbeLength) {
             break;
         }
@@ -77,6 +78,7 @@ const mightExceedWidth = (text: string, maxWidth: number): boolean => {
         }
 
         const codePoint = character.codePointAt(0)!;
+
         if (codePoint <= c0ControlUpperBound || codePoint === deleteCodePoint || (codePoint >= c1ControlStart && codePoint <= c1ControlEnd)) {
             return true;
         }
@@ -86,6 +88,7 @@ const mightExceedWidth = (text: string, maxWidth: number): boolean => {
         }
 
         lineCodePointCount++;
+
         if (lineCodePointCount > maxWidth) {
             return true;
         }
@@ -118,8 +121,8 @@ export const renderNodeToScreenReaderOutput = (
     } else if (node.nodeName === "ink-box" || node.nodeName === "ink-root") {
         const separator = node.style.flexDirection === "row" || node.style.flexDirection === "row-reverse" ? " " : "\n";
 
-        const childNodes =
-            node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? [...node.childNodes].reverse() : [...node.childNodes];
+        const childNodes
+            = node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
 
         output = childNodes
             .map((childNode) => {
@@ -127,6 +130,7 @@ export const renderNodeToScreenReaderOutput = (
                     parentRole: node.internal_accessibility?.role,
                     skipStaticElements: options.skipStaticElements,
                 });
+
                 return screenReaderOutput;
             })
             .filter(Boolean)
@@ -137,7 +141,7 @@ export const renderNodeToScreenReaderOutput = (
         const { role, state } = node.internal_accessibility;
 
         if (state) {
-            const stateKeys = Object.keys(state) as Array<keyof typeof state>;
+            const stateKeys = Object.keys(state) as (keyof typeof state)[];
             const stateDescription = stateKeys.filter((key) => state[key]).join(", ");
 
             if (stateDescription) {
@@ -160,11 +164,11 @@ const renderNodeToOutput = (
     options: {
         offsetX?: number;
         offsetY?: number;
-        transformers?: OutputTransformer[];
         skipStaticElements: boolean;
+        transformers?: OutputTransformer[];
     },
 ): void => {
-    const { offsetX = 0, offsetY = 0, transformers = [], skipStaticElements } = options;
+    const { offsetX = 0, offsetY = 0, skipStaticElements, transformers = [] } = options;
 
     if (skipStaticElements && node.internal_static) {
         return;
@@ -196,9 +200,11 @@ const renderNodeToOutput = (
                 const maxWidth = getMaxWidth(yogaNode);
 
                 if (mightExceedWidth(text, maxWidth)) {
-                    const currentWidth = Math.max(...text.split("\n").map(line => getStringWidth(line)));
+                    const currentWidth = Math.max(...text.split("\n").map((line) => getStringWidth(line)));
+
                     if (currentWidth > maxWidth) {
                         const textWrap = node.style.textWrap ?? "wrap";
+
                         text = wrapText(text, maxWidth, textWrap);
                     }
                 }
@@ -239,8 +245,8 @@ const renderNodeToOutput = (
                 renderNodeToOutput(childNode as DOMElement, output, {
                     offsetX: x,
                     offsetY: y,
-                    transformers: newTransformers,
                     skipStaticElements,
+                    transformers: newTransformers,
                 });
             }
 

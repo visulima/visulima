@@ -1,6 +1,8 @@
 import process from "node:process";
+
 import React, { useEffect } from "react";
-import { render, useInput, useApp, Text } from "../../../src/ink/index.js";
+
+import { render, Text, useApp, useInput } from "../../../src/ink/index.js";
 
 // Detect MaxListenersExceededWarning
 process.on("warning", (warning) => {
@@ -9,12 +11,13 @@ process.on("warning", (warning) => {
     }
 });
 
-function InputHandler() {
+const InputHandler = () => {
     useInput(() => {});
-    return null;
-}
 
-function App() {
+    return null;
+};
+
+const App = () => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -37,8 +40,9 @@ function App() {
             <Text>ready</Text>
         </>
     );
-}
+};
 
 const app = render(<App />);
+
 await app.waitUntilExit();
 console.log("exited");

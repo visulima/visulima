@@ -1,6 +1,6 @@
-import process from "node:process";
 import { createRequire } from "node:module";
 import path from "node:path";
+import process from "node:process";
 import url from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -17,7 +17,7 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
     }
 };
 
-type Run = (fixture: string, props?: { env?: Record<string, string>; columns?: number }) => Promise<string>;
+type Run = (fixture: string, props?: { columns?: number; env?: Record<string, string> }) => Promise<string>;
 
 export const run: Run = async (fixture, props) => {
     const spawn = getSpawn();
@@ -31,10 +31,10 @@ export const run: Run = async (fixture, props) => {
 
     return new Promise<string>((resolve, reject) => {
         const term = spawn("node", ["--import=tsx", path.join(fixturesDir, `${fixture}.tsx`)], {
-            name: "xterm-color",
             cols: typeof props?.columns === "number" ? props.columns : 100,
             cwd: fixturesDir,
             env,
+            name: "xterm-color",
         });
 
         let output = "";
@@ -46,6 +46,7 @@ export const run: Run = async (fixture, props) => {
         term.onExit(({ exitCode }) => {
             if (exitCode === 0) {
                 resolve(output);
+
                 return;
             }
 

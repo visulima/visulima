@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
@@ -103,9 +104,14 @@ it("padding with multiline string", () => {
 it("apply padding to text with newlines", () => {
     const output = renderToString(
         <Box padding={1}>
-            <Text>Hello{"\n"}World</Text>
+            <Text>
+                Hello
+                {"\n"}
+                World
+            </Text>
         </Box>,
     );
+
     expect(output).toBe("\n Hello\n World\n");
 });
 
@@ -121,7 +127,7 @@ it("apply padding to wrapped text", () => {
 
 it("text wrapping respects paddingX with flexGrow", () => {
     const output = renderToString(
-        <Box width={40} borderStyle="round">
+        <Box borderStyle="round" width={40}>
             <Box paddingX={2}>
                 <Box marginLeft={2}>
                     <Text>•</Text>
@@ -134,6 +140,7 @@ it("text wrapping respects paddingX with flexGrow", () => {
     );
 
     const lines = output.split("\n");
+
     for (const line of lines) {
         expect(line.length).toBeLessThanOrEqual(40);
     }

@@ -1,9 +1,10 @@
 import React from "react";
+
 import { render, Text, useApp, useStdin } from "../../../src/ink/index.js";
 
 class Exit extends React.Component<{
-    onSetRawMode: (value: boolean) => void;
     onExit: (error: Error) => void;
+    onSetRawMode: (value: boolean) => void;
 }> {
     override render() {
         return <Text>Hello World</Text>;
@@ -18,12 +19,12 @@ class Exit extends React.Component<{
     }
 }
 
-function Test() {
+const Test = () => {
     const { exit } = useApp();
     const { setRawMode } = useStdin();
 
     return <Exit onExit={exit} onSetRawMode={setRawMode} />;
-}
+};
 
 const app = render(<Test />);
 

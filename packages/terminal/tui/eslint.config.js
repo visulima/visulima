@@ -15,4 +15,8 @@ export default createConfig({
         "README.md",
         ".prettierrc.cjs",
     ],
+}, {
+    rules: {
+        "vitest/unbound-method": "off",
+    },
 });

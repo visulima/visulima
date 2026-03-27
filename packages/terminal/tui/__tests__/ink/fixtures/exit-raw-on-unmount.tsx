@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render, Text, useStdin } from "../../../src/ink/index.js";
 
 class Exit extends React.Component<{
@@ -13,10 +14,11 @@ class Exit extends React.Component<{
     }
 }
 
-function Test() {
+const Test = () => {
     const { setRawMode } = useStdin();
+
     return <Exit onSetRawMode={setRawMode} />;
-}
+};
 
 const app = render(<Test />);
 

@@ -18,7 +18,7 @@ import { createLoop, setCell } from "./harness.js";
 
 // ─── Fire palette — black → deep red → orange → yellow → white ───────────────
 // 256 entries mapping heat intensity (0-255) to a 256-color terminal index.
-const PALETTE: number[] = new Array(256).fill(0);
+const PALETTE: number[] = Array.from({ length: 256 }).fill(0);
 
 function buildPalette() {
     // 0       → color 232 (near-black)
@@ -39,15 +39,26 @@ function buildPalette() {
         }
     }
 }
+
 buildPalette();
 
 // Fire characters — sparse at low heat, dense/solid at high heat
 function heatChar(heat: number): string {
-    if (heat < 20) return " ";
-    if (heat < 60) return "·";
-    if (heat < 100) return "░";
-    if (heat < 150) return "▒";
-    if (heat < 200) return "▓";
+    if (heat < 20)
+        return " ";
+
+    if (heat < 60)
+        return "·";
+
+    if (heat < 100)
+        return "░";
+
+    if (heat < 150)
+        return "▒";
+
+    if (heat < 200)
+        return "▓";
+
     return "█";
 }
 
@@ -77,6 +88,7 @@ function stepFire() {
             const decay = Math.random() < 0.4 ? 1 : 0;
             const spread = Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
             const tx = Math.max(0, Math.min(fireW - 1, x + spread));
+
             fire[y * fireW + tx] = Math.max(0, below - decay);
         }
     }
@@ -85,6 +97,7 @@ function stepFire() {
     for (let x = 0; x < fireW; x++) {
         const current = fire[(fireH - 1) * fireW + x]!;
         const flicker = Math.random() < 0.05 ? -20 : 0;
+
         fire[(fireH - 1) * fireW + x] = Math.max(200, Math.min(255, current + flicker));
     }
 }
@@ -108,8 +121,12 @@ function paint(buf: Uint32Array, w: number, h: number, _frame: number) {
     for (let y = 0; y < h; y++) {
         for (let x = 0; x < w; x++) {
             const heat = fire[y * w + x]!;
-            if (heat === 0) continue; // cold cells stay blank
+
+            if (heat === 0)
+                continue; // cold cells stay blank
+
             const fg = PALETTE[heat]!;
+
             setCell(buf, w, x, y, heatChar(heat), fg, 0);
         }
     }
@@ -118,4 +135,5 @@ function paint(buf: Uint32Array, w: number, h: number, _frame: number) {
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
 const loop = createLoop(paint, 30); // 30fps looks great for fire
+
 loop.start();

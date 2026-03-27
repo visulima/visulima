@@ -7,24 +7,26 @@
  *
  * Run: node --import @oxc-node/core/register examples/scroll-test.tsx
  */
+import { Box, render, Text, useApp, useInput, useScrollable } from "@visulima/tui/react";
 import React, { useCallback } from "react";
-import { render, Box, Text, useInput, useApp, useScrollable } from "@visulima/tui/react";
 
-const ITEMS = Array.from({ length: 40 }, (_, i) => ({
-    id: i,
-    label: `item ${String(i + 1).padStart(2, "0")}`,
+const ITEMS = Array.from({ length: 40 }, (_, i) => {
+    return {
     // alternate colors to make rows easy to track visually
-    color: i % 2 === 0 ? "white" : "blackBright",
-}));
+        color: i % 2 === 0 ? "white" : "blackBright",
+        id: i,
+        label: `item ${String(i + 1).padStart(2, "0")}`,
+    };
+});
 
 const VIEWPORT_H = 10;
 
-function App() {
+const App = () => {
     const { exit } = useApp();
 
     const scroll = useScrollable({
-        viewportHeight: VIEWPORT_H,
         contentHeight: ITEMS.length,
+        viewportHeight: VIEWPORT_H,
     });
 
     useInput(
@@ -32,12 +34,21 @@ function App() {
             (_ch, key) => {
                 if (key.escape || _ch === "q") {
                     exit();
+
                     return;
                 }
-                if (key.upArrow) scroll.scrollUp();
-                if (key.downArrow) scroll.scrollDown();
-                if (key.pageUp) scroll.scrollBy(-5);
-                if (key.pageDown) scroll.scrollBy(5);
+
+                if (key.upArrow)
+                    scroll.scrollUp();
+
+                if (key.downArrow)
+                    scroll.scrollDown();
+
+                if (key.pageUp)
+                    scroll.scrollBy(-5);
+
+                if (key.pageDown)
+                    scroll.scrollBy(5);
             },
             [scroll, exit],
         ),
@@ -49,19 +60,20 @@ function App() {
         <Box flexDirection="column" gap={1}>
             {/* title */}
             <Box paddingX={1}>
-                <Text color="cyan" bold>
-                    scroll-test{" "}
+                <Text bold color="cyan">
+                    scroll-test
+                    {" "}
                 </Text>
                 <Text color="blackBright">↑↓ scroll · PgUp/PgDn jump 5 · q quit</Text>
             </Box>
 
             {/* viewport: fixed height, items sliced to fit — no marginTop trick needed here */}
             <Box
-                flexDirection="column"
-                borderStyle="single"
                 borderColor="cyan"
-                width={30}
+                borderStyle="single"
+                flexDirection="column"
                 height={VIEWPORT_H + 2} // +2 for border rows
+                width={30}
             >
                 {visibleItems.map((item) => (
                     <Box key={item.id} paddingX={1}>
@@ -71,9 +83,11 @@ function App() {
             </Box>
 
             {/* scroll position readout */}
-            <Box paddingX={1} flexDirection="row" gap={2}>
+            <Box flexDirection="row" gap={2} paddingX={1}>
                 <Text color="blackBright">
-                    offset <Text color="white">{scroll.offset}</Text>
+                    offset
+                    {" "}
+                    <Text color="white">{scroll.offset}</Text>
                     {" / "}
                     <Text color="white">{ITEMS.length - VIEWPORT_H}</Text>
                 </Text>
@@ -82,6 +96,6 @@ function App() {
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

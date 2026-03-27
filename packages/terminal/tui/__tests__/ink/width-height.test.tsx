@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { Box, Text, render } from "../../src/ink/index.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { expect, it } from "vitest";
+
+import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
 it("set width", () => {
     const output = renderToString(
@@ -12,6 +13,7 @@ it("set width", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A    B");
 });
 
@@ -24,6 +26,7 @@ it("set width in percent", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A    B");
 });
 
@@ -36,6 +39,7 @@ it("set min width", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(smallerOutput).toBe("A    B");
 
     const largerOutput = renderToString(
@@ -46,6 +50,7 @@ it("set min width", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(largerOutput).toBe("AAAAAB");
 });
 
@@ -58,6 +63,7 @@ it.fails("set min width in percent", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A    B");
 });
 
@@ -68,18 +74,20 @@ it("set height", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("AB\n\n\n");
 });
 
 it("set height in percent", () => {
     const output = renderToString(
-        <Box height={6} flexDirection="column">
+        <Box flexDirection="column" height={6}>
             <Box height="50%">
                 <Text>A</Text>
             </Box>
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A\n\n\nB\n\n");
 });
 
@@ -90,6 +98,7 @@ it("cut text over the set height", () => {
         </Box>,
         { columns: 4 },
     );
+
     expect(output).toBe("AAAA\nBBBB");
 });
 
@@ -99,6 +108,7 @@ it("set min height", () => {
             <Text>A</Text>
         </Box>,
     );
+
     expect(smallerOutput).toBe("A\n\n\n");
 
     const largerOutput = renderToString(
@@ -108,18 +118,20 @@ it("set min height", () => {
             </Box>
         </Box>,
     );
+
     expect(largerOutput).toBe("A\n\n\n");
 });
 
 it("set min height in percent", () => {
     const output = renderToString(
-        <Box height={6} flexDirection="column">
+        <Box flexDirection="column" height={6}>
             <Box minHeight="50%">
                 <Text>A</Text>
             </Box>
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A\n\n\nB\n\n");
 });
 
@@ -133,6 +145,7 @@ it("set max width", () => {
         </Box>,
         { columns: 10 },
     );
+
     expect(constrainedOutput).toBe("AAAB\nAA");
 
     const unconstrainedOutput = renderToString(
@@ -143,31 +156,31 @@ it("set max width", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(unconstrainedOutput).toBe("AAAB");
 });
 
 it("clears maxWidth on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ maxWidth }: { readonly maxWidth?: number }) {
-        return (
-            <Box>
-                <Box maxWidth={maxWidth}>
-                    <Text>AAAAA</Text>
-                </Box>
-                <Text>B</Text>
+    const Test = ({ maxWidth }: { readonly maxWidth?: number }) => (
+        <Box>
+            <Box maxWidth={maxWidth}>
+                <Text>AAAAA</Text>
             </Box>
-        );
-    }
+            <Text>B</Text>
+        </Box>
+    );
 
     const { rerender } = render(<Test maxWidth={3} />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAB\nAA");
 
     rerender(<Test maxWidth={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAAAB");
 });
 
@@ -179,6 +192,7 @@ it("set max height", () => {
             </Box>
         </Box>,
     );
+
     expect(constrainedOutput).toBe("A\n");
 
     const unconstrainedOutput = renderToString(
@@ -186,103 +200,106 @@ it("set max height", () => {
             <Text>A</Text>
         </Box>,
     );
+
     expect(unconstrainedOutput).toBe("A");
 });
 
 it("clears maxHeight on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ maxHeight }: { readonly maxHeight?: number }) {
-        return (
-            <Box maxHeight={maxHeight}>
-                <Box height={4}>
-                    <Text>A</Text>
-                </Box>
+    const Test = ({ maxHeight }: { readonly maxHeight?: number }) => (
+        <Box maxHeight={maxHeight}>
+            <Box height={4}>
+                <Text>A</Text>
             </Box>
-        );
-    }
+        </Box>
+    );
 
     const { rerender } = render(<Test maxHeight={2} />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n");
 
     rerender(<Test maxHeight={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n\n\n");
 });
 
 it("set aspect ratio with width", () => {
     const output = renderToString(
         <Box flexDirection="column">
-            <Box width={8} aspectRatio={2} borderStyle="single">
+            <Box aspectRatio={2} borderStyle="single" width={8}>
                 <Text>X</Text>
             </Box>
             <Text>Y</Text>
         </Box>,
     );
+
     expect(output).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
 });
 
 it("set aspect ratio with height", () => {
     const output = renderToString(
         <Box flexDirection="column">
-            <Box height={3} aspectRatio={2} borderStyle="single">
+            <Box aspectRatio={2} borderStyle="single" height={3}>
                 <Text>X</Text>
             </Box>
             <Text>Y</Text>
         </Box>,
     );
+
     expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
 });
 
 it("set aspect ratio with width and height", () => {
     const output = renderToString(
         <Box flexDirection="column">
-            <Box width={8} height={3} aspectRatio={2} borderStyle="single">
+            <Box aspectRatio={2} borderStyle="single" height={3} width={8}>
                 <Text>X</Text>
             </Box>
             <Text>Y</Text>
         </Box>,
     );
+
     expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
 });
 
 it("set aspect ratio with maxHeight constraint", () => {
     const output = renderToString(
         <Box flexDirection="column">
-            <Box width={10} maxHeight={3} aspectRatio={2} borderStyle="single">
+            <Box aspectRatio={2} borderStyle="single" maxHeight={3} width={10}>
                 <Text>X</Text>
             </Box>
             <Text>Y</Text>
         </Box>,
     );
+
     expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
 });
 
 it("clears aspectRatio on rerender", () => {
     const stdout = createStdout();
 
-    function Test({ aspectRatio }: { readonly aspectRatio?: number }) {
-        return (
-            <Box flexDirection="column">
-                <Box width={8} aspectRatio={aspectRatio} borderStyle="single">
-                    <Text>X</Text>
-                </Box>
-                <Text>Y</Text>
+    const Test = ({ aspectRatio }: { readonly aspectRatio?: number }) => (
+        <Box flexDirection="column">
+            <Box aspectRatio={aspectRatio} borderStyle="single" width={8}>
+                <Text>X</Text>
             </Box>
-        );
-    }
+            <Text>Y</Text>
+        </Box>
+    );
 
     const { rerender } = render(<Test aspectRatio={2} />, {
-        stdout,
         debug: true,
+        stdout,
     });
 
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
 
     rerender(<Test aspectRatio={undefined} />);
+
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n└──────┘\nY");
 });
 
@@ -295,12 +312,13 @@ it.fails("set max width in percent", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("AAAAAB");
 });
 
 it("set max height in percent", () => {
     const output = renderToString(
-        <Box height={6} flexDirection="column">
+        <Box flexDirection="column" height={6}>
             <Box maxHeight="50%">
                 <Box height={6}>
                     <Text>A</Text>
@@ -309,6 +327,7 @@ it("set max height in percent", () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A\n\n\nB\n\n");
 });
 
@@ -321,6 +340,7 @@ it("set width - concurrent", async () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("A    B");
 });
 
@@ -331,5 +351,6 @@ it("set height - concurrent", async () => {
             <Text>B</Text>
         </Box>,
     );
+
     expect(output).toBe("AB\n\n\n");
 });

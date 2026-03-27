@@ -11,18 +11,18 @@ const sosCharacter = "\u0098";
 type ControlStringType = "osc" | "dcs" | "pm" | "apc" | "sos";
 
 type CsiToken = {
+    readonly finalCharacter: string;
+    readonly intermediateString: string;
+    readonly parameterString: string;
     readonly type: "csi";
     readonly value: string;
-    readonly parameterString: string;
-    readonly intermediateString: string;
-    readonly finalCharacter: string;
 };
 
 type EscToken = {
+    readonly finalCharacter: string;
+    readonly intermediateString: string;
     readonly type: "esc";
     readonly value: string;
-    readonly intermediateString: string;
-    readonly finalCharacter: string;
 };
 
 type ControlStringToken = {
@@ -97,11 +97,11 @@ const readCsiSequence = (
     fromIndex: number,
 ):
     | {
-          readonly endIndex: number;
-          readonly parameterString: string;
-          readonly intermediateString: string;
-          readonly finalCharacter: string;
-      }
+        readonly endIndex: number;
+        readonly finalCharacter: string;
+        readonly intermediateString: string;
+        readonly parameterString: string;
+    }
     | undefined => {
     let index = fromIndex;
 
@@ -137,9 +137,9 @@ const readCsiSequence = (
 
     return {
         endIndex: index + 1,
-        parameterString,
-        intermediateString,
         finalCharacter,
+        intermediateString,
+        parameterString,
     };
 };
 
@@ -178,10 +178,10 @@ const readEscapeSequence = (
     fromIndex: number,
 ):
     | {
-          readonly endIndex: number;
-          readonly intermediateString: string;
-          readonly finalCharacter: string;
-      }
+        readonly endIndex: number;
+        readonly finalCharacter: string;
+        readonly intermediateString: string;
+    }
     | undefined => {
     let index = fromIndex;
 
@@ -204,8 +204,8 @@ const readEscapeSequence = (
 
     return {
         endIndex: index + 1,
-        intermediateString,
         finalCharacter,
+        intermediateString,
     };
 };
 
@@ -214,29 +214,29 @@ const getControlStringFromEscapeIntroducer = (
     character: string,
 ):
     | {
-          readonly type: ControlStringType;
-          readonly allowBellTerminator: boolean;
-      }
+        readonly allowBellTerminator: boolean;
+        readonly type: ControlStringType;
+    }
     | undefined => {
     switch (character) {
         case "]": {
-            return { type: "osc", allowBellTerminator: true };
-        }
-
-        case "P": {
-            return { type: "dcs", allowBellTerminator: false };
+            return { allowBellTerminator: true, type: "osc" };
         }
 
         case "^": {
-            return { type: "pm", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "pm" };
         }
 
         case "_": {
-            return { type: "apc", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "apc" };
+        }
+
+        case "P": {
+            return { allowBellTerminator: false, type: "dcs" };
         }
 
         case "X": {
-            return { type: "sos", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "sos" };
         }
 
         default: {
@@ -249,29 +249,29 @@ const getControlStringFromC1Introducer = (
     character: string,
 ):
     | {
-          readonly type: ControlStringType;
-          readonly allowBellTerminator: boolean;
-      }
+        readonly allowBellTerminator: boolean;
+        readonly type: ControlStringType;
+    }
     | undefined => {
     switch (character) {
-        case oscCharacter: {
-            return { type: "osc", allowBellTerminator: true };
+        case apcCharacter: {
+            return { allowBellTerminator: false, type: "apc" };
         }
 
         case dcsCharacter: {
-            return { type: "dcs", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "dcs" };
+        }
+
+        case oscCharacter: {
+            return { allowBellTerminator: true, type: "osc" };
         }
 
         case pmCharacter: {
-            return { type: "pm", allowBellTerminator: false };
-        }
-
-        case apcCharacter: {
-            return { type: "apc", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "pm" };
         }
 
         case sosCharacter: {
-            return { type: "sos", allowBellTerminator: false };
+            return { allowBellTerminator: false, type: "sos" };
         }
 
         default: {
@@ -313,7 +313,7 @@ export const tokenizeAnsi = (text: string): AnsiToken[] => {
     const tokens: AnsiToken[] = [];
     let textStartIndex = 0;
 
-    for (let index = 0; index < text.length; ) {
+    for (let index = 0; index < text.length;) {
         const character = text[index];
 
         if (character === undefined) {
@@ -339,11 +339,11 @@ export const tokenizeAnsi = (text: string): AnsiToken[] => {
                 }
 
                 tokens.push({
+                    finalCharacter: csiSequence.finalCharacter,
+                    intermediateString: csiSequence.intermediateString,
+                    parameterString: csiSequence.parameterString,
                     type: "csi",
                     value: text.slice(index, csiSequence.endIndex),
-                    parameterString: csiSequence.parameterString,
-                    intermediateString: csiSequence.intermediateString,
-                    finalCharacter: csiSequence.finalCharacter,
                 });
                 index = csiSequence.endIndex;
                 textStartIndex = index;
@@ -395,10 +395,10 @@ export const tokenizeAnsi = (text: string): AnsiToken[] => {
             }
 
             tokens.push({
+                finalCharacter: escapeSequence.finalCharacter,
+                intermediateString: escapeSequence.intermediateString,
                 type: "esc",
                 value: text.slice(index, escapeSequence.endIndex),
-                intermediateString: escapeSequence.intermediateString,
-                finalCharacter: escapeSequence.finalCharacter,
             });
             index = escapeSequence.endIndex;
             textStartIndex = index;
@@ -417,11 +417,11 @@ export const tokenizeAnsi = (text: string): AnsiToken[] => {
             }
 
             tokens.push({
+                finalCharacter: csiSequence.finalCharacter,
+                intermediateString: csiSequence.intermediateString,
+                parameterString: csiSequence.parameterString,
                 type: "csi",
                 value: text.slice(index, csiSequence.endIndex),
-                parameterString: csiSequence.parameterString,
-                intermediateString: csiSequence.intermediateString,
-                finalCharacter: csiSequence.finalCharacter,
             });
             index = csiSequence.endIndex;
             textStartIndex = index;

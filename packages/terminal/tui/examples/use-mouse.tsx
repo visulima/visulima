@@ -12,56 +12,71 @@
  * - Enter to submit, Ctrl+C to quit
  */
 
-import React, { useState, useCallback } from "react";
-import { render, Box, Text, useApp, useWindowSize, useMouse, useTextInput, useScrollable } from "@visulima/tui/react";
+import { Box, render, Text, useApp, useMouse, useScrollable, useTextInput, useWindowSize } from "@visulima/tui/react";
+import React, { useCallback, useState } from "react";
 
 interface LogEntry {
+    color: string;
     id: number;
     text: string;
-    color: string;
 }
 
 let nextId = 0;
 
-function App() {
+const App = () => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
-    const [log, setLog] = useState<LogEntry[]>([{ id: nextId++, text: "Click anywhere · scroll wheel · type below · ⌘V to paste", color: "dim" }]);
+    const [log, setLog] = useState<LogEntry[]>([{ color: "dim", id: nextId++, text: "Click anywhere · scroll wheel · type below · ⌘V to paste" }]);
     const [submitted, setSubmitted] = useState<string[]>([]);
 
     const addLog = useCallback((text: string, color = "white") => {
-        setLog((prev) => [...prev, { id: nextId++, text, color }]);
+        setLog((previous) => [...previous, { color, id: nextId++, text }]);
     }, []);
 
     // ── Mouse ──────────────────────────────────────────────────────────────────
     useMouse((e) => {
-        if (e.button === "left") {
-            addLog(`click  (${e.x}, ${e.y})${e.shift ? " +shift" : ""}${e.ctrl ? " +ctrl" : ""}`, "cyan");
-        } else if (e.button === "right") {
-            addLog(`right  (${e.x}, ${e.y})`, "yellow");
-        } else if (e.button === "scrollUp") {
-            scroll.scrollBy(-1);
-        } else if (e.button === "scrollDown") {
-            scroll.scrollBy(1);
+        switch (e.button) {
+            case "left": {
+                addLog(`click  (${e.x}, ${e.y})${e.shift ? " +shift" : ""}${e.ctrl ? " +ctrl" : ""}`, "cyan");
+
+                break;
+            }
+            case "right": {
+                addLog(`right  (${e.x}, ${e.y})`, "yellow");
+
+                break;
+            }
+            case "scrollDown": {
+                scroll.scrollBy(1);
+
+                break;
+            }
+            case "scrollUp": {
+                scroll.scrollBy(-1);
+
+                break;
+            }
+        // No default
         }
     });
 
     // ── Text input ─────────────────────────────────────────────────────────────
-    const { value, cursor, clear } = useTextInput({
+    const { clear, cursor, value } = useTextInput({
+        onChange: () => {},
         onSubmit: (v) => {
             if (v.trim()) {
                 addLog(`submit "${v}"`, "green");
-                setSubmitted((prev) => [...prev, v]);
+                setSubmitted((previous) => [...previous, v]);
             }
+
             clear();
         },
-        onChange: () => {},
     });
 
     // ── Scrollable log ─────────────────────────────────────────────────────────
     const CHROME = 5; // input bar (3) + header (1) + bottom border (1)
     const logViewport = Math.max(4, rows - CHROME);
-    const scroll = useScrollable({ viewportHeight: logViewport, contentHeight: log.length });
+    const scroll = useScrollable({ contentHeight: log.length, viewportHeight: logViewport });
 
     const visibleLog = log.slice(scroll.offset, scroll.offset + logViewport);
 
@@ -71,9 +86,9 @@ function App() {
     const after = value.slice(cursor + 1);
 
     return (
-        <Box flexDirection="column" width={columns} height={rows}>
+        <Box flexDirection="column" height={rows} width={columns}>
             {/* Header */}
-            <Box borderStyle="single" borderColor="magenta" paddingX={1}>
+            <Box borderColor="magenta" borderStyle="single" paddingX={1}>
                 <Text bold color="magenta">
                     useMouse · useTextInput · bracketed paste
                 </Text>
@@ -83,7 +98,7 @@ function App() {
             {/* Event log */}
             <Box flexDirection="column" flexGrow={1} overflow="hidden">
                 {visibleLog.map((entry) => (
-                    <Text key={entry.id} color={entry.color}>
+                    <Text color={entry.color} key={entry.id}>
                         {" "}
                         {entry.text}
                     </Text>
@@ -98,13 +113,19 @@ function App() {
             {log.length > logViewport && (
                 <Box justifyContent="flex-end" paddingRight={1}>
                     <Text dim>
-                        {scroll.offset + 1}–{Math.min(scroll.offset + logViewport, log.length)}/{log.length} ↑↓ scroll
+                        {scroll.offset + 1}
+                        –
+                        {Math.min(scroll.offset + logViewport, log.length)}
+                        /
+                        {log.length}
+                        {" "}
+                        ↑↓ scroll
                     </Text>
                 </Box>
             )}
 
             {/* Input bar */}
-            <Box borderStyle="single" borderColor="cyan" paddingX={1}>
+            <Box borderColor="cyan" borderStyle="single" paddingX={1}>
                 <Text color="cyan">› </Text>
                 <Text>{before}</Text>
                 <Text inverse>{atChar}</Text>
@@ -112,6 +133,6 @@ function App() {
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

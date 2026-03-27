@@ -1,11 +1,12 @@
-import { describe, expect, it } from "vitest";
 import { cursorDown, cursorTo, cursorUp } from "@visulima/ansi";
+import { expect, it } from "vitest";
+
 import {
-    cursorPositionChanged,
+    buildCursorOnlySequence,
     buildCursorSuffix,
     buildReturnToBottom,
-    buildCursorOnlySequence,
     buildReturnToBottomPrefix,
+    cursorPositionChanged,
 } from "../../src/ink/cursor-helpers.js";
 
 const showCursorEscape = "\u001B[?25h";
@@ -42,16 +43,19 @@ it("buildCursorSuffix - returns empty string when cursorPosition is undefined", 
 
 it("buildCursorSuffix - moves up and positions cursor", () => {
     const result = buildCursorSuffix(3, { x: 5, y: 1 });
+
     expect(result).toBe(cursorUp(2) + cursorTo(5) + showCursorEscape);
 });
 
 it("buildCursorSuffix - no cursorUp when cursor is at last visible line", () => {
     const result = buildCursorSuffix(3, { x: 0, y: 3 });
+
     expect(result).toBe(cursorTo(0) + showCursorEscape);
 });
 
 it("buildCursorSuffix - cursor at first line of single-line output", () => {
     const result = buildCursorSuffix(1, { x: 4, y: 0 });
+
     expect(result).toBe(cursorUp(1) + cursorTo(4) + showCursorEscape);
 });
 
@@ -63,11 +67,13 @@ it("buildReturnToBottom - returns empty string when previousCursorPosition is un
 
 it("buildReturnToBottom - moves down to bottom", () => {
     const result = buildReturnToBottom(4, { x: 5, y: 0 });
+
     expect(result).toBe(cursorDown(3) + cursorTo(0));
 });
 
 it("buildReturnToBottom - no cursorDown when cursor already at bottom", () => {
     const result = buildReturnToBottom(4, { x: 0, y: 3 });
+
     expect(result).toBe(cursorTo(0));
 });
 
@@ -75,26 +81,28 @@ it("buildReturnToBottom - no cursorDown when cursor already at bottom", () => {
 
 it("buildCursorOnlySequence - builds full sequence with hide prefix when cursor was shown", () => {
     const result = buildCursorOnlySequence({
-        cursorWasShown: true,
-        previousLineCount: 2,
-        previousCursorPosition: { x: 0, y: 0 },
-        visibleLineCount: 1,
         cursorPosition: { x: 3, y: 0 },
+        cursorWasShown: true,
+        previousCursorPosition: { x: 0, y: 0 },
+        previousLineCount: 2,
+        visibleLineCount: 1,
     });
     const expected = hideCursorEscape + buildReturnToBottom(2, { x: 0, y: 0 }) + buildCursorSuffix(1, { x: 3, y: 0 });
+
     expect(result).toBe(expected);
 });
 
 it("buildCursorOnlySequence - no hide prefix when cursor was not shown", () => {
     const result = buildCursorOnlySequence({
-        cursorWasShown: false,
-        previousLineCount: 0,
-        previousCursorPosition: undefined,
-        visibleLineCount: 1,
         cursorPosition: { x: 3, y: 0 },
+        cursorWasShown: false,
+        previousCursorPosition: undefined,
+        previousLineCount: 0,
+        visibleLineCount: 1,
     });
+
     expect(result.startsWith(hideCursorEscape)).toBe(false);
-    expect(result.includes(showCursorEscape)).toBe(true);
+    expect(result).toContain(showCursorEscape);
 });
 
 // BuildReturnToBottomPrefix
@@ -105,10 +113,12 @@ it("buildReturnToBottomPrefix - returns empty string when cursor was not shown",
 
 it("buildReturnToBottomPrefix - returns hide + returnToBottom when cursor was shown", () => {
     const result = buildReturnToBottomPrefix(true, 4, { x: 0, y: 0 });
+
     expect(result).toBe(hideCursorEscape + buildReturnToBottom(4, { x: 0, y: 0 }));
 });
 
 it("buildReturnToBottomPrefix - with undefined previousCursorPosition still hides cursor", () => {
     const result = buildReturnToBottomPrefix(true, 4, undefined);
+
     expect(result).toBe(hideCursorEscape + buildReturnToBottom(4, undefined));
 });

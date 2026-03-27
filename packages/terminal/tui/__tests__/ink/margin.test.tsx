@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
@@ -103,9 +104,14 @@ it("margin with multiline string", () => {
 it("apply margin to text with newlines", () => {
     const output = renderToString(
         <Box margin={1}>
-            <Text>Hello{"\n"}World</Text>
+            <Text>
+                Hello
+                {"\n"}
+                World
+            </Text>
         </Box>,
     );
+
     expect(output).toBe("\n Hello\n World\n");
 });
 

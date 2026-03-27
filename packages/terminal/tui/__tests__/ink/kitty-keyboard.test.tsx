@@ -1,14 +1,14 @@
-import process from "node:process";
 import EventEmitter from "node:events";
-import { Buffer } from "node:buffer";
-import { describe, expect, it } from "vitest";
-import { vi } from "vitest";
-import parseKeypress from "../../src/ink/parse-keypress.js";
+
+import { expect, it, vi } from "vitest";
+
 import { render, Text } from "../../src/ink/index.js";
+import parseKeypress from "../../src/ink/parse-keypress.js";
 
 // Helper to create kitty protocol CSI u sequences
 const kittyKey = (codepoint: number, modifiers?: number, eventType?: number, textCodepoints?: number[]): string => {
     let seq = `\u001B[${codepoint}`;
+
     if (modifiers !== undefined || eventType !== undefined || textCodepoints !== undefined) {
         seq += `;${modifiers ?? 1}`;
     }
@@ -22,11 +22,13 @@ const kittyKey = (codepoint: number, modifiers?: number, eventType?: number, tex
     }
 
     seq += "u";
+
     return seq;
 };
 
 it("kitty protocol - simple character", () => {
     const result = parseKeypress(kittyKey(97));
+
     expect(result.name).toBe("a");
     expect(result.ctrl).toBe(false);
     expect(result.shift).toBe(false);
@@ -37,6 +39,7 @@ it("kitty protocol - simple character", () => {
 
 it("kitty protocol - uppercase character (shift)", () => {
     const result = parseKeypress(kittyKey(65, 2));
+
     expect(result.name).toBe("a");
     expect(result.shift).toBe(true);
     expect(result.ctrl).toBe(false);
@@ -45,6 +48,7 @@ it("kitty protocol - uppercase character (shift)", () => {
 
 it("kitty protocol - ctrl modifier", () => {
     const result = parseKeypress(kittyKey(97, 5));
+
     expect(result.name).toBe("a");
     expect(result.ctrl).toBe(true);
     expect(result.shift).toBe(false);
@@ -53,6 +57,7 @@ it("kitty protocol - ctrl modifier", () => {
 
 it("kitty protocol - alt/option modifier", () => {
     const result = parseKeypress(kittyKey(97, 3));
+
     expect(result.name).toBe("a");
     expect(result.option).toBe(true);
     expect(result.ctrl).toBe(false);
@@ -61,6 +66,7 @@ it("kitty protocol - alt/option modifier", () => {
 
 it("kitty protocol - super modifier", () => {
     const result = parseKeypress(kittyKey(97, 9));
+
     expect(result.name).toBe("a");
     expect(result.super).toBe(true);
     expect(result.ctrl).toBe(false);
@@ -69,6 +75,7 @@ it("kitty protocol - super modifier", () => {
 
 it("kitty protocol - hyper modifier", () => {
     const result = parseKeypress(kittyKey(97, 17));
+
     expect(result.name).toBe("a");
     expect(result.hyper).toBe(true);
     expect(result.super).toBe(false);
@@ -77,6 +84,7 @@ it("kitty protocol - hyper modifier", () => {
 
 it("kitty protocol - meta modifier", () => {
     const result = parseKeypress(kittyKey(97, 33));
+
     expect(result.name).toBe("a");
     expect(result.meta).toBe(true);
     expect(result.eventType).toBe("press");
@@ -84,6 +92,7 @@ it("kitty protocol - meta modifier", () => {
 
 it("kitty protocol - caps lock", () => {
     const result = parseKeypress(kittyKey(97, 65));
+
     expect(result.name).toBe("a");
     expect(result.capsLock).toBe(true);
     expect(result.eventType).toBe("press");
@@ -91,6 +100,7 @@ it("kitty protocol - caps lock", () => {
 
 it("kitty protocol - num lock", () => {
     const result = parseKeypress(kittyKey(97, 129));
+
     expect(result.name).toBe("a");
     expect(result.numLock).toBe(true);
     expect(result.eventType).toBe("press");
@@ -98,6 +108,7 @@ it("kitty protocol - num lock", () => {
 
 it("kitty protocol - combined modifiers (ctrl+shift)", () => {
     const result = parseKeypress(kittyKey(97, 6));
+
     expect(result.name).toBe("a");
     expect(result.ctrl).toBe(true);
     expect(result.shift).toBe(true);
@@ -107,6 +118,7 @@ it("kitty protocol - combined modifiers (ctrl+shift)", () => {
 
 it("kitty protocol - combined modifiers (super+ctrl)", () => {
     const result = parseKeypress(kittyKey(115, 13));
+
     expect(result.name).toBe("s");
     expect(result.super).toBe(true);
     expect(result.ctrl).toBe(true);
@@ -116,72 +128,84 @@ it("kitty protocol - combined modifiers (super+ctrl)", () => {
 
 it("kitty protocol - escape key", () => {
     const result = parseKeypress(kittyKey(27));
+
     expect(result.name).toBe("escape");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - return/enter key", () => {
     const result = parseKeypress(kittyKey(13));
+
     expect(result.name).toBe("return");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - tab key", () => {
     const result = parseKeypress(kittyKey(9));
+
     expect(result.name).toBe("tab");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - backspace key", () => {
     const result = parseKeypress(kittyKey(8));
+
     expect(result.name).toBe("backspace");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - delete key", () => {
     const result = parseKeypress(kittyKey(127));
+
     expect(result.name).toBe("delete");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - space key", () => {
     const result = parseKeypress(kittyKey(32));
+
     expect(result.name).toBe("space");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - event type press", () => {
     const result = parseKeypress(kittyKey(97, 1, 1));
+
     expect(result.name).toBe("a");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - event type repeat", () => {
     const result = parseKeypress(kittyKey(97, 1, 2));
+
     expect(result.name).toBe("a");
     expect(result.eventType).toBe("repeat");
 });
 
 it("kitty protocol - event type release", () => {
     const result = parseKeypress(kittyKey(97, 1, 3));
+
     expect(result.name).toBe("a");
     expect(result.eventType).toBe("release");
 });
 
 it("kitty protocol - number keys", () => {
     const result = parseKeypress(kittyKey(49));
+
     expect(result.name).toBe("1");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - special character", () => {
     const result = parseKeypress(kittyKey(64));
+
     expect(result.name).toBe("@");
     expect(result.eventType).toBe("press");
 });
 
 it("kitty protocol - ctrl+letter produces codepoint 1-26", () => {
     const result = parseKeypress(kittyKey(1, 5));
+
     expect(result.name).toBe("a");
     expect(result.ctrl).toBe(true);
 });
@@ -189,12 +213,14 @@ it("kitty protocol - ctrl+letter produces codepoint 1-26", () => {
 it("kitty protocol - preserves sequence and raw", () => {
     const seq = kittyKey(97, 5);
     const result = parseKeypress(seq);
+
     expect(result.sequence).toBe(seq);
     expect(result.raw).toBe(seq);
 });
 
 it("kitty protocol - text-as-codepoints field", () => {
     const result = parseKeypress(kittyKey(97, 2, 1, [65]));
+
     expect(result.name).toBe("a");
     expect(result.text).toBe("A");
     expect(result.shift).toBe(true);
@@ -203,12 +229,14 @@ it("kitty protocol - text-as-codepoints field", () => {
 
 it("kitty protocol - supplementary unicode codepoint", () => {
     const result = parseKeypress(kittyKey(128_512));
+
     expect(result.name).toBe("😀");
     expect(result.isKittyProtocol).toBe(true);
 });
 
 it("kitty protocol - invalid codepoint above U+10FFFF returns safe empty keypress", () => {
     const result = parseKeypress("\u001B[1114112u");
+
     expect(result.name).toBe("");
     expect(result.ctrl).toBe(false);
     expect(result.isKittyProtocol).toBe(true);
@@ -217,6 +245,7 @@ it("kitty protocol - invalid codepoint above U+10FFFF returns safe empty keypres
 
 it("kitty protocol - surrogate codepoint returns safe empty keypress", () => {
     const result = parseKeypress("\u001B[55296u");
+
     expect(result.name).toBe("");
     expect(result.ctrl).toBe(false);
     expect(result.isKittyProtocol).toBe(true);
@@ -225,44 +254,52 @@ it("kitty protocol - surrogate codepoint returns safe empty keypress", () => {
 
 it("non-kitty sequences fall back to legacy parsing", () => {
     const result = parseKeypress("\u001B[A");
+
     expect(result.name).toBe("up");
-    expect(result.isKittyProtocol).toBe(undefined);
+    expect(result.isKittyProtocol).toBeUndefined();
 });
 
 it("non-kitty sequences - ctrl+c", () => {
     const result = parseKeypress("\u0003");
+
     expect(result.name).toBe("c");
     expect(result.ctrl).toBe(true);
-    expect(result.isKittyProtocol).toBe(undefined);
+    expect(result.isKittyProtocol).toBeUndefined();
 });
 
 it("kitty protocol - isPrintable is true for regular characters", () => {
     const result = parseKeypress(kittyKey(97));
+
     expect(result.isPrintable).toBe(true);
 });
 
 it("kitty protocol - isPrintable is false for escape", () => {
     const result = parseKeypress(kittyKey(27));
+
     expect(result.isPrintable).toBe(false);
 });
 
 it("kitty protocol - isPrintable is true for space", () => {
     const result = parseKeypress(kittyKey(32));
+
     expect(result.isPrintable).toBe(true);
 });
 
 it("kitty protocol - isPrintable is false for backspace", () => {
     const result = parseKeypress(kittyKey(8));
+
     expect(result.isPrintable).toBe(false);
 });
 
 it("kitty protocol - isPrintable is false for ctrl+letter", () => {
     const result = parseKeypress(kittyKey(1, 5));
+
     expect(result.isPrintable).toBe(false);
 });
 
 it("kitty protocol - capslock (57358) is non-printable", () => {
     const result = parseKeypress("\u001B[57358u");
+
     expect(result.name).toBe("capslock");
     expect(result.isPrintable).toBe(false);
     expect(result.isKittyProtocol).toBe(true);
@@ -270,6 +307,7 @@ it("kitty protocol - capslock (57358) is non-printable", () => {
 
 it("kitty protocol - printscreen (57361) is non-printable", () => {
     const result = parseKeypress("\u001B[57361u");
+
     expect(result.name).toBe("printscreen");
     expect(result.isPrintable).toBe(false);
     expect(result.isKittyProtocol).toBe(true);
@@ -277,6 +315,7 @@ it("kitty protocol - printscreen (57361) is non-printable", () => {
 
 it("kitty protocol - f13 (57376) is non-printable", () => {
     const result = parseKeypress("\u001B[57376u");
+
     expect(result.name).toBe("f13");
     expect(result.isPrintable).toBe(false);
     expect(result.isKittyProtocol).toBe(true);
@@ -284,11 +323,13 @@ it("kitty protocol - f13 (57376) is non-printable", () => {
 
 it("kitty protocol - space key has text field set to space character", () => {
     const result = parseKeypress(kittyKey(32));
+
     expect(result.text).toBe(" ");
 });
 
 it("kitty protocol - return key has text field set to carriage return", () => {
     const result = parseKeypress(kittyKey(13));
+
     expect(result.text).toBe("\r");
 });
 
@@ -296,19 +337,24 @@ it("kitty protocol - return key has text field set to carriage return", () => {
 
 const createFakeStdout = () => {
     const stdout = new EventEmitter() as unknown as NodeJS.WriteStream;
+
     stdout.columns = 100;
     stdout.isTTY = true;
     const write = vi.fn();
+
     stdout.write = write;
+
     return { stdout, write };
 };
 
 const createFakeStdin = () => {
     const stdin = new EventEmitter() as unknown as NodeJS.ReadStream;
+
     stdin.isTTY = true;
-    stdin.setRawMode = vi.fn();
+    vi.spyOn(stdin, "setRawMode").mockImplementation();
     stdin.setEncoding = () => {};
-    stdin.read = vi.fn();
+    vi.spyOn(stdin, "read").mockImplementation();
+
     return stdin;
 };
 
@@ -319,12 +365,12 @@ it("kitty protocol - writes enable sequence on init when mode is enabled", () =>
     const stdin = createFakeStdin();
 
     const { unmount } = render(<Text>Hello</Text>, {
-        stdout,
-        stdin,
         kittyKeyboard: { mode: "enabled" },
+        stdin,
+        stdout,
     });
 
-    expect(getWrittenStrings(write).includes("\u001B[>1u")).toBe(true);
+    expect(getWrittenStrings(write)).toContain("\u001B[>1u");
 
     unmount();
 });
@@ -334,44 +380,46 @@ it("kitty protocol - writes disable sequence on unmount", () => {
     const stdin = createFakeStdin();
 
     const { unmount } = render(<Text>Hello</Text>, {
-        stdout,
-        stdin,
         kittyKeyboard: { mode: "enabled" },
+        stdin,
+        stdout,
     });
 
     unmount();
 
-    expect(getWrittenStrings(write).includes("\u001B[<u")).toBe(true);
+    expect(getWrittenStrings(write)).toContain("\u001B[<u");
 });
 
 it("kitty protocol - not enabled when stdin is not a TTY", () => {
     const { stdout, write } = createFakeStdout();
     const stdin = createFakeStdin();
+
     stdin.isTTY = false;
 
     const { unmount } = render(<Text>Hello</Text>, {
-        stdout,
-        stdin,
         kittyKeyboard: { mode: "enabled" },
+        stdin,
+        stdout,
     });
 
-    expect(getWrittenStrings(write).includes("\u001B[>1u")).toBe(false);
+    expect(getWrittenStrings(write)).not.toContain("\u001B[>1u");
 
     unmount();
 });
 
 it("kitty protocol - not enabled when stdout is not a TTY", () => {
     const { stdout, write } = createFakeStdout();
+
     stdout.isTTY = false;
     const stdin = createFakeStdin();
 
     const { unmount } = render(<Text>Hello</Text>, {
-        stdout,
-        stdin,
         kittyKeyboard: { mode: "enabled" },
+        stdin,
+        stdout,
     });
 
-    expect(getWrittenStrings(write).includes("\u001B[>1u")).toBe(false);
+    expect(getWrittenStrings(write)).not.toContain("\u001B[>1u");
 
     unmount();
 });

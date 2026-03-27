@@ -1,18 +1,17 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { getStringWidth } from "@visulima/string";
 
 const cache = new Map<string, Output>();
 
 type Output = {
-    width: number;
     height: number;
+    width: number;
 };
 
 const measureText = (text: string): Output => {
     if (text.length === 0) {
         return {
-            width: 0,
             height: 0,
+            width: 0,
         };
     }
 
@@ -22,9 +21,10 @@ const measureText = (text: string): Output => {
         return cachedDimensions;
     }
 
-    const width = Math.max(...text.split("\n").map(line => getStringWidth(line)));
+    const width = Math.max(...text.split("\n").map((line) => getStringWidth(line)));
     const height = text.split("\n").length;
-    const dimensions = { width, height };
+    const dimensions = { height, width };
+
     cache.set(text, dimensions);
 
     return dimensions;

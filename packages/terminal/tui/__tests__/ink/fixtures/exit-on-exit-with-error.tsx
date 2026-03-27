@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render, Text, useApp } from "../../../src/ink/index.js";
 
 class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter: number }> {
@@ -9,7 +10,12 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
     };
 
     override render() {
-        return <Text>Counter: {this.state.counter}</Text>;
+        return (
+            <Text>
+                Counter:
+                {this.state.counter}
+            </Text>
+        );
     }
 
     override componentDidMount() {
@@ -18,9 +24,11 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
         }, 500);
 
         this.timer = setInterval(() => {
-            this.setState((prevState) => ({
-                counter: prevState.counter + 1,
-            }));
+            this.setState((previousState) => {
+                return {
+                    counter: previousState.counter + 1,
+                };
+            });
         }, 100);
     }
 
@@ -29,10 +37,11 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
     }
 }
 
-function Test() {
+const Test = () => {
     const { exit } = useApp();
+
     return <Exit onExit={exit} />;
-}
+};
 
 const app = render(<Test />);
 

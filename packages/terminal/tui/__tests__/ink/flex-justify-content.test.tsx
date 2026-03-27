@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
 import colorizeDefault from "@visulima/colorize";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -90,7 +91,7 @@ it("row - align colored text node when text is squashed", () => {
 
 it("column - align text to center", () => {
     const output = renderToString(
-        <Box flexDirection="column" justifyContent="center" height={3}>
+        <Box flexDirection="column" height={3} justifyContent="center">
             <Text>Test</Text>
         </Box>,
     );
@@ -100,7 +101,7 @@ it("column - align text to center", () => {
 
 it("column - align text to bottom", () => {
     const output = renderToString(
-        <Box flexDirection="column" justifyContent="flex-end" height={3}>
+        <Box flexDirection="column" height={3} justifyContent="flex-end">
             <Text>Test</Text>
         </Box>,
     );
@@ -110,7 +111,7 @@ it("column - align text to bottom", () => {
 
 it("column - align two text nodes on the edges", () => {
     const output = renderToString(
-        <Box flexDirection="column" justifyContent="space-between" height={4}>
+        <Box flexDirection="column" height={4} justifyContent="space-between">
             <Text>A</Text>
             <Text>B</Text>
         </Box>,
@@ -121,7 +122,7 @@ it("column - align two text nodes on the edges", () => {
 
 it.fails("column - align two text nodes with equal space around them", () => {
     const output = renderToString(
-        <Box flexDirection="column" justifyContent="space-around" height={5}>
+        <Box flexDirection="column" height={5} justifyContent="space-around">
             <Text>A</Text>
             <Text>B</Text>
         </Box>,

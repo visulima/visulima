@@ -3,23 +3,27 @@
  * Press Tab to cycle focus forward, Shift+Tab to cycle backward.
  * Run: node --import @oxc-node/core/register examples/use-focus.tsx
  */
+import { Box, render, Text, useApp, useFocus, useInput } from "@visulima/tui/react";
 import React from "react";
-import { Box, Text, render, useFocus, useInput, useApp } from "@visulima/tui/react";
 
-function Item({ label }: { label: string }) {
+const Item = ({ label }: { label: string }) => {
     const { isFocused } = useFocus();
+
     return (
         <Text>
-            {label} {isFocused ? <Text color="green">(focused)</Text> : <Text color="gray">(unfocused)</Text>}
+            {label}
+            {" "}
+            {isFocused ? <Text color="green">(focused)</Text> : <Text color="gray">(unfocused)</Text>}
         </Text>
     );
-}
+};
 
-function FocusExample() {
+const FocusExample = () => {
     const { exit } = useApp();
 
     useInput((_input, key) => {
-        if (key.escape) exit();
+        if (key.escape)
+            exit();
     });
 
     return (
@@ -32,6 +36,6 @@ function FocusExample() {
             <Item label="Third" />
         </Box>
     );
-}
+};
 
 render(<FocusExample />);

@@ -1,24 +1,26 @@
-import { forwardRef, useContext, type PropsWithChildren, type ForwardRefExoticComponent, type RefAttributes } from "react";
+import type { ForwardRefExoticComponent, PropsWithChildren, RefAttributes } from "react";
+import { forwardRef, useContext } from "react";
 import type { Except } from "type-fest";
-import { type Styles } from "../styles.js";
-import { type DOMElement } from "../dom.js";
+
+import type { DOMElement } from "../dom.js";
+import type { Styles } from "../styles.js";
 import { accessibilityContext } from "./AccessibilityContext.js";
 import { backgroundContext } from "./BackgroundContext.js";
 
 export type Props = Except<Styles, "textWrap"> & {
     /**
-	A label for the element for screen readers.
-	*/
-    readonly "aria-label"?: string;
-
-    /**
-	Hide the element from screen readers.
-	*/
+     * Hide the element from screen readers.
+     */
     readonly "aria-hidden"?: boolean;
 
     /**
-	The role of the element.
-	*/
+     * A label for the element for screen readers.
+     */
+    readonly "aria-label"?: string;
+
+    /**
+     * The role of the element.
+     */
     readonly "aria-role"?:
         | "button"
         | "checkbox"
@@ -40,8 +42,8 @@ export type Props = Except<Styles, "textWrap"> & {
         | "toolbar";
 
     /**
-	The state of the element.
-	*/
+     * The state of the element.
+     */
     readonly "aria-state"?: {
         readonly busy?: boolean;
         readonly checked?: boolean;
@@ -56,32 +58,33 @@ export type Props = Except<Styles, "textWrap"> & {
 };
 
 /**
-`<Box>` is an essential Ink component to build your layout. It's like `<div style="display: flex">` in the browser.
-*/
+ * `&lt;Box>` is an essential Ink component to build your layout. It's like `&lt;div style="display: flex">` in the browser.
+ */
 const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DOMElement>> = forwardRef<DOMElement, PropsWithChildren<Props>>(
-    ({ children, backgroundColor, "aria-label": ariaLabel, "aria-hidden": ariaHidden, "aria-role": role, "aria-state": ariaState, ...style }, ref) => {
+    ({ "aria-hidden": ariaHidden, "aria-label": ariaLabel, "aria-role": role, "aria-state": ariaState, backgroundColor, children, ...style }, ref) => {
         const { isScreenReaderEnabled } = useContext(accessibilityContext);
         const label = ariaLabel ? <ink-text>{ariaLabel}</ink-text> : undefined;
+
         if (isScreenReaderEnabled && ariaHidden) {
             return null;
         }
 
         const boxElement = (
             <ink-box
+                internal_accessibility={{
+                    role,
+                    state: ariaState,
+                }}
                 ref={ref}
                 style={{
-                    flexWrap: "nowrap",
                     flexDirection: "row",
                     flexGrow: 0,
                     flexShrink: 1,
+                    flexWrap: "nowrap",
                     ...style,
                     backgroundColor,
                     overflowX: style.overflowX ?? style.overflow ?? "visible",
                     overflowY: style.overflowY ?? style.overflow ?? "visible",
-                }}
-                internal_accessibility={{
-                    role,
-                    state: ariaState,
                 }}
             >
                 {isScreenReaderEnabled && label ? label : children}

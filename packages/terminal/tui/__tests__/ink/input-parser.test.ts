@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { createInputParser, type InputEvent } from "../../src/ink/input-parser.js";
+import { expect, it } from "vitest";
+
+import type { InputEvent } from "../../src/ink/input-parser.js";
+import { createInputParser } from "../../src/ink/input-parser.js";
 
 const parseChunks = (chunks: string[]): InputEvent[] => {
     const parser = createInputParser();
@@ -118,7 +120,9 @@ it("reset clears pending input state", () => {
     const parser = createInputParser();
 
     expect(parser.push("\u001B[")).toEqual([]);
+
     parser.reset();
+
     expect(parser.push("A")).toEqual(["A"]);
 });
 
@@ -187,74 +191,74 @@ it("plain text followed by incomplete escape holds escape as pending", () => {
 
 const deleteAndBackspaceCases = [
     {
-        title: "splits batched delete characters into individual events",
         chunks: ["\u007F\u007F\u007F"],
         events: ["\u007F", "\u007F", "\u007F"],
+        title: "splits batched delete characters into individual events",
     },
     {
-        title: "splits batched backspace characters into individual events",
         chunks: ["\u0008\u0008\u0008"],
         events: ["\u0008", "\u0008", "\u0008"],
+        title: "splits batched backspace characters into individual events",
     },
     {
-        title: "splits mixed delete and backspace characters",
         chunks: ["\u007F\u0008\u007F"],
         events: ["\u007F", "\u0008", "\u007F"],
+        title: "splits mixed delete and backspace characters",
     },
     {
-        title: "splits mixed printable text and delete characters",
         chunks: ["abc\u007F\u007F\u007F"],
         events: ["abc", "\u007F", "\u007F", "\u007F"],
+        title: "splits mixed printable text and delete characters",
     },
     {
-        title: "single delete character is preserved as individual event",
         chunks: ["\u007F"],
         events: ["\u007F"],
+        title: "single delete character is preserved as individual event",
     },
     {
-        title: "single backspace character is preserved as individual event",
         chunks: ["\u0008"],
         events: ["\u0008"],
+        title: "single backspace character is preserved as individual event",
     },
     {
-        title: "splits trailing delete from text",
         chunks: ["abc\u007F"],
         events: ["abc", "\u007F"],
+        title: "splits trailing delete from text",
     },
     {
-        title: "splits delete characters before escape sequences",
         chunks: ["\u007F\u007F\u001B[A"],
         events: ["\u007F", "\u007F", "\u001B[A"],
+        title: "splits delete characters before escape sequences",
     },
     {
-        title: "splits delete characters after escape sequences",
         chunks: ["\u001B[A\u007F\u007F"],
         events: ["\u001B[A", "\u007F", "\u007F"],
+        title: "splits delete characters after escape sequences",
     },
     {
-        title: "splits delete characters between escape sequences",
         chunks: ["\u001B[A\u007F\u001B[B"],
         events: ["\u001B[A", "\u007F", "\u001B[B"],
+        title: "splits delete characters between escape sequences",
     },
     {
-        title: "splits backspace characters around escape sequences",
         chunks: ["\u0008\u001B[A\u0008"],
         events: ["\u0008", "\u001B[A", "\u0008"],
+        title: "splits backspace characters around escape sequences",
     },
     {
-        title: "splits interleaved text and delete characters",
         chunks: ["ab\u007Fcd"],
         events: ["ab", "\u007F", "cd"],
+        title: "splits interleaved text and delete characters",
     },
     {
-        title: "does not split pasted carriage return from text",
         chunks: ["\rtest"],
         events: ["\rtest"],
+        title: "does not split pasted carriage return from text",
     },
     {
-        title: "does not split pasted tab from text",
         chunks: ["\ttest"],
         events: ["\ttest"],
+        title: "does not split pasted tab from text",
     },
 ] as const;
 
@@ -315,7 +319,7 @@ it("emits empty paste for adjacent paste markers", () => {
     expect(parseChunks(["\u001B[200~\u001B[201~"])).toEqual([{ paste: "" }]);
 });
 
-it("handles pasteStart split before the tilde (\\u001B[200 without ~)", () => {
+it(String.raw`handles pasteStart split before the tilde (\u001B[200 without ~)`, () => {
     const parser = createInputParser();
 
     expect(parser.push("\u001B[200")).toEqual([]);
@@ -323,14 +327,14 @@ it("handles pasteStart split before the tilde (\\u001B[200 without ~)", () => {
     expect(parser.push("~hello\u001B[201~")).toEqual([{ paste: "hello" }]);
 });
 
-it("hasPendingEscape returns true for length-3 pasteStart prefix (\\u001B[2)", () => {
+it(String.raw`hasPendingEscape returns true for length-3 pasteStart prefix (\u001B[2)`, () => {
     const parser = createInputParser();
 
     expect(parser.push("\u001B[2")).toEqual([]);
     expect(parser.hasPendingEscape()).toBe(true);
 });
 
-it("hasPendingEscape returns true for length-4 pasteStart prefix (\\u001B[20)", () => {
+it(String.raw`hasPendingEscape returns true for length-4 pasteStart prefix (\u001B[20)`, () => {
     const parser = createInputParser();
 
     expect(parser.push("\u001B[20")).toEqual([]);

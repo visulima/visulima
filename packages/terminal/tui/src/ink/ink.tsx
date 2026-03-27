@@ -1,36 +1,39 @@
-import process from "node:process";
 import { Buffer } from "node:buffer";
 import { Console as NodeConsole } from "node:console";
-import { type ReactNode } from "react";
-import { throttle, type DebouncedFunc } from "es-toolkit/compat";
-// eslint-disable-next-line import/no-extraneous-dependencies
+import process from "node:process";
+
 import { ALT_SCREEN_OFF, ALT_SCREEN_ON, eraseLines, resetTerminal } from "@visulima/ansi";
-import isInCi from "is-in-ci";
+import { wordWrap } from "@visulima/string";
 import autoBind from "auto-bind";
-import { onExit as signalExit } from "signal-exit";
+import type { DebouncedFunc } from "es-toolkit/compat";
+import { throttle } from "es-toolkit/compat";
+import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
+import type { ReactNode } from "react";
+import type { FiberRoot } from "react-reconciler";
+import { ConcurrentRoot, LegacyRoot } from "react-reconciler/constants.js";
+import { onExit as signalExit } from "signal-exit";
+import Yoga from "yoga-layout";
+
+import { accessibilityContext as AccessibilityContext } from "./components/AccessibilityContext.js";
+import App from "./components/App.js";
+import { hideCursorEscape, showCursorEscape } from "./cursor-helpers.js";
+import * as dom from "./dom.js";
+import instances from "./instances.js";
+import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard.js";
+import { resolveFlags } from "./kitty-keyboard.js";
+import type { CursorPosition, LogUpdate } from "./log-update.js";
+import logUpdate from "./log-update.js";
+import reconciler from "./reconciler.js";
+import render from "./renderer.js";
+import { getWindowSize } from "./utils.js";
+import { bsu, esu, shouldSynchronize } from "./write-synchronized.js";
 
 // Ensure console.Console is available for patch-console (Vitest and some test
 // environments replace the global console without exposing Console as a constructor).
 if (!(console as any).Console) {
     (console as any).Console = NodeConsole;
 }
-import { LegacyRoot, ConcurrentRoot } from "react-reconciler/constants.js";
-import { type FiberRoot } from "react-reconciler";
-import Yoga from "yoga-layout";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { wordWrap } from "@visulima/string";
-import { getWindowSize } from "./utils.js";
-import reconciler from "./reconciler.js";
-import render from "./renderer.js";
-import * as dom from "./dom.js";
-import { hideCursorEscape, showCursorEscape } from "./cursor-helpers.js";
-import logUpdate, { type LogUpdate, type CursorPosition } from "./log-update.js";
-import { bsu, esu, shouldSynchronize } from "./write-synchronized.js";
-import instances from "./instances.js";
-import App from "./components/App.js";
-import { accessibilityContext as AccessibilityContext } from "./components/AccessibilityContext.js";
-import { type KittyKeyboardOptions, type KittyFlagName, resolveFlags } from "./kitty-keyboard.js";
 
 const noop = () => {};
 
@@ -46,21 +49,22 @@ const kittyQueryLetterByte = 0x75;
 const zeroByte = 0x30;
 const nineByte = 0x39;
 
-type KittyQueryResponseMatch = { state: "complete"; endIndex: number } | { state: "partial" };
+type KittyQueryResponseMatch = { endIndex: number; state: "complete" } | { state: "partial" };
 
 const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineByte;
 
 const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
     if (
-        buffer[startIndex] !== kittyQueryEscapeByte ||
-        buffer[startIndex + 1] !== kittyQueryOpenBracketByte ||
-        buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
+        buffer[startIndex] !== kittyQueryEscapeByte
+        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
+        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
     ) {
         return undefined;
     }
 
     let index = startIndex + 3;
     const digitsStartIndex = index;
+
     while (index < buffer.length && isDigitByte(buffer[index]!)) {
         index++;
     }
@@ -74,7 +78,7 @@ const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQue
     }
 
     if (buffer[index] === kittyQueryLetterByte) {
-        return { state: "complete", endIndex: index };
+        return { endIndex: index, state: "complete" };
     }
 
     return undefined;
@@ -83,6 +87,7 @@ const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQue
 const hasCompleteKittyQueryResponse = (buffer: number[]): boolean => {
     for (let index = 0; index < buffer.length; index++) {
         const match = matchKittyQueryResponse(buffer, index);
+
         if (match?.state === "complete") {
             return true;
         }
@@ -94,8 +99,10 @@ const hasCompleteKittyQueryResponse = (buffer: number[]): boolean => {
 const stripKittyQueryResponsesAndTrailingPartial = (buffer: number[]): number[] => {
     const keptBytes: number[] = [];
     let index = 0;
+
     while (index < buffer.length) {
         const match = matchKittyQueryResponse(buffer, index);
+
         if (match?.state === "complete") {
             index = match.endIndex + 1;
             continue;
@@ -114,16 +121,16 @@ const stripKittyQueryResponsesAndTrailingPartial = (buffer: number[]): number[] 
 
 const shouldClearTerminalForFrame = ({
     isTty,
-    viewportRows,
-    previousOutputHeight,
-    nextOutputHeight,
     isUnmounting,
+    nextOutputHeight,
+    previousOutputHeight,
+    viewportRows,
 }: {
     isTty: boolean;
-    viewportRows: number;
-    previousOutputHeight: number;
-    nextOutputHeight: number;
     isUnmounting: boolean;
+    nextOutputHeight: number;
+    previousOutputHeight: number;
+    viewportRows: number;
 }): boolean => {
     if (!isTty) {
         return false;
@@ -138,26 +145,24 @@ const shouldClearTerminalForFrame = ({
 
     return (
         // Overflowing frames still need full clear fallback.
-        wasOverflowing ||
-        (isOverflowing && hadPreviousFrame) ||
+        wasOverflowing
+        || (isOverflowing && hadPreviousFrame)
         // Clear when shrinking from fullscreen to non-fullscreen output.
-        isLeavingFullscreen ||
+        || isLeavingFullscreen
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
-        shouldClearOnUnmount
+        || shouldClearOnUnmount
     );
 };
 
-const isErrorInput = (value: unknown): value is Error => {
-    return value instanceof Error || Object.prototype.toString.call(value) === "[object Error]";
-};
+const isErrorInput = (value: unknown): value is Error => value instanceof Error || Object.prototype.toString.call(value) === "[object Error]";
 
 type MaybeWritableStream = NodeJS.WriteStream & {
+    _writableState?: unknown;
+    destroyed?: boolean;
     writable?: boolean;
     writableEnded?: boolean;
-    destroyed?: boolean;
     writableLength?: number;
-    _writableState?: unknown;
 };
 
 const getWritableStreamState = (stdout: MaybeWritableStream) => {
@@ -176,8 +181,8 @@ const settleThrottle = (throttled: unknown, canWriteToStdout: boolean): void => 
     }
 
     const throttledValue = throttled as {
-        flush: () => void;
         cancel?: () => void;
+        flush: () => void;
     };
 
     if (canWriteToStdout) {
@@ -188,115 +193,140 @@ const settleThrottle = (throttled: unknown, canWriteToStdout: boolean): void => 
 };
 
 /**
-Performance metrics for a render operation.
-*/
+ * Performance metrics for a render operation.
+ */
 export type RenderMetrics = {
     /**
-	Time spent rendering in milliseconds.
-	*/
+     * Time spent rendering in milliseconds.
+     */
     renderTime: number;
 };
 
 export type Options = {
-    stdout: NodeJS.WriteStream;
-    stdin: NodeJS.ReadStream;
-    stderr: NodeJS.WriteStream;
+    /**
+     * Render the app in the terminal's alternate screen buffer. When enabled, the app renders on a separate screen, and the original terminal content is restored when the app exits. This is the same mechanism used by programs like vim, htop, and less.
+     *
+     * Note: The terminal's scrollback buffer is not available while in the alternate screen. This is standard terminal behavior; programs like vim use the alternate screen specifically to avoid polluting the user's scrollback history.
+     *
+     * Note: Ink intentionally treats alternate-screen teardown output as disposable. It does not preserve or replay teardown-time frames, hook writes, or `console.*` output after restoring the primary screen.
+     *
+	Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
+     
+	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
+     
+	@default false
+     
+	@see {@link RenderOptions.alternateScreen}
+     */
+    alternateScreen?: boolean;
+
+    /**
+     * Enable React Concurrent Rendering mode.
+     *
+     * When enabled:
+     * - Suspense boundaries work correctly with async data
+     * - `useTransition` and `useDeferredValue` are fully functional
+	- Updates can be interrupted for higher priority work
+     
+	Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
+     
+	@default false
+	@experimental
+     */
+    concurrent?: boolean;
     debug: boolean;
     exitOnCtrlC: boolean;
-    patchConsole: boolean;
-    onRender?: (metrics: RenderMetrics) => void;
-    isScreenReaderEnabled?: boolean;
-    waitUntilExit?: () => Promise<unknown>;
-    maxFps?: number;
     incrementalRendering?: boolean;
 
     /**
-	Enable React Concurrent Rendering mode.
-
-	When enabled:
-	- Suspense boundaries work correctly with async data
-	- `useTransition` and `useDeferredValue` are fully functional
-	- Updates can be interrupted for higher priority work
-
-	Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
-
-	@default false
-	@experimental
-	*/
-    concurrent?: boolean;
-    kittyKeyboard?: KittyKeyboardOptions;
-
-    /**
-	Override automatic interactive mode detection.
-
-	By default, Ink detects whether the environment is interactive based on CI detection (via [`is-in-ci`](https://github.com/sindresorhus/is-in-ci)) and `stdout.isTTY`. Most users should not need to set this.
-
-	When non-interactive, Ink disables ANSI erase sequences, cursor manipulation, synchronized output, resize handling, and kitty keyboard auto-detection, writing only the final frame at unmount.
-
+     * Override automatic interactive mode detection.
+     *
+     * By default, Ink detects whether the environment is interactive based on CI detection (via [`is-in-ci`](https://github.com/sindresorhus/is-in-ci)) and `stdout.isTTY`. Most users should not need to set this.
+     *
+     * When non-interactive, Ink disables ANSI erase sequences, cursor manipulation, synchronized output, resize handling, and kitty keyboard auto-detection, writing only the final frame at unmount.
+     *
 	Set to `false` to force non-interactive mode or `true` to force interactive mode when the automatic detection doesn't suit your use case.
-
+     
 	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-
+     
 	@default true (false if in CI or `stdout.isTTY` is falsy)
-
+     
 	@see {@link RenderOptions.interactive}
-	*/
+     */
     interactive?: boolean;
+    isScreenReaderEnabled?: boolean;
+    kittyKeyboard?: KittyKeyboardOptions;
+    maxFps?: number;
+    onRender?: (metrics: RenderMetrics) => void;
+    patchConsole: boolean;
 
-    /**
-	Render the app in the terminal's alternate screen buffer. When enabled, the app renders on a separate screen, and the original terminal content is restored when the app exits. This is the same mechanism used by programs like vim, htop, and less.
+    stderr: NodeJS.WriteStream;
+    stdin: NodeJS.ReadStream;
 
-	Note: The terminal's scrollback buffer is not available while in the alternate screen. This is standard terminal behavior; programs like vim use the alternate screen specifically to avoid polluting the user's scrollback history.
+    stdout: NodeJS.WriteStream;
 
-	Note: Ink intentionally treats alternate-screen teardown output as disposable. It does not preserve or replay teardown-time frames, hook writes, or `console.*` output after restoring the primary screen.
-
-	Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
-
-	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-
-	@default false
-
-	@see {@link RenderOptions.alternateScreen}
-	*/
-    alternateScreen?: boolean;
+    waitUntilExit?: () => Promise<unknown>;
 };
 
 export default class Ink {
     /**
-	Whether this instance is using concurrent rendering mode.
-	*/
+     * Whether this instance is using concurrent rendering mode.
+     */
     readonly isConcurrent: boolean;
 
     private readonly options: Options;
+
     private readonly log: LogUpdate;
+
     private cursorPosition: CursorPosition | undefined;
+
     private readonly throttledLog: LogUpdate | DebouncedFunc<(output: string) => void>;
 
     private readonly isScreenReaderEnabled: boolean;
+
     private readonly interactive: boolean;
+
     private alternateScreen: boolean;
 
     // Ignore last render after unmounting a tree to prevent empty output before exit
     private isUnmounted: boolean;
+
     private isUnmounting: boolean;
+
     private lastOutput: string;
+
     private lastOutputToRender: string;
+
     private lastOutputHeight: number;
+
     private lastTerminalWidth: number;
+
     private readonly container: FiberRoot;
+
     private readonly rootNode: dom.DOMElement;
+
     // This variable is used only in debug mode to store full static output
     // so that it's rerendered every time, not just new static parts, like in non-debug mode
     private fullStaticOutput: string;
+
     private readonly exitPromise!: Promise<unknown>;
+
     private exitResult: unknown;
+
     private beforeExitHandler?: () => void;
+
     private restoreConsole?: () => void;
+
     private readonly unsubscribeResize?: () => void;
+
     private readonly throttledOnRender?: DebouncedFunc<() => void>;
+
     private hasPendingThrottledRender = false;
+
     private kittyProtocolEnabled = false;
+
     private cancelKittyDetection?: () => void;
+
     private nextRenderCommit?: { promise: Promise<void>; resolve: () => void };
 
     constructor(options: Options) {
@@ -327,6 +357,7 @@ export default class Ink {
                 leading: true,
                 trailing: true,
             });
+
             this.rootNode.onRender = () => {
                 this.hasPendingThrottledRender = true;
                 throttled();
@@ -343,25 +374,26 @@ export default class Ink {
         this.throttledLog = unthrottled
             ? this.log
             : throttle(
-                  (output: string) => {
-                      const shouldWrite = this.log.willRender(output);
-                      const sync = this.shouldSync();
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(bsu);
-                      }
+                (output: string) => {
+                    const shouldWrite = this.log.willRender(output);
+                    const sync = this.shouldSync();
 
-                      this.log(output);
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(bsu);
+                    }
 
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(esu);
-                      }
-                  },
-                  undefined,
-                  {
-                      leading: true,
-                      trailing: true,
-                  },
-              );
+                    this.log(output);
+
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(esu);
+                    }
+                },
+                undefined,
+                {
+                    leading: true,
+                    trailing: true,
+                },
+            );
 
         // Ignore last render after unmounting a tree to prevent empty output before exit
         this.isUnmounted = false;
@@ -383,7 +415,6 @@ export default class Ink {
         // Use ConcurrentRoot for concurrent mode, LegacyRoot for legacy mode
         const rootTag = options.concurrent ? ConcurrentRoot : LegacyRoot;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.container = reconciler.createContainer(
             this.rootNode,
             rootTag,
@@ -448,7 +479,9 @@ export default class Ink {
     };
 
     resolveExitPromise: (result?: unknown) => void = () => {};
+
     rejectExitPromise: (reason?: Error) => void = () => {};
+
     unsubscribeExit: () => void = () => {};
 
     handleAppExit = (errorOrResult?: unknown): void => {
@@ -458,6 +491,7 @@ export default class Ink {
 
         if (isErrorInput(errorOrResult)) {
             this.unmount(errorOrResult);
+
             return;
         }
 
@@ -478,7 +512,7 @@ export default class Ink {
         // Clear() resets log-update's cursor state, so replay the latest cursor intent
         // before restoring output after external stdout/stderr writes.
         this.log.setCursorPosition(this.cursorPosition);
-        this.log(this.lastOutputToRender || this.lastOutput + "\n");
+        this.log(this.lastOutputToRender || `${this.lastOutput}\n`);
     };
 
     calculateLayout = (): void => {
@@ -518,6 +552,7 @@ export default class Ink {
             this.lastOutputToRender = output;
             this.lastOutputHeight = outputHeight;
             this.options.stdout.write(this.fullStaticOutput + output);
+
             return;
         }
 
@@ -527,13 +562,15 @@ export default class Ink {
             }
 
             this.lastOutput = output;
-            this.lastOutputToRender = output + "\n";
+            this.lastOutputToRender = `${output}\n`;
             this.lastOutputHeight = outputHeight;
+
             return;
         }
 
         if (this.isScreenReaderEnabled) {
             const sync = this.shouldSync();
+
             if (sync) {
                 this.options.stdout.write(bsu);
             }
@@ -541,6 +578,7 @@ export default class Ink {
             if (hasStaticOutput) {
                 // We need to erase the main output before writing new static output
                 const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
+
                 this.options.stdout.write(erase + staticOutput);
                 // After erasing, the last output is gone, so we should reset its height
                 this.lastOutputHeight = 0;
@@ -557,8 +595,8 @@ export default class Ink {
             const terminalWidth = getWindowSize(this.options.stdout).columns;
 
             const wrappedOutput = wordWrap(output, {
-                width: terminalWidth,
                 trim: false,
+                width: terminalWidth,
                 wrapMode: "BREAK_WORDS",
             }).replace(/\n$/, "");
 
@@ -567,6 +605,7 @@ export default class Ink {
                 this.options.stdout.write(wrappedOutput);
             } else {
                 const erase = this.lastOutputHeight > 0 ? eraseLines(this.lastOutputHeight) : "";
+
                 this.options.stdout.write(erase + wrappedOutput);
             }
 
@@ -592,16 +631,16 @@ export default class Ink {
         const tree = (
             <AccessibilityContext.Provider value={{ isScreenReaderEnabled: this.isScreenReaderEnabled }}>
                 <App
-                    stdin={this.options.stdin}
-                    stdout={this.options.stdout}
-                    stderr={this.options.stderr}
                     exitOnCtrlC={this.options.exitOnCtrlC}
                     interactive={this.interactive}
-                    writeToStdout={this.writeToStdout}
-                    writeToStderr={this.writeToStderr}
-                    setCursorPosition={this.setCursorPosition}
                     onExit={this.handleAppExit}
                     onWaitUntilRenderFlush={this.waitUntilRenderFlush}
+                    setCursorPosition={this.setCursorPosition}
+                    stderr={this.options.stderr}
+                    stdin={this.options.stdin}
+                    stdout={this.options.stdout}
+                    writeToStderr={this.writeToStderr}
+                    writeToStdout={this.writeToStdout}
                 >
                     {node}
                 </App>
@@ -625,15 +664,18 @@ export default class Ink {
 
         if (this.options.debug) {
             this.options.stdout.write(data + this.fullStaticOutput + this.lastOutput);
+
             return;
         }
 
         if (!this.interactive) {
             this.options.stdout.write(data);
+
             return;
         }
 
         const sync = this.shouldSync();
+
         if (sync) {
             this.options.stdout.write(bsu);
         }
@@ -655,15 +697,18 @@ export default class Ink {
         if (this.options.debug) {
             this.options.stderr.write(data);
             this.options.stdout.write(this.fullStaticOutput + this.lastOutput);
+
             return;
         }
 
         if (!this.interactive) {
             this.options.stderr.write(data);
+
             return;
         }
 
         const sync = this.shouldSync();
+
         if (sync) {
             this.options.stdout.write(bsu);
         }
@@ -677,7 +722,6 @@ export default class Ink {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-restricted-types
     unmount(error?: Error | number | null): void {
         if (this.isUnmounted || this.isUnmounting) {
             return;
@@ -718,6 +762,7 @@ export default class Ink {
         // Flush any pending throttled log writes if possible, otherwise cancel to
         // prevent delayed callbacks from writing to a closed stream.
         settleThrottle(this.throttledLog, canWriteToStdout);
+
         if (typeof this.restoreConsole === "function") {
             // Once unmount starts, Ink stops trying to manage teardown-time
             // console output. Restoring the native console before React cleanup keeps
@@ -758,7 +803,7 @@ export default class Ink {
                     // In debug mode, each render already writes to stdout, so only a trailing
                     // newline is needed. In non-debug mode, write the last frame now (it was
                     // deferred during rendering).
-                    this.options.stdout.write(this.options.debug ? "\n" : this.lastOutput + "\n");
+                    this.options.stdout.write(this.options.debug ? "\n" : `${this.lastOutput}\n`);
                 } else if (!this.options.debug) {
                     this.log.done();
                 }
@@ -829,6 +874,7 @@ export default class Ink {
     async waitUntilRenderFlush(): Promise<void> {
         if (this.isUnmounted || this.isUnmounting) {
             await this.awaitExit();
+
             return;
         }
 
@@ -838,6 +884,7 @@ export default class Ink {
 
         if (this.isUnmounted || this.isUnmounting) {
             await this.awaitExit();
+
             return;
         }
 
@@ -849,6 +896,7 @@ export default class Ink {
             if (this.isUnmounted || this.isUnmounting) {
                 this.nextRenderCommit = undefined;
                 await this.awaitExit();
+
                 return;
             }
         }
@@ -868,6 +916,7 @@ export default class Ink {
                     resolve();
                 });
             });
+
             return;
         }
 
@@ -879,7 +928,7 @@ export default class Ink {
             this.log.clear();
             // Sync lastOutput so that unmount's final onRender
             // sees it as unchanged and log-update skips it
-            this.log.sync(this.lastOutputToRender || this.lastOutput + "\n");
+            this.log.sync(this.lastOutputToRender || `${this.lastOutput}\n`);
         }
     }
 
@@ -941,9 +990,10 @@ export default class Ink {
 
     private hasPendingConcurrentWork(): boolean {
         const concurrentContainer = this.container as {
-            pendingLanes?: number;
             callbackNode?: unknown;
+            pendingLanes?: number;
         };
+
         return (concurrentContainer.pendingLanes ?? 0) !== 0 && concurrentContainer.callbackNode !== undefined && concurrentContainer.callbackNode !== null;
     }
 
@@ -953,6 +1003,7 @@ export default class Ink {
             const promise = new Promise<void>((resolve) => {
                 resolveRender = resolve;
             });
+
             this.nextRenderCommit = { promise, resolve: resolveRender };
         }
 
@@ -967,18 +1018,19 @@ export default class Ink {
         // Only apply when writing to a real TTY — piped output always gets trailing newlines.
         const viewportRows = isTty ? getWindowSize(this.options.stdout).rows : 24;
         const isFullscreen = isTty && outputHeight >= viewportRows;
-        const outputToRender = isFullscreen ? output : output + "\n";
+        const outputToRender = isFullscreen ? output : `${output}\n`;
 
         const shouldClearTerminal = shouldClearTerminalForFrame({
             isTty,
-            viewportRows,
-            previousOutputHeight: this.lastOutputHeight,
-            nextOutputHeight: outputHeight,
             isUnmounting: this.isUnmounting,
+            nextOutputHeight: outputHeight,
+            previousOutputHeight: this.lastOutputHeight,
+            viewportRows,
         });
 
         if (shouldClearTerminal) {
             const sync = this.shouldSync();
+
             if (sync) {
                 this.options.stdout.write(bsu);
             }
@@ -999,6 +1051,7 @@ export default class Ink {
         // To ensure static output is cleanly rendered before main output, clear main output first
         if (hasStaticOutput) {
             const sync = this.shouldSync();
+
             if (sync) {
                 this.options.stdout.write(bsu);
             }
@@ -1026,14 +1079,14 @@ export default class Ink {
             return;
         }
 
-        const opts = this.options.kittyKeyboard;
-        const mode = opts.mode ?? "auto";
+        const options = this.options.kittyKeyboard;
+        const mode = options.mode ?? "auto";
 
         if (mode === "disabled") {
             return;
         }
 
-        const flags: KittyFlagName[] = opts.flags ?? ["disambiguateEscapeCodes"];
+        const flags: KittyFlagName[] = options.flags ?? ["disambiguateEscapeCodes"];
 
         // 'enabled' force-enables the protocol as long as both streams are TTYs,
         // regardless of the interactive setting (e.g. even in CI).
@@ -1071,7 +1124,9 @@ export default class Ink {
             // so it isn't lost from Ink's normal input pipeline.
             // Clear responseBuffer afterwards to make cleanup idempotent.
             const remaining = stripKittyQueryResponsesAndTrailingPartial(responseBuffer);
+
             responseBuffer = [];
+
             if (remaining.length > 0) {
                 stdin.unshift(Buffer.from(remaining));
             }
@@ -1079,12 +1134,14 @@ export default class Ink {
 
         const onData = (data: Uint8Array | string): void => {
             const chunk = typeof data === "string" ? Buffer.from(data) : data;
+
             for (const byte of chunk) {
                 responseBuffer.push(byte);
             }
 
             if (hasCompleteKittyQueryResponse(responseBuffer)) {
                 cleanup();
+
                 if (!this.isUnmounted) {
                     this.enableKittyProtocol(flags);
                 }
@@ -1095,6 +1152,7 @@ export default class Ink {
         // or immediate responses are not missed.
         stdin.on("data", onData);
         const timer = setTimeout(cleanup, 200);
+
         this.cancelKittyDetection = cleanup;
 
         stdout.write("\u001B[?u");

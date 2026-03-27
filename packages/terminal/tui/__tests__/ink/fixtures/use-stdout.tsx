@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { render, useStdout, Text } from "../../../src/ink/index.js";
 
-function WriteToStdout() {
+import { render, Text, useStdout } from "../../../src/ink/index.js";
+
+const WriteToStdout = () => {
     const { write } = useStdout();
 
     useEffect(() => {
@@ -9,7 +10,7 @@ function WriteToStdout() {
     }, []);
 
     return <Text>Hello World</Text>;
-}
+};
 
 const app = render(<WriteToStdout />);
 

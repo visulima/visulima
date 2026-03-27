@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
@@ -8,6 +9,7 @@ it("display flex", () => {
             <Text>X</Text>
         </Box>,
     );
+
     expect(output).toBe("X");
 });
 
@@ -30,6 +32,7 @@ it("display flex - concurrent", async () => {
             <Text>X</Text>
         </Box>,
     );
+
     expect(output).toBe("X");
 });
 

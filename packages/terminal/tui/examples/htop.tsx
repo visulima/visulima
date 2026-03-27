@@ -11,10 +11,11 @@
  * Run: node --import @oxc-node/core/register examples/htop.tsx
  */
 
+import { exec } from "node:child_process";
+import os from "node:os";
+
+import { Box, render, Spacer, Text, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 import React, { useEffect, useRef, useState } from "react";
-import os from "os";
-import { exec } from "child_process";
-import { render, Box, Text, Spacer, useApp, useInput, useWindowSize } from "@visulima/tui/react";
 
 if (process.platform === "win32") {
     console.error("examples/htop.tsx is Unix-only (uses `ps aux`).");
@@ -24,32 +25,36 @@ if (process.platform === "win32") {
 type CpuSnapshot = ReturnType<typeof os.cpus>;
 
 interface ProcInfo {
-    pid: string;
-    user: string;
+    cmd: string;
     cpu: number;
     mem: number;
-    cmd: string;
+    pid: string;
+    user: string;
 }
 
 type SortMode = "cpu" | "mem";
 
-function cpuPercents(prev: CpuSnapshot, curr: CpuSnapshot): number[] {
-    return curr.map((cpu, i) => {
-        const p = prev[i].times;
+function cpuPercents(previous: CpuSnapshot, current: CpuSnapshot): number[] {
+    return current.map((cpu, i) => {
+        const p = previous[i].times;
         const c = cpu.times;
-        const prevTotal = p.user + p.nice + p.sys + p.idle + p.irq;
-        const currTotal = c.user + c.nice + c.sys + c.idle + c.irq;
-        const totalDiff = currTotal - prevTotal;
+        const previousTotal = p.user + p.nice + p.sys + p.idle + p.irq;
+        const currentTotal = c.user + c.nice + c.sys + c.idle + c.irq;
+        const totalDiff = currentTotal - previousTotal;
         const idleDiff = c.idle - p.idle;
-        if (totalDiff === 0) return 0;
+
+        if (totalDiff === 0)
+            return 0;
+
         return Math.round(((totalDiff - idleDiff) / totalDiff) * 100);
     });
 }
 
-function readProcs(cb: (procs: ProcInfo[]) => void) {
-    exec("ps aux", { timeout: 2000 }, (err, stdout) => {
-        if (err) {
-            cb([]);
+function readProcs(callback: (procs: ProcInfo[]) => void) {
+    exec("ps aux", { timeout: 2000 }, (error, stdout) => {
+        if (error) {
+            callback([]);
+
             return;
         }
 
@@ -59,22 +64,24 @@ function readProcs(cb: (procs: ProcInfo[]) => void) {
             .slice(1)
             .map((line) => {
                 const parts = line.trim().split(/\s+/);
+
                 return {
-                    user: parts[0] ?? "",
-                    pid: parts[1] ?? "",
-                    cpu: parseFloat(parts[2] ?? "0"),
-                    mem: parseFloat(parts[3] ?? "0"),
                     cmd: parts.slice(10).join(" "),
+                    cpu: Number.parseFloat(parts[2] ?? "0"),
+                    mem: Number.parseFloat(parts[3] ?? "0"),
+                    pid: parts[1] ?? "",
+                    user: parts[0] ?? "",
                 };
             });
 
-        cb(procs);
+        callback(procs);
     });
 }
 
 function miniBar(pct: number, width: number, color: string) {
     const filled = Math.round((Math.min(pct, 100) / 100) * width);
     const empty = width - filled;
+
     return (
         <Box flexDirection="row">
             <Text color={color}>{"|".repeat(filled)}</Text>
@@ -84,22 +91,30 @@ function miniBar(pct: number, width: number, color: string) {
 }
 
 function formatUptime(secs: number) {
-    const d = Math.floor(secs / 86400);
-    const h = Math.floor((secs % 86400) / 3600);
+    const d = Math.floor(secs / 86_400);
+    const h = Math.floor((secs % 86_400) / 3600);
     const m = Math.floor((secs % 3600) / 60);
     const parts = [];
-    if (d > 0) parts.push(`${d}d`);
-    if (h > 0 || d > 0) parts.push(`${h}h`);
+
+    if (d > 0)
+        parts.push(`${d}d`);
+
+    if (h > 0 || d > 0)
+        parts.push(`${h}h`);
+
     parts.push(`${m}m`);
+
     return parts.join(" ");
 }
 
 function formatMem(bytes: number) {
-    if (bytes >= 1e9) return (bytes / 1e9).toFixed(1) + "G";
-    return (bytes / 1e6).toFixed(0) + "M";
+    if (bytes >= 1e9)
+        return `${(bytes / 1e9).toFixed(1)}G`;
+
+    return `${(bytes / 1e6).toFixed(0)}M`;
 }
 
-function App() {
+const App = () => {
     const { exit } = useApp();
     const { columns } = useWindowSize();
 
@@ -110,15 +125,16 @@ function App() {
     const [procs, setProcs] = useState<ProcInfo[]>([]);
     const [sort, setSort] = useState<SortMode>("cpu");
 
-    const prevCpus = useRef(os.cpus());
+    const previousCpus = useRef(os.cpus());
 
     useEffect(() => {
         readProcs(setProcs);
 
         const timer = setInterval(() => {
-            const curr = os.cpus();
-            setCpuPcts(cpuPercents(prevCpus.current, curr));
-            prevCpus.current = curr;
+            const current = os.cpus();
+
+            setCpuPcts(cpuPercents(previousCpus.current, current));
+            previousCpus.current = current;
             setMemUsed(os.totalmem() - os.freemem());
             setLoadAvg(os.loadavg());
             setUptime(os.uptime());
@@ -129,9 +145,14 @@ function App() {
     }, []);
 
     useInput((input, key) => {
-        if (key.escape || input === "q" || input === "Q") exit();
-        if (input === "c" || input === "C") setSort("cpu");
-        if (input === "m" || input === "M") setSort("mem");
+        if (key.escape || input === "q" || input === "Q")
+            exit();
+
+        if (input === "c" || input === "C")
+            setSort("cpu");
+
+        if (input === "m" || input === "M")
+            setSort("mem");
     });
 
     const totalMem = os.totalmem();
@@ -139,46 +160,63 @@ function App() {
     const cpuCount = cpuPcts.length;
     const barW = Math.max(8, Math.floor((columns - 20) / Math.min(cpuCount, 10)) - 2);
 
-    const sorted = [...procs].sort((a, b) => (sort === "cpu" ? b.cpu - a.cpu : b.mem - a.mem)).slice(0, 20);
+    const sorted = procs.toSorted((a, b) => sort === "cpu" ? b.cpu - a.cpu : b.mem - a.mem).slice(0, 20);
     const hostname = os.hostname().split(".")[0];
 
     return (
         <Box flexDirection="column" gap={1}>
-            <Box flexDirection="row" gap={4} borderStyle="round" borderColor="green" paddingX={2} flexShrink={0}>
+            <Box borderColor="green" borderStyle="round" flexDirection="row" flexShrink={0} gap={4} paddingX={2}>
                 <Text bold color="green">
                     {hostname}
                 </Text>
                 <Text dim>
-                    up <Text color="white">{formatUptime(uptime)}</Text>
+                    up
+                    {" "}
+                    <Text color="white">{formatUptime(uptime)}</Text>
                 </Text>
                 <Text dim>
-                    load <Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>{" "}
+                    load
+                    {" "}
+                    <Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>
+                    {" "}
                     <Text dim>
-                        {loadAvg[1].toFixed(2)} {loadAvg[2].toFixed(2)}
+                        {loadAvg[1].toFixed(2)}
+                        {" "}
+                        {loadAvg[2].toFixed(2)}
                     </Text>
                 </Text>
                 <Spacer />
-                <Text dim>{cpuCount} cores · </Text>
+                <Text dim>
+                    {cpuCount}
+                    {" "}
+                    cores ·
+                    {" "}
+                </Text>
                 <Text color="cyan">{formatMem(totalMem)}</Text>
                 <Text dim> RAM · q quit</Text>
             </Box>
 
-            <Box flexDirection="column" borderStyle="single" borderColor="gray" paddingX={2} paddingY={1} flexShrink={0}>
+            <Box borderColor="gray" borderStyle="single" flexDirection="column" flexShrink={0} paddingX={2} paddingY={1}>
                 <Text bold dim>
                     CPU
                 </Text>
                 <Box flexDirection="row" flexWrap="wrap" gap={1} marginTop={1}>
                     {cpuPcts.map((pct, i) => {
                         const color = pct > 80 ? "red" : pct > 50 ? "yellow" : "green";
+
                         return (
-                            <Box key={i} flexDirection="row" width={barW + 12}>
-                                <Text dim>{String(i + 1).padStart(2)} </Text>
+                            <Box flexDirection="row" key={i} width={barW + 12}>
+                                <Text dim>
+                                    {String(i + 1).padStart(2)}
+                                    {" "}
+                                </Text>
                                 <Text color={color}>[</Text>
                                 {miniBar(pct, barW, color)}
                                 <Text color={color}>]</Text>
-                                <Text color={color} bold>
+                                <Text bold color={color}>
                                     {" "}
-                                    {String(pct).padStart(3)}%
+                                    {String(pct).padStart(3)}
+                                    %
                                 </Text>
                             </Box>
                         );
@@ -186,22 +224,26 @@ function App() {
                 </Box>
             </Box>
 
-            <Box flexDirection="row" borderStyle="single" borderColor="gray" paddingX={2} paddingY={1} flexShrink={0} gap={2}>
+            <Box borderColor="gray" borderStyle="single" flexDirection="row" flexShrink={0} gap={2} paddingX={2} paddingY={1}>
                 <Text bold dim>
                     Mem
                 </Text>
                 <Text color="cyan">[</Text>
                 {miniBar(memPct, 40, memPct > 80 ? "red" : memPct > 60 ? "yellow" : "cyan")}
                 <Text color="cyan">]</Text>
-                <Text color="cyan" bold>
-                    {String(memPct).padStart(3)}%
+                <Text bold color="cyan">
+                    {String(memPct).padStart(3)}
+                    %
                 </Text>
                 <Text dim>
-                    {formatMem(memUsed)} / {formatMem(totalMem)}
+                    {formatMem(memUsed)}
+                    {" "}
+                    /
+                    {formatMem(totalMem)}
                 </Text>
             </Box>
 
-            <Box flexDirection="column" borderStyle="single" borderColor="gray" paddingX={2} paddingY={1} flexGrow={1}>
+            <Box borderColor="gray" borderStyle="single" flexDirection="column" flexGrow={1} paddingX={2} paddingY={1}>
                 <Box flexDirection="row" marginBottom={1}>
                     <Box width={7}>
                         <Text bold dim>
@@ -228,26 +270,28 @@ function App() {
                     </Text>
                     <Spacer />
                     <Text dim>sort: </Text>
-                    <Text color={sort === "cpu" ? "yellow" : "gray"} bold={sort === "cpu"}>
+                    <Text bold={sort === "cpu"} color={sort === "cpu" ? "yellow" : "gray"}>
                         C
                     </Text>
                     <Text dim>pu </Text>
-                    <Text color={sort === "mem" ? "yellow" : "gray"} bold={sort === "mem"}>
+                    <Text bold={sort === "mem"} color={sort === "mem" ? "yellow" : "gray"}>
                         M
                     </Text>
                     <Text dim>em</Text>
                 </Box>
 
-                {sorted.length === 0 ? (
-                    <Text dim>no process rows available (check `ps` availability)</Text>
-                ) : (
-                    sorted.map((p, i) => {
+                {sorted.length === 0
+                    ? (
+                        <Text dim>no process rows available (check `ps` availability)</Text>
+                    )
+                    : sorted.map((p, i) => {
                         const cpuColor = p.cpu > 50 ? "red" : p.cpu > 20 ? "yellow" : "white";
                         const memColor = p.mem > 10 ? "red" : p.mem > 5 ? "yellow" : "white";
-                        const cmd = p.cmd.length > columns - 40 ? p.cmd.slice(0, columns - 43) + "…" : p.cmd;
-                        const cmdDisplay = cmd.startsWith("/") ? (cmd.split("/").pop() ?? cmd) : cmd;
+                        const cmd = p.cmd.length > columns - 40 ? `${p.cmd.slice(0, columns - 43)}…` : p.cmd;
+                        const cmdDisplay = cmd.startsWith("/") ? cmd.split("/").pop() ?? cmd : cmd;
+
                         return (
-                            <Box key={`${p.pid}-${i}`} flexDirection="row">
+                            <Box flexDirection="row" key={`${p.pid}-${i}`}>
                                 <Box width={7}>
                                     <Text dim>{p.pid}</Text>
                                 </Box>
@@ -255,7 +299,7 @@ function App() {
                                     <Text color="cyan">{p.user.slice(0, 12)}</Text>
                                 </Box>
                                 <Box width={8}>
-                                    <Text color={cpuColor} bold={p.cpu > 20}>
+                                    <Text bold={p.cpu > 20} color={cpuColor}>
                                         {p.cpu.toFixed(1).padStart(5)}
                                     </Text>
                                 </Box>
@@ -265,11 +309,10 @@ function App() {
                                 <Text color={i === 0 ? "white" : "gray"}>{cmdDisplay}</Text>
                             </Box>
                         );
-                    })
-                )}
+                    })}
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

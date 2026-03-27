@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -64,7 +65,7 @@ it("shrink equally", () => {
     expect(output).toBe("A    B   C");
 });
 
-it('set flex basis with flexDirection="row" container', () => {
+it("set flex basis with flexDirection=\"row\" container", () => {
     const output = renderToString(
         <Box width={6}>
             <Box flexBasis={3}>
@@ -77,7 +78,7 @@ it('set flex basis with flexDirection="row" container', () => {
     expect(output).toBe("A  B");
 });
 
-it('set flex basis in percent with flexDirection="row" container', () => {
+it("set flex basis in percent with flexDirection=\"row\" container", () => {
     const output = renderToString(
         <Box width={6}>
             <Box flexBasis="50%">
@@ -90,9 +91,9 @@ it('set flex basis in percent with flexDirection="row" container', () => {
     expect(output).toBe("A  B");
 });
 
-it('set flex basis with flexDirection="column" container', () => {
+it("set flex basis with flexDirection=\"column\" container", () => {
     const output = renderToString(
-        <Box height={6} flexDirection="column">
+        <Box flexDirection="column" height={6}>
             <Box flexBasis={3}>
                 <Text>A</Text>
             </Box>
@@ -103,9 +104,9 @@ it('set flex basis with flexDirection="column" container', () => {
     expect(output).toBe("A\n\n\nB\n\n");
 });
 
-it('set flex basis in percent with flexDirection="column" container', () => {
+it("set flex basis in percent with flexDirection=\"column\" container", () => {
     const output = renderToString(
-        <Box height={6} flexDirection="column">
+        <Box flexDirection="column" height={6}>
             <Box flexBasis="50%">
                 <Text>A</Text>
             </Box>

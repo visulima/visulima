@@ -1,16 +1,16 @@
 [package]
-authors = ["visulima"]
+authors = [ "visulima" ]
 edition = "2021"
-name    = "visulima-tui-native"
+name = "visulima-tui-native"
 version = "0.1.0"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [dependencies]
-crossterm     = "0.29.0"
-napi          = "3.0.0"
-napi-derive   = "3.0.0"
+crossterm = "0.29.0"
+napi = "3.0.0"
+napi-derive = "3.0.0"
 unicode-width = "0.2.0"
 
 [build-dependencies]

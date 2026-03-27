@@ -1,36 +1,36 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { getStringWidth, slice as sliceAnsi } from "@visulima/string";
-import { isFullwidthCodePoint } from "@visulima/string";
-import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, type StyledChar, tokenize } from "@alcalzone/ansi-tokenize";
-import { type OutputTransformer } from "./render-node-to-output.js";
+import type { StyledChar } from "@alcalzone/ansi-tokenize";
+import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
+import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";
+
+import type { OutputTransformer } from "./render-node-to-output.js";
 
 /**
-"Virtual" output class
-
-Handles the positioning and saving of the output of each node in the tree. Also responsible for applying transformations to each character of the output.
-
-Used to generate the final output of all nodes before writing it to actual output stream (e.g. stdout)
-*/
+ * "Virtual" output class
+ *
+ * Handles the positioning and saving of the output of each node in the tree. Also responsible for applying transformations to each character of the output.
+ *
+ * Used to generate the final output of all nodes before writing it to actual output stream (e.g. stdout)
+ */
 
 type Options = {
-    width: number;
-    height: number;
     caches?: OutputCaches;
+    height: number;
+    width: number;
 };
 
 type Operation = WriteOperation | ClipOperation | UnclipOperation;
 
 type WriteOperation = {
+    text: string;
+    transformers: OutputTransformer[];
     type: "write";
     x: number;
     y: number;
-    text: string;
-    transformers: OutputTransformer[];
 };
 
 type ClipOperation = {
-    type: "clip";
     clip: Clip;
+    type: "clip";
 };
 
 type Clip = {
@@ -50,28 +50,36 @@ type OutputCachesOptions = {
 };
 
 type PreparedWrite = {
+    lines: string[];
     x: number;
     y: number;
-    lines: string[];
 };
 
 export class OutputCaches {
     widths: Map<string, number> = new Map<string, number>();
+
     blockWidths: Map<string, number> = new Map<string, number>();
+
     styledChars: Map<string, StyledChar[]> = new Map<string, StyledChar[]>();
+
     lines: Map<string, string[]> = new Map<string, string[]>();
+
     private readonly asciiStyledCharCache = new Map<string, StyledChar>();
+
     private readonly maxEntries: number;
+
     private readonly pruneToFactor: number;
 
     constructor(options: OutputCachesOptions = {}) {
         const { maxEntries = 30_000, pruneToFactor = 0.8 } = options;
+
         this.maxEntries = Math.max(1, maxEntries);
         this.pruneToFactor = Math.min(0.99, Math.max(0.1, pruneToFactor));
     }
 
     getStyledChars(line: string): StyledChar[] {
         let cached = this.styledChars.get(line);
+
         if (cached === undefined) {
             cached = this.hasAnsiControlMarker(line) ? this.getAnsiStyledChars(line) : this.getPlainStyledChars(line);
             this.setCacheEntry(this.styledChars, line, cached);
@@ -82,6 +90,7 @@ export class OutputCaches {
 
     getStringWidth(text: string): number {
         let cached = this.widths.get(text);
+
         if (cached === undefined) {
             cached = getStringWidth(text);
             this.setCacheEntry(this.widths, text, cached);
@@ -98,6 +107,7 @@ export class OutputCaches {
         // Fast path for printable ASCII graphemes.
         if (character.value.length === 1) {
             const code = character.value.codePointAt(0)!;
+
             if (code >= 0x20 && code <= 0x7e) {
                 return 1;
             }
@@ -109,8 +119,10 @@ export class OutputCaches {
 
     getWidestLine(text: string): number {
         let cached = this.blockWidths.get(text);
+
         if (cached === undefined) {
             let lineWidth = 0;
+
             for (const line of this.getLines(text)) {
                 lineWidth = Math.max(lineWidth, this.getStringWidth(line));
             }
@@ -124,6 +136,7 @@ export class OutputCaches {
 
     getLines(text: string): string[] {
         let cached = this.lines.get(text);
+
         if (cached === undefined) {
             cached = text.split("\n");
             this.setCacheEntry(this.lines, text, cached);
@@ -135,6 +148,7 @@ export class OutputCaches {
     private hasAnsiControlMarker(text: string): boolean {
         for (const character of text) {
             const codePoint = character.codePointAt(0)!;
+
             if (ansiControlMarkerCodePoints.has(codePoint)) {
                 return true;
             }
@@ -150,6 +164,7 @@ export class OutputCaches {
         for (const token of tokenize(text)) {
             if (token.type === "ansi") {
                 activeStyles = reduceAnsiCodesIncremental(activeStyles, [token]);
+
                 if (activeStyles.length === 0) {
                     activeStyles = noStyles;
                 }
@@ -159,10 +174,10 @@ export class OutputCaches {
 
             if (token.type === "char") {
                 styledChars.push({
-                    type: token.type,
-                    value: token.value,
                     fullWidth: token.fullWidth,
                     styles: activeStyles,
+                    type: token.type,
+                    value: token.value,
                 });
             }
         }
@@ -172,17 +187,19 @@ export class OutputCaches {
 
     private getPlainStyledChars(text: string): StyledChar[] {
         if (asciiPrintableRegex.test(text)) {
-            return [...text].map((character) => this.getAsciiStyledChar(character));
+            return Array.from(text, (character) => this.getAsciiStyledChar(character));
         }
 
         const styledChars: StyledChar[] = [];
+
         for (const { segment } of plainTextSegmenter.segment(text)) {
             const codePoint = segment.codePointAt(0)!;
+
             styledChars.push({
-                type: "char",
-                value: segment,
                 fullWidth: this.isFullwidthGrapheme(segment, codePoint),
                 styles: noStyles,
+                type: "char",
+                value: segment,
             });
         }
 
@@ -191,12 +208,13 @@ export class OutputCaches {
 
     private getAsciiStyledChar(character: string): StyledChar {
         let cached = this.asciiStyledCharCache.get(character);
+
         if (cached === undefined) {
             cached = {
-                type: "char",
-                value: character,
                 fullWidth: false,
                 styles: noStyles,
+                type: "char",
+                value: character,
             };
             this.asciiStyledCharCache.set(character, cached);
         }
@@ -230,8 +248,10 @@ export class OutputCaches {
 
     private pruneCache<T>(cache: Map<string, T>) {
         const targetSize = Math.floor(this.maxEntries * this.pruneToFactor);
+
         for (const existingKey of cache.keys()) {
             cache.delete(existingKey);
+
             if (cache.size <= targetSize) {
                 break;
             }
@@ -240,10 +260,10 @@ export class OutputCaches {
 }
 
 const blankCell: StyledChar = {
-    type: "char",
-    value: " ",
     fullWidth: false,
     styles: [],
+    type: "char",
+    value: " ",
 };
 
 const noStyles: StyledChar["styles"] = [];
@@ -260,13 +280,19 @@ const memoizationProbeInterval = 30;
 
 export default class Output {
     width: number;
+
     height: number;
 
     private readonly operations: Operation[] = [];
+
     private readonly caches: OutputCaches;
+
     private readonly outputGrid: StyledChar[][] = [];
+
     private readonly previousLineCells: StyledChar[][] = [];
+
     private readonly previousRenderedLines: string[] = [];
+
     private readonly continuationCellCache = new WeakMap<StyledChar, StyledChar>();
 
     private readonly stylePrefixCache = new WeakMap<StyledChar["styles"], string>();
@@ -274,10 +300,11 @@ export default class Output {
     private readonly styleTransitionCache = new WeakMap<StyledChar["styles"], WeakMap<StyledChar["styles"], string>>();
 
     private lineMemoizationEnabled = true;
+
     private memoizationProbeCountdown = 0;
 
     constructor(options: Options) {
-        const { width, height, caches } = options;
+        const { caches, height, width } = options;
 
         this.width = width;
         this.height = height;
@@ -298,18 +325,18 @@ export default class Output {
         }
 
         this.operations.push({
+            text,
+            transformers,
             type: "write",
             x,
             y,
-            text,
-            transformers,
         });
     }
 
     clip(clip: Clip): void {
         this.operations.push({
-            type: "clip",
             clip,
+            type: "clip",
         });
     }
 
@@ -319,7 +346,7 @@ export default class Output {
         });
     }
 
-    get(): { output: string; height: number } {
+    get(): { height: number; output: string } {
         if (!this.lineMemoizationEnabled) {
             if (this.memoizationProbeCountdown > 0) {
                 this.memoizationProbeCountdown--;
@@ -346,6 +373,7 @@ export default class Output {
 
                 case "write": {
                     const clip = clips.at(-1);
+
                     this.processWriteOperation(operation, output, clip);
                     break;
                 }
@@ -363,7 +391,7 @@ export default class Output {
         const canUseMemoization = this.lineMemoizationEnabled;
         const canReuseRows = canUseMemoization && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
 
-        const generatedLines = Array.from({ length: output.length }, () => "");
+        const generatedLines = Array.from({ length: output.length }).fill("");
         let changedRows = 0;
 
         for (const [rowIndex, row] of output.entries()) {
@@ -388,24 +416,27 @@ export default class Output {
 
         if (canUseMemoization && canReuseRows && output.length > 0) {
             const changedRatio = changedRows / output.length;
+
             if (changedRatio > memoizationDisableRatio) {
                 this.disableLineMemoization();
             }
         }
 
         return {
-            output: generatedLines.join("\n"),
             height: output.length,
+            output: generatedLines.join("\n"),
         };
     }
 
     private processWriteOperation(operation: WriteOperation, output: StyledChar[][], clip: Clip | undefined) {
         const prepared = this.prepareWrite(operation, clip);
+
         if (!prepared) {
             return;
         }
 
         const hasTransformers = operation.transformers.length > 0;
+
         for (let lineIndex = 0; lineIndex < prepared.lines.length; lineIndex++) {
             const rowIndex = prepared.y + lineIndex;
 
@@ -418,11 +449,13 @@ export default class Output {
             }
 
             const currentLine = output[rowIndex];
+
             if (!currentLine) {
                 continue;
             }
 
             let line = prepared.lines[lineIndex] ?? "";
+
             if (hasTransformers) {
                 line = this.applyTransformers(line, operation.transformers, lineIndex);
             }
@@ -432,11 +465,11 @@ export default class Output {
     }
 
     private prepareWrite(operation: WriteOperation, clip: Clip | undefined): PreparedWrite | undefined {
-        let { x, y, text } = operation;
+        let { text, x, y } = operation;
         let lines = this.caches.getLines(text);
 
         if (!clip) {
-            return { x, y, lines };
+            return { lines, x, y };
         }
 
         const clipHorizontally = typeof clip.x1 === "number" && typeof clip.x2 === "number";
@@ -446,6 +479,7 @@ export default class Output {
             const clipX1 = clip.x1!;
             const clipX2 = clip.x2!;
             const width = this.caches.getWidestLine(text);
+
             if (x + width < clipX1 || x > clipX2) {
                 return;
             }
@@ -455,6 +489,7 @@ export default class Output {
             const clipY1 = clip.y1!;
             const clipY2 = clip.y2!;
             const height = lines.length;
+
             if (y + height < clipY1 || y > clipY2) {
                 return;
             }
@@ -462,21 +497,23 @@ export default class Output {
 
         if (clipHorizontally) {
             const clipped = this.applyHorizontalClip(lines, x, clip.x1!, clip.x2!);
+
             lines = clipped.lines;
             x = clipped.x;
         }
 
         if (clipVertically) {
             const clipped = this.applyVerticalClip(lines, y, clip.y1!, clip.y2!);
+
             lines = clipped.lines;
             y = clipped.y;
         }
 
-        return { x, y, lines };
+        return { lines, x, y };
     }
 
-    private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { x: number; lines: string[] } {
-        const clippedLines = Array.from({ length: lines.length }, () => "");
+    private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { lines: string[]; x: number } {
+        const clippedLines = Array.from({ length: lines.length }).fill("");
 
         for (const [lineIndex, line] of lines.entries()) {
             const from = x < x1 ? x1 - x : 0;
@@ -487,25 +524,26 @@ export default class Output {
         }
 
         return {
-            x: Math.max(x, x1),
             lines: clippedLines,
+            x: Math.max(x, x1),
         };
     }
 
-    private applyVerticalClip(lines: string[], y: number, y1: number, y2: number): { y: number; lines: string[] } {
+    private applyVerticalClip(lines: string[], y: number, y1: number, y2: number): { lines: string[]; y: number } {
         const from = y < y1 ? y1 - y : 0;
         const height = lines.length;
         const to = y + height > y2 ? y2 - y : height;
         const clippedLines = from > 0 || to < height ? lines.slice(from, to) : lines;
 
         return {
-            y: Math.max(y, y1),
             lines: clippedLines,
+            y: Math.max(y, y1),
         };
     }
 
     private applyTransformers(line: string, transformers: OutputTransformer[], lineIndex: number): string {
         let transformedLine = line;
+
         for (const transformer of transformers) {
             transformedLine = transformer(transformedLine, lineIndex);
         }
@@ -528,6 +566,7 @@ export default class Output {
 
             if (characterWidth > 1) {
                 const continuationCell = this.getContinuationCell(character);
+
                 for (let continuationIndex = 1; continuationIndex < characterWidth; continuationIndex++) {
                     currentLine[offsetX + continuationIndex] = continuationCell;
                 }
@@ -608,6 +647,7 @@ export default class Output {
 
     private renderUnstyledRow(row: StyledChar[]): string {
         let line = "";
+
         for (const cell of row) {
             if (cell) {
                 line += cell.value;
@@ -627,6 +667,7 @@ export default class Output {
             }
 
             const { styles, value } = cell;
+
             if (previousStyles === undefined) {
                 line += this.getStylePrefix(styles);
             } else if (previousStyles !== styles) {
@@ -646,6 +687,7 @@ export default class Output {
 
     private getStylePrefix(styles: StyledChar["styles"]): string {
         let cached = this.stylePrefixCache.get(styles);
+
         if (cached === undefined) {
             cached = ansiCodesToString(styles);
             this.stylePrefixCache.set(styles, cached);
@@ -656,12 +698,14 @@ export default class Output {
 
     private getStyleTransition(fromStyles: StyledChar["styles"], toStyles: StyledChar["styles"]): string {
         let fromCache = this.styleTransitionCache.get(fromStyles);
+
         if (fromCache === undefined) {
             fromCache = new WeakMap<StyledChar["styles"], string>();
             this.styleTransitionCache.set(fromStyles, fromCache);
         }
 
         let cached = fromCache.get(toStyles);
+
         if (cached === undefined) {
             cached = ansiCodesToString(diffAnsiCodes(fromStyles, toStyles));
             fromCache.set(toStyles, cached);
@@ -684,17 +728,20 @@ export default class Output {
 
     private getContinuationCell(character: StyledChar): StyledChar {
         const cached = this.continuationCellCache.get(character);
+
         if (cached) {
             return cached;
         }
 
         const continuationCell: StyledChar = {
-            type: "char",
-            value: "",
             fullWidth: false,
             styles: character.styles,
+            type: "char",
+            value: "",
         };
+
         this.continuationCellCache.set(character, continuationCell);
+
         return continuationCell;
     }
 

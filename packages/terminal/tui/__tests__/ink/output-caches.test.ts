@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import Output, { OutputCaches } from "../../src/ink/output.js";
 
-it("Output uses provided caches instance", () => {
+it("output uses provided caches instance", () => {
     const caches = new OutputCaches();
     const output = new Output({
-        width: 8,
-        height: 1,
         caches,
+        height: 1,
+        width: 8,
     });
 
     output.write(0, 0, "abc", { transformers: [] });
@@ -18,12 +19,12 @@ it("Output uses provided caches instance", () => {
 
 it("default caches are isolated per Output instance", () => {
     const output1 = new Output({
-        width: 8,
         height: 1,
+        width: 8,
     });
     const output2 = new Output({
-        width: 8,
         height: 1,
+        width: 8,
     });
 
     const output1WithCaches = output1 as unknown as { caches: OutputCaches };
@@ -36,10 +37,11 @@ it("shared caches reuse entries across Output instances", () => {
     const caches = new OutputCaches();
 
     const output1 = new Output({
-        width: 8,
-        height: 1,
         caches,
+        height: 1,
+        width: 8,
     });
+
     output1.write(0, 0, "abc", { transformers: [] });
     output1.get();
 
@@ -47,10 +49,11 @@ it("shared caches reuse entries across Output instances", () => {
     const styledCharsSizeAfterFirst = caches.styledChars.size;
 
     const output2 = new Output({
-        width: 8,
-        height: 1,
         caches,
+        height: 1,
+        width: 8,
     });
+
     output2.write(0, 0, "abc", { transformers: [] });
     output2.get();
 
@@ -60,35 +63,36 @@ it("shared caches reuse entries across Output instances", () => {
 
 it("reset clears frame operations before next render", () => {
     const output = new Output({
-        width: 8,
         height: 1,
+        width: 8,
     });
 
     output.write(0, 0, "before", { transformers: [] });
-    expect(output.get().output.includes("before")).toBe(true);
+
+    expect(output.get().output).toContain("before");
 
     output.reset(8, 1);
     output.write(0, 0, "after", { transformers: [] });
     const next = output.get().output;
 
-    expect(next.includes("after")).toBe(true);
-    expect(next.includes("before")).toBe(false);
+    expect(next).toContain("after");
+    expect(next).not.toContain("before");
 });
 
 it("getCharacterWidth fast-path avoids cache writes for printable ASCII and full-width chars", () => {
     const caches = new OutputCaches();
 
     const asciiWidth = caches.getCharacterWidth({
-        type: "char",
-        value: "A",
         fullWidth: false,
         styles: [],
+        type: "char",
+        value: "A",
     });
     const cjkWidth = caches.getCharacterWidth({
-        type: "char",
-        value: "漢",
         fullWidth: true,
         styles: [],
+        type: "char",
+        value: "漢",
     });
 
     expect(asciiWidth).toBe(1);
@@ -101,10 +105,10 @@ it("getCharacterWidth falls back to string-width for non-ASCII narrow chars", ()
     const caches = new OutputCaches();
 
     const width = caches.getCharacterWidth({
-        type: "char",
-        value: "é",
         fullWidth: false,
         styles: [],
+        type: "char",
+        value: "é",
     });
 
     expect(width).toBe(1);
@@ -120,29 +124,30 @@ it("plain ASCII lines reuse StyledChar instances", () => {
     expect(single[0]).toBe(repeated[0]);
 });
 
-it("ANSI-marked lines preserve styles", () => {
+it("aNSI-marked lines preserve styles", () => {
     const caches = new OutputCaches();
     const styledChars = caches.getStyledChars("\u001B[31mA\u001B[39m");
 
-    expect(styledChars.length).toBe(1);
+    expect(styledChars).toHaveLength(1);
     expect(styledChars[0]!.styles.length).toBeGreaterThan(0);
 });
 
-it("ANSI style runs reuse style array references", () => {
+it("aNSI style runs reuse style array references", () => {
     const caches = new OutputCaches();
     const styledChars = caches.getStyledChars("\u001B[31mAB\u001B[39m");
 
-    expect(styledChars.length).toBe(2);
+    expect(styledChars).toHaveLength(2);
     expect(styledChars[0]!.styles).toBe(styledChars[1]!.styles);
 });
 
 it("styled rendering preserves ANSI transitions", () => {
     const output = new Output({
-        width: 4,
         height: 1,
+        width: 4,
     });
 
     output.write(0, 0, "\u001B[31mA\u001B[32mB\u001B[39m", { transformers: [] });
+
     expect(output.get().output).toBe("\u001B[31mA\u001B[32mB\u001B[39m");
 });
 
@@ -150,11 +155,11 @@ it("plain non-ASCII lines include full-width metadata", () => {
     const caches = new OutputCaches();
     const styledChars = caches.getStyledChars("漢");
 
-    expect(styledChars.length).toBe(1);
+    expect(styledChars).toHaveLength(1);
     expect(styledChars[0]!.fullWidth).toBe(true);
 });
 
-it("OutputCaches prunes width cache when maxEntries is exceeded", () => {
+it("outputCaches prunes width cache when maxEntries is exceeded", () => {
     const caches = new OutputCaches({ maxEntries: 2 });
 
     caches.getStringWidth("a");
@@ -165,7 +170,7 @@ it("OutputCaches prunes width cache when maxEntries is exceeded", () => {
     expect(caches.widths.has("c")).toBe(true);
 });
 
-it("OutputCaches prunes styledChars cache when maxEntries is exceeded", () => {
+it("outputCaches prunes styledChars cache when maxEntries is exceeded", () => {
     const caches = new OutputCaches({ maxEntries: 2 });
 
     caches.getStyledChars("a");
@@ -186,7 +191,7 @@ it("getLines caches split line arrays", () => {
     expect(second).toEqual(["a", "b"]);
 });
 
-it("OutputCaches prunes lines cache when maxEntries is exceeded", () => {
+it("outputCaches prunes lines cache when maxEntries is exceeded", () => {
     const caches = new OutputCaches({ maxEntries: 2 });
 
     caches.getLines("a");
@@ -197,7 +202,7 @@ it("OutputCaches prunes lines cache when maxEntries is exceeded", () => {
     expect(caches.lines.has("c")).toBe(true);
 });
 
-it("OutputCaches pruneToFactor controls eviction target", () => {
+it("outputCaches pruneToFactor controls eviction target", () => {
     const caches = new OutputCaches({
         maxEntries: 10,
         pruneToFactor: 0.5,
@@ -212,35 +217,39 @@ it("OutputCaches pruneToFactor controls eviction target", () => {
 
 it("line memoization keeps unchanged rows and updates changed rows", () => {
     const output = new Output({
-        width: 2,
         height: 2,
+        width: 2,
     });
 
     output.write(0, 0, "ab\ncd", { transformers: [] });
+
     expect(output.get().output).toBe("ab\ncd");
 
     output.reset(2, 2);
     output.write(0, 0, "ab\nef", { transformers: [] });
+
     expect(output.get().output).toBe("ab\nef");
 });
 
 it("line memoization does not keep stale rows when content is cleared", () => {
     const output = new Output({
-        width: 2,
         height: 2,
+        width: 2,
     });
 
     output.write(0, 1, "zz", { transformers: [] });
+
     expect(output.get().output).toBe("\nzz");
 
     output.reset(2, 2);
+
     expect(output.get().output).toBe("\n");
 });
 
 it("clip applies horizontal and vertical bounds to writes", () => {
     const output = new Output({
-        width: 6,
         height: 2,
+        width: 6,
     });
 
     output.clip({ x1: 1, x2: 5, y1: 0, y2: 2 });
@@ -252,8 +261,8 @@ it("clip applies horizontal and vertical bounds to writes", () => {
 
 it("clip can apply vertical-only bounds", () => {
     const output = new Output({
-        width: 8,
         height: 2,
+        width: 8,
     });
 
     output.clip({ x1: undefined, x2: undefined, y1: 1, y2: 2 });

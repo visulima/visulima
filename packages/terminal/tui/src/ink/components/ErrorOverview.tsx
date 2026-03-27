@@ -1,16 +1,17 @@
-import * as fs from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { cwd } from "node:process";
-import { type ReactElement } from "react";
+
+import type { CodeExcerpt } from "code-excerpt";
+import codeExcerpt from "code-excerpt";
+import type { ReactElement } from "react";
 import StackUtils from "stack-utils";
-import codeExcerpt, { type CodeExcerpt } from "code-excerpt";
+
 import Box from "./Box.js";
 import Text from "./Text.js";
 
 // Error's source file is reported as file:///home/user/file.js
 // This function removes the file://[cwd] part
-const cleanupPath = (path: string | undefined): string | undefined => {
-    return path?.replace(`file://${cwd()}/`, "");
-};
+const cleanupPath = (path: string | undefined): string | undefined => path?.replace(`file://${cwd()}/`, "");
 
 const stackUtils = new StackUtils({
     cwd: cwd(),
@@ -28,8 +29,9 @@ export default function ErrorOverview({ error }: Props): ReactElement {
     let excerpt: CodeExcerpt[] | undefined;
     let lineWidth = 0;
 
-    if (filePath && origin?.line && fs.existsSync(filePath)) {
-        const sourceCode = fs.readFileSync(filePath, "utf8");
+    if (filePath && origin?.line && existsSync(filePath)) {
+        const sourceCode = readFileSync(filePath, "utf8");
+
         excerpt = codeExcerpt(sourceCode, origin.line);
 
         if (excerpt) {
@@ -44,45 +46,58 @@ export default function ErrorOverview({ error }: Props): ReactElement {
             <Box>
                 <Text backgroundColor="red" color="white">
                     {" "}
-                    ERROR{" "}
+                    ERROR
+                    {" "}
                 </Text>
 
-                <Text> {error.message}</Text>
+                <Text>
+                    {" "}
+                    {error.message}
+                </Text>
             </Box>
 
-            {origin && filePath ? (
-                <Box marginTop={1}>
-                    <Text dimColor>
-                        {filePath}:{origin.line}:{origin.column}
-                    </Text>
-                </Box>
-            ) : null}
+            {origin && filePath
+                ? (
+                    <Box marginTop={1}>
+                        <Text dimColor>
+                            {filePath}
+                            :
+                            {origin.line}
+                            :
+                            {origin.column}
+                        </Text>
+                    </Box>
+                )
+                : null}
 
-            {origin && excerpt ? (
-                <Box marginTop={1} flexDirection="column">
-                    {excerpt.map(({ line, value }) => (
-                        <Box key={line}>
-                            <Box width={lineWidth + 1}>
-                                <Text
-                                    dimColor={line !== origin.line}
-                                    backgroundColor={line === origin.line ? "red" : undefined}
-                                    color={line === origin.line ? "white" : undefined}
-                                    aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
-                                >
-                                    {String(line).padStart(lineWidth, " ")}:
+            {origin && excerpt
+                ? (
+                    <Box flexDirection="column" marginTop={1}>
+                        {excerpt.map(({ line, value }) => (
+                            <Box key={line}>
+                                <Box width={lineWidth + 1}>
+                                    <Text
+                                        aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
+                                        backgroundColor={line === origin.line ? "red" : undefined}
+                                        color={line === origin.line ? "white" : undefined}
+                                        dimColor={line !== origin.line}
+                                    >
+                                        {String(line).padStart(lineWidth, " ")}
+                                        :
+                                    </Text>
+                                </Box>
+
+                                <Text backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined} key={line}>
+                                    {` ${value}`}
                                 </Text>
                             </Box>
-
-                            <Text key={line} backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined}>
-                                {" " + value}
-                            </Text>
-                        </Box>
-                    ))}
-                </Box>
-            ) : null}
+                        ))}
+                    </Box>
+                )
+                : null}
 
             {error.stack ? (
-                <Box marginTop={1} flexDirection="column">
+                <Box flexDirection="column" marginTop={1}>
                     {error.stack
                         .split("\n")
                         .slice(1)
@@ -94,9 +109,10 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                 return (
                                     <Box key={line}>
                                         <Text dimColor>- </Text>
-                                        <Text dimColor bold>
+                                        <Text bold dimColor>
                                             {line}
-                                            \t{" "}
+                                            \t
+                                            {" "}
                                         </Text>
                                     </Box>
                                 );
@@ -105,16 +121,22 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                             return (
                                 <Box key={line}>
                                     <Text dimColor>- </Text>
-                                    <Text dimColor bold>
+                                    <Text bold dimColor>
                                         {parsedLine.function}
                                     </Text>
                                     <Text
-                                        dimColor
-                                        color="gray"
                                         aria-label={`at ${cleanupPath(parsedLine.file) ?? ""} line ${parsedLine.line} column ${parsedLine.column}`}
+                                        color="gray"
+                                        dimColor
                                     >
                                         {" "}
-                                        ({cleanupPath(parsedLine.file) ?? ""}:{parsedLine.line}:{parsedLine.column})
+                                        (
+                                        {cleanupPath(parsedLine.file) ?? ""}
+                                        :
+                                        {parsedLine.line}
+                                        :
+                                        {parsedLine.column}
+                                        )
                                     </Text>
                                 </Box>
                             );

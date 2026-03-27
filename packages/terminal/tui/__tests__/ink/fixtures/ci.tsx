@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render, Static, Text } from "../../../src/ink/index.js";
 
 type TestState = {
@@ -10,8 +11,8 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
     timer?: NodeJS.Timeout;
 
     override state: TestState = {
-        items: [],
         counter: 0,
+        items: [],
     };
 
     override render() {
@@ -19,7 +20,10 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
             <>
                 <Static items={this.state.items}>{(item) => <Text key={item}>{item}</Text>}</Static>
 
-                <Text>Counter: {this.state.counter}</Text>
+                <Text>
+                    Counter:
+                    {this.state.counter}
+                </Text>
             </>
         );
     }
@@ -30,10 +34,12 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
                 return;
             }
 
-            this.setState((prevState) => ({
-                counter: prevState.counter + 1,
-                items: [...prevState.items, `#${prevState.counter + 1}`],
-            }));
+            this.setState((previousState) => {
+                return {
+                    counter: previousState.counter + 1,
+                    items: [...previousState.items, `#${previousState.counter + 1}`],
+                };
+            });
 
             this.timer = setTimeout(onTimeout, 20);
         };

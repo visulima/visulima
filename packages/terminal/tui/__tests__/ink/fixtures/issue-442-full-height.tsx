@@ -1,8 +1,10 @@
 import process from "node:process";
-import React, { useEffect } from "react";
-import { Box, Text, render, useApp } from "../../../src/ink/index.js";
 
-function App() {
+import React, { useEffect } from "react";
+
+import { Box, render, Text, useApp } from "../../../src/ink/index.js";
+
+const App = () => {
     const { exit } = useApp();
 
     useEffect(() => {
@@ -19,14 +21,14 @@ function App() {
     const columns = process.stdout.columns || 100;
 
     return (
-        <Box width={columns} height={rows} flexDirection="column">
+        <Box flexDirection="column" height={rows} width={columns}>
             <Box flexGrow={1}>
                 <Text>#442 top</Text>
             </Box>
             <Text>#442 bottom</Text>
         </Box>
     );
-}
+};
 
 process.stdout.rows = Number(process.argv[2]) || 5;
 

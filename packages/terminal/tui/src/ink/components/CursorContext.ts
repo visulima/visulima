@@ -1,16 +1,17 @@
-import { createContext, type Context } from "react";
-import { type CursorPosition } from "../log-update.js";
+import type { Context } from "react";
+import { createContext } from "react";
+
+import type { CursorPosition } from "../log-update.js";
 
 export type Props = {
     /**
-	Set the cursor position relative to the Ink output.
-
-	Pass `undefined` to hide the cursor.
-	*/
+     * Set the cursor position relative to the Ink output.
+     *
+     * Pass `undefined` to hide the cursor.
+     */
     readonly setCursorPosition: (position: CursorPosition | undefined) => void;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 const CursorContext: Context<Props> = createContext<Props>({
     setCursorPosition() {},
 });

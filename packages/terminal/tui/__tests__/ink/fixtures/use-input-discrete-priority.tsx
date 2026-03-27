@@ -1,8 +1,10 @@
 import process from "node:process";
-import React, { useState, useTransition, useMemo, useEffect, useRef } from "react";
-import { render, Box, Text, useInput, useApp } from "../../../src/ink/index.js";
 
-function App() {
+import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
+
+import { Box, render, Text, useApp, useInput } from "../../../src/ink/index.js";
+
+const App = () => {
     const { exit } = useApp();
     const [query, setQuery] = useState("abcde");
     const [, startTransition] = useTransition();
@@ -18,6 +20,7 @@ function App() {
             done.current = true;
             process.stdout.write(`\nFINAL query:${JSON.stringify(query)} deferred:${JSON.stringify(deferredQuery)}\n`);
             exit();
+
             return;
         }
 
@@ -36,6 +39,7 @@ function App() {
 
         // Simulate expensive computation that blocks the fiber
         const start = Date.now();
+
         while (Date.now() - start < 30) {
             // Artificial delay
         }
@@ -49,11 +53,20 @@ function App() {
 
     return (
         <Box flexDirection="column">
-            <Text>query:{query}</Text>
-            <Text>deferred:{deferredQuery}</Text>
-            <Text>filtered:{filteredResult}</Text>
+            <Text>
+                query:
+                {query}
+            </Text>
+            <Text>
+                deferred:
+                {deferredQuery}
+            </Text>
+            <Text>
+                filtered:
+                {filteredResult}
+            </Text>
         </Box>
     );
-}
+};
 
 render(<App />, { concurrent: true });

@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -52,7 +53,7 @@ it("render select input for screen readers", () => {
                 const screenReaderLabel = `${index + 1}. ${item}`;
 
                 return (
-                    <Box key={item} aria-label={screenReaderLabel} aria-role="listitem" aria-state={{ selected: isSelected }}>
+                    <Box aria-label={screenReaderLabel} aria-role="listitem" aria-state={{ selected: isSelected }} key={item}>
                         <Text>{item}</Text>
                     </Box>
                 );
@@ -85,7 +86,7 @@ it("render aria-label only Box for screen readers", () => {
 it("omit ANSI styling in screen-reader output", () => {
     const output = renderToString(
         <Box>
-            {/* eslint-disable-next-line react/jsx-sort-props */}
+            { }
             <Text bold color="green" inverse underline>
                 Styled content
             </Text>
@@ -326,7 +327,7 @@ it("render nested row", () => {
 
 it("render multi-line text with roles", () => {
     const output = renderToString(
-        <Box flexDirection="column" aria-role="list">
+        <Box aria-role="list" flexDirection="column">
             <Box aria-role="listitem">
                 <Text>Item 1</Text>
             </Box>
@@ -344,7 +345,7 @@ it("render multi-line text with roles", () => {
 
 it("render listbox with multiselectable options", () => {
     const output = renderToString(
-        <Box flexDirection="column" aria-role="listbox" aria-state={{ multiselectable: true }}>
+        <Box aria-role="listbox" aria-state={{ multiselectable: true }} flexDirection="column">
             <Box aria-role="option" aria-state={{ selected: true }}>
                 <Text>Option 1</Text>
             </Box>

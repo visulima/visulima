@@ -18,8 +18,8 @@
  * Run: node --import @oxc-node/core/register examples/sierpinski.tsx
  */
 // @ts-nocheck
-import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { render, Box, Text, useInput, useApp, useWindowSize, useFocus, useFocusManager } from "@visulima/tui/react";
+import { Box, render, Text, useApp, useFocus, useFocusManager, useInput, useWindowSize } from "@visulima/tui/react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 // React internals call performance.measure() on every reconcile.
 // At 300fps this fills Node's default 1M entry buffer in ~3 seconds.
@@ -28,8 +28,10 @@ try {
     const obs = new PerformanceObserver((list) => {
         list.getEntries();
     });
+
     obs.observe({ entryTypes: ["measure", "mark"] });
 } catch {}
+
 performance.clearMeasures();
 performance.clearMarks();
 
@@ -54,6 +56,7 @@ function useFps() {
         frames.current++;
         const now = Date.now();
         const elapsed = now - last.current;
+
         if (elapsed >= 500) {
             setFps(Math.round((frames.current / elapsed) * 1000));
             frames.current = 0;
@@ -69,15 +72,17 @@ function useFps() {
 // Highlights when focused.
 
 let dotId = 0;
+
 function nextId() {
     return String(++dotId);
 }
 
-const Dot = memo(function Dot({ id, text }: { id: string; text: string }) {
+const Dot = memo(({ id, text }: { id: string; text: string }) => {
     const { isFocused } = useFocus({ id });
+
     return (
-        <Box width={MIN_DOT_WIDTH} height={1} justifyContent="center" alignItems="center" flexShrink={0}>
-            <Text color={isFocused ? "black" : "cyan"} backgroundColor={isFocused ? "cyan" : undefined} bold={isFocused}>
+        <Box alignItems="center" flexShrink={0} height={1} justifyContent="center" width={MIN_DOT_WIDTH}>
+            <Text backgroundColor={isFocused ? "cyan" : undefined} bold={isFocused} color={isFocused ? "black" : "cyan"}>
                 {text.padStart(MIN_DOT_WIDTH - 1).slice(0, MIN_DOT_WIDTH)}
             </Text>
         </Box>
@@ -92,35 +97,37 @@ const Dot = memo(function Dot({ id, text }: { id: string; text: string }) {
 
 interface TriangleProps {
     depth: number;
-    text: string;
-    ids: string[];
     idIndex: { current: number };
+    ids: string[];
+    text: string;
 }
 
-function SierpinskiTriangle({ depth, text, ids, idIndex }: TriangleProps) {
+const SierpinskiTriangle = ({ depth, idIndex, ids, text }: TriangleProps) => {
     if (depth === 0) {
         const id = ids[idIndex.current++] ?? String(idIndex.current);
+
         return <Dot id={id} text={text} />;
     }
 
     return (
-        <Box flexDirection="column" alignItems="center" flexShrink={0}>
+        <Box alignItems="center" flexDirection="column" flexShrink={0}>
             {/* top point */}
-            <SierpinskiTriangle depth={depth - 1} text={text} ids={ids} idIndex={idIndex} />
+            <SierpinskiTriangle depth={depth - 1} idIndex={idIndex} ids={ids} text={text} />
             {/* bottom row */}
             <Box flexDirection="row" flexShrink={0}>
-                <SierpinskiTriangle depth={depth - 1} text={text} ids={ids} idIndex={idIndex} />
-                <SierpinskiTriangle depth={depth - 1} text={text} ids={ids} idIndex={idIndex} />
+                <SierpinskiTriangle depth={depth - 1} idIndex={idIndex} ids={ids} text={text} />
+                <SierpinskiTriangle depth={depth - 1} idIndex={idIndex} ids={ids} text={text} />
             </Box>
         </Box>
     );
-}
+};
 
 // ─── Generate stable IDs once ─────────────────────────────────────────────────
 // IDs are fixed across renders — only text changes.
 
 function makeIds(depth: number): string[] {
     const count = Math.pow(3, depth);
+
     return Array.from({ length: count }, (_, i) => `dot-${i}`);
 }
 
@@ -129,45 +136,55 @@ const DOT_COUNT = IDS.length;
 
 // ─── Stats bar ────────────────────────────────────────────────────────────────
 
-function StatsBar({
+const StatsBar = ({
+    cols,
+    counter,
     fps,
     frame,
-    counter,
-    cols,
-    rows,
     pulseWidth,
+    rows,
 }: {
+    cols: number;
+    counter: number;
     fps: number;
     frame: number;
-    counter: number;
-    cols: number;
-    rows: number;
     pulseWidth: number;
-}) {
-    return (
-        <Box borderStyle="round" borderColor="cyan" paddingX={2} flexShrink={0}>
-            <Text bold color="cyan">
-                Sierpinski{" "}
-            </Text>
-            <Text>
-                {String(fps).padStart(3)} fps{"  "}
-                frame: <Text color="white">{String(frame).padStart(6)}</Text>
-                {"  "}
-                counter: <Text color="yellow">{counter}</Text>
-                {"  "}
-                nodes: <Text color="white">{DOT_COUNT}</Text>
-                {"  "}
-                width: <Text color="white">{pulseWidth}</Text>
-                {"  "}
-                <Text dim>Tab · Ctrl+C</Text>
-            </Text>
-        </Box>
-    );
-}
+    rows: number;
+}) => (
+    <Box borderColor="cyan" borderStyle="round" flexShrink={0} paddingX={2}>
+        <Text bold color="cyan">
+            Sierpinski
+            {" "}
+        </Text>
+        <Text>
+            {String(fps).padStart(3)}
+            {" "}
+            fps
+            {"  "}
+            frame:
+            {" "}
+            <Text color="white">{String(frame).padStart(6)}</Text>
+            {"  "}
+            counter:
+            {" "}
+            <Text color="yellow">{counter}</Text>
+            {"  "}
+            nodes:
+            {" "}
+            <Text color="white">{DOT_COUNT}</Text>
+            {"  "}
+            width:
+            {" "}
+            <Text color="white">{pulseWidth}</Text>
+            {"  "}
+            <Text dim>Tab · Ctrl+C</Text>
+        </Text>
+    </Box>
+);
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-function SierpinskiApp() {
+const SierpinskiApp = () => {
     const { columns, rows } = useWindowSize();
     const { fps, tick } = useFps();
     const { exit } = useApp();
@@ -183,10 +200,13 @@ function SierpinskiApp() {
     // Keyboard: Tab / Shift+Tab for focus, q/Ctrl+C to exit
     useInput((input, key) => {
         if (key.tab) {
-            if (key.shift) focusPrevious();
+            if (key.shift)
+                focusPrevious();
             else focusNext();
         }
-        if (input === "q" || (key.ctrl && input === "c")) exit();
+
+        if (input === "q" || (key.ctrl && input === "c"))
+            exit();
     });
 
     // Animation loop — drives pulse
@@ -196,8 +216,11 @@ function SierpinskiApp() {
         let loopFrame = 0;
 
         function loop() {
-            if (!running) return;
+            if (!running)
+                return;
+
             loopFrame++;
+
             // Belt-and-suspenders: also clear periodically in case the observer misses anything
             if (loopFrame % 500 === 0) {
                 try {
@@ -205,13 +228,17 @@ function SierpinskiApp() {
                     performance.clearMarks();
                 } catch {}
             }
+
             setFrame((f) => {
                 tick();
+
                 return f + 1;
             });
             handle = setTimeout(loop, 0);
         }
+
         loop();
+
         return () => {
             running = false;
             clearTimeout(handle);
@@ -223,6 +250,7 @@ function SierpinskiApp() {
         const id = setInterval(() => {
             setCounter((c) => (c % 10) + 1);
         }, 1000);
+
         return () => clearInterval(id);
     }, []);
 
@@ -237,18 +265,19 @@ function SierpinskiApp() {
     // idIndex is a mutable ref reset each render so IDs are assigned
     // in the same order every render
     const idIndex = useRef(0);
+
     idIndex.current = 0;
 
     const text = String(counter);
 
     return (
-        <Box flexDirection="column" width={columns} height={rows}>
-            <StatsBar fps={fps} frame={frame} counter={counter} cols={columns} rows={rows} pulseWidth={pulseWidth} />
-            <Box flexDirection="column" alignItems="center" justifyContent="center" flexGrow={1} width={pulseWidth}>
-                <SierpinskiTriangle depth={DEPTH} text={text} ids={IDS} idIndex={idIndex} />
+        <Box flexDirection="column" height={rows} width={columns}>
+            <StatsBar cols={columns} counter={counter} fps={fps} frame={frame} pulseWidth={pulseWidth} rows={rows} />
+            <Box alignItems="center" flexDirection="column" flexGrow={1} justifyContent="center" width={pulseWidth}>
+                <SierpinskiTriangle depth={DEPTH} idIndex={idIndex} ids={IDS} text={text} />
             </Box>
         </Box>
     );
-}
+};
 
 render(<SierpinskiApp />);

@@ -1,5 +1,5 @@
 import colorize from "./colorize.js";
-import { type DOMNode } from "./dom.js";
+import type { DOMNode } from "./dom.js";
 import type Output from "./output.js";
 
 const renderBackground = (x: number, y: number, node: DOMNode, output: Output): void => {

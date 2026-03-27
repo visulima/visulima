@@ -1,29 +1,37 @@
-import { describe, expect, it } from "vitest";
-import colorizeDefault from "@visulima/colorize";
 import { boxen } from "@visulima/boxen";
+import colorizeDefault from "@visulima/colorize";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { Box, Text, Static, Transform, Newline, Spacer, renderToString } from "../../src/ink/index.js";
+import { expect, it } from "vitest";
+
+import { Box, Newline, renderToString, Spacer, Static, Text, Transform } from "../../src/ink/index.js";
 
 // ── Basic rendering ─────────────────────────────────────
 
 it("render simple text", () => {
     const output = renderToString(<Text>Hello World</Text>);
+
     expect(output).toBe("Hello World");
 });
 
 it("render text with variable", () => {
-    const output = renderToString(<Text>Count: {42}</Text>);
+    const output = renderToString(
+        <Text>
+            Count:
+            {42}
+        </Text>,
+    );
+
     expect(output).toBe("Count: 42");
 });
 
 it("render nested text components", () => {
-    function World() {
-        return <Text>World</Text>;
-    }
+    const World = () => <Text>World</Text>;
 
     const output = renderToString(
         <Text>
-            Hello <World />
+            Hello
+            {" "}
+            <World />
         </Text>,
     );
 
@@ -31,12 +39,14 @@ it("render nested text components", () => {
 });
 
 it("render empty fragment", () => {
-    const output = renderToString(<></>); // eslint-disable-line react/jsx-no-useless-fragment
+    const output = renderToString(<></>);
+
     expect(output).toBe("");
 });
 
 it("render null children", () => {
     const output = renderToString(<Text>{null}</Text>);
+
     expect(output).toBe("");
 });
 
@@ -98,13 +108,14 @@ it("render gap between items", () => {
 
 it("render box with fixed width and height", () => {
     const output = renderToString(
-        <Box width={10} height={3}>
+        <Box height={3} width={10}>
             <Text>Hi</Text>
         </Box>,
     );
 
     const lines = output.split("\n");
-    expect(lines.length).toBe(3);
+
+    expect(lines).toHaveLength(3);
 });
 
 it("render spacer pushes content apart", () => {
@@ -141,8 +152,8 @@ it("render box with border", () => {
 
     expect(output).toBe(
         boxen("Bordered", {
-            width: 20,
             borderStyle: "single",
+            width: 20,
         }),
     );
 });
@@ -151,11 +162,13 @@ it("render box with border", () => {
 
 it("render colored text", () => {
     const output = renderToString(<Text color="green">Green</Text>);
+
     expect(output).toBe(colorizeDefault.green("Green"));
 });
 
 it("render bold text", () => {
     const output = renderToString(<Text bold>Bold</Text>);
+
     expect(output).toBe(colorizeDefault.bold("Bold"));
 });
 
@@ -186,7 +199,8 @@ it("default columns is 80", () => {
     const output = renderToString(<Text>{longText}</Text>);
 
     const lines = output.split("\n");
-    expect(lines.length).toBe(2);
+
+    expect(lines).toHaveLength(2);
     expect(lines[0]).toBe("A".repeat(80));
     expect(lines[1]).toBe("A".repeat(20));
 });
@@ -196,7 +210,8 @@ it("custom columns option", () => {
     const output = renderToString(<Text>{longText}</Text>, { columns: 30 });
 
     const lines = output.split("\n");
-    expect(lines.length).toBe(2);
+
+    expect(lines).toHaveLength(2);
     expect(lines[0]).toBe("A".repeat(30));
     expect(lines[1]).toBe("A".repeat(20));
 });
@@ -250,7 +265,7 @@ it("render static + dynamic output has exactly one newline between parts", () =>
 // ── Effect behavior ─────────────────────────────────────
 
 it("captures initial render output before effect-driven state updates", () => {
-    function App() {
+    const App = () => {
         const [text, setText] = useState("Initial");
 
         useEffect(() => {
@@ -258,14 +273,15 @@ it("captures initial render output before effect-driven state updates", () => {
         }, []);
 
         return <Text>{text}</Text>;
-    }
+    };
 
     const output = renderToString(<App />);
+
     expect(output).toBe("Initial");
 });
 
 it("useLayoutEffect state updates are reflected in output", () => {
-    function App() {
+    const App = () => {
         const [text, setText] = useState("Initial");
 
         useLayoutEffect(() => {
@@ -273,26 +289,26 @@ it("useLayoutEffect state updates are reflected in output", () => {
         }, []);
 
         return <Text>{text}</Text>;
-    }
+    };
 
     const output = renderToString(<App />);
+
     expect(output).toBe("Layout Updated");
 });
 
 it("runs effect cleanup on teardown", () => {
     let cleanupRan = false;
 
-    function App() {
-        useEffect(() => {
-            return () => {
-                cleanupRan = true;
-            };
+    const App = () => {
+        useEffect(() => () => {
+            cleanupRan = true;
         }, []);
 
         return <Text>Cleanup test</Text>;
-    }
+    };
 
     const output = renderToString(<App />);
+
     expect(output).toBe("Cleanup test");
     expect(cleanupRan).toBe(true);
 });
@@ -308,7 +324,7 @@ it("component that throws propagates the error", () => {
 });
 
 it("text outside Text component throws", () => {
-    expect(() => renderToString(<Box>{"raw text"}</Box>)).toThrow(/must be rendered inside <Text>/);
+    expect(() => renderToString(<Box>raw text</Box>)).toThrow(/must be rendered inside <Text>/);
 });
 
 it("subsequent calls work after a component error", () => {
@@ -317,7 +333,9 @@ it("subsequent calls work after a component error", () => {
     }
 
     expect(() => renderToString(<Broken />)).toThrow();
+
     const output = renderToString(<Text>Still works</Text>);
+
     expect(output).toBe("Still works");
 });
 
@@ -347,6 +365,6 @@ it("render deeply nested component tree", () => {
         </Box>,
     );
 
-    expect(output.includes("Nested")).toBe(true);
-    expect(output.includes("deep")).toBe(true);
+    expect(output).toContain("Nested");
+    expect(output).toContain("deep");
 });

@@ -1,4 +1,5 @@
 import Yoga from "yoga-layout-prebuilt";
+
 import { measureTextBlock } from "./text-width.js";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;
@@ -10,28 +11,42 @@ const yogaOwner = new Map<YogaNode, LayoutNode>();
 
 export class LayoutNode {
     public yogaNode: YogaNode;
+
     public children: LayoutNode[] = [];
+
     public parent: LayoutNode | null = null;
+
     private _destroyed = false;
+
     _hidden = false; // set by Suspense hideInstance/unhideInstance
+
     transform?: (s: string, index: number) => string; // set by <Transform>
 
     // Custom terminal props
     private _text?: string;
+
     public fg: number = 255;
+
     public bg: number = 255;
+
     public styles: number = 0;
+
     public _style?: any;
 
     set text(value: string | undefined) {
         this._text = value;
-        if (value !== undefined) {
+
+        if (value === undefined) {
+            this.yogaNode.unsetMeasureFunc();
+        } else {
             this.yogaNode.setMeasureFunc((width, widthMode, height, heightMode) => {
-                if (value.length === 0) return { width: 0, height: 0 };
+                if (value.length === 0)
+                    return { height: 0, width: 0 };
 
                 const unconstrained = measureTextBlock(value, Number.MAX_SAFE_INTEGER);
 
                 let targetWidth = unconstrained.maxLineWidth;
+
                 if (widthMode === Yoga.MEASURE_MODE_EXACTLY) {
                     targetWidth = Math.max(0, Math.floor(width));
                 } else if (widthMode === Yoga.MEASURE_MODE_AT_MOST) {
@@ -39,6 +54,7 @@ export class LayoutNode {
                 }
 
                 let targetHeight = unconstrained.wrappedRows;
+
                 if (targetWidth > 0) {
                     targetHeight = measureTextBlock(value, targetWidth).wrappedRows;
                 }
@@ -49,10 +65,8 @@ export class LayoutNode {
                     targetHeight = Math.min(targetHeight, Math.max(0, Math.floor(height)));
                 }
 
-                return { width: targetWidth, height: targetHeight };
+                return { height: targetHeight, width: targetWidth };
             });
-        } else {
-            this.yogaNode.unsetMeasureFunc();
         }
     }
 
@@ -69,17 +83,22 @@ export class LayoutNode {
     insertChild(child: LayoutNode, index: number): void {
         // Remove from current owner first (yogaOwner is authoritative)
         const currentOwner = yogaOwner.get(child.yogaNode);
+
         if (currentOwner) {
-            currentOwner.removeChild(child);
+            child.remove();
         }
+
         // Belt-and-suspenders: ask Yoga directly in case yogaOwner is stale
         const staleParent = child.yogaNode.getParent();
+
         if (staleParent) {
-            staleParent.removeChild(child.yogaNode);
+            child.yogaNode.remove();
         }
+
         // Clamp index to Yoga's actual child count to stay in sync
         const yogaCount = this.yogaNode.getChildCount();
         const safeIndex = Math.min(index, yogaCount);
+
         // Insert into Yoga FIRST — if this throws, don't corrupt our JS bookkeeping
         try {
             this.yogaNode.insertChild(child.yogaNode, safeIndex);
@@ -87,6 +106,7 @@ export class LayoutNode {
             // Yoga refused the insert — child stays detached
             return;
         }
+
         // Only update JS bookkeeping after Yoga succeeds
         child.parent = this;
         this.children.splice(safeIndex, 0, child);
@@ -95,11 +115,12 @@ export class LayoutNode {
 
     removeChild(child: LayoutNode): void {
         const i = this.children.indexOf(child);
-        if (i >= 0) {
+
+        if (i !== -1) {
             this.children.splice(i, 1);
             child.parent = null;
             yogaOwner.delete(child.yogaNode);
-            this.yogaNode.removeChild(child.yogaNode);
+            child.yogaNode.remove();
         }
     }
 
@@ -112,12 +133,17 @@ export class LayoutNode {
      * The _destroyed guard prevents double-free if free() is also called.
      */
     destroy(): void {
-        if (this._destroyed) return;
+        if (this._destroyed)
+            return;
+
         this._destroyed = true;
+
         // Clear parent reference on children before clearing our own bookkeeping
         for (const child of this.children) {
-            if (child.parent === this) child.parent = null;
+            if (child.parent === this)
+                child.parent = null;
         }
+
         this.children = [];
         yogaOwner.delete(this.yogaNode);
         // Free the native Yoga allocation. Safe because React always calls
@@ -126,9 +152,11 @@ export class LayoutNode {
         // if somehow the node is still attached, remove it first so free()
         // doesn't corrupt the parent's child list in the wasm heap.
         const staleParent = this.yogaNode.getParent();
+
         if (staleParent) {
-            staleParent.removeChild(this.yogaNode);
+            this.yogaNode.remove();
         }
+
         this.yogaNode.free();
     }
 
