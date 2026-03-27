@@ -22,7 +22,5 @@
   "devDependencies": {
     "benchmark": "catalog:dev",
     "typescript": "catalog:tsc"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

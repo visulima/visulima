@@ -15,7 +15,5 @@
     "@visulima/cerebro": "workspace:*",
     "@visulima/pail": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

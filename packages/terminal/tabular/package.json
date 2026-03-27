@@ -78,7 +78,6 @@
     "test:ui:tabular": "pnpm --filter \"tabular\" run test:ui",
     "test:watch": "vitest"
   },
-  "dependencies": {},
   "devDependencies": {
     "@anolilab/eslint-config": "catalog:lint",
     "@anolilab/prettier-config": "catalog:lint",
@@ -110,8 +109,6 @@
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
   },
-  "peerDependencies": {},
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },

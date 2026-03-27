@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/boxen": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

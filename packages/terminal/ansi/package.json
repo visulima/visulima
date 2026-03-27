@@ -201,8 +201,6 @@
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
   },
-  "peerDependencies": {},
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },

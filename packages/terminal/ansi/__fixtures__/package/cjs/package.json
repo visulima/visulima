@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/ansi": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

@@ -22,7 +22,5 @@
     "eslint-config-next": "catalog:lint",
     "postcss": "catalog:dev",
     "typescript": "catalog:tsc"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
