@@ -48,7 +48,28 @@ yarn add @visulima/find-ai-runner
 pnpm add @visulima/find-ai-runner
 ```
 
-## Usage
+## CLI Usage
+
+Run directly with `npx` — no installation required:
+
+```bash
+# List all providers and their availability
+npx @visulima/find-ai-runner list
+
+# Output as JSON
+npx @visulima/find-ai-runner list --json
+
+# Detect a specific provider
+npx @visulima/find-ai-runner detect claude
+
+# Run a prompt against a provider
+npx @visulima/find-ai-runner run claude "Explain this error"
+
+# Preview CLI arguments without executing
+npx @visulima/find-ai-runner args claude "Explain this code" --json
+```
+
+## Programmatic Usage
 
 ### Detect all AI CLI tools
 
@@ -107,19 +128,19 @@ if (provider.available) {
 
 ## Supported Providers
 
-| Provider | Command    | Env Variable    | Default Model             | Prompt Flags                                    |
-| -------- | ---------- | --------------- | ------------------------- | ----------------------------------------------- |
-| Amp      | `amp`      | `AMP_PATH`      |                           | `-x --dangerously-allow-all`                    |
-| Claude   | `claude`   | `CLAUDE_PATH`   | `claude-sonnet-4-20250514`| `--dangerously-skip-permissions -p`             |
-| Codex    | `codex`    | `CODEX_PATH`    | `o3`                      | positional + `--approval-mode full-auto`        |
-| Copilot  | `copilot`  | `COPILOT_PATH`  |                           | `-p --allow-all-tools`                          |
-| Crush    | `crush`    | `CRUSH_PATH`    |                           | `run --yolo`                                    |
-| Cursor   | `agent`    | `CURSOR_PATH`   |                           | `-p --force`                                    |
-| Droid    | `droid`    | `DROID_PATH`    |                           | positional + `--skip-permissions-unsafe`        |
-| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro`          | `--sandbox -p`                                  |
-| Kimi     | `kimi`     | `KIMI_PATH`     |                           | `--quiet -p`                                    |
-| OpenCode | `opencode` | `OPENCODE_PATH` | `anthropic/claude-sonnet-4`| `run` subcommand                               |
-| Qwen     | `qwen`     | `QWEN_PATH`     |                           | `-p --yolo -o text`                             |
+| Provider | Command    | Env Variable    | Default Model               | Prompt Flags                             |
+| -------- | ---------- | --------------- | --------------------------- | ---------------------------------------- |
+| Amp      | `amp`      | `AMP_PATH`      |                             | `-x --dangerously-allow-all`             |
+| Claude   | `claude`   | `CLAUDE_PATH`   | `claude-sonnet-4-20250514`  | `--dangerously-skip-permissions -p`      |
+| Codex    | `codex`    | `CODEX_PATH`    | `o3`                        | positional + `--approval-mode full-auto` |
+| Copilot  | `copilot`  | `COPILOT_PATH`  |                             | `-p --allow-all-tools`                   |
+| Crush    | `crush`    | `CRUSH_PATH`    |                             | `run --yolo`                             |
+| Cursor   | `agent`    | `CURSOR_PATH`   |                             | `-p --force`                             |
+| Droid    | `droid`    | `DROID_PATH`    |                             | positional + `--skip-permissions-unsafe` |
+| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro`            | `--sandbox -p`                           |
+| Kimi     | `kimi`     | `KIMI_PATH`     |                             | `--quiet -p`                             |
+| OpenCode | `opencode` | `OPENCODE_PATH` | `anthropic/claude-sonnet-4` | `run` subcommand                         |
+| Qwen     | `qwen`     | `QWEN_PATH`     |                             | `-p --yolo -o text`                      |
 
 ## Detection Strategies
 
