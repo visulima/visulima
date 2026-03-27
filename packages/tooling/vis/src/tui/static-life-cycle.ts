@@ -1,11 +1,10 @@
 import { cyan, dim, green, red } from "@visulima/colorize";
-
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
 import { cliOutput } from "./output";
 import { formatMs } from "./pretty-time";
-import { TICK, CROSS } from "./symbols";
+import { CROSS, TICK } from "./symbols";
 
 interface StaticOutputOptions {
     args: {
@@ -21,10 +20,15 @@ interface StaticOutputOptions {
  */
 export class StaticOutputLifeCycle implements LifeCycleInterface {
     readonly #projectNames: string[];
+
     readonly #targets: string[];
+
     readonly #tasks: Task[];
+
     readonly #failedTasks: TaskResult[] = [];
+
     readonly #cachedTasks: TaskResult[] = [];
+
     readonly #allCompletedTasks = new Map<string, TaskResult>();
 
     #commandStartTime = 0;
@@ -38,18 +42,13 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     public startCommand(): void {
         this.#commandStartTime = Date.now();
 
-        const header = cliOutput.applyPrefix(
-            cyan,
-            `Running ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`,
-        );
+        const header = cliOutput.applyPrefix(cyan, `Running ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`);
 
         process.stdout.write(header);
 
         // Print overrides if any (skip internal "command" key)
         const firstTask = this.#tasks[0];
-        const overrideEntries = firstTask?.overrides
-            ? Object.entries(firstTask.overrides).filter(([flag]) => flag !== "command")
-            : [];
+        const overrideEntries = firstTask?.overrides ? Object.entries(firstTask.overrides).filter(([flag]) => flag !== "command") : [];
 
         if (overrideEntries.length > 0) {
             process.stdout.write(`\n  With additional flags:\n`);
@@ -78,10 +77,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                 this.#cachedTasks.push(result);
             }
 
-            const elapsed =
-                result.startTime && result.endTime
-                    ? dim(` (${formatMs(result.endTime - result.startTime)})`)
-                    : "";
+            const elapsed = result.startTime && result.endTime ? dim(` (${formatMs(result.endTime - result.startTime)})`) : "";
 
             const icon = cliOutput.getStatusIcon(result.status);
             const cacheLabel = isCacheStatus(result.status) ? cyan(" [cache]") : "";
@@ -101,58 +97,46 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         // Detect skipped tasks (tasks that never completed due to dependency failures or bail)
         const skippedTasks = this.#tasks.filter((t) => !this.#allCompletedTasks.has(t.id));
 
+        // Empty line between task output and summary
+        process.stdout.write("\n");
+
         if (this.#failedTasks.length === 0 && skippedTasks.length === 0) {
-            const cacheNote = this.#cachedTasks.length > 0
-                ? dim(` (${this.#cachedTasks.length} read from cache)`)
-                : "";
+            const cacheNote = this.#cachedTasks.length > 0 ? dim(` (${this.#cachedTasks.length} read from cache)`) : "";
 
             process.stdout.write(
-                cliOutput.success(
-                    `Successfully ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`,
-                    [
-                        `${green(TICK)} ${totalTasks} tasks completed${cacheNote}`,
-                        dim(`   Took ${totalTime}`),
-                    ],
-                ),
+                cliOutput.success(`Successfully ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`, [
+                    ` ${green(TICK)}  ${totalTasks} tasks completed${cacheNote}`,
+                    `    ${dim(`Took ${totalTime}`)}`,
+                ]),
             );
         } else {
             const bodyLines: string[] = [];
 
             if (skippedTasks.length > 0) {
-                bodyLines.push(
-                    `${dim(`${skippedTasks.length} task${skippedTasks.length === 1 ? "" : "s"} skipped`)} (dependency failed or --bail)`,
-                );
+                bodyLines.push(` ${dim(`${skippedTasks.length} task${skippedTasks.length === 1 ? "" : "s"} skipped`)} (dependency failed or --bail)`);
 
                 for (const task of skippedTasks) {
-                    bodyLines.push(`  ${dim("-")}  ${dim(task.id)}`);
+                    bodyLines.push(`   ${dim("-")}  ${dim(task.id)}`);
                 }
 
                 bodyLines.push("");
             }
 
             if (this.#failedTasks.length > 0) {
-                bodyLines.push(
-                    `${red(String(this.#failedTasks.length))} task${this.#failedTasks.length === 1 ? "" : "s"} failed:`,
-                );
+                bodyLines.push(` ${red(String(this.#failedTasks.length))} task${this.#failedTasks.length === 1 ? "" : "s"} failed:`);
 
                 for (const result of this.#failedTasks) {
-                    bodyLines.push(`  ${red(CROSS)}  ${result.task.id}`);
+                    bodyLines.push(`   ${red(CROSS)}  ${result.task.id}`);
                 }
 
                 bodyLines.push("");
             }
 
-            bodyLines.push(dim(`Took ${totalTime}`));
+            bodyLines.push(`    ${dim(`Took ${totalTime}`)}`);
 
-            process.stdout.write(
-                cliOutput.error(
-                    `Ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`,
-                    bodyLines,
-                ),
-            );
+            process.stdout.write(cliOutput.error(`Ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`, bodyLines));
         }
     }
 }
 
-const isCacheStatus = (status: TaskStatus): boolean =>
-    status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
+const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";

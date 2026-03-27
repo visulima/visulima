@@ -1,25 +1,29 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { CROSS, DASH, ELLIPSIS, SPINNER_FRAMES, TICK } from "../../src/tui/symbols";
 
 describe("tui/symbols", () => {
     it("should export TICK as a non-empty string", () => {
-        expect(typeof TICK).toBe("string");
+        expectTypeOf(TICK).toBeString();
+
         expect(TICK.length).toBeGreaterThan(0);
     });
 
     it("should export CROSS as a non-empty string", () => {
-        expect(typeof CROSS).toBe("string");
+        expectTypeOf(CROSS).toBeString();
+
         expect(CROSS.length).toBeGreaterThan(0);
     });
 
     it("should export DASH as a non-empty string", () => {
-        expect(typeof DASH).toBe("string");
+        expectTypeOf(DASH).toBeString();
+
         expect(DASH.length).toBeGreaterThan(0);
     });
 
     it("should export ELLIPSIS as a non-empty string", () => {
-        expect(typeof ELLIPSIS).toBe("string");
+        expectTypeOf(ELLIPSIS).toBeString();
+
         expect(ELLIPSIS.length).toBeGreaterThan(0);
     });
 
@@ -28,7 +32,7 @@ describe("tui/symbols", () => {
         expect(SPINNER_FRAMES.length).toBeGreaterThan(0);
 
         for (const frame of SPINNER_FRAMES) {
-            expect(typeof frame).toBe("string");
+            expectTypeOf(frame).toBeString();
         }
     });
 });

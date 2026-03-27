@@ -1,5 +1,4 @@
 import { bold, cyan, dim } from "@visulima/colorize";
-
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
 import { cliOutput } from "./output";
@@ -65,23 +64,18 @@ export class SummaryLifeCycle implements LifeCycleInterface {
         }
 
         process.stdout.write("\n");
-        process.stdout.write(cliOutput.getSeparator() + "\n");
-        process.stdout.write(bold(" Task Summary") + "\n");
-        process.stdout.write(cliOutput.getSeparator() + "\n");
+        process.stdout.write(`${cliOutput.getSeparator()}\n`);
+        process.stdout.write(`${bold(" Task Summary")}\n`);
+        process.stdout.write(`${cliOutput.getSeparator()}\n`);
         process.stdout.write("\n");
 
         // Sort: failures first, then cached, then success, then skipped
-        const sorted = [...this.#entries.values()].sort((a, b) => {
-            return getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status);
-        });
+        const sorted = this.#entries.values().toSorted((a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status));
 
         for (const entry of sorted) {
             const status = entry.result?.status;
             const icon = status ? cliOutput.getStatusIcon(status) : dim("?");
-            const elapsed =
-                entry.result?.startTime && entry.result.endTime
-                    ? dim(` ${formatMs(entry.result.endTime - entry.result.startTime)}`)
-                    : "";
+            const elapsed = entry.result?.startTime && entry.result.endTime ? dim(` ${formatMs(entry.result.endTime - entry.result.startTime)}`) : "";
 
             const cacheLabel = status && isCacheStatus(status) ? cyan(" [cache]") : "";
 
@@ -97,16 +91,16 @@ const getStatusOrder = (status?: TaskStatus): number => {
         case "failure": {
             return 0;
         }
+        case "local-cache":
+        case "local-cache-kept-existing":
+        case "remote-cache": {
+            return 3;
+        }
         case "skipped": {
             return 1;
         }
         case "success": {
             return 2;
-        }
-        case "local-cache":
-        case "local-cache-kept-existing":
-        case "remote-cache": {
-            return 3;
         }
         default: {
             return 4;
@@ -114,5 +108,4 @@ const getStatusOrder = (status?: TaskStatus): number => {
     }
 };
 
-const isCacheStatus = (status: TaskStatus): boolean =>
-    status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
+const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";

@@ -1,15 +1,16 @@
 import { cursorLeft, eraseLines } from "@visulima/ansi";
 import { bold, cyan, dim, green, inverse, red, white } from "@visulima/colorize";
-
 import type { TaskStatus } from "@visulima/task-runner";
 
-import { DASH, TICK, CROSS } from "./symbols";
+import { CROSS, DASH, TICK } from "./symbols";
 
 const EOL = "\n";
 
 /**
  * CLI output utility for the VIS task runner TUI.
- * Provides formatted output with colors, separators, and cursor control.
+ *
+ * Design language: industrial-utilitarian. Cyan accent for branding,
+ * green/red for status. Restrained use of bold. Generous spacing.
  */
 export class CLIOutput {
     readonly #cliName = "VIS";
@@ -23,13 +24,10 @@ export class CLIOutput {
 
     /**
      * Overwrites the current line(s) with new text.
-     * Used for dynamic terminal updates.
-     * @param numLines - Number of lines to erase before writing
-     * @param lines - Lines to write
      */
-    public overwriteLines(numLines: number, lines: string[]): void {
-        if (numLines > 0) {
-            process.stdout.write(eraseLines(numLines + 1));
+    public overwriteLines(numberLines: number, lines: string[]): void {
+        if (numberLines > 0) {
+            process.stdout.write(eraseLines(numberLines + 1));
             process.stdout.write(cursorLeft());
         }
 
@@ -39,7 +37,7 @@ export class CLIOutput {
     }
 
     /**
-     * Gets a full-width separator line.
+     * Gets a full-width thin separator line using box-drawing characters.
      */
     public getSeparator(): string {
         const width = process.stdout.columns || 80;
@@ -48,15 +46,18 @@ export class CLIOutput {
     }
 
     /**
-     * Applies the VIS prefix to text with a given color function.
+     * Applies the VIS badge prefix to text.
+     * Renders as: ` VIS ` inverse badge + space + text
      */
     public applyPrefix(colorFunction: (text: string) => string, text: string): string {
-        return `${EOL}${inverse(bold(colorFunction(` ${this.#cliName} `)))} ${text}${EOL}`;
+        const badge = inverse(bold(colorFunction(` ${this.#cliName} `)));
+
+        return `${EOL}${badge}  ${text}${EOL}`;
     }
 
     /**
-     * Logs task terminal output with appropriate formatting.
-     * Supports GitHub Actions grouping.
+     * Logs task terminal output with formatting.
+     * Uses GitHub Actions grouping when available.
      */
     public logCommandOutput(taskId: string, status: TaskStatus, output: string): void {
         const trimmed = output.trim();
@@ -84,16 +85,14 @@ export class CLIOutput {
      */
     public getStatusIcon(status: TaskStatus): string {
         switch (status) {
-            case "success": {
-                return green(TICK);
+            case "failure": {
+                return red(CROSS);
             }
             case "local-cache":
             case "local-cache-kept-existing":
-            case "remote-cache": {
+            case "remote-cache":
+            case "success": {
                 return green(TICK);
-            }
-            case "failure": {
-                return red(CROSS);
             }
             case "skipped": {
                 return dim(DASH);
@@ -109,19 +108,19 @@ export class CLIOutput {
      */
     public getStatusPrefix(status: TaskStatus): string {
         switch (status) {
-            case "success": {
-                return green(TICK);
+            case "failure": {
+                return red(CROSS);
             }
             case "local-cache":
             case "local-cache-kept-existing":
             case "remote-cache": {
                 return `${green(TICK)} ${cyan("[cache]")}`;
             }
-            case "failure": {
-                return red(CROSS);
-            }
             case "skipped": {
                 return `${dim(DASH)} ${dim("[skipped]")}`;
+            }
+            case "success": {
+                return green(TICK);
             }
             default: {
                 return white("?");
@@ -130,7 +129,7 @@ export class CLIOutput {
     }
 
     /**
-     * Returns a success message with VIS prefix.
+     * Returns a success message with VIS prefix badge.
      */
     public success(title: string, bodyLines?: string[]): string {
         let output = this.applyPrefix(green, title);
@@ -143,7 +142,7 @@ export class CLIOutput {
     }
 
     /**
-     * Returns an error message with VIS prefix.
+     * Returns an error message with VIS prefix badge.
      */
     public error(title: string, bodyLines?: string[]): string {
         let output = this.applyPrefix(red, title);

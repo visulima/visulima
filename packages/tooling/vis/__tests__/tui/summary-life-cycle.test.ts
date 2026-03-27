@@ -1,29 +1,28 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 import { strip } from "@visulima/colorize";
-
 import type { Task, TaskResult } from "@visulima/task-runner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SummaryLifeCycle } from "../../src/tui/summary-life-cycle";
 
-const createTask = (project: string, target: string): Task => ({
-    id: `${project}:${target}`,
-    outputs: [],
-    overrides: {},
-    target: { project, target },
-});
+const createTask = (project: string, target: string): Task => {
+    return {
+        id: `${project}:${target}`,
+        outputs: [],
+        overrides: {},
+        target: { project, target },
+    };
+};
 
-const createResult = (
-    task: Task,
-    status: "success" | "failure" | "local-cache" | "skipped" = "success",
-): TaskResult => ({
-    code: status === "failure" ? 1 : 0,
-    endTime: 2000,
-    startTime: 1000,
-    status,
-    task,
-    terminalOutput: `output for ${task.id}`,
-});
+const createResult = (task: Task, status: "success" | "failure" | "local-cache" | "skipped" = "success"): TaskResult => {
+    return {
+        code: status === "failure" ? 1 : 0,
+        endTime: 2000,
+        startTime: 1000,
+        status,
+        task,
+        terminalOutput: `output for ${task.id}`,
+    };
+};
 
 describe("tui/SummaryLifeCycle", () => {
     let writeSpy: ReturnType<typeof vi.spyOn>;

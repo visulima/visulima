@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "build": "echo 'Building lib-c...' && sleep 0.5 && echo 'lib-c built!'",
-        "test": "echo 'Testing lib-c...' && sleep 0.2 && echo 'lib-c tests passed!'",
-        "lint": "echo 'Linting lib-c...' && echo 'No lint errors.'"
+        "lint": "echo 'Linting lib-c...' && echo 'No lint errors.'",
+        "test": "echo 'Testing lib-c...' && sleep 0.2 && echo 'lib-c tests passed!'"
     }
 }

@@ -1,14 +1,16 @@
-import { cursorHide, cursorShow } from "@visulima/ansi";
-import { cyan, dim, green, red, yellow } from "@visulima/colorize";
-
+import { bold, cyan, dim, green, red, white } from "@visulima/colorize";
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/pail/interactive";
+import { createTable } from "@visulima/tabular";
+import { NO_BORDER } from "@visulima/tabular/style";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
 import { formatTargetsAndProjects } from "./formatting-utils";
 import { cliOutput } from "./output";
 import { formatMs } from "./pretty-time";
-import { SPINNER_FRAMES, TICK, CROSS } from "./symbols";
+import { CROSS, DASH, ELLIPSIS, SPINNER_FRAMES, TICK } from "./symbols";
 
 interface TaskRow {
+    duration?: number;
     startTime?: [number, number];
     status: "pending" | "running" | TaskStatus;
     task: Task;
@@ -28,260 +30,241 @@ interface DynamicOutputResult {
     renderIsDone: Promise<void>;
 }
 
-/**
- * Creates a dynamic TUI renderer for local development with cursor rewriting,
- * spinners, and a continuously updated pinned footer.
- */
+// ── helpers ──────────────────────────────────────────────────────────────
+
+const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
+
+const elapsedMs = (start: [number, number]): number => {
+    const d = process.hrtime(start);
+
+    return d[0] * 1000 + d[1] / 1_000_000;
+};
+
+// ── renderer ─────────────────────────────────────────────────────────────
+
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
     const { args, projectNames, tasks } = options;
 
-    const taskRows: TaskRow[] = tasks.map((task) => ({ status: "pending" as const, task }));
-    const tasksToTerminalOutputs = new Map<string, string>();
+    const rows: TaskRow[] = tasks.map((t) => { return { status: "pending" as const, task: t }; });
+    const outputs = new Map<string, string>();
 
-    let totalCompletedTasks = 0;
-    let totalSuccessfulTasks = 0;
-    let totalFailedTasks = 0;
-    let totalCachedTasks = 0;
-    let pinnedFooterNumLines = 0;
-    let currentFrame = 0;
-    let renderInterval: ReturnType<typeof setInterval> | undefined;
-    let commandStartTime: number;
+    let completed = 0;
+    let succeeded = 0;
+    let failed = 0;
+    let cached = 0;
+    let frame = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    let t0: number;
 
-    let resolveRenderIsDone: () => void;
-    const renderIsDone = new Promise<void>((resolve) => {
-        resolveRenderIsDone = resolve;
+    const manager = new InteractiveManager(new InteractiveStreamHook(process.stdout), new InteractiveStreamHook(process.stderr));
+
+    let resolveDone: () => void;
+    const renderIsDone = new Promise<void>((r) => {
+        resolveDone = r;
     });
 
-    const getRunningTasks = (): TaskRow[] => taskRows.filter((r) => r.status === "running");
-    const getSpinner = (): string => SPINNER_FRAMES[currentFrame % SPINNER_FRAMES.length] as string;
+    const spinner = (): string => SPINNER_FRAMES[frame % SPINNER_FRAMES.length] as string;
 
-    const renderFooter = (): string[] => {
-        const running = getRunningTasks();
-        const totalTasks = taskRows.length;
-        const remaining = totalTasks - totalCompletedTasks;
-        const lines: string[] = [];
+    /**
+     * Build the task list table as an array of lines using @visulima/tabular.
+     */
+    const buildFrame = (): string[] => {
+        const termWidth = process.stdout.columns || 80;
 
-        // Blank separator line
-        lines.push("");
+        // Column widths: icon=3 (fixed), name=auto (stretches), cache=7 (fixed), duration=14 (fixed)
+        const table = createTable({
+            columnWidths: [3, undefined, 7, 14],
+            maxWidth: termWidth,
+            style: {
+                border: NO_BORDER,
+                paddingLeft: 1,
+                paddingRight: 1,
+            },
+        });
 
-        // Status line
-        const parts: string[] = [];
+        table.setHeaders([
+            { content: "", hAlign: "left" },
+            { content: "", hAlign: "left" },
+            { content: bold("Cache"), hAlign: "right" },
+            { content: bold("Duration"), hAlign: "right" },
+        ]);
 
-        if (remaining > 0) {
-            parts.push(`${cyan(String(remaining))} remaining`);
+        const running = rows.filter((r) => r.status === "running");
+        const done = rows.filter((r) => r.status !== "pending" && r.status !== "running");
+        const pending = rows.filter((r) => r.status === "pending");
+
+        // ── running tasks with spinners ──
+        for (const r of running) {
+            const ms = r.startTime ? elapsedMs(r.startTime) : 0;
+
+            table.addRow([
+                { content: cyan(spinner()), hAlign: "left" },
+                { content: r.task.id },
+                { content: dim(ELLIPSIS), hAlign: "right" },
+                { content: formatMs(ms), hAlign: "right" },
+            ]);
         }
 
-        if (totalSuccessfulTasks > 0) {
-            parts.push(`${green(String(totalSuccessfulTasks))} succeeded`);
+        // pad to parallel slot count to prevent layout jumping
+        if (completed !== rows.length && typeof args.parallel === "number") {
+            const slots = Math.min(args.parallel as number, rows.length - completed);
+
+            for (let i = running.length; i < slots; i++) {
+                table.addRow(["", "", "", ""]);
+            }
         }
 
-        if (totalCachedTasks > 0) {
-            parts.push(`${green(String(totalCachedTasks))} cached`);
+        // ── completed tasks ──
+        for (const r of done) {
+            const icon = r.status === "failure" ? red(CROSS) : green(TICK);
+            const dur = r.duration === undefined ? DASH : formatMs(r.duration);
+            const ch = isCacheStatus(r.status as TaskStatus) ? cyan("yes") : dim(DASH);
+
+            table.addRow([{ content: icon, hAlign: "left" }, r.task.id, { content: ch, hAlign: "right" }, { content: dur, hAlign: "right" }]);
         }
 
-        if (totalFailedTasks > 0) {
-            parts.push(`${red(String(totalFailedTasks))} failed`);
+        // ── next pending task ──
+        if (pending.length > 0) {
+            const next = pending[0] as TaskRow;
+
+            table.addRow([
+                { content: `${white(bold(">"))} ${dim(".")}`, hAlign: "left" },
+                next.task.id,
+                { content: dim(DASH), hAlign: "right" },
+                { content: dim(ELLIPSIS), hAlign: "right" },
+            ]);
+
+            if (pending.length > 1) {
+                table.addRow(["", dim(`${ELLIPSIS} ${pending.length - 1} more`), "", ""]);
+            }
         }
 
-        if (parts.length > 0) {
-            lines.push(`   ${parts.join(dim("  |  "))}`);
-        }
+        const rendered = table.toString();
 
-        lines.push("");
-
-        // Running tasks with spinners
-        for (const row of running) {
-            const spinner = yellow(getSpinner());
-            const elapsed = row.startTime ? formatMs(process.hrtime(row.startTime)[0] * 1000 + process.hrtime(row.startTime)[1] / 1_000_000) : "";
-            const elapsedSuffix = elapsed ? dim(` (${elapsed})`) : "";
-
-            lines.push(`   ${spinner}  ${row.task.id}${elapsedSuffix}`);
-        }
-
-        if (running.length === 0 && remaining > 0) {
-            lines.push(`   ${dim("Waiting for tasks...")}`);
-        }
-
-        lines.push("");
-
-        return lines;
+        // Split into lines, filter trailing empty
+        return rendered.split("\n");
     };
+
+    // ── render cycle ───────────────────────────────────────────────────
 
     const render = (): void => {
-        currentFrame++;
-        const lines = renderFooter();
-
-        cliOutput.overwriteLines(pinnedFooterNumLines, lines);
-        pinnedFooterNumLines = lines.length;
+        frame++;
+        manager.update("stdout", buildFrame());
     };
 
-    const restoreCursor = (): void => {
-        process.stdout.write(cursorShow);
-    };
-
-    const handleSignal = (): void => {
-        restoreCursor();
-
-        if (renderInterval) {
-            clearInterval(renderInterval);
+    const cleanup = (): void => {
+        if (timer) {
+            clearInterval(timer);
+            timer = undefined;
         }
 
+        manager.unhook(false);
+    };
+
+    const onSignal = (): void => {
+        cleanup();
         process.exit(1);
     };
 
+    // ── lifecycle ──────────────────────────────────────────────────────
+
     const lifeCycle: LifeCycleInterface = {
         endCommand(): void {
-            if (renderInterval) {
-                clearInterval(renderInterval);
-                renderInterval = undefined;
-            }
+            // final frame
+            manager.update("stdout", buildFrame());
+            cleanup();
 
-            // Clear the pinned footer
-            if (pinnedFooterNumLines > 0) {
-                cliOutput.overwriteLines(pinnedFooterNumLines, []);
-                pinnedFooterNumLines = 0;
-            }
+            const took = formatMs(Date.now() - t0);
 
-            const totalTime = formatMs(Date.now() - commandStartTime);
+            // Empty line between the task table and the summary
+            process.stdout.write("\n");
 
-            // Print final summary
-            if (totalFailedTasks === 0) {
-                const cacheNote = totalCachedTasks > 0 ? dim(` (${totalCachedTasks} read from cache)`) : "";
+            if (failed === 0) {
+                const cacheNote = cached > 0 ? dim(` (${cached} read from cache)`) : "";
 
                 process.stdout.write(
                     cliOutput.success(`Successfully ran ${formatTargetsAndProjects(projectNames, args.targets, tasks)}`, [
-                        `${green(TICK)} ${totalSuccessfulTasks + totalCachedTasks} tasks completed${cacheNote}`,
-                        dim(`   Took ${totalTime}`),
+                        ` ${green(TICK)}  ${succeeded + cached} tasks completed${cacheNote}`,
+                        `    ${dim(`Took ${took}`)}`,
                     ]),
                 );
             } else {
-                const failedRows = taskRows.filter((r) => r.status === "failure");
-                const failedLines = failedRows.map((r) => `  ${red(CROSS)}  ${r.task.id}`);
+                const failedIds = rows.filter((r) => r.status === "failure").map((r) => `   ${red(CROSS)}  ${r.task.id}`);
 
                 process.stdout.write(
                     cliOutput.error(`Ran ${formatTargetsAndProjects(projectNames, args.targets, tasks)}`, [
-                        `${red(String(totalFailedTasks))} task${totalFailedTasks === 1 ? "" : "s"} failed:`,
-                        ...failedLines,
+                        ` ${red(String(failed))} task${failed === 1 ? "" : "s"} failed:`,
+                        ...failedIds,
                         "",
-                        dim(`Took ${totalTime}`),
+                        `    ${dim(`Took ${took}`)}`,
                     ]),
                 );
             }
 
-            restoreCursor();
-
-            process.removeListener("SIGINT", handleSignal);
-            process.removeListener("SIGTERM", handleSignal);
-
-            resolveRenderIsDone();
+            process.removeListener("SIGINT", onSignal);
+            process.removeListener("SIGTERM", onSignal);
+            resolveDone();
         },
 
-        endTasks(taskResults: TaskResult[]): void {
-            for (const result of taskResults) {
-                const row = taskRows.find((r) => r.task.id === result.task.id);
+        endTasks(results: TaskResult[]): void {
+            for (const res of results) {
+                const row = rows.find((r) => r.task.id === res.task.id);
 
                 if (row) {
-                    row.status = result.status;
+                    row.status = res.status;
+                    row.duration = res.startTime && res.endTime ? res.endTime - res.startTime : undefined;
                 }
 
-                totalCompletedTasks++;
+                completed++;
 
-                switch (result.status) {
-                    case "success": {
-                        totalSuccessfulTasks++;
+                switch (res.status) {
+                    case "failure": {
+                        failed++;
                         break;
                     }
                     case "local-cache":
                     case "local-cache-kept-existing":
                     case "remote-cache": {
-                        totalCachedTasks++;
+                        cached++;
                         break;
                     }
-                    case "failure": {
-                        totalFailedTasks++;
+                    case "success": {
+                        succeeded++;
                         break;
                     }
                     // no default
                 }
 
-                if (result.terminalOutput) {
-                    tasksToTerminalOutputs.set(result.task.id, result.terminalOutput);
+                if (res.terminalOutput) {
+                    outputs.set(res.task.id, res.terminalOutput);
                 }
-
-                // Print completed task line (above the pinned footer)
-                const elapsed =
-                    result.startTime && result.endTime ? dim(` (${formatMs(result.endTime - result.startTime)})`) : "";
-
-                const icon = cliOutput.getStatusIcon(result.status);
-                const cacheLabel = isCacheStatus(result.status) ? cyan(" [cache]") : "";
-
-                // Erase footer, print result line, re-render footer
-                if (pinnedFooterNumLines > 0) {
-                    cliOutput.overwriteLines(pinnedFooterNumLines, []);
-                    pinnedFooterNumLines = 0;
-                }
-
-                process.stdout.write(`   ${icon}  ${result.task.id}${cacheLabel}${elapsed}\n`);
-
-                // Re-render footer immediately
-                const lines = renderFooter();
-
-                for (const line of lines) {
-                    process.stdout.write(line + "\n");
-                }
-
-                pinnedFooterNumLines = lines.length;
             }
         },
 
-        printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
-            if (status === "failure" && terminalOutput.trim()) {
-                // For failures, print output above footer
-                if (pinnedFooterNumLines > 0) {
-                    cliOutput.overwriteLines(pinnedFooterNumLines, []);
-                    pinnedFooterNumLines = 0;
-                }
-
-                cliOutput.logCommandOutput(task.id, status, terminalOutput);
-
-                // Re-render footer
-                const lines = renderFooter();
-
-                for (const line of lines) {
-                    process.stdout.write(line + "\n");
-                }
-
-                pinnedFooterNumLines = lines.length;
+        printTaskTerminalOutput(task: Task, _status: TaskStatus, output: string): void {
+            if (output.trim()) {
+                outputs.set(task.id, (outputs.get(task.id) ?? "") + output);
             }
         },
 
         startCommand(): void {
-            commandStartTime = Date.now();
+            t0 = Date.now();
+            process.on("SIGINT", onSignal);
+            process.on("SIGTERM", onSignal);
 
-            process.stdout.write(cursorHide);
-            process.on("SIGINT", handleSignal);
-            process.on("SIGTERM", handleSignal);
+            // Print header BEFORE hooking so it stays in normal output
+            const title = `Running ${formatTargetsAndProjects(projectNames, args.targets, tasks)}`;
 
-            const header = cliOutput.applyPrefix(
-                cyan,
-                `Running ${formatTargetsAndProjects(projectNames, args.targets, tasks)}`,
-            );
+            process.stdout.write(cliOutput.applyPrefix(cyan, title));
+            process.stdout.write("\n");
 
-            process.stdout.write(header);
-
-            // Initial footer render
-            const lines = renderFooter();
-
-            for (const line of lines) {
-                process.stdout.write(line + "\n");
-            }
-
-            pinnedFooterNumLines = lines.length;
+            // Hook streams for the interactive task list region
+            manager.hook();
         },
 
-        startTasks(startedTasks: Task[]): void {
-            for (const task of startedTasks) {
-                const row = taskRows.find((r) => r.task.id === task.id);
+        startTasks(started: Task[]): void {
+            for (const t of started) {
+                const row = rows.find((r) => r.task.id === t.id);
 
                 if (row) {
                     row.status = "running";
@@ -289,14 +272,11 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 }
             }
 
-            if (!renderInterval) {
-                renderInterval = setInterval(render, 100);
+            if (!timer) {
+                timer = setInterval(render, 100);
             }
         },
     };
 
     return { lifeCycle, renderIsDone };
 };
-
-const isCacheStatus = (status: TaskStatus): boolean =>
-    status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
