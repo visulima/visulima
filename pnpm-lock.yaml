@@ -8338,9 +8338,15 @@ importers:
       '@xterm/headless':
         specifier: ^6.0.0
         version: 6.0.0
+      boxen:
+        specifier: 8.0.1
+        version: 8.0.1
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.0
+      delay:
+        specifier: 7.0.0
+        version: 7.0.0
       esbuild:
         specifier: catalog:build
         version: 0.27.4
@@ -8368,6 +8374,9 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: 0.1.1
         version: 0.1.1(eslint@10.1.0(jiti@2.6.1))
+      node-pty:
+        specifier: 1.1.0
+        version: 1.1.0
       prettier:
         specifier: catalog:lint
         version: 3.8.1
@@ -8383,6 +8392,9 @@ importers:
       semantic-release:
         specifier: catalog:cli
         version: 25.0.3(typescript@5.9.3)
+      strip-ansi:
+        specifier: 7.2.0
+        version: 7.2.0
       typescript:
         specifier: catalog:tsc
         version: 5.9.3
@@ -20298,6 +20310,10 @@ packages:
     resolution: {integrity: sha512-TllpMR/t0M5sqCXfj85i4XaAzxmS5tVA16dqvdkMwGmzI+dXLXnw3J+3Vdv7VKw+ThlTMboK6i9rnZ6Nntj5CQ==}
     engines: {node: '>= 14'}
 
+  delay@7.0.0:
+    resolution: {integrity: sha512-C3vaGs818qzZjCvVJ98GQUMVyWeg7dr5w2Nwwb2t5K8G98jOyyVO2ti2bKYk5yoYElqH3F2yA53ykuEnwD6MCg==}
+    engines: {node: '>=20'}
+
   delayed-stream@1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
@@ -25696,6 +25712,9 @@ packages:
     resolution: {integrity: sha512-RM5oyBy45cLEoHqCeh+MNuFAxO0vTFBLskvQbOKnEE7YTTSN4tbN8QWDIPQ6L+WvKsB/qLEGpYe2ZZ9d4W9OIQ==}
     engines: {node: '>=8'}
 
+  node-pty@1.1.0:
+    resolution: {integrity: sha512-20JqtutY6JPXTUnL0ij1uad7Qe1baT46lyolh2sSENDd4sTzKZ4nmAFkeAARDKwmlLjPx6XKRlwRUxwjOy+lUg==}
+
   node-readfiles@0.2.0:
     resolution: {integrity: sha512-SU00ZarexNlE4Rjdm83vglt5Y9yiQ+XI1XpflWlb7q7UTN1JUItm69xMeiQCTxtTfnzt+83T8Cx+vI2ED++VDA==}
 
@@ -27236,6 +27255,10 @@ packages:
   randexp@0.5.3:
     resolution: {integrity: sha512-U+5l2KrcMNOUPYvazA3h5ekF80FHTUG+87SEAmHZmolh1M+i/WyTCxVzmi+tidIa1tM4BSe8g2Y/D3loWDjj+w==}
     engines: {node: '>=4'}
+
+  random-int@3.1.0:
+    resolution: {integrity: sha512-h8CRz8cpvzj0hC/iH/1Gapgcl2TQ6xtnCpyOI5WvWfXf/yrDx2DOU+tD9rX23j36IF11xg1KqB9W11Z18JPMdw==}
+    engines: {node: '>=12'}
 
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -29929,6 +29952,10 @@ packages:
   unixify@1.0.0:
     resolution: {integrity: sha512-6bc58dPYhCMHHuwxldQxO3RRNZ4eCogZ/st++0+fcC1nr0jiGUtAdBJ2qzmLQWSxbtz42pWt4QQMiZ9HvZf5cg==}
     engines: {node: '>=0.10.0'}
+
+  unlimited-timeout@0.1.0:
+    resolution: {integrity: sha512-D4g+mxFeQGQHzCfnvij+R35ukJ0658Zzudw7j16p4tBBbNasKkKM4SocYxqhwT5xA7a9JYWDzKkEFyMlRi5sng==}
+    engines: {node: '>=20'}
 
   unpic@4.2.2:
     resolution: {integrity: sha512-z6T2ScMgRV2y2H8MwwhY5xHZWXhUx/YxtOCGJwfURSl7ypVy4HpLIMWoIZKnnxQa/RKzM0kg8hUh0paIrpLfvw==}
@@ -45359,6 +45386,11 @@ snapshots:
       escodegen: 2.1.0
       esprima: 4.0.1
 
+  delay@7.0.0:
+    dependencies:
+      random-int: 3.1.0
+      unlimited-timeout: 0.1.0
+
   delayed-stream@1.0.0: {}
 
   delegates@1.0.0: {}
@@ -52915,6 +52947,10 @@ snapshots:
     dependencies:
       process-on-spawn: 1.0.0
 
+  node-pty@1.1.0:
+    dependencies:
+      node-addon-api: 7.1.1
+
   node-readfiles@0.2.0:
     dependencies:
       es6-promise: 3.3.1
@@ -54805,6 +54841,8 @@ snapshots:
     dependencies:
       drange: 1.1.1
       ret: 0.2.2
+
+  random-int@3.1.0: {}
 
   randombytes@2.1.0:
     dependencies:
@@ -58233,6 +58271,8 @@ snapshots:
   unixify@1.0.0:
     dependencies:
       normalize-path: 2.1.1
+
+  unlimited-timeout@0.1.0: {}
 
   unpic@4.2.2: {}
 

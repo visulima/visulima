@@ -1,6 +1,6 @@
 import { useContext, type ReactNode, type ReactElement } from "react";
 import chalk, { type ForegroundColorName } from "chalk";
-import { type LiteralUnion } from "type-fest";
+import type { LiteralUnion } from "type-fest";
 import colorize from "../colorize.js";
 import { type Styles } from "../styles.js";
 import { accessibilityContext } from "./AccessibilityContext.js";

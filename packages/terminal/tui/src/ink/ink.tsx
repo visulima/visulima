@@ -1,5 +1,6 @@
 import process from "node:process";
 import { Buffer } from "node:buffer";
+import { Console as NodeConsole } from "node:console";
 import { type ReactNode } from "react";
 import { throttle, type DebouncedFunc } from "es-toolkit/compat";
 import ansiEscapes from "ansi-escapes";
@@ -7,6 +8,12 @@ import isInCi from "is-in-ci";
 import autoBind from "auto-bind";
 import { onExit as signalExit } from "signal-exit";
 import patchConsole from "patch-console";
+
+// Ensure console.Console is available for patch-console (Vitest and some test
+// environments replace the global console without exposing Console as a constructor).
+if (!(console as any).Console) {
+    (console as any).Console = NodeConsole;
+}
 import { LegacyRoot, ConcurrentRoot } from "react-reconciler/constants.js";
 import { type FiberRoot } from "react-reconciler";
 import Yoga from "yoga-layout";
