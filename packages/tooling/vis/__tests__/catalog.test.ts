@@ -2814,9 +2814,10 @@ describe("fetchChangelogInfo", () => {
 
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
-
                 ({
-                    json: async () => { return { repository: { url: "git+https://github.com/facebook/react.git" } }; },
+                    json: async () => {
+                        return { repository: { url: "git+https://github.com/facebook/react.git" } };
+                    },
                     ok: true,
                 }) as Response,
         );
@@ -2837,9 +2838,10 @@ describe("fetchChangelogInfo", () => {
 
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
-
                 ({
-                    json: async () => { return {}; },
+                    json: async () => {
+                        return {};
+                    },
                     ok: true,
                 }) as Response,
         );
@@ -2857,11 +2859,7 @@ describe("fetchChangelogInfo", () => {
     it("should handle fetch failure gracefully", async () => {
         expect.assertions(2);
 
-        vi.spyOn(globalThis, "fetch").mockImplementation(
-            async () =>
-
-                ({ ok: false, status: 404 }) as Response,
-        );
+        vi.spyOn(globalThis, "fetch").mockImplementation(async () => ({ ok: false, status: 404 }) as Response);
 
         const result = await fetchChangelogInfo([
             { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "missing-pkg", targetVersion: "2.0.0", updateType: "major" },
@@ -2878,9 +2876,10 @@ describe("fetchChangelogInfo", () => {
 
         vi.spyOn(globalThis, "fetch").mockImplementation(
             async () =>
-
                 ({
-                    json: async () => { return { repository: { url: "https://gitlab.com/my/repo.git" } }; },
+                    json: async () => {
+                        return { repository: { url: "https://gitlab.com/my/repo.git" } };
+                    },
                     ok: true,
                 }) as Response,
         );
@@ -2903,7 +2902,9 @@ describe("fetchChangelogInfo", () => {
             const name = url.replace("https://registry.npmjs.org/", "");
 
             return {
-                json: async () => { return { repository: { url: `git+https://github.com/owner/${name}.git` } }; },
+                json: async () => {
+                    return { repository: { url: `git+https://github.com/owner/${name}.git` } };
+                },
                 ok: true,
             } as Response;
         });
