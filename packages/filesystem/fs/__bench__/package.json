@@ -18,7 +18,5 @@
     "@types/fs-extra": "catalog:types",
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
