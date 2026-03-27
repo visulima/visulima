@@ -28,7 +28,5 @@
     "tailwindcss": "catalog:style",
     "typescript": "catalog:tsc",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

@@ -10,7 +10,5 @@
   "dependencies": {
     "@visulima/pail": "catalog:prod"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

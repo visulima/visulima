@@ -11,7 +11,5 @@
     "@visulima/error-handler": "workspace:*",
     "hono": "catalog:backend"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

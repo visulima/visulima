@@ -27,7 +27,5 @@
     "cross-env": "catalog:dev",
     "typescript": "catalog:tsc",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

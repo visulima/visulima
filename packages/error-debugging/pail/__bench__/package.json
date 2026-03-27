@@ -20,7 +20,5 @@
   "devDependencies": {
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

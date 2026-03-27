@@ -16,7 +16,5 @@
     "@visulima/vite-overlay": "workspace:*",
     "typescript": "catalog:tsc",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

@@ -9,7 +9,5 @@
   "dependencies": {
     "@visulima/error-handler": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

@@ -13,7 +13,5 @@
   },
   "devDependencies": {
     "bun-types": "catalog:dev"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

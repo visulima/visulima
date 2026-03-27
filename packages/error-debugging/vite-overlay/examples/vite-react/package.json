@@ -26,7 +26,5 @@
     "typescript": "catalog:tsc",
     "typescript-eslint": "catalog:lint",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

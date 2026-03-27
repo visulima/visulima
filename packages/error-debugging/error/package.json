@@ -116,7 +116,6 @@
     "test:ui": "vitest --ui --coverage.enabled=true",
     "test:watch": "vitest"
   },
-  "dependencies": {},
   "devDependencies": {
     "@anolilab/eslint-config": "catalog:lint",
     "@anolilab/prettier-config": "catalog:lint",
@@ -150,7 +149,6 @@
       "optional": true
     }
   },
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },
