@@ -8,9 +8,9 @@
  *   import { DevTools } from 'ratatat'
  *
  *   render(
- *     <DevTools>
- *       <MyApp />
- *     </DevTools>
+ *     &lt;DevTools>
+ *       &lt;MyApp />
+ *     &lt;/DevTools>
  *   )
  *
  * Props:
@@ -19,8 +19,9 @@
  * Future slots: render count, memory usage, custom metrics via props.
  */
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Spacer, Text } from "./react.js";
+
 import { useRatatatContext, useWindowSize } from "./hooks.js";
+import { Box, Spacer, Text } from "./react.js";
 
 export interface DevToolsProps {
     children: React.ReactNode;
@@ -42,7 +43,9 @@ function useFpsCounter() {
     useEffect(() => {
         const onRender = () => {
             // Reset the idle timeout — 2s of no renders → show '--'
-            if (idleTimer.current) clearTimeout(idleTimer.current);
+            if (idleTimer.current)
+                clearTimeout(idleTimer.current);
+
             idleTimer.current = setTimeout(() => {
                 setFps(0);
                 frames.current = 0;
@@ -52,6 +55,7 @@ function useFpsCounter() {
             frames.current++;
             const now = Date.now();
             const elapsed = now - windowStart.current;
+
             if (elapsed >= 500) {
                 setFps(Math.round((frames.current / elapsed) * 1000));
                 frames.current = 0;
@@ -62,9 +66,12 @@ function useFpsCounter() {
         const unsub = app.onBeforeFlush(() => {
             onRender();
         });
+
         return () => {
             unsub();
-            if (idleTimer.current) clearTimeout(idleTimer.current);
+
+            if (idleTimer.current)
+                clearTimeout(idleTimer.current);
         };
     }, [app]);
 
@@ -72,21 +79,26 @@ function useFpsCounter() {
 }
 
 /** Small updates/sec badge */
-function FpsHud({ fps }: { fps: number }) {
+const FpsHud = ({ fps }: { fps: number }) => {
     const label = fps === 0 ? "--" : String(fps);
+
     return (
-        <Box borderStyle="round" borderColor="gray" paddingX={1}>
-            <Text dim>{label} updates/sec</Text>
+        <Box borderColor="gray" borderStyle="round" paddingX={1}>
+            <Text dim>
+                {label}
+                {" "}
+                updates/sec
+            </Text>
         </Box>
     );
-}
+};
 
-export function DevTools({ children, enabled = true }: DevToolsProps): React.ReactElement {
+export const DevTools = ({ children, enabled = true }: DevToolsProps): React.ReactElement => {
     const fps = useFpsCounter();
     const { columns, rows } = useWindowSize();
 
     return (
-        <Box flexDirection="column" width={columns} height={rows}>
+        <Box flexDirection="column" height={rows} width={columns}>
             {/* App content fills all available space */}
             <Box flexGrow={1}>{children}</Box>
 
@@ -99,4 +111,4 @@ export function DevTools({ children, enabled = true }: DevToolsProps): React.Rea
             )}
         </Box>
     );
-}
+};

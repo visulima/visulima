@@ -1,18 +1,22 @@
 import process from "node:process";
+
 import React from "react";
+
 import { render, useApp, useInput, usePaste } from "../../../src/ink/index.js";
 
-function PasteDemo({ test }: { readonly test: string | undefined }) {
+const PasteDemo = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();
 
     usePaste((text) => {
         if (test === "basic" && text === "hello world") {
             exit();
+
             return;
         }
 
         if (test === "escapeSequences" && text === "hello\u001B[Aworld") {
             exit();
+
             return;
         }
 
@@ -33,9 +37,9 @@ function PasteDemo({ test }: { readonly test: string | undefined }) {
     }, []);
 
     return null;
-}
+};
 
-function MultipleHooksDemo() {
+const MultipleHooksDemo = () => {
     const { exit } = useApp();
     const receivedCount = React.useRef(0);
 
@@ -43,6 +47,7 @@ function MultipleHooksDemo() {
         (text: string) => {
             if (text === "hello") {
                 receivedCount.current++;
+
                 if (receivedCount.current >= 2) {
                     exit();
                 }
@@ -59,7 +64,7 @@ function MultipleHooksDemo() {
     }, []);
 
     return null;
-}
+};
 
 const test = process.argv[2];
 const app = render(test === "multipleHooks" ? <MultipleHooksDemo /> : <PasteDemo test={test} />);

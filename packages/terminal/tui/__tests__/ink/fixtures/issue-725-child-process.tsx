@@ -1,11 +1,12 @@
 import React from "react";
-import { Text, useStdin, render } from "../../../src/ink/index.js";
 
-function App() {
+import { render, Text, useStdin } from "../../../src/ink/index.js";
+
+const App = () => {
     const { isRawModeSupported } = useStdin();
 
     return <Text>{isRawModeSupported ? "ready" : "ready-stdin-not-tty"}</Text>;
-}
+};
 
 const { waitUntilExit } = render(<App />);
 

@@ -1,14 +1,15 @@
-import { useContext, useRef, useCallback, useInsertionEffect } from "react";
+import { useCallback, useContext, useInsertionEffect, useRef } from "react";
+
 import CursorContext from "../components/CursorContext.js";
-import { type CursorPosition } from "../log-update.js";
+import type { CursorPosition } from "../log-update.js";
 
 /**
-A React hook that returns methods to control the terminal cursor position.
-
-Setting a cursor position makes the cursor visible at the specified coordinates (relative to the Ink output origin). This is useful for IME (Input Method Editor) support, where the composing character is displayed at the cursor location.
-
-Pass `undefined` to hide the cursor.
-*/
+ * A React hook that returns methods to control the terminal cursor position.
+ *
+ * Setting a cursor position makes the cursor visible at the specified coordinates (relative to the Ink output origin). This is useful for IME (Input Method Editor) support, where the composing character is displayed at the cursor location.
+ *
+ * Pass `undefined` to hide the cursor.
+ */
 const useCursor = (): { setCursorPosition: (position: CursorPosition | undefined) => void } => {
     const context = useContext(CursorContext);
     const positionRef = useRef<CursorPosition | undefined>(undefined);
@@ -23,12 +24,13 @@ const useCursor = (): { setCursorPosition: (position: CursorPosition | undefined
     // This prevents cursor state from leaking across render boundaries.
     useInsertionEffect(() => {
         context.setCursorPosition(positionRef.current);
+
         return () => {
             context.setCursorPosition(undefined);
         };
     });
 
-    return { setCursorPosition: setCursorPosition };
+    return { setCursorPosition };
 };
 
 export default useCursor;

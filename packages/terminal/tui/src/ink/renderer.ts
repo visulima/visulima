@@ -1,6 +1,6 @@
-import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output.js";
+import type { DOMElement } from "./dom.js";
 import Output, { OutputCaches } from "./output.js";
-import { type DOMElement } from "./dom.js";
+import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output.js";
 
 type Result = {
     output: string;
@@ -14,25 +14,27 @@ const interactiveOutputs = new WeakMap<DOMElement, Output>();
 const staticOutputs = new WeakMap<DOMElement, Output>();
 
 type ReusableOutputOptions = {
-    outputs: WeakMap<DOMElement, Output>;
-    node: DOMElement;
-    width: number;
-    height: number;
     caches: OutputCaches;
+    height: number;
+    node: DOMElement;
+    outputs: WeakMap<DOMElement, Output>;
+    width: number;
 };
 
-const getReusableOutput = ({ outputs, node, width, height, caches }: ReusableOutputOptions): Output => {
+const getReusableOutput = ({ caches, height, node, outputs, width }: ReusableOutputOptions): Output => {
     let output = outputs.get(node);
+
     if (!output) {
         output = new Output({
-            width,
-            height,
             caches,
+            height,
+            width,
         });
         outputs.set(node, output);
     }
 
     output.reset(width, height);
+
     return output;
 };
 
@@ -61,11 +63,11 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
         }
 
         const output = getReusableOutput({
-            outputs: interactiveOutputs,
-            node,
-            width: node.yogaNode.getComputedWidth(),
-            height: node.yogaNode.getComputedHeight(),
             caches: interactiveOutputCaches,
+            height: node.yogaNode.getComputedHeight(),
+            node,
+            outputs: interactiveOutputs,
+            width: node.yogaNode.getComputedWidth(),
         });
 
         renderNodeToOutput(node, output, {
@@ -76,11 +78,11 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
 
         if (node.staticNode?.yogaNode) {
             staticOutput = getReusableOutput({
-                outputs: staticOutputs,
-                node,
-                width: node.staticNode.yogaNode.getComputedWidth(),
-                height: node.staticNode.yogaNode.getComputedHeight(),
                 caches: staticOutputCaches,
+                height: node.staticNode.yogaNode.getComputedHeight(),
+                node,
+                outputs: staticOutputs,
+                width: node.staticNode.yogaNode.getComputedWidth(),
             });
 
             renderNodeToOutput(node.staticNode, staticOutput, {
@@ -88,7 +90,7 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             });
         }
 
-        const { output: generatedOutput, height: outputHeight } = output.get();
+        const { height: outputHeight, output: generatedOutput } = output.get();
 
         return {
             output: generatedOutput,

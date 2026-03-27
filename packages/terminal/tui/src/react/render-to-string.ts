@@ -1,11 +1,12 @@
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
+
+import { Cell } from "../core/index.js";
+import { FocusProvider } from "./focus.js";
+import { RatatatContext } from "./hooks.js";
 import { LayoutNode } from "./layout.js";
 import { RatatatReconciler } from "./reconciler.js";
 import { renderTreeToBuffer } from "./renderer.js";
-import { RatatatContext } from "./hooks.js";
-import { FocusProvider } from "./focus.js";
-import { Cell } from "../core/index.js";
 
 export interface RenderToStringOptions {
     /** Width of the virtual terminal in columns. @default 80 */
@@ -32,6 +33,7 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
     const rows = options?.rows ?? 24;
 
     const rootNode = new LayoutNode();
+
     rootNode.yogaNode.setWidth(cols);
     rootNode.yogaNode.setHeight(rows);
 
@@ -39,8 +41,8 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
     const noopContext = {
         app: null as any,
         input: null as any,
-        writeStdout: (_t: string) => {},
         writeStderr: (_t: string) => {},
+        writeStdout: (_t: string) => {},
     };
 
     const wrapped = React.createElement(RatatatContext.Provider, { value: noopContext }, React.createElement(FocusProvider, null, element));
@@ -64,22 +66,27 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
     // Layout and paint into a buffer
     rootNode.calculateLayout(cols, rows);
     const buffer = new Uint32Array(cols * rows * 2);
+
     renderTreeToBuffer(rootNode, buffer, cols, rows);
 
     // Read buffer back to string — trim trailing spaces from each row,
     // then strip empty trailing rows
     const lines: string[] = [];
+
     for (let row = 0; row < rows; row++) {
         let line = "";
+
         for (let col = 0; col < cols; col++) {
             const ch = buffer[(row * cols + col) * 2];
+
             line += Cell.getChar(ch);
         }
+
         lines.push(line.trimEnd());
     }
 
     // Remove trailing empty lines
-    while (lines.length > 0 && lines[lines.length - 1] === "") {
+    while (lines.length > 0 && lines.at(-1) === "") {
         lines.pop();
     }
 

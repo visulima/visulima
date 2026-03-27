@@ -1,5 +1,5 @@
 /**
- * spinner.tsx — <Spinner> component demo
+ * spinner.tsx — &lt;Spinner> component demo
  *
  * Controls:
  *   + / =   faster
@@ -9,26 +9,32 @@
  * Run: node --import @oxc-node/core/register examples/spinner.tsx
  */
 
+import { Box, render, Spinner, Text, useApp, useInput } from "@visulima/tui/react";
 import React, { useEffect, useState } from "react";
-import { render, Box, Text, Spinner, useInput, useApp } from "@visulima/tui/react";
 
-function App() {
+const App = () => {
     const { exit } = useApp();
     const [intervalMs, setIntervalMs] = useState(80);
     const [seconds, setSeconds] = useState(0);
 
     useEffect(() => {
         const t = setInterval(() => setSeconds((s) => s + 1), 1000);
+
         return () => clearInterval(t);
     }, []);
 
     useInput((input, key) => {
         if (key.escape || input === "q" || (key.ctrl && input === "c")) {
             exit();
+
             return;
         }
-        if (input === "+" || input === "=") setIntervalMs((ms) => Math.max(20, ms - 20));
-        if (input === "-") setIntervalMs((ms) => Math.min(400, ms + 20));
+
+        if (input === "+" || input === "=")
+            setIntervalMs((ms) => Math.max(20, ms - 20));
+
+        if (input === "-")
+            setIntervalMs((ms) => Math.min(400, ms + 20));
     });
 
     return (
@@ -37,31 +43,43 @@ function App() {
                 Spinner demo
             </Text>
             <Text dim>
-                +/= faster · - slower · current interval <Text color="yellow">{intervalMs}ms</Text> · q quit
+                +/= faster · - slower · current interval
+                {" "}
+                <Text color="yellow">
+                    {intervalMs}
+                    ms
+                </Text>
+                {" "}
+                · q quit
             </Text>
 
-            <Box borderStyle="round" borderColor="cyan" paddingX={2} paddingY={1} flexDirection="column" gap={1}>
+            <Box borderColor="cyan" borderStyle="round" flexDirection="column" gap={1} paddingX={2} paddingY={1}>
                 <Box flexDirection="row" gap={1}>
                     <Spinner color="cyan" interval={intervalMs} />
                     <Text>default braille frames</Text>
                 </Box>
 
                 <Box flexDirection="row" gap={1}>
-                    <Spinner frames={["-", "\\", "|", "/"]} color="yellow" interval={Math.max(40, intervalMs + 40)} />
+                    <Spinner color="yellow" frames={["-", "\\", "|", "/"]} interval={Math.max(40, intervalMs + 40)} />
                     <Text>ascii frames</Text>
                 </Box>
 
                 <Box flexDirection="row" gap={1}>
-                    <Spinner frames={["◐", "◓", "◑", "◒"]} color="magenta" interval={Math.max(30, intervalMs - 20)} />
+                    <Spinner color="magenta" frames={["◐", "◓", "◑", "◒"]} interval={Math.max(30, intervalMs - 20)} />
                     <Text>unicode quarter frames</Text>
                 </Box>
             </Box>
 
             <Text>
-                uptime: <Text color="green">{seconds}s</Text>
+                uptime:
+                {" "}
+                <Text color="green">
+                    {seconds}
+                    s
+                </Text>
             </Text>
         </Box>
     );
-}
+};
 
 render(<App />);

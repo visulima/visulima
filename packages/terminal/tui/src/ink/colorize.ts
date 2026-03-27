@@ -1,61 +1,61 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import colorizeDefault, { type AnsiColors, type ColorizeType } from "@visulima/colorize";
+import type { AnsiColors, ColorizeType } from "@visulima/colorize";
+import colorizeDefault from "@visulima/colorize";
 
 type ColorType = "foreground" | "background";
 
 const rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
 const ansiRegex = /^ansi256\(\s?(\d+)\s?\)$/;
 
-const isNamedColor = (color: string): color is AnsiColors => {
-    return color in colorizeDefault;
-};
+const isNamedColor = (color: string): color is AnsiColors => color in colorizeDefault;
 
-const colorize = (str: string, color: string | undefined, type: ColorType): string => {
+const colorize = (string_: string, color: string | undefined, type: ColorType): string => {
     if (!color) {
-        return str;
+        return string_;
     }
 
     if (isNamedColor(color)) {
         if (type === "foreground") {
-            return (colorizeDefault as unknown as Record<string, ColorizeType>)[color]!(str);
+            return (colorizeDefault as unknown as Record<string, ColorizeType>)[color]!(string_);
         }
 
         const methodName = `bg${color[0]!.toUpperCase() + color.slice(1)}`;
 
-        return (colorizeDefault as unknown as Record<string, ColorizeType>)[methodName]!(str);
+        return (colorizeDefault as unknown as Record<string, ColorizeType>)[methodName]!(string_);
     }
 
     if (color.startsWith("#")) {
-        return type === "foreground" ? colorizeDefault.hex(color as `#${string}`)(str) : colorizeDefault.bgHex(color as `#${string}`)(str);
+        return type === "foreground" ? colorizeDefault.hex(color as `#${string}`)(string_) : colorizeDefault.bgHex(color as `#${string}`)(string_);
     }
 
     if (color.startsWith("ansi256")) {
         const matches = ansiRegex.exec(color);
 
         if (!matches) {
-            return str;
+            return string_;
         }
 
         const value = Number(matches[1]);
 
-        return type === "foreground" ? colorizeDefault.ansi256(value)(str) : colorizeDefault.bgAnsi256(value)(str);
+        return type === "foreground" ? colorizeDefault.ansi256(value)(string_) : colorizeDefault.bgAnsi256(value)(string_);
     }
 
     if (color.startsWith("rgb")) {
         const matches = rgbRegex.exec(color);
 
         if (!matches) {
-            return str;
+            return string_;
         }
 
         const firstValue = Number(matches[1]);
         const secondValue = Number(matches[2]);
         const thirdValue = Number(matches[3]);
 
-        return type === "foreground" ? colorizeDefault.rgb(firstValue, secondValue, thirdValue)(str) : colorizeDefault.bgRgb(firstValue, secondValue, thirdValue)(str);
+        return type === "foreground"
+            ? colorizeDefault.rgb(firstValue, secondValue, thirdValue)(string_)
+            : colorizeDefault.bgRgb(firstValue, secondValue, thirdValue)(string_);
     }
 
-    return str;
+    return string_;
 };
 
 export default colorize;

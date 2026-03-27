@@ -1,71 +1,69 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/justify-content
+import { Box, render, Text } from "@visulima/tui/react";
 import React from "react";
-import { render, Box, Text } from "@visulima/tui/react";
 
-if (typeof global !== "undefined" && !global.document) {
-    global.document = { createElement: () => ({}), addEventListener: () => {}, removeEventListener: () => {} };
-    global.window = global;
-    Object.defineProperty(global, "navigator", {
+if (globalThis.global !== undefined && !globalThis.document) {
+    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.window = globalThis;
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
         value: { scheduling: { isInputPending: () => false } },
         writable: true,
-        configurable: true,
     });
 }
 
-function JustifyContent() {
-    return (
-        <Box flexDirection="column">
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="flex-start" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] flex-start</Text>
+const JustifyContent = () => (
+    <Box flexDirection="column">
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="flex-start" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
             </Box>
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="flex-end" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] flex-end</Text>
-            </Box>
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="center" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] center</Text>
-            </Box>
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="space-around" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] space-around</Text>
-            </Box>
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="space-between" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] space-between</Text>
-            </Box>
-            <Box>
-                <Text>[</Text>
-                <Box justifyContent="space-evenly" width={20} height={1}>
-                    <Text>X</Text>
-                    <Text>Y</Text>
-                </Box>
-                <Text>] space-evenly</Text>
-            </Box>
+            <Text>] flex-start</Text>
         </Box>
-    );
-}
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="flex-end" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
+            </Box>
+            <Text>] flex-end</Text>
+        </Box>
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="center" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
+            </Box>
+            <Text>] center</Text>
+        </Box>
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="space-around" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
+            </Box>
+            <Text>] space-around</Text>
+        </Box>
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="space-between" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
+            </Box>
+            <Text>] space-between</Text>
+        </Box>
+        <Box>
+            <Text>[</Text>
+            <Box height={1} justifyContent="space-evenly" width={20}>
+                <Text>X</Text>
+                <Text>Y</Text>
+            </Box>
+            <Text>] space-evenly</Text>
+        </Box>
+    </Box>
+);
 
 render(<JustifyContent />);

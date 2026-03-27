@@ -1,13 +1,16 @@
 import process from "node:process";
-import React from "react";
-import { render, useInput, useApp } from "../../../src/ink/index.js";
 
-function UserInput() {
+import React from "react";
+
+import { render, useApp, useInput } from "../../../src/ink/index.js";
+
+const UserInput = () => {
     const { exit } = useApp();
 
     useInput((input, key) => {
         if (input === "c" && key.ctrl) {
             exit();
+
             return;
         }
 
@@ -19,7 +22,7 @@ function UserInput() {
     }, []);
 
     return null;
-}
+};
 
 const app = render(<UserInput />, { exitOnCtrlC: false });
 

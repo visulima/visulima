@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
-import { Text, render } from "../../../src/ink/index.js";
 
-function App() {
+import { render, Text } from "../../../src/ink/index.js";
+
+const App = () => {
     useEffect(() => {
         const timer = setTimeout(() => {}, 1000);
 
@@ -11,9 +12,10 @@ function App() {
     }, []);
 
     return <Text>Hello World</Text>;
-}
+};
 
 const { unmount } = render(<App />);
+
 console.log("First log");
 unmount();
 console.log("Second log");

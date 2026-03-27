@@ -1,5 +1,5 @@
 /**
- * progress-bar.tsx — <ProgressBar> component demo
+ * progress-bar.tsx — &lt;ProgressBar> component demo
  *
  * Controls:
  *   Space   pause/resume
@@ -9,10 +9,10 @@
  * Run: node --import @oxc-node/core/register examples/progress-bar.tsx
  */
 
+import { Box, ProgressBar, render, Text, useApp, useInput } from "@visulima/tui/react";
 import React, { useEffect, useState } from "react";
-import { render, Box, Text, ProgressBar, useInput, useApp } from "@visulima/tui/react";
 
-function App() {
+const App = () => {
     const { exit } = useApp();
     const [running, setRunning] = useState(true);
     const [build, setBuild] = useState(0);
@@ -20,21 +20,28 @@ function App() {
     const [assets, setAssets] = useState(18);
 
     useEffect(() => {
-        if (!running) return;
+        if (!running)
+            return;
+
         const t = setInterval(() => {
             setBuild((p) => (p >= 100 ? 0 : p + 1));
             setUpload((p) => (p >= 100 ? 0 : p + 2));
             setAssets((p) => (p >= 60 ? 0 : p + 1));
         }, 80);
+
         return () => clearInterval(t);
     }, [running]);
 
     useInput((input, key) => {
         if (key.escape || input === "q" || (key.ctrl && input === "c")) {
             exit();
+
             return;
         }
-        if (input === " ") setRunning((v) => !v);
+
+        if (input === " ")
+            setRunning((v) => !v);
+
         if (input === "r") {
             setBuild(0);
             setUpload(0);
@@ -48,28 +55,33 @@ function App() {
                 ProgressBar demo
             </Text>
             <Text dim>
-                Space pause/resume · r reset · q quit · status <Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
+                Space pause/resume · r reset · q quit · status
+                {" "}
+                <Text color={running ? "green" : "yellow"}>{running ? "running" : "paused"}</Text>
             </Text>
 
-            <Box borderStyle="round" borderColor="green" paddingX={2} paddingY={1} flexDirection="column" gap={1}>
+            <Box borderColor="green" borderStyle="round" flexDirection="column" gap={1} paddingX={2} paddingY={1}>
                 <Box flexDirection="row" gap={1}>
                     <Text dim>Build</Text>
-                    <ProgressBar value={build} width={28} color="green" />
+                    <ProgressBar color="green" value={build} width={28} />
                 </Box>
 
                 <Box flexDirection="row" gap={1}>
                     <Text dim>Upload</Text>
-                    <ProgressBar value={upload} width={28} completeChar="■" incompleteChar="·" bracket={false} showPercentage={false} color="yellow" />
-                    <Text color="yellow">{String(upload).padStart(3)}%</Text>
+                    <ProgressBar bracket={false} color="yellow" completeChar="■" incompleteChar="·" showPercentage={false} value={upload} width={28} />
+                    <Text color="yellow">
+                        {String(upload).padStart(3)}
+                        %
+                    </Text>
                 </Box>
 
                 <Box flexDirection="row" gap={1}>
                     <Text dim>Assets</Text>
-                    <ProgressBar value={assets} max={60} width={28} color="blue" />
+                    <ProgressBar color="blue" max={60} value={assets} width={28} />
                 </Box>
             </Box>
         </Box>
     );
-}
+};
 
 render(<App />);

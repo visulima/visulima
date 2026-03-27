@@ -1,26 +1,28 @@
 import process from "node:process";
-import createReconciler, { type ReactContext } from "react-reconciler";
-import { DefaultEventPriority, NoEventPriority } from "react-reconciler/constants.js";
-import * as Scheduler from "scheduler";
-import Yoga, { type Node as YogaNode } from "yoga-layout";
+
 import { createContext, version as reactVersion } from "react";
+import type { ReactContext } from "react-reconciler";
+import createReconciler from "react-reconciler";
+import { DefaultEventPriority, NoEventPriority } from "react-reconciler/constants.js";
+import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unstable_shouldYield } from "scheduler";
+import type { Node as YogaNode } from "yoga-layout";
+import Yoga from "yoga-layout";
+
+import type { DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom.js";
 import {
-    createTextNode,
     appendChildNode,
+    createNode,
+    createTextNode,
+    emitLayoutListeners,
     insertBeforeNode,
     removeChildNode,
-    emitLayoutListeners,
+    setAttribute,
     setStyle,
     setTextNodeValue,
-    createNode,
-    setAttribute,
-    type DOMNodeAttribute,
-    type TextNode,
-    type ElementNames,
-    type DOMElement,
 } from "./dom.js";
-import applyStyles, { type Styles } from "./styles.js";
-import { type OutputTransformer } from "./render-node-to-output.js";
+import type { OutputTransformer } from "./render-node-to-output.js";
+import type { Styles } from "./styles.js";
+import applyStyles from "./styles.js";
 
 // We need to conditionally perform devtools connection to avoid
 // accidentally breaking other third-party code.
@@ -30,6 +32,7 @@ if (process.env["DEV"] === "true") {
     // Intentionally no warning when the package is missing.
     // DEV may be set for other reasons; devtools is opt-in via installing the package.
     let isDevtoolsInstalled = false;
+
     try {
         import.meta.resolve("react-devtools-core");
         isDevtoolsInstalled = true;
@@ -96,9 +99,9 @@ async function loadPackageJson() {
 
     const parsedContent = JSON.parse(content) as
         | {
-              name?: string;
-              version?: string;
-          }
+            name?: string;
+            version?: string;
+        }
         | undefined;
 
     return {
@@ -115,10 +118,11 @@ let packageInfo = {
 if (process.env["DEV"] === "true") {
     try {
         const loaded = await loadPackageJson();
+
         packageInfo = {
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
             name: loaded.name || packageInfo.name,
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+
             version: loaded.version || packageInfo.version,
         };
     } catch (error) {
@@ -142,46 +146,55 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     unknown,
     unknown
 >({
-    getRootHostContext: () => ({
-        isInsideText: false,
-    }),
-    prepareForCommit: () => null,
-    preparePortalMount: () => null,
+    afterActiveInstanceBlur() {},
+    appendChild: appendChildNode,
+    appendChildToContainer: appendChildNode,
+    appendInitialChild: appendChildNode,
+    beforeActiveInstanceBlur() {},
+    cancelCallback: unstable_cancelCallback,
+    cancelTimeout: clearTimeout,
     clearContainer: () => false,
-    resetAfterCommit(rootNode) {
-        if (typeof rootNode.onComputeLayout === "function") {
-            rootNode.onComputeLayout();
+    commitTextUpdate(node, _oldText, newText) {
+        setTextNodeValue(node, newText);
+    },
+    commitUpdate(node, _type, oldProps, newProps) {
+        if (currentRootNode && node.internal_static) {
+            currentRootNode.isStaticDirty = true;
         }
 
-        emitLayoutListeners(rootNode);
+        const props = diff(oldProps, newProps);
 
-        // Since renders are throttled at the instance level and <Static> component children
-        // are rendered only once and then get deleted, we need an escape hatch to
-        // trigger an immediate render to ensure <Static> children are written to output before they get erased
-        if (rootNode.isStaticDirty) {
-            rootNode.isStaticDirty = false;
-            if (typeof rootNode.onImmediateRender === "function") {
-                rootNode.onImmediateRender();
-            }
+        const style = diff(oldProps["style"] as Styles, newProps["style"] as Styles);
 
+        if (!props && !style) {
             return;
         }
 
-        if (typeof rootNode.onRender === "function") {
-            rootNode.onRender();
+        if (props) {
+            for (const [key, value] of Object.entries(props)) {
+                if (key === "style") {
+                    setStyle(node, value as Styles);
+                    continue;
+                }
+
+                if (key === "internal_transform") {
+                    node.internal_transform = value as OutputTransformer;
+                    continue;
+                }
+
+                if (key === "internal_static") {
+                    node.internal_static = true;
+                    continue;
+                }
+
+                setAttribute(node, key, value as DOMNodeAttribute);
+            }
+        }
+
+        if (style && node.yogaNode) {
+            applyStyles(node.yogaNode, style, (newProps["style"] as Styles | undefined) ?? {});
         }
     },
-    getChildHostContext(parentHostContext, type) {
-        const previousIsInsideText = parentHostContext.isInsideText;
-        const isInsideText = type === "ink-text" || type === "ink-virtual-text";
-
-        if (previousIsInsideText === isInsideText) {
-            return parentHostContext;
-        }
-
-        return { isInsideText };
-    },
-    shouldSetTextContent: () => false,
     createInstance(originalType, newProps, rootNode, hostContext) {
         if (hostContext.isInsideText && originalType === "ink-box") {
             throw new Error(`<Box> can’t be nested inside <Text> component`);
@@ -234,102 +247,97 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
         return createTextNode(text);
     },
-    resetTextContent() {},
-    hideTextInstance(node) {
-        setTextNodeValue(node, "");
-    },
-    unhideTextInstance(node, text) {
-        setTextNodeValue(node, text);
-    },
-    getPublicInstance: (instance) => instance,
-    hideInstance(node) {
-        node.yogaNode?.setDisplay(Yoga.DISPLAY_NONE);
-    },
-    unhideInstance(node) {
-        node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
-    },
-    appendInitialChild: appendChildNode,
-    appendChild: appendChildNode,
-    insertBefore: insertBeforeNode,
+    detachDeletedInstance() {},
     finalizeInitialChildren() {
         return false;
     },
-    isPrimaryRenderer: true,
-    supportsMutation: true,
-    supportsPersistence: false,
-    supportsHydration: false,
-    // Scheduler integration for concurrent mode
-    supportsMicrotasks: true,
-    scheduleMicrotask: queueMicrotask,
-    // @ts-expect-error @types/react-reconciler is outdated and doesn't include scheduleCallback
-    scheduleCallback: Scheduler.unstable_scheduleCallback,
-    cancelCallback: Scheduler.unstable_cancelCallback,
-    shouldYield: Scheduler.unstable_shouldYield,
-    now: Scheduler.unstable_now,
-    scheduleTimeout: setTimeout,
-    cancelTimeout: clearTimeout,
-    noTimeout: -1,
-    beforeActiveInstanceBlur() {},
-    afterActiveInstanceBlur() {},
-    detachDeletedInstance() {},
+    getChildHostContext(parentHostContext, type) {
+        const previousIsInsideText = parentHostContext.isInsideText;
+        const isInsideText = type === "ink-text" || type === "ink-virtual-text";
+
+        if (previousIsInsideText === isInsideText) {
+            return parentHostContext;
+        }
+
+        return { isInsideText };
+    },
+    getCurrentUpdatePriority: () => currentUpdatePriority,
     getInstanceFromNode: () => null,
-    prepareScopeUpdate() {},
     getInstanceFromScope: () => null,
-    appendChildToContainer: appendChildNode,
+    getPublicInstance: (instance) => instance,
+    getRootHostContext: () => {
+        return {
+            isInsideText: false,
+        };
+    },
+    hideInstance(node) {
+        node.yogaNode?.setDisplay(Yoga.DISPLAY_NONE);
+    },
+    hideTextInstance(node) {
+        setTextNodeValue(node, "");
+    },
+
+    HostTransitionContext: createContext(null) as unknown as ReactContext<unknown>,
+    insertBefore: insertBeforeNode,
     insertInContainerBefore: insertBeforeNode,
-    removeChildFromContainer(node, removeNode) {
-        removeChildNode(node, removeNode);
-        cleanupYogaNode(removeNode.yogaNode);
+    isPrimaryRenderer: true,
+    maySuspendCommit() {
+        // Return true to enable Suspense resource preloading
+        return true;
     },
-    commitUpdate(node, _type, oldProps, newProps) {
-        if (currentRootNode && node.internal_static) {
-            currentRootNode.isStaticDirty = true;
-        }
+    noTimeout: -1,
 
-        const props = diff(oldProps, newProps);
-
-        const style = diff(oldProps["style"] as Styles, newProps["style"] as Styles);
-
-        if (!props && !style) {
-            return;
-        }
-
-        if (props) {
-            for (const [key, value] of Object.entries(props)) {
-                if (key === "style") {
-                    setStyle(node, value as Styles);
-                    continue;
-                }
-
-                if (key === "internal_transform") {
-                    node.internal_transform = value as OutputTransformer;
-                    continue;
-                }
-
-                if (key === "internal_static") {
-                    node.internal_static = true;
-                    continue;
-                }
-
-                setAttribute(node, key, value as DOMNodeAttribute);
-            }
-        }
-
-        if (style && node.yogaNode) {
-            applyStyles(node.yogaNode, style, (newProps["style"] as Styles | undefined) ?? {});
-        }
+    NotPendingTransition: undefined,
+    now: unstable_now,
+    preloadInstance() {
+        return true;
     },
-    commitTextUpdate(node, _oldText, newText) {
-        setTextNodeValue(node, newText);
-    },
+    prepareForCommit: () => null,
+    preparePortalMount: () => null,
+    prepareScopeUpdate() {},
     removeChild(node, removeNode) {
         removeChildNode(node, removeNode);
         cleanupYogaNode(removeNode.yogaNode);
     },
-    setCurrentUpdatePriority(newPriority: number) {
-        currentUpdatePriority = newPriority;
+    removeChildFromContainer(node, removeNode) {
+        removeChildNode(node, removeNode);
+        cleanupYogaNode(removeNode.yogaNode);
     },
-    getCurrentUpdatePriority: () => currentUpdatePriority,
+    rendererPackageName: packageInfo.name,
+    rendererVersion: packageInfo.version,
+    requestPostPaintCallback() {},
+    resetAfterCommit(rootNode) {
+        if (typeof rootNode.onComputeLayout === "function") {
+            rootNode.onComputeLayout();
+        }
+
+        emitLayoutListeners(rootNode);
+
+        // Since renders are throttled at the instance level and <Static> component children
+        // are rendered only once and then get deleted, we need an escape hatch to
+        // trigger an immediate render to ensure <Static> children are written to output before they get erased
+        if (rootNode.isStaticDirty) {
+            rootNode.isStaticDirty = false;
+
+            if (typeof rootNode.onImmediateRender === "function") {
+                rootNode.onImmediateRender();
+            }
+
+            return;
+        }
+
+        if (typeof rootNode.onRender === "function") {
+            rootNode.onRender();
+        }
+    },
+    resetFormInstance() {},
+    resetTextContent() {},
+    resolveEventTimeStamp() {
+        return -1.1;
+    },
+    resolveEventType() {
+        return null;
+    },
     resolveUpdatePriority() {
         if (currentUpdatePriority !== NoEventPriority) {
             return currentUpdatePriority;
@@ -337,36 +345,35 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
         return DefaultEventPriority;
     },
-    maySuspendCommit() {
-        // Return true to enable Suspense resource preloading
-        return true;
+    // @ts-expect-error @types/react-reconciler is outdated and doesn't include scheduleCallback
+    scheduleCallback: unstable_scheduleCallback,
+    scheduleMicrotask: queueMicrotask,
+    scheduleTimeout: setTimeout,
+    setCurrentUpdatePriority(newPriority: number) {
+        currentUpdatePriority = newPriority;
     },
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    NotPendingTransition: undefined,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    HostTransitionContext: createContext(null) as unknown as ReactContext<unknown>,
-    resetFormInstance() {},
-    requestPostPaintCallback() {},
     shouldAttemptEagerTransition() {
         return false;
     },
-    trackSchedulerEvent() {},
-    resolveEventType() {
-        return null;
-    },
-    resolveEventTimeStamp() {
-        return -1.1;
-    },
-    preloadInstance() {
-        return true;
-    },
+    shouldSetTextContent: () => false,
+    shouldYield: unstable_shouldYield,
     startSuspendingCommit() {},
+    supportsHydration: false,
+    // Scheduler integration for concurrent mode
+    supportsMicrotasks: true,
+    supportsMutation: true,
+    supportsPersistence: false,
     suspendInstance() {},
+    trackSchedulerEvent() {},
+    unhideInstance(node) {
+        node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
+    },
+    unhideTextInstance(node, text) {
+        setTextNodeValue(node, text);
+    },
     waitForCommitToBeReady() {
         return null;
     },
-    rendererPackageName: packageInfo.name,
-    rendererVersion: packageInfo.version,
 });
 
 export default reconcilerInstance;

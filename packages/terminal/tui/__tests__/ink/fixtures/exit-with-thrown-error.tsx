@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render } from "../../../src/ink/index.js";
 
 const Test = () => {

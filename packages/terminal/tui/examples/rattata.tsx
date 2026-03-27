@@ -14,8 +14,8 @@
  * Run: node --import @oxc-node/core/register examples/rattata.tsx
  */
 // @ts-nocheck
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { render, Box, Text, useInput, useApp, useWindowSize, useScrollable } from "@visulima/tui/react";
+import { Box, render, Text, useApp, useInput, useScrollable, useWindowSize } from "@visulima/tui/react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,34 +23,35 @@ type MessageKind = "user" | "ai" | "tool" | "diff" | "system";
 type Focus = "sidebar" | "chat" | "input";
 
 interface Message {
+    done: boolean;
     id: number;
     kind: MessageKind;
     text: string;
-    done: boolean;
 }
 
 // ─── Script ───────────────────────────────────────────────────────────────────
 
-const SCRIPT: Array<{ kind: MessageKind; text: string; delay: number }> = [
+const SCRIPT: { delay: number; kind: MessageKind; text: string }[] = [
     {
+        delay: 0,
         kind: "system",
         text: "Rattata v0.1.0  ·  model: rattata-large-2  ·  context: 128k",
-        delay: 0,
     },
     {
+        delay: 600,
         kind: "user",
         text: "the terminal renderer is flushing too slowly, can you take a look?",
-        delay: 600,
     },
-    { kind: "tool", text: "▸ read_file  src/terminal.rs", delay: 900 },
-    { kind: "tool", text: '▸ search     "write_all\\|flush\\|BufWriter"  →  4 matches', delay: 400 },
+    { delay: 900, kind: "tool", text: "▸ read_file  src/terminal.rs" },
+    { delay: 400, kind: "tool", text: String.raw`▸ search     "write_all\|flush\|BufWriter"  →  4 matches` },
     {
+        delay: 500,
         kind: "ai",
         text: "Found it. The renderer calls `stdout.write_all()` per-cell without a `BufWriter` — that's a syscall on every character. Wrapping stdout in a `BufWriter` will batch writes and flush once per frame. Should be a significant speedup.",
-        delay: 500,
     },
-    { kind: "tool", text: "▸ edit_file  src/terminal.rs", delay: 400 },
+    { delay: 400, kind: "tool", text: "▸ edit_file  src/terminal.rs" },
     {
+        delay: 300,
         kind: "diff",
         text: [
             "  @@ src/terminal.rs:42 @@",
@@ -62,26 +63,25 @@ const SCRIPT: Array<{ kind: MessageKind; text: string; delay: number }> = [
             "+     buf.flush().unwrap();",
             "  }",
         ].join("\n"),
-        delay: 300,
     },
     {
+        delay: 400,
         kind: "ai",
         text: "Done. Also noticed `lock()` was being called inside the loop — moved it outside so we only acquire the lock once per frame. That alone should cut ~30% of frame time on busy terminals.",
-        delay: 400,
     },
-    { kind: "tool", text: "▸ run_tests  cargo test terminal  →  12 passed  (0.4s)", delay: 800 },
+    { delay: 800, kind: "tool", text: "▸ run_tests  cargo test terminal  →  12 passed  (0.4s)" },
     {
+        delay: 300,
         kind: "ai",
         text: "All green. Want me to run the stress-test benchmark to confirm the speedup?",
-        delay: 300,
     },
-    { kind: "user", text: "yes please", delay: 1200 },
-    { kind: "tool", text: "▸ run_bench  examples/stress-test.tsx", delay: 600 },
-    { kind: "tool", text: "▸ result     before: 187 fps  →  after: 312 fps  (+67%)", delay: 1400 },
+    { delay: 1200, kind: "user", text: "yes please" },
+    { delay: 600, kind: "tool", text: "▸ run_bench  examples/stress-test.tsx" },
+    { delay: 1400, kind: "tool", text: "▸ result     before: 187 fps  →  after: 312 fps  (+67%)" },
     {
+        delay: 200,
         kind: "ai",
         text: "Nice — 67% throughput improvement. The BufWriter change accounts for most of it. Commit message suggestion:\n\nperf: wrap stdout in BufWriter, hoist lock() out of render loop\n\nSaves ~1 syscall per cell and ~1 mutex acquisition per frame.",
-        delay: 200,
     },
 ];
 
@@ -95,82 +95,98 @@ const CANNED: string[] = [
     "I see what you mean. Pulling up the file now.",
     "That's a tricky one. Let me think through the options.",
 ];
-let cannedIdx = 0;
-const nextCanned = () => CANNED[cannedIdx++ % CANNED.length];
+let cannedIndex = 0;
+const nextCanned = () => CANNED[cannedIndex++ % CANNED.length];
 
 // How many terminal rows a committed message occupies
-function messageRows(msg: Message): number {
-    if (msg.kind === "system") return 1;
-    if (msg.kind === "tool") return 1;
-    if (msg.kind === "diff") return msg.text.split("\n").length;
+function messageRows(message: Message): number {
+    if (message.kind === "system")
+        return 1;
+
+    if (message.kind === "tool")
+        return 1;
+
+    if (message.kind === "diff")
+        return message.text.split("\n").length;
+
     // user / ai: 1 blank line + 1 per line of text
-    return 1 + msg.text.split("\n").length;
+    return 1 + message.text.split("\n").length;
 }
 
 // ─── File tree ────────────────────────────────────────────────────────────────
 
 const FILES = [
-    { name: "src/", indent: 0, dir: true, selectable: false },
-    { name: "lib.rs", indent: 1, dir: false, selectable: true },
-    { name: "terminal.rs", indent: 1, dir: false, selectable: true },
-    { name: "ansi.rs", indent: 1, dir: false, selectable: true },
-    { name: "cell.ts", indent: 1, dir: false, selectable: true },
-    { name: "renderer.ts", indent: 1, dir: false, selectable: true },
-    { name: "layout.ts", indent: 1, dir: false, selectable: true },
-    { name: "hooks.ts", indent: 1, dir: false, selectable: true },
-    { name: "react.ts", indent: 1, dir: false, selectable: true },
-    { name: "examples/", indent: 0, dir: true, selectable: false },
-    { name: "stress-test.tsx", indent: 1, dir: false, selectable: true },
-    { name: "rattata.tsx", indent: 1, dir: false, selectable: true },
+    { dir: true, indent: 0, name: "src/", selectable: false },
+    { dir: false, indent: 1, name: "lib.rs", selectable: true },
+    { dir: false, indent: 1, name: "terminal.rs", selectable: true },
+    { dir: false, indent: 1, name: "ansi.rs", selectable: true },
+    { dir: false, indent: 1, name: "cell.ts", selectable: true },
+    { dir: false, indent: 1, name: "renderer.ts", selectable: true },
+    { dir: false, indent: 1, name: "layout.ts", selectable: true },
+    { dir: false, indent: 1, name: "hooks.ts", selectable: true },
+    { dir: false, indent: 1, name: "react.ts", selectable: true },
+    { dir: true, indent: 0, name: "examples/", selectable: false },
+    { dir: false, indent: 1, name: "stress-test.tsx", selectable: true },
+    { dir: false, indent: 1, name: "rattata.tsx", selectable: true },
 ];
-const SELECTABLE = FILES.map((f, i) => ({ ...f, index: i })).filter((f) => f.selectable);
+const SELECTABLE = FILES.map((f, i) => { return { ...f, index: i }; }).filter((f) => f.selectable);
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
 function useSpinner() {
     const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
     const [frame, setFrame] = useState(0);
+
     useEffect(() => {
         const t = setInterval(() => setFrame((f) => (f + 1) % FRAMES.length), 80);
+
         return () => clearInterval(t);
     }, []);
+
     return FRAMES[frame];
 }
 
 function useTokens() {
     const [tokens, setTokens] = useState(1247);
+
     useEffect(() => {
         const t = setInterval(() => {
             setTokens((n) => n + Math.floor(Math.random() * 8 + 1));
         }, 120);
+
         return () => clearInterval(t);
     }, []);
+
     return tokens;
 }
 
 function useClock() {
     const [time, setTime] = useState(() => new Date().toLocaleTimeString("en-US", { hour12: false }));
+
     useEffect(() => {
         const t = setInterval(() => {
             setTime(new Date().toLocaleTimeString("en-US", { hour12: false }));
         }, 1000);
+
         return () => clearInterval(t);
     }, []);
+
     return time;
 }
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
-function Header({ tokens, time, focus }: { tokens: number; time: string; focus: Focus }) {
+const Header = ({ focus, time, tokens }: { focus: Focus; time: string; tokens: number }) => {
     const hints: Record<Focus, string> = {
-        sidebar: "[↑↓] navigate  [tab] focus chat  [q] quit",
         chat: "[↑↓] scroll  [tab] focus input  [q] quit",
         input: "[enter] send  [tab] focus sidebar  [q] quit",
+        sidebar: "[↑↓] navigate  [tab] focus chat  [q] quit",
     };
+
     return (
-        <Box borderStyle="single" borderColor="cyan" paddingX={1} flexDirection="row" justifyContent="space-between">
+        <Box borderColor="cyan" borderStyle="single" flexDirection="row" justifyContent="space-between" paddingX={1}>
             <Box flexDirection="row" gap={1}>
-                <Text color="cyan" bold>
+                <Text bold color="cyan">
                     RATTATA
                 </Text>
                 <Text color="blackBright">│</Text>
@@ -180,59 +196,75 @@ function Header({ tokens, time, focus }: { tokens: number; time: string; focus: 
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">{hints[focus]}</Text>
-                <Text color="blackBright">{tokens.toLocaleString()} tok</Text>
+                <Text color="blackBright">
+                    {tokens.toLocaleString()}
+                    {" "}
+                    tok
+                </Text>
                 <Text color="blackBright">{time}</Text>
             </Box>
         </Box>
     );
-}
+};
 
-function Sidebar({ width, focused, selectedIdx }: { width: number; focused: boolean; selectedIdx: number }) {
+const Sidebar = ({ focused, selectedIdx, width }: { focused: boolean; selectedIdx: number; width: number }) => {
     const borderColor = focused ? "cyan" : "blackBright";
+
     return (
-        <Box width={width} flexDirection="column" borderStyle="single" borderColor={borderColor}>
+        <Box borderColor={borderColor} borderStyle="single" flexDirection="column" width={width}>
             <Box paddingX={1}>
-                <Text color={focused ? "cyan" : "blackBright"} bold>
+                <Text bold color={focused ? "cyan" : "blackBright"}>
                     FILES
                 </Text>
             </Box>
             {FILES.map((f, i) => {
                 const isSelected = f.selectable && selectedIdx === i;
+
                 return (
                     <Box key={i} paddingLeft={1 + f.indent * 2}>
-                        {f.dir ? (
-                            <Text color="blueBright">▸ {f.name}</Text>
-                        ) : isSelected ? (
-                            <Text color="cyan" bold inverse>
-                                {" "}
-                                {f.name}{" "}
-                            </Text>
-                        ) : (
-                            <Text color="blackBright"> {f.name}</Text>
-                        )}
+                        {f.dir
+                            ? (
+                                <Text color="blueBright">
+                                    ▸
+                                    {f.name}
+                                </Text>
+                            )
+                            : isSelected
+                                ? (
+                                    <Text bold color="cyan" inverse>
+                                        {" "}
+                                        {f.name}
+                                        {" "}
+                                    </Text>
+                                )
+                                : (
+                                    <Text color="blackBright">
+                                        {" "}
+                                        {f.name}
+                                    </Text>
+                                )}
                     </Box>
                 );
             })}
         </Box>
     );
-}
+};
 
-function DiffBlock({ text }: { text: string }) {
-    return (
-        <Box flexDirection="column">
-            {text.split("\n").map((line, i) => {
-                const color = line.startsWith("+") ? "greenBright" : line.startsWith("-") ? "red" : line.startsWith("@") ? "cyan" : "blackBright";
-                return (
-                    <Box key={i} paddingLeft={4}>
-                        <Text color={color}>{line}</Text>
-                    </Box>
-                );
-            })}
-        </Box>
-    );
-}
+const DiffBlock = ({ text }: { text: string }) => (
+    <Box flexDirection="column">
+        {text.split("\n").map((line, i) => {
+            const color = line.startsWith("+") ? "greenBright" : line.startsWith("-") ? "red" : line.startsWith("@") ? "cyan" : "blackBright";
 
-function MessageBlock({ msg }: { msg: Message }) {
+            return (
+                <Box key={i} paddingLeft={4}>
+                    <Text color={color}>{line}</Text>
+                </Box>
+            );
+        })}
+    </Box>
+);
+
+const MessageBlock = ({ msg }: { msg: Message }) => {
     if (msg.kind === "system") {
         return (
             <Box paddingX={2}>
@@ -242,16 +274,19 @@ function MessageBlock({ msg }: { msg: Message }) {
             </Box>
         );
     }
+
     if (msg.kind === "user") {
         return (
             <Box marginTop={1} paddingX={2}>
-                <Text color="yellow" bold>
-                    you{" "}
+                <Text bold color="yellow">
+                    you
+                    {" "}
                 </Text>
                 <Text color="blackBright">{msg.text}</Text>
             </Box>
         );
     }
+
     if (msg.kind === "tool") {
         return (
             <Box paddingLeft={4}>
@@ -259,65 +294,77 @@ function MessageBlock({ msg }: { msg: Message }) {
             </Box>
         );
     }
+
     if (msg.kind === "diff") {
         return <DiffBlock text={msg.text} />;
     }
+
     // ai
     return (
         <Box marginTop={1} paddingX={2}>
-            <Text color="cyan" bold>
-                rat{" "}
+            <Text bold color="cyan">
+                rat
+                {" "}
             </Text>
-            <Box flexGrow={1} flexDirection="column">
+            <Box flexDirection="column" flexGrow={1}>
                 {msg.text.split("\n").map((line, i) => (
-                    <Text key={i} color="white">
+                    <Text color="white" key={i}>
                         {line}
                     </Text>
                 ))}
             </Box>
         </Box>
     );
-}
+};
 
-function InputBar({ value, focused, disabled }: { value: string; focused: boolean; disabled: boolean }) {
+const InputBar = ({ disabled, focused, value }: { disabled: boolean; focused: boolean; value: string }) => {
     const borderColor = focused ? "yellow" : "blackBright";
-    const prompt = disabled ? (
-        <Text color="blackBright"> waiting for rattata…</Text>
-    ) : (
-        <>
-            <Text color="yellow" bold>
-                ▸{" "}
-            </Text>
-            <Text color={focused ? "white" : "blackBright"}>{value}</Text>
-            {focused && <Text color="yellow">█</Text>}
-        </>
-    );
+    const prompt = disabled
+        ? (
+            <Text color="blackBright"> waiting for rattata…</Text>
+        )
+        : (
+            <>
+                <Text bold color="yellow">
+                    ▸
+                    {" "}
+                </Text>
+                <Text color={focused ? "white" : "blackBright"}>{value}</Text>
+                {focused && <Text color="yellow">█</Text>}
+            </>
+        );
+
     return (
-        <Box borderStyle="single" borderColor={borderColor} paddingX={1} height={3} alignItems="center">
+        <Box alignItems="center" borderColor={borderColor} borderStyle="single" height={3} paddingX={1}>
             {prompt}
         </Box>
     );
-}
+};
 
-function StatusBar({ thinking, spinner, scriptDone, focus }: { thinking: boolean; spinner: string; scriptDone: boolean; focus: Focus }) {
+const StatusBar = ({ focus, scriptDone, spinner, thinking }: { focus: Focus; scriptDone: boolean; spinner: string; thinking: boolean }) => {
     const focusLabel: Record<Focus, string> = {
-        sidebar: "SIDEBAR",
         chat: "CHAT",
         input: "INPUT",
+        sidebar: "SIDEBAR",
     };
+
     return (
-        <Box borderStyle="single" borderColor="blackBright" paddingX={1} flexDirection="row" justifyContent="space-between">
+        <Box borderColor="blackBright" borderStyle="single" flexDirection="row" justifyContent="space-between" paddingX={1}>
             <Box flexDirection="row" gap={1}>
-                {thinking ? (
-                    <>
-                        <Text color="cyan">{spinner}</Text>
-                        <Text color="cyan">thinking…</Text>
-                    </>
-                ) : scriptDone ? (
-                    <Text color="greenBright">✓ ready</Text>
-                ) : (
-                    <Text color="blackBright">ready</Text>
-                )}
+                {thinking
+                    ? (
+                        <>
+                            <Text color="cyan">{spinner}</Text>
+                            <Text color="cyan">thinking…</Text>
+                        </>
+                    )
+                    : scriptDone
+                        ? (
+                            <Text color="greenBright">✓ ready</Text>
+                        )
+                        : (
+                            <Text color="blackBright">ready</Text>
+                        )}
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">focus: </Text>
@@ -326,7 +373,7 @@ function StatusBar({ thinking, spinner, scriptDone, focus }: { thinking: boolean
             </Box>
         </Box>
     );
-}
+};
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -336,7 +383,7 @@ const uid = () => ++_id;
 // Initial selected file index (terminal.rs)
 const INITIAL_FILE_IDX = FILES.findIndex((f) => f.name === "terminal.rs");
 
-function RattataApp() {
+const RattataApp = () => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const spinner = useSpinner();
@@ -345,7 +392,7 @@ function RattataApp() {
 
     // ── Focus & sidebar state
     const [focus, setFocus] = useState<Focus>("chat");
-    const [selectedFileIdx, setSelectedFileIdx] = useState(INITIAL_FILE_IDX);
+    const [selectedFileIndex, setSelectedFileIndex] = useState(INITIAL_FILE_IDX);
 
     // ── Chat state
     const [settled, setSettled] = useState<Message[]>([]);
@@ -366,8 +413,8 @@ function RattataApp() {
     const allMessages: Message[] = active
         ? [...settled, active]
         : thinking
-          ? [...settled, { id: -1, kind: "tool" as MessageKind, text: `${spinner} running…`, done: false }]
-          : settled;
+            ? [...settled, { done: false, id: -1, kind: "tool" as MessageKind, text: `${spinner} running…` }]
+            : settled;
 
     const contentHeight = allMessages.reduce((sum, m) => sum + messageRows(m), 0);
 
@@ -377,11 +424,11 @@ function RattataApp() {
         ? undefined // useScrollable controls offset
         : Math.max(0, contentHeight - chatViewport); // always show bottom
 
-    const scroll = useScrollable({ viewportHeight: chatViewport, contentHeight });
+    const scroll = useScrollable({ contentHeight, viewportHeight: chatViewport });
 
     // ── Script playback refs
-    const scriptIdx = useRef(0);
-    const charIdx = useRef(0);
+    const scriptIndex = useRef(0);
+    const charIndex = useRef(0);
     const streamTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const stepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const scriptDoneRef = useRef(false);
@@ -391,6 +438,7 @@ function RattataApp() {
     const cycleFocus = useCallback((dir: 1 | -1) => {
         setFocus((f) => {
             const i = FOCUS_ORDER.indexOf(f);
+
             return FOCUS_ORDER[(i + dir + FOCUS_ORDER.length) % FOCUS_ORDER.length];
         });
     }, []);
@@ -400,28 +448,35 @@ function RattataApp() {
         // Escape and Ctrl+C always quit regardless of focus
         if (key.escape || (key.ctrl && char === "c")) {
             exit();
+
             return;
         }
 
         // Tab always cycles focus
         if (key.tab) {
             cycleFocus(key.shift ? -1 : 1);
+
             return;
         }
 
         if (focus === "sidebar") {
             if (key.upArrow) {
-                setSelectedFileIdx((idx) => {
-                    const pos = SELECTABLE.findIndex((f) => f.index === idx);
+                setSelectedFileIndex((index) => {
+                    const pos = SELECTABLE.findIndex((f) => f.index === index);
+
                     return SELECTABLE[Math.max(0, pos - 1)].index;
                 });
+
                 return;
             }
+
             if (key.downArrow) {
-                setSelectedFileIdx((idx) => {
-                    const pos = SELECTABLE.findIndex((f) => f.index === idx);
+                setSelectedFileIndex((index) => {
+                    const pos = SELECTABLE.findIndex((f) => f.index === index);
+
                     return SELECTABLE[Math.min(SELECTABLE.length - 1, pos + 1)].index;
                 });
+
                 return;
             }
         }
@@ -430,24 +485,35 @@ function RattataApp() {
             if (key.upArrow) {
                 setPinned(true);
                 scroll.scrollUp();
+
                 return;
             }
+
             if (key.downArrow) {
-                if (scroll.atBottom) setPinned(false);
+                if (scroll.atBottom)
+                    setPinned(false);
                 else scroll.scrollDown();
+
                 return;
             }
+
             if (key.pageUp) {
                 setPinned(true);
                 scroll.scrollBy(-5);
+
                 return;
             }
+
             if (key.pageDown) {
-                if (scroll.atBottom) setPinned(false);
-                else {
+                if (scroll.atBottom) {
+                    setPinned(false);
+                } else {
                     scroll.scrollBy(5);
-                    if (scroll.atBottom) setPinned(false);
+
+                    if (scroll.atBottom)
+                        setPinned(false);
                 }
+
                 return;
             }
         }
@@ -455,75 +521,94 @@ function RattataApp() {
         if (focus === "input" && !inputLocked) {
             if (key.return) {
                 const text = inputValue.trim();
+
                 if (text) {
                     submitUserMessage(text);
                     setInputValue("");
                 }
+
                 return;
             }
+
             if (key.backspace) {
                 setInputValue((v) => v.slice(0, -1));
+
                 return;
             }
+
             if (char && !key.ctrl && !key.meta) {
                 setInputValue((v) => v + char);
+
                 return;
             }
         }
 
         // 'q' quits from sidebar and chat; not from input (user may want to type 'q')
-        if (char === "q" && focus !== "input") exit();
+        if (char === "q" && focus !== "input")
+            exit();
     });
 
     // ── Stream a single message then call onDone
-    const streamMessage = useCallback((msg: Message, fullText: string, speed: number, onDone: () => void) => {
-        charIdx.current = 0;
-        setActive(msg);
+    const streamMessage = useCallback((message: Message, fullText: string, speed: number, onDone: () => void) => {
+        charIndex.current = 0;
+        setActive(message);
         const tick = () => {
             streamTimer.current = setTimeout(() => {
-                setActive((cur) => {
-                    if (!cur) return cur;
-                    charIdx.current++;
-                    const next = fullText.slice(0, charIdx.current);
-                    if (charIdx.current >= fullText.length) {
-                        setSettled((s) => [...s, { ...cur, text: fullText, done: true }]);
+                setActive((current) => {
+                    if (!current)
+                        return current;
+
+                    charIndex.current++;
+                    const next = fullText.slice(0, charIndex.current);
+
+                    if (charIndex.current >= fullText.length) {
+                        setSettled((s) => [...s, { ...current, done: true, text: fullText }]);
                         setActive(null);
                         onDone();
+
                         return null;
                     }
+
                     tick();
-                    return { ...cur, text: next };
+
+                    return { ...current, text: next };
                 });
             }, speed);
         };
+
         tick();
     }, []);
 
     // ── Advance the scripted session
     const advanceScript = useCallback(() => {
-        const step = SCRIPT[scriptIdx.current];
+        const step = SCRIPT[scriptIndex.current];
+
         if (!step) {
             setScriptDone(true);
             setInputLocked(false);
             scriptDoneRef.current = true;
             setFocus("input");
+
             return;
         }
-        scriptIdx.current++;
+
+        scriptIndex.current++;
 
         if (step.kind === "system" || step.kind === "tool" || step.kind === "diff") {
-            setSettled((s) => [...s, { id: uid(), kind: step.kind, text: step.text, done: true }]);
+            setSettled((s) => [...s, { done: true, id: uid(), kind: step.kind, text: step.text }]);
             setThinking(step.kind === "tool");
-            stepTimer.current = setTimeout(advanceScript, SCRIPT[scriptIdx.current]?.delay ?? 0);
+            stepTimer.current = setTimeout(advanceScript, SCRIPT[scriptIndex.current]?.delay ?? 0);
+
             return;
         }
 
-        const msg: Message = { id: uid(), kind: step.kind, text: "", done: false };
+        const message: Message = { done: false, id: uid(), kind: step.kind, text: "" };
         const speed = step.kind === "user" ? 25 : 18;
+
         setThinking(false);
-        streamMessage(msg, step.text, speed, () => {
+        streamMessage(message, step.text, speed, () => {
             setThinking(false);
-            stepTimer.current = setTimeout(advanceScript, SCRIPT[scriptIdx.current]?.delay ?? 0);
+            stepTimer.current = setTimeout(advanceScript, SCRIPT[scriptIndex.current]?.delay ?? 0);
         });
     }, [streamMessage]);
 
@@ -531,8 +616,9 @@ function RattataApp() {
     const submitUserMessage = useCallback(
         (text: string) => {
             setInputLocked(true);
-            const userMsg: Message = { id: uid(), kind: "user", text, done: true };
-            setSettled((s) => [...s, userMsg]);
+            const userMessage: Message = { done: true, id: uid(), kind: "user", text };
+
+            setSettled((s) => [...s, userMessage]);
 
             setTimeout(() => {
                 setThinking(true);
@@ -541,8 +627,9 @@ function RattataApp() {
                 () => {
                     setThinking(false);
                     const response = nextCanned();
-                    const aiMsg: Message = { id: uid(), kind: "ai", text: "", done: false };
-                    streamMessage(aiMsg, response, 18, () => {
+                    const aiMessage: Message = { done: false, id: uid(), kind: "ai", text: "" };
+
+                    streamMessage(aiMessage, response, 18, () => {
                         setInputLocked(false);
                     });
                 },
@@ -554,9 +641,13 @@ function RattataApp() {
 
     useEffect(() => {
         stepTimer.current = setTimeout(advanceScript, 400);
+
         return () => {
-            if (streamTimer.current) clearTimeout(streamTimer.current);
-            if (stepTimer.current) clearTimeout(stepTimer.current);
+            if (streamTimer.current)
+                clearTimeout(streamTimer.current);
+
+            if (stepTimer.current)
+                clearTimeout(stepTimer.current);
         };
     }, []);
 
@@ -571,35 +662,47 @@ function RattataApp() {
     const visibleMessages: Message[] = [];
     let rowsSkipped = 0;
     let rowsShown = 0;
-    for (const msg of allMessages) {
-        const h = messageRows(msg);
+
+    for (const message of allMessages) {
+        const h = messageRows(message);
+
         if (rowsSkipped < displayOffset) {
             const remaining = displayOffset - rowsSkipped;
+
             if (h <= remaining) {
                 rowsSkipped += h;
                 continue;
             }
+
             rowsSkipped = displayOffset;
         }
-        if (rowsShown >= chatViewport) break;
-        visibleMessages.push(msg);
+
+        if (rowsShown >= chatViewport)
+            break;
+
+        visibleMessages.push(message);
         rowsShown += h;
     }
 
     return (
-        <Box flexDirection="column" width={columns} height={rows}>
-            <Header tokens={tokens} time={time} focus={focus} />
-            <Box flexGrow={1} flexDirection="row">
-                <Sidebar width={sidebarW} focused={focus === "sidebar"} selectedIdx={selectedFileIdx} />
-                <Box flexGrow={1} flexDirection="column">
-                    <Box flexGrow={1} flexDirection="column" borderStyle="single" borderColor={focus === "chat" ? "cyan" : "blackBright"} paddingX={1}>
+        <Box flexDirection="column" height={rows} width={columns}>
+            <Header focus={focus} time={time} tokens={tokens} />
+            <Box flexDirection="row" flexGrow={1}>
+                <Sidebar focused={focus === "sidebar"} selectedIdx={selectedFileIndex} width={sidebarW} />
+                <Box flexDirection="column" flexGrow={1}>
+                    <Box borderColor={focus === "chat" ? "cyan" : "blackBright"} borderStyle="single" flexDirection="column" flexGrow={1} paddingX={1}>
                         {!atTop && (
                             <Box justifyContent="center">
-                                <Text color="blackBright">↑ {displayOffset} rows above</Text>
+                                <Text color="blackBright">
+                                    ↑
+                                    {displayOffset}
+                                    {" "}
+                                    rows above
+                                </Text>
                             </Box>
                         )}
-                        {visibleMessages.map((msg) => (
-                            <MessageBlock key={msg.id} msg={msg} />
+                        {visibleMessages.map((message) => (
+                            <MessageBlock key={message.id} msg={message} />
                         ))}
                         {!atBottom && (
                             <Box justifyContent="center">
@@ -607,12 +710,12 @@ function RattataApp() {
                             </Box>
                         )}
                     </Box>
-                    <InputBar value={inputValue} focused={focus === "input"} disabled={inputLocked} />
+                    <InputBar disabled={inputLocked} focused={focus === "input"} value={inputValue} />
                 </Box>
             </Box>
-            <StatusBar thinking={thinking && !active} spinner={spinner} scriptDone={scriptDone} focus={focus} />
+            <StatusBar focus={focus} scriptDone={scriptDone} spinner={spinner} thinking={thinking && !active} />
         </Box>
     );
-}
+};
 
 render(<RattataApp />);

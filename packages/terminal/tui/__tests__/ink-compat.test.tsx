@@ -1,5 +1,5 @@
 // @ts-nocheck — compat tests use loose typing to match upstream Ink examples
-import React, { Suspense, useState, useMemo, useTransition } from "react";
+import React, { Suspense, useState, useTransition } from "react";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,15 +9,9 @@ import {
     Spacer,
     Static,
     Text,
-    useApp,
-    useCursor,
     useFocus,
-    useFocusManager,
-    useInput,
     useStderr,
-    useStdin,
     useStdout,
-    useWindowSize,
 } from "../src/react/index.js";
 
 // ---------------------------------------------------------------------------
@@ -40,37 +34,35 @@ function renderTest(element: React.ReactElement, options?: { columns?: number; r
 // ---------------------------------------------------------------------------
 
 describe("ink compatibility - borders", () => {
-    function Borders() {
-        return (
-            <Box flexDirection="column" padding={2}>
-                <Box>
-                    <Box borderStyle="single" marginRight={2}>
-                        <Text>single</Text>
-                    </Box>
-                    <Box borderStyle="double" marginRight={2}>
-                        <Text>double</Text>
-                    </Box>
-                    <Box borderStyle="round" marginRight={2}>
-                        <Text>round</Text>
-                    </Box>
-                    <Box borderStyle="bold">
-                        <Text>bold</Text>
-                    </Box>
+    const Borders = () => (
+        <Box flexDirection="column" padding={2}>
+            <Box>
+                <Box borderStyle="single" marginRight={2}>
+                    <Text>single</Text>
                 </Box>
-                <Box marginTop={1}>
-                    <Box borderStyle="singleDouble" marginRight={2}>
-                        <Text>singleDouble</Text>
-                    </Box>
-                    <Box borderStyle="doubleSingle" marginRight={2}>
-                        <Text>doubleSingle</Text>
-                    </Box>
-                    <Box borderStyle="classic">
-                        <Text>classic</Text>
-                    </Box>
+                <Box borderStyle="double" marginRight={2}>
+                    <Text>double</Text>
+                </Box>
+                <Box borderStyle="round" marginRight={2}>
+                    <Text>round</Text>
+                </Box>
+                <Box borderStyle="bold">
+                    <Text>bold</Text>
                 </Box>
             </Box>
-        );
-    }
+            <Box marginTop={1}>
+                <Box borderStyle="singleDouble" marginRight={2}>
+                    <Text>singleDouble</Text>
+                </Box>
+                <Box borderStyle="doubleSingle" marginRight={2}>
+                    <Text>doubleSingle</Text>
+                </Box>
+                <Box borderStyle="classic">
+                    <Text>classic</Text>
+                </Box>
+            </Box>
+        </Box>
+    );
 
     it("should render all border styles", () => {
         const output = renderTest(<Borders />, { columns: 60 });
@@ -86,35 +78,34 @@ describe("ink compatibility - borders", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<Borders />, { columns: 60 });
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - box-backgrounds", () => {
-    function BoxBackgrounds() {
-        return (
-            <Box flexDirection="column" gap={1}>
-                <Text bold>Box Background Examples:</Text>
-                <Box backgroundColor="red" width={10} height={3} alignSelf="flex-start">
-                    <Text>Hello</Text>
-                </Box>
-                <Box backgroundColor="blue" borderStyle="round" width={12} height={4} alignSelf="flex-start">
-                    <Text>Border</Text>
-                </Box>
-                <Box backgroundColor="green" padding={1} width={14} height={4} alignSelf="flex-start">
-                    <Text>Padding</Text>
-                </Box>
-                <Box backgroundColor="yellow" width={16} height={3} justifyContent="center" alignSelf="flex-start">
-                    <Text>Centered</Text>
-                </Box>
-                <Box backgroundColor="cyan" alignSelf="flex-start">
-                    <Text>Inherited </Text>
-                    <Text backgroundColor="red">Override </Text>
-                    <Text>Back to inherited</Text>
-                </Box>
+    const BoxBackgrounds = () => (
+        <Box flexDirection="column" gap={1}>
+            <Text bold>Box Background Examples:</Text>
+            <Box alignSelf="flex-start" backgroundColor="red" height={3} width={10}>
+                <Text>Hello</Text>
             </Box>
-        );
-    }
+            <Box alignSelf="flex-start" backgroundColor="blue" borderStyle="round" height={4} width={12}>
+                <Text>Border</Text>
+            </Box>
+            <Box alignSelf="flex-start" backgroundColor="green" height={4} padding={1} width={14}>
+                <Text>Padding</Text>
+            </Box>
+            <Box alignSelf="flex-start" backgroundColor="yellow" height={3} justifyContent="center" width={16}>
+                <Text>Centered</Text>
+            </Box>
+            <Box alignSelf="flex-start" backgroundColor="cyan">
+                <Text>Inherited </Text>
+                <Text backgroundColor="red">Override </Text>
+                <Text>Back to inherited</Text>
+            </Box>
+        </Box>
+    );
 
     it("should render backgrounds and text", () => {
         const output = renderTest(<BoxBackgrounds />);
@@ -130,65 +121,64 @@ describe("ink compatibility - box-backgrounds", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<BoxBackgrounds />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - justify-content", () => {
-    function JustifyContent() {
-        return (
-            <Box flexDirection="column">
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="flex-start" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] flex-start</Text>
+    const JustifyContent = () => (
+        <Box flexDirection="column">
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="flex-start" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
                 </Box>
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="flex-end" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] flex-end</Text>
-                </Box>
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="center" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] center</Text>
-                </Box>
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="space-around" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] space-around</Text>
-                </Box>
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="space-between" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] space-between</Text>
-                </Box>
-                <Box>
-                    <Text>[</Text>
-                    <Box justifyContent="space-evenly" width={20} height={1}>
-                        <Text>X</Text>
-                        <Text>Y</Text>
-                    </Box>
-                    <Text>] space-evenly</Text>
-                </Box>
+                <Text>] flex-start</Text>
             </Box>
-        );
-    }
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="flex-end" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
+                </Box>
+                <Text>] flex-end</Text>
+            </Box>
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="center" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
+                </Box>
+                <Text>] center</Text>
+            </Box>
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="space-around" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
+                </Box>
+                <Text>] space-around</Text>
+            </Box>
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="space-between" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
+                </Box>
+                <Text>] space-between</Text>
+            </Box>
+            <Box>
+                <Text>[</Text>
+                <Box height={1} justifyContent="space-evenly" width={20}>
+                    <Text>X</Text>
+                    <Text>Y</Text>
+                </Box>
+                <Text>] space-evenly</Text>
+            </Box>
+        </Box>
+    );
 
     it("should render all justify-content modes", () => {
         const output = renderTest(<JustifyContent />, { columns: 40 });
@@ -206,6 +196,7 @@ describe("ink compatibility - justify-content", () => {
 
         // All modes should contain both X and Y
         const lines = output.split("\n");
+
         for (const line of lines) {
             if (line.includes("flex-start") || line.includes("flex-end") || line.includes("center")) {
                 expect(line).toContain("X");
@@ -216,26 +207,35 @@ describe("ink compatibility - justify-content", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<JustifyContent />, { columns: 40 });
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - counter", () => {
-    function Counter() {
+    const Counter = () => {
         const [counter] = useState(0);
-        return <Text color="green">{counter} tests passed</Text>;
-    }
+
+        return (
+            <Text color="green">
+                {counter}
+                {" "}
+                tests passed
+            </Text>
+        );
+    };
 
     it("should render initial counter value", () => {
         const output = renderTest(<Counter />);
+
         expect(output).toContain("0 tests passed");
     });
 });
 
 describe("ink compatibility - chat", () => {
-    function ChatApp() {
+    const ChatApp = () => {
         const [input] = useState("");
-        const [messages] = useState<Array<{ id: number; text: string }>>([]);
+        const [messages] = useState<{ id: number; text: string }[]>([]);
 
         return (
             <Box flexDirection="column" padding={1}>
@@ -245,25 +245,30 @@ describe("ink compatibility - chat", () => {
                     ))}
                 </Box>
                 <Box marginTop={1}>
-                    <Text>Enter your message: {input}</Text>
+                    <Text>
+                        Enter your message:
+                        {input}
+                    </Text>
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render empty chat with input prompt", () => {
         const output = renderTest(<ChatApp />);
+
         expect(output).toContain("Enter your message:");
     });
 
     it("should match snapshot", () => {
         const output = renderTest(<ChatApp />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - static component", () => {
-    function StaticExample() {
+    const StaticExample = () => {
         const tests = [
             { id: 0, title: "Test #1" },
             { id: 1, title: "Test #2" },
@@ -275,16 +280,22 @@ describe("ink compatibility - static component", () => {
                 <Static items={tests}>
                     {(test) => (
                         <Box key={test.id}>
-                            <Text color="green">✔ {test.title}</Text>
+                            <Text color="green">
+                                ✔
+                                {test.title}
+                            </Text>
                         </Box>
                     )}
                 </Static>
                 <Box marginTop={1}>
-                    <Text dimColor>Completed tests: {tests.length}</Text>
+                    <Text dimColor>
+                        Completed tests:
+                        {tests.length}
+                    </Text>
                 </Box>
             </>
         );
-    }
+    };
 
     it("should render static items and dynamic footer", () => {
         const output = renderTest(<StaticExample />);
@@ -297,25 +308,26 @@ describe("ink compatibility - static component", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<StaticExample />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - suspense", () => {
-    function Fallback() {
-        return <Text>Loading...</Text>;
-    }
+    const Fallback = () => <Text>Loading...</Text>;
 
     it("should render suspense fallback", () => {
         // Component that always suspends
         let thrown = false;
-        function AlwaysSuspends() {
+
+        const AlwaysSuspends = () => {
             if (!thrown) {
                 thrown = true;
                 throw new Promise(() => {});
             }
+
             return <Text>Loaded</Text>;
-        }
+        };
 
         const output = renderTest(
             <Suspense fallback={<Fallback />}>
@@ -329,13 +341,11 @@ describe("ink compatibility - suspense", () => {
 
 describe("ink compatibility - concurrent-suspense", () => {
     it("should render suspense fallbacks for multiple boundaries", () => {
-        function Loading({ message }: { message: string }) {
-            return (
-                <Box marginLeft={2}>
-                    <Text color="yellow">{message}</Text>
-                </Box>
-            );
-        }
+        const Loading = ({ message }: { message: string }) => (
+            <Box marginLeft={2}>
+                <Text color="yellow">{message}</Text>
+            </Box>
+        );
 
         // All components suspend — we see fallbacks
         function AlwaysSuspends() {
@@ -363,17 +373,15 @@ describe("ink compatibility - concurrent-suspense", () => {
 });
 
 describe("ink compatibility - terminal-resize", () => {
-    function TerminalResizeExample() {
-        return (
-            <Box flexDirection="column" padding={1}>
-                <Text bold color="cyan">
-                    Terminal Size
-                </Text>
-                <Text>Columns: 80</Text>
-                <Text>Rows: 24</Text>
-            </Box>
-        );
-    }
+    const TerminalResizeExample = () => (
+        <Box flexDirection="column" padding={1}>
+            <Text bold color="cyan">
+                Terminal Size
+            </Text>
+            <Text>Columns: 80</Text>
+            <Text>Rows: 24</Text>
+        </Box>
+    );
 
     it("should render terminal dimension labels", () => {
         const output = renderTest(<TerminalResizeExample />);
@@ -385,12 +393,13 @@ describe("ink compatibility - terminal-resize", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<TerminalResizeExample />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - use-input", () => {
-    function Robot() {
+    const Robot = () => {
         const [x] = useState(1);
         const [y] = useState(1);
 
@@ -402,7 +411,7 @@ describe("ink compatibility - use-input", () => {
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render initial state", () => {
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
@@ -413,32 +422,34 @@ describe("ink compatibility - use-input", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - use-focus", () => {
-    function Item({ label }: { label: string }) {
+    const Item = ({ label }: { label: string }) => {
         const { isFocused } = useFocus();
+
         return (
             <Text>
-                {label} {isFocused && <Text color="green">(focused)</Text>}
+                {label}
+                {" "}
+                {isFocused && <Text color="green">(focused)</Text>}
             </Text>
         );
-    }
+    };
 
-    function FocusExample() {
-        return (
-            <Box flexDirection="column" padding={1}>
-                <Box marginBottom={1}>
-                    <Text>Press Tab to focus next element</Text>
-                </Box>
-                <Item label="First" />
-                <Item label="Second" />
-                <Item label="Third" />
+    const FocusExample = () => (
+        <Box flexDirection="column" padding={1}>
+            <Box marginBottom={1}>
+                <Text>Press Tab to focus next element</Text>
             </Box>
-        );
-    }
+            <Item label="First" />
+            <Item label="Second" />
+            <Item label="Third" />
+        </Box>
+    );
 
     it("should render all items", () => {
         const output = renderTest(<FocusExample />);
@@ -451,32 +462,34 @@ describe("ink compatibility - use-focus", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<FocusExample />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - use-focus-with-id", () => {
-    function Item({ label, id }: { label: string; id: string }) {
+    const Item = ({ id, label }: { id: string; label: string }) => {
         const { isFocused } = useFocus({ id });
+
         return (
             <Text>
-                {label} {isFocused && <Text color="green">(focused)</Text>}
+                {label}
+                {" "}
+                {isFocused && <Text color="green">(focused)</Text>}
             </Text>
         );
-    }
+    };
 
-    function FocusWithId() {
-        return (
-            <Box flexDirection="column" padding={1}>
-                <Box marginBottom={1}>
-                    <Text>Press 1/2/3 to focus by ID</Text>
-                </Box>
-                <Item id="1" label="Press 1 to focus" />
-                <Item id="2" label="Press 2 to focus" />
-                <Item id="3" label="Press 3 to focus" />
+    const FocusWithId = () => (
+        <Box flexDirection="column" padding={1}>
+            <Box marginBottom={1}>
+                <Text>Press 1/2/3 to focus by ID</Text>
             </Box>
-        );
-    }
+            <Item id="1" label="Press 1 to focus" />
+            <Item id="2" label="Press 2 to focus" />
+            <Item id="3" label="Press 3 to focus" />
+        </Box>
+    );
 
     it("should render all items with labels", () => {
         const output = renderTest(<FocusWithId />);
@@ -488,25 +501,28 @@ describe("ink compatibility - use-focus-with-id", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<FocusWithId />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - use-stderr", () => {
-    function StderrExample() {
+    const StderrExample = () => {
         const { write } = useStderr();
+
         // write is a no-op in renderToString
         return <Text>Hello World (check stderr for output)</Text>;
-    }
+    };
 
     it("should render without throwing", () => {
         const output = renderTest(<StderrExample />);
+
         expect(output).toContain("Hello World");
     });
 });
 
 describe("ink compatibility - use-stdout", () => {
-    function StdoutExample() {
+    const StdoutExample = () => {
         const { stdout } = useStdout();
 
         return (
@@ -516,17 +532,21 @@ describe("ink compatibility - use-stdout", () => {
                 </Text>
                 <Box marginTop={1}>
                     <Text>
-                        Width: <Text bold>{stdout.columns}</Text>
+                        Width:
+                        {" "}
+                        <Text bold>{stdout.columns}</Text>
                     </Text>
                 </Box>
                 <Box>
                     <Text>
-                        Height: <Text bold>{stdout.rows}</Text>
+                        Height:
+                        {" "}
+                        <Text bold>{stdout.rows}</Text>
                     </Text>
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render terminal dimension labels", () => {
         const output = renderTest(<StdoutExample />);
@@ -538,12 +558,13 @@ describe("ink compatibility - use-stdout", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<StdoutExample />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - use-transition", () => {
-    function SearchApp() {
+    const SearchApp = () => {
         const [query] = useState("");
         const [isPending] = useTransition();
         const [deferredQuery] = useState("");
@@ -559,7 +580,7 @@ describe("ink compatibility - use-transition", () => {
                     <Text>Search: </Text>
                     <Text color="cyan">{query || "(type something)"}</Text>
                 </Box>
-                <Box marginTop={1} flexDirection="column">
+                <Box flexDirection="column" marginTop={1}>
                     <Text bold>Results (showing first 10):</Text>
                     {items.map((item) => (
                         <Text key={item}>{item}</Text>
@@ -567,7 +588,7 @@ describe("ink compatibility - use-transition", () => {
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render initial state with items", () => {
         const output = renderTest(<SearchApp />);
@@ -580,12 +601,13 @@ describe("ink compatibility - use-transition", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<SearchApp />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - aria", () => {
-    function AriaExample() {
+    const AriaExample = () => {
         const [checked] = useState(false);
 
         return (
@@ -601,7 +623,7 @@ describe("ink compatibility - aria", () => {
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render unchecked checkbox", () => {
         const output = renderTest(<AriaExample />);
@@ -613,23 +635,26 @@ describe("ink compatibility - aria", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<AriaExample />);
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - cursor-ime", () => {
-    function CursorApp() {
+    const CursorApp = () => {
         const [text] = useState("");
 
         return (
             <Box flexDirection="column">
                 <Text>Type Korean (Ctrl+C to exit):</Text>
                 <Text>
-                    {">"} {text}
+                    {">"}
+                    {" "}
+                    {text}
                 </Text>
             </Box>
         );
-    }
+    };
 
     it("should render input prompt", () => {
         const output = renderTest(<CursorApp />);
@@ -640,15 +665,13 @@ describe("ink compatibility - cursor-ime", () => {
 });
 
 describe("ink compatibility - spacer", () => {
-    function SpacerExample() {
-        return (
-            <Box width={40}>
-                <Text>Left</Text>
-                <Spacer />
-                <Text>Right</Text>
-            </Box>
-        );
-    }
+    const SpacerExample = () => (
+        <Box width={40}>
+            <Text>Left</Text>
+            <Spacer />
+            <Text>Right</Text>
+        </Box>
+    );
 
     it("should push elements apart", () => {
         const output = renderTest(<SpacerExample />, { columns: 40 });
@@ -662,21 +685,21 @@ describe("ink compatibility - spacer", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<SpacerExample />, { columns: 40 });
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - newline", () => {
-    function NewlineExample() {
-        return (
-            <Box flexDirection="column">
-                <Text>
-                    Line 1<Newline />
-                    Line 2
-                </Text>
-            </Box>
-        );
-    }
+    const NewlineExample = () => (
+        <Box flexDirection="column">
+            <Text>
+                Line 1
+                <Newline />
+                Line 2
+            </Text>
+        </Box>
+    );
 
     it("should render text on separate lines", () => {
         const output = renderTest(<NewlineExample />);
@@ -689,26 +712,31 @@ describe("ink compatibility - newline", () => {
 describe("ink compatibility - text styles", () => {
     it("should render bold text", () => {
         const output = renderTest(<Text bold>Bold text</Text>);
+
         expect(output).toContain("Bold text");
     });
 
     it("should render italic text", () => {
         const output = renderTest(<Text italic>Italic text</Text>);
+
         expect(output).toContain("Italic text");
     });
 
     it("should render underline text", () => {
         const output = renderTest(<Text underline>Underlined text</Text>);
+
         expect(output).toContain("Underlined text");
     });
 
     it("should render dim text", () => {
         const output = renderTest(<Text dimColor>Dim text</Text>);
+
         expect(output).toContain("Dim text");
     });
 
     it("should render colored text", () => {
         const output = renderTest(<Text color="green">Green text</Text>);
+
         expect(output).toContain("Green text");
     });
 });
@@ -754,25 +782,26 @@ describe("ink compatibility - nested boxes", () => {
             </Box>,
             { columns: 30 },
         );
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - incremental-rendering", () => {
-    function IncrementalRendering() {
+    const IncrementalRendering = () => {
         const [selectedIndex] = useState(0);
         const services = ["Server Authentication Module", "Database Connection Pool", "API Gateway Service"];
 
         return (
             <Box flexDirection="column">
-                <Box borderStyle="round" borderColor="cyan" paddingX={2} paddingY={1}>
+                <Box borderColor="cyan" borderStyle="round" paddingX={2} paddingY={1}>
                     <Text bold color="cyan">
                         Incremental Rendering Demo
                     </Text>
                 </Box>
-                <Box borderStyle="single" borderColor="gray" paddingX={2} paddingY={1} marginTop={1} flexDirection="column">
+                <Box borderColor="gray" borderStyle="single" flexDirection="column" marginTop={1} paddingX={2} paddingY={1}>
                     {services.map((svc, index) => (
-                        <Text key={svc} color={index === selectedIndex ? "blue" : "white"}>
+                        <Text color={index === selectedIndex ? "blue" : "white"} key={svc}>
                             {index === selectedIndex ? "> " : "  "}
                             {svc}
                         </Text>
@@ -780,7 +809,7 @@ describe("ink compatibility - incremental-rendering", () => {
                 </Box>
             </Box>
         );
-    }
+    };
 
     it("should render service list with selection indicator", () => {
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
@@ -793,47 +822,50 @@ describe("ink compatibility - incremental-rendering", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
+
         expect(output).toMatchSnapshot();
     });
 });
 
 describe("ink compatibility - stress-test", () => {
     const COLORS = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
-    const CHARS = Array.from("█▓▒░▪▫●○◆◇");
+    const CHARS = [..."█▓▒░▪▫●○◆◇"];
 
-    function GridRow({ y, cols, frame }: { y: number; cols: number; frame: number }) {
+    const GridRow = ({ cols, frame, y }: { cols: number; frame: number; y: number }) => {
         const cells: React.ReactElement[] = [];
+
         for (let x = 0; x < cols; x++) {
-            const colorIdx = (x + y + frame) % COLORS.length;
-            const charIdx = (x * 3 + y * 7 + frame) % CHARS.length;
+            const colorIndex = (x + y + frame) % COLORS.length;
+            const charIndex = (x * 3 + y * 7 + frame) % CHARS.length;
+
             cells.push(
-                <Text key={x} color={COLORS[colorIdx]}>
-                    {CHARS[charIdx]}
+                <Text color={COLORS[colorIndex]} key={x}>
+                    {CHARS[charIndex]}
                 </Text>,
             );
         }
-        return <Box>{cells}</Box>;
-    }
 
-    function StressTest() {
-        return (
-            <Box flexDirection="column" width={20} height={10}>
-                <Box borderStyle="round" borderColor="cyan" paddingX={2} marginBottom={1} flexShrink={0}>
-                    <Text bold color="cyan">
-                        Stress test
-                    </Text>
-                </Box>
-                <Box flexDirection="column" flexGrow={1}>
-                    {Array.from({ length: 5 }, (_, y) => (
-                        <GridRow key={y} y={y} cols={20} frame={0} />
-                    ))}
-                </Box>
+        return <Box>{cells}</Box>;
+    };
+
+    const StressTest = () => (
+        <Box flexDirection="column" height={10} width={20}>
+            <Box borderColor="cyan" borderStyle="round" flexShrink={0} marginBottom={1} paddingX={2}>
+                <Text bold color="cyan">
+                    Stress test
+                </Text>
             </Box>
-        );
-    }
+            <Box flexDirection="column" flexGrow={1}>
+                {Array.from({ length: 5 }, (_, y) => (
+                    <GridRow cols={20} frame={0} key={y} y={y} />
+                ))}
+            </Box>
+        </Box>
+    );
 
     it("should render grid cells", () => {
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
+
         expect(output).toContain("Stress test");
         // Grid cells should contain block characters
         expect(output).toMatch(/[█▓▒░▪▫●○◆◇]/);
@@ -841,6 +873,7 @@ describe("ink compatibility - stress-test", () => {
 
     it("should match snapshot", () => {
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
+
         expect(output).toMatchSnapshot();
     });
 });

@@ -1,29 +1,30 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stderr
-import React from "react";
 import { render, Text, useStderr } from "@visulima/tui/react";
+import React from "react";
 
-if (typeof global !== "undefined" && !global.document) {
-    global.document = { createElement: () => ({}), addEventListener: () => {}, removeEventListener: () => {} };
-    global.window = global;
-    Object.defineProperty(global, "navigator", {
+if (globalThis.global !== undefined && !globalThis.document) {
+    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.window = globalThis;
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
         value: { scheduling: { isInputPending: () => false } },
         writable: true,
-        configurable: true,
     });
 }
 
-function Example() {
+const Example = () => {
     const { write } = useStderr();
 
     React.useEffect(() => {
         const timer = setInterval(() => {
             write("Hello from ratatat to stderr\n");
         }, 1000);
+
         return () => clearInterval(timer);
     }, []);
 
     return <Text>Hello World (check stderr for output)</Text>;
-}
+};
 
 render(<Example />);

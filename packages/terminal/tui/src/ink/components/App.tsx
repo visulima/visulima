@@ -1,17 +1,19 @@
 import { EventEmitter } from "node:events";
 import process from "node:process";
-import React, { type ReactNode, useState, useRef, useCallback, useMemo, useEffect } from "react";
-// eslint-disable-next-line import/no-extraneous-dependencies
+
 import { cursorShow } from "@visulima/ansi";
-import { type CursorPosition } from "../log-update.js";
+import type { ReactNode } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
 import { createInputParser } from "../input-parser.js";
+import type { CursorPosition } from "../log-update.js";
 import AppContext from "./AppContext.js";
-import StdinContext from "./StdinContext.js";
-import StdoutContext from "./StdoutContext.js";
-import StderrContext from "./StderrContext.js";
-import FocusContext from "./FocusContext.js";
 import CursorContext from "./CursorContext.js";
 import ErrorBoundary from "./ErrorBoundary.js";
+import FocusContext from "./FocusContext.js";
+import StderrContext from "./StderrContext.js";
+import StdinContext from "./StdinContext.js";
+import StdoutContext from "./StdoutContext.js";
 
 const tab = "\t";
 const shiftTab = "\u001B[Z";
@@ -19,16 +21,16 @@ const escape = "\u001B";
 
 type Props = {
     readonly children: ReactNode;
-    readonly stdin: NodeJS.ReadStream;
-    readonly stdout: NodeJS.WriteStream;
-    readonly stderr: NodeJS.WriteStream;
-    readonly writeToStdout: (data: string) => void;
-    readonly writeToStderr: (data: string) => void;
     readonly exitOnCtrlC: boolean;
+    readonly interactive: boolean;
     readonly onExit: (errorOrResult?: unknown) => void;
     readonly onWaitUntilRenderFlush: () => Promise<void>;
     readonly setCursorPosition: (position: CursorPosition | undefined) => void;
-    readonly interactive: boolean;
+    readonly stderr: NodeJS.WriteStream;
+    readonly stdin: NodeJS.ReadStream;
+    readonly stdout: NodeJS.WriteStream;
+    readonly writeToStderr: (data: string) => void;
+    readonly writeToStdout: (data: string) => void;
 };
 
 type Focusable = {
@@ -39,23 +41,23 @@ type Focusable = {
 // Root component for all Ink apps
 // It renders stdin and stdout contexts, so that children can access them if needed
 // It also handles Ctrl+C exiting and cursor visibility
-function App({
+const App = ({
     children,
-    stdin,
-    stdout,
-    stderr,
-    writeToStdout,
-    writeToStderr,
     exitOnCtrlC,
+    interactive,
     onExit,
     onWaitUntilRenderFlush,
     setCursorPosition,
-    interactive,
-}: Props): React.ReactNode {
+    stderr,
+    stdin,
+    stdout,
+    writeToStderr,
+    writeToStdout,
+}: Props): React.ReactNode => {
     const [isFocusEnabled, setIsFocusEnabled] = useState(true);
     const [activeFocusId, setActiveFocusId] = useState<string | undefined>(undefined);
     // Focusables array is managed internally via setFocusables callback pattern
-    // eslint-disable-next-line react/hook-use-state
+
     const [, setFocusables] = useState<Focusable[]>([]);
     // Track focusables count for tab navigation check (avoids stale closure)
     const focusablesCountRef = useRef(0);
@@ -67,6 +69,7 @@ function App({
     const bracketedPasteModeEnabledCount = useRef(0);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const internal_eventEmitter = useRef(new EventEmitter());
+
     // Each useInput hook adds a listener, so the count can legitimately exceed the default limit of 10.
     internal_eventEmitter.current.setMaxListeners(Infinity);
     // Store the currently attached readable listener to avoid stale closure issues
@@ -123,6 +126,7 @@ function App({
             // eslint-disable-next-line unicorn/no-hex-escape
             if (input === "\x03" && exitOnCtrlC) {
                 handleExit();
+
                 return;
             }
 
@@ -153,6 +157,7 @@ function App({
         pendingInputFlushRef.current = setTimeout(() => {
             pendingInputFlushRef.current = undefined;
             const pendingEscape = inputParserRef.current.flushPendingEscape();
+
             if (!pendingEscape) {
                 return;
             }
@@ -164,9 +169,10 @@ function App({
     const handleReadable = useCallback((): void => {
         clearPendingInputFlush();
         let chunk;
-        // eslint-disable-next-line @typescript-eslint/no-restricted-types
+
         while ((chunk = stdin.read() as string | null) !== null) {
             const inputEvents = inputParserRef.current.push(chunk);
+
             for (const event of inputEvents) {
                 if (typeof event === "string") {
                     emitInput(event);
@@ -215,6 +221,7 @@ function App({
                 }
 
                 rawModeEnabledCount.current++;
+
                 return;
             }
 
@@ -242,6 +249,7 @@ function App({
                 }
 
                 bracketedPasteModeEnabledCount.current++;
+
                 return;
             }
 
@@ -258,9 +266,7 @@ function App({
 
     // Focus navigation helpers
     const findNextFocusable = useCallback((currentFocusables: Focusable[], currentActiveFocusId: string | undefined): string | undefined => {
-        const activeIndex = currentFocusables.findIndex((focusable) => {
-            return focusable.id === currentActiveFocusId;
-        });
+        const activeIndex = currentFocusables.findIndex((focusable) => focusable.id === currentActiveFocusId);
 
         for (let index = activeIndex + 1; index < currentFocusables.length; index++) {
             const focusable = currentFocusables[index];
@@ -274,9 +280,7 @@ function App({
     }, []);
 
     const findPreviousFocusable = useCallback((currentFocusables: Focusable[], currentActiveFocusId: string | undefined): string | undefined => {
-        const activeIndex = currentFocusables.findIndex((focusable) => {
-            return focusable.id === currentActiveFocusId;
-        });
+        const activeIndex = currentFocusables.findIndex((focusable) => focusable.id === currentActiveFocusId);
 
         for (let index = activeIndex - 1; index >= 0; index--) {
             const focusable = currentFocusables[index];
@@ -297,6 +301,7 @@ function App({
 
                 return nextFocusableId ?? firstFocusableId;
             });
+
             return currentFocusables;
         });
     }, [findNextFocusable]);
@@ -309,6 +314,7 @@ function App({
 
                 return previousFocusableId ?? lastFocusableId;
             });
+
             return currentFocusables;
         });
     }, [findPreviousFocusable]);
@@ -316,7 +322,8 @@ function App({
     // Handle tab navigation via effect that subscribes to input events
     useEffect(() => {
         const handleTabNavigation = (input: string): void => {
-            if (!isFocusEnabled || focusablesCountRef.current === 0) return;
+            if (!isFocusEnabled || focusablesCountRef.current === 0)
+                return;
 
             if (input === tab) {
                 focusNext();
@@ -389,9 +396,8 @@ function App({
         });
 
         setFocusables((currentFocusables) => {
-            const filtered = currentFocusables.filter((focusable) => {
-                return focusable.id !== id;
-            });
+            const filtered = currentFocusables.filter((focusable) => focusable.id !== id);
+
             focusablesCountRef.current = filtered.length;
 
             return filtered;
@@ -437,87 +443,97 @@ function App({
     }, []);
 
     // Handle cursor visibility, raw mode, and bracketed paste mode cleanup on unmount
-    useEffect(() => {
-        return () => {
-            const canWriteToStdout = !stdout.destroyed && !stdout.writableEnded;
+    useEffect(() => () => {
+        const canWriteToStdout = !stdout.destroyed && !stdout.writableEnded;
 
-            if (interactive && canWriteToStdout) {
-                stdout.write(cursorShow);
+        if (interactive && canWriteToStdout) {
+            stdout.write(cursorShow);
+        }
+
+        if (isRawModeSupported && rawModeEnabledCount.current > 0) {
+            disableRawMode();
+        }
+
+        if (bracketedPasteModeEnabledCount.current > 0) {
+            if (stdout.isTTY && canWriteToStdout) {
+                stdout.write("\u001B[?2004l");
             }
 
-            if (isRawModeSupported && rawModeEnabledCount.current > 0) {
-                disableRawMode();
-            }
-
-            if (bracketedPasteModeEnabledCount.current > 0) {
-                if (stdout.isTTY && canWriteToStdout) {
-                    stdout.write("\u001B[?2004l");
-                }
-
-                bracketedPasteModeEnabledCount.current = 0;
-            }
-        };
+            bracketedPasteModeEnabledCount.current = 0;
+        }
     }, [stdout, isRawModeSupported, disableRawMode, interactive]);
 
     // Memoize context values to prevent unnecessary re-renders
     const appContextValue = useMemo(
-        () => ({
-            exit: handleExit,
-            waitUntilRenderFlush: onWaitUntilRenderFlush,
-        }),
+        () => {
+            return {
+                exit: handleExit,
+                waitUntilRenderFlush: onWaitUntilRenderFlush,
+            };
+        },
         [handleExit, onWaitUntilRenderFlush],
     );
 
     const stdinContextValue = useMemo(
-        () => ({
-            stdin,
-            setRawMode: handleSetRawMode,
-            setBracketedPasteMode: handleSetBracketedPasteMode,
-            isRawModeSupported,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            internal_exitOnCtrlC: exitOnCtrlC,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            internal_eventEmitter: internal_eventEmitter.current,
-        }),
+        () => {
+            return {
+
+                internal_eventEmitter: internal_eventEmitter.current,
+
+                internal_exitOnCtrlC: exitOnCtrlC,
+                isRawModeSupported,
+                setBracketedPasteMode: handleSetBracketedPasteMode,
+                setRawMode: handleSetRawMode,
+                stdin,
+            };
+        },
         [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC],
     );
 
     const stdoutContextValue = useMemo(
-        () => ({
-            stdout,
-            write: writeToStdout,
-        }),
+        () => {
+            return {
+                stdout,
+                write: writeToStdout,
+            };
+        },
         [stdout, writeToStdout],
     );
 
     const stderrContextValue = useMemo(
-        () => ({
-            stderr,
-            write: writeToStderr,
-        }),
+        () => {
+            return {
+                stderr,
+                write: writeToStderr,
+            };
+        },
         [stderr, writeToStderr],
     );
 
     const cursorContextValue = useMemo(
-        () => ({
-            setCursorPosition,
-        }),
+        () => {
+            return {
+                setCursorPosition,
+            };
+        },
         [setCursorPosition],
     );
 
     const focusContextValue = useMemo(
-        () => ({
-            activeId: activeFocusId,
-            add: addFocusable,
-            remove: removeFocusable,
-            activate: activateFocusable,
-            deactivate: deactivateFocusable,
-            enableFocus,
-            disableFocus,
-            focusNext,
-            focusPrevious,
-            focus,
-        }),
+        () => {
+            return {
+                activate: activateFocusable,
+                activeId: activeFocusId,
+                add: addFocusable,
+                deactivate: deactivateFocusable,
+                disableFocus,
+                enableFocus,
+                focus,
+                focusNext,
+                focusPrevious,
+                remove: removeFocusable,
+            };
+        },
         [activeFocusId, addFocusable, removeFocusable, activateFocusable, deactivateFocusable, enableFocus, disableFocus, focusNext, focusPrevious, focus],
     );
 
@@ -536,7 +552,7 @@ function App({
             </StdinContext.Provider>
         </AppContext.Provider>
     );
-}
+};
 
 // Declare displayName on the function so isolatedDeclarations can emit the type
 declare namespace App {

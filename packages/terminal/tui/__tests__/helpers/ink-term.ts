@@ -1,6 +1,6 @@
-import process from "node:process";
 import { createRequire } from "node:module";
 import path from "node:path";
+import process from "node:process";
 import url from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -35,25 +35,25 @@ const term = (fixture: string, args: string[] = []) => {
 
     const env: Record<string, string> = {
         ...(process.env as Record<string, string>),
-        NODE_NO_WARNINGS: "1",
         CI: "false",
+        NODE_NO_WARNINGS: "1",
     };
 
     const ps = spawn("node", ["--import=tsx", path.join(fixturesDir, `${fixture}.tsx`), ...args], {
-        name: "xterm-color",
         cols: 100,
         cwd: fixturesDir,
         env,
+        name: "xterm-color",
     });
 
     const result = {
+        output: "",
+        waitForExit: async () => exitPromise,
         write(input: string) {
             void readyPromise.then(() => {
                 ps.write(input);
             });
         },
-        output: "",
-        waitForExit: async () => exitPromise,
     };
 
     ps.onData((data) => {
@@ -67,6 +67,7 @@ const term = (fixture: string, args: string[] = []) => {
     ps.onExit(({ exitCode }) => {
         if (exitCode === 0) {
             resolve();
+
             return;
         }
 

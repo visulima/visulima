@@ -34,6 +34,7 @@ function ageColor(age: number): number {
 
 // ─── Cell characters — denser = older ────────────────────────────────────────
 const AGE_CHARS = ["█", "▓", "▒", "░", "·", "·", "·", "·", "·", "·"];
+
 function ageChar(age: number): string {
     return AGE_CHARS[Math.min(age, AGE_CHARS.length - 1)]!;
 }
@@ -57,7 +58,7 @@ function initGrid(w: number, h: number) {
     }
 }
 
-function idx(x: number, y: number): number {
+function index(x: number, y: number): number {
     // Toroidal (wrap-around) topology
     return ((y + rows) % rows) * cols + ((x + cols) % cols);
 }
@@ -65,32 +66,35 @@ function idx(x: number, y: number): number {
 function step() {
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-            const alive = grid[idx(x, y)]! > 0;
+            const alive = grid[index(x, y)]! > 0;
 
-            const neighbors =
-                (grid[idx(x - 1, y - 1)]! > 0 ? 1 : 0) +
-                (grid[idx(x, y - 1)]! > 0 ? 1 : 0) +
-                (grid[idx(x + 1, y - 1)]! > 0 ? 1 : 0) +
-                (grid[idx(x - 1, y)]! > 0 ? 1 : 0) +
-                (grid[idx(x + 1, y)]! > 0 ? 1 : 0) +
-                (grid[idx(x - 1, y + 1)]! > 0 ? 1 : 0) +
-                (grid[idx(x, y + 1)]! > 0 ? 1 : 0) +
-                (grid[idx(x + 1, y + 1)]! > 0 ? 1 : 0);
+            const neighbors
+                = (grid[index(x - 1, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y - 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x - 1, y)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y)]! > 0 ? 1 : 0)
+                    + (grid[index(x - 1, y + 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x, y + 1)]! > 0 ? 1 : 0)
+                    + (grid[index(x + 1, y + 1)]! > 0 ? 1 : 0);
 
-            const currentAge = grid[idx(x, y)]!;
+            const currentAge = grid[index(x, y)]!;
+
             if (alive) {
                 // Survival: 2 or 3 neighbors
-                next[idx(x, y)] = neighbors === 2 || neighbors === 3 ? Math.min(currentAge + 1, 255) : 0;
+                next[index(x, y)] = neighbors === 2 || neighbors === 3 ? Math.min(currentAge + 1, 255) : 0;
             } else {
                 // Birth: exactly 3 neighbors
-                next[idx(x, y)] = neighbors === 3 ? 1 : 0;
+                next[index(x, y)] = neighbors === 3 ? 1 : 0;
             }
         }
     }
+
     // Swap buffers
-    const tmp = grid;
+    const temporary = grid;
+
     grid = next;
-    next = tmp;
+    next = temporary;
 }
 
 // ─── Paint ───────────────────────────────────────────────────────────────────
@@ -119,6 +123,7 @@ function paint(buf: Uint32Array, w: number, h: number, frame: number) {
         // leave last row for status bar
         for (let x = 0; x < w; x++) {
             const age = grid[y * w + x]!;
+
             if (age > 0) {
                 setCell(buf, w, x, y, ageChar(age), ageColor(age));
             }
@@ -129,6 +134,7 @@ function paint(buf: Uint32Array, w: number, h: number, frame: number) {
     // Status bar
     const alive = grid.reduce((n, v) => n + (v > 0 ? 1 : 0), 0);
     const status = ` Gen ${generation}  Alive ${alive}  ${w}×${h}  Ctrl+C to quit `;
+
     for (let i = 0; i < Math.min(status.length, w); i++) {
         setCell(buf, w, i, h - 1, status[i]!, 0, 250); // dark bg status bar
     }
@@ -137,4 +143,5 @@ function paint(buf: Uint32Array, w: number, h: number, frame: number) {
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
 const loop = createLoop(paint, 20); // 20fps — life doesn't need 60
+
 loop.start();

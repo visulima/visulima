@@ -25,6 +25,7 @@ function paletteColor(t: number): number {
     const r = Math.floor(((Math.sin(t * Math.PI * 2) + 1) / 2) * 5);
     const g = Math.floor(((Math.sin(t * Math.PI * 2 + (Math.PI * 2) / 3) + 1) / 2) * 5);
     const b = Math.floor(((Math.sin(t * Math.PI * 2 + (Math.PI * 4) / 3) + 1) / 2) * 5);
+
     return 16 + 36 * r + 6 * g + b;
 }
 
@@ -43,7 +44,7 @@ function plasmaValue(x: number, y: number, t: number, cols: number, rows: number
     // Circular wave from center
     const cx = nx - 0.5;
     const cy = ny - 0.5;
-    const dist = Math.sqrt(cx * cx + cy * cy);
+    const dist = Math.hypot(cx, cy);
     const v4 = Math.sin(dist * 12 - t * 1.7);
 
     // Sum → normalize to [0, 1]
@@ -70,6 +71,7 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
             // Shift bg palette by 0.5 for contrast — complementary color underneath
             const bg = paletteColor((v + 0.5) % 1);
             const char = plasmaChar(v);
+
             setCell(buf, cols, x, y, char, fg, bg);
         }
     }
@@ -78,4 +80,5 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
 const loop = createLoop(paint, 60);
+
 loop.start();

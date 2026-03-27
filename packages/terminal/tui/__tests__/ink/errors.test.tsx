@@ -1,9 +1,11 @@
 import process from "node:process";
-import { useEffect } from "react";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import patchConsole from "patch-console";
+
 import { strip as stripAnsi } from "@visulima/ansi";
-import { render, useStdin, Text } from "../../src/ink/index.js";
+import patchConsole from "patch-console";
+import { useEffect } from "react";
+import { afterAll, beforeAll, expect, it } from "vitest";
+
+import { render, Text, useStdin } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
 let restore = () => {};
@@ -25,12 +27,11 @@ it("catch and display error", () => {
 
     render(<Test />, { stdout });
 
-    const writes: string[] = (stdout.write as any).mock.calls
-        .map((c: any) => c[0] as string)
-        .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+    const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
     const lastContentWrite = writes.at(-1)!;
 
     const lines = stripAnsi(lastContentWrite).split("\n");
+
     expect(lines[1]).toBe("  ERROR  Oh no");
     expect(lines[3]).toMatch(/errors\.test\.tsx:\d+:\d+/);
     expect(lines.some((l: string) => l.includes("throw new Error") && l.includes("Oh no"))).toBe(true);
@@ -60,37 +61,34 @@ it("does not emit unhandledRejection when render exits with an error and waitUnt
             setImmediate(resolve);
         });
 
-        expect(unhandledRejectionReasons.length).toBe(0);
+        expect(unhandledRejectionReasons).toHaveLength(0);
     } finally {
         process.off("unhandledRejection", onUnhandledRejection);
     }
 });
 
-it("ErrorBoundary catches and displays nested component errors", () => {
+it("errorBoundary catches and displays nested component errors", () => {
     const stdout = createStdout();
 
     const NestedComponent = () => {
         throw new Error("Nested component error");
     };
 
-    function Parent() {
-        return (
-            <Text>
-                Before error
-                <NestedComponent />
-            </Text>
-        );
-    }
+    const Parent = () => (
+        <Text>
+            Before error
+            <NestedComponent />
+        </Text>
+    );
 
     render(<Parent />, { stdout });
 
-    const writes: string[] = (stdout.write as any).mock.calls
-        .map((c: any) => c[0] as string)
-        .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+    const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
     const lastContentWrite = writes.at(-1)!;
     const output = stripAnsi(lastContentWrite);
-    expect(output.includes("ERROR")).toBe(true);
-    expect(output.includes("Nested component error")).toBe(true);
+
+    expect(output).toContain("ERROR");
+    expect(output).toContain("Nested component error");
 });
 
 it("clean up raw mode when error is thrown", async () => {
@@ -101,15 +99,17 @@ it("clean up raw mode when error is thrown", async () => {
 
     if (!process.stdin.isTTY) {
         expect(true).toBe(true); // Skipping test - stdin is not a TTY
+
         return;
     }
 
     process.stdin.setRawMode = (mode: boolean) => {
         setRawModeCalls.push(mode);
+
         return originalSetRawMode?.(mode) ?? process.stdin;
     };
 
-    function Test() {
+    const Test = () => {
         const { setRawMode } = useStdin();
 
         useEffect(() => {
@@ -118,7 +118,7 @@ it("clean up raw mode when error is thrown", async () => {
         }, [setRawMode]);
 
         return <Text>Test</Text>;
-    }
+    };
 
     const app = render(<Test />, { stdout });
 
@@ -128,6 +128,6 @@ it("clean up raw mode when error is thrown", async () => {
         process.stdin.setRawMode = originalSetRawMode;
     }
 
-    expect(setRawModeCalls.includes(true)).toBe(true);
-    expect(setRawModeCalls.includes(false)).toBe(true);
+    expect(setRawModeCalls).toContain(true);
+    expect(setRawModeCalls).toContain(false);
 });

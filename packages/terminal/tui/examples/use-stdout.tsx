@@ -1,25 +1,26 @@
 // @ts-nocheck
 // Ratatat port of ink/examples/use-stdout
+import { Box, render, Text, useStdout } from "@visulima/tui/react";
 import React from "react";
-import { render, Box, Text, useStdout } from "@visulima/tui/react";
 
-if (typeof global !== "undefined" && !global.document) {
-    global.document = { createElement: () => ({}), addEventListener: () => {}, removeEventListener: () => {} };
-    global.window = global;
-    Object.defineProperty(global, "navigator", {
+if (globalThis.global !== undefined && !globalThis.document) {
+    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.window = globalThis;
+    Object.defineProperty(globalThis, "navigator", {
+        configurable: true,
         value: { scheduling: { isInputPending: () => false } },
         writable: true,
-        configurable: true,
     });
 }
 
-function Example() {
+const Example = () => {
     const { stdout, write } = useStdout();
 
     React.useEffect(() => {
         const timer = setInterval(() => {
             write("Hello from ratatat to stdout\n");
         }, 1000);
+
         return () => clearInterval(timer);
     }, []);
 
@@ -30,16 +31,20 @@ function Example() {
             </Text>
             <Box marginTop={1}>
                 <Text>
-                    Width: <Text bold>{stdout.columns}</Text>
+                    Width:
+                    {" "}
+                    <Text bold>{stdout.columns}</Text>
                 </Text>
             </Box>
             <Box>
                 <Text>
-                    Height: <Text bold>{stdout.rows}</Text>
+                    Height:
+                    {" "}
+                    <Text bold>{stdout.rows}</Text>
                 </Text>
             </Box>
         </Box>
     );
-}
+};
 
 render(<Example />);

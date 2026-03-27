@@ -1,4 +1,5 @@
-import { type Writable } from "node:stream";
+import type { Writable } from "node:stream";
+
 import isInCi from "is-in-ci";
 
 export const bsu = "\u001B[?2026h";

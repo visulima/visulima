@@ -1,33 +1,33 @@
-import process from "node:process";
-import { PassThrough, Writable } from "node:stream";
 import { Buffer } from "node:buffer";
-import url from "node:url";
-import * as path from "node:path";
 import { createRequire } from "node:module";
-import { describe, expect, it } from "vitest";
-import { vi } from "vitest";
-import { type ReactElement, type ReactNode, PureComponent, useEffect, useState } from "react";
-import { eraseLines, resetTerminal } from "@visulima/ansi";
-import { strip as stripAnsi } from "@visulima/ansi";
+import { join } from "node:path";
+import process from "node:process";
+import { Writable } from "node:stream";
+import url from "node:url";
+
+import { eraseLines, resetTerminal, strip as stripAnsi } from "@visulima/ansi";
 import { boxen } from "@visulima/boxen";
 import delay from "delay";
-import { render, Box, Text, useApp, useCursor, useInput } from "../../src/ink/index.js";
-import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
+import type { ReactElement } from "react";
+import { PureComponent, useEffect, useState } from "react";
+import { expect, it } from "vitest";
+
+import { Box, render, Text, useApp } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
 const require = createRequire(import.meta.url);
 
-const _req = createRequire(import.meta.url);
+const _request = createRequire(import.meta.url);
 const ptyAvailable = (() => {
     try {
-        _req("node-pty");
+        _request("node-pty");
+
         return true;
     } catch {
         return false;
     }
 })();
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 let _spawn: (typeof import("node-pty"))["spawn"] | undefined;
 const getSpawn = () => {
     if (!_spawn) {
@@ -37,6 +37,7 @@ const getSpawn = () => {
             throw new Error("node-pty not available on this platform");
         }
     }
+
     return _spawn;
 };
 
@@ -56,19 +57,19 @@ const term = (fixture: string, args: string[] = []) => {
         NODE_NO_WARNINGS: "1",
     };
 
-    const ps = getSpawn()("node", ["--import=tsx", path.join(__dirname, `./fixtures/${fixture}.tsx`), ...args], {
-        name: "xterm-color",
+    const ps = getSpawn()("node", ["--import=tsx", join(__dirname, `./fixtures/${fixture}.tsx`), ...args], {
         cols: 100,
         cwd: __dirname,
         env,
+        name: "xterm-color",
     });
 
     const result = {
+        output: "",
+        waitForExit: async () => exitPromise,
         write(input: string) {
             ps.write(input);
         },
-        output: "",
-        waitForExit: async () => exitPromise,
     };
 
     ps.onData((data) => {
@@ -78,6 +79,7 @@ const term = (fixture: string, args: string[] = []) => {
     ps.onExit(({ exitCode }) => {
         if (exitCode === 0) {
             resolve();
+
             return;
         }
 
@@ -93,8 +95,9 @@ const isWriteBarrierChunk = (chunk: string | Uint8Array): boolean =>
 const toRenderedChunk = (chunk: string | Uint8Array): string => stripAnsi(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString());
 
 const isCursorOrSyncEscape = (chunk: string | Uint8Array): boolean => {
-    const str = typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
-    return str.startsWith("\u001B[?25") || str === "\u001B[?2026h" || str === "\u001B[?2026l";
+    const string_ = typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
+
+    return string_.startsWith("\u001B[?25") || string_ === "\u001B[?2026h" || string_ === "\u001B[?2026l";
 };
 
 const isRenderContent = (chunk: string | Uint8Array): boolean => !isWriteBarrierChunk(chunk) && !isCursorOrSyncEscape(chunk);
@@ -104,11 +107,13 @@ const getContentWrites = (writeSpy: any): string[] =>
 
 it.skipIf(!ptyAvailable)("do not erase screen", async () => {
     const ps = term("erase", ["4"]);
+
     await ps.waitForExit();
-    expect(ps.output.includes(resetTerminal)).toBe(false);
+
+    expect(ps.output).not.toContain(resetTerminal);
 
     for (const letter of ["A", "B", "C"]) {
-        expect(ps.output.includes(letter)).toBe(true);
+        expect(ps.output).toContain(letter);
     }
 });
 
@@ -116,25 +121,29 @@ it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than view
     const ps = term("erase-with-static", ["4"]);
 
     await ps.waitForExit();
-    expect(ps.output.includes(resetTerminal)).toBe(false);
+
+    expect(ps.output).not.toContain(resetTerminal);
 
     for (const letter of ["A", "B", "C", "D", "E", "F"]) {
-        expect(ps.output.includes(letter)).toBe(true);
+        expect(ps.output).toContain(letter);
     }
 });
 
 it.skipIf(!ptyAvailable)("erase screen", async () => {
     const ps = term("erase", ["3"]);
+
     await ps.waitForExit();
-    expect(ps.output.includes(resetTerminal)).toBe(true);
+
+    expect(ps.output).toContain(resetTerminal);
 
     for (const letter of ["A", "B", "C"]) {
-        expect(ps.output.includes(letter)).toBe(true);
+        expect(ps.output).toContain(letter);
     }
 });
 
 it.skipIf(!ptyAvailable)("clear output", async () => {
     const ps = term("clear");
+
     await ps.waitForExit();
 
     const secondFrame = ps.output.split(eraseLines(4))[1];
@@ -146,11 +155,10 @@ it.skipIf(!ptyAvailable)("clear output", async () => {
 
 it.skipIf(!ptyAvailable)("intercept console methods and display result above output", async () => {
     const ps = term("console");
+
     await ps.waitForExit();
 
-    const frames = ps.output.split(eraseLines(2)).map((line) => {
-        return stripAnsi(line);
-    });
+    const frames = ps.output.split(eraseLines(2)).map((line) => stripAnsi(line));
 
     expect(frames).toEqual(["Hello World\r\n", "First log\r\nHello World\r\nSecond log\r\n"]);
 });
@@ -158,30 +166,31 @@ it.skipIf(!ptyAvailable)("intercept console methods and display result above out
 it.skipIf(!ptyAvailable)("rerender on resize", async () => {
     const stdout = createStdout(10);
 
-    function Test() {
-        return (
-            <Box borderStyle="round">
-                <Text>Test</Text>
-            </Box>
-        );
-    }
+    const Test = () => (
+        <Box borderStyle="round">
+            <Text>Test</Text>
+        </Box>
+    );
 
     const { unmount } = render(<Test />, { stdout });
 
     const contentWrites = getContentWrites(stdout.write);
-    expect(stripAnsi(contentWrites[0]!)).toBe(boxen("Test".padEnd(8), { borderStyle: "round" }) + "\n");
 
-    expect(stdout.listeners("resize").length).toBe(1);
+    expect(stripAnsi(contentWrites[0]!)).toBe(`${boxen("Test".padEnd(8), { borderStyle: "round" })}\n`);
+
+    expect(stdout.listeners("resize")).toHaveLength(1);
 
     stdout.columns = 8;
     stdout.emit("resize");
     await delay(100);
 
     const contentWritesAfterResize = getContentWrites(stdout.write);
-    expect(stripAnsi(contentWritesAfterResize.at(-1)!)).toBe(boxen("Test".padEnd(6), { borderStyle: "round" }) + "\n");
+
+    expect(stripAnsi(contentWritesAfterResize.at(-1)!)).toBe(`${boxen("Test".padEnd(6), { borderStyle: "round" })}\n`);
 
     unmount();
-    expect(stdout.listeners("resize").length).toBe(0);
+
+    expect(stdout.listeners("resize")).toHaveLength(0);
 });
 
 it.skipIf(!ptyAvailable)("waitUntilExit resolves after stdout write callback", async () => {
@@ -221,7 +230,7 @@ it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after unmount", async ()
 it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after exit with error", async () => {
     const stdout = createStdout();
 
-    function Test() {
+    const Test = () => {
         const { exit } = useApp();
 
         useEffect(() => {
@@ -229,19 +238,20 @@ it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after exit with error", 
         }, [exit]);
 
         return <Text>Hello</Text>;
-    }
+    };
 
     const { waitUntilExit, waitUntilRenderFlush } = render(<Test />, { stdout });
 
     await expect(waitUntilExit()).rejects.toThrow("Done");
+
     await waitUntilRenderFlush();
 });
 
 it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during synchronous render error handling", async () => {
     class SynchronousErrorBoundary extends PureComponent<
         {
-            onError: (error: Error) => void;
             children?: ReactElement;
+            onError: (error: Error) => void;
         },
         { error?: Error }
     > {
@@ -270,7 +280,7 @@ it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during sync
         throw new Error("Synchronous render error");
     }
 
-    function ThrowingComponentWithBoundary() {
+    const ThrowingComponentWithBoundary = () => {
         const { exit } = useApp();
 
         return (
@@ -278,12 +288,12 @@ it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during sync
                 <SynchronousRenderErrorComponent />
             </SynchronousErrorBoundary>
         );
-    }
+    };
 
     const stdout = createStdout();
     const { waitUntilExit } = render(<ThrowingComponentWithBoundary />, {
-        stdout,
         patchConsole: false,
+        stdout,
     });
 
     await expect(
@@ -297,53 +307,62 @@ it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during sync
 });
 
 it.skipIf(!ptyAvailable)("render only last frame when run in CI", async () => {
-    function Counter() {
+    const Counter = () => {
         const [count, setCount] = useState(0);
         const { exit } = useApp();
 
         useEffect(() => {
             if (count >= 5) {
                 exit();
+
                 return;
             }
 
             const timer = setTimeout(() => {
                 setCount((c) => c + 1);
             }, 10);
+
             return () => clearTimeout(timer);
         }, [count, exit]);
 
-        return <Text>Counter: {count}</Text>;
-    }
+        return (
+            <Text>
+                Counter:
+                {count}
+            </Text>
+        );
+    };
 
     const stdout = createStdout(100, false);
-    const { waitUntilExit } = render(<Counter />, { stdout, debug: false });
+    const { waitUntilExit } = render(<Counter />, { debug: false, stdout });
+
     await waitUntilExit();
 
     const allWrites = stdout.getWrites().map((w) => stripAnsi(w));
     const allContent = allWrites.join("");
 
     // In non-interactive mode, only the last frame is written
-    for (const num of [0, 1, 2, 3, 4]) {
-        expect(allContent.includes(`Counter: ${num}`)).toBe(false);
+    for (const number_ of [0, 1, 2, 3, 4]) {
+        expect(allContent).not.toContain(`Counter: ${number_}`);
     }
 
-    expect(allContent.includes("Counter: 5")).toBe(true);
+    expect(allContent).toContain("Counter: 5");
 });
 
 it.skipIf(!ptyAvailable)("#725: non-TTY child process output is flushed", async () => {
     const { spawn: spawnProcess } = await import("node:child_process");
 
-    const fixtureProcess = spawnProcess("node", ["--import=tsx", path.join(__dirname, "./fixtures/issue-725-child-process.tsx")], {
+    const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/issue-725-child-process.tsx")], {
         env: {
             ...process.env,
-            NODE_NO_WARNINGS: "1",
             CI: "false",
+            NODE_NO_WARNINGS: "1",
         },
         stdio: ["ignore", "pipe", "pipe"],
     });
 
     let output = "";
+
     fixtureProcess.stdout.on("data", (data: Uint8Array | string) => {
         output += typeof data === "string" ? data : data.toString();
     });
@@ -356,7 +375,9 @@ it.skipIf(!ptyAvailable)("#725: non-TTY child process output is flushed", async 
     });
 
     expect(exitCode).toBe(0);
+
     const plainOutput = stripAnsi(output);
-    expect(plainOutput.includes("ready-stdin-not-tty")).toBe(true);
-    expect(plainOutput.includes("exited")).toBe(true);
+
+    expect(plainOutput).toContain("ready-stdin-not-tty");
+    expect(plainOutput).toContain("exited");
 });

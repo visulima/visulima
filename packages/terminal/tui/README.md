@@ -37,6 +37,34 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 - **Cross-platform** native bindings for macOS, Linux (glibc/musl), and Windows (x64/arm64)
 - **Server-side rendering** via `renderToString`
 
+## Performance
+
+### Core runtime (~700 FPS sustained)
+
+![Stress test (700 FPS)](docs/media/ratatat-stress-test-700fps.png)
+
+### React vs Ink benchmark
+
+Measured on Apple M1 Max, 80×24 terminal.
+
+| Metric                  | Unit              | @visulima/tui |    Ink | Speedup |
+| ----------------------- | ----------------- | ------------: | -----: | ------: |
+| Initial mount (simple)  | ops/sec           |        67,630 |  8,215 |    8.2× |
+| Initial mount (complex) | ops/sec           |        41,253 |  1,421 |     29× |
+| Rerender (simple)       | ops/sec           |        95,175 |  8,095 |   11.8× |
+| Rerender (complex)      | ops/sec           |        49,852 |  1,384 |     36× |
+| p99 latency (complex)   | µs (lower better) |            23 |  1,586 |     68× |
+
+### Kitchen sink demo
+
+| Layout | Focus | Graph | Live |
+| --- | --- | --- | --- |
+| ![Layout](docs/media/ks-layout.png) | ![Focus](docs/media/ks-focus.png) | ![Graph](docs/media/ks-graph.png) | ![Live](docs/media/ks-live.png) |
+
+| Incremental | UI | Static | Mouse |
+| --- | --- | --- | --- |
+| ![Incremental](docs/media/ks-incremental.png) | ![UI](docs/media/ks-ui.png) | ![Static](docs/media/ks-static.png) | ![Mouse](docs/media/ks-mouse.png) |
+
 ## Install
 
 ```sh

@@ -1,4 +1,5 @@
 import React from "react";
+
 import { render, Text } from "../../../src/ink/index.js";
 
 class Test extends React.Component<Record<string, unknown>, { counter: number }> {
@@ -9,7 +10,12 @@ class Test extends React.Component<Record<string, unknown>, { counter: number }>
     };
 
     override render() {
-        return <Text>Counter: {this.state.counter}</Text>;
+        return (
+            <Text>
+                Counter:
+                {this.state.counter}
+            </Text>
+        );
     }
 
     override componentDidMount() {
@@ -18,9 +24,11 @@ class Test extends React.Component<Record<string, unknown>, { counter: number }>
                 return;
             }
 
-            this.setState((prevState) => ({
-                counter: prevState.counter + 1,
-            }));
+            this.setState((previousState) => {
+                return {
+                    counter: previousState.counter + 1,
+                };
+            });
 
             this.timer = setTimeout(onTimeout, 20);
         };

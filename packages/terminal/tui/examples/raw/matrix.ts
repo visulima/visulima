@@ -29,8 +29,8 @@ function randomChar(): string {
 // Cells fade through the palette based on age, then go dark.
 
 interface ScreenCell {
-    char: string;
     age: number; // frames since written; 0 = fresh
+    char: string;
     isHead: boolean;
 }
 
@@ -41,12 +41,15 @@ let screenRows = 0;
 function initScreen(cols: number, rows: number) {
     screenCols = cols;
     screenRows = rows;
-    screen = Array.from({ length: cols * rows }, () => ({ char: " ", age: 999, isHead: false }));
+    screen = Array.from({ length: cols * rows }, () => { return { age: 999, char: " ", isHead: false }; });
 }
 
 function writeCell(x: number, y: number, char: string, isHead: boolean) {
-    if (x < 0 || x >= screenCols || y < 0 || y >= screenRows) return;
+    if (x < 0 || x >= screenCols || y < 0 || y >= screenRows)
+        return;
+
     const cell = screen[y * screenCols + x]!;
+
     cell.char = char;
     cell.age = 0;
     cell.isHead = isHead;
@@ -113,6 +116,7 @@ let lastRows = 0;
 
 function initDrops(cols: number, rows: number) {
     drops = [];
+
     for (let x = 0; x < cols; x++) {
         drops.push({
             head: -Math.floor(Math.random() * rows) - 1,
@@ -120,6 +124,7 @@ function initDrops(cols: number, rows: number) {
             tick: Math.floor(Math.random() * 4),
         });
     }
+
     lastCols = cols;
     lastRows = rows;
 }
@@ -148,8 +153,8 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
     }
 
     // Age every cell by 1 each frame
-    for (let i = 0; i < screen.length; i++) {
-        screen[i]!.age++;
+    for (const element of screen) {
+        element!.age++;
     }
 
     // Advance drops and write head characters into the screen buffer
@@ -157,12 +162,14 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
         const drop = drops[x]!;
 
         drop.tick++;
+
         if (drop.tick >= drop.speed) {
             drop.tick = 0;
             drop.head++;
 
             if (drop.head >= 0 && drop.head < rows) {
                 writeCell(x, drop.head, randomChar(), true);
+
                 if (drop.head > 0 && Math.random() < 0.3) {
                     writeCell(x, drop.head - 1, randomChar(), false);
                 }
@@ -180,9 +187,13 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
             const cell = screen[y * cols + x]!;
-            if (cell.age >= FADE_OUT) continue; // fully faded — leave blank
+
+            if (cell.age >= FADE_OUT)
+                continue; // fully faded — leave blank
+
             const color = FADE[cell.age]!;
             const bold = cell.age === 0 ? 1 : 0;
+
             setCell(buf, cols, x, y, cell.char, color, 0, bold);
         }
     }
@@ -191,4 +202,5 @@ function paint(buf: Uint32Array, cols: number, rows: number, _frame: number) {
 // ─── Run ─────────────────────────────────────────────────────────────────────
 
 const loop = createLoop(paint, 24); // 24fps — rain doesn't need 60
+
 loop.start();

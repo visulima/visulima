@@ -1,14 +1,15 @@
-import React, { useState } from "react";
 import { getStringWidth as stringWidth } from "@visulima/string";
-import { render, Box, Text, useInput, useCursor } from "@visulima/tui/react";
+import { Box, render, Text, useCursor, useInput } from "@visulima/tui/react";
+import React, { useState } from "react";
 
-function App() {
+const App = () => {
     const [text, setText] = useState("");
     const { setCursorPosition } = useCursor();
 
     useInput((input, key) => {
         if (key.backspace || key.delete) {
             setText((previous) => previous.slice(0, -1));
+
             return;
         }
 
@@ -19,6 +20,7 @@ function App() {
 
     // Use stringWidth for correct cursor position with wide characters (Korean, CJK, emoji)
     const prompt = "> ";
+
     setCursorPosition({ x: stringWidth(prompt + text), y: 1 });
 
     return (
@@ -30,6 +32,6 @@ function App() {
             </Text>
         </Box>
     );
-}
+};
 
 render(<App />);

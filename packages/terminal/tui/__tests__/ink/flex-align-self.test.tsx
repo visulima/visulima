@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { Box, Text, Newline } from "../../src/ink/index.js";
+import { expect, it } from "vitest";
+
+import { Box, Newline, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
 it("row - align text to center", () => {
@@ -105,7 +106,8 @@ it("row - align self baseline", () => {
         <Box alignItems="flex-end" height={3}>
             <Text>
                 A
-                <Newline />B
+                <Newline />
+                B
             </Text>
             <Box alignSelf="baseline">
                 <Text>X</Text>

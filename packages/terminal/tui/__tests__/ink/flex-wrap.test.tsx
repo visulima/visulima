@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -27,7 +28,7 @@ it("column - no wrap", () => {
 
 it("row - wrap content", () => {
     const output = renderToString(
-        <Box width={2} flexWrap="wrap">
+        <Box flexWrap="wrap" width={2}>
             <Text>A</Text>
             <Text>BC</Text>
         </Box>,
@@ -38,7 +39,7 @@ it("row - wrap content", () => {
 
 it("column - wrap content", () => {
     const output = renderToString(
-        <Box flexDirection="column" height={2} flexWrap="wrap">
+        <Box flexDirection="column" flexWrap="wrap" height={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>
@@ -50,7 +51,7 @@ it("column - wrap content", () => {
 
 it("column - wrap content reverse", () => {
     const output = renderToString(
-        <Box flexDirection="column" height={2} width={3} flexWrap="wrap-reverse">
+        <Box flexDirection="column" flexWrap="wrap-reverse" height={2} width={3}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>
@@ -62,7 +63,7 @@ it("column - wrap content reverse", () => {
 
 it("row - wrap content reverse", () => {
     const output = renderToString(
-        <Box height={3} width={2} flexWrap="wrap-reverse">
+        <Box flexWrap="wrap-reverse" height={3} width={2}>
             <Text>A</Text>
             <Text>B</Text>
             <Text>C</Text>

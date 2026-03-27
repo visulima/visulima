@@ -1,12 +1,13 @@
 // @ts-nocheck
+import { createContext } from "react";
 import ReactReconciler from "react-reconciler";
 import { DefaultEventPriority, DiscreteEventPriority, NoEventPriority } from "react-reconciler/constants.js";
-import * as Scheduler from "scheduler";
-import { createContext } from "react";
+import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unstable_shouldYield } from "scheduler";
+
 import { LayoutNode } from "./layout.js";
-import { applyStyles, resolveColor, Styles } from "./styles.js";
+import type { Styles } from "./styles.js";
+import { applyStyles, resolveColor } from "./styles.js";
 import { getStringWidth } from "./text-width.js";
-import Yoga from "yoga-layout-prebuilt";
 
 type Type = "box" | "text";
 type Props = any;
@@ -25,8 +26,8 @@ type NoTimeout = any;
 type TransitionStatus = any;
 
 export let onAfterCommit: (() => void) | null = null;
-export function setOnAfterCommit(fn: (() => void) | null): void {
-    onAfterCommit = fn;
+export function setOnAfterCommit(function_: (() => void) | null): void {
+    onAfterCommit = function_;
 }
 
 let currentUpdatePriority = NoEventPriority;
@@ -34,32 +35,49 @@ let currentUpdatePriority = NoEventPriority;
 /**
  * Resolve Ink-compatible color/style props into ratatat's numeric fg/bg/styles values.
  * Ink uses: color="green", backgroundColor="red", bold, italic, dim, underline, etc.
- * Ratatat uses: fg=<ansi-index>, bg=<ansi-index>, styles=<bitfield>
+ * Ratatat uses: fg=&lt;ansi-index>, bg=&lt;ansi-index>, styles=&lt;bitfield>
  */
-function resolveNodeColors(props: Props): { fg: number; bg: number; styles: number } {
+function resolveNodeColors(props: Props): { bg: number; fg: number; styles: number } {
     // fg: explicit numeric fg > color prop > 255 (terminal default)
-    const fg = resolveColor(props.fg !== undefined ? props.fg : props.color !== undefined ? props.color : undefined);
+    const fg = resolveColor(props.fg === undefined ? props.color === undefined ? undefined : props.color : props.fg);
 
     // bg: explicit numeric bg > backgroundColor prop > 255 (terminal default)
-    const bg = resolveColor(props.bg !== undefined ? props.bg : props.backgroundColor !== undefined ? props.backgroundColor : undefined);
+    const bg = resolveColor(props.bg === undefined ? props.backgroundColor === undefined ? undefined : props.backgroundColor : props.bg);
 
     // styles bitfield — explicit number overrides, otherwise build from boolean props
     let styles: number;
-    if (props.styles !== undefined) {
-        styles = props.styles;
-    } else {
+
+    if (props.styles === undefined) {
         styles = 0;
-        if (props.bold) styles |= 1;
-        if (props.dim || props.dimColor) styles |= 2;
-        if (props.italic) styles |= 4;
-        if (props.underline) styles |= 8;
-        if (props.blink) styles |= 16;
-        if (props.inverse) styles |= 32;
-        if (props.hidden) styles |= 64;
-        if (props.strikethrough) styles |= 128;
+
+        if (props.bold)
+            styles |= 1;
+
+        if (props.dim || props.dimColor)
+            styles |= 2;
+
+        if (props.italic)
+            styles |= 4;
+
+        if (props.underline)
+            styles |= 8;
+
+        if (props.blink)
+            styles |= 16;
+
+        if (props.inverse)
+            styles |= 32;
+
+        if (props.hidden)
+            styles |= 64;
+
+        if (props.strikethrough)
+            styles |= 128;
+    } else {
+        styles = props.styles;
     }
 
-    return { fg, bg, styles };
+    return { bg, fg, styles };
 }
 
 const hostConfig: ReactReconciler.HostConfig<
@@ -78,10 +96,45 @@ const hostConfig: ReactReconciler.HostConfig<
     NoTimeout,
     TransitionStatus
 > = {
-    supportsMutation: true,
-    supportsPersistence: false,
-    supportsHydration: false,
-    isPrimaryRenderer: true,
+    afterActiveInstanceBlur: () => {},
+    appendChild(parentInstance, child) {
+        parentInstance.insertChild(child, parentInstance.children.length);
+    },
+    appendChildToContainer(container, child) {
+        container.insertChild(child, container.children.length);
+    },
+    appendInitialChild(parentInstance, child) {
+        parentInstance.insertChild(child, parentInstance.children.length);
+    },
+
+    beforeActiveInstanceBlur: () => {},
+
+    cancelCallback: unstable_cancelCallback,
+
+    cancelTimeout: clearTimeout,
+
+    clearContainer(container: any) {},
+
+    commitTextUpdate(textInstance, oldText, newText) {
+        textInstance.text = newText;
+        textInstance.yogaNode.setWidth(getStringWidth(newText));
+    },
+
+    commitUpdate(instance, type, previousProps, nextProps, internalHandle) {
+        // Re-apply Yoga styles on update (React 19 signature: instance, type, oldProps, newProps, fiber)
+        applyStyles(instance.yogaNode, nextProps as Styles, previousProps as Styles);
+
+        // Re-resolve color/style props
+        const { bg, fg, styles } = resolveNodeColors(nextProps);
+
+        instance.fg = fg;
+        instance.bg = bg;
+        instance.styles = styles;
+        instance._style = nextProps;
+
+        // Update transform prop
+        instance.transform = typeof nextProps.transform === "function" ? nextProps.transform : undefined;
+    },
 
     createInstance(type, props, rootContainer, hostContext, internalHandle) {
         const node = new LayoutNode();
@@ -90,16 +143,20 @@ const hostConfig: ReactReconciler.HostConfig<
         //   flexDirection: 'row'  (Yoga default: 'column')
         //   flexShrink: 1         (Yoga default: 0 — causes flexGrow boxes to overflow their parent)
         const stylesToApply: Styles = { ...props };
+
         if (stylesToApply.flexDirection === undefined) {
             stylesToApply.flexDirection = "row";
         }
+
         if (stylesToApply.flexShrink === undefined) {
             stylesToApply.flexShrink = 1;
         }
+
         applyStyles(node.yogaNode, stylesToApply);
 
         // Resolve color/style props (Ink-compat + ratatat-native)
-        const { fg, bg, styles } = resolveNodeColors(props);
+        const { bg, fg, styles } = resolveNodeColors(props);
+
         node.fg = fg;
         node.bg = bg;
         node.styles = styles;
@@ -115,42 +172,73 @@ const hostConfig: ReactReconciler.HostConfig<
 
     createTextInstance(text, rootContainer, hostContext, internalHandle) {
         const node = new LayoutNode();
+
         node.text = text;
         // Text nodes shouldn't expand like block elements in standard HTML,
         // but in terminal we let parent constraints apply and seed a natural width.
         node.yogaNode.setWidth(getStringWidth(text));
         node.yogaNode.setHeight(1);
+
         return node;
     },
 
-    appendInitialChild(parentInstance, child) {
-        parentInstance.insertChild(child, parentInstance.children.length);
+    detachDeletedInstance: (instance: LayoutNode) => {
+        instance.destroy();
     },
 
-    appendChild(parentInstance, child) {
-        parentInstance.insertChild(child, parentInstance.children.length);
+    finalizeInitialChildren(instance: any, type: any, props: any, rootContainer: any, hostContext: any) {
+        return false;
     },
 
-    appendChildToContainer(container, child) {
-        container.insertChild(child, container.children.length);
+    getChildHostContext(parentHostContext, type, rootContainer) {
+        return { isInsideText: type === "text" };
     },
 
-    removeChild(parentInstance, child) {
-        parentInstance.removeChild(child);
+    getCurrentEventPriority: () => DiscreteEventPriority,
+
+    getCurrentUpdatePriority: () => currentUpdatePriority,
+
+    getInstanceFromNode: () => null,
+
+    getPublicInstance(instance) {
+        return instance;
     },
 
-    removeChildFromContainer(container, child) {
-        container.removeChild(child);
+    getRootHostContext(rootContainer) {
+        return { isInsideText: false };
     },
+    // Suspense visibility — called when a Suspense boundary hides/reveals children.
+    // In a terminal renderer there's no DOM visibility concept; we just mark the node
+    // and let the next render pass skip or include it naturally.
+    hideInstance(instance: LayoutNode) {
+        instance._hidden = true;
+    },
+    hideTextInstance(_instance: any) {},
+    HostTransitionContext: createContext(null) as any,
 
     insertBefore(parentInstance, child, beforeChild) {
         // Remove child from its current owner BEFORE computing indexOf(beforeChild).
         // Same-parent reorders shift the array, so we must get the index after removal.
-        if (child.parent) child.parent.removeChild(child);
+        if (child.parent)
+            child.remove();
+
         const index = parentInstance.children.indexOf(beforeChild);
+
         parentInstance.insertChild(child, index);
     },
+    isPrimaryRenderer: true,
+    maySuspendCommit: () => true,
+    noTimeout: -1,
 
+    NotPendingTransition: undefined,
+    now: unstable_now,
+    preloadInstance: () => true,
+
+    prepareForCommit(containerInfo) {
+        return null;
+    },
+    preparePortalMount: () => {},
+    prepareScopeUpdate: () => {},
     prepareUpdate(instance, type, oldProps, newProps, rootContainer, hostContext) {
         // Return null if props haven't changed — tells React to skip commitUpdate
         // for this node. This is critical for performance: returning true always
@@ -158,114 +246,62 @@ const hostConfig: ReactReconciler.HostConfig<
         // leading to unbounded memory growth under high-frequency renders.
         const oldKeys = Object.keys(oldProps).filter((k) => k !== "children");
         const newKeys = Object.keys(newProps).filter((k) => k !== "children");
-        if (oldKeys.length !== newKeys.length) return true;
+
+        if (oldKeys.length !== newKeys.length)
+            return true;
+
         for (const key of newKeys) {
-            if (oldProps[key] !== newProps[key]) return true;
+            if (oldProps[key] !== newProps[key])
+                return true;
         }
+
         return null;
     },
-
-    commitUpdate(instance, type, prevProps, nextProps, internalHandle) {
-        // Re-apply Yoga styles on update (React 19 signature: instance, type, oldProps, newProps, fiber)
-        applyStyles(instance.yogaNode, nextProps as Styles, prevProps as Styles);
-
-        // Re-resolve color/style props
-        const { fg, bg, styles } = resolveNodeColors(nextProps);
-        instance.fg = fg;
-        instance.bg = bg;
-        instance.styles = styles;
-        instance._style = nextProps;
-
-        // Update transform prop
-        instance.transform = typeof nextProps.transform === "function" ? nextProps.transform : undefined;
+    removeChild(parentInstance, child) {
+        child.remove();
     },
 
-    commitTextUpdate(textInstance, oldText, newText) {
-        textInstance.text = newText;
-        textInstance.yogaNode.setWidth(getStringWidth(newText));
+    removeChildFromContainer(container, child) {
+        child.remove();
     },
-
-    getRootHostContext(rootContainer) {
-        return { isInsideText: false };
-    },
-
-    getChildHostContext(parentHostContext, type, rootContainer) {
-        return { isInsideText: type === "text" };
-    },
-
-    getPublicInstance(instance) {
-        return instance;
-    },
-
-    prepareForCommit(containerInfo) {
-        return null;
-    },
+    requestPostPaintCallback: () => {},
 
     resetAfterCommit(containerInfo: any) {
-        if (typeof onAfterCommit === "function") onAfterCommit();
+        if (typeof onAfterCommit === "function")
+            onAfterCommit();
     },
-    shouldSetTextContent(type: any, props: any) {
-        return false;
-    },
-    clearContainer(container: any) {},
-    finalizeInitialChildren(instance: any, type: any, props: any, rootContainer: any, hostContext: any) {
-        return false;
-    },
+    resolveEventTimeStamp: () => -1.1,
+    resolveEventType: () => null,
+    resolveUpdatePriority() {
+        if (currentUpdatePriority !== NoEventPriority)
+            return currentUpdatePriority;
 
-    // Suspense visibility — called when a Suspense boundary hides/reveals children.
-    // In a terminal renderer there's no DOM visibility concept; we just mark the node
-    // and let the next render pass skip or include it naturally.
-    hideInstance(instance: LayoutNode) {
-        instance._hidden = true;
+        return DefaultEventPriority;
     },
-    unhideInstance(instance: LayoutNode, _props: any) {
-        instance._hidden = false;
-    },
-    hideTextInstance(_instance: any) {},
-    unhideTextInstance(_instance: any, _text: string) {},
-
-    scheduleTimeout: setTimeout,
-    cancelTimeout: clearTimeout,
-    noTimeout: -1,
-
+    scheduleCallback: unstable_scheduleCallback,
     scheduleMicrotask: queueMicrotask,
-    scheduleCallback: Scheduler.unstable_scheduleCallback,
-    cancelCallback: Scheduler.unstable_cancelCallback,
-    shouldYield: Scheduler.unstable_shouldYield,
-    now: Scheduler.unstable_now,
-
-    warnsIfNotActing: true,
-    supportsMicrotasks: true,
-
-    getInstanceFromNode: () => null,
-    beforeActiveInstanceBlur: () => {},
-    afterActiveInstanceBlur: () => {},
-    preparePortalMount: () => {},
-    prepareScopeUpdate: () => {},
-    getCurrentEventPriority: () => DiscreteEventPriority,
+    scheduleTimeout: setTimeout,
     setCurrentUpdatePriority(newPriority: any) {
         currentUpdatePriority = newPriority;
     },
-    getCurrentUpdatePriority: () => currentUpdatePriority,
-    detachDeletedInstance: (instance: LayoutNode) => {
-        instance.destroy();
-    },
-    resolveUpdatePriority() {
-        if (currentUpdatePriority !== NoEventPriority) return currentUpdatePriority;
-        return DefaultEventPriority;
-    },
-    trackSchedulerEvent: () => {},
-    resolveEventType: () => null,
-    resolveEventTimeStamp: () => -1.1,
     shouldAttemptEagerTransition: () => false,
-    requestPostPaintCallback: () => {},
-    maySuspendCommit: () => true,
-    preloadInstance: () => true,
+    shouldSetTextContent(type: any, props: any) {
+        return false;
+    },
+    shouldYield: unstable_shouldYield,
     startSuspendingCommit: () => {},
+    supportsHydration: false,
+    supportsMicrotasks: true,
+    supportsMutation: true,
+    supportsPersistence: false,
     suspendInstance: () => {},
+    trackSchedulerEvent: () => {},
+    unhideInstance(instance: LayoutNode, _props: any) {
+        instance._hidden = false;
+    },
+    unhideTextInstance(_instance: any, _text: string) {},
     waitForCommitToBeReady: () => null,
-    NotPendingTransition: undefined,
-    HostTransitionContext: createContext(null) as any,
+    warnsIfNotActing: true,
 } as any;
 
 export const RatatatReconciler: ReturnType<typeof ReactReconciler> = ReactReconciler(hostConfig);

@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { Box, Text, Newline } from "../../src/ink/index.js";
+import { expect, it } from "vitest";
+
+import { Box, Newline, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
 it("row - align text to center", () => {
@@ -46,7 +47,7 @@ it("row - align multiple text nodes to bottom", () => {
 
 it("column - align text to center", () => {
     const output = renderToString(
-        <Box flexDirection="column" alignItems="center" width={10}>
+        <Box alignItems="center" flexDirection="column" width={10}>
             <Text>Test</Text>
         </Box>,
     );
@@ -56,7 +57,7 @@ it("column - align text to center", () => {
 
 it("column - align text to right", () => {
     const output = renderToString(
-        <Box flexDirection="column" alignItems="flex-end" width={10}>
+        <Box alignItems="flex-end" flexDirection="column" width={10}>
             <Text>Test</Text>
         </Box>,
     );
@@ -93,7 +94,8 @@ it("row - align text to baseline", () => {
         <Box alignItems="baseline" height={3}>
             <Text>
                 A
-                <Newline />B
+                <Newline />
+                B
             </Text>
             <Text>X</Text>
         </Box>,

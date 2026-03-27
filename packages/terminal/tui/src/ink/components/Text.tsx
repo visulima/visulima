@@ -1,87 +1,89 @@
-import { useContext, type ReactNode, type ReactElement } from "react";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import colorizeDefault, { type AnsiColors } from "@visulima/colorize";
+import type { AnsiColors } from "@visulima/colorize";
+import colorizeDefault from "@visulima/colorize";
+import type { ReactElement, ReactNode } from "react";
+import { useContext } from "react";
 import type { LiteralUnion } from "type-fest";
+
 import colorize from "../colorize.js";
-import { type Styles } from "../styles.js";
+import type { Styles } from "../styles.js";
 import { accessibilityContext } from "./AccessibilityContext.js";
 import { backgroundContext } from "./BackgroundContext.js";
 
 export type Props = {
     /**
-	A label for the element for screen readers.
-	*/
-    readonly "aria-label"?: string;
-
-    /**
-	Hide the element from screen readers.
-	*/
+     * Hide the element from screen readers.
+     */
     readonly "aria-hidden"?: boolean;
 
     /**
-	Change text color. Ink uses @visulima/colorize under the hood, so all its functionality is supported.
-	*/
-    readonly color?: LiteralUnion<AnsiColors, string>;
+     * A label for the element for screen readers.
+     */
+    readonly "aria-label"?: string;
 
     /**
-	Same as `color`, but for the background.
-	*/
+     * Same as `color`, but for the background.
+     */
     readonly backgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
-	Dim the color (make it less bright).
-	*/
+     * Make the text bold.
+     */
+    readonly bold?: boolean;
+
+    readonly children?: ReactNode;
+
+    /**
+     * Change text color. Ink uses @visulima/colorize under the hood, so all its functionality is supported.
+     */
+    readonly color?: LiteralUnion<AnsiColors, string>;
+
+    /**
+     * Dim the color (make it less bright).
+     */
     readonly dimColor?: boolean;
 
     /**
-	Make the text bold.
-	*/
-    readonly bold?: boolean;
-
-    /**
-	Make the text italic.
-	*/
-    readonly italic?: boolean;
-
-    /**
-	Make the text underlined.
-	*/
-    readonly underline?: boolean;
-
-    /**
-	Make the text crossed out with a line.
-	*/
-    readonly strikethrough?: boolean;
-
-    /**
-	Inverse background and foreground colors.
-	*/
+     * Inverse background and foreground colors.
+     */
     readonly inverse?: boolean;
 
     /**
-	This property tells Ink to wrap or truncate text if its width is larger than the container. If `wrap` is passed (the default), Ink will wrap text and split it into multiple lines. If `truncate-*` is passed, Ink will truncate text instead, resulting in one line of text with the rest cut off.
-	*/
-    readonly wrap?: Styles["textWrap"];
+     * Make the text italic.
+     */
+    readonly italic?: boolean;
 
-    readonly children?: ReactNode;
+    /**
+     * Make the text crossed out with a line.
+     */
+    readonly strikethrough?: boolean;
+
+    /**
+     * Make the text underlined.
+     */
+    readonly underline?: boolean;
+
+    /**
+     * This property tells Ink to wrap or truncate text if its width is larger than the container. If `wrap` is passed (the default), Ink will wrap text and split it into multiple lines. If `truncate-*` is passed, Ink will truncate text instead, resulting in one line of text with the rest cut off.
+     */
+    readonly wrap?: Styles["textWrap"];
 };
 
 /**
-This component can display text and change its style to make it bold, underlined, italic, or strikethrough.
-*/
+ * This component can display text and change its style to make it bold, underlined, italic, or strikethrough.
+ */
 export default function Text({
-    color,
-    backgroundColor,
-    dimColor = false,
-    bold = false,
-    italic = false,
-    underline = false,
-    strikethrough = false,
-    inverse = false,
-    wrap = "wrap",
-    children,
-    "aria-label": ariaLabel,
     "aria-hidden": ariaHidden = false,
+    "aria-label": ariaLabel,
+    backgroundColor,
+    bold = false,
+    children,
+    color,
+    dimColor = false,
+    inverse = false,
+    italic = false,
+    strikethrough = false,
+    underline = false,
+    wrap = "wrap",
 }: Props): ReactElement | null {
     const { isScreenReaderEnabled } = useContext(accessibilityContext);
     const inheritedBackgroundColor = useContext(backgroundContext);
@@ -102,6 +104,7 @@ export default function Text({
 
         // Use explicit backgroundColor if provided, otherwise use inherited from parent Box
         const effectiveBackgroundColor = backgroundColor ?? inheritedBackgroundColor;
+
         if (effectiveBackgroundColor) {
             children = colorize(children, effectiveBackgroundColor, "background");
         }
@@ -134,7 +137,7 @@ export default function Text({
     }
 
     return (
-        <ink-text style={{ flexGrow: 0, flexShrink: 1, flexDirection: "row", textWrap: wrap }} internal_transform={transform}>
+        <ink-text internal_transform={transform} style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1, textWrap: wrap }}>
             {isScreenReaderEnabled && ariaLabel ? ariaLabel : children}
         </ink-text>
     );

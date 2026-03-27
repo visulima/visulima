@@ -1,19 +1,15 @@
 // Ignoring missing types error to avoid adding another dependency for this hack to work
 import ws from "ws";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const customGlobal = globalThis as any;
 
 // These things must exist before importing `react-devtools-core`
 // Using ||= intentionally to set falsy values, not just null/undefined
 
-// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 customGlobal.WebSocket ||= ws;
 
-// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 customGlobal.window ||= globalThis;
 
-// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 customGlobal.self ||= globalThis;
 
 // Filter out Ink's internal components from devtools for a cleaner view.
@@ -22,52 +18,52 @@ customGlobal.self ||= globalThis;
 // See https://github.com/facebook/react/blob/edf6eac8a181860fd8a2d076a43806f1237495a1/packages/react-devtools-shared/src/types.js#L24
 customGlobal.window.__REACT_DEVTOOLS_COMPONENT_FILTERS__ = [
     {
+        isEnabled: true,
         // ComponentFilterElementType
         type: 1,
         // ElementTypeHostComponent
         value: 7,
-        isEnabled: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalApp",
-        isEnabled: true,
-        isValid: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalAppContext",
-        isEnabled: true,
-        isValid: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalStdoutContext",
-        isEnabled: true,
-        isValid: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalStderrContext",
-        isEnabled: true,
-        isValid: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalStdinContext",
-        isEnabled: true,
-        isValid: true,
     },
     {
+        isEnabled: true,
+        isValid: true,
         // ComponentFilterDisplayName
         type: 2,
         value: "InternalFocusContext",
-        isEnabled: true,
-        isValid: true,
     },
 ];

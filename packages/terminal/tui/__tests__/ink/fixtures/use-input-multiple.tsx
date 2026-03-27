@@ -1,8 +1,10 @@
 import process from "node:process";
-import React, { useState, useCallback, useEffect } from "react";
-import { render, useInput, useApp, Text } from "../../../src/ink/index.js";
 
-function App() {
+import React, { useCallback, useEffect, useState } from "react";
+
+import { render, Text, useApp, useInput } from "../../../src/ink/index.js";
+
+const App = () => {
     const { exit } = useApp();
     const [input, setInput] = useState("");
 
@@ -22,7 +24,7 @@ function App() {
     }, []);
 
     return <Text>{input}</Text>;
-}
+};
 
 const app = render(<App />);
 

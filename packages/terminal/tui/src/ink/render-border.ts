@@ -1,8 +1,8 @@
-import cliBoxes from "cli-boxes";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import colorizeDefault from "@visulima/colorize";
+import cliBoxes from "cli-boxes";
+
 import colorize from "./colorize.js";
-import { type DOMNode } from "./dom.js";
+import type { DOMNode } from "./dom.js";
 import type Output from "./output.js";
 
 const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void => {
@@ -49,13 +49,13 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
             verticalBorderHeight -= 1;
         }
 
-        let leftBorder = (colorize(box.left, leftBorderColor, "foreground") + "\n").repeat(verticalBorderHeight);
+        let leftBorder = `${colorize(box.left, leftBorderColor, "foreground")}\n`.repeat(verticalBorderHeight);
 
         if (dimLeftBorderColor) {
             leftBorder = colorizeDefault.dim(leftBorder);
         }
 
-        let rightBorder = (colorize(box.right, rightBorderColor, "foreground") + "\n").repeat(verticalBorderHeight);
+        let rightBorder = `${colorize(box.right, rightBorderColor, "foreground")}\n`.repeat(verticalBorderHeight);
 
         if (dimRightBorderColor) {
             rightBorder = colorizeDefault.dim(rightBorder);
@@ -63,10 +63,10 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
 
         let bottomBorder = showBottomBorder
             ? colorize(
-                  (showLeftBorder ? box.bottomLeft : "") + box.bottom.repeat(contentWidth) + (showRightBorder ? box.bottomRight : ""),
-                  bottomBorderColor,
-                  "foreground",
-              )
+                (showLeftBorder ? box.bottomLeft : "") + box.bottom.repeat(contentWidth) + (showRightBorder ? box.bottomRight : ""),
+                bottomBorderColor,
+                "foreground",
+            )
             : undefined;
 
         if (showBottomBorder && dimBottomBorderColor) {

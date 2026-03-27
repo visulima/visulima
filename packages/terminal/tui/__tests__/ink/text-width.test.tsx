@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
 import { strip as stripAnsi } from "@visulima/ansi";
+import { expect, it } from "vitest";
+
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
@@ -22,12 +23,13 @@ it("wide characters do not add extra space inside fixed-width Box", () => {
     );
 
     const lines = output.split("\n");
-    expect(lines.length).toBe(2);
+
+    expect(lines).toHaveLength(2);
     expect(lines[0]).toBe("🍔|");
     expect(lines[1]).toBe("⏳|");
 });
 
-it("CJK characters occupy correct width in fixed-width Box", () => {
+it("cJK characters occupy correct width in fixed-width Box", () => {
     const output = renderToString(
         <Box>
             <Box width={4}>
@@ -59,12 +61,13 @@ it("mixed ASCII and wide characters align correctly", () => {
     );
 
     const lines = output.split("\n");
-    expect(lines.length).toBe(2);
+
+    expect(lines).toHaveLength(2);
     expect(lines[0]).toBe("ab🍔cd|");
     expect(lines[1]).toBe("abcdef|");
 });
 
-it("ANSI styled text does not affect layout width", () => {
+it("aNSI styled text does not affect layout width", () => {
     const output = renderToString(
         <Box>
             <Box width={5}>
@@ -75,6 +78,7 @@ it("ANSI styled text does not affect layout width", () => {
     );
 
     const stripped = stripAnsi(output);
+
     expect(stripped).toBe("hello|");
 });
 

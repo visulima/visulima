@@ -1,12 +1,14 @@
 import EventEmitter from "node:events";
+
 import { vi } from "vitest";
 
 export const createStdin = (): NodeJS.WriteStream => {
     const stdin = new EventEmitter() as unknown as NodeJS.WriteStream;
+
     stdin.isTTY = true;
-    stdin.setRawMode = vi.fn();
+    vi.spyOn(stdin, "setRawMode").mockImplementation();
     stdin.setEncoding = () => {};
-    stdin.read = vi.fn();
+    vi.spyOn(stdin, "read").mockImplementation();
     stdin.unref = () => {};
     stdin.ref = () => {};
 
@@ -15,6 +17,7 @@ export const createStdin = (): NodeJS.WriteStream => {
 
 export const emitReadable = (stdin: NodeJS.WriteStream, chunk: string): void => {
     const read = stdin.read as ReturnType<typeof vi.fn>;
+
     read.mockReturnValueOnce(chunk);
     read.mockReturnValueOnce(null);
     stdin.emit("readable");
