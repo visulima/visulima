@@ -1,0 +1,74 @@
+---
+title: Getting Started
+description: "Install @visulima/tui and choose the right rendering mode for your project"
+---
+
+# Getting Started
+
+`@visulima/tui` supports three runtime modes.
+
+| Mode            | Primary API                         | Import path                                  | Best for                                         |
+| --------------- | ----------------------------------- | -------------------------------------------- | ------------------------------------------------ |
+| React mode      | `render(<App />)`                   | `@visulima/tui/react`                        | Component-driven TUIs with hooks and Yoga layout |
+| Raw-buffer mode | `Renderer` + `renderer.render`      | `@visulima/tui/core`                         | Direct per-cell rendering and custom loops       |
+| Inline mode     | `renderInline` / `createInlineLoop` | `@visulima/tui/react` / `@visulima/tui/core` | Fixed-height UI below the cursor                 |
+
+## Install
+
+### React apps (most users)
+
+```bash npm2yarn
+npm install @visulima/tui react
+```
+
+### Raw-buffer / non-React apps
+
+```bash npm2yarn
+npm install @visulima/tui
+```
+
+> `@visulima/tui/core` is a TypeScript-facing runtime with a native Rust diff/render engine. React is an optional peer dependency.
+
+## Requirements
+
+- **Node.js**: 20.19 or higher
+
+## Run examples in this repository
+
+```bash
+# React mode
+node --import @oxc-node/core/register examples/kitchen-sink.tsx
+node --import @oxc-node/core/register examples/counter.tsx
+
+# Raw-buffer mode
+node --import @oxc-node/core/register examples-raw/matrix.ts
+node --import @oxc-node/core/register examples-raw/conway.ts
+
+# Inline mode (React)
+node --import @oxc-node/core/register examples/inline-minimal.tsx
+```
+
+See [Examples](/examples) for the full list.
+
+## Ink migration (typical)
+
+```diff
+- import { render, Box, Text } from 'ink'
++ import { render, Box, Text } from '@visulima/tui/react'
+```
+
+Most app-level API usage maps directly. See [Ink Compatibility](/ink-compat) for caveats and stubs.
+
+## Next Steps
+
+<Cards>
+    <Card title="Package Map" href="/package-map">
+        Choose the right sub-package for your use case
+    </Card>
+    <Card title="Quickstart: React" href="/quickstart-react">
+        Build a TUI app with React components and hooks
+    </Card>
+    <Card title="Quickstart: Raw Buffer" href="/quickstart-raw-buffer">
+        Drive the Rust renderer directly without React
+    </Card>
+</Cards>

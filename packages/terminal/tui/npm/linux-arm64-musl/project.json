@@ -1,0 +1,6 @@
+{
+    "name": "tui-binding-linux-arm64-musl",
+    "projectType": "library",
+    "tags": ["tui", "type:native-binding"],
+    "implicitDependencies": ["tui"]
+}

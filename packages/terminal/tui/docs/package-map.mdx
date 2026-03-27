@@ -1,0 +1,94 @@
+---
+title: Package Map
+description: "Choose the right @visulima/tui sub-package for your use case"
+---
+
+# Package Map
+
+`@visulima/tui` is a single package with multiple entry points.
+
+Use this page to decide which entry to import and where each API lives.
+
+## Quick Choice
+
+| If you want to…                                       | Use entry point       | Why                                                              |
+| ----------------------------------------------------- | --------------------- | ---------------------------------------------------------------- |
+| Build a React TUI with components and hooks           | `@visulima/tui/react` | Includes the React renderer and Ink-compatible API               |
+| Paint terminal cells directly from a `Uint32Array`    | `@visulima/tui/core`  | Lowest-level runtime, direct control over render loop and buffer |
+| Run or study the `ink-fast` fork and perf experiments | `@visulima/tui/ink`   | Standalone Ink fork + benchmark harnesses                        |
+
+## `@visulima/tui/core`
+
+Framework-agnostic runtime backed by the Rust diff engine.
+
+Primary APIs are exposed to TypeScript/JavaScript while rendering is handled by a native Rust diff engine.
+
+Primary exports:
+
+- `Renderer`
+- `TerminalGuard`
+- `terminalSize`
+- `Cell`, `StyleMasks`
+- `InputParser`
+- `RatatatApp`
+- `createInlineLoop`
+
+```bash npm2yarn
+npm install @visulima/tui
+```
+
+```typescript
+import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
+```
+
+## `@visulima/tui/react`
+
+React adapter and Ink-compatible component/hook surface.
+
+Depends on `@visulima/tui/core` for terminal output and native diffing.
+
+Primary exports:
+
+- `render`, `renderInline`, `renderToString`
+- components: `Box`, `Text`, `Static`, `Transform`, `Spinner`, `ProgressBar`, `Newline`, `Spacer`
+- hooks: `useInput`, `useApp`, `useFocus`, `useFocusManager`, `usePaste`, `useMouse`, `useScrollable`, `useTextInput`, and more
+
+```bash npm2yarn
+npm install @visulima/tui react
+```
+
+```typescript
+import { render, Box, Text, useInput } from "@visulima/tui/react";
+```
+
+## `@visulima/tui/ink`
+
+Research/experimental entry: the `ink-fast` fork.
+
+Contains:
+
+- forked Ink implementation
+- benchmark suites
+- profiling harnesses
+- research notes and snapshots
+
+```typescript
+import { render } from "@visulima/tui/ink";
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Getting Started" href="/getting-started">
+        Installation and first-run setup
+    </Card>
+    <Card title="Quickstart: React" href="/quickstart-react">
+        Build a TUI app with React components
+    </Card>
+    <Card title="Quickstart: Raw Buffer" href="/quickstart-raw-buffer">
+        Direct cell rendering without React
+    </Card>
+    <Card title="Rendering Modes" href="/rendering-modes">
+        Full comparison of all three modes
+    </Card>
+</Cards>

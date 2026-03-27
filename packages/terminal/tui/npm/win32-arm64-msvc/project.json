@@ -1,0 +1,6 @@
+{
+    "name": "tui-binding-win32-arm64-msvc",
+    "projectType": "library",
+    "tags": ["tui", "type:native-binding"],
+    "implicitDependencies": ["tui"]
+}

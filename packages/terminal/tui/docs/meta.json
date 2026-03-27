@@ -1,0 +1,17 @@
+{
+    "pages": [
+        "index",
+        "getting-started",
+        "package-map",
+        "quickstart-react",
+        "quickstart-raw-buffer",
+        "components",
+        "hooks",
+        "rendering-modes",
+        "raw-buffer",
+        "ts-buffer-guide",
+        "ink-compat",
+        "examples",
+        "troubleshooting"
+    ]
+}

@@ -1,0 +1,205 @@
+{
+    "name": "@visulima/tui",
+    "version": "0.0.1",
+    "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
+    "keywords": [
+        "visulima",
+        "tui",
+        "terminal",
+        "react",
+        "ink",
+        "cli",
+        "rust",
+        "napi"
+    ],
+    "homepage": "https://visulima.com/packages/tui",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": [
+        "./dist/ink/**",
+        "./dist/react/**",
+        "./binding.js"
+    ],
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./core": {
+            "types": "./dist/core/index.d.ts",
+            "default": "./dist/core/index.js"
+        },
+        "./react": {
+            "types": "./dist/react/index.d.ts",
+            "default": "./dist/react/index.js"
+        },
+        "./ink": {
+            "types": "./dist/ink/index.d.ts",
+            "default": "./dist/ink/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "binding.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:native": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir .",
+        "build:native:debug": "napi build --platform --manifest-path native/Cargo.toml --output-dir .",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache *.node",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
+        "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:bench": "vitest bench",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@alcalzone/ansi-tokenize": "^0.3.0",
+        "ansi-escapes": "^7.3.0",
+        "ansi-styles": "^6.2.3",
+        "auto-bind": "^5.0.1",
+        "chalk": "^5.6.2",
+        "cli-boxes": "^4.0.1",
+        "cli-cursor": "^5.0.0",
+        "cli-truncate": "^5.2.0",
+        "code-excerpt": "^4.0.0",
+        "es-toolkit": "^1.45.1",
+        "eventemitter3": "^5.0.4",
+        "indent-string": "^5.0.0",
+        "is-fullwidth-code-point": "^5.1.0",
+        "is-in-ci": "^2.0.0",
+        "patch-console": "^2.0.0",
+        "scheduler": "^0.27.0",
+        "signal-exit": "^4.1.0",
+        "slice-ansi": "^8.0.0",
+        "stack-utils": "^2.0.6",
+        "string-width": "^8.2.0",
+        "terminal-size": "^4.0.1",
+        "type-fest": "^5.5.0",
+        "widest-line": "^6.0.0",
+        "wrap-ansi": "^10.0.0",
+        "ws": "^8.20.0",
+        "yoga-layout": "~3.2.1",
+        "yoga-layout-prebuilt": "^1.10.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@eslint-react/eslint-plugin": "3.0.0",
+        "@napi-rs/cli": "^3.5.1",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@types/react": "^19.2.14",
+        "@types/react-reconciler": "^0.33.0",
+        "@types/scheduler": "^0.26.0",
+        "@types/signal-exit": "^4.0.0",
+        "@types/stack-utils": "^2.0.3",
+        "@types/ws": "^8.18.1",
+        "@types/yoga-layout": "^3.1.0",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "@xterm/headless": "^6.0.0",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-jsx-a11y": "6.10.2",
+        "eslint-plugin-react": "7.37.5",
+        "eslint-plugin-react-hooks": "7.0.1",
+        "eslint-plugin-react-perf": "3.3.3",
+        "eslint-plugin-react-refresh": "0.5.2",
+        "eslint-plugin-react-you-might-not-need-an-effect": "0.9.2",
+        "eslint-plugin-validate-jsx-nesting": "0.1.1",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "optionalDependencies": {
+        "@visulima/tui-binding-darwin-arm64": "workspace:*",
+        "@visulima/tui-binding-darwin-x64": "workspace:*",
+        "@visulima/tui-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/tui-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/tui-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/tui-binding-linux-x64-musl": "workspace:*",
+        "@visulima/tui-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/tui-binding-win32-x64-msvc": "workspace:*"
+    },
+    "peerDependencies": {
+        "react": ">=19.0.0",
+        "react-devtools-core": ">=6.1.2",
+        "react-reconciler": ">=0.33.0"
+    },
+    "peerDependenciesMeta": {
+        "react-devtools-core": {
+            "optional": true
+        },
+        "react-reconciler": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": ">=20.19 <=25.x"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "napi": {
+        "binaryName": "tui-native",
+        "packageName": "@visulima/tui-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
+    }
+}

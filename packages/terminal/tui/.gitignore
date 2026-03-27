@@ -1,0 +1,3 @@
+# Native addon build artifacts (napi v3 outputs to package root)
+*.node
+native/target/

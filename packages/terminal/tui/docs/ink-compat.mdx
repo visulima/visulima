@@ -1,0 +1,83 @@
+---
+title: Ink Compatibility
+description: "Ink API parity matrix, render option differences, and Ratatat-only exports in @visulima/tui/react"
+---
+
+# Ink Compatibility
+
+`@visulima/tui` targets Ink API compatibility for core component and hook workflows, with a few documented stubs and behavior differences.
+
+## Core API Parity
+
+| Export                       | Status | Notes                                                         |
+| ---------------------------- | ------ | ------------------------------------------------------------- |
+| `render()`                   | ✅     | Returns `{ rerender, unmount, waitUntilExit, app, input }`    |
+| `Box`                        | ✅     | Yoga-backed layout                                            |
+| `Text`                       | ✅     | Core style props supported                                    |
+| `Newline`                    | ✅     | `count` supported                                             |
+| `Spacer`                     | ✅     | Flex grow spacer                                              |
+| `Static`                     | ✅     | Append-only semantics                                         |
+| `Transform`                  | ✅     | Transform callback support                                    |
+| `renderToString()`           | ✅     | Synchronous snapshot                                          |
+| `measureElement()`           | ✅     | Returns `{ width, height }`                                   |
+| `useApp()`                   | ✅     | `exit` + `quit`                                               |
+| `useInput()`                 | ✅     | Arrows, Enter, Escape, Ctrl, Meta, paging keys                |
+| `usePaste()`                 | ✅     | Bracketed paste routing                                       |
+| `useFocus()`                 | ✅     | Focus state and `focus(id)`                                   |
+| `useFocusManager()`          | ✅     | Focus navigation methods                                      |
+| `useStdin()`                 | ✅     | Raw mode helpers                                              |
+| `useStdout()`                | ✅     | Buffered while app is running                                 |
+| `useStderr()`                | ✅     | Buffered while app is running                                 |
+| `useBoxMetrics()`            | ✅     | Layout metrics + `hasMeasured` (intended for `render()` mode) |
+| `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)            |
+| `useIsScreenReaderEnabled()` | ⚠️     | Stub: always `false`                                          |
+| `useCursor()`                | ⚠️     | Stub: `setCursorPosition` is a no-op                          |
+
+## Render Option Differences
+
+`render()` accepts Ink-style options, but these are currently ignored:
+
+- `concurrent`
+- `patchConsole`
+- `exitOnCtrlC`
+- `incrementalRendering`
+- `debug`
+
+`maxFps` is used.
+
+## Ratatat-only API (No Ink Equivalent)
+
+| Export                       | Description                             |
+| ---------------------------- | --------------------------------------- |
+| `useScrollable()`            | Virtual scrolling state helper          |
+| `useMouse()`                 | Mouse click/wheel events with modifiers |
+| `useTextInput()`             | Managed text editing hook               |
+| `Spinner`                    | Animated spinner component              |
+| `ProgressBar`                | Progress bar component                  |
+| `renderInline()`             | React inline rendering mode             |
+| `createInlineLoop()`         | Raw-buffer inline rendering loop        |
+| `Renderer` / `TerminalGuard` | Raw-buffer runtime primitives           |
+
+## Architectural Differences vs Ink
+
+| Concern            | Ink                  | @visulima/tui                |
+| ------------------ | -------------------- | ---------------------------- |
+| Render strategy    | JS string renderer   | Rust diff over `Uint32Array` |
+| Screen mode        | Inline rewrite model | Alternate screen model       |
+| `patchConsole`     | Integrated           | Not implemented              |
+| Screen reader hook | Functional           | Stub (`false`)               |
+| Cursor hook        | Functional           | Stub (no-op)                 |
+
+## `compat-test/` Status
+
+The `compat-test/` directory tracks runnable Ink example ports.
+
+- Most files are direct ports with import-path changes
+- Two files include small TypeScript typing fixes from upstream examples (`use-focus.tsx`, `use-focus-with-id.tsx`)
+
+Run examples manually:
+
+```bash
+node --import @oxc-node/core/register compat-test/counter.tsx
+node --import @oxc-node/core/register compat-test/chat.tsx
+```
