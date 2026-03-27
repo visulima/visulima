@@ -23,17 +23,14 @@ permissions:
 env:
     CARGO_INCREMENTAL: 0
 
-defaults:
-    run:
-        working-directory: "packages/tooling/task-runner"
-
 jobs:
     files-changed:
         name: "Detect native file changes"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 3
         outputs:
-            native: "${{ steps.changes.outputs.native }}"
+            task-runner: "${{ steps.changes.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
@@ -50,20 +47,37 @@ jobs:
               id: "changes"
               with:
                   filters: |
-                      native:
+                      task-runner:
                         - 'packages/tooling/task-runner/native/**'
                         - 'packages/tooling/task-runner/npm/**'
                         - 'packages/tooling/task-runner/package.json'
                         - 'packages/tooling/task-runner/binding.js'
                         - '.github/workflows/build-native.yml'
+                      tui:
+                        - 'packages/terminal/tui/native/**'
+                        - 'packages/terminal/tui/npm/**'
+                        - 'packages/terminal/tui/package.json'
+                        - 'packages/terminal/tui/binding.js'
+                        - '.github/workflows/build-native.yml'
 
     build:
-        name: "Build - ${{ matrix.settings.target }}"
+        name: "Build ${{ matrix.package.name }} - ${{ matrix.settings.target }}"
         needs: "files-changed"
-        if: "needs.files-changed.outputs.native == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'"
+        if: |
+            github.event_name == 'push' ||
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.tui == 'true'
         strategy:
             fail-fast: false
             matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "tui"
+                      dir: "packages/terminal/tui"
+                      changed: "${{ needs.files-changed.outputs.tui }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
@@ -92,52 +106,72 @@ jobs:
               with:
                   egress-policy: "audit"
 
+            - name: "Skip unchanged package"
+              id: "skip-check"
+              if: "github.event_name == 'pull_request' && matrix.package.changed != 'true'"
+              run: "echo 'Skipping — no changes detected for ${{ matrix.package.name }}'"
+
             - name: "Git checkout"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               with:
                   persist-credentials: false
 
             - name: "Setup resources and environment"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
-                  cache-prefix: "build-native"
+                  cache-prefix: "build-native-${{ matrix.package.name }}"
                   run-signatures-audit: false
 
             - name: "Install Rust toolchain"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
               with:
-                  cache-key: "build-native"
+                  cache-key: "build-native-${{ matrix.package.name }}"
                   save-cache: "${{ github.ref_name == 'main' }}"
                   tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
 
             - name: "Add Rust target"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               run: "rustup target add ${{ matrix.settings.target }}"
-              working-directory: "."
 
             - name: "Install Zig (cross-compilation)"
-              if: "${{ matrix.settings.cross == '-x' }}"
+              if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && matrix.settings.cross == '-x'"
               uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
               with:
                   version: "0.14.1"
 
             - name: "Build native"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+              working-directory: "${{ matrix.package.dir }}"
 
             - name: "Upload artifact"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" # v4.6.2
               with:
-                  name: "bindings-${{ matrix.settings.target }}"
-                  path: "packages/tooling/task-runner/*.node"
+                  name: "bindings-${{ matrix.package.name }}-${{ matrix.settings.target }}"
+                  path: "${{ matrix.package.dir }}/*.node"
                   if-no-files-found: "error"
 
     test-native:
-        name: "Test native - ${{ matrix.settings.target }}"
-        needs: "build"
+        name: "Test ${{ matrix.package.name }} - ${{ matrix.settings.target }}"
+        needs: ["files-changed", "build"]
         strategy:
             fail-fast: false
             matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner"
+                      test_files: "__tests__/native-binding.test.ts __tests__/xxh3.test.ts"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "tui"
+                      dir: "packages/terminal/tui"
+                      test_files: "__tests__/native-binding.test.ts"
+                      changed: "${{ needs.files-changed.outputs.tui }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
@@ -156,26 +190,31 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
               with:
                   persist-credentials: false
 
             - name: "Setup resources and environment"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               id: "setup"
               uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
               with:
                   node-version: "22"
-                  cache-prefix: "build-native-test"
+                  cache-prefix: "build-native-${{ matrix.package.name }}-test"
                   run-signatures-audit: false
 
             - name: "Download artifact"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
               uses: "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093" # v4.3.0
               with:
-                  name: "bindings-${{ matrix.settings.target }}"
-                  path: "packages/tooling/task-runner"
+                  name: "bindings-${{ matrix.package.name }}-${{ matrix.settings.target }}"
+                  path: "${{ matrix.package.dir }}"
 
             - name: "Run native binding tests"
-              run: "pnpm vitest run __tests__/native-binding.test.ts __tests__/xxh3.test.ts"
+              if: "github.event_name != 'pull_request' || matrix.package.changed == 'true'"
+              run: "pnpm vitest run ${{ matrix.package.test_files }}"
+              working-directory: "${{ matrix.package.dir }}"
 
     # This check runs once all build jobs have passed
     build-native-required-check:
@@ -190,7 +229,6 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Check for failures"
-              working-directory: "."
               run: |
                   if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
                     echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
