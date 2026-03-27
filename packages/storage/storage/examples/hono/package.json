@@ -17,7 +17,5 @@
   "devDependencies": {
     "@types/node": "catalog:types",
     "tsx": "catalog:dev"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

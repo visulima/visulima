@@ -22,7 +22,5 @@
     "svelte-check": "catalog:frontend",
     "typescript": "catalog:tsc",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

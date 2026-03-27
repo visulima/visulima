@@ -21,7 +21,5 @@
     "@types/express": "catalog:types",
     "@types/swagger-ui-express": "catalog:types",
     "tsx": "catalog:dev"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

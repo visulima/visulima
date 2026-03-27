@@ -25,7 +25,5 @@
     "eslint-plugin-react-refresh": "catalog:lint",
     "typescript": "catalog:tsc",
     "vite": "catalog:build"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

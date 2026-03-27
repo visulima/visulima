@@ -17,7 +17,5 @@
     "typescript": "catalog:tsc",
     "vite": "catalog:build",
     "vue-tsc": "catalog:lint"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
