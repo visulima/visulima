@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import colorizeDefault from "@visulima/colorize";
-import boxen from "boxen";
+import { boxen } from "@visulima/boxen";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { Box, Text, Static, Transform, Newline, Spacer, renderToString } from "../../src/ink/index.js";
 
