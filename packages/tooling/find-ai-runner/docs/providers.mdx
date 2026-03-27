@@ -9,37 +9,37 @@ find-ai-runner supports 11 AI CLI providers. Each provider has a primary command
 
 ## Provider Reference
 
-| Provider | Command    | Alternates    | Env Variable    | Default Model              |
-| -------- | ---------- | ------------- | --------------- | -------------------------- |
-| Amp      | `amp`      |               | `AMP_PATH`      |                            |
-| Claude   | `claude`   |               | `CLAUDE_PATH`   | `claude-sonnet-4-20250514` |
-| Codex    | `codex`    | `openai-codex`| `CODEX_PATH`    | `o3`                       |
-| Copilot  | `copilot`  |               | `COPILOT_PATH`  |                            |
-| Crush    | `crush`    |               | `CRUSH_PATH`    |                            |
-| Cursor   | `agent`    | `cursor`      | `CURSOR_PATH`   |                            |
-| Droid    | `droid`    |               | `DROID_PATH`    |                            |
-| Gemini   | `gemini`   | `gemini-cli`  | `GEMINI_PATH`   | `gemini-2.5-pro`           |
-| Kimi     | `kimi`     |               | `KIMI_PATH`     |                            |
-| OpenCode | `opencode` |               | `OPENCODE_PATH` | `anthropic/claude-sonnet-4`|
-| Qwen     | `qwen`     | `qwen-code`   | `QWEN_PATH`     |                            |
+| Provider | Command    | Alternates     | Env Variable    | Default Model               |
+| -------- | ---------- | -------------- | --------------- | --------------------------- |
+| Amp      | `amp`      |                | `AMP_PATH`      |                             |
+| Claude   | `claude`   |                | `CLAUDE_PATH`   | `claude-sonnet-4-20250514`  |
+| Codex    | `codex`    | `openai-codex` | `CODEX_PATH`    | `o3`                        |
+| Copilot  | `copilot`  |                | `COPILOT_PATH`  |                             |
+| Crush    | `crush`    |                | `CRUSH_PATH`    |                             |
+| Cursor   | `agent`    | `cursor`       | `CURSOR_PATH`   |                             |
+| Droid    | `droid`    |                | `DROID_PATH`    |                             |
+| Gemini   | `gemini`   | `gemini-cli`   | `GEMINI_PATH`   | `gemini-2.5-pro`            |
+| Kimi     | `kimi`     |                | `KIMI_PATH`     |                             |
+| OpenCode | `opencode` |                | `OPENCODE_PATH` | `anthropic/claude-sonnet-4` |
+| Qwen     | `qwen`     | `qwen-code`    | `QWEN_PATH`     |                             |
 
 ## CLI Flags Per Provider
 
 Each provider uses different flags to accept prompts and configure behavior:
 
-| Provider | Prompt Flags                                                            |
-| -------- | ----------------------------------------------------------------------- |
-| Amp      | `-x` + prompt + `--dangerously-allow-all`                               |
-| Claude   | `--dangerously-skip-permissions --model <model> --output-format text -p`|
-| Codex    | prompt + `--approval-mode full-auto --quiet --model <model>`            |
-| Copilot  | `-p` + prompt + `--allow-all-tools`                                     |
-| Crush    | `run --yolo` + prompt                                                   |
-| Cursor   | `-p --force --output-format text` + prompt                              |
-| Droid    | prompt + `--skip-permissions-unsafe -o text`                            |
-| Gemini   | `--sandbox --model <model> --max-output-tokens <n> -p` + prompt         |
-| Kimi     | `--quiet -p` + prompt                                                   |
-| OpenCode | `run` + prompt                                                          |
-| Qwen     | `-p` + prompt + `--yolo -o text`                                        |
+| Provider | Prompt Flags                                                             |
+| -------- | ------------------------------------------------------------------------ |
+| Amp      | `-x` + prompt + `--dangerously-allow-all`                                |
+| Claude   | `--dangerously-skip-permissions --model <model> --output-format text -p` |
+| Codex    | prompt + `--approval-mode full-auto --quiet --model <model>`             |
+| Copilot  | `-p` + prompt + `--allow-all-tools`                                      |
+| Crush    | `run --yolo` + prompt                                                    |
+| Cursor   | `-p --force --output-format text` + prompt                               |
+| Droid    | prompt + `--skip-permissions-unsafe -o text`                             |
+| Gemini   | `--sandbox --model <model> --max-output-tokens <n> -p` + prompt          |
+| Kimi     | `--quiet -p` + prompt                                                    |
+| OpenCode | `run` + prompt                                                           |
+| Qwen     | `-p` + prompt + `--yolo -o text`                                         |
 
 ## Provider Details
 

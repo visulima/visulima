@@ -113,7 +113,7 @@ const detectVersion = (commandPath: string): string | undefined => {
  * 1. Environment variable (e.g., `CLAUDE_PATH`).
  * 2. `which`/`where` command lookup on PATH.
  * 3. Known installation paths (`/opt/homebrew/bin/`, `~/.local/bin/`, etc.).
- * @param name - The provider to detect (e.g., `"claude"`, `"gemini"`).
+ * @param name The provider to detect (e.g., `"claude"`, `"gemini"`).
  * @returns Provider info including availability, path, and version.
  */
 const detectProvider = (name: AiProviderName): AiProviderInfo => {
@@ -182,7 +182,7 @@ const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOption
  *
  * Uses Node.js `spawn` with stdin closed immediately for non-interactive execution.
  * The process environment is sanitized with `NO_COLOR=1` and `FORCE_COLOR=0` for clean output.
- * @param provider - A detected provider (from `detectProvider` or `detectAvailableProviders`).
+ * @param provider A detected provider (from `detectProvider` or `detectAvailableProviders`).
  * @param prompt The prompt text to send.
  * @param options Optional model, maxTokens, and timeout overrides.
  * @returns The stdout/stderr output from the CLI.
