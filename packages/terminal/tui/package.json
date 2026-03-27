@@ -86,7 +86,8 @@
         "test:bench": "vitest bench",
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui --coverage.enabled=true",
-        "test:watch": "vitest"
+        "test:watch": "vitest",
+        "example": "NODE_NO_WARNINGS=1 node --import=tsx"
     },
     "dependencies": {
         "@alcalzone/ansi-tokenize": "^0.3.0",
@@ -110,6 +111,7 @@
         "yoga-layout-prebuilt": "^1.10.0"
     },
     "devDependencies": {
+        "tsx": "*",
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/semantic-release-pnpm": "catalog:dev",
@@ -132,7 +134,7 @@
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@xterm/headless": "^6.0.0",
-        "boxen": "8.0.1",
+        "@visulima/boxen": "workspace:*",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "delay": "7.0.0",
         "esbuild": "catalog:build",
@@ -150,7 +152,6 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "chalk": "^5.6.2",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

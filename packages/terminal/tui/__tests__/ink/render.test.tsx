@@ -9,7 +9,7 @@ import { vi } from "vitest";
 import { type ReactElement, type ReactNode, PureComponent, useEffect, useState } from "react";
 import { eraseLines, resetTerminal } from "@visulima/ansi";
 import { strip as stripAnsi } from "@visulima/ansi";
-import boxen from "boxen";
+import { boxen } from "@visulima/boxen";
 import delay from "delay";
 import { render, Box, Text, useApp, useCursor, useInput } from "../../src/ink/index.js";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
