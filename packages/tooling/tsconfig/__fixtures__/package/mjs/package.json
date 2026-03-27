@@ -6,7 +6,5 @@
   "dependencies": {
     "@visulima/tsconfig": "workspace:*"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }
