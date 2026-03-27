@@ -31,7 +31,5 @@
     "vite": "catalog:build",
     "vitest": "catalog:test",
     "web-vitals": "catalog:dev"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

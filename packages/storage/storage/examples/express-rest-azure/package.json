@@ -18,7 +18,5 @@
     "@types/cors": "catalog:types",
     "@types/express": "catalog:types",
     "tsx": "catalog:dev"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

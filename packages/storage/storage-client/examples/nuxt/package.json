@@ -17,7 +17,5 @@
   },
   "devDependencies": {
     "typescript": "catalog:tsc"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

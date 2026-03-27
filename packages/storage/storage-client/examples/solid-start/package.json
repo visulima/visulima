@@ -18,7 +18,5 @@
     "solid-js": "catalog:frontend",
     "vinxi": "catalog:prod"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

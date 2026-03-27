@@ -349,7 +349,6 @@
       "optional": true
     }
   },
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },
