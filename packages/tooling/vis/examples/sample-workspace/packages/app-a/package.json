@@ -8,6 +8,6 @@
         "test": "echo 'Testing app-a...' && sleep 0.3 && echo 'app-a tests passed!'"
     },
     "dependencies": {
-        "lib-a": "1.0.0"
+        "lib-b": "workspace:*"
     }
 }
