@@ -30,12 +30,7 @@ describe("string Interface Augmentations", () => {
             expectTypeOf(input.concat(" ", "world")).toEqualTypeOf<"hello world">();
         });
 
-        it.todo("should handle array of strings", () => {
-            const input = "hello";
-            const array = [" ", "world", "!"];
-
-            expectTypeOf(input.concat(...array)).toEqualTypeOf<"hello world!">();
-        });
+        it.todo("should handle array of strings");
     });
 
     describe("endsWith", () => {

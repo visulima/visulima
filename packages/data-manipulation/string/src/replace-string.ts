@@ -1,5 +1,8 @@
 import type { Interval, IntervalArray, OptionReplaceArray } from "./types";
 
+const RE_REPLACEMENT_REGEX = /\$([\d&$`'])/g;
+const RE_REPLACEMENT_STRING = /\$(\d+|&|\$)/g;
+
 /**
  * Represents a potential replacement match found during processing.
  * @internal
@@ -103,7 +106,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
 
                     const end = start + original.length - 1;
 
-                    const finalReplacement = replacementValue.replaceAll(/\$([\d&$`'])/g, (substringFound, capturedSymbolOrDigits) => {
+                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_REGEX, (substringFound, capturedSymbolOrDigits) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original;
                         }
@@ -146,7 +149,7 @@ const replaceString = (source: string, searches: OptionReplaceArray, ignoreRange
                     // Mock a match object for the replacement logic ($& and $$ are supported)
                     const mockMatch: RegExpExecArray = Object.assign([original], { index: start, input: source }) as RegExpExecArray;
 
-                    const finalReplacement = replacementValue.replaceAll(/\$(\d+|&|\$)/g, (substringFound, capturedSymbolOrDigits) => {
+                    const finalReplacement = replacementValue.replaceAll(RE_REPLACEMENT_STRING, (substringFound, capturedSymbolOrDigits) => {
                         if (capturedSymbolOrDigits === "&") {
                             return original; // original is match[0]
                         }

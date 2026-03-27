@@ -3,16 +3,16 @@ import { distance } from "fastest-levenshtein";
 export { closest, distance } from "fastest-levenshtein";
 
 export const closestN = (string_: string, array: ReadonlyArray<string>, n: number): (string | undefined)[] => {
-    const distances = Array.from({ length: n }, () => Infinity);
-    const values = Array.from({ length: n }, () => undefined as string | undefined);
+    const distances: number[] = Array.from({ length: n }, () => Infinity);
+    const values: (string | undefined)[] = Array.from({ length: n }, () => undefined);
 
     for (const candidateValue of array) {
         let currentDistance = distance(string_, candidateValue);
-        let currentValue = candidateValue;
+        let currentValue: string = candidateValue;
 
         for (let index = 0; index < n; index += 1) {
-            if (currentDistance < distances[index]) {
-                const temporaryDistance = distances[index];
+            if (currentDistance < (distances[index] as number)) {
+                const temporaryDistance = distances[index] as number;
                 const temporaryValue = values[index];
 
                 distances[index] = currentDistance;
