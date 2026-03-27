@@ -18,7 +18,6 @@
     "@visulima/cerebro": "workspace:*"
   },
   "devDependencies": {},
-  "peerDependencies": {},
   "optionalDependencies": {
     "@bomb.sh/tab": "catalog:optional"
   }

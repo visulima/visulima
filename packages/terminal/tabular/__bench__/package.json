@@ -3,7 +3,6 @@
   "scripts": {
     "test:bench": "vitest bench --run"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/cli-table": "catalog:types",
     "@types/node": "catalog:types",
@@ -11,7 +10,5 @@
     "cli-table3": "catalog:dev",
     "table": "catalog:dev",
     "vitest": "catalog:test"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

@@ -5,12 +5,9 @@
   "scripts": {
     "test:bench": "vitest bench"
   },
-  "dependencies": {},
   "devDependencies": {
     "@visulima/boxen": "workspace:*",
     "boxen": "catalog:dev",
     "vitest": "catalog:test"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

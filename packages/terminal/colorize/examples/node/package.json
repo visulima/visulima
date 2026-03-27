@@ -11,7 +11,5 @@
     "color-convert": "catalog:prod",
     "log-update": "catalog:prod"
   },
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }

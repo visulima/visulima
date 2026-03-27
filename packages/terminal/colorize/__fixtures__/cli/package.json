@@ -3,8 +3,5 @@
   "private": true,
   "description": "ESM version",
   "type": "module",
-  "dependencies": {},
-  "devDependencies": {},
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  "devDependencies": {}
 }
