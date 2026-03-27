@@ -120,7 +120,6 @@
   "peerDependencies": {
     "zod": "catalog:utils"
   },
-  "optionalDependencies": {},
   "engines": {
     "node": ">=22.13 <=25.x"
   },

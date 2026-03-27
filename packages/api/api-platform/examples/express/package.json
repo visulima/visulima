@@ -19,7 +19,5 @@
     "rimraf": "catalog:node",
     "tsx": "catalog:dev",
     "typescript": "catalog:tsc"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
