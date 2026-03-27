@@ -1,5 +1,6 @@
 import cliBoxes from "cli-boxes";
-import chalk from "chalk";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import colorizeDefault from "@visulima/colorize";
 import colorize from "./colorize.js";
 import { type DOMNode } from "./dom.js";
 import type Output from "./output.js";
@@ -35,7 +36,7 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
             : undefined;
 
         if (showTopBorder && dimTopBorderColor) {
-            topBorder = chalk.dim(topBorder);
+            topBorder = colorizeDefault.dim(topBorder);
         }
 
         let verticalBorderHeight = height;
@@ -51,13 +52,13 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
         let leftBorder = (colorize(box.left, leftBorderColor, "foreground") + "\n").repeat(verticalBorderHeight);
 
         if (dimLeftBorderColor) {
-            leftBorder = chalk.dim(leftBorder);
+            leftBorder = colorizeDefault.dim(leftBorder);
         }
 
         let rightBorder = (colorize(box.right, rightBorderColor, "foreground") + "\n").repeat(verticalBorderHeight);
 
         if (dimRightBorderColor) {
-            rightBorder = chalk.dim(rightBorder);
+            rightBorder = colorizeDefault.dim(rightBorder);
         }
 
         let bottomBorder = showBottomBorder
@@ -69,7 +70,7 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
             : undefined;
 
         if (showBottomBorder && dimBottomBorderColor) {
-            bottomBorder = chalk.dim(bottomBorder);
+            bottomBorder = colorizeDefault.dim(bottomBorder);
         }
 
         const offsetY = showTopBorder ? 1 : 0;

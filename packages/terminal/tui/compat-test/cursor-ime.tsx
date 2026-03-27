@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import stringWidth from "string-width";
+import { getStringWidth as stringWidth } from "@visulima/string";
 import { render, Box, Text, useInput, useCursor } from "@visulima/tui/react";
 
 function App() {

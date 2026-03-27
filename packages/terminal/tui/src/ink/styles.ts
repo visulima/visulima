@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { type Boxes, type BoxStyle } from "cli-boxes";
 import type { LiteralUnion } from "type-fest";
-import { type ForegroundColorName } from "ansi-styles"; // Note: We import directly from `ansi-styles` to avoid a bug in TypeScript.
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { type AnsiColors } from "@visulima/colorize";
 import Yoga, { type Node as YogaNode } from "yoga-layout";
 
 export type Styles = {
@@ -253,27 +254,27 @@ export type Styles = {
     /**
 	Change border color. A shorthand for setting `borderTopColor`, `borderRightColor`, `borderBottomColor`, and `borderLeftColor`.
 	*/
-    readonly borderColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly borderColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Change the top border color. Accepts the same values as `color` in `Text` component.
 	*/
-    readonly borderTopColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly borderTopColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Change the bottom border color. Accepts the same values as `color` in `Text` component.
 	*/
-    readonly borderBottomColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly borderBottomColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Change the left border color. Accepts the same values as `color` in `Text` component.
 	*/
-    readonly borderLeftColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly borderLeftColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Change the right border color. Accepts the same values as `color` in `Text` component.
 	*/
-    readonly borderRightColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly borderRightColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Dim the border color. A shorthand for setting `borderTopDimColor`, `borderBottomDimColor`, `borderLeftDimColor`, and `borderRightDimColor`.
@@ -336,7 +337,7 @@ export type Styles = {
 
 	Accepts the same values as `color` in the `<Text>` component.
 	*/
-    readonly backgroundColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly backgroundColor?: LiteralUnion<AnsiColors, string>;
 };
 
 const positionEdges = [

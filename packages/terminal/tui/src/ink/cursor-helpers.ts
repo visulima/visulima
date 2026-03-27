@@ -1,4 +1,5 @@
-import ansiEscapes from "ansi-escapes";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { cursorDown, cursorTo, cursorUp } from "@visulima/ansi";
 
 export type CursorPosition = {
     x: number;
@@ -25,7 +26,7 @@ export const buildCursorSuffix = (visibleLineCount: number, cursorPosition: Curs
     }
 
     const moveUp = visibleLineCount - cursorPosition.y;
-    return (moveUp > 0 ? ansiEscapes.cursorUp(moveUp) : "") + ansiEscapes.cursorTo(cursorPosition.x) + showCursorEscape;
+    return (moveUp > 0 ? cursorUp(moveUp) : "") + cursorTo(cursorPosition.x) + showCursorEscape;
 };
 
 /**
@@ -40,7 +41,7 @@ export const buildReturnToBottom = (previousLineCount: number, previousCursorPos
     // PreviousLineCount includes trailing newline, so visible lines = previousLineCount - 1
     // cursor is at previousCursorPosition.y, need to go to line (previousLineCount - 1)
     const down = previousLineCount - 1 - previousCursorPosition.y;
-    return (down > 0 ? ansiEscapes.cursorDown(down) : "") + ansiEscapes.cursorTo(0);
+    return (down > 0 ? cursorDown(down) : "") + cursorTo(0);
 };
 
 export type CursorOnlyInput = {

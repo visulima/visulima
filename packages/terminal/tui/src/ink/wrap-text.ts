@@ -1,5 +1,5 @@
-import wrapAnsi from "wrap-ansi";
-import cliTruncate from "cli-truncate";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { truncate, wordWrap } from "@visulima/string";
 import { type Styles } from "./styles.js";
 
 const cache: Record<string, string> = {};
@@ -15,10 +15,11 @@ const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]):
     let wrappedText = text;
 
     if (wrapType === "wrap") {
-        wrappedText = wrapAnsi(text, maxWidth, {
+        wrappedText = wordWrap(text, {
+            width: maxWidth,
             trim: false,
-            hard: true,
-        });
+            wrapMode: "BREAK_WORDS",
+        }).replace(/\n$/, "");
     }
 
     if (wrapType!.startsWith("truncate")) {
@@ -32,7 +33,7 @@ const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]):
             position = "start";
         }
 
-        wrappedText = cliTruncate(text, maxWidth, { position });
+        wrappedText = truncate(text, maxWidth, { position });
     }
 
     cache[cacheKey] = wrappedText;

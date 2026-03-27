@@ -1,6 +1,6 @@
 import { type Writable } from "node:stream";
-import ansiEscapes from "ansi-escapes";
-import cliCursor from "cli-cursor";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 import {
     type CursorPosition,
     cursorPositionChanged,
@@ -44,7 +44,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
 
     const render = (str: string) => {
         if (!showCursor && !hasHiddenCursor) {
-            cliCursor.hide(stream);
+            stream.write(cursorHide);
             hasHiddenCursor = true;
         }
 
@@ -75,7 +75,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         } else {
             previousOutput = str;
             const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
-            stream.write(returnPrefix + ansiEscapes.eraseLines(previousLineCount) + str + cursorSuffix);
+            stream.write(returnPrefix + eraseLines(previousLineCount) + str + cursorSuffix);
             previousLineCount = lines.length;
         }
 
@@ -86,7 +86,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
 
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
-        stream.write(prefix + ansiEscapes.eraseLines(previousLineCount));
+        stream.write(prefix + eraseLines(previousLineCount));
         previousOutput = "";
         previousLineCount = 0;
         previousCursorPosition = undefined;
@@ -100,7 +100,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
         cursorWasShown = false;
 
         if (!showCursor) {
-            cliCursor.show(stream);
+            stream.write(cursorShow);
             hasHiddenCursor = false;
         }
     };
@@ -160,7 +160,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
 
     const render = (str: string) => {
         if (!showCursor && !hasHiddenCursor) {
-            cliCursor.hide(stream);
+            stream.write(cursorHide);
             hasHiddenCursor = true;
         }
 
@@ -197,7 +197,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
 
         if (str === "\n" || previousOutput.length === 0) {
             const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
-            stream.write(returnPrefix + ansiEscapes.eraseLines(previousLines.length) + str + cursorSuffix);
+            stream.write(returnPrefix + eraseLines(previousLines.length) + str + cursorSuffix);
             cursorWasShown = activeCursor !== undefined;
             previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
             previousOutput = str;
@@ -216,9 +216,9 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         if (visibleCount < previousVisible) {
             const previousHadTrailingNewline = previousOutput.endsWith("\n");
             const extraSlot = previousHadTrailingNewline ? 1 : 0;
-            buffer.push(ansiEscapes.eraseLines(previousVisible - visibleCount + extraSlot), ansiEscapes.cursorUp(visibleCount));
+            buffer.push(eraseLines(previousVisible - visibleCount + extraSlot), cursorUp(visibleCount));
         } else {
-            buffer.push(ansiEscapes.cursorUp(previousVisible - 1));
+            buffer.push(cursorUp(previousVisible - 1));
         }
 
         for (let i = 0; i < visibleCount; i++) {
@@ -229,16 +229,16 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
                 // Don't move past the last line when there's no trailing newline,
                 // otherwise the cursor overshoots the rendered block.
                 if (!isLastLine || hasTrailingNewline) {
-                    buffer.push(ansiEscapes.cursorNextLine);
+                    buffer.push(cursorNextLine());
                 }
 
                 continue;
             }
 
             buffer.push(
-                ansiEscapes.cursorTo(0) +
+                cursorTo(0) +
                     nextLines[i] +
-                    ansiEscapes.eraseEndLine +
+                    eraseLineEnd +
                     // Don't append newline after the last line when the input
                     // has no trailing newline (fullscreen mode).
                     (isLastLine && !hasTrailingNewline ? "" : "\n"),
@@ -259,7 +259,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
 
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLines.length, previousCursorPosition);
-        stream.write(prefix + ansiEscapes.eraseLines(previousLines.length));
+        stream.write(prefix + eraseLines(previousLines.length));
         previousOutput = "";
         previousLines = [];
         previousCursorPosition = undefined;
@@ -273,7 +273,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         cursorWasShown = false;
 
         if (!showCursor) {
-            cliCursor.show(stream);
+            stream.write(cursorShow);
             hasHiddenCursor = false;
         }
     };

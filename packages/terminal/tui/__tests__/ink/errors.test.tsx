@@ -2,7 +2,7 @@ import process from "node:process";
 import { useEffect } from "react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import patchConsole from "patch-console";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { render, useStdin, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
@@ -33,7 +33,7 @@ it("catch and display error", () => {
     const lines = stripAnsi(lastContentWrite).split("\n");
     expect(lines[1]).toBe("  ERROR  Oh no");
     expect(lines[3]).toMatch(/errors\.test\.tsx:\d+:\d+/);
-    expect(lines.some((l: string) => l.includes("throw new Error('Oh no')"))).toBe(true);
+    expect(lines.some((l: string) => l.includes("throw new Error") && l.includes("Oh no"))).toBe(true);
     expect(lines.some((l: string) => l.match(/Test.*errors\.test\.tsx:\d+:\d+/))).toBe(true);
 });
 

@@ -1,5 +1,6 @@
 import { useContext, type ReactNode, type ReactElement } from "react";
-import chalk, { type ForegroundColorName } from "chalk";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import colorizeDefault, { type AnsiColors } from "@visulima/colorize";
 import type { LiteralUnion } from "type-fest";
 import colorize from "../colorize.js";
 import { type Styles } from "../styles.js";
@@ -18,14 +19,14 @@ export type Props = {
     readonly "aria-hidden"?: boolean;
 
     /**
-	Change text color. Ink uses Chalk under the hood, so all its functionality is supported.
+	Change text color. Ink uses @visulima/colorize under the hood, so all its functionality is supported.
 	*/
-    readonly color?: LiteralUnion<ForegroundColorName, string>;
+    readonly color?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Same as `color`, but for the background.
 	*/
-    readonly backgroundColor?: LiteralUnion<ForegroundColorName, string>;
+    readonly backgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
 	Dim the color (make it less bright).
@@ -92,7 +93,7 @@ export default function Text({
 
     const transform = (children: string): string => {
         if (dimColor) {
-            children = chalk.dim(children);
+            children = colorizeDefault.dim(children);
         }
 
         if (color) {
@@ -106,23 +107,23 @@ export default function Text({
         }
 
         if (bold) {
-            children = chalk.bold(children);
+            children = colorizeDefault.bold(children);
         }
 
         if (italic) {
-            children = chalk.italic(children);
+            children = colorizeDefault.italic(children);
         }
 
         if (underline) {
-            children = chalk.underline(children);
+            children = colorizeDefault.underline(children);
         }
 
         if (strikethrough) {
-            children = chalk.strikethrough(children);
+            children = colorizeDefault.strikethrough(children);
         }
 
         if (inverse) {
-            children = chalk.inverse(children);
+            children = colorizeDefault.inverse(children);
         }
 
         return children;

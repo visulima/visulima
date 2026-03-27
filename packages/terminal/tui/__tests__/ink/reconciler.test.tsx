@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Suspense } from "react";
-import chalk from "chalk";
+import colorizeDefault from "@visulima/colorize";
 import { Box, Text, render } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
@@ -301,7 +301,7 @@ it("replace child node with text", () => {
         debug: true,
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(chalk.green("test"));
+    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(colorizeDefault.green("test"));
 
     rerender(<Dynamic replace />);
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("x");

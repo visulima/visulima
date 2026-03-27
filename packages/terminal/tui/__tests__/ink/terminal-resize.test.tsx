@@ -1,7 +1,7 @@
 import process from "node:process";
 import { describe, expect, it } from "vitest";
 import delay from "delay";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { render, Box, Text, useWindowSize } from "../../src/ink/index.js";
 import createStdout, { type FakeStdout } from "../helpers/ink-create-stdout.js";
 

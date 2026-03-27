@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { describe, expect, it } from "vitest";
 import delay from "delay";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { Box, Text, render, useBoxMetrics, type DOMElement } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 

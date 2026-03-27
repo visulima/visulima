@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import ansiEscapes from "ansi-escapes";
+import { cursorDown, cursorTo, cursorUp } from "@visulima/ansi";
 import {
     cursorPositionChanged,
     buildCursorSuffix,
@@ -42,17 +42,17 @@ it("buildCursorSuffix - returns empty string when cursorPosition is undefined", 
 
 it("buildCursorSuffix - moves up and positions cursor", () => {
     const result = buildCursorSuffix(3, { x: 5, y: 1 });
-    expect(result).toBe(ansiEscapes.cursorUp(2) + ansiEscapes.cursorTo(5) + showCursorEscape);
+    expect(result).toBe(cursorUp(2) + cursorTo(5) + showCursorEscape);
 });
 
 it("buildCursorSuffix - no cursorUp when cursor is at last visible line", () => {
     const result = buildCursorSuffix(3, { x: 0, y: 3 });
-    expect(result).toBe(ansiEscapes.cursorTo(0) + showCursorEscape);
+    expect(result).toBe(cursorTo(0) + showCursorEscape);
 });
 
 it("buildCursorSuffix - cursor at first line of single-line output", () => {
     const result = buildCursorSuffix(1, { x: 4, y: 0 });
-    expect(result).toBe(ansiEscapes.cursorUp(1) + ansiEscapes.cursorTo(4) + showCursorEscape);
+    expect(result).toBe(cursorUp(1) + cursorTo(4) + showCursorEscape);
 });
 
 // BuildReturnToBottom
@@ -63,12 +63,12 @@ it("buildReturnToBottom - returns empty string when previousCursorPosition is un
 
 it("buildReturnToBottom - moves down to bottom", () => {
     const result = buildReturnToBottom(4, { x: 5, y: 0 });
-    expect(result).toBe(ansiEscapes.cursorDown(3) + ansiEscapes.cursorTo(0));
+    expect(result).toBe(cursorDown(3) + cursorTo(0));
 });
 
 it("buildReturnToBottom - no cursorDown when cursor already at bottom", () => {
     const result = buildReturnToBottom(4, { x: 0, y: 3 });
-    expect(result).toBe(ansiEscapes.cursorTo(0));
+    expect(result).toBe(cursorTo(0));
 });
 
 // BuildCursorOnlySequence

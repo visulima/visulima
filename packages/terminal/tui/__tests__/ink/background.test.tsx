@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import chalk from "chalk";
+import colorizeDefault from "@visulima/colorize";
 import { render, Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -34,7 +34,7 @@ it("Text inherits parent Box background color", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgGreen("Hello World"));
+    expect(output).toBe(colorizeDefault.bgGreen("Hello World"));
 });
 
 it("Text explicit background color overrides inherited", () => {
@@ -44,7 +44,7 @@ it("Text explicit background color overrides inherited", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgBlue("Hello World"));
+    expect(output).toBe(colorizeDefault.bgBlue("Hello World"));
 });
 
 it("Nested Box background inheritance", () => {
@@ -56,7 +56,7 @@ it("Nested Box background inheritance", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgBlue("Hello World"));
+    expect(output).toBe(colorizeDefault.bgBlue("Hello World"));
 });
 
 it("Text without parent Box background has no inheritance", () => {
@@ -77,7 +77,7 @@ it("Multiple Text elements inherit same background", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgYellow("Hello World"));
+    expect(output).toBe(colorizeDefault.bgYellow("Hello World"));
 });
 
 it("Mixed text with and without background inheritance", () => {
@@ -89,7 +89,7 @@ it("Mixed text with and without background inheritance", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgGreen("Inherited ") + "No BG " + chalk.bgRed("Red BG"));
+    expect(output).toBe(colorizeDefault.bgGreen("Inherited ") + "No BG " + colorizeDefault.bgRed("Red BG"));
 });
 
 it("Complex nested structure with background inheritance", () => {
@@ -115,7 +115,7 @@ it("Box background with standard color", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgRed("Hello"));
+    expect(output).toBe(colorizeDefault.bgRed("Hello"));
 });
 
 it("Box background with hex color", () => {
@@ -125,7 +125,7 @@ it("Box background with hex color", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgHex("#FF0000")("Hello"));
+    expect(output).toBe(colorizeDefault.bgHex("#FF0000")("Hello"));
 });
 
 it("Box background with rgb color", () => {
@@ -135,7 +135,7 @@ it("Box background with rgb color", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgRgb(255, 0, 0)("Hello"));
+    expect(output).toBe(colorizeDefault.bgRgb(255, 0, 0)("Hello"));
 });
 
 it("Box background with ansi256 color", () => {
@@ -145,7 +145,7 @@ it("Box background with ansi256 color", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgAnsi256(9)("Hello"));
+    expect(output).toBe(colorizeDefault.bgAnsi256(9)("Hello"));
 });
 
 it("Box background with wide characters", () => {
@@ -155,7 +155,7 @@ it("Box background with wide characters", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgYellow("こんにちは"));
+    expect(output).toBe(colorizeDefault.bgYellow("こんにちは"));
 });
 
 it("Box background with emojis", () => {
@@ -165,7 +165,7 @@ it("Box background with emojis", () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgRed("🎉🎊"));
+    expect(output).toBe(colorizeDefault.bgRed("🎉🎊"));
 });
 
 it("Box background fills entire area with standard color", () => {
@@ -288,7 +288,7 @@ it("Box background updates on rerender", () => {
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello");
 
     rerender(<Test bgColor="green" />);
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(chalk.bgGreen("Hello"));
+    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(colorizeDefault.bgGreen("Hello"));
 
     rerender(<Test />);
     expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello");
@@ -301,7 +301,7 @@ it("Text inherits parent Box background color - concurrent", async () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgGreen("Hello World"));
+    expect(output).toBe(colorizeDefault.bgGreen("Hello World"));
 });
 
 it("Nested Box background inheritance - concurrent", async () => {
@@ -313,7 +313,7 @@ it("Nested Box background inheritance - concurrent", async () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgBlue("Hello World"));
+    expect(output).toBe(colorizeDefault.bgBlue("Hello World"));
 });
 
 it("Box background with hex color - concurrent", async () => {
@@ -323,7 +323,7 @@ it("Box background with hex color - concurrent", async () => {
         </Box>,
     );
 
-    expect(output).toBe(chalk.bgHex("#FF0000")("Hello"));
+    expect(output).toBe(colorizeDefault.bgHex("#FF0000")("Hello"));
 });
 
 it("Box background updates on rerender - concurrent", async () => {
@@ -340,7 +340,7 @@ it("Box background updates on rerender - concurrent", async () => {
     expect(getOutput()).toBe("Hello");
 
     await rerenderAsync(<Test bgColor="green" />);
-    expect(getOutput()).toBe(chalk.bgGreen("Hello"));
+    expect(getOutput()).toBe(colorizeDefault.bgGreen("Hello"));
 
     await rerenderAsync(<Test />);
     expect(getOutput()).toBe("Hello");

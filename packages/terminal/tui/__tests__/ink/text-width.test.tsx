@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 

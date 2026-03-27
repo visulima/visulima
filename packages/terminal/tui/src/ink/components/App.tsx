@@ -1,7 +1,8 @@
 import { EventEmitter } from "node:events";
 import process from "node:process";
 import React, { type ReactNode, useState, useRef, useCallback, useMemo, useEffect } from "react";
-import cliCursor from "cli-cursor";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { cursorShow } from "@visulima/ansi";
 import { type CursorPosition } from "../log-update.js";
 import { createInputParser } from "../input-parser.js";
 import AppContext from "./AppContext.js";
@@ -441,7 +442,7 @@ function App({
             const canWriteToStdout = !stdout.destroyed && !stdout.writableEnded;
 
             if (interactive && canWriteToStdout) {
-                cliCursor.show(stdout);
+                stdout.write(cursorShow);
             }
 
             if (isRawModeSupported && rawModeEnabledCount.current > 0) {

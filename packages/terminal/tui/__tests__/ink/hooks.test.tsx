@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import stripAnsi from "strip-ansi";
+import { strip as stripAnsi } from "@visulima/ansi";
 import term from "../helpers/ink-term.js";
 
 import { createRequire } from "node:module";
