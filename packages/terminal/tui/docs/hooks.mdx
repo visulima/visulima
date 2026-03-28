@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useMouse, useTextInput, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -8,7 +8,7 @@ description: "Reference for all React hooks in @visulima/tui/react: useInput, us
 Use these hooks inside components rendered with `render()`. Hooks that rely on the full app event emitter are marked as `render()`-mode only.
 
 ```tsx
-import { useApp, useFocus, useFocusManager, useInput, useMouse, usePaste, useScrollable, useTextInput } from "@visulima/tui/react";
+import { useApp, useCursor, useFocus, useFocusManager, useInput, useMouse, usePaste, useScrollable, useTextInput } from "@visulima/tui/react";
 ```
 
 ## `useInput`
@@ -237,12 +237,39 @@ Imperative element measurement.
 const { width, height } = measureElement(ref.current);
 ```
 
+## `useCursor`
+
+Imperative cursor positioning. Use this when you need precise control over cursor placement, for example with IME (Input Method Editor) support where you need to account for wide characters.
+
+```tsx
+const { setCursorPosition } = useCursor();
+
+const prompt = "> ";
+setCursorPosition({ x: stringWidth(prompt + text), y: 1 });
+
+return (
+    <Box flexDirection="column">
+        <Text>Header</Text>
+        <Text>{prompt}{text}</Text>
+    </Box>
+);
+```
+
+### `setCursorPosition`
+
+| Argument   | Type                             | Description                        |
+| ---------- | -------------------------------- | ---------------------------------- |
+| `position` | `{ x: number, y: number }` or `undefined` | Absolute position, or `undefined` to hide |
+
+Notes:
+
+- `x` and `y` are 0-based coordinates relative to the top-left of the rendered output.
+- Use `stringWidth()` from `@visulima/string` for correct column calculation with wide characters.
+- The cursor is automatically hidden when the component using `useCursor` unmounts.
+- For most text input use cases, prefer the declarative [`<Cursor />`](./components.mdx#cursor) component instead.
+
 ## Compatibility Stubs
 
 ### `useIsScreenReaderEnabled`
 
 Always returns `false`.
-
-### `useCursor`
-
-Returns `{ setCursorPosition }`, currently a no-op stub.

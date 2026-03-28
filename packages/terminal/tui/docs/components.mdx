@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui/react: Box, Text, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
+description: "Reference for all React components in @visulima/tui/react: Box, Text, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
 ---
 
 # Components
@@ -8,7 +8,7 @@ description: "Reference for all React components in @visulima/tui/react: Box, Te
 `@visulima/tui` exposes Ink-compatible core components plus Ratatat-only additions.
 
 ```tsx
-import { Box, Newline, ProgressBar, Spacer, Spinner, Static, Text, Transform } from "@visulima/tui/react";
+import { Box, Cursor, Newline, ProgressBar, Spacer, Spinner, Static, Text, Transform } from "@visulima/tui/react";
 ```
 
 ## `Box`
@@ -70,6 +70,59 @@ Renders styled text.
 ```
 
 `dimColor` is supported as an Ink-compat alias for `dim`.
+
+## `Cursor`
+
+Declaratively position the terminal cursor. Two modes are available:
+
+### Inline mode (no props)
+
+Place `<Cursor />` after a `<Text>` node. The cursor appears where the preceding text ended, even when text wraps across lines.
+
+```tsx
+<Box>
+    <Text>{prompt + value}</Text>
+    <Cursor />
+</Box>
+```
+
+This is the recommended approach for text inputs. It handles text wrapping, wide characters (CJK, emoji), and multi-line output automatically because the cursor position is derived from the actual rendered text output.
+
+For editable text with a cursor position in the middle:
+
+```tsx
+<Box>
+    <Text>{value.slice(0, cursorPos)}</Text>
+    <Cursor />
+    <Text>{value.slice(cursorPos)}</Text>
+</Box>
+```
+
+### Anchor mode
+
+Pass `anchorRef` and/or `x`/`y` to position the cursor relative to another element's content origin.
+
+```tsx
+const ref = useRef(null);
+
+<Box ref={ref}>
+    <Text>{content}</Text>
+</Box>
+<Cursor anchorRef={ref} x={5} y={1} />
+```
+
+| Prop        | Type                         | Default     |
+| ----------- | ---------------------------- | ----------- |
+| `anchorRef` | `RefObject<DOMElement/null>` | parent node |
+| `x`         | `number`                     | `0`         |
+| `y`         | `number`                     | `0`         |
+
+Notes:
+
+- `<Cursor>` must not be rendered inside `<Text>`.
+- If multiple `<Cursor>` components are rendered, the last one controls the terminal cursor.
+- If `anchorRef` is set but unresolved, the cursor is hidden for that frame.
+- See also [`useCursor()`](./hooks.mdx#usecursor) for imperative cursor control (e.g. IME support).
 
 ## `Newline`
 
