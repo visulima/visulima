@@ -9,7 +9,7 @@ import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unsta
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
-import type { DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom.js";
+import type { CursorMarker, DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom.js";
 import {
     appendChildNode,
     createNode,
@@ -182,6 +182,11 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
                     continue;
                 }
 
+                if (key === "internal_cursor") {
+                    node.internal_cursor = value as CursorMarker;
+                    continue;
+                }
+
                 if (key === "internal_static") {
                     node.internal_static = true;
                     continue;
@@ -198,6 +203,10 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     createInstance(originalType, newProps, rootNode, hostContext) {
         if (hostContext.isInsideText && originalType === "ink-box") {
             throw new Error(`<Box> can’t be nested inside <Text> component`);
+        }
+
+        if (hostContext.isInsideText && originalType === "ink-cursor") {
+            throw new Error(`<Cursor> can’t be nested inside <Text> component`);
         }
 
         const type = originalType === "ink-text" && hostContext.isInsideText ? "ink-virtual-text" : originalType;
@@ -221,6 +230,11 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
             if (key === "internal_transform") {
                 node.internal_transform = value as OutputTransformer;
+                continue;
+            }
+
+            if (key === "internal_cursor") {
+                node.internal_cursor = value as CursorMarker;
                 continue;
             }
 
@@ -271,6 +285,7 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
         };
     },
     hideInstance(node) {
+        node.internal_hidden = true;
         node.yogaNode?.setDisplay(Yoga.DISPLAY_NONE);
     },
     hideTextInstance(node) {
@@ -366,6 +381,7 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     suspendInstance() {},
     trackSchedulerEvent() {},
     unhideInstance(node) {
+        node.internal_hidden = false;
         node.yogaNode?.setDisplay(Yoga.DISPLAY_FLEX);
     },
     unhideTextInstance(node, text) {

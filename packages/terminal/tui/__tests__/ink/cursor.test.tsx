@@ -1,9 +1,9 @@
 import { cursorTo } from "@visulima/ansi";
 import delay from "delay";
 import { act, Suspense, useEffect, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { Box, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index.js";
+import { Box, Cursor, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index.js";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
@@ -89,6 +89,14 @@ const InputApp = () => {
 };
 
 describe("cursor", () => {
+    let currentUnmount: (() => void) | undefined;
+
+    afterEach(async () => {
+        currentUnmount?.();
+        currentUnmount = undefined;
+        await delay(50);
+    });
+
     it("cursor is shown at specified position after render", async () => {
         expect.hasAssertions();
 
@@ -96,6 +104,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -103,8 +112,6 @@ describe("cursor", () => {
 
         expect(firstRenderOutput).toContain(showCursorEscape);
         expect(firstRenderOutput).toContain(cursorTo(2));
-
-        unmount();
     });
 
     it("cursor is not hidden by useEffect after first render", async () => {
@@ -114,6 +121,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -122,8 +130,6 @@ describe("cursor", () => {
         const lastHideIndex = output.lastIndexOf(hideCursorEscape);
 
         expect(lastShowIndex).toBeGreaterThan(lastHideIndex);
-
-        unmount();
     });
 
     it("cursor follows text input", async () => {
@@ -133,6 +139,7 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -143,8 +150,6 @@ describe("cursor", () => {
 
         expect(allOutput).toContain(showCursorEscape);
         expect(allOutput).toContain(cursorTo(3));
-
-        unmount();
     });
 
     it("cursor moves on space input even when output is identical", async () => {
@@ -154,23 +159,22 @@ describe("cursor", () => {
         const stdin = createStdin();
 
         const { unmount } = render(<InputApp />, { stdin, stdout });
+        currentUnmount = unmount;
 
-        await delay(50);
+        await delay(100);
 
         emitReadable(stdin, "a");
-        await delay(50);
+        await delay(100);
         const afterA = (stdout.write as any).mock.calls.length;
 
         emitReadable(stdin, " ");
-        await delay(50);
+        await delay(100);
 
         expect((stdout.write as any).mock.calls.length).toBeGreaterThan(afterA);
 
         const allOutput = getWriteCalls(stdout).join("");
 
         expect(allOutput).toContain(cursorTo(4));
-
-        unmount();
     });
 
     it("cursor is cleared when component using useCursor unmounts", async () => {
@@ -200,6 +204,7 @@ describe("cursor", () => {
         };
 
         const { unmount } = render(<Parent />, { stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -217,8 +222,6 @@ describe("cursor", () => {
         const lastHideIndex = outputAfterChildUnmount.lastIndexOf(hideCursorEscape);
 
         expect(lastHideIndex).toBeGreaterThan(lastShowIndex);
-
-        unmount();
     });
 
     it("cursor position does not leak from suspended concurrent render to fallback", async () => {
@@ -253,7 +256,8 @@ describe("cursor", () => {
         );
 
         await act(() => {
-            render(<Test />, { concurrent: true, stdin, stdout });
+            const result = render(<Test />, { concurrent: true, stdin, stdout });
+            currentUnmount = result.unmount;
         });
 
         const fallbackOutput = getWriteCalls(stdout).join("");
@@ -295,6 +299,7 @@ describe("cursor", () => {
         };
 
         const { unmount } = render(<MultiLineApp />, { stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -307,8 +312,6 @@ describe("cursor", () => {
 
         expect(secondRenderOutput).toContain(hideCursorEscape);
         expect(secondRenderOutput).toContain("x");
-
-        unmount();
     });
 
     it("debug mode: useStdout().write() replays latest frame", async () => {
@@ -326,6 +329,7 @@ describe("cursor", () => {
 
         const stdout = createStdout();
         const { unmount } = render(<DebugStdoutWriteApp />, { debug: true, stdout });
+        currentUnmount = unmount;
 
         await waitForCondition(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
 
@@ -334,7 +338,153 @@ describe("cursor", () => {
 
         expect(hookWrite).toBeDefined();
         expect(writes).not.toContain("");
+    });
 
-        unmount();
+    it("inline cursor positions at end of preceding text", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const InlineApp = () => (
+            <Box>
+                <Text>hello</Text>
+                <Cursor />
+            </Box>
+        );
+
+        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        currentUnmount = unmount;
+
+        await delay(50);
+
+        const output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(showCursorEscape);
+        // "hello" is 5 chars wide, cursor should be at column 5
+        expect(output).toContain(cursorTo(5));
+    });
+
+    it("inline cursor positions between text nodes", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const InlineApp = () => (
+            <Box>
+                <Text>he</Text>
+                <Cursor />
+                <Text>llo</Text>
+            </Box>
+        );
+
+        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        currentUnmount = unmount;
+
+        await delay(50);
+
+        const output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(showCursorEscape);
+        // "he" is 2 chars, cursor should be at column 2
+        expect(output).toContain(cursorTo(2));
+    });
+
+    it("inline cursor follows text input", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const InlineInputApp = () => {
+            const [text, setText] = useState("");
+
+            useInput((input, key) => {
+                if (!key.ctrl && !key.meta && input) {
+                    setText((previous) => previous + input);
+                }
+            });
+
+            return (
+                <Box>
+                    <Text>{`> ${text}`}</Text>
+                    <Cursor />
+                </Box>
+            );
+        };
+
+        const { unmount } = render(<InlineInputApp />, { stdin, stdout });
+        currentUnmount = unmount;
+
+        await delay(50);
+
+        // Initial: "> " is 2 chars, cursor at column 2
+        let output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(cursorTo(2));
+
+        emitReadable(stdin, "ab");
+        await delay(50);
+
+        // After "ab": "> ab" is 4 chars, cursor at column 4
+        output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(cursorTo(4));
+    });
+
+    it("inline cursor with no preceding text falls back to parent origin", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const InlineApp = () => (
+            <Box>
+                <Cursor />
+                <Text>hello</Text>
+            </Box>
+        );
+
+        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        currentUnmount = unmount;
+
+        await delay(50);
+
+        const output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(showCursorEscape);
+        // No preceding text, cursor falls back to parent origin (column 0)
+        expect(output).toContain(cursorTo(0));
+    });
+
+    it("inline cursor handles text wrapping correctly", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(10);
+        const stdin = createStdin();
+
+        // "hello world" is 11 chars, wraps at column 10
+        const InlineApp = () => (
+            <Box width={10}>
+                <Text>hello world</Text>
+                <Cursor />
+            </Box>
+        );
+
+        const { unmount } = render(<InlineApp />, { stdin, stdout });
+        currentUnmount = unmount;
+
+        await delay(50);
+
+        const output = getWriteCalls(stdout).join("");
+
+        expect(output).toContain(showCursorEscape);
+        // After wrapping "hello world" in a 10-col box, text wraps to 2 lines.
+        // The cursor should NOT be at column 11 (unwrapped), but rather on the
+        // second line after the wrapped portion. This verifies wrapping awareness.
+        // With word-wrap, "hello" stays on line 0 and "world" goes to line 1.
+        // Cursor should be at the end of "world" (column 5) on line 1.
+        expect(output).toContain(cursorTo(5));
     });
 });

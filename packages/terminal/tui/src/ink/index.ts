@@ -2,6 +2,8 @@
 export type { Props as AppProps } from "./components/AppContext.js";
 export type { Props as BoxProps } from "./components/Box.js";
 export { default as Box } from "./components/Box.js";
+export type { Props as CursorProps } from "./components/Cursor.js";
+export { default as Cursor } from "./components/Cursor.js";
 export type { Props as NewlineProps } from "./components/Newline.js";
 export { default as Newline } from "./components/Newline.js";
 export { default as Spacer } from "./components/Spacer.js";
@@ -15,6 +17,7 @@ export { default as Text } from "./components/Text.js";
 export type { Props as TransformProps } from "./components/Transform.js";
 export { default as Transform } from "./components/Transform.js";
 export type { DOMElement } from "./dom.js";
+export { IMECompositionBuffer, isIMEInput } from "./ime-utils.js";
 export { default as useApp } from "./hooks/use-app.js";
 export type { BoxMetrics, UseBoxMetricsResult } from "./hooks/use-box-metrics.js";
 export { default as useBoxMetrics } from "./hooks/use-box-metrics.js";
