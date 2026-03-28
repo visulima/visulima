@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import InteractiveStreamHook from "../../../src/interactive/interactive-stream-hook";
 import { cursorHide, cursorShow, eraseLines } from "../../../src/utils/ansi-escapes";
-import WriteStream from "./__mocks__/write-stream.mock.js";
+import WriteStream from "./__mocks__/write-stream.mock";
 
 const stream = new WriteStream() as unknown as TtyWriteStream & WriteStream;
 const hook = new InteractiveStreamHook(stream);

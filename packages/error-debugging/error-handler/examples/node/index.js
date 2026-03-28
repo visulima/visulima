@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-import httpDisplayer from "@visulima/error-handler/dist/handler/http/node-handler.js";
+import httpDisplayer from "@visulima/error-handler/dist/handler/http/node-handler";
 
 // Deeper stack builders (sync + async levels)
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { all, getCountriesForTimezone, getCountriesWithTimezones, getPrimaryTimezone, getTimezonesByCountry, isValidTimezone } from "../src/timezones.js";
+import { all, getCountriesForTimezone, getCountriesWithTimezones, getPrimaryTimezone, getTimezonesByCountry, isValidTimezone } from "../src/timezones";
 
 describe("timezones", () => {
     describe(getTimezonesByCountry, () => {

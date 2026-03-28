@@ -9,7 +9,7 @@
 import isPlainObject from "is-plain-obj";
 import type { Paths } from "type-fest";
 
-import pathsAreEqual from "./paths-are-equal.js";
+import pathsAreEqual from "./paths-are-equal";
 
 const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys extends Paths<T>[]>(object: T, omittedKeys: OmittedKeys, pathUntilNow = ""): T => {
     if (!isPlainObject(object)) {

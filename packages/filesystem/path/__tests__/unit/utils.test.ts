@@ -15,7 +15,7 @@ describe("utils", () => {
     it("toPath", () => {
         expect.assertions(2);
 
-        const fixture = "./foo.js";
+        const fixture = "./foo";
 
         expect(toPath(new URL(fixture, import.meta.url))).toStrictEqual(resolve(dirname(fileURLToPath(import.meta.url)), fixture));
         expect(toPath(fixture)).toStrictEqual(fixture);

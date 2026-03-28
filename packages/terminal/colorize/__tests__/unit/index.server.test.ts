@@ -2,7 +2,7 @@ import { backgroundColorNames, foregroundColorNames, modifierNames } from "ansi-
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import colorize, { bold, Colorize, green, hex, red, yellow } from "../../src/index.server.mts";
-import { esc } from "../helpers.js";
+import { esc } from "../helpers";
 
 describe("style tests", () => {
     beforeEach(() => {

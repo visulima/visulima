@@ -21,7 +21,7 @@
  */
 
 // eslint-disable-next-line antfu/no-import-dist -- bin entry point runs after build
-import { startMcpServer } from "../dist/mcp/server.js";
+import { startMcpServer } from "../dist/mcp/server";
 
 startMcpServer().catch((error) => {
     console.error("Failed to start MCP server:", error);

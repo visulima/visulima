@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import HttpReporterEdgeLight from "../../../../src/reporter/http/http-reporter.edge-light";
-import compressData from "../../../../src/reporter/http/utils/compression.js";
-import sendWithRetry from "../../../../src/reporter/http/utils/retry.js";
+import compressData from "../../../../src/reporter/http/utils/compression";
+import sendWithRetry from "../../../../src/reporter/http/utils/retry";
 import type { ReadonlyMeta } from "../../../../src/types";
 
 // Mock utility functions

@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 // @ts-ignore - resolved after build: dist/handler/fetch-handler.mjs is generated
-import fetchHandler from "@visulima/error-handler/dist/handler/http/fetch-handler.js";
+import fetchHandler from "@visulima/error-handler/dist/handler/http/fetch-handler";
 import { Hono } from "hono";
 
 const app = new Hono();

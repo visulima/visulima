@@ -2,7 +2,7 @@ import "./style.css";
 
 import type { DevToolbarApp } from "@visulima/dev-toolbar";
 
-import { App } from "./App.js";
+import { App } from "./App";
 
 // eslint-disable-next-line no-unsanitized/property -- static, developer-controlled HTML; not user input
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = App();
