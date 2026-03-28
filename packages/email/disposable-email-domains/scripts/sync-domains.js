@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { createTable } from "@visulima/tabular";
 
-import DisposableEmailSyncManager from "./disposable-email-sync-manager";
+import DisposableEmailSyncManager from "./disposable-email-sync-manager.js";
 
 const filename = fileURLToPath(import.meta.url);
 const dirnamePath = dirname(filename);
