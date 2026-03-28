@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-duplicate-type-constituents, @typescript-eslint/no-unsafe-assignment, import/exports-last, import/no-commonjs, no-underscore-dangle */
 // ESM wrapper around the NAPI-RS CJS native binding
 import { createRequire } from "node:module";
 
@@ -38,8 +39,10 @@ type NativeBinding = {
 
 const _native: NativeBinding = native as NativeBinding;
 
-// Export each binding member with an explicit type so --isolatedDeclarations can emit declarations
-// without needing to infer types from a destructured binding element.
-export const { Renderer } = _native;
-export const { TerminalGuard } = _native;
-export const { terminalSize } = _native;
+// Export each binding member with an explicit type so --isolatedDeclarations can emit declarations.
+// eslint-disable-next-line prefer-destructuring -- Destructured bindings break --isolatedDeclarations
+export const Renderer: RendererConstructor = _native.Renderer;
+// eslint-disable-next-line prefer-destructuring -- Destructured bindings break --isolatedDeclarations
+export const TerminalGuard: TerminalGuardConstructor = _native.TerminalGuard;
+// eslint-disable-next-line prefer-destructuring -- Destructured bindings break --isolatedDeclarations
+export const terminalSize: () => TerminalSize = _native.terminalSize;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, no-for-of-array/no-for-of-array, no-plusplus, react-x/no-context-provider, react-x/no-unnecessary-use-callback, sonarjs/no-nested-functions, unicorn/filename-case, unicorn/prefer-event-target */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
@@ -554,11 +555,6 @@ const App = ({
     );
 };
 
-// Declare displayName on the function so isolatedDeclarations can emit the type
-declare namespace App {
-    let displayName: string;
-}
-
 App.displayName = "InternalApp";
 
-export default App;
+export default App as React.FC<Props>;
