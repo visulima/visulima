@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-import { render, Text, useApp } from "../../../src/ink/index.js";
+import { render, Text, useApp } from "../../../src/ink/index";
 
 const Test = () => {
     const { exit } = useApp();

@@ -1,8 +1,8 @@
 import { act } from "react";
 
-import type { Instance } from "../../src/ink/index.js";
-import { render } from "../../src/ink/index.js";
-import createStdout from "./ink-create-stdout.js";
+import type { Instance } from "../../src/ink/index";
+import { render } from "../../src/ink/index";
+import createStdout from "./ink-create-stdout";
 
 type TestRenderOptions = {
     columns?: number;

@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React, { useEffect, useState } from "react";
 
-import { Box, render, Text } from "../../../src/ink/index.js";
+import { Box, render, Text } from "../../../src/ink/index";
 
 const Erase = () => {
     const [show, setShow] = useState(true);

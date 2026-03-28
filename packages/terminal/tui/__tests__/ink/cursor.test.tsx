@@ -3,9 +3,9 @@ import delay from "delay";
 import { act, Suspense, useEffect, useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { Box, Cursor, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index.js";
-import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import { Box, Cursor, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index";
+import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
+import createStdout from "../helpers/ink-create-stdout";
 
 const showCursorEscape = "\u001B[?25h";
 const hideCursorEscape = "\u001B[?25l";

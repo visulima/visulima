@@ -3,7 +3,7 @@ import { bold, green } from "@visulima/colorize";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, Newline, renderToString, Spacer, Static, Text, Transform } from "../../src/ink/index.js";
+import { Box, Newline, renderToString, Spacer, Static, Text, Transform } from "../../src/ink/index";
 
 const TEXT_INSIDE_TEXT_RE = /must be rendered inside <Text>/u;
 

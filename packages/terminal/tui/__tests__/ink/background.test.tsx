@@ -1,11 +1,11 @@
 import { bgAnsi256, bgBlue, bgGreen, bgHex, bgRed, bgRgb, bgYellow } from "@visulima/colorize";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
-import { disableTestColors, enableTestColors } from "../helpers/ink-force-colors.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
-import { renderAsync } from "../helpers/ink-test-renderer.js";
+import { Box, render, Text } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
+import { disableTestColors, enableTestColors } from "../helpers/ink-force-colors";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
+import { renderAsync } from "../helpers/ink-test-renderer";
 
 // ANSI escape sequences for background colors
 const ansi = {

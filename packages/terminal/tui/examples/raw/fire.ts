@@ -15,7 +15,7 @@
  *   Ctrl+C   quit
  */
 
-import { createLoop, setCell } from "./harness.js";
+import { createLoop, setCell } from "./harness";
 
 // ─── Fire palette — black → deep red → orange → yellow → white ───────────────
 // 256 entries mapping heat intensity (0-255) to a 256-color terminal index.

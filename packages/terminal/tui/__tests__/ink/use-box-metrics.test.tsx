@@ -3,9 +3,9 @@ import delay from "delay";
 import { useRef, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import type { DOMElement } from "../../src/ink/index.js";
-import { Box, render, Text, useBoxMetrics } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import type { DOMElement } from "../../src/ink/index";
+import { Box, render, Text, useBoxMetrics } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 
 describe("use-box-metrics", () => {
     it("returns correct size on first render", async () => {

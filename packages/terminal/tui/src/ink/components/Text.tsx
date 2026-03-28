@@ -5,10 +5,10 @@ import type { ReactElement, ReactNode } from "react";
 import { useContext } from "react";
 import type { LiteralUnion } from "type-fest";
 
-import colorize from "../colorize.js";
-import type { Styles } from "../styles.js";
-import { accessibilityContext } from "./AccessibilityContext.js";
-import { backgroundContext } from "./BackgroundContext.js";
+import colorize from "../colorize";
+import type { Styles } from "../styles";
+import { accessibilityContext } from "./AccessibilityContext";
+import { backgroundContext } from "./BackgroundContext";
 
 export type Props = {
     /**

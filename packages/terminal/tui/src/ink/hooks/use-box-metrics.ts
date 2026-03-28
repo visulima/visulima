@@ -2,9 +2,9 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type { DOMElement } from "../dom.js";
-import { addLayoutListener } from "../dom.js";
-import useStdout from "./use-stdout.js";
+import type { DOMElement } from "../dom";
+import { addLayoutListener } from "../dom";
+import useStdout from "./use-stdout";
 
 // Yoga's `right`/`bottom` are omitted: always `0` for flow layout and unintuitive for absolute positioning.
 

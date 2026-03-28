@@ -2,14 +2,14 @@
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
 
-import type { InlineOptions } from "../core/index.js";
-import { createInlineLoop, InputParser, RatatatApp, terminalSize } from "../core/index.js";
-import { FocusProvider, useFocusManager } from "./focus.js";
-import { RatatatContext, useInput } from "./hooks.js";
-import { LayoutNode } from "./layout.js";
-import { RatatatReconciler, setOnAfterCommit } from "./reconciler.js";
-import { renderTreeToBuffer } from "./renderer.js";
-import type { Styles } from "./styles.js";
+import type { InlineOptions } from "../core/index";
+import { createInlineLoop, InputParser, RatatatApp, terminalSize } from "../core/index";
+import { FocusProvider, useFocusManager } from "./focus";
+import { RatatatContext, useInput } from "./hooks";
+import { LayoutNode } from "./layout";
+import { RatatatReconciler, setOnAfterCommit } from "./reconciler";
+import { renderTreeToBuffer } from "./renderer";
+import type { Styles } from "./styles";
 
 export interface BoxProps extends Styles {
     bg?: number;

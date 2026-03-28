@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { Box, Text } from "../../src/ink/index";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("display", () => {
     it("display flex", () => {

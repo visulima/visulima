@@ -1,8 +1,8 @@
 import { cursorDown, cursorNextLine, cursorTo, cursorUp, eraseLines } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import logUpdate from "../../src/ink/log-update.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import logUpdate from "../../src/ink/log-update";
+import createStdout from "../helpers/ink-create-stdout";
 
 describe("log-update", () => {
     it("standard rendering - renders and updates output", () => {

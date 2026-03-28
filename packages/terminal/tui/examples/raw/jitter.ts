@@ -14,7 +14,7 @@
  *   Ctrl+C   quit
  */
 
-import { createLoop, setCell } from "./harness.js";
+import { createLoop, setCell } from "./harness";
 
 // ─── Ring buffer for timing samples ──────────────────────────────────────────
 

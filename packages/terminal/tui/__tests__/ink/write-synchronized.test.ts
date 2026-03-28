@@ -3,7 +3,7 @@ import EventEmitter from "node:events";
 import isInCi from "is-in-ci";
 import { describe, expect, it } from "vitest";
 
-import { bsu, esu, shouldSynchronize } from "../../src/ink/write-synchronized.js";
+import { bsu, esu, shouldSynchronize } from "../../src/ink/write-synchronized";
 
 const createStream = ({ tty = false } = {}) => {
     const stream = new EventEmitter() as unknown as NodeJS.WriteStream;

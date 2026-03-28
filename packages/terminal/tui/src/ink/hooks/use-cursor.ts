@@ -1,7 +1,7 @@
 import { useCallback, useContext, useInsertionEffect, useRef } from "react";
 
-import CursorContext from "../components/CursorContext.js";
-import type { CursorPosition } from "../log-update.js";
+import CursorContext from "../components/CursorContext";
+import type { CursorPosition } from "../log-update";
 
 /**
  * A React hook that returns methods to control the terminal cursor position.

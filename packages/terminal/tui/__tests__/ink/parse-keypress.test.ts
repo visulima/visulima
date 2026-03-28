@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import parseKeypress from "../../src/ink/parse-keypress.js";
+import parseKeypress from "../../src/ink/parse-keypress";
 
 describe("parse-keypress", () => {
     // VT220-style modifier sequences (ESC [ 1 ; <mod> P/Q/R/S)

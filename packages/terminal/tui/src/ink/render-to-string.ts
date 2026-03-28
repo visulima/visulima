@@ -1,12 +1,12 @@
 /* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment, import/exports-last, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
 import type { ReactNode } from "react";
-import { LegacyRoot } from "react-reconciler/constants.js";
+import { LegacyRoot } from "react-reconciler/constants";
 import Yoga from "yoga-layout";
 
-import type { DOMElement } from "./dom.js";
-import { createNode } from "./dom.js";
-import reconciler from "./reconciler.js";
-import renderer from "./renderer.js";
+import type { DOMElement } from "./dom";
+import { createNode } from "./dom";
+import reconciler from "./reconciler";
+import renderer from "./renderer";
 
 export type RenderToStringOptions = {
     /**

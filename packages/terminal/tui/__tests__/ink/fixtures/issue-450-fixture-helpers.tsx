@@ -2,7 +2,7 @@ import process from "node:process";
 
 import React, { useEffect, useState } from "react";
 
-import { Box, render, Static, Text, useApp } from "../../../src/ink/index.js";
+import { Box, render, Static, Text, useApp } from "../../../src/ink/index";
 
 type RerenderFixtureOptions = {
     readonly completionMarker?: string;

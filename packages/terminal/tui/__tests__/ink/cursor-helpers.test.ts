@@ -7,7 +7,7 @@ import {
     buildReturnToBottom,
     buildReturnToBottomPrefix,
     cursorPositionChanged,
-} from "../../src/ink/cursor-helpers.js";
+} from "../../src/ink/cursor-helpers";
 
 const showCursorEscape = "\u001B[?25h";
 const hideCursorEscape = "\u001B[?25l";

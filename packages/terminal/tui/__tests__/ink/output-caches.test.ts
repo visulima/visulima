@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import Output, { OutputCaches } from "../../src/ink/output.js";
+import Output, { OutputCaches } from "../../src/ink/output";
 
 describe("output-caches", () => {
     it("output uses provided caches instance", () => {

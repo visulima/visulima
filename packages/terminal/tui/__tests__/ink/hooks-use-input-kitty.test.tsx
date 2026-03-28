@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 
 import { describe, expect, it } from "vitest";
 
-import term from "../helpers/ink-term.js";
+import term from "../helpers/ink-term";
 
 const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {

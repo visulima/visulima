@@ -3,8 +3,8 @@ import { boxen } from "@visulima/boxen";
 import { slice as sliceAnsi } from "@visulima/string";
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { Box, Text } from "../../src/ink/index";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 const box = (text: string, options?: Options): string =>
     boxen(text, {

@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 
-import { Spinner } from "../../src/ink/index.js";
-import { renderToString } from "../helpers/ink-render.js";
+import { Spinner } from "../../src/ink/index";
+import { renderToString } from "../helpers/ink-render";
 
 describe("Spinner", () => {
     it("should render default dots spinner", () => {

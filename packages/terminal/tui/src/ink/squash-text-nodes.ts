@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
-import type { DOMElement } from "./dom.js";
-import sanitizeAnsi from "./sanitize-ansi.js";
+import type { DOMElement } from "./dom";
+import sanitizeAnsi from "./sanitize-ansi";
 
 // Squashing text nodes allows to combine multiple text nodes into one and write
 // to `Output` instance only once. For example, <Text>hello{' '}world</Text>

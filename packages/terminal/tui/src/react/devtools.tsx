@@ -21,8 +21,8 @@
  */
 import React, { useEffect, useRef, useState } from "react";
 
-import { useRatatatContext, useWindowSize } from "./hooks.js";
-import { Box, Spacer, Text } from "./react.js";
+import { useRatatatContext, useWindowSize } from "./hooks";
+import { Box, Spacer, Text } from "./react";
 
 export interface DevToolsProps {
     children: React.ReactNode;

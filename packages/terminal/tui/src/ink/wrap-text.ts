@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion, e18e/prefer-static-regex */
 import { truncate, wordWrap } from "@visulima/string";
 
-import type { Styles } from "./styles.js";
+import type { Styles } from "./styles";
 
 const cache: Record<string, string> = {};
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render } from "../../../src/ink/index.js";
+import { render } from "../../../src/ink/index";
 
 const Test = () => {
     throw new Error("errored");

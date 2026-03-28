@@ -1,6 +1,6 @@
 import Yoga from "yoga-layout";
 
-import type { DOMElement } from "./dom.js";
+import type { DOMElement } from "./dom";
 
 export type Position = {
     x: number;

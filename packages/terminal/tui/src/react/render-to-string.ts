@@ -2,12 +2,12 @@
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
 
-import { Cell } from "../core/index.js";
-import { FocusProvider } from "./focus.js";
-import { RatatatContext } from "./hooks.js";
-import { LayoutNode } from "./layout.js";
-import { RatatatReconciler } from "./reconciler.js";
-import { renderTreeToBuffer } from "./renderer.js";
+import { Cell } from "../core/index";
+import { FocusProvider } from "./focus";
+import { RatatatContext } from "./hooks";
+import { LayoutNode } from "./layout";
+import { RatatatReconciler } from "./reconciler";
+import { renderTreeToBuffer } from "./renderer";
 
 export interface RenderToStringOptions {
     /** Width of the virtual terminal in columns. @default 80 */

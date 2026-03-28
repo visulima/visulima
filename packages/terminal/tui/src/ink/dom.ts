@@ -2,11 +2,11 @@
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
-import measureText from "./measure-text.js";
-import type { OutputTransformer } from "./render-node-to-output.js";
-import squashTextNodes from "./squash-text-nodes.js";
-import type { Styles } from "./styles.js";
-import wrapText from "./wrap-text.js";
+import measureText from "./measure-text";
+import type { OutputTransformer } from "./render-node-to-output";
+import squashTextNodes from "./squash-text-nodes";
+import type { Styles } from "./styles";
+import wrapText from "./wrap-text";
 
 type InkNode = {
     internal_static?: boolean;

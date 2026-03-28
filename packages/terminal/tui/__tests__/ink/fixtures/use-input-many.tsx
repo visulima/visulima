@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React, { useEffect } from "react";
 
-import { render, Text, useApp, useInput } from "../../../src/ink/index.js";
+import { render, Text, useApp, useInput } from "../../../src/ink/index";
 
 // Detect MaxListenersExceededWarning
 process.on("warning", (warning) => {

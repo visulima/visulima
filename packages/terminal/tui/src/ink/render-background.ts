@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus */
-import colorize from "./colorize.js";
-import type { DOMNode } from "./dom.js";
-import type Output from "./output.js";
+import colorize from "./colorize";
+import type { DOMNode } from "./dom";
+import type Output from "./output";
 
 const renderBackground = (x: number, y: number, node: DOMNode, output: Output): void => {
     if (!node.style.backgroundColor) {

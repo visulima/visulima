@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/naming-convention, import/no-named-as-default, import/prefer-default-export, no-for-of-array/no-for-of-array, no-underscore-dangle, unicorn/no-null */
 import EventEmitter from "eventemitter3";
 
-import type { RendererInstance, TerminalGuardInstance } from "./native-binding.js";
-import { Renderer, TerminalGuard } from "./native-binding.js";
+import type { RendererInstance, TerminalGuardInstance } from "./native-binding";
+import { Renderer, TerminalGuard } from "./native-binding";
 
 const DEC_2026_ON = "\u001B[?2026h";
 const DEC_2026_OFF = "\u001B[?2026l";

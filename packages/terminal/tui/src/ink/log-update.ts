@@ -3,16 +3,16 @@ import type { Writable } from "node:stream";
 
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
-import type { CursorPosition } from "./cursor-helpers.js";
+import type { CursorPosition } from "./cursor-helpers";
 import {
     buildCursorOnlySequence,
     buildCursorSuffix,
     buildReturnToBottomPrefix,
     cursorPositionChanged,
     hideCursorEscape,
-} from "./cursor-helpers.js";
+} from "./cursor-helpers";
 
-export type { CursorPosition } from "./cursor-helpers.js";
+export type { CursorPosition } from "./cursor-helpers";
 
 export type LogUpdate = {
     clear: () => void;

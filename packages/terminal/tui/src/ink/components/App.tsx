@@ -6,15 +6,15 @@ import { cursorShow } from "@visulima/ansi";
 import type { ReactNode } from "react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { createInputParser } from "../input-parser.js";
-import type { CursorPosition } from "../log-update.js";
-import AppContext from "./AppContext.js";
-import CursorContext from "./CursorContext.js";
-import ErrorBoundary from "./ErrorBoundary.js";
-import FocusContext from "./FocusContext.js";
-import StderrContext from "./StderrContext.js";
-import StdinContext from "./StdinContext.js";
-import StdoutContext from "./StdoutContext.js";
+import { createInputParser } from "../input-parser";
+import type { CursorPosition } from "../log-update";
+import AppContext from "./AppContext";
+import CursorContext from "./CursorContext";
+import ErrorBoundary from "./ErrorBoundary";
+import FocusContext from "./FocusContext";
+import StderrContext from "./StderrContext";
+import StdinContext from "./StdinContext";
+import StdoutContext from "./StdoutContext";
 
 const tab = "\t";
 const shiftTab = "\u001B[Z";

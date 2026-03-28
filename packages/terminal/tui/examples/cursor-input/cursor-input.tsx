@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { Box, Cursor, render, Text, useInput } from "../../src/ink/index.js";
+import { Box, Cursor, render, Text, useInput } from "../../src/ink/index";
 
 function CursorTextInputExample() {
     const [value, setValue] = useState("");

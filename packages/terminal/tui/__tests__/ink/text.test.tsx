@@ -2,10 +2,10 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import { ansi256, bgAnsi256, bgGreen, bgHex, bgRgb, dim, green, hex, inverse, rgb } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
-import { renderAsync } from "../helpers/ink-test-renderer.js";
+import { Box, render, Text } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
+import { renderAsync } from "../helpers/ink-test-renderer";
 
 const renderText = (text: string): string =>
     renderToString(

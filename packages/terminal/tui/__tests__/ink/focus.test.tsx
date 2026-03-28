@@ -4,8 +4,8 @@ import delay from "delay";
 import { useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { Box, render, Text, useFocus, useFocusManager } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import { Box, render, Text, useFocus, useFocusManager } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 
 const createStdin = () => {
     const stdin = new EventEmitter() as unknown as NodeJS.WriteStream;

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
+import { Box, render, Text } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 const renderWithAlignContent = (alignContent: NonNullable<React.ComponentProps<typeof Box>["alignContent"]>): string =>
     renderToString(
