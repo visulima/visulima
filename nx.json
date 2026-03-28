@@ -84,7 +84,6 @@
         "sharedGlobals": [
             "{workspaceRoot}/.nvmrc",
             "{workspaceRoot}/package.json",
-            "{workspaceRoot}/tsup.config.ts",
             "{workspaceRoot}/tsconfig.json",
             "{workspaceRoot}/tsconfig.base.json"
         ]
