@@ -81,11 +81,11 @@ Below"
 exports[`ink compatibility - spacer > should match snapshot 1`] = `"Left                               Right"`;
 
 exports[`ink compatibility - static component > should match snapshot 1`] = `
-"✔ Test #1
-✔ Test #2
-✔ Test #3
+"✔Test #1
+✔Test #2
+✔Test #3
 
-Completed tests: 3"
+Completed tests:3"
 `;
 
 exports[`ink compatibility - stress-test > should match snapshot 1`] = `

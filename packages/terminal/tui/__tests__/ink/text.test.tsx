@@ -1,6 +1,6 @@
 import { strip as stripAnsi } from "@visulima/ansi";
-import colorizeDefault from "@visulima/colorize";
-import { expect, it } from "vitest";
+import { ansi256, bgAnsi256, bgGreen, bgHex, bgRgb, dim, green, hex, inverse, rgb } from "@visulima/colorize";
+import { describe, expect, it } from "vitest";
 
 import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -14,373 +14,457 @@ const renderText = (text: string): string =>
         </Box>,
     );
 
-it("<Text> with undefined children", () => {
-    const output = renderToString(<Text />);
+describe("text", () => {
+    it("<Text> with undefined children", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("");
-});
+        const output = renderToString(<Text />);
 
-it("<Text> with null children", () => {
-    const output = renderToString(<Text>{null}</Text>);
+        expect(output).toBe("");
+    });
 
-    expect(output).toBe("");
-});
+    it("<Text> with null children", () => {
+        expect.hasAssertions();
 
-it("text with standard color", () => {
-    const output = renderToString(<Text color="green">Test</Text>);
+        const output = renderToString(<Text>{null}</Text>);
 
-    expect(output).toBe(colorizeDefault.green("Test"));
-});
+        expect(output).toBe("");
+    });
 
-it("text with dim+bold", () => {
-    const output = renderToString(
-        <Text bold dimColor>
-            Test
-        </Text>,
-    );
+    it("text with standard color", () => {
+        expect.hasAssertions();
 
-    expect(stripAnsi(output)).toBe("Test");
-    expect(output).not.toBe("Test");
-});
+        const output = renderToString(<Text color="green">Test</Text>);
 
-it("text with dimmed color", () => {
-    const output = renderToString(
-        <Text color="green" dimColor>
-            Test
-        </Text>,
-    );
+        expect(output).toBe(green("Test"));
+    });
 
-    expect(output).toBe(colorizeDefault.green.dim("Test"));
-});
+    it("text with dim+bold", () => {
+        expect.hasAssertions();
 
-it("text with hex color", () => {
-    const output = renderToString(<Text color="#FF8800">Test</Text>);
+        const output = renderToString(
+            <Text bold dimColor>
+                Test
+            </Text>,
+        );
 
-    expect(output).toBe(colorizeDefault.hex("#FF8800")("Test"));
-});
+        expect(stripAnsi(output)).toBe("Test");
+        expect(output).not.toBe("Test");
+    });
 
-it("text with rgb color", () => {
-    const output = renderToString(<Text color="rgb(255, 136, 0)">Test</Text>);
+    it("text with dimmed color", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe(colorizeDefault.rgb(255, 136, 0)("Test"));
-});
+        const output = renderToString(
+            <Text color="green" dimColor>
+                Test
+            </Text>,
+        );
 
-it("text with ansi256 color", () => {
-    const output = renderToString(<Text color="ansi256(194)">Test</Text>);
+        expect(output).toBe(green(dim("Test")));
+    });
 
-    expect(output).toBe(colorizeDefault.ansi256(194)("Test"));
-});
+    it("text with hex color", () => {
+        expect.hasAssertions();
 
-it("text with standard background color", () => {
-    const output = renderToString(<Text backgroundColor="green">Test</Text>);
+        const output = renderToString(<Text color="#FF8800">Test</Text>);
 
-    expect(output).toBe(colorizeDefault.bgGreen("Test"));
-});
+        expect(output).toBe(hex("#FF8800")("Test"));
+    });
 
-it("text with hex background color", () => {
-    const output = renderToString(<Text backgroundColor="#FF8800">Test</Text>);
+    it("text with rgb color", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe(colorizeDefault.bgHex("#FF8800")("Test"));
-});
+        const output = renderToString(<Text color="rgb(255, 136, 0)">Test</Text>);
 
-it("text with rgb background color", () => {
-    const output = renderToString(<Text backgroundColor="rgb(255, 136, 0)">Test</Text>);
+        expect(output).toBe(rgb(255, 136, 0)("Test"));
+    });
 
-    expect(output).toBe(colorizeDefault.bgRgb(255, 136, 0)("Test"));
-});
+    it("text with ansi256 color", () => {
+        expect.hasAssertions();
 
-it("text with ansi256 background color", () => {
-    const output = renderToString(<Text backgroundColor="ansi256(194)">Test</Text>);
+        const output = renderToString(<Text color="ansi256(194)">Test</Text>);
 
-    expect(output).toBe(colorizeDefault.bgAnsi256(194)("Test"));
-});
+        expect(output).toBe(ansi256(194)("Test"));
+    });
 
-it("text with inversion", () => {
-    const output = renderToString(<Text inverse>Test</Text>);
+    it("text with standard background color", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe(colorizeDefault.inverse("Test"));
-});
+        const output = renderToString(<Text backgroundColor="green">Test</Text>);
 
-it("text with empty-to-nonempty sibling does not wrap", () => {
-    const Test = ({ show }: { readonly show?: boolean }) => (
-        <Box>
-            <Text>
-                {show ? "x" : ""}
-                hello
-            </Text>
-        </Box>
-    );
+        expect(output).toBe(bgGreen("Test"));
+    });
 
-    const stdout = createStdout();
-    const { rerender } = render(<Test />, { debug: true, stdout });
+    it("text with hex background color", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("hello");
+        const output = renderToString(<Text backgroundColor="#FF8800">Test</Text>);
 
-    rerender(<Test show />);
+        expect(output).toBe(bgHex("#FF8800")("Test"));
+    });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("xhello");
-});
+    it("text with rgb background color", () => {
+        expect.hasAssertions();
 
-it("remeasure text when text is changed", () => {
-    const Test = ({ add }: { readonly add?: boolean }) => (
-        <Box>
-            <Text>{add ? "abcx" : "abc"}</Text>
-        </Box>
-    );
+        const output = renderToString(<Text backgroundColor="rgb(255, 136, 0)">Test</Text>);
 
-    const stdout = createStdout();
-    const { rerender } = render(<Test />, { debug: true, stdout });
+        expect(output).toBe(bgRgb(255, 136, 0)("Test"));
+    });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abc");
+    it("text with ansi256 background color", () => {
+        expect.hasAssertions();
 
-    rerender(<Test add />);
+        const output = renderToString(<Text backgroundColor="ansi256(194)">Test</Text>);
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
-});
+        expect(output).toBe(bgAnsi256(194)("Test"));
+    });
 
-it("remeasure text when text nodes are changed", () => {
-    const Test = ({ add }: { readonly add?: boolean }) => (
-        <Box>
-            <Text>
-                abc
-                {add ? <Text>x</Text> : null}
-            </Text>
-        </Box>
-    );
+    it("text with inversion", () => {
+        expect.hasAssertions();
 
-    const stdout = createStdout();
+        const output = renderToString(<Text inverse>Test</Text>);
 
-    const { rerender } = render(<Test />, { debug: true, stdout });
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abc");
+        expect(output).toBe(inverse("Test"));
+    });
 
-    rerender(<Test add />);
+    it("text with empty-to-nonempty sibling does not wrap", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
-});
+        const Test = ({ show }: { readonly show?: boolean }) => (
+            <Box>
+                <Text>
+                    {show ? "x" : ""}
+                    hello
+                </Text>
+            </Box>
+        );
 
-it("text with content \"constructor\" wraps correctly", () => {
-    const output = renderToString(<Text>constructor</Text>);
+        const stdout = createStdout();
+        const { rerender } = render(<Test />, { debug: true, stdout });
 
-    expect(output).toBe("constructor");
-});
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("hello");
 
-it("strip ANSI cursor movement sequences from text", () => {
-    const input = "\u001B[1A\u001B[2KStarting client ... \u001B[32mdone\u001B[0m\u001B[1B";
-
-    const output = renderToString(
-        <Box>
-            <Text>{input}</Text>
-        </Box>,
-    );
+        rerender(<Test show />);
 
-    expect(output).not.toContain("\u001B[1A");
-    expect(output).not.toContain("\u001B[2K");
-    expect(output).not.toContain("\u001B[1B");
-    expect(stripAnsi(output)).toBe("Starting client ... done");
-});
-
-it("strip ANSI cursor position and erase sequences from text", () => {
-    const output = renderToString(
-        <Box>
-            <Text>{"Hello\u001B[5;10HWorld\u001B[2J!"}</Text>
-        </Box>,
-    );
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("xhello");
+    });
 
-    expect(output).not.toContain("\u001B[5;10H");
-    expect(output).not.toContain("\u001B[2J");
-    expect(stripAnsi(output)).toBe("HelloWorld!");
-});
-
-it("preserve SGR color sequences in text", () => {
-    const output = renderToString(
-        <Box>
-            <Text>{"\u001B[32mgreen\u001B[0m normal"}</Text>
-        </Box>,
-    );
+    it("remeasure text when text is changed", () => {
+        expect.hasAssertions();
 
-    expect(output).toContain("\u001B[");
-    expect(stripAnsi(output)).toBe("green normal");
-});
+        const Test = ({ add }: { readonly add?: boolean }) => (
+            <Box>
+                <Text>{add ? "abcx" : "abc"}</Text>
+            </Box>
+        );
 
-it("preserve OSC hyperlink sequences in text", () => {
-    const output = renderText("\u001B]8;;https://example.com\u0007link\u001B]8;;\u0007");
+        const stdout = createStdout();
+        const { rerender } = render(<Test />, { debug: true, stdout });
 
-    expect(output).toContain("\u001B]8;;");
-    expect(stripAnsi(output)).toBe("link");
-});
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abc");
 
-it("preserve OSC hyperlink sequences with ST terminator in text", () => {
-    const output = renderText("\u001B]8;;https://example.com\u001B\\link\u001B]8;;\u001B\\");
+        rerender(<Test add />);
 
-    expect(output).toContain("\u001B]8;;");
-    expect(output).toContain("\u001B\\");
-    expect(stripAnsi(output)).toBe("link");
-});
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
+    });
 
-it("preserve C1 OSC sequences in text", () => {
-    const input = "\u009D8;;https://example.com\u0007link\u009D8;;\u0007";
-    const output = renderText(input);
+    it("remeasure text when text nodes are changed", () => {
+        expect.hasAssertions();
 
-    expect(output).toContain("\u009D8;;https://example.com");
-    expect(output).toContain("\u009D8;;\u0007");
-    expect(output).toBe(input);
-});
+        const Test = ({ add }: { readonly add?: boolean }) => (
+            <Box>
+                <Text>
+                    abc
+                    {add ? <Text>x</Text> : null}
+                </Text>
+            </Box>
+        );
 
-it("preserve C1 OSC hyperlink sequences with ST terminator in text", () => {
-    const input = "\u009D8;;https://example.com\u001B\\link\u009D8;;\u001B\\";
-    const output = renderText(input);
+        const stdout = createStdout();
 
-    expect(output).toContain("\u009D8;;https://example.com");
-    expect(output).toContain("\u001B\\");
-    expect(output).toBe(input);
-});
+        const { rerender } = render(<Test />, { debug: true, stdout });
 
-it("preserve SGR sequences with colon parameters", () => {
-    const output = renderText("A\u001B[38:2::255:100:0mcolor\u001B[0mB");
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abc");
 
-    expect(output).toContain("\u001B[38:2::255:100:0m");
-    expect(stripAnsi(output)).toBe("AcolorB");
-});
+        rerender(<Test add />);
 
-it("strip complete non-SGR CSI sequences without leaking parameters", () => {
-    const input = "A\u001B[>4;2mB\u001B[2 qC";
-    const output = renderText(input);
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("abcx");
+    });
 
-    expect(output).not.toContain("4;2m");
-    expect(output).not.toContain(" q");
-    expect(stripAnsi(output)).toBe("ABC");
-});
+    it("text with content \"constructor\" wraps correctly", () => {
+        expect.hasAssertions();
 
-it("strip complete C1 non-SGR CSI sequences without leaking parameters", () => {
-    const output = renderText("A\u009B>4;2mB\u009B2 qC");
+        const output = renderToString(<Text>constructor</Text>);
 
-    expect(output).not.toContain("4;2m");
-    expect(output).not.toContain(" q");
-    expect(stripAnsi(output)).toBe("ABC");
-});
+        expect(output).toBe("constructor");
+    });
 
-it("strip complete ESC control sequences with intermediates", () => {
-    const output = renderText("A\u001B#8B\u001BcC");
+    it("strip ANSI cursor movement sequences from text", () => {
+        expect.hasAssertions();
 
-    expect(output).not.toContain("\u001B#8");
-    expect(output).not.toContain("\u001Bc");
-    expect(stripAnsi(output)).toBe("ABC");
-});
+        const input = "\u001B[1A\u001B[2KStarting client ... \u001B[32mdone\u001B[0m\u001B[1B";
 
-it("strip tmux DCS passthrough wrappers without leaking payload", () => {
-    const wrappedHyperlinkStart = "\u001BPtmux;\u001B\u001B]8;;https://example.com\u0007\u001B\\";
-    const wrappedHyperlinkEnd = "\u001BPtmux;\u001B\u001B]8;;\u0007\u001B\\";
-    const output = renderText(`${wrappedHyperlinkStart}link${wrappedHyperlinkEnd}`);
+        const output = renderToString(
+            <Box>
+                <Text>{input}</Text>
+            </Box>,
+        );
 
-    expect(output).not.toContain("tmux;");
-    expect(output).not.toContain("\u001BP");
-    expect(output).not.toContain("\u001B\\");
-    expect(stripAnsi(output)).toBe("link");
-});
+        expect(output).not.toContain("\u001B[1A");
+        expect(output).not.toContain("\u001B[2K");
+        expect(output).not.toContain("\u001B[1B");
+        expect(stripAnsi(output)).toBe("Starting client ... done");
+    });
 
-it("strip ESC SOS control strings as complete units", () => {
-    const output = renderText("A\u001BXpayload\u001B\\B");
+    it("strip ANSI cursor position and erase sequences from text", () => {
+        expect.hasAssertions();
 
-    expect(output).not.toContain("payload");
-    expect(stripAnsi(output)).toBe("AB");
-});
+        const output = renderToString(
+            <Box>
+                <Text>{"Hello\u001B[5;10HWorld\u001B[2J!"}</Text>
+            </Box>,
+        );
 
-it("strip C1 SOS control strings as complete units", () => {
-    const output = renderText("A\u0098payload\u001B\\B\u0098payload\u009CC");
+        expect(output).not.toContain("\u001B[5;10H");
+        expect(output).not.toContain("\u001B[2J");
+        expect(stripAnsi(output)).toBe("HelloWorld!");
+    });
 
-    expect(output).not.toContain("payload");
-    expect(stripAnsi(output)).toBe("ABC");
-});
+    it("preserve SGR color sequences in text", () => {
+        expect.hasAssertions();
 
-it("strip standalone ST bytes from text output", () => {
-    const output = renderText("A\u009CB");
+        const output = renderToString(
+            <Box>
+                <Text>{"\u001B[32mgreen\u001B[0m normal"}</Text>
+            </Box>,
+        );
 
-    expect(output).not.toContain("\u009C");
-    expect(stripAnsi(output)).toBe("AB");
-});
+        expect(output).toContain("\u001B[");
+        expect(stripAnsi(output)).toBe("green normal");
+    });
 
-it("strip standalone C1 control characters from text output", () => {
-    const output = renderText("A\u0085B\u008EC");
+    it("preserve OSC hyperlink sequences in text", () => {
+        expect.hasAssertions();
 
-    expect(output).not.toContain("\u0085");
-    expect(output).not.toContain("\u008E");
-    expect(stripAnsi(output)).toBe("ABC");
-});
+        const output = renderText("\u001B]8;;https://example.com\u0007link\u001B]8;;\u0007");
 
-// Concurrent mode tests
-it("<Text> with undefined children - concurrent", async () => {
-    const output = await renderToStringAsync(<Text />);
+        expect(output).toContain("\u001B]8;;");
+        expect(stripAnsi(output)).toBe("link");
+    });
 
-    expect(output).toBe("");
-});
+    it("preserve OSC hyperlink sequences with ST terminator in text", () => {
+        expect.hasAssertions();
 
-it("<Text> with null children - concurrent", async () => {
-    const output = await renderToStringAsync(<Text>{null}</Text>);
+        const output = renderText("\u001B]8;;https://example.com\u001B\\link\u001B]8;;\u001B\\");
 
-    expect(output).toBe("");
-});
+        expect(output).toContain("\u001B]8;;");
+        expect(output).toContain("\u001B\\");
+        expect(stripAnsi(output)).toBe("link");
+    });
 
-it("text with standard color - concurrent", async () => {
-    const output = await renderToStringAsync(<Text color="green">Test</Text>);
+    it("preserve C1 OSC sequences in text", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe(colorizeDefault.green("Test"));
-});
+        const input = "\u009D8;;https://example.com\u0007link\u009D8;;\u0007";
+        const output = renderText(input);
 
-it("text with dim+bold - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Text bold dimColor>
-            Test
-        </Text>,
-    );
+        expect(output).toContain("\u009D8;;https://example.com");
+        expect(output).toContain("\u009D8;;\u0007");
+        expect(output).toBe(input);
+    });
 
-    expect(stripAnsi(output)).toBe("Test");
-    expect(output).not.toBe("Test");
-});
+    it("preserve C1 OSC hyperlink sequences with ST terminator in text", () => {
+        expect.hasAssertions();
 
-it("text with hex color - concurrent", async () => {
-    const output = await renderToStringAsync(<Text color="#FF8800">Test</Text>);
+        const input = "\u009D8;;https://example.com\u001B\\link\u009D8;;\u001B\\";
+        const output = renderText(input);
 
-    expect(output).toBe(colorizeDefault.hex("#FF8800")("Test"));
-});
+        expect(output).toContain("\u009D8;;https://example.com");
+        expect(output).toContain("\u001B\\");
+        expect(output).toBe(input);
+    });
 
-it("text with inversion - concurrent", async () => {
-    const output = await renderToStringAsync(<Text inverse>Test</Text>);
+    it("preserve SGR sequences with colon parameters", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe(colorizeDefault.inverse("Test"));
-});
+        const output = renderText("A\u001B[38:2::255:100:0mcolor\u001B[0mB");
 
-it("remeasure text when text is changed - concurrent", async () => {
-    const Test = ({ add }: { readonly add?: boolean }) => (
-        <Box>
-            <Text>{add ? "abcx" : "abc"}</Text>
-        </Box>
-    );
+        expect(output).toContain("\u001B[38:2::255:100:0m");
+        expect(stripAnsi(output)).toBe("AcolorB");
+    });
 
-    const { getOutput, rerenderAsync } = await renderAsync(<Test />);
+    it("strip complete non-SGR CSI sequences without leaking parameters", () => {
+        expect.hasAssertions();
 
-    expect(getOutput()).toBe("abc");
+        const input = "A\u001B[>4;2mB\u001B[2 qC";
+        const output = renderText(input);
 
-    await rerenderAsync(<Test add />);
+        expect(output).not.toContain("4;2m");
+        expect(output).not.toContain(" q");
+        expect(stripAnsi(output)).toBe("ABC");
+    });
 
-    expect(getOutput()).toBe("abcx");
-});
+    it("strip complete C1 non-SGR CSI sequences without leaking parameters", () => {
+        expect.hasAssertions();
 
-it("remeasure text when text nodes are changed - concurrent", async () => {
-    const Test = ({ add }: { readonly add?: boolean }) => (
-        <Box>
-            <Text>
-                abc
-                {add ? <Text>x</Text> : null}
-            </Text>
-        </Box>
-    );
+        const output = renderText("A\u009B>4;2mB\u009B2 qC");
 
-    const { getOutput, rerenderAsync } = await renderAsync(<Test />);
+        expect(output).not.toContain("4;2m");
+        expect(output).not.toContain(" q");
+        expect(stripAnsi(output)).toBe("ABC");
+    });
 
-    expect(getOutput()).toBe("abc");
+    it("strip complete ESC control sequences with intermediates", () => {
+        expect.hasAssertions();
 
-    await rerenderAsync(<Test add />);
+        const output = renderText("A\u001B#8B\u001BcC");
 
-    expect(getOutput()).toBe("abcx");
+        expect(output).not.toContain("\u001B#8");
+        expect(output).not.toContain("\u001Bc");
+        expect(stripAnsi(output)).toBe("ABC");
+    });
+
+    it("strip tmux DCS passthrough wrappers without leaking payload", () => {
+        expect.hasAssertions();
+
+        const wrappedHyperlinkStart = "\u001BPtmux;\u001B\u001B]8;;https://example.com\u0007\u001B\\";
+        const wrappedHyperlinkEnd = "\u001BPtmux;\u001B\u001B]8;;\u0007\u001B\\";
+        const output = renderText(`${wrappedHyperlinkStart}link${wrappedHyperlinkEnd}`);
+
+        expect(output).not.toContain("tmux;");
+        expect(output).not.toContain("\u001BP");
+        expect(output).not.toContain("\u001B\\");
+        expect(stripAnsi(output)).toBe("link");
+    });
+
+    it("strip ESC SOS control strings as complete units", () => {
+        expect.hasAssertions();
+
+        const output = renderText("A\u001BXpayload\u001B\\B");
+
+        expect(output).not.toContain("payload");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip C1 SOS control strings as complete units", () => {
+        expect.hasAssertions();
+
+        const output = renderText("A\u0098payload\u001B\\B\u0098payload\u009CC");
+
+        expect(output).not.toContain("payload");
+        expect(stripAnsi(output)).toBe("ABC");
+    });
+
+    it("strip standalone ST bytes from text output", () => {
+        expect.hasAssertions();
+
+        const output = renderText("A\u009CB");
+
+        expect(output).not.toContain("\u009C");
+        expect(stripAnsi(output)).toBe("AB");
+    });
+
+    it("strip standalone C1 control characters from text output", () => {
+        expect.hasAssertions();
+
+        const output = renderText("A\u0085B\u008EC");
+
+        expect(output).not.toContain("\u0085");
+        expect(output).not.toContain("\u008E");
+        expect(stripAnsi(output)).toBe("ABC");
+    });
+
+    // Concurrent mode tests
+    it("<Text> with undefined children - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(<Text />);
+
+        expect(output).toBe("");
+    });
+
+    it("<Text> with null children - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(<Text>{null}</Text>);
+
+        expect(output).toBe("");
+    });
+
+    it("text with standard color - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(<Text color="green">Test</Text>);
+
+        expect(output).toBe(green("Test"));
+    });
+
+    it("text with dim+bold - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Text bold dimColor>
+                Test
+            </Text>,
+        );
+
+        expect(stripAnsi(output)).toBe("Test");
+        expect(output).not.toBe("Test");
+    });
+
+    it("text with hex color - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(<Text color="#FF8800">Test</Text>);
+
+        expect(output).toBe(hex("#FF8800")("Test"));
+    });
+
+    it("text with inversion - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(<Text inverse>Test</Text>);
+
+        expect(output).toBe(inverse("Test"));
+    });
+
+    it("remeasure text when text is changed - concurrent", async () => {
+        expect.hasAssertions();
+
+        const Test = ({ add }: { readonly add?: boolean }) => (
+            <Box>
+                <Text>{add ? "abcx" : "abc"}</Text>
+            </Box>
+        );
+
+        const { getOutput, rerenderAsync } = await renderAsync(<Test />);
+
+        expect(getOutput()).toBe("abc");
+
+        await rerenderAsync(<Test add />);
+
+        expect(getOutput()).toBe("abcx");
+    });
+
+    it("remeasure text when text nodes are changed - concurrent", async () => {
+        expect.hasAssertions();
+
+        const Test = ({ add }: { readonly add?: boolean }) => (
+            <Box>
+                <Text>
+                    abc
+                    {add ? <Text>x</Text> : null}
+                </Text>
+            </Box>
+        );
+
+        const { getOutput, rerenderAsync } = await renderAsync(<Test />);
+
+        expect(getOutput()).toBe("abc");
+
+        await rerenderAsync(<Test add />);
+
+        expect(getOutput()).toBe("abcx");
+    });
 });

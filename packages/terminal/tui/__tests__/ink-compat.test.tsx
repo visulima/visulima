@@ -1,18 +1,15 @@
-// @ts-nocheck — compat tests use loose typing to match upstream Ink examples
 import React, { Suspense, useState, useTransition } from "react";
 import { describe, expect, it } from "vitest";
 
-import {
-    Box,
-    Newline,
-    renderToString,
-    Spacer,
-    Static,
-    Text,
-    useFocus,
-    useStderr,
-    useStdout,
-} from "../src/react/index.js";
+import { Box, Newline, renderToString, Spacer, Static, Text, useFocus, useStderr, useStdout } from "../src/react/index.js";
+
+const BLOCK_CHARS_RE = /[█▓▒░▪▫●○◆◇]/;
+
+// React Suspense requires throwing a Promise — wrap in a typed helper to satisfy ESLint
+const suspendForever = (): never => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense requires throwing a Promise
+    throw new Promise(() => {});
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -22,9 +19,8 @@ import {
  * Render a component and return its string output.
  * Defaults to 80×24 unless overridden.
  */
-function renderTest(element: React.ReactElement, options?: { columns?: number; rows?: number }): string {
-    return renderToString(element, { columns: 80, rows: 24, ...options });
-}
+const renderTest = (element: React.ReactElement, options?: { columns?: number; rows?: number }): string =>
+    renderToString(element, { columns: 80, rows: 24, ...options });
 
 // ---------------------------------------------------------------------------
 // Layout / Component tests
@@ -65,6 +61,8 @@ describe("ink compatibility - borders", () => {
     );
 
     it("should render all border styles", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Borders />, { columns: 60 });
 
         expect(output).toContain("single");
@@ -77,6 +75,8 @@ describe("ink compatibility - borders", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Borders />, { columns: 60 });
 
         expect(output).toMatchSnapshot();
@@ -108,6 +108,8 @@ describe("ink compatibility - box-backgrounds", () => {
     );
 
     it("should render backgrounds and text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<BoxBackgrounds />);
 
         expect(output).toContain("Box Background Examples:");
@@ -120,6 +122,8 @@ describe("ink compatibility - box-backgrounds", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<BoxBackgrounds />);
 
         expect(output).toMatchSnapshot();
@@ -181,6 +185,8 @@ describe("ink compatibility - justify-content", () => {
     );
 
     it("should render all justify-content modes", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
         expect(output).toContain("flex-start");
@@ -192,20 +198,26 @@ describe("ink compatibility - justify-content", () => {
     });
 
     it("should position X and Y correctly", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
         // All modes should contain both X and Y
         const lines = output.split("\n");
 
-        for (const line of lines) {
+        lines.forEach((line) => {
             if (line.includes("flex-start") || line.includes("flex-end") || line.includes("center")) {
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(line).toContain("X");
+                // eslint-disable-next-line vitest/no-conditional-expect
                 expect(line).toContain("Y");
             }
-        }
+        });
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
         expect(output).toMatchSnapshot();
@@ -226,6 +238,8 @@ describe("ink compatibility - counter", () => {
     };
 
     it("should render initial counter value", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Counter />);
 
         expect(output).toContain("0 tests passed");
@@ -255,12 +269,16 @@ describe("ink compatibility - chat", () => {
     };
 
     it("should render empty chat with input prompt", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<ChatApp />);
 
         expect(output).toContain("Enter your message:");
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<ChatApp />);
 
         expect(output).toMatchSnapshot();
@@ -298,15 +316,19 @@ describe("ink compatibility - static component", () => {
     };
 
     it("should render static items and dynamic footer", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StaticExample />);
 
         expect(output).toContain("Test #1");
         expect(output).toContain("Test #2");
         expect(output).toContain("Test #3");
-        expect(output).toContain("Completed tests: 3");
+        expect(output).toContain("Completed tests:3");
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StaticExample />);
 
         expect(output).toMatchSnapshot();
@@ -317,13 +339,15 @@ describe("ink compatibility - suspense", () => {
     const Fallback = () => <Text>Loading...</Text>;
 
     it("should render suspense fallback", () => {
+        expect.hasAssertions();
+
         // Component that always suspends
         let thrown = false;
 
         const AlwaysSuspends = () => {
             if (!thrown) {
                 thrown = true;
-                throw new Promise(() => {});
+                suspendForever();
             }
 
             return <Text>Loaded</Text>;
@@ -341,6 +365,8 @@ describe("ink compatibility - suspense", () => {
 
 describe("ink compatibility - concurrent-suspense", () => {
     it("should render suspense fallbacks for multiple boundaries", () => {
+        expect.hasAssertions();
+
         const Loading = ({ message }: { message: string }) => (
             <Box marginLeft={2}>
                 <Text color="yellow">{message}</Text>
@@ -348,9 +374,7 @@ describe("ink compatibility - concurrent-suspense", () => {
         );
 
         // All components suspend — we see fallbacks
-        function AlwaysSuspends() {
-            throw new Promise(() => {});
-        }
+        const AlwaysSuspends = (): never => suspendForever();
 
         const output = renderTest(
             <Box flexDirection="column">
@@ -384,6 +408,8 @@ describe("ink compatibility - terminal-resize", () => {
     );
 
     it("should render terminal dimension labels", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<TerminalResizeExample />);
 
         expect(output).toContain("Terminal Size");
@@ -392,6 +418,8 @@ describe("ink compatibility - terminal-resize", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<TerminalResizeExample />);
 
         expect(output).toMatchSnapshot();
@@ -405,7 +433,7 @@ describe("ink compatibility - use-input", () => {
 
         return (
             <Box flexDirection="column">
-                <Text>Use arrow keys to move the face. Press "q" to exit.</Text>
+                <Text>Use arrow keys to move the face. Press {'"'}q{'"'} to exit.</Text>
                 <Box height={12} paddingLeft={x} paddingTop={y}>
                     <Text>^_^</Text>
                 </Box>
@@ -414,6 +442,8 @@ describe("ink compatibility - use-input", () => {
     };
 
     it("should render initial state", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
 
         expect(output).toContain("Use arrow keys to move the face");
@@ -421,6 +451,8 @@ describe("ink compatibility - use-input", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
 
         expect(output).toMatchSnapshot();
@@ -452,6 +484,8 @@ describe("ink compatibility - use-focus", () => {
     );
 
     it("should render all items", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<FocusExample />);
 
         expect(output).toContain("First");
@@ -461,6 +495,8 @@ describe("ink compatibility - use-focus", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<FocusExample />);
 
         expect(output).toMatchSnapshot();
@@ -492,6 +528,8 @@ describe("ink compatibility - use-focus-with-id", () => {
     );
 
     it("should render all items with labels", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<FocusWithId />);
 
         expect(output).toContain("Press 1 to focus");
@@ -500,6 +538,8 @@ describe("ink compatibility - use-focus-with-id", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<FocusWithId />);
 
         expect(output).toMatchSnapshot();
@@ -508,13 +548,15 @@ describe("ink compatibility - use-focus-with-id", () => {
 
 describe("ink compatibility - use-stderr", () => {
     const StderrExample = () => {
-        const { write } = useStderr();
+        useStderr();
 
         // write is a no-op in renderToString
         return <Text>Hello World (check stderr for output)</Text>;
     };
 
     it("should render without throwing", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StderrExample />);
 
         expect(output).toContain("Hello World");
@@ -549,6 +591,8 @@ describe("ink compatibility - use-stdout", () => {
     };
 
     it("should render terminal dimension labels", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StdoutExample />);
 
         expect(output).toContain("Terminal dimensions:");
@@ -557,6 +601,8 @@ describe("ink compatibility - use-stdout", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StdoutExample />);
 
         expect(output).toMatchSnapshot();
@@ -566,10 +612,12 @@ describe("ink compatibility - use-stdout", () => {
 describe("ink compatibility - use-transition", () => {
     const SearchApp = () => {
         const [query] = useState("");
-        const [isPending] = useTransition();
-        const [deferredQuery] = useState("");
 
-        const items = Array.from({ length: 10 }, (_, i) => `Item ${i + 1}: ${["Apple", "Banana", "Cherry", "Date", "Elderberry"][i % 5]}`);
+        useTransition();
+        useState("");
+
+        const fruits = ["Apple", "Banana", "Cherry", "Date", "Elderberry"];
+        const items = Array.from({ length: 10 }, (_, i) => `Item ${String(i + 1)}: ${String(fruits[i % 5])}`);
 
         return (
             <Box flexDirection="column">
@@ -591,6 +639,8 @@ describe("ink compatibility - use-transition", () => {
     };
 
     it("should render initial state with items", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<SearchApp />);
 
         expect(output).toContain("useTransition Demo");
@@ -600,6 +650,8 @@ describe("ink compatibility - use-transition", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<SearchApp />);
 
         expect(output).toMatchSnapshot();
@@ -626,6 +678,8 @@ describe("ink compatibility - aria", () => {
     };
 
     it("should render unchecked checkbox", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<AriaExample />);
 
         expect(output).toContain("[ ]");
@@ -634,6 +688,8 @@ describe("ink compatibility - aria", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<AriaExample />);
 
         expect(output).toMatchSnapshot();
@@ -657,6 +713,8 @@ describe("ink compatibility - cursor-ime", () => {
     };
 
     it("should render input prompt", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<CursorApp />);
 
         expect(output).toContain("Type Korean");
@@ -674,6 +732,8 @@ describe("ink compatibility - spacer", () => {
     );
 
     it("should push elements apart", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<SpacerExample />, { columns: 40 });
         const line = output.split("\n")[0] ?? "";
 
@@ -684,6 +744,8 @@ describe("ink compatibility - spacer", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<SpacerExample />, { columns: 40 });
 
         expect(output).toMatchSnapshot();
@@ -702,6 +764,8 @@ describe("ink compatibility - newline", () => {
     );
 
     it("should render text on separate lines", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<NewlineExample />);
 
         expect(output).toContain("Line 1");
@@ -711,30 +775,40 @@ describe("ink compatibility - newline", () => {
 
 describe("ink compatibility - text styles", () => {
     it("should render bold text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Text bold>Bold text</Text>);
 
         expect(output).toContain("Bold text");
     });
 
     it("should render italic text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Text italic>Italic text</Text>);
 
         expect(output).toContain("Italic text");
     });
 
     it("should render underline text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Text underline>Underlined text</Text>);
 
         expect(output).toContain("Underlined text");
     });
 
     it("should render dim text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Text dimColor>Dim text</Text>);
 
         expect(output).toContain("Dim text");
     });
 
     it("should render colored text", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<Text color="green">Green text</Text>);
 
         expect(output).toContain("Green text");
@@ -743,6 +817,8 @@ describe("ink compatibility - text styles", () => {
 
 describe("ink compatibility - nested boxes", () => {
     it("should render nested flex layouts", () => {
+        expect.hasAssertions();
+
         const output = renderTest(
             <Box flexDirection="column">
                 <Box flexDirection="row">
@@ -766,6 +842,8 @@ describe("ink compatibility - nested boxes", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(
             <Box flexDirection="column">
                 <Box flexDirection="row">
@@ -812,6 +890,8 @@ describe("ink compatibility - incremental-rendering", () => {
     };
 
     it("should render service list with selection indicator", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
 
         expect(output).toContain("Incremental Rendering Demo");
@@ -821,6 +901,8 @@ describe("ink compatibility - incremental-rendering", () => {
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
 
         expect(output).toMatchSnapshot();
@@ -829,12 +911,12 @@ describe("ink compatibility - incremental-rendering", () => {
 
 describe("ink compatibility - stress-test", () => {
     const COLORS = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
-    const CHARS = [..."█▓▒░▪▫●○◆◇"];
+    const CHARS = ["█", "▓", "▒", "░", "▪", "▫", "●", "○", "◆", "◇"];
 
     const GridRow = ({ cols, frame, y }: { cols: number; frame: number; y: number }) => {
         const cells: React.ReactElement[] = [];
 
-        for (let x = 0; x < cols; x++) {
+        for (let x = 0; x < cols; x += 1) {
             const colorIndex = (x + y + frame) % COLORS.length;
             const charIndex = (x * 3 + y * 7 + frame) % CHARS.length;
 
@@ -864,14 +946,18 @@ describe("ink compatibility - stress-test", () => {
     );
 
     it("should render grid cells", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
 
         expect(output).toContain("Stress test");
         // Grid cells should contain block characters
-        expect(output).toMatch(/[█▓▒░▪▫●○◆◇]/);
+        expect(output).toMatch(BLOCK_CHARS_RE);
     });
 
     it("should match snapshot", () => {
+        expect.hasAssertions();
+
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
 
         expect(output).toMatchSnapshot();

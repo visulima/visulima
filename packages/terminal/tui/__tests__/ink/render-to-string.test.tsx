@@ -1,370 +1,441 @@
 import { boxen } from "@visulima/boxen";
-import colorizeDefault from "@visulima/colorize";
+import { bold, green } from "@visulima/colorize";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Newline, renderToString, Spacer, Static, Text, Transform } from "../../src/ink/index.js";
 
-// ── Basic rendering ─────────────────────────────────────
-
-it("render simple text", () => {
-    const output = renderToString(<Text>Hello World</Text>);
-
-    expect(output).toBe("Hello World");
-});
-
-it("render text with variable", () => {
-    const output = renderToString(
-        <Text>
-            Count:
-            {42}
-        </Text>,
-    );
-
-    expect(output).toBe("Count: 42");
-});
-
-it("render nested text components", () => {
-    const World = () => <Text>World</Text>;
-
-    const output = renderToString(
-        <Text>
-            Hello
-            {" "}
-            <World />
-        </Text>,
-    );
-
-    expect(output).toBe("Hello World");
-});
-
-it("render empty fragment", () => {
-    const output = renderToString(<></>);
-
-    expect(output).toBe("");
-});
-
-it("render null children", () => {
-    const output = renderToString(<Text>{null}</Text>);
-
-    expect(output).toBe("");
-});
-
-// ── Layout ──────────────────────────────────────────────
-
-it("render box with padding", () => {
-    const output = renderToString(
-        <Box paddingLeft={2}>
-            <Text>Padded</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("  Padded");
-});
-
-it("render box with flex direction row", () => {
-    const output = renderToString(
-        <Box>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("ABC");
-});
-
-it("render box with flex direction column", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Text>Line 1</Text>
-            <Text>Line 2</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("Line 1\nLine 2");
-});
-
-it("render margin", () => {
-    const output = renderToString(
-        <Box marginLeft={2}>
-            <Text>Margined</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("  Margined");
-});
-
-it("render gap between items", () => {
-    const output = renderToString(
-        <Box gap={1}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A B");
-});
-
-it("render box with fixed width and height", () => {
-    const output = renderToString(
-        <Box height={3} width={10}>
-            <Text>Hi</Text>
-        </Box>,
-    );
-
-    const lines = output.split("\n");
-
-    expect(lines).toHaveLength(3);
-});
-
-it("render spacer pushes content apart", () => {
-    const output = renderToString(
-        <Box width={20}>
-            <Text>Left</Text>
-            <Spacer />
-            <Text>Right</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("Left           Right");
-});
-
-it("render newline inserts blank line", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Text>Above</Text>
-            <Newline />
-            <Text>Below</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("Above\n\n\nBelow");
-});
-
-it("render box with border", () => {
-    const output = renderToString(
-        <Box borderStyle="single" width={20}>
-            <Text>Bordered</Text>
-        </Box>,
-        { columns: 20 },
-    );
-
-    expect(output).toBe(
-        boxen("Bordered", {
-            borderStyle: "single",
-            width: 20,
-        }),
-    );
-});
-
-// ── Styling ─────────────────────────────────────────────
-
-it("render colored text", () => {
-    const output = renderToString(<Text color="green">Green</Text>);
-
-    expect(output).toBe(colorizeDefault.green("Green"));
-});
-
-it("render bold text", () => {
-    const output = renderToString(<Text bold>Bold</Text>);
-
-    expect(output).toBe(colorizeDefault.bold("Bold"));
-});
-
-// ── Text wrapping and columns ───────────────────────────
-
-it("render text with wrap", () => {
-    const output = renderToString(
-        <Box width={7}>
-            <Text wrap="wrap">Hello World</Text>
-        </Box>,
-    );
+const TEXT_INSIDE_TEXT_RE = /must be rendered inside <Text>/u;
 
-    expect(output).toBe("Hello\nWorld");
-});
-
-it("render text with truncate", () => {
-    const output = renderToString(
-        <Box width={7}>
-            <Text wrap="truncate">Hello World</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("Hello …");
-});
+describe("render-to-string", () => {
+    // ── Basic rendering ─────────────────────────────────────
 
-it("default columns is 80", () => {
-    const longText = "A".repeat(100);
-    const output = renderToString(<Text>{longText}</Text>);
+    it("render simple text", () => {
+        expect.hasAssertions();
 
-    const lines = output.split("\n");
+        const output = renderToString(<Text>Hello World</Text>);
 
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe("A".repeat(80));
-    expect(lines[1]).toBe("A".repeat(20));
-});
+        expect(output).toBe("Hello World");
+    });
 
-it("custom columns option", () => {
-    const longText = "A".repeat(50);
-    const output = renderToString(<Text>{longText}</Text>, { columns: 30 });
+    it("render text with variable", () => {
+        expect.hasAssertions();
 
-    const lines = output.split("\n");
+        const output = renderToString(
+            <Text>
+                Count:
+                {42}
+            </Text>,
+        );
 
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe("A".repeat(30));
-    expect(lines[1]).toBe("A".repeat(20));
-});
+        expect(output).toBe("Count:42");
+    });
 
-// ── Components ──────────────────────────────────────────
+    it("render nested text components", () => {
+        expect.hasAssertions();
 
-it("render Transform component", () => {
-    const output = renderToString(
-        <Transform transform={(output) => output.toUpperCase()}>
-            <Text>hello</Text>
-        </Transform>,
-    );
+        const World = () => <Text>World</Text>;
 
-    expect(output).toBe("HELLO");
-});
+        const output = renderToString(
+            <Text>
+                Hello
+                {" "}
+                <World />
+            </Text>,
+        );
 
-it("render Static component with items", () => {
-    const items = ["A", "B", "C"];
+        expect(output).toBe("Hello World");
+    });
 
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
-            <Text>Dynamic</Text>
-        </Box>,
-    );
+    it("render empty fragment", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("A\nB\nC\nDynamic");
-});
+        const output = renderToString(<></>);
 
-it("render static-only output has no trailing newline", () => {
-    const items = ["A", "B"];
+        expect(output).toBe("");
+    });
 
-    const output = renderToString(<Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>);
+    it("render null children", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("A\nB");
-});
+        const output = renderToString(<Text>{null}</Text>);
 
-it("render static + dynamic output has exactly one newline between parts", () => {
-    const items = ["A", "B"];
+        expect(output).toBe("");
+    });
 
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
-            <Text>Dynamic</Text>
-        </Box>,
-    );
+    // ── Layout ──────────────────────────────────────────────
 
-    expect(output).toBe("A\nB\nDynamic");
-});
+    it("render box with padding", () => {
+        expect.hasAssertions();
 
-// ── Effect behavior ─────────────────────────────────────
+        const output = renderToString(
+            <Box paddingLeft={2}>
+                <Text>Padded</Text>
+            </Box>,
+        );
 
-it("captures initial render output before effect-driven state updates", () => {
-    const App = () => {
-        const [text, setText] = useState("Initial");
+        expect(output).toBe("  Padded");
+    });
 
-        useEffect(() => {
-            setText("Updated");
-        }, []);
+    it("render box with flex direction row", () => {
+        expect.hasAssertions();
 
-        return <Text>{text}</Text>;
-    };
+        const output = renderToString(
+            <Box>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
 
-    const output = renderToString(<App />);
+        expect(output).toBe("ABC");
+    });
 
-    expect(output).toBe("Initial");
-});
+    it("render box with flex direction column", () => {
+        expect.hasAssertions();
 
-it("useLayoutEffect state updates are reflected in output", () => {
-    const App = () => {
-        const [text, setText] = useState("Initial");
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Text>Line 1</Text>
+                <Text>Line 2</Text>
+            </Box>,
+        );
 
-        useLayoutEffect(() => {
-            setText("Layout Updated");
-        }, []);
+        expect(output).toBe("Line 1\nLine 2");
+    });
 
-        return <Text>{text}</Text>;
-    };
+    it("render margin", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box marginLeft={2}>
+                <Text>Margined</Text>
+            </Box>,
+        );
 
-    const output = renderToString(<App />);
+        expect(output).toBe("  Margined");
+    });
 
-    expect(output).toBe("Layout Updated");
-});
+    it("render gap between items", () => {
+        expect.hasAssertions();
 
-it("runs effect cleanup on teardown", () => {
-    let cleanupRan = false;
+        const output = renderToString(
+            <Box gap={1}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    const App = () => {
-        useEffect(() => () => {
-            cleanupRan = true;
-        }, []);
+        expect(output).toBe("A B");
+    });
 
-        return <Text>Cleanup test</Text>;
-    };
+    it("render box with fixed width and height", () => {
+        expect.hasAssertions();
 
-    const output = renderToString(<App />);
+        const output = renderToString(
+            <Box height={3} width={10}>
+                <Text>Hi</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("Cleanup test");
-    expect(cleanupRan).toBe(true);
-});
+        const lines = output.split("\n");
 
-// ── Error handling ──────────────────────────────────────
+        expect(lines).toHaveLength(3);
+    });
 
-it("component that throws propagates the error", () => {
-    function Broken(): React.JSX.Element {
-        throw new Error("Component error");
-    }
+    it("render spacer pushes content apart", () => {
+        expect.hasAssertions();
 
-    expect(() => renderToString(<Broken />)).toThrow("Component error");
-});
+        const output = renderToString(
+            <Box width={20}>
+                <Text>Left</Text>
+                <Spacer />
+                <Text>Right</Text>
+            </Box>,
+        );
 
-it("text outside Text component throws", () => {
-    expect(() => renderToString(<Box>raw text</Box>)).toThrow(/must be rendered inside <Text>/);
-});
+        expect(output).toBe("Left           Right");
+    });
 
-it("subsequent calls work after a component error", () => {
-    function Broken(): React.JSX.Element {
-        throw new Error("Boom");
-    }
+    it("render newline inserts blank line", () => {
+        expect.hasAssertions();
 
-    expect(() => renderToString(<Broken />)).toThrow();
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Text>Above</Text>
+                <Newline />
+                <Text>Below</Text>
+            </Box>,
+        );
 
-    const output = renderToString(<Text>Still works</Text>);
+        expect(output).toBe("Above\n\n\nBelow");
+    });
 
-    expect(output).toBe("Still works");
-});
+    it("render box with border", () => {
+        expect.hasAssertions();
 
-// ── Independence ────────────────────────────────────────
+        const output = renderToString(
+            <Box borderStyle="single" width={20}>
+                <Text>Bordered</Text>
+            </Box>,
+            { columns: 20 },
+        );
 
-it("can be called multiple times independently", () => {
-    const output1 = renderToString(<Text>First</Text>);
-    const output2 = renderToString(<Text>Second</Text>);
+        expect(output).toBe(
+            boxen("Bordered", {
+                borderStyle: "single",
+                width: 20,
+            }),
+        );
+    });
 
-    expect(output1).toBe("First");
-    expect(output2).toBe("Second");
-});
+    // ── Styling ─────────────────────────────────────────────
 
-// ── Deeply nested tree ──────────────────────────────────
+    it("render colored text", () => {
+        expect.hasAssertions();
 
-it("render deeply nested component tree", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box paddingLeft={1}>
-                <Box>
-                    <Text bold>
-                        {"Nested "}
-                        <Text color="green">deep</Text>
-                    </Text>
+        const output = renderToString(<Text color="green">Green</Text>);
+
+        expect(output).toBe(green("Green"));
+    });
+
+    it("render bold text", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(<Text bold>Bold</Text>);
+
+        expect(output).toBe(bold("Bold"));
+    });
+
+    // ── Text wrapping and columns ───────────────────────────
+
+    it("render text with wrap", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box width={7}>
+                <Text wrap="wrap">Hello World</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("Hello\nWorld");
+    });
+
+    it("render text with truncate", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box width={7}>
+                <Text wrap="truncate">Hello World</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("Hello …");
+    });
+
+    it("default columns is 80", () => {
+        expect.hasAssertions();
+
+        const longText = "A".repeat(100);
+        const output = renderToString(<Text>{longText}</Text>);
+
+        const lines = output.split("\n");
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toBe("A".repeat(80));
+        expect(lines[1]).toBe("A".repeat(20));
+    });
+
+    it("custom columns option", () => {
+        expect.hasAssertions();
+
+        const longText = "A".repeat(50);
+        const output = renderToString(<Text>{longText}</Text>, { columns: 30 });
+
+        const lines = output.split("\n");
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toBe("A".repeat(30));
+        expect(lines[1]).toBe("A".repeat(20));
+    });
+
+    // ── Components ──────────────────────────────────────────
+
+    it("render Transform component", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Transform transform={(output) => output.toUpperCase()}>
+                <Text>hello</Text>
+            </Transform>,
+        );
+
+        expect(output).toBe("HELLO");
+    });
+
+    it("render Static component with items", () => {
+        expect.hasAssertions();
+
+        const items = ["A", "B", "C"];
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
+                <Text>Dynamic</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\nB\nC\nDynamic");
+    });
+
+    it("render static-only output has no trailing newline", () => {
+        expect.hasAssertions();
+
+        const items = ["A", "B"];
+
+        const output = renderToString(<Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>);
+
+        expect(output).toBe("A\nB");
+    });
+
+    it("render static + dynamic output has exactly one newline between parts", () => {
+        expect.hasAssertions();
+
+        const items = ["A", "B"];
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
+                <Text>Dynamic</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\nB\nDynamic");
+    });
+
+    // ── Effect behavior ─────────────────────────────────────
+
+    it("captures initial render output before effect-driven state updates", () => {
+        expect.hasAssertions();
+
+        const App = () => {
+            const [text, setText] = useState("Initial");
+
+            useEffect(() => {
+                setText("Updated");
+            }, []);
+
+            return <Text>{text}</Text>;
+        };
+
+        const output = renderToString(<App />);
+
+        expect(output).toBe("Initial");
+    });
+
+    it("useLayoutEffect state updates are reflected in output", () => {
+        expect.hasAssertions();
+
+        const App = () => {
+            const [text, setText] = useState("Initial");
+
+            useLayoutEffect(() => {
+                setText("Layout Updated");
+            }, []);
+
+            return <Text>{text}</Text>;
+        };
+
+        const output = renderToString(<App />);
+
+        expect(output).toBe("Layout Updated");
+    });
+
+    it("runs effect cleanup on teardown", () => {
+        expect.hasAssertions();
+
+        let cleanupRan = false;
+
+        const App = () => {
+            useEffect(
+                () => () => {
+                    cleanupRan = true;
+                },
+                [],
+            );
+
+            return <Text>Cleanup test</Text>;
+        };
+
+        const output = renderToString(<App />);
+
+        expect(output).toBe("Cleanup test");
+        expect(cleanupRan).toBe(true);
+    });
+
+    // ── Error handling ──────────────────────────────────────
+
+    it("component that throws propagates the error", () => {
+        expect.hasAssertions();
+
+        const Broken = (): React.JSX.Element => {
+            throw new Error("Component error");
+        };
+
+        expect(() => renderToString(<Broken />)).toThrow("Component error");
+    });
+
+    it("text outside Text component throws", () => {
+        expect.hasAssertions();
+
+        expect(() => renderToString(<Box>raw text</Box>)).toThrow(TEXT_INSIDE_TEXT_RE);
+    });
+
+    it("subsequent calls work after a component error", () => {
+        expect.hasAssertions();
+
+        const Broken = (): React.JSX.Element => {
+            throw new Error("Boom");
+        };
+
+        expect(() => renderToString(<Broken />)).toThrow("Boom");
+
+        const output = renderToString(<Text>Still works</Text>);
+
+        expect(output).toBe("Still works");
+    });
+
+    // ── Independence ────────────────────────────────────────
+
+    it("can be called multiple times independently", () => {
+        expect.hasAssertions();
+
+        const output1 = renderToString(<Text>First</Text>);
+        const output2 = renderToString(<Text>Second</Text>);
+
+        expect(output1).toBe("First");
+        expect(output2).toBe("Second");
+    });
+
+    // ── Deeply nested tree ──────────────────────────────────
+
+    it("render deeply nested component tree", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box paddingLeft={1}>
+                    <Box>
+                        <Text bold>
+                            {"Nested "}
+                            <Text color="green">deep</Text>
+                        </Text>
+                    </Box>
                 </Box>
-            </Box>
-        </Box>,
-    );
+            </Box>,
+        );
 
-    expect(output).toContain("Nested");
-    expect(output).toContain("deep");
+        expect(output).toContain("Nested");
+        expect(output).toContain("deep");
+    });
 });

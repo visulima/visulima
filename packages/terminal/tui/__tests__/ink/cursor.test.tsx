@@ -1,7 +1,7 @@
 import { cursorTo } from "@visulima/ansi";
 import delay from "delay";
 import { act, Suspense, useEffect, useState } from "react";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index.js";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin.js";
@@ -9,6 +9,12 @@ import createStdout from "../helpers/ink-create-stdout.js";
 
 const showCursorEscape = "\u001B[?25h";
 const hideCursorEscape = "\u001B[?25l";
+
+// React Suspense requires throwing a Promise/thenable — helper to satisfy only-throw-error
+const throwForSuspense = (thenable: Promise<unknown>): never => {
+    // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense requires throwing a Promise
+    throw thenable;
+};
 
 const getWriteCalls = (stream: NodeJS.WriteStream): string[] => {
     const writes: string[] = [];
@@ -47,11 +53,11 @@ const waitForCondition = async (condition: () => boolean): Promise<void> => {
                 return;
             }
 
-            attempts++;
+            attempts += 1;
 
             if (attempts >= maxAttempts) {
                 clearInterval(interval);
-                reject(new Error(`Condition was not met in ${timeoutMs}ms`));
+                reject(new Error(`Condition was not met in ${String(timeoutMs)}ms`));
             }
         }, intervalMs);
     });
@@ -82,235 +88,254 @@ const InputApp = () => {
     );
 };
 
-it("cursor is shown at specified position after render", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
+describe("cursor", () => {
+    it("cursor is shown at specified position after render", async () => {
+        expect.hasAssertions();
 
-    const { unmount } = render(<InputApp />, { stdin, stdout });
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    await delay(50);
+        const { unmount } = render(<InputApp />, { stdin, stdout });
 
-    const firstRenderOutput = getWriteCalls(stdout).join("");
-
-    expect(firstRenderOutput).toContain(showCursorEscape);
-    expect(firstRenderOutput).toContain(cursorTo(2));
-
-    unmount();
-});
-
-it("cursor is not hidden by useEffect after first render", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    const { unmount } = render(<InputApp />, { stdin, stdout });
-
-    await delay(50);
-
-    const output = getWriteCalls(stdout).join("");
-    const lastShowIndex = output.lastIndexOf(showCursorEscape);
-    const lastHideIndex = output.lastIndexOf(hideCursorEscape);
-
-    expect(lastShowIndex).toBeGreaterThan(lastHideIndex);
-
-    unmount();
-});
-
-it("cursor follows text input", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    const { unmount } = render(<InputApp />, { stdin, stdout });
-
-    await delay(50);
-
-    emitReadable(stdin, "a");
-    await delay(50);
-
-    const allOutput = getWriteCalls(stdout).join("");
-
-    expect(allOutput).toContain(showCursorEscape);
-    expect(allOutput).toContain(cursorTo(3));
-
-    unmount();
-});
-
-it("cursor moves on space input even when output is identical", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    const { unmount } = render(<InputApp />, { stdin, stdout });
-
-    await delay(50);
-
-    emitReadable(stdin, "a");
-    await delay(50);
-    const afterA = (stdout.write as any).mock.calls.length;
-
-    emitReadable(stdin, " ");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.length).toBeGreaterThan(afterA);
-
-    const allOutput = getWriteCalls(stdout).join("");
-
-    expect(allOutput).toContain(cursorTo(4));
-
-    unmount();
-});
-
-it("cursor is cleared when component using useCursor unmounts", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    const CursorChild = () => {
-        const { setCursorPosition } = useCursor();
-
-        setCursorPosition({ x: 5, y: 0 });
-
-        return <Text>child</Text>;
-    };
-
-    const Parent = () => {
-        const [showChild, setShowChild] = useState(true);
-
-        useInput((_input, key) => {
-            if (key.return) {
-                setShowChild(false);
-            }
-        });
-
-        return <Box>{showChild ? <CursorChild /> : <Text>no cursor</Text>}</Box>;
-    };
-
-    const { unmount } = render(<Parent />, { stdin, stdout });
-
-    await delay(50);
-
-    const initialRenderOutput = getWriteCalls(stdout).join("");
-
-    expect(initialRenderOutput).toContain(showCursorEscape);
-
-    const writesBeforeEnter = (stdout.write as any).mock.calls.length;
-
-    emitReadable(stdin, "\r");
-    await delay(50);
-
-    const outputAfterChildUnmount = getWriteCalls(stdout).slice(writesBeforeEnter).join("");
-    const lastShowIndex = outputAfterChildUnmount.lastIndexOf(showCursorEscape);
-    const lastHideIndex = outputAfterChildUnmount.lastIndexOf(hideCursorEscape);
-
-    expect(lastHideIndex).toBeGreaterThan(lastShowIndex);
-
-    unmount();
-});
-
-it("cursor position does not leak from suspended concurrent render to fallback", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    let resolvePromise: () => void;
-    const promise = new Promise<void>((resolve) => {
-        resolvePromise = resolve;
-    });
-
-    let suspended = true;
-
-    const CursorChild = () => {
-        const { setCursorPosition } = useCursor();
-
-        setCursorPosition({ x: 5, y: 0 });
-
-        if (suspended) {
-            throw promise;
-        }
-
-        return <Text>loaded</Text>;
-    };
-
-    const Test = () => (
-        <Suspense fallback={<Text>loading</Text>}>
-            <CursorChild />
-        </Suspense>
-    );
-
-    await act(async () => {
-        render(<Test />, { concurrent: true, stdin, stdout });
-    });
-
-    const fallbackOutput = getWriteCalls(stdout).join("");
-
-    expect(fallbackOutput).toContain("loading");
-    expect(fallbackOutput).not.toContain(showCursorEscape);
-
-    suspended = false;
-    resolvePromise!();
-    await act(async () => {
         await delay(50);
+
+        const firstRenderOutput = getWriteCalls(stdout).join("");
+
+        expect(firstRenderOutput).toContain(showCursorEscape);
+        expect(firstRenderOutput).toContain(cursorTo(2));
+
+        unmount();
     });
-});
 
-it("screen does not scroll up on subsequent renders", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
+    it("cursor is not hidden by useEffect after first render", async () => {
+        expect.hasAssertions();
 
-    const MultiLineApp = () => {
-        const [text, setText] = useState("");
-        const { setCursorPosition } = useCursor();
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-        useInput((input, key) => {
-            if (!key.ctrl && !key.meta && input) {
-                setText((previous) => previous + input);
-            }
+        const { unmount } = render(<InputApp />, { stdin, stdout });
+
+        await delay(50);
+
+        const output = getWriteCalls(stdout).join("");
+        const lastShowIndex = output.lastIndexOf(showCursorEscape);
+        const lastHideIndex = output.lastIndexOf(hideCursorEscape);
+
+        expect(lastShowIndex).toBeGreaterThan(lastHideIndex);
+
+        unmount();
+    });
+
+    it("cursor follows text input", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const { unmount } = render(<InputApp />, { stdin, stdout });
+
+        await delay(50);
+
+        emitReadable(stdin, "a");
+        await delay(50);
+
+        const allOutput = getWriteCalls(stdout).join("");
+
+        expect(allOutput).toContain(showCursorEscape);
+        expect(allOutput).toContain(cursorTo(3));
+
+        unmount();
+    });
+
+    it("cursor moves on space input even when output is identical", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const { unmount } = render(<InputApp />, { stdin, stdout });
+
+        await delay(50);
+
+        emitReadable(stdin, "a");
+        await delay(50);
+        const afterA = (stdout.write as any).mock.calls.length;
+
+        emitReadable(stdin, " ");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.length).toBeGreaterThan(afterA);
+
+        const allOutput = getWriteCalls(stdout).join("");
+
+        expect(allOutput).toContain(cursorTo(4));
+
+        unmount();
+    });
+
+    it("cursor is cleared when component using useCursor unmounts", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        const CursorChild = () => {
+            const { setCursorPosition } = useCursor();
+
+            setCursorPosition({ x: 5, y: 0 });
+
+            return <Text>child</Text>;
+        };
+
+        const Parent = () => {
+            const [showChild, setShowChild] = useState(true);
+
+            useInput((_input, key) => {
+                if (key.return) {
+                    setShowChild(false);
+                }
+            });
+
+            return <Box>{showChild ? <CursorChild /> : <Text>no cursor</Text>}</Box>;
+        };
+
+        const { unmount } = render(<Parent />, { stdin, stdout });
+
+        await delay(50);
+
+        const initialRenderOutput = getWriteCalls(stdout).join("");
+
+        expect(initialRenderOutput).toContain(showCursorEscape);
+
+        const writesBeforeEnter = (stdout.write as any).mock.calls.length;
+
+        emitReadable(stdin, "\r");
+        await delay(50);
+
+        const outputAfterChildUnmount = getWriteCalls(stdout).slice(writesBeforeEnter).join("");
+        const lastShowIndex = outputAfterChildUnmount.lastIndexOf(showCursorEscape);
+        const lastHideIndex = outputAfterChildUnmount.lastIndexOf(hideCursorEscape);
+
+        expect(lastHideIndex).toBeGreaterThan(lastShowIndex);
+
+        unmount();
+    });
+
+    it("cursor position does not leak from suspended concurrent render to fallback", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        let resolvePromise: () => void;
+        const promise = new Promise<void>((resolve) => {
+            resolvePromise = resolve;
         });
 
-        setCursorPosition({ x: 2 + text.length, y: 1 });
+        let suspended = true;
 
-        return (
-            <Box flexDirection="column">
-                <Text>Header</Text>
-                <Text>{`> ${text}`}</Text>
-            </Box>
+        const CursorChild = () => {
+            const { setCursorPosition } = useCursor();
+
+            setCursorPosition({ x: 5, y: 0 });
+
+            if (suspended) {
+                // React Suspense requires throwing a thenable
+                throw promise as unknown as Error;
+            }
+
+            return <Text>loaded</Text>;
+        };
+
+        const Test = () => (
+            <Suspense fallback={<Text>loading</Text>}>
+                <CursorChild />
+            </Suspense>
         );
-    };
 
-    const { unmount } = render(<MultiLineApp />, { stdin, stdout });
+        await act(async () => {
+            render(<Test />, { concurrent: true, stdin, stdout });
+        });
 
-    await delay(50);
+        const fallbackOutput = getWriteCalls(stdout).join("");
 
-    const writesBeforeInput = (stdout.write as any).mock.calls.length;
+        expect(fallbackOutput).toContain("loading");
+        expect(fallbackOutput).not.toContain(showCursorEscape);
 
-    emitReadable(stdin, "x");
-    await delay(50);
+        suspended = false;
+        resolvePromise!();
+        await act(async () => {
+            await delay(50);
+        });
+    });
 
-    const secondRenderOutput = getWriteCalls(stdout).slice(writesBeforeInput).join("");
+    it("screen does not scroll up on subsequent renders", async () => {
+        expect.hasAssertions();
 
-    expect(secondRenderOutput).toContain(hideCursorEscape);
-    expect(secondRenderOutput).toContain("x");
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    unmount();
-});
+        const MultiLineApp = () => {
+            const [text, setText] = useState("");
+            const { setCursorPosition } = useCursor();
 
-it("debug mode: useStdout().write() replays latest frame", async () => {
-    const DebugStdoutWriteApp = () => {
-        const { write } = useStdout();
+            useInput((input, key) => {
+                if (!key.ctrl && !key.meta && input) {
+                    setText((previous) => previous + input);
+                }
+            });
 
-        useEffect(() => {
-            write("from stdout hook\n");
-        }, [write]);
+            setCursorPosition({ x: 2 + text.length, y: 1 });
 
-        return <Text>Hello</Text>;
-    };
+            return (
+                <Box flexDirection="column">
+                    <Text>Header</Text>
+                    <Text>{`> ${text}`}</Text>
+                </Box>
+            );
+        };
 
-    const stdout = createStdout();
-    const { unmount } = render(<DebugStdoutWriteApp />, { debug: true, stdout });
+        const { unmount } = render(<MultiLineApp />, { stdin, stdout });
 
-    await waitForCondition(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
+        await delay(50);
 
-    const writes = getWriteCalls(stdout);
-    const hookWrite = writes.find((write) => write.includes("from stdout hook\nHello"));
+        const writesBeforeInput = (stdout.write as any).mock.calls.length;
 
-    expect(hookWrite).toBe(true);
-    expect(writes).not.toContain("");
+        emitReadable(stdin, "x");
+        await delay(50);
 
-    unmount();
+        const secondRenderOutput = getWriteCalls(stdout).slice(writesBeforeInput).join("");
+
+        expect(secondRenderOutput).toContain(hideCursorEscape);
+        expect(secondRenderOutput).toContain("x");
+
+        unmount();
+    });
+
+    it("debug mode: useStdout().write() replays latest frame", async () => {
+        expect.hasAssertions();
+
+        const DebugStdoutWriteApp = () => {
+            const { write } = useStdout();
+
+            useEffect(() => {
+                write("from stdout hook\n");
+            }, [write]);
+
+            return <Text>Hello</Text>;
+        };
+
+        const stdout = createStdout();
+        const { unmount } = render(<DebugStdoutWriteApp />, { debug: true, stdout });
+
+        await waitForCondition(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
+
+        const writes = getWriteCalls(stdout);
+        const hookWrite = writes.find((write) => write.includes("from stdout hook\nHello"));
+
+        expect(hookWrite).toBeDefined();
+        expect(writes).not.toContain("");
+
+        unmount();
+    });
 });
