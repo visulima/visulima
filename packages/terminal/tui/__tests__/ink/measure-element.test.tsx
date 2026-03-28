@@ -13,7 +13,7 @@ describe("measure-element", () => {
     afterEach(async () => {
         currentUnmount?.();
         currentUnmount = undefined;
-        await delay(50);
+        await delay(100);
     });
 
     it("measure element", async () => {
@@ -93,10 +93,10 @@ describe("measure-element", () => {
 
         const { unmount } = render(<Test />, { debug: true, stdout });
         currentUnmount = unmount;
-        await delay(50);
+        await delay(100);
 
         setTestItems(["line 1", "line 2", "line 3"]);
-        await delay(50);
+        await delay(100);
 
         expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight:3");
     });
@@ -189,10 +189,10 @@ describe("measure-element", () => {
 
         const { unmount } = render(<Test />, { debug: true, stdout });
         currentUnmount = unmount;
-        await delay(50);
+        await delay(100);
 
         setTestItems(["line 1", "line 2", "line 3"]);
-        await delay(50);
+        await delay(100);
 
         expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight:3");
     });
@@ -229,7 +229,7 @@ describe("measure-element", () => {
         const { rerender } = render(null, { patchConsole: false, stdout });
 
         rerender(<Test />);
-        await delay(50);
+        await delay(100);
 
         const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
         const lastContentWrite = writes.at(-1)!;
