@@ -1,3 +1,4 @@
+/* eslint-disable import/exports-last, unicorn/filename-case */
 import process from "node:process";
 
 import type { Context } from "react";

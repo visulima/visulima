@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return, e18e/prefer-static-regex, import/exports-last */
 import { useEffect } from "react";
 
 import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress.js";
@@ -143,18 +144,18 @@ type Options = {
  *
  * const UserInput = () => {
  * useInput((input, key) => {
-    if (input === 'q') {
-      // Exit program
-    }
- 
-    if (key.leftArrow) {
-      // Left arrow key pressed
-    }
-  });
- 
-  return …
-};
-```
+ * if (input === 'q') {
+ * // Exit program
+ * }
+ *
+ * if (key.leftArrow) {
+ * // Left arrow key pressed
+ * }
+ * });
+ *
+ * return …
+ * };
+ * ```
  */
 const useInput = (inputHandler: Handler, options: Options = {}): void => {
     // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, class-methods-use-this, consistent-return, default-case, import/exports-last, max-classes-per-file, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, prefer-const, sonarjs/cognitive-complexity */
 import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";

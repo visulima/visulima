@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, import/exports-last, no-confusing-arrow, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-identical-functions */
 import type { Writable } from "node:stream";
 
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
@@ -27,6 +28,17 @@ export type LogUpdate = {
 // Count visible lines in a string, ignoring the trailing empty element
 // that `split('\n')` produces when the string ends with '\n'.
 const visibleLineCount = (lines: string[], string_: string): number => string_.endsWith("\n") ? lines.length - 1 : lines.length;
+
+// Get the viewport height from a stream. TTY streams expose `.rows`;
+// non-TTY streams don't, so we fall back to Infinity (no clamping).
+const getViewportRows = (stream: Writable): number =>
+    (stream as NodeJS.WriteStream).rows || Infinity; // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- .rows may be undefined at runtime
+
+// Clamp a line count so that eraseLines / cursorUp never move the cursor
+// above the visible viewport. Lines beyond the viewport have already
+// scrolled into terminal scrollback and cannot be erased.
+const clampToViewport = (lineCount: number, stream: Writable): number =>
+    Math.min(lineCount, getViewportRows(stream));
 
 const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdate => {
     let previousLineCount = 0;
@@ -79,7 +91,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
             previousOutput = string_;
             const returnPrefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
 
-            stream.write(returnPrefix + eraseLines(previousLineCount) + string_ + cursorSuffix);
+            stream.write(returnPrefix + eraseLines(clampToViewport(previousLineCount, stream)) + string_ + cursorSuffix);
             previousLineCount = lines.length;
         }
 
@@ -92,7 +104,7 @@ const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdat
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLineCount, previousCursorPosition);
 
-        stream.write(prefix + eraseLines(previousLineCount));
+        stream.write(prefix + eraseLines(clampToViewport(previousLineCount, stream)));
         previousOutput = "";
         previousLineCount = 0;
         previousCursorPosition = undefined;
@@ -209,7 +221,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         if (string_ === "\n" || previousOutput.length === 0) {
             const cursorSuffix = buildCursorSuffix(visibleCount, activeCursor);
 
-            stream.write(returnPrefix + eraseLines(previousLines.length) + string_ + cursorSuffix);
+            stream.write(returnPrefix + eraseLines(clampToViewport(previousLines.length, stream)) + string_ + cursorSuffix);
             cursorWasShown = activeCursor !== undefined;
             previousCursorPosition = activeCursor ? { ...activeCursor } : undefined;
             previousOutput = string_;
@@ -224,13 +236,18 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
         const buffer: string[] = [returnPrefix];
 
         // Clear extra lines if the current content's line count is lower than the previous.
+        const viewportRows = getViewportRows(stream);
+
         if (visibleCount < previousVisible) {
             const previousHadTrailingNewline = previousOutput.endsWith("\n");
             const extraSlot = previousHadTrailingNewline ? 1 : 0;
 
-            buffer.push(eraseLines(previousVisible - visibleCount + extraSlot), cursorUp(visibleCount));
+            buffer.push(
+                eraseLines(Math.min(previousVisible - visibleCount + extraSlot, viewportRows)),
+                cursorUp(Math.min(visibleCount, viewportRows - 1)),
+            );
         } else {
-            buffer.push(cursorUp(previousVisible - 1));
+            buffer.push(cursorUp(Math.min(previousVisible - 1, viewportRows - 1)));
         }
 
         for (let i = 0; i < visibleCount; i++) {
@@ -274,7 +291,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
     render.clear = () => {
         const prefix = buildReturnToBottomPrefix(cursorWasShown, previousLines.length, previousCursorPosition);
 
-        stream.write(prefix + eraseLines(previousLines.length));
+        stream.write(prefix + eraseLines(clampToViewport(previousLines.length, stream)));
         previousOutput = "";
         previousLines = [];
         previousCursorPosition = undefined;

@@ -1,3 +1,4 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 import type { ReactElement } from "react";
 
 export type Props = {

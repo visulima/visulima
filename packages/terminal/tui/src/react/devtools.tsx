@@ -1,3 +1,4 @@
+/* eslint-disable func-style, import/exports-last, jsdoc/check-indentation, jsdoc/lines-before-block, jsdoc/match-description, no-plusplus */
 /**
  * DevTools — optional development overlay for Ratatat apps.
  *

@@ -1,3 +1,4 @@
+/* eslint-disable import/exports-last, unicorn/filename-case */
 import type { Context } from "react";
 import { createContext } from "react";
 

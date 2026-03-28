@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow, import/no-named-as-default-member, jsdoc/escape-inline-tags, no-param-reassign, react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, react-x/no-use-context, react/function-component-definition, unicorn/filename-case */
 import type { AnsiColors } from "@visulima/colorize";
 import colorizeDefault from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";

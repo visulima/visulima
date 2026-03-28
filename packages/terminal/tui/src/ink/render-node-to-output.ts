@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity */
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 

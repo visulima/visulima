@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, consistent-return, func-style, no-console, no-empty, no-for-of-array/no-for-of-array, no-param-reassign, sonarjs/cognitive-complexity, unicorn/no-null */
 import process from "node:process";
 
 import { createContext, version as reactVersion } from "react";
@@ -120,7 +121,6 @@ if (process.env["DEV"] === "true") {
         const loaded = await loadPackageJson();
 
         packageInfo = {
-
             name: loaded.name || packageInfo.name,
 
             version: loaded.version || packageInfo.version,

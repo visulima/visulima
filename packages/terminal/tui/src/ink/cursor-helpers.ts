@@ -1,3 +1,4 @@
+/* eslint-disable import/exports-last */
 import { cursorDown, cursorTo, cursorUp } from "@visulima/ansi";
 
 export type CursorPosition = {

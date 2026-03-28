@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus */
 import colorize from "./colorize.js";
 import type { DOMNode } from "./dom.js";
 import type Output from "./output.js";

@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, consistent-return, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
 import { useEffect } from "react";
 
 import reconciler from "../reconciler.js";

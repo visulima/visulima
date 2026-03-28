@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, consistent-return, import/exports-last, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
 import type { RefObject } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 

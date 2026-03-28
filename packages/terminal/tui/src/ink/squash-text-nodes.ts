@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 import type { DOMElement } from "./dom.js";
 import sanitizeAnsi from "./sanitize-ansi.js";
 

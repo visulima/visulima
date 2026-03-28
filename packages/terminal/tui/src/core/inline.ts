@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, e18e/prefer-static-regex, func-style, no-control-regex, no-plusplus, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/no-process-exit, unicorn/prevent-abbreviations */
+
 /**
  * src/inline.ts — Inline rendering mode
  *

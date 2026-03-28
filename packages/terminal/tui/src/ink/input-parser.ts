@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-plusplus, sonarjs/function-return-type */
 const escape = "\u001B";
 const pasteStart = "\u001B[200~";
 const pasteEnd = "\u001B[201~";

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/filename-case */
 import type { AnsiColors } from "@visulima/colorize";
 import type { Context } from "react";
 import { createContext } from "react";
