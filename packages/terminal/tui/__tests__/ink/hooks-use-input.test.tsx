@@ -22,24 +22,25 @@ describe("hooks-use-input", () => {
         const ps = term("use-input-discrete-priority");
         const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
-        // Wait for the app to be ready before sending input
-        await sleep(500);
+        // Wait for the app to be ready and initial render to complete
+        await sleep(1000);
 
-        // Send 5 delete keys with delays between them to ensure each is processed
-        // as a separate input event by the terminal and React scheduler
+        // Send 5 delete keys with enough delay between them for React concurrent
+        // scheduler to process each update. The fixture has a 30ms blocking useMemo
+        // per deferred update, so we need generous delays.
         for (let index = 0; index < 5; index++) {
             ps.write("\u001B[3~");
-            await sleep(50);
+            await sleep(200);
         }
 
         // Wait for React concurrent mode to process all transitions
-        await sleep(2000);
+        await sleep(3000);
 
         ps.write("\r");
         await ps.waitForExit();
 
         expect(ps.output).toContain("FINAL query:\"\" deferred:\"\"");
-    }, 10_000);
+    }, 15_000);
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {
         expect.hasAssertions();
