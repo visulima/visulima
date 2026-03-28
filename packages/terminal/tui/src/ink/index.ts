@@ -7,6 +7,8 @@ export { default as Cursor } from "./components/Cursor.js";
 export type { Props as NewlineProps } from "./components/Newline.js";
 export { default as Newline } from "./components/Newline.js";
 export { default as Spacer } from "./components/Spacer.js";
+export type { Props as SpinnerProps } from "./components/Spinner.js";
+export { default as Spinner } from "./components/Spinner.js";
 export type { Props as StaticProps } from "./components/Static.js";
 export { default as Static } from "./components/Static.js";
 export type { Props as StderrProps } from "./components/StderrContext.js";
