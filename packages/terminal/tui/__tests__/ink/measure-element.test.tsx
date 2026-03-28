@@ -17,6 +17,7 @@ describe("measure-element", () => {
             const [width, setWidth] = useState(0);
             const ref = useRef<DOMElement>(null);
 
+            // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
             useEffect(() => {
                 if (!ref.current) {
                     return;
@@ -57,6 +58,7 @@ describe("measure-element", () => {
 
             setTestItems = setItems;
 
+            // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
             useEffect(() => {
                 if (!ref.current) {
                     return;
@@ -103,6 +105,7 @@ describe("measure-element", () => {
             setTestItems = setItems;
 
             useEffect(() => {
+            // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }
@@ -193,6 +196,7 @@ describe("measure-element", () => {
             const ref = useRef<DOMElement>(null);
 
             useEffect(() => {
+            // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }

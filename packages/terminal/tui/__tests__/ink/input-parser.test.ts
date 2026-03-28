@@ -7,9 +7,9 @@ const parseChunks = (chunks: string[]): InputEvent[] => {
     const parser = createInputParser();
     const events: InputEvent[] = [];
 
-    for (const chunk of chunks) {
+    chunks.forEach((chunk) => {
         events.push(...parser.push(chunk));
-    }
+    });
 
     return events;
 };

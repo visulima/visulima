@@ -4,10 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
-const _request = createRequire(import.meta.url);
+const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {
     try {
-        _request("node-pty");
+        ptyRequire("node-pty");
 
         return true;
     } catch {
