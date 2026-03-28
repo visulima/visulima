@@ -17,7 +17,7 @@ const ptyAvailable = (() => {
 
 describe("hooks-use-input-kitty", () => {
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super modifier", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["super"]);
 
@@ -28,7 +28,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol hyper modifier", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["hyper"]);
 
@@ -39,7 +39,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol capsLock", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["capsLock"]);
 
@@ -50,7 +50,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol numLock", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["numLock"]);
 
@@ -61,7 +61,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super+ctrl", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["superCtrl"]);
 
@@ -72,7 +72,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol press event", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["press"]);
 
@@ -83,7 +83,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol repeat event", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["repeat"]);
 
@@ -94,7 +94,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol release event", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["release"]);
 
@@ -105,7 +105,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle kitty protocol escape key", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["escapeKitty"]);
 
@@ -116,7 +116,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (capslock) produces empty input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["nonPrintable"]);
 
@@ -127,7 +127,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (f13) produces empty input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["nonPrintable"]);
 
@@ -138,7 +138,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (printscreen) produces empty input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["nonPrintable"]);
 
@@ -149,7 +149,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - kitty protocol space key produces space input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["space"]);
 
@@ -160,7 +160,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - kitty protocol return key produces carriage return input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["returnKey"]);
 
@@ -171,7 +171,7 @@ describe("hooks-use-input-kitty", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - kitty protocol ctrl+letter via codepoint 1-26 produces input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-kitty", ["ctrlLetter"]);
 

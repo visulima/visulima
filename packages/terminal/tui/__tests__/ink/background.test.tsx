@@ -30,7 +30,7 @@ describe("background", () => {
     });
 
     it("text inherits parent Box background color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="green">
@@ -42,7 +42,7 @@ describe("background", () => {
     });
 
     it("text explicit background color overrides inherited", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red">
@@ -54,7 +54,7 @@ describe("background", () => {
     });
 
     it("nested Box background inheritance", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red">
@@ -68,7 +68,7 @@ describe("background", () => {
     });
 
     it("text without parent Box background has no inheritance", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start">
@@ -80,7 +80,7 @@ describe("background", () => {
     });
 
     it("multiple Text elements inherit same background", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="yellow">
@@ -93,7 +93,7 @@ describe("background", () => {
     });
 
     it("mixed text with and without background inheritance", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="green">
@@ -107,7 +107,7 @@ describe("background", () => {
     });
 
     it("complex nested structure with background inheritance", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="yellow">
@@ -125,7 +125,7 @@ describe("background", () => {
     });
 
     it("box background with standard color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red">
@@ -137,7 +137,7 @@ describe("background", () => {
     });
 
     it("box background with hex color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="#FF0000">
@@ -149,7 +149,7 @@ describe("background", () => {
     });
 
     it("box background with rgb color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="rgb(255, 0, 0)">
@@ -161,7 +161,7 @@ describe("background", () => {
     });
 
     it("box background with ansi256 color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="ansi256(9)">
@@ -173,7 +173,7 @@ describe("background", () => {
     });
 
     it("box background with wide characters", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="yellow">
@@ -185,7 +185,7 @@ describe("background", () => {
     });
 
     it("box background with emojis", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red">
@@ -197,7 +197,7 @@ describe("background", () => {
     });
 
     it("box background fills entire area with standard color", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red" height={3} width={10}>
@@ -212,7 +212,7 @@ describe("background", () => {
     });
 
     it("box background fills with hex color", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="#FF0000" height={3} width={10}>
@@ -226,7 +226,7 @@ describe("background", () => {
     });
 
     it("box background fills with rgb color", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="rgb(255, 0, 0)" height={3} width={10}>
@@ -240,7 +240,7 @@ describe("background", () => {
     });
 
     it("box background fills with ansi256 color", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="ansi256(9)" height={3} width={10}>
@@ -254,7 +254,7 @@ describe("background", () => {
     });
 
     it("box background with border fills content area", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="cyan" borderStyle="round" height={5} width={10}>
@@ -270,7 +270,7 @@ describe("background", () => {
     });
 
     it("box background with padding fills entire padded area", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="magenta" height={5} padding={1} width={10}>
@@ -284,7 +284,7 @@ describe("background", () => {
     });
 
     it("box background with center alignment fills entire area", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="blue" height={3} justifyContent="center" width={10}>
@@ -298,7 +298,7 @@ describe("background", () => {
     });
 
     it("box background with column layout fills entire area", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="green" flexDirection="column" height={5} width={10}>
@@ -314,7 +314,7 @@ describe("background", () => {
     });
 
     it("box background updates on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -341,7 +341,7 @@ describe("background", () => {
     });
 
     it("text inherits parent Box background color - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box alignSelf="flex-start" backgroundColor="green">
@@ -353,7 +353,7 @@ describe("background", () => {
     });
 
     it("nested Box background inheritance - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box alignSelf="flex-start" backgroundColor="red">
@@ -367,7 +367,7 @@ describe("background", () => {
     });
 
     it("box background with hex color - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box alignSelf="flex-start" backgroundColor="#FF0000">
@@ -379,7 +379,7 @@ describe("background", () => {
     });
 
     it("box background updates on rerender - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const Test = ({ bgColor }: { readonly bgColor?: string }) => (
             <Box alignSelf="flex-start" backgroundColor={bgColor}>
@@ -401,7 +401,7 @@ describe("background", () => {
     });
 
     it("box backgroundColor fills full width on every line when text wraps", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" backgroundColor="red" width={10}>
@@ -413,7 +413,7 @@ describe("background", () => {
     });
 
     it("text-only backgroundColor colors text content but does not fill Box width", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" width={10}>

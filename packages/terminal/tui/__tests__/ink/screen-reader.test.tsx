@@ -5,7 +5,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("screen-reader", () => {
     it("render text for screen readers", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-label="Hello World">
@@ -20,7 +20,7 @@ describe("screen-reader", () => {
     });
 
     it("render text for screen readers with aria-hidden", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-hidden>
@@ -35,7 +35,7 @@ describe("screen-reader", () => {
     });
 
     it("render text for screen readers with aria-role", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="button">
@@ -50,7 +50,7 @@ describe("screen-reader", () => {
     });
 
     it("render select input for screen readers", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const items = ["Red", "Green", "Blue"];
 
@@ -77,7 +77,7 @@ describe("screen-reader", () => {
     });
 
     it("render aria-label only Text for screen readers", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text aria-label="Screen-reader only" />, {
             isScreenReaderEnabled: true,
@@ -87,7 +87,7 @@ describe("screen-reader", () => {
     });
 
     it("render aria-label only Box for screen readers", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Box aria-label="Screen-reader only" />, {
             isScreenReaderEnabled: true,
@@ -97,7 +97,7 @@ describe("screen-reader", () => {
     });
 
     it("omit ANSI styling in screen-reader output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -115,7 +115,7 @@ describe("screen-reader", () => {
     });
 
     it("skip nodes with display:none style in screen-reader output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -131,7 +131,7 @@ describe("screen-reader", () => {
     });
 
     it("render multiple Text components", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -147,7 +147,7 @@ describe("screen-reader", () => {
     });
 
     it("render nested Box components with Text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -167,7 +167,7 @@ describe("screen-reader", () => {
     const NullComponent = (): undefined => undefined;
 
     it("render component that returns null", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -184,7 +184,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.busy", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-state={{ busy: true }}>
@@ -199,7 +199,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.checked", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="checkbox" aria-state={{ checked: true }}>
@@ -214,7 +214,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.disabled", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="button" aria-state={{ disabled: true }}>
@@ -229,7 +229,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.expanded", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="combobox" aria-state={{ expanded: true }}>
@@ -244,7 +244,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.multiline", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="textbox" aria-state={{ multiline: true }}>
@@ -259,7 +259,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.multiselectable", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="listbox" aria-state={{ multiselectable: true }}>
@@ -274,7 +274,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.readonly", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="textbox" aria-state={{ readonly: true }}>
@@ -289,7 +289,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.required", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="textbox" aria-state={{ required: true }}>
@@ -304,7 +304,7 @@ describe("screen-reader", () => {
     });
 
     it("render with aria-state.selected", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="option" aria-state={{ selected: true }}>
@@ -319,7 +319,7 @@ describe("screen-reader", () => {
     });
 
     it("render multi-line text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -335,7 +335,7 @@ describe("screen-reader", () => {
     });
 
     it("render nested multi-line text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="row">
@@ -353,7 +353,7 @@ describe("screen-reader", () => {
     });
 
     it("render nested row", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -371,7 +371,7 @@ describe("screen-reader", () => {
     });
 
     it("render multi-line text with roles", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="list" flexDirection="column">
@@ -391,7 +391,7 @@ describe("screen-reader", () => {
     });
 
     it("render listbox with multiselectable options", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box aria-role="listbox" aria-state={{ multiselectable: true }} flexDirection="column">

@@ -4,13 +4,13 @@ import { tokenizeAnsi } from "../../src/ink/ansi-tokenizer";
 
 describe("ansi-tokenizer", () => {
     it("tokenize plain text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(tokenizeAnsi("hello")).toStrictEqual([{ type: "text", value: "hello" }]);
     });
 
     it("tokenize ESC CSI SGR sequence", () => {
-        expect.hasAssertions();
+        expect.assertions(7);
 
         const tokens = tokenizeAnsi("A\u001B[31mB");
 
@@ -35,7 +35,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 CSI sequence", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const tokens = tokenizeAnsi("A\u009B2 qB");
         const csiToken = tokens[1];
@@ -55,7 +55,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize OSC control string with ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u001B]8;;https://example.com\u001B\\B");
         const oscToken = tokens[1];
@@ -74,7 +74,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize tmux DCS passthrough as one control string token", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const tokens = tokenizeAnsi("A\u001BPtmux;\u001B\u001B]8;;https://example.com\u001B\u001B\\\u001B\\B");
         const dcsToken = tokens[1];
@@ -94,7 +94,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete CSI as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u001B[");
 
@@ -105,7 +105,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete ESC intermediate sequence as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u001B#");
 
@@ -116,7 +116,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("ignore lone ESC before non-final byte", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u001B\u0007B");
 
@@ -127,7 +127,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize ESC ST sequence as ESC token", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const tokens = tokenizeAnsi("A\u001B\\B");
         const escToken = tokens[1];
@@ -148,7 +148,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 OSC with C1 ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u009CB");
         const oscToken = tokens[1];
@@ -167,7 +167,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 OSC with ESC ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u001B\\B");
         const oscToken = tokens[1];
@@ -186,7 +186,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 SGR CSI sequence", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const tokens = tokenizeAnsi("A\u009B31mB");
         const csiToken = tokens[1];
@@ -208,7 +208,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete C1 CSI as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u009B31");
 
@@ -219,7 +219,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete C1 OSC as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u009D8;;https://example.com");
 
@@ -230,7 +230,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize DCS with BEL in payload until ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const tokens = tokenizeAnsi("A\u001BPpayload\u0007still-payload\u001B\\B");
         const dcsToken = tokens[1];
@@ -250,7 +250,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 OSC control string with BEL terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u0007B");
         const oscToken = tokens[1];
@@ -269,7 +269,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize ESC SOS control string with ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u001BXpayload\u001B\\B");
         const sosToken = tokens[1];
@@ -288,7 +288,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize ESC SOS control string with C1 ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u001BXpayload\u009CB");
         const sosToken = tokens[1];
@@ -307,7 +307,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 SOS control string with C1 ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u0098payload\u009CB");
         const sosToken = tokens[1];
@@ -326,7 +326,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 SOS control string with ESC ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const tokens = tokenizeAnsi("A\u0098payload\u001B\\B");
         const sosToken = tokens[1];
@@ -345,7 +345,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize ESC SOS with BEL terminator as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u001BXpayload\u0007B");
 
@@ -356,7 +356,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize C1 SOS with BEL terminator as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u0098payload\u0007B");
 
@@ -367,7 +367,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete C1 SOS as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u0098payload");
 
@@ -378,7 +378,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize incomplete ESC SOS as invalid and stop", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const tokens = tokenizeAnsi("A\u001BXpayload");
 
@@ -389,7 +389,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize SOS with escaped ESC in payload until final ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const tokens = tokenizeAnsi("A\u001BXfoo\u001B\u001B\\bar\u001B\\B");
         const sosToken = tokens[1];
@@ -409,7 +409,7 @@ describe("ansi-tokenizer", () => {
     });
 
     it("tokenize standalone C1 controls as c1 tokens", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const tokens = tokenizeAnsi("A\u0085B\u008EC");
         const c1Token1 = tokens[1];

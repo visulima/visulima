@@ -5,13 +5,13 @@ import sanitizeAnsi from "../../src/ink/sanitize-ansi";
 
 describe("sanitize-ansi", () => {
     it("preserve plain text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(sanitizeAnsi("hello")).toBe("hello");
     });
 
     it("preserve SGR sequences", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001B[38:2::255:100:0mcolor\u001B[0mB");
 
@@ -20,7 +20,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve OSC hyperlinks", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("\u001B]8;;https://example.com\u001B\\link\u001B]8;;\u001B\\");
 
@@ -29,7 +29,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve OSC hyperlinks terminated by C1 ST", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("\u001B]8;;https://example.com\u009Clink\u001B]8;;\u009C");
 
@@ -38,7 +38,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve C1 OSC hyperlinks terminated by C1 ST", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const input = "\u009D8;;https://example.com\u009Clink\u009D8;;\u009C";
         const output = sanitizeAnsi(input);
@@ -48,7 +48,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve C1 OSC hyperlinks terminated by ESC ST", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const input = "\u009D8;;https://example.com\u001B\\link\u009D8;;\u001B\\";
         const output = sanitizeAnsi(input);
@@ -58,7 +58,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve C1 OSC hyperlinks terminated by BEL", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const input = "\u009D8;;https://example.com\u0007link\u009D8;;\u0007";
         const output = sanitizeAnsi(input);
@@ -68,7 +68,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip non-SGR CSI sequences as complete units", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = sanitizeAnsi("A\u001B[>4;2mB\u001B[2 qC");
 
@@ -78,7 +78,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip C1 non-SGR CSI sequences as complete units", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = sanitizeAnsi("A\u009B>4;2mB\u009B2 qC");
 
@@ -88,7 +88,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve C1 SGR CSI sequences", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u009B31mgreen\u009B0mB");
 
@@ -97,7 +97,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip private-parameter m-sequences that are not SGR", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001B[>4;2mB");
 
@@ -106,7 +106,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip tmux DCS passthrough wrappers with escaped ST payload terminators", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const wrappedHyperlinkStart = "\u001BPtmux;\u001B\u001B]8;;https://example.com\u001B\u001B\\\u001B\\";
         const wrappedHyperlinkEnd = "\u001BPtmux;\u001B\u001B]8;;\u001B\u001B\\\u001B\\";
@@ -118,7 +118,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip incomplete DCS passthrough sequences to avoid payload leaks", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001BPtmux;\u001Blink");
 
@@ -127,7 +127,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip DCS control strings with BEL in payload until ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = sanitizeAnsi("A\u001BPpayload\u0007still-payload\u001B\\B");
 
@@ -137,7 +137,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip ESC SOS control strings as complete units", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001BXpayload\u001B\\B");
 
@@ -146,7 +146,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip ESC SOS control strings with C1 ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001BXpayload\u009CB");
 
@@ -155,7 +155,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip C1 SOS control strings as complete units with C1 ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u0098payload\u009CB");
 
@@ -164,7 +164,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip C1 SOS control strings as complete units with ESC ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u0098payload\u001B\\B");
 
@@ -173,7 +173,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip ESC SOS with BEL terminator as malformed control string", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001BXpayload\u0007B");
 
@@ -182,7 +182,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip C1 SOS with BEL terminator as malformed control string", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u0098payload\u0007B");
 
@@ -191,7 +191,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip incomplete ESC SOS control strings to avoid payload leaks", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001BXpayload");
 
@@ -200,7 +200,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip incomplete C1 SOS control strings to avoid payload leaks", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u0098payload");
 
@@ -209,7 +209,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip SOS with escaped ESC in payload until final ST terminator", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = sanitizeAnsi("A\u001BXfoo\u001B\u001B\\bar\u001B\\B");
 
@@ -219,7 +219,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("preserve SGR around stripped SOS control strings", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = sanitizeAnsi("A\u001B[31mR\u001B[0m\u001BXpayload\u001B\\B");
 
@@ -230,7 +230,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip ESC ST sequences", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001B\\B");
 
@@ -239,7 +239,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip malformed ESC control sequences with intermediates and non-final bytes", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001B#\u0007payload");
 
@@ -248,7 +248,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip incomplete CSI after preserving prior SGR content", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u001B[31mB\u001B[");
 
@@ -257,7 +257,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip standalone ST bytes", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = sanitizeAnsi("A\u009CB");
 
@@ -266,7 +266,7 @@ describe("sanitize-ansi", () => {
     });
 
     it("strip standalone C1 control characters", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = sanitizeAnsi("A\u0085B\u008EC");
 

@@ -17,7 +17,7 @@ const ptyAvailable = (() => {
 
 describe("hooks-use-paste", () => {
     it.skipIf(!ptyAvailable)("usePaste - receives bracketed paste as single text blob", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const ps = term("use-paste", ["basic"]);
 
@@ -30,7 +30,7 @@ describe("hooks-use-paste", () => {
     });
 
     it.skipIf(!ptyAvailable)("usePaste - paste content with escape sequences is delivered verbatim", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-paste", ["escapeSequences"]);
 
@@ -41,7 +41,7 @@ describe("hooks-use-paste", () => {
     });
 
     it.skipIf(!ptyAvailable)("usePaste - useInput does not receive bracketed paste content", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-paste", ["noUseInput"]);
 
@@ -52,7 +52,7 @@ describe("hooks-use-paste", () => {
     });
 
     it.skipIf(!ptyAvailable)("usePaste - multiple simultaneous hooks both receive the same paste event", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-paste", ["multipleHooks"]);
 

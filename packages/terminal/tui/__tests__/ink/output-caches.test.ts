@@ -4,7 +4,7 @@ import Output, { OutputCaches } from "../../src/ink/output";
 
 describe("output-caches", () => {
     it("output uses provided caches instance", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
         const output = new Output({
@@ -21,7 +21,7 @@ describe("output-caches", () => {
     });
 
     it("default caches are isolated per Output instance", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output1 = new Output({
             height: 1,
@@ -39,7 +39,7 @@ describe("output-caches", () => {
     });
 
     it("shared caches reuse entries across Output instances", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
 
@@ -69,7 +69,7 @@ describe("output-caches", () => {
     });
 
     it("reset clears frame operations before next render", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = new Output({
             height: 1,
@@ -89,7 +89,7 @@ describe("output-caches", () => {
     });
 
     it("getCharacterWidth fast-path avoids cache writes for printable ASCII and full-width chars", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const caches = new OutputCaches();
 
@@ -113,7 +113,7 @@ describe("output-caches", () => {
     });
 
     it("getCharacterWidth falls back to string-width for non-ASCII narrow chars", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
 
@@ -129,7 +129,7 @@ describe("output-caches", () => {
     });
 
     it("plain ASCII lines reuse StyledChar instances", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const caches = new OutputCaches();
 
@@ -140,7 +140,7 @@ describe("output-caches", () => {
     });
 
     it("aNSI-marked lines preserve styles", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
         const styledChars = caches.getStyledChars("\u001B[31mA\u001B[39m");
@@ -150,7 +150,7 @@ describe("output-caches", () => {
     });
 
     it("aNSI style runs reuse style array references", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
         const styledChars = caches.getStyledChars("\u001B[31mAB\u001B[39m");
@@ -160,7 +160,7 @@ describe("output-caches", () => {
     });
 
     it("styled rendering preserves ANSI transitions", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = new Output({
             height: 1,
@@ -173,7 +173,7 @@ describe("output-caches", () => {
     });
 
     it("plain non-ASCII lines include full-width metadata", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
         const styledChars = caches.getStyledChars("漢");
@@ -183,7 +183,7 @@ describe("output-caches", () => {
     });
 
     it("outputCaches prunes width cache when maxEntries is exceeded", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches({ maxEntries: 2 });
 
@@ -196,7 +196,7 @@ describe("output-caches", () => {
     });
 
     it("outputCaches prunes styledChars cache when maxEntries is exceeded", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches({ maxEntries: 2 });
 
@@ -209,7 +209,7 @@ describe("output-caches", () => {
     });
 
     it("getLines caches split line arrays", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches();
 
@@ -221,7 +221,7 @@ describe("output-caches", () => {
     });
 
     it("outputCaches prunes lines cache when maxEntries is exceeded", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const caches = new OutputCaches({ maxEntries: 2 });
 
@@ -234,7 +234,7 @@ describe("output-caches", () => {
     });
 
     it("outputCaches pruneToFactor controls eviction target", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const caches = new OutputCaches({
             maxEntries: 10,
@@ -249,7 +249,7 @@ describe("output-caches", () => {
     });
 
     it("line memoization keeps unchanged rows and updates changed rows", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = new Output({
             height: 2,
@@ -267,7 +267,7 @@ describe("output-caches", () => {
     });
 
     it("line memoization does not keep stale rows when content is cleared", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = new Output({
             height: 2,
@@ -284,7 +284,7 @@ describe("output-caches", () => {
     });
 
     it("clip applies horizontal and vertical bounds to writes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = new Output({
             height: 2,
@@ -299,7 +299,7 @@ describe("output-caches", () => {
     });
 
     it("clip can apply vertical-only bounds", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = new Output({
             height: 2,

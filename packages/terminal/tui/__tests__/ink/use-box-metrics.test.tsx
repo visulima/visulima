@@ -9,7 +9,7 @@ import createStdout from "../helpers/ink-create-stdout";
 
 describe("use-box-metrics", () => {
     it("returns correct size on first render", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -37,7 +37,7 @@ describe("use-box-metrics", () => {
     });
 
     it("returns correct position", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -68,7 +68,7 @@ describe("use-box-metrics", () => {
     });
 
     it("updates when terminal is resized", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
 
@@ -101,7 +101,7 @@ describe("use-box-metrics", () => {
     });
 
     it("updates when sibling content changes", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
         let externalSetSiblingText!: (text: string) => void;
@@ -140,7 +140,7 @@ describe("use-box-metrics", () => {
     });
 
     it("does not trigger extra re-renders when layout is unchanged", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
         let renderCount = 0;
@@ -180,7 +180,7 @@ describe("use-box-metrics", () => {
     };
 
     it("removes resize listener on unmount", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
 
@@ -197,7 +197,7 @@ describe("use-box-metrics", () => {
     });
 
     it("does not crash when resize fires after unmount", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -213,7 +213,7 @@ describe("use-box-metrics", () => {
     });
 
     it("returns zeros when ref is not attached", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -247,7 +247,7 @@ describe("use-box-metrics", () => {
     });
 
     it("hasMeasured becomes true when tracked element is mounted on initial render", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -274,7 +274,7 @@ describe("use-box-metrics", () => {
     });
 
     it("resets metrics when tracked element unmounts", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
         let unmountTrackedElement!: () => void;

@@ -61,7 +61,7 @@ describe("ink compatibility - borders", () => {
     );
 
     it("should render all border styles", () => {
-        expect.hasAssertions();
+        expect.assertions(7);
 
         const output = renderTest(<Borders />, { columns: 60 });
 
@@ -75,7 +75,7 @@ describe("ink compatibility - borders", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Borders />, { columns: 60 });
 
@@ -108,7 +108,7 @@ describe("ink compatibility - box-backgrounds", () => {
     );
 
     it("should render backgrounds and text", () => {
-        expect.hasAssertions();
+        expect.assertions(7);
 
         const output = renderTest(<BoxBackgrounds />);
 
@@ -122,7 +122,7 @@ describe("ink compatibility - box-backgrounds", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<BoxBackgrounds />);
 
@@ -185,7 +185,7 @@ describe("ink compatibility - justify-content", () => {
     );
 
     it("should render all justify-content modes", () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
@@ -198,7 +198,7 @@ describe("ink compatibility - justify-content", () => {
     });
 
     it("should position X and Y correctly", () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
@@ -216,7 +216,7 @@ describe("ink compatibility - justify-content", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<JustifyContent />, { columns: 40 });
 
@@ -238,7 +238,7 @@ describe("ink compatibility - counter", () => {
     };
 
     it("should render initial counter value", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Counter />);
 
@@ -269,7 +269,7 @@ describe("ink compatibility - chat", () => {
     };
 
     it("should render empty chat with input prompt", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<ChatApp />);
 
@@ -277,7 +277,7 @@ describe("ink compatibility - chat", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<ChatApp />);
 
@@ -316,7 +316,7 @@ describe("ink compatibility - static component", () => {
     };
 
     it("should render static items and dynamic footer", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderTest(<StaticExample />);
 
@@ -327,7 +327,7 @@ describe("ink compatibility - static component", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<StaticExample />);
 
@@ -339,7 +339,7 @@ describe("ink compatibility - suspense", () => {
     const Fallback = () => <Text>Loading...</Text>;
 
     it("should render suspense fallback", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         // Component that always suspends
         let thrown = false;
@@ -365,7 +365,7 @@ describe("ink compatibility - suspense", () => {
 
 describe("ink compatibility - concurrent-suspense", () => {
     it("should render suspense fallbacks for multiple boundaries", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const Loading = ({ message }: { message: string }) => (
             <Box marginLeft={2}>
@@ -408,7 +408,7 @@ describe("ink compatibility - terminal-resize", () => {
     );
 
     it("should render terminal dimension labels", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(<TerminalResizeExample />);
 
@@ -418,7 +418,7 @@ describe("ink compatibility - terminal-resize", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<TerminalResizeExample />);
 
@@ -442,7 +442,7 @@ describe("ink compatibility - use-input", () => {
     };
 
     it("should render initial state", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
 
@@ -451,7 +451,7 @@ describe("ink compatibility - use-input", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Robot />, { columns: 60, rows: 20 });
 
@@ -484,7 +484,7 @@ describe("ink compatibility - use-focus", () => {
     );
 
     it("should render all items", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderTest(<FocusExample />);
 
@@ -495,7 +495,7 @@ describe("ink compatibility - use-focus", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<FocusExample />);
 
@@ -528,7 +528,7 @@ describe("ink compatibility - use-focus-with-id", () => {
     );
 
     it("should render all items with labels", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(<FocusWithId />);
 
@@ -538,7 +538,7 @@ describe("ink compatibility - use-focus-with-id", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<FocusWithId />);
 
@@ -555,7 +555,7 @@ describe("ink compatibility - use-stderr", () => {
     };
 
     it("should render without throwing", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<StderrExample />);
 
@@ -591,7 +591,7 @@ describe("ink compatibility - use-stdout", () => {
     };
 
     it("should render terminal dimension labels", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(<StdoutExample />);
 
@@ -601,7 +601,7 @@ describe("ink compatibility - use-stdout", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<StdoutExample />);
 
@@ -639,7 +639,7 @@ describe("ink compatibility - use-transition", () => {
     };
 
     it("should render initial state with items", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderTest(<SearchApp />);
 
@@ -650,7 +650,7 @@ describe("ink compatibility - use-transition", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<SearchApp />);
 
@@ -678,7 +678,7 @@ describe("ink compatibility - aria", () => {
     };
 
     it("should render unchecked checkbox", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(<AriaExample />);
 
@@ -688,7 +688,7 @@ describe("ink compatibility - aria", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<AriaExample />);
 
@@ -713,7 +713,7 @@ describe("ink compatibility - cursor-ime", () => {
     };
 
     it("should render input prompt", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderTest(<CursorApp />);
 
@@ -732,7 +732,7 @@ describe("ink compatibility - spacer", () => {
     );
 
     it("should push elements apart", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(<SpacerExample />, { columns: 40 });
         const line = output.split("\n")[0] ?? "";
@@ -744,7 +744,7 @@ describe("ink compatibility - spacer", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<SpacerExample />, { columns: 40 });
 
@@ -764,7 +764,7 @@ describe("ink compatibility - newline", () => {
     );
 
     it("should render text on separate lines", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderTest(<NewlineExample />);
 
@@ -775,7 +775,7 @@ describe("ink compatibility - newline", () => {
 
 describe("ink compatibility - text styles", () => {
     it("should render bold text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Text bold>Bold text</Text>);
 
@@ -783,7 +783,7 @@ describe("ink compatibility - text styles", () => {
     });
 
     it("should render italic text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Text italic>Italic text</Text>);
 
@@ -791,7 +791,7 @@ describe("ink compatibility - text styles", () => {
     });
 
     it("should render underline text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Text underline>Underlined text</Text>);
 
@@ -799,7 +799,7 @@ describe("ink compatibility - text styles", () => {
     });
 
     it("should render dim text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Text dimColor>Dim text</Text>);
 
@@ -807,7 +807,7 @@ describe("ink compatibility - text styles", () => {
     });
 
     it("should render colored text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<Text color="green">Green text</Text>);
 
@@ -817,7 +817,7 @@ describe("ink compatibility - text styles", () => {
 
 describe("ink compatibility - nested boxes", () => {
     it("should render nested flex layouts", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderTest(
             <Box flexDirection="column">
@@ -842,7 +842,7 @@ describe("ink compatibility - nested boxes", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(
             <Box flexDirection="column">
@@ -890,7 +890,7 @@ describe("ink compatibility - incremental-rendering", () => {
     };
 
     it("should render service list with selection indicator", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
 
@@ -901,7 +901,7 @@ describe("ink compatibility - incremental-rendering", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<IncrementalRendering />, { columns: 60 });
 
@@ -946,7 +946,7 @@ describe("ink compatibility - stress-test", () => {
     );
 
     it("should render grid cells", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
 
@@ -956,7 +956,7 @@ describe("ink compatibility - stress-test", () => {
     });
 
     it("should match snapshot", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderTest(<StressTest />, { columns: 20, rows: 10 });
 

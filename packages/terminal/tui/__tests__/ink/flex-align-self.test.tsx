@@ -5,7 +5,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("flex-align-self", () => {
     it("row - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3}>
@@ -19,7 +19,7 @@ describe("flex-align-self", () => {
     });
 
     it("row - align multiple text nodes to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3}>
@@ -34,7 +34,7 @@ describe("flex-align-self", () => {
     });
 
     it("row - align text to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3}>
@@ -48,7 +48,7 @@ describe("flex-align-self", () => {
     });
 
     it("row - align multiple text nodes to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3}>
@@ -63,7 +63,7 @@ describe("flex-align-self", () => {
     });
 
     it("column - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" width={10}>
@@ -77,7 +77,7 @@ describe("flex-align-self", () => {
     });
 
     it("column - align text to right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" width={10}>
@@ -91,7 +91,7 @@ describe("flex-align-self", () => {
     });
 
     it("column - align self stretch", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" width={7}>
@@ -105,7 +105,7 @@ describe("flex-align-self", () => {
     });
 
     it("row - align self stretch", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={5}>
@@ -119,7 +119,7 @@ describe("flex-align-self", () => {
     });
 
     it("row - align self baseline", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-end" height={3}>

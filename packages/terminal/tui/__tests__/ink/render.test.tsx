@@ -78,8 +78,6 @@ const term = (fixture: string, args: string[] = []) => {
     });
 
     ps.onExit(({ exitCode }) => {
-        expect.hasAssertions();
-
         if (exitCode === 0) {
             resolveExit();
 
@@ -109,7 +107,7 @@ const getContentWrites = (writeSpy: any): string[] =>
 // eslint-disable-next-line vitest/prefer-describe-function-title -- String title is conventional for test describe blocks
 describe("render", () => {
     it.skipIf(!ptyAvailable)("do not erase screen", async () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const ps = term("erase", ["4"]);
 
@@ -123,7 +121,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than viewport", async () => {
-        expect.hasAssertions();
+        expect.assertions(7);
 
         const ps = term("erase-with-static", ["4"]);
 
@@ -137,7 +135,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("erase screen", async () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const ps = term("erase", ["3"]);
 
@@ -151,7 +149,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("clear output", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const ps = term("clear");
 
@@ -165,7 +163,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("intercept console methods and display result above output", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("console");
 
@@ -177,7 +175,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("rerender on resize", async () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout(10);
 
@@ -209,7 +207,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("waitUntilExit resolves after stdout write callback", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         let writeCallbackFired = false;
 
@@ -234,7 +232,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after unmount", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const { unmount, waitUntilExit, waitUntilRenderFlush } = render(<Text>Hello</Text>, { stdout });
@@ -247,7 +245,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after exit with error", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
 
@@ -269,7 +267,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during synchronous render error handling", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         class SynchronousErrorBoundary extends PureComponent<
             {
@@ -336,7 +334,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("render only last frame when run in CI", async () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const Counter = () => {
             const [count, setCount] = useState(0);
@@ -379,7 +377,7 @@ describe("render", () => {
     });
 
     it.skipIf(!ptyAvailable)("#725: non-TTY child process output is flushed", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const { spawn: spawnProcess } = await import("node:child_process");
 
@@ -416,7 +414,7 @@ describe("render", () => {
     it.skipIf(!ptyAvailable)(
         "#450: incremental rendering should not clearTerminal for fullscreen rerenders",
         async () => {
-            expect.hasAssertions();
+            expect.assertions(3);
 
             const rows = 6;
             const output = await run("issue-450-incremental-fullscreen-rerender", { args: [String(rows)], rows });
@@ -433,7 +431,7 @@ describe("render", () => {
     );
 
     it.skipIf(!ptyAvailable)("#450: incremental rendering should still emit Static output when shrinking from fullscreen", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const rows = 6;
         const output = await run("issue-450-incremental-static-shrink-rerender", { args: [String(rows)], rows });

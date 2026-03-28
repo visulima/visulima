@@ -24,7 +24,7 @@ describe("errors", () => {
     });
 
     it("catch and display error", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout();
 
@@ -46,7 +46,7 @@ describe("errors", () => {
     });
 
     it("does not emit unhandledRejection when render exits with an error and waitUntilExit is unused", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const unhandledRejectionReasons: unknown[] = [];
@@ -77,7 +77,7 @@ describe("errors", () => {
     });
 
     it("errorBoundary catches and displays nested component errors", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -103,7 +103,7 @@ describe("errors", () => {
     });
 
     it("clean up raw mode when error is thrown", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
 

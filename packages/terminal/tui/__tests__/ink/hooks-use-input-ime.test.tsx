@@ -17,7 +17,7 @@ const ptyAvailable = (() => {
 
 describe("hooks-use-input-ime", () => {
     it.skipIf(!ptyAvailable)("useInput - buffers Chinese IME input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ime", ["chinese"]);
 
@@ -30,7 +30,7 @@ describe("hooks-use-input-ime", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - buffers Japanese IME input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ime", ["japanese"]);
 
@@ -41,7 +41,7 @@ describe("hooks-use-input-ime", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - buffers Korean IME input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ime", ["korean"]);
 
@@ -52,7 +52,7 @@ describe("hooks-use-input-ime", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - buffers Thai IME input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ime", ["thai"]);
 
@@ -63,15 +63,16 @@ describe("hooks-use-input-ime", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - flushes IME buffer before processing regular ASCII input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ime", ["mixedInput"]);
 
         ps.write("\u4F60");
 
-        // Small delay to let IME buffer accumulate, then send ASCII
+        // Wait for IME buffer to flush (imeTimeout is 30ms in fixture),
+        // then send ASCII which should be processed normally.
         await new Promise((resolve) => {
-            setTimeout(resolve, 100);
+            setTimeout(resolve, 200);
         });
         ps.write("x");
         await ps.waitForExit();

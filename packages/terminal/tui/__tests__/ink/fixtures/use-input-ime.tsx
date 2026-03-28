@@ -48,12 +48,17 @@ const IMEInput = ({ test }: { readonly test: string | undefined }) => {
             }
 
             if (test === "mixedInput") {
-                setReceived((previous) => previous + input);
+                setReceived((previous) => {
+                    const next = previous + input;
 
-                // After receiving IME text followed by ASCII
-                if (input === "x") {
-                    exit();
-                }
+                    // Exit once we've accumulated both the IME character and "x".
+                    // Works whether they arrive as separate events or coalesced.
+                    if (next.includes("x")) {
+                        exit();
+                    }
+
+                    return next;
+                });
             }
         },
         {

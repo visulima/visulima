@@ -17,7 +17,7 @@ const ptyAvailable = (() => {
 
 describe("hooks-use-input-navigation", () => {
     it.skipIf(!ptyAvailable)("useInput - handle up arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["upArrow"]);
 
@@ -28,7 +28,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle down arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["downArrow"]);
 
@@ -39,7 +39,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle left arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["leftArrow"]);
 
@@ -50,7 +50,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle right arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["rightArrow"]);
 
@@ -61,7 +61,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handles rapid arrows and enter in one chunk", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["rapidArrowsEnter"]);
 
@@ -72,7 +72,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta + up arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["upArrowMeta"]);
 
@@ -83,7 +83,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta + down arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["downArrowMeta"]);
 
@@ -94,7 +94,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta + left arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["leftArrowMeta"]);
 
@@ -105,7 +105,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta + right arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["rightArrowMeta"]);
 
@@ -116,7 +116,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle ctrl + up arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["upArrowCtrl"]);
 
@@ -127,7 +127,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle ctrl + down arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["downArrowCtrl"]);
 
@@ -138,7 +138,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle ctrl + left arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["leftArrowCtrl"]);
 
@@ -149,7 +149,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle ctrl + right arrow", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["rightArrowCtrl"]);
 
@@ -160,7 +160,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle page down", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["pageDown"]);
 
@@ -171,7 +171,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle page up", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["pageUp"]);
 
@@ -182,7 +182,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle home", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["home"]);
 
@@ -193,7 +193,7 @@ describe("hooks-use-input-navigation", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle end", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["end"]);
 

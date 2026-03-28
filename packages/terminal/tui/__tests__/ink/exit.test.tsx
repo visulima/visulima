@@ -36,7 +36,7 @@ const currentDirectory = url.fileURLToPath(new URL(".", import.meta.url));
 
 describe("exit", () => {
     it.skipIf(!ptyAvailable)("exit normally without unmount() or exit()", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-normally");
 
@@ -44,7 +44,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on unmount()", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-unmount");
 
@@ -52,7 +52,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit when app finishes execution", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = run("exit-on-finish");
 
@@ -60,7 +60,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit()", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-exit");
 
@@ -68,7 +68,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with error", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-exit-with-error");
 
@@ -76,7 +76,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with error with value property", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-exit-with-error-value-property");
 
@@ -84,7 +84,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with result value", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-exit-with-result");
 
@@ -92,7 +92,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with object result", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-on-exit-with-value-object");
 
@@ -100,7 +100,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with raw mode", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-raw-on-exit");
 
@@ -108,7 +108,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with raw mode with error", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-raw-on-exit-with-error");
 
@@ -116,7 +116,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on unmount() with raw mode", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-raw-on-unmount");
 
@@ -124,7 +124,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit with thrown error", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-with-thrown-error");
 
@@ -132,11 +132,9 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("don't exit while raw mode is active", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         await new Promise<void>((resolve, reject) => {
-            expect.hasAssertions();
-
             const env: Record<string, string> = {
                 ...process.env,
                 NODE_NO_WARNINGS: "1",
@@ -188,7 +186,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit when DEV is set", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("exit-normally", {
             env: {
@@ -200,7 +198,7 @@ describe("exit", () => {
     });
 
     it.skipIf(!ptyAvailable)("exit on exit() with error and static output", async () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const output = await run("exit-with-static");
 

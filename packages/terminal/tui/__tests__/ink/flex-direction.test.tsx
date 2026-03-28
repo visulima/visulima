@@ -5,7 +5,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("flex-direction", () => {
     it("direction row", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="row">
@@ -18,7 +18,7 @@ describe("flex-direction", () => {
     });
 
     it("direction row reverse", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="row-reverse" width={4}>
@@ -31,7 +31,7 @@ describe("flex-direction", () => {
     });
 
     it("direction column", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -44,7 +44,7 @@ describe("flex-direction", () => {
     });
 
     it("direction column reverse", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column-reverse" height={4}>
@@ -57,7 +57,7 @@ describe("flex-direction", () => {
     });
 
     it("don't squash text nodes when column direction is applied", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -70,7 +70,7 @@ describe("flex-direction", () => {
     });
 
     it("direction row - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box flexDirection="row">
@@ -83,7 +83,7 @@ describe("flex-direction", () => {
     });
 
     it("direction column - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box flexDirection="column">

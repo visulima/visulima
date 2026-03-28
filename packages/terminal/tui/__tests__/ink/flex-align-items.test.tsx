@@ -5,7 +5,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("flex-align-items", () => {
     it("row - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="center" height={3}>
@@ -17,7 +17,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - align multiple text nodes to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="center" height={3}>
@@ -30,7 +30,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - align text to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-end" height={3}>
@@ -42,7 +42,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - align multiple text nodes to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-end" height={3}>
@@ -55,7 +55,7 @@ describe("flex-align-items", () => {
     });
 
     it("column - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="center" flexDirection="column" width={10}>
@@ -67,7 +67,7 @@ describe("flex-align-items", () => {
     });
 
     it("column - align text to right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-end" flexDirection="column" width={10}>
@@ -79,7 +79,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - align items stretch", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="stretch" height={5}>
@@ -93,7 +93,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - default align items stretches children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={5}>
@@ -107,7 +107,7 @@ describe("flex-align-items", () => {
     });
 
     it("row - align text to baseline", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="baseline" height={3}>

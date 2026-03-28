@@ -18,7 +18,7 @@ const ptyAvailable = (() => {
 
 describe("hooks", () => {
     it.skipIf(!ptyAvailable)("useInput - ignore input if not active", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const ps = term("use-input-multiple");
 
@@ -31,7 +31,7 @@ describe("hooks", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C when `exitOnCtrlC` is `false`", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ctrl-c");
 
@@ -42,7 +42,7 @@ describe("hooks", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - no MaxListenersExceededWarning with many useInput hooks", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const ps = term("use-input-many");
 
@@ -53,7 +53,7 @@ describe("hooks", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C via kitty codepoint-3 form when `exitOnCtrlC` is `false`", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input-ctrl-c");
 
@@ -65,7 +65,7 @@ describe("hooks", () => {
     });
 
     it.skipIf(!ptyAvailable)("useStdout - write to stdout", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-stdout");
 

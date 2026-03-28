@@ -16,85 +16,85 @@ const parseChunks = (chunks: string[]): InputEvent[] => {
 
 describe("input-parser", () => {
     it("passes through plain text chunks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["hello", " ", "world"])).toStrictEqual(["hello", " ", "world"]);
     });
 
     it("keeps plain text and control sequences separate", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["a\u001B[Ab"])).toStrictEqual(["a", "\u001B[A", "b"]);
     });
 
     it("parses multiple standard CSI keys in one chunk", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[A\u001B[B\u001B[C\u001B[D"])).toStrictEqual(["\u001B[A", "\u001B[B", "\u001B[C", "\u001B[D"]);
     });
 
     it("parses CSI sequences with parameters", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[1;5A\u001B[5~\u001B[6~"])).toStrictEqual(["\u001B[1;5A", "\u001B[5~", "\u001B[6~"]);
     });
 
     it("parses kitty protocol sequence as one key event", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[97;5u"])).toStrictEqual(["\u001B[97;5u"]);
     });
 
     it("parses SS3 sequences as one key event", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001BOA\u001BOB\u001BOC\u001BOD"])).toStrictEqual(["\u001BOA", "\u001BOB", "\u001BOC", "\u001BOD"]);
     });
 
     it("does not consume a following escape as SS3 final byte", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001BO\u001B[A"])).toStrictEqual(["\u001BO", "\u001B[A"]);
     });
 
     it("parses meta+CSI sequence with double escape", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B\u001B[A"])).toStrictEqual(["\u001B\u001B[A"]);
     });
 
     it("parses escaped printable code points", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001Bx\u001B1"])).toStrictEqual(["\u001Bx", "\u001B1"]);
     });
 
     it("parses escaped supplementary code points", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B😀"])).toStrictEqual(["\u001B😀"]);
     });
 
     it("preserves legacy ESC[[... sequences in a mixed chunk", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[[A\u001B[[5~"])).toStrictEqual(["\u001B[[A", "\u001B[[5~"]);
     });
 
     it("preserves legacy ESC[[... sequences across chunks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[[", "A\u001B[[5~"])).toStrictEqual(["\u001B[[A", "\u001B[[5~"]);
     });
 
     it("parses legacy and standard CSI sequences mixed together", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[[A\u001B[B\u001B[[6~\u001B[1;5D"])).toStrictEqual(["\u001B[[A", "\u001B[B", "\u001B[[6~", "\u001B[1;5D"]);
     });
 
     it("holds incomplete CSI sequence until final byte arrives", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const parser = createInputParser();
 
@@ -105,7 +105,7 @@ describe("input-parser", () => {
     });
 
     it("holds incomplete legacy ESC[[... sequence until final byte arrives", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -115,7 +115,7 @@ describe("input-parser", () => {
     });
 
     it("holds incomplete SS3 sequence until final byte arrives", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const parser = createInputParser();
 
@@ -124,7 +124,7 @@ describe("input-parser", () => {
     });
 
     it("holds incomplete double-escape CSI sequence until final byte arrives", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const parser = createInputParser();
 
@@ -133,7 +133,7 @@ describe("input-parser", () => {
     });
 
     it("keeps pending plain escape and can flush it", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const parser = createInputParser();
 
@@ -144,7 +144,7 @@ describe("input-parser", () => {
     });
 
     it("flushes pending CSI prefix as literal input", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const parser = createInputParser();
 
@@ -156,7 +156,7 @@ describe("input-parser", () => {
     });
 
     it("reset clears pending input state", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const parser = createInputParser();
 
@@ -168,19 +168,19 @@ describe("input-parser", () => {
     });
 
     it("treats invalid CSI continuation as escaped code point plus plain text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[\n"])).toStrictEqual(["\u001B[", "\n"]);
     });
 
     it("parses mixed text and many key events in one read", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["start\u001B[A mid \u001BOH end\u001B[[5~"])).toStrictEqual(["start", "\u001B[A", " mid ", "\u001BOH", " end", "\u001B[[5~"]);
     });
 
     it("flushes pending SS3 prefix as literal input", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const parser = createInputParser();
 
@@ -191,7 +191,7 @@ describe("input-parser", () => {
     });
 
     it("flushes pending legacy CSI prefix as literal input", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const parser = createInputParser();
 
@@ -202,13 +202,13 @@ describe("input-parser", () => {
     });
 
     it("parses meta+SS3 sequence with double escape", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B\u001BOA"])).toStrictEqual(["\u001B\u001BOA"]);
     });
 
     it("holds incomplete double-escape SS3 sequence until final byte arrives", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -218,19 +218,19 @@ describe("input-parser", () => {
     });
 
     it("emits double escape as single event for non-control character", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B\u001Bx"])).toStrictEqual(["\u001B\u001B", "x"]);
     });
 
     it("empty chunk produces no events", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks([""])).toStrictEqual([]);
     });
 
     it("empty chunk does not disturb pending state", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const parser = createInputParser();
 
@@ -241,7 +241,7 @@ describe("input-parser", () => {
     });
 
     it("plain text followed by incomplete escape holds escape as pending", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -324,13 +324,13 @@ describe("input-parser", () => {
     ] as const;
 
     it.each(deleteAndBackspaceCases)("$title", (testCase) => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(testCase.chunks)).toStrictEqual(testCase.events);
     });
 
     it("assembles CSI sequence from single-byte chunks", () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const parser = createInputParser();
 
@@ -343,37 +343,37 @@ describe("input-parser", () => {
     });
 
     it("emits paste event for bracketed paste sequence", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~hello world\u001B[201~"])).toStrictEqual([{ paste: "hello world" }]);
     });
 
     it("emits paste event for multiline bracketed paste", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~line1\nline2\u001B[201~"])).toStrictEqual([{ paste: "line1\nline2" }]);
     });
 
     it("paste content with escape sequences is delivered verbatim", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~hello\u001B[Aworld\u001B[201~"])).toStrictEqual([{ paste: "hello\u001B[Aworld" }]);
     });
 
     it("emits normal events before and after bracketed paste", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["before\u001B[200~pasted\u001B[201~after"])).toStrictEqual(["before", { paste: "pasted" }, "after"]);
     });
 
     it("emits multiple paste events in one chunk", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~first\u001B[201~mid\u001B[200~second\u001B[201~"])).toStrictEqual([{ paste: "first" }, "mid", { paste: "second" }]);
     });
 
     it("holds incomplete bracketed paste as pending", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -383,7 +383,7 @@ describe("input-parser", () => {
     });
 
     it("assembles bracketed paste from chunk-by-chunk delivery", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -393,13 +393,13 @@ describe("input-parser", () => {
     });
 
     it("emits empty paste for adjacent paste markers", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~\u001B[201~"])).toStrictEqual([{ paste: "" }]);
     });
 
     it(String.raw`handles pasteStart split before the tilde (\u001B[200 without ~)`, () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const parser = createInputParser();
 
@@ -409,7 +409,7 @@ describe("input-parser", () => {
     });
 
     it(String.raw`hasPendingEscape returns true for length-3 pasteStart prefix (\u001B[2)`, () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const parser = createInputParser();
 
@@ -418,7 +418,7 @@ describe("input-parser", () => {
     });
 
     it(String.raw`hasPendingEscape returns true for length-4 pasteStart prefix (\u001B[20)`, () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const parser = createInputParser();
 
@@ -427,7 +427,7 @@ describe("input-parser", () => {
     });
 
     it("paste event delivers delete and backspace chars verbatim without splitting", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(parseChunks(["\u001B[200~\u007F\u0008\u007F\u001B[201~"])).toStrictEqual([{ paste: "\u007F\u0008\u007F" }]);
     });

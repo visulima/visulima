@@ -12,7 +12,7 @@ import { renderAsync } from "../helpers/ink-test-renderer";
 
 describe("borders", () => {
     it("single node - full width box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round">
@@ -24,7 +24,7 @@ describe("borders", () => {
     });
 
     it("single node - full width box with colorful border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderColor="green" borderStyle="round">
@@ -43,7 +43,7 @@ describe("borders", () => {
     });
 
     it("single node - fit-content box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -55,7 +55,7 @@ describe("borders", () => {
     });
 
     it("single node - fit-content box with wide characters", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -67,7 +67,7 @@ describe("borders", () => {
     });
 
     it("single node - fit-content box with emojis", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -79,7 +79,7 @@ describe("borders", () => {
     });
 
     it("single node - fit-content box with variation selector emojis", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -91,7 +91,7 @@ describe("borders", () => {
     });
 
     it("single node - fixed width box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={20}>
@@ -103,7 +103,7 @@ describe("borders", () => {
     });
 
     it("single node - fixed width and height box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={20} width={20}>
@@ -119,7 +119,7 @@ describe("borders", () => {
     });
 
     it("single node - box with padding", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round" padding={1}>
@@ -131,7 +131,7 @@ describe("borders", () => {
     });
 
     it("single node - box with horizontal alignment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" justifyContent="center" width={20}>
@@ -143,7 +143,7 @@ describe("borders", () => {
     });
 
     it("single node - box with vertical alignment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="center" alignSelf="flex-start" borderStyle="round" height={20}>
@@ -159,7 +159,7 @@ describe("borders", () => {
     });
 
     it("single node - box with wrapping", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={10}>
@@ -171,7 +171,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - full width box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round">
@@ -186,7 +186,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - full width box with colorful border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderColor="green" borderStyle="round">
@@ -208,7 +208,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - fit-content box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -223,7 +223,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - fixed width box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={20}>
@@ -238,7 +238,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - fixed width and height box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={20} width={20}>
@@ -257,7 +257,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with padding", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round" padding={1}>
@@ -272,7 +272,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with horizontal alignment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" justifyContent="center" width={20}>
@@ -287,7 +287,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with vertical alignment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="center" alignSelf="flex-start" borderStyle="round" height={20}>
@@ -306,7 +306,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with wrapping", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={10}>
@@ -321,7 +321,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with wrapping and long first node", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={10}>
@@ -333,7 +333,7 @@ describe("borders", () => {
     });
 
     it("multiple nodes - box with wrapping and very long first node", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" width={10}>
@@ -345,7 +345,7 @@ describe("borders", () => {
     });
 
     it("nested boxes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" padding={1} width={40}>
@@ -361,7 +361,7 @@ describe("borders", () => {
     });
 
     it("nested boxes - fit-content box with wide characters on flex-direction row", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -394,7 +394,7 @@ describe("borders", () => {
 
     // TODO: @visulima/boxen measures emoji widths differently than the ink renderer
     it.skip("nested boxes - fit-content box with emojis on flex-direction row", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -426,7 +426,7 @@ describe("borders", () => {
     });
 
     it("nested boxes - fit-content box with wide characters on flex-direction column", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round" flexDirection="column">
@@ -454,7 +454,7 @@ describe("borders", () => {
 
     // TODO: @visulima/boxen measures emoji widths differently than the ink renderer
     it.skip("nested boxes - fit-content box with emojis on flex-direction column", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderStyle="round" flexDirection="column">
@@ -478,7 +478,7 @@ describe("borders", () => {
     });
 
     it("render border after update", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -517,7 +517,7 @@ describe("borders", () => {
     });
 
     it("render border edge changes after update when borderStyle is unchanged", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -549,7 +549,7 @@ describe("borders", () => {
     });
 
     it("hide top border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -572,7 +572,7 @@ describe("borders", () => {
     });
 
     it("hide bottom border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -595,7 +595,7 @@ describe("borders", () => {
     });
 
     it("hide top and bottom borders", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -611,7 +611,7 @@ describe("borders", () => {
     });
 
     it("hide left border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -635,7 +635,7 @@ describe("borders", () => {
     });
 
     it("hide right border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -659,7 +659,7 @@ describe("borders", () => {
     });
 
     it("hide left and right border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -675,7 +675,7 @@ describe("borders", () => {
     });
 
     it("hide all borders", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -691,7 +691,7 @@ describe("borders", () => {
     });
 
     it("change color of top border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -715,7 +715,7 @@ describe("borders", () => {
     });
 
     it("change color of bottom border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -739,7 +739,7 @@ describe("borders", () => {
     });
 
     it("change color of left border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -763,7 +763,7 @@ describe("borders", () => {
     });
 
     it("change color of right border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -787,7 +787,7 @@ describe("borders", () => {
     });
 
     it("custom border style", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box
@@ -810,7 +810,7 @@ describe("borders", () => {
     });
 
     it("dim border color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderDimColor borderStyle="round">
@@ -830,7 +830,7 @@ describe("borders", () => {
     });
 
     it("dim top border color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -854,7 +854,7 @@ describe("borders", () => {
     });
 
     it("dim bottom border color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -878,7 +878,7 @@ describe("borders", () => {
     });
 
     it("dim left border color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -902,7 +902,7 @@ describe("borders", () => {
     });
 
     it("dim right border color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignItems="flex-start" flexDirection="column">
@@ -926,7 +926,7 @@ describe("borders", () => {
     });
 
     it("borderDimColor does not dim styled child Text touching left edge", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderToString(
             <Box alignSelf="flex-start" borderDimColor borderStyle="round">
@@ -946,7 +946,7 @@ describe("borders", () => {
     });
 
     it("single node - full width box - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box borderStyle="round">
@@ -958,7 +958,7 @@ describe("borders", () => {
     });
 
     it("single node - fit-content box - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box alignSelf="flex-start" borderStyle="round">
@@ -970,7 +970,7 @@ describe("borders", () => {
     });
 
     it("nested boxes - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box borderStyle="round" padding={1} width={40}>
@@ -986,7 +986,7 @@ describe("borders", () => {
     });
 
     it("render border after update - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ borderColor }: { readonly borderColor?: string }) => (
             <Box borderColor={borderColor} borderStyle="round">

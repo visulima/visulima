@@ -6,7 +6,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("flex-justify-content", () => {
     it("row - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="center" width={10}>
@@ -18,7 +18,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - align multiple text nodes to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="center" width={10}>
@@ -31,7 +31,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - align text to right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="flex-end" width={10}>
@@ -43,7 +43,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - align multiple text nodes to right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="flex-end" width={10}>
@@ -56,7 +56,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - align two text nodes on the edges", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="space-between" width={4}>
@@ -69,7 +69,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - space evenly two text nodes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="space-evenly" width={10}>
@@ -82,7 +82,7 @@ describe("flex-justify-content", () => {
     });
 
     it.fails("row - align two text nodes with equal space around them", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="space-around" width={5}>
@@ -95,7 +95,7 @@ describe("flex-justify-content", () => {
     });
 
     it("row - align colored text node when text is squashed", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box justifyContent="flex-end" width={5}>
@@ -107,7 +107,7 @@ describe("flex-justify-content", () => {
     });
 
     it("column - align text to center", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={3} justifyContent="center">
@@ -119,7 +119,7 @@ describe("flex-justify-content", () => {
     });
 
     it("column - align text to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={3} justifyContent="flex-end">
@@ -131,7 +131,7 @@ describe("flex-justify-content", () => {
     });
 
     it("column - align two text nodes on the edges", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={4} justifyContent="space-between">
@@ -144,7 +144,7 @@ describe("flex-justify-content", () => {
     });
 
     it.fails("column - align two text nodes with equal space around them", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={5} justifyContent="space-around">

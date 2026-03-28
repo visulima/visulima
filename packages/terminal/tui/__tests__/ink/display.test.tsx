@@ -5,7 +5,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("display", () => {
     it("display flex", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box display="flex">
@@ -17,7 +17,7 @@ describe("display", () => {
     });
 
     it("display none", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -32,7 +32,7 @@ describe("display", () => {
     });
 
     it("display flex - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box display="flex">
@@ -44,7 +44,7 @@ describe("display", () => {
     });
 
     it("display none - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box flexDirection="column">

@@ -6,7 +6,7 @@ import createStdout from "../helpers/ink-create-stdout";
 
 describe("log-update", () => {
     it("standard rendering - renders and updates output", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -23,7 +23,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - skips identical output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -35,7 +35,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - renders and updates output", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -55,7 +55,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - skips identical output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -70,7 +70,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - surgical updates", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -90,7 +90,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - clears extra lines when output shrinks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -107,7 +107,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - when output grows", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -127,7 +127,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - single write call with multiple surgical updates", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -142,7 +142,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - shrinking output keeps screen tight", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -160,7 +160,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - clear() fully resets incremental state", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -178,7 +178,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - done() resets before next render", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -196,7 +196,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - multiple consecutive clear() calls (should be harmless no-ops)", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -218,7 +218,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - sync() followed by update (assert incremental path is used)", () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -258,7 +258,7 @@ describe("log-update", () => {
     };
 
     it("standard rendering - positions cursor after output when cursorPosition is set", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -273,7 +273,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - hides cursor before erase when cursor was previously shown", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -290,7 +290,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - no cursor positioning when cursorPosition is undefined", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -303,7 +303,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - cursor position at second-to-last line emits cursorUp(1)", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -317,7 +317,7 @@ describe("log-update", () => {
     });
 
     it.each(renderingModes)("$name - clear() returns cursor to bottom before erasing", ({ incremental }) => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const { render, stdout } = createRenderForMode(incremental);
 
@@ -334,7 +334,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - clearing cursor position stops cursor positioning", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -351,7 +351,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - positions cursor after surgical updates", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -368,7 +368,7 @@ describe("log-update", () => {
     });
 
     it("incremental rendering - positions cursor after update", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, {
@@ -387,7 +387,7 @@ describe("log-update", () => {
     });
 
     it.each(renderingModes)("$name - repositions cursor when only cursor position changes (same output)", ({ incremental }) => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const { render, stdout } = createRenderForMode(incremental);
 
@@ -408,7 +408,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - returns to bottom before erase when cursor was positioned", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });
@@ -427,7 +427,7 @@ describe("log-update", () => {
     });
 
     it.each(renderingModes)("$name - sync() resets cursor state", ({ incremental }) => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const { render, stdout } = createRenderForMode(incremental);
 
@@ -445,7 +445,7 @@ describe("log-update", () => {
     });
 
     it("standard rendering - sync() without cursor does not write to stream", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const render = logUpdate.create(stdout, { showCursor: true });

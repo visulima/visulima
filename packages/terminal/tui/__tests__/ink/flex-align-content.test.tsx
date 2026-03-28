@@ -24,7 +24,7 @@ describe("flex-align-content", () => {
         ["space-evenly", "\nAB\n\nCD\n\n"],
         ["stretch", "AB\n\n\nCD\n\n"],
     ] as const)("align content %s", (alignContent, expectedOutput) => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderWithAlignContent(alignContent);
 
@@ -32,7 +32,7 @@ describe("flex-align-content", () => {
     });
 
     it("align content defaults to flex-start", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexWrap="wrap" height={6} width={2}>
@@ -47,7 +47,7 @@ describe("flex-align-content", () => {
     });
 
     it("align content does not add extra spacing when there is no free cross-axis space", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box alignContent="center" flexWrap="wrap" height={2} width={2}>
@@ -62,7 +62,7 @@ describe("flex-align-content", () => {
     });
 
     it("clears alignContent on rerender to default flex-start", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -88,7 +88,7 @@ describe("flex-align-content", () => {
     });
 
     it("clears alignContent from stretch on rerender to default flex-start", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -114,7 +114,7 @@ describe("flex-align-content", () => {
     });
 
     it("clears alignContent when prop is omitted on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -140,7 +140,7 @@ describe("flex-align-content", () => {
     });
 
     it("align content center - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box alignContent="center" flexWrap="wrap" height={6} width={2}>

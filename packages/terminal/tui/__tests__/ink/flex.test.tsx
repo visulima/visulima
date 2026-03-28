@@ -5,7 +5,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("flex", () => {
     it("grow equally", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={6}>
@@ -22,7 +22,7 @@ describe("flex", () => {
     });
 
     it("grow one element", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={6}>
@@ -37,7 +37,7 @@ describe("flex", () => {
     });
 
     it("do not shrink", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={16}>
@@ -57,7 +57,7 @@ describe("flex", () => {
     });
 
     it("shrink equally", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
@@ -75,7 +75,7 @@ describe("flex", () => {
     });
 
     it("set flex basis with flexDirection=\"row\" container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={6}>
@@ -90,7 +90,7 @@ describe("flex", () => {
     });
 
     it("set flex basis in percent with flexDirection=\"row\" container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={6}>
@@ -105,7 +105,7 @@ describe("flex", () => {
     });
 
     it("set flex basis with flexDirection=\"column\" container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>
@@ -120,7 +120,7 @@ describe("flex", () => {
     });
 
     it("set flex basis in percent with flexDirection=\"column\" container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>

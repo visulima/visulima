@@ -10,7 +10,7 @@ const getWriteContents = (stdout: FakeStdout): string[] => stdout.getWrites().fi
 
 describe("terminal-resize", () => {
     it("useWindowSize returns current terminal dimensions and updates on resize", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
 
@@ -43,7 +43,7 @@ describe("terminal-resize", () => {
     });
 
     it("useWindowSize removes resize listener on unmount", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(100);
 
@@ -74,7 +74,7 @@ describe("terminal-resize", () => {
     });
 
     it("useWindowSize does not crash when resize fires after unmount", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(100);
 
@@ -104,7 +104,7 @@ describe("terminal-resize", () => {
     });
 
     it("useWindowSize falls back to a positive column count when stdout.columns is 0", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout(0);
         let capturedColumns = -1;
@@ -125,7 +125,7 @@ describe("terminal-resize", () => {
     });
 
     it("clear screen when terminal width decreases", async () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const stdout = createStdout(100);
 
@@ -154,7 +154,7 @@ describe("terminal-resize", () => {
     });
 
     it("no screen clear when terminal width increases", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(50);
 
@@ -179,7 +179,7 @@ describe("terminal-resize", () => {
     });
 
     it("consecutive width decreases trigger screen clear each time", async () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const stdout = createStdout(100);
 
@@ -213,7 +213,7 @@ describe("terminal-resize", () => {
     });
 
     it("width decrease clears lastOutput to force rerender", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout(100);
 

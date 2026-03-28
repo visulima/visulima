@@ -4,19 +4,19 @@ import measureText from "../../src/ink/measure-text";
 
 describe("measure-text", () => {
     it("measure single word", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(measureText("constructor")).toStrictEqual({ height: 1, width: 11 });
     });
 
     it("measure empty string", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(measureText("")).toStrictEqual({ height: 0, width: 0 });
     });
 
     it("measure multiline text", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("hello\nworld");
 
@@ -25,7 +25,7 @@ describe("measure-text", () => {
     });
 
     it("measure multiline text with varying line lengths", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("a\nfoo\nhi");
 
@@ -34,7 +34,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with trailing newline", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("hello\n");
 
@@ -43,7 +43,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with only newlines", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("\n\n");
 
@@ -52,7 +52,7 @@ describe("measure-text", () => {
     });
 
     it("returns cached result on repeated calls", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const first = measureText("cached-test");
 
@@ -65,7 +65,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with ANSI escape sequences", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("\u001B[31mred\u001B[0m");
 
@@ -74,7 +74,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with 256-color ANSI", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("\u001B[38;5;196mred\u001B[0m");
 
@@ -83,7 +83,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with wide characters", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("你好");
 
@@ -92,7 +92,7 @@ describe("measure-text", () => {
     });
 
     it("measure text with emoji", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("🍔");
 
@@ -101,7 +101,7 @@ describe("measure-text", () => {
     });
 
     it("measure multiline with wide characters", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = measureText("🍔🍟\nabc");
 

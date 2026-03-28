@@ -11,7 +11,7 @@ describe("render-to-string", () => {
     // ── Basic rendering ─────────────────────────────────────
 
     it("render simple text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>Hello World</Text>);
 
@@ -19,7 +19,7 @@ describe("render-to-string", () => {
     });
 
     it("render text with variable", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -32,7 +32,7 @@ describe("render-to-string", () => {
     });
 
     it("render nested text components", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const World = () => <Text>World</Text>;
 
@@ -48,7 +48,7 @@ describe("render-to-string", () => {
     });
 
     it("render empty fragment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<></>);
 
@@ -56,7 +56,7 @@ describe("render-to-string", () => {
     });
 
     it("render null children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>{null}</Text>);
 
@@ -66,7 +66,7 @@ describe("render-to-string", () => {
     // ── Layout ──────────────────────────────────────────────
 
     it("render box with padding", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingLeft={2}>
@@ -78,7 +78,7 @@ describe("render-to-string", () => {
     });
 
     it("render box with flex direction row", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -92,7 +92,7 @@ describe("render-to-string", () => {
     });
 
     it("render box with flex direction column", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -105,7 +105,7 @@ describe("render-to-string", () => {
     });
 
     it("render margin", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box marginLeft={2}>
@@ -117,7 +117,7 @@ describe("render-to-string", () => {
     });
 
     it("render gap between items", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box gap={1}>
@@ -130,7 +130,7 @@ describe("render-to-string", () => {
     });
 
     it("render box with fixed width and height", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3} width={10}>
@@ -144,7 +144,7 @@ describe("render-to-string", () => {
     });
 
     it("render spacer pushes content apart", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={20}>
@@ -158,7 +158,7 @@ describe("render-to-string", () => {
     });
 
     it("render newline inserts blank line", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -172,7 +172,7 @@ describe("render-to-string", () => {
     });
 
     it("render box with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="single" width={20}>
@@ -192,7 +192,7 @@ describe("render-to-string", () => {
     // ── Styling ─────────────────────────────────────────────
 
     it("render colored text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="green">Green</Text>);
 
@@ -200,7 +200,7 @@ describe("render-to-string", () => {
     });
 
     it("render bold text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text bold>Bold</Text>);
 
@@ -210,7 +210,7 @@ describe("render-to-string", () => {
     // ── Text wrapping and columns ───────────────────────────
 
     it("render text with wrap", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -222,7 +222,7 @@ describe("render-to-string", () => {
     });
 
     it("render text with truncate", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -234,7 +234,7 @@ describe("render-to-string", () => {
     });
 
     it("default columns is 80", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const longText = "A".repeat(100);
         const output = renderToString(<Text>{longText}</Text>);
@@ -247,7 +247,7 @@ describe("render-to-string", () => {
     });
 
     it("custom columns option", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const longText = "A".repeat(50);
         const output = renderToString(<Text>{longText}</Text>, { columns: 30 });
@@ -262,7 +262,7 @@ describe("render-to-string", () => {
     // ── Components ──────────────────────────────────────────
 
     it("render Transform component", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(output) => output.toUpperCase()}>
@@ -274,7 +274,7 @@ describe("render-to-string", () => {
     });
 
     it("render Static component with items", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const items = ["A", "B", "C"];
 
@@ -289,7 +289,7 @@ describe("render-to-string", () => {
     });
 
     it("render static-only output has no trailing newline", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const items = ["A", "B"];
 
@@ -299,7 +299,7 @@ describe("render-to-string", () => {
     });
 
     it("render static + dynamic output has exactly one newline between parts", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const items = ["A", "B"];
 
@@ -316,7 +316,7 @@ describe("render-to-string", () => {
     // ── Effect behavior ─────────────────────────────────────
 
     it("captures initial render output before effect-driven state updates", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const App = () => {
             const [text, setText] = useState("Initial");
@@ -334,7 +334,7 @@ describe("render-to-string", () => {
     });
 
     it("useLayoutEffect state updates are reflected in output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const App = () => {
             const [text, setText] = useState("Initial");
@@ -352,7 +352,7 @@ describe("render-to-string", () => {
     });
 
     it("runs effect cleanup on teardown", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         let cleanupRan = false;
 
@@ -376,7 +376,7 @@ describe("render-to-string", () => {
     // ── Error handling ──────────────────────────────────────
 
     it("component that throws propagates the error", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const Broken = (): React.JSX.Element => {
             throw new Error("Component error");
@@ -386,13 +386,13 @@ describe("render-to-string", () => {
     });
 
     it("text outside Text component throws", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(() => renderToString(<Box>raw text</Box>)).toThrow(TEXT_INSIDE_TEXT_RE);
     });
 
     it("subsequent calls work after a component error", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Broken = (): React.JSX.Element => {
             throw new Error("Boom");
@@ -408,7 +408,7 @@ describe("render-to-string", () => {
     // ── Independence ────────────────────────────────────────
 
     it("can be called multiple times independently", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output1 = renderToString(<Text>First</Text>);
         const output2 = renderToString(<Text>Second</Text>);
@@ -420,7 +420,7 @@ describe("render-to-string", () => {
     // ── Deeply nested tree ──────────────────────────────────
 
     it("render deeply nested component tree", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderToString(
             <Box flexDirection="column">

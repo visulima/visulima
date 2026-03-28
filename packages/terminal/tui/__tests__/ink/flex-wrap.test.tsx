@@ -5,7 +5,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("flex-wrap", () => {
     it("row - no wrap", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={2}>
@@ -18,7 +18,7 @@ describe("flex-wrap", () => {
     });
 
     it("column - no wrap", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={2}>
@@ -32,7 +32,7 @@ describe("flex-wrap", () => {
     });
 
     it("row - wrap content", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexWrap="wrap" width={2}>
@@ -45,7 +45,7 @@ describe("flex-wrap", () => {
     });
 
     it("column - wrap content", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" flexWrap="wrap" height={2}>
@@ -59,7 +59,7 @@ describe("flex-wrap", () => {
     });
 
     it("column - wrap content reverse", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" flexWrap="wrap-reverse" height={2} width={3}>
@@ -73,7 +73,7 @@ describe("flex-wrap", () => {
     });
 
     it("row - wrap content reverse", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexWrap="wrap-reverse" height={3} width={2}>

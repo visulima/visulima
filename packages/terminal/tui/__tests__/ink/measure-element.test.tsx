@@ -17,7 +17,7 @@ describe("measure-element", () => {
     });
 
     it("measure element", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -55,7 +55,7 @@ describe("measure-element", () => {
     });
 
     it("measure element after state update", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         let setTestItems!: (items: string[]) => void;
@@ -102,7 +102,7 @@ describe("measure-element", () => {
     });
 
     it("measure element after multiple state updates", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         let setTestItems!: (items: string[]) => void;
@@ -152,7 +152,7 @@ describe("measure-element", () => {
     });
 
     it("measure element in useLayoutEffect after state update", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         let setTestItems!: (items: string[]) => void;
@@ -199,7 +199,7 @@ describe("measure-element", () => {
 
     // Timing-sensitive test that passes in isolation but can fail when run with other tests
     it.skip("calculate layout while rendering is throttled", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
 

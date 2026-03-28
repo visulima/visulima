@@ -6,7 +6,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("position", () => {
     it("absolute position with top and left offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={3} width={5}>
@@ -20,7 +20,7 @@ describe("position", () => {
     });
 
     it("absolute position with bottom and right offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} width={6}>
@@ -34,7 +34,7 @@ describe("position", () => {
     });
 
     it("absolute position with percentage offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} width={6}>
@@ -48,7 +48,7 @@ describe("position", () => {
     });
 
     it("absolute position with percentage bottom and right offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} width={6}>
@@ -62,7 +62,7 @@ describe("position", () => {
     });
 
     it("relative position offsets visual position while keeping flow", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={5}>
@@ -77,7 +77,7 @@ describe("position", () => {
     });
 
     it("static position ignores offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={5}>
@@ -92,7 +92,7 @@ describe("position", () => {
     });
 
     it("static position ignores percentage offsets", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={5}>
@@ -107,7 +107,7 @@ describe("position", () => {
     });
 
     it("clears top offset on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -132,7 +132,7 @@ describe("position", () => {
     });
 
     it("clears percentage top and left offsets on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -157,7 +157,7 @@ describe("position", () => {
     });
 
     it("clears percentage top and left offsets when props are omitted on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -182,7 +182,7 @@ describe("position", () => {
     });
 
     it("clears bottom and right offsets on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -207,7 +207,7 @@ describe("position", () => {
     });
 
     it("absolute position with top and left offsets - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box height={3} width={5}>
