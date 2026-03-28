@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-unnecessary-condition, func-style, jsdoc/check-indentation, jsdoc/match-description, no-bitwise, no-empty, no-param-reassign, no-plusplus, unicorn/no-null, unicorn/no-process-exit, unicorn/prefer-code-point, unicorn/prevent-abbreviations */
+
 /**
  * harness.ts — minimal terminal loop for raw buffer demos
  *

@@ -1,94 +1,106 @@
 import { strip as stripAnsi } from "@visulima/ansi";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
-it("wide characters do not add extra space inside fixed-width Box", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
+describe("text-width", () => {
+    it("wide characters do not add extra space inside fixed-width Box", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box>
+                    <Box width={2}>
+                        <Text>🍔</Text>
+                    </Box>
+                    <Text>|</Text>
+                </Box>
+                <Box>
+                    <Box width={2}>
+                        <Text>⏳</Text>
+                    </Box>
+                    <Text>|</Text>
+                </Box>
+            </Box>,
+        );
+
+        const lines = output.split("\n");
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toBe("🍔|");
+        expect(lines[1]).toBe("⏳|");
+    });
+
+    it("cJK characters occupy correct width in fixed-width Box", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
             <Box>
-                <Box width={2}>
-                    <Text>🍔</Text>
+                <Box width={4}>
+                    <Text>你好</Text>
                 </Box>
                 <Text>|</Text>
-            </Box>
+            </Box>,
+        );
+
+        expect(output).toBe("你好|");
+    });
+
+    it("mixed ASCII and wide characters align correctly", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box>
+                    <Box width={6}>
+                        <Text>ab🍔cd</Text>
+                    </Box>
+                    <Text>|</Text>
+                </Box>
+                <Box>
+                    <Box width={6}>
+                        <Text>abcdef</Text>
+                    </Box>
+                    <Text>|</Text>
+                </Box>
+            </Box>,
+        );
+
+        const lines = output.split("\n");
+
+        expect(lines).toHaveLength(2);
+        expect(lines[0]).toBe("ab🍔cd|");
+        expect(lines[1]).toBe("abcdef|");
+    });
+
+    it("aNSI styled text does not affect layout width", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
             <Box>
-                <Box width={2}>
-                    <Text>⏳</Text>
+                <Box width={5}>
+                    <Text color="red">hello</Text>
                 </Box>
                 <Text>|</Text>
-            </Box>
-        </Box>,
-    );
+            </Box>,
+        );
 
-    const lines = output.split("\n");
+        const stripped = stripAnsi(output);
 
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe("🍔|");
-    expect(lines[1]).toBe("⏳|");
-});
+        expect(stripped).toBe("hello|");
+    });
 
-it("cJK characters occupy correct width in fixed-width Box", () => {
-    const output = renderToString(
-        <Box>
-            <Box width={4}>
-                <Text>你好</Text>
-            </Box>
-            <Text>|</Text>
-        </Box>,
-    );
+    it("empty Text does not affect sibling layout", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("你好|");
-});
-
-it("mixed ASCII and wide characters align correctly", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
+        const output = renderToString(
             <Box>
-                <Box width={6}>
-                    <Text>ab🍔cd</Text>
-                </Box>
-                <Text>|</Text>
-            </Box>
-            <Box>
-                <Box width={6}>
-                    <Text>abcdef</Text>
-                </Box>
-                <Text>|</Text>
-            </Box>
-        </Box>,
-    );
+                <Text />
+                <Text>hello</Text>
+            </Box>,
+        );
 
-    const lines = output.split("\n");
-
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe("ab🍔cd|");
-    expect(lines[1]).toBe("abcdef|");
-});
-
-it("aNSI styled text does not affect layout width", () => {
-    const output = renderToString(
-        <Box>
-            <Box width={5}>
-                <Text color="red">hello</Text>
-            </Box>
-            <Text>|</Text>
-        </Box>,
-    );
-
-    const stripped = stripAnsi(output);
-
-    expect(stripped).toBe("hello|");
-});
-
-it("empty Text does not affect sibling layout", () => {
-    const output = renderToString(
-        <Box>
-            <Text />
-            <Text>hello</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("hello");
+        expect(output).toBe("hello");
+    });
 });

@@ -1,351 +1,439 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { tokenizeAnsi } from "../../src/ink/ansi-tokenizer.js";
 
-it("tokenize plain text", () => {
-    expect(tokenizeAnsi("hello")).toEqual([{ type: "text", value: "hello" }]);
-});
+describe("ansi-tokenizer", () => {
+    it("tokenize plain text", () => {
+        expect.hasAssertions();
 
-it("tokenize ESC CSI SGR sequence", () => {
-    const tokens = tokenizeAnsi("A\u001B[31mB");
+        expect(tokenizeAnsi("hello")).toStrictEqual([{ type: "text", value: "hello" }]);
+    });
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "csi", "text"]);
-    expect(tokens[0]).toEqual({ type: "text", value: "A" });
-    expect(tokens[2]).toEqual({ type: "text", value: "B" });
+    it("tokenize ESC CSI SGR sequence", () => {
+        expect.hasAssertions();
 
-    const csiToken = tokens[1];
+        const tokens = tokenizeAnsi("A\u001B[31mB");
 
-    if (csiToken?.type !== "csi") {
-        expect.fail();
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "csi", "text"]);
+        expect(tokens[0]).toStrictEqual({ type: "text", value: "A" });
+        expect(tokens[2]).toStrictEqual({ type: "text", value: "B" });
 
-        return;
-    }
+        const csiToken = tokens[1];
 
-    expect(csiToken.value).toBe("\u001B[31m");
-    expect(csiToken.parameterString).toBe("31");
-    expect(csiToken.intermediateString).toBe("");
-    expect(csiToken.finalCharacter).toBe("m");
-});
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (csiToken?.type !== "csi") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-it("tokenize C1 CSI sequence", () => {
-    const tokens = tokenizeAnsi("A\u009B2 qB");
-    const csiToken = tokens[1];
+            return;
+        }
 
-    if (csiToken?.type !== "csi") {
-        expect.fail();
+        expect(csiToken.value).toBe("\u001B[31m");
+        expect(csiToken.parameterString).toBe("31");
+        expect(csiToken.intermediateString).toBe("");
+        expect(csiToken.finalCharacter).toBe("m");
+    });
 
-        return;
-    }
+    it("tokenize C1 CSI sequence", () => {
+        expect.hasAssertions();
 
-    expect(csiToken.value).toBe("\u009B2 q");
-    expect(csiToken.parameterString).toBe("2");
-    expect(csiToken.intermediateString).toBe(" ");
-    expect(csiToken.finalCharacter).toBe("q");
-});
+        const tokens = tokenizeAnsi("A\u009B2 qB");
+        const csiToken = tokens[1];
 
-it("tokenize OSC control string with ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u001B]8;;https://example.com\u001B\\B");
-    const oscToken = tokens[1];
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (csiToken?.type !== "csi") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+            return;
+        }
 
-    if (oscToken?.type !== "osc") {
-        expect.fail();
+        expect(csiToken.value).toBe("\u009B2 q");
+        expect(csiToken.parameterString).toBe("2");
+        expect(csiToken.intermediateString).toBe(" ");
+        expect(csiToken.finalCharacter).toBe("q");
+    });
 
-        return;
-    }
+    it("tokenize OSC control string with ST terminator", () => {
+        expect.hasAssertions();
 
-    expect(oscToken.value).toBe("\u001B]8;;https://example.com\u001B\\");
-});
+        const tokens = tokenizeAnsi("A\u001B]8;;https://example.com\u001B\\B");
+        const oscToken = tokens[1];
 
-it("tokenize tmux DCS passthrough as one control string token", () => {
-    const tokens = tokenizeAnsi("A\u001BPtmux;\u001B\u001B]8;;https://example.com\u001B\u001B\\\u001B\\B");
-    const dcsToken = tokens[1];
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "dcs", "text"]);
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (oscToken?.type !== "osc") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    if (dcsToken?.type !== "dcs") {
-        expect.fail();
+            return;
+        }
 
-        return;
-    }
+        expect(oscToken.value).toBe("\u001B]8;;https://example.com\u001B\\");
+    });
 
-    expect(dcsToken.value.startsWith("\u001BPtmux;")).toBe(true);
-    expect(dcsToken.value.endsWith("\u001B\\")).toBe(true);
-});
+    it("tokenize tmux DCS passthrough as one control string token", () => {
+        expect.hasAssertions();
 
-it("tokenize incomplete CSI as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u001B[");
+        const tokens = tokenizeAnsi("A\u001BPtmux;\u001B\u001B]8;;https://example.com\u001B\u001B\\\u001B\\B");
+        const dcsToken = tokens[1];
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u001B[" },
-    ]);
-});
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "dcs", "text"]);
 
-it("tokenize incomplete ESC intermediate sequence as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u001B#");
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (dcsToken?.type !== "dcs") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u001B#" },
-    ]);
-});
+            return;
+        }
 
-it("ignore lone ESC before non-final byte", () => {
-    const tokens = tokenizeAnsi("A\u001B\u0007B");
+        expect(dcsToken.value.startsWith("\u001BPtmux;")).toBe(true);
+        expect(dcsToken.value.endsWith("\u001B\\")).toBe(true);
+    });
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "text", value: "\u0007B" },
-    ]);
-});
+    it("tokenize incomplete CSI as invalid and stop", () => {
+        expect.hasAssertions();
 
-it("tokenize ESC ST sequence as ESC token", () => {
-    const tokens = tokenizeAnsi("A\u001B\\B");
-    const escToken = tokens[1];
+        const tokens = tokenizeAnsi("A\u001B[");
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "esc", "text"]);
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u001B[" },
+        ]);
+    });
 
-    if (escToken?.type !== "esc") {
-        expect.fail();
+    it("tokenize incomplete ESC intermediate sequence as invalid and stop", () => {
+        expect.hasAssertions();
 
-        return;
-    }
+        const tokens = tokenizeAnsi("A\u001B#");
 
-    expect(escToken.value).toBe("\u001B\\");
-    expect(escToken.intermediateString).toBe("");
-    expect(escToken.finalCharacter).toBe("\\");
-});
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u001B#" },
+        ]);
+    });
 
-it("tokenize C1 OSC with C1 ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u009CB");
-    const oscToken = tokens[1];
+    it("ignore lone ESC before non-final byte", () => {
+        expect.hasAssertions();
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+        const tokens = tokenizeAnsi("A\u001B\u0007B");
 
-    if (oscToken?.type !== "osc") {
-        expect.fail();
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "text", value: "\u0007B" },
+        ]);
+    });
 
-        return;
-    }
+    it("tokenize ESC ST sequence as ESC token", () => {
+        expect.hasAssertions();
 
-    expect(oscToken.value).toBe("\u009D8;;https://example.com\u009C");
-});
+        const tokens = tokenizeAnsi("A\u001B\\B");
+        const escToken = tokens[1];
 
-it("tokenize C1 OSC with ESC ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u001B\\B");
-    const oscToken = tokens[1];
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "esc", "text"]);
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (escToken?.type !== "esc") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    if (oscToken?.type !== "osc") {
-        expect.fail();
+            return;
+        }
 
-        return;
-    }
+        expect(escToken.value).toBe("\u001B\\");
+        expect(escToken.intermediateString).toBe("");
+        expect(escToken.finalCharacter).toBe("\\");
+    });
 
-    expect(oscToken.value).toBe("\u009D8;;https://example.com\u001B\\");
-});
+    it("tokenize C1 OSC with C1 ST terminator", () => {
+        expect.hasAssertions();
 
-it("tokenize C1 SGR CSI sequence", () => {
-    const tokens = tokenizeAnsi("A\u009B31mB");
-    const csiToken = tokens[1];
+        const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u009CB");
+        const oscToken = tokens[1];
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "csi", "text"]);
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-    if (csiToken?.type !== "csi") {
-        expect.fail();
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (oscToken?.type !== "osc") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-        return;
-    }
+            return;
+        }
 
-    expect(csiToken.value).toBe("\u009B31m");
-    expect(csiToken.parameterString).toBe("31");
-    expect(csiToken.intermediateString).toBe("");
-    expect(csiToken.finalCharacter).toBe("m");
-});
+        expect(oscToken.value).toBe("\u009D8;;https://example.com\u009C");
+    });
 
-it("tokenize incomplete C1 CSI as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u009B31");
+    it("tokenize C1 OSC with ESC ST terminator", () => {
+        expect.hasAssertions();
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u009B31" },
-    ]);
-});
+        const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u001B\\B");
+        const oscToken = tokens[1];
 
-it("tokenize incomplete C1 OSC as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u009D8;;https://example.com");
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u009D8;;https://example.com" },
-    ]);
-});
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (oscToken?.type !== "osc") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-it("tokenize DCS with BEL in payload until ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u001BPpayload\u0007still-payload\u001B\\B");
-    const dcsToken = tokens[1];
+            return;
+        }
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "dcs", "text"]);
+        expect(oscToken.value).toBe("\u009D8;;https://example.com\u001B\\");
+    });
 
-    if (dcsToken?.type !== "dcs") {
-        expect.fail();
+    it("tokenize C1 SGR CSI sequence", () => {
+        expect.hasAssertions();
 
-        return;
-    }
+        const tokens = tokenizeAnsi("A\u009B31mB");
+        const csiToken = tokens[1];
 
-    expect(dcsToken.value).toContain("\u0007");
-    expect(dcsToken.value.endsWith("\u001B\\")).toBe(true);
-});
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "csi", "text"]);
 
-it("tokenize C1 OSC control string with BEL terminator", () => {
-    const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u0007B");
-    const oscToken = tokens[1];
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (csiToken?.type !== "csi") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "osc", "text"]);
+            return;
+        }
 
-    if (oscToken?.type !== "osc") {
-        expect.fail();
+        expect(csiToken.value).toBe("\u009B31m");
+        expect(csiToken.parameterString).toBe("31");
+        expect(csiToken.intermediateString).toBe("");
+        expect(csiToken.finalCharacter).toBe("m");
+    });
 
-        return;
-    }
+    it("tokenize incomplete C1 CSI as invalid and stop", () => {
+        expect.hasAssertions();
 
-    expect(oscToken.value).toBe("\u009D8;;https://example.com\u0007");
-});
+        const tokens = tokenizeAnsi("A\u009B31");
 
-it("tokenize ESC SOS control string with ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u001BXpayload\u001B\\B");
-    const sosToken = tokens[1];
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u009B31" },
+        ]);
+    });
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+    it("tokenize incomplete C1 OSC as invalid and stop", () => {
+        expect.hasAssertions();
 
-    if (sosToken?.type !== "sos") {
-        expect.fail();
+        const tokens = tokenizeAnsi("A\u009D8;;https://example.com");
 
-        return;
-    }
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u009D8;;https://example.com" },
+        ]);
+    });
 
-    expect(sosToken.value).toBe("\u001BXpayload\u001B\\");
-});
+    it("tokenize DCS with BEL in payload until ST terminator", () => {
+        expect.hasAssertions();
 
-it("tokenize ESC SOS control string with C1 ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u001BXpayload\u009CB");
-    const sosToken = tokens[1];
+        const tokens = tokenizeAnsi("A\u001BPpayload\u0007still-payload\u001B\\B");
+        const dcsToken = tokens[1];
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "dcs", "text"]);
 
-    if (sosToken?.type !== "sos") {
-        expect.fail();
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (dcsToken?.type !== "dcs") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-        return;
-    }
+            return;
+        }
 
-    expect(sosToken.value).toBe("\u001BXpayload\u009C");
-});
+        expect(dcsToken.value).toContain("\u0007");
+        expect(dcsToken.value.endsWith("\u001B\\")).toBe(true);
+    });
 
-it("tokenize C1 SOS control string with C1 ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u0098payload\u009CB");
-    const sosToken = tokens[1];
+    it("tokenize C1 OSC control string with BEL terminator", () => {
+        expect.hasAssertions();
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+        const tokens = tokenizeAnsi("A\u009D8;;https://example.com\u0007B");
+        const oscToken = tokens[1];
 
-    if (sosToken?.type !== "sos") {
-        expect.fail();
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "osc", "text"]);
 
-        return;
-    }
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (oscToken?.type !== "osc") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    expect(sosToken.value).toBe("\u0098payload\u009C");
-});
+            return;
+        }
 
-it("tokenize C1 SOS control string with ESC ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u0098payload\u001B\\B");
-    const sosToken = tokens[1];
+        expect(oscToken.value).toBe("\u009D8;;https://example.com\u0007");
+    });
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+    it("tokenize ESC SOS control string with ST terminator", () => {
+        expect.hasAssertions();
 
-    if (sosToken?.type !== "sos") {
-        expect.fail();
+        const tokens = tokenizeAnsi("A\u001BXpayload\u001B\\B");
+        const sosToken = tokens[1];
 
-        return;
-    }
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-    expect(sosToken.value).toBe("\u0098payload\u001B\\");
-});
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (sosToken?.type !== "sos") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-it("tokenize ESC SOS with BEL terminator as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u001BXpayload\u0007B");
+            return;
+        }
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u001BXpayload\u0007B" },
-    ]);
-});
+        expect(sosToken.value).toBe("\u001BXpayload\u001B\\");
+    });
 
-it("tokenize C1 SOS with BEL terminator as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u0098payload\u0007B");
+    it("tokenize ESC SOS control string with C1 ST terminator", () => {
+        expect.hasAssertions();
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u0098payload\u0007B" },
-    ]);
-});
+        const tokens = tokenizeAnsi("A\u001BXpayload\u009CB");
+        const sosToken = tokens[1];
 
-it("tokenize incomplete C1 SOS as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u0098payload");
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u0098payload" },
-    ]);
-});
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (sosToken?.type !== "sos") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-it("tokenize incomplete ESC SOS as invalid and stop", () => {
-    const tokens = tokenizeAnsi("A\u001BXpayload");
+            return;
+        }
 
-    expect(tokens).toEqual([
-        { type: "text", value: "A" },
-        { type: "invalid", value: "\u001BXpayload" },
-    ]);
-});
+        expect(sosToken.value).toBe("\u001BXpayload\u009C");
+    });
 
-it("tokenize SOS with escaped ESC in payload until final ST terminator", () => {
-    const tokens = tokenizeAnsi("A\u001BXfoo\u001B\u001B\\bar\u001B\\B");
-    const sosToken = tokens[1];
+    it("tokenize C1 SOS control string with C1 ST terminator", () => {
+        expect.hasAssertions();
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "sos", "text"]);
+        const tokens = tokenizeAnsi("A\u0098payload\u009CB");
+        const sosToken = tokens[1];
 
-    if (sosToken?.type !== "sos") {
-        expect.fail();
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-        return;
-    }
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (sosToken?.type !== "sos") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-    expect(sosToken.value).toContain("\u001B\u001B\\");
-    expect(sosToken.value.endsWith("\u001B\\")).toBe(true);
-});
+            return;
+        }
 
-it("tokenize standalone C1 controls as c1 tokens", () => {
-    const tokens = tokenizeAnsi("A\u0085B\u008EC");
-    const c1Token1 = tokens[1];
-    const c1Token2 = tokens[3];
+        expect(sosToken.value).toBe("\u0098payload\u009C");
+    });
 
-    expect(tokens.map((token) => token.type)).toEqual(["text", "c1", "text", "c1", "text"]);
+    it("tokenize C1 SOS control string with ESC ST terminator", () => {
+        expect.hasAssertions();
 
-    if (c1Token1?.type !== "c1") {
-        expect.fail();
+        const tokens = tokenizeAnsi("A\u0098payload\u001B\\B");
+        const sosToken = tokens[1];
 
-        return;
-    }
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
 
-    if (c1Token2?.type !== "c1") {
-        expect.fail();
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (sosToken?.type !== "sos") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
 
-        return;
-    }
+            return;
+        }
 
-    expect(c1Token1.value).toBe("\u0085");
-    expect(c1Token2.value).toBe("\u008E");
+        expect(sosToken.value).toBe("\u0098payload\u001B\\");
+    });
+
+    it("tokenize ESC SOS with BEL terminator as invalid and stop", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u001BXpayload\u0007B");
+
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u001BXpayload\u0007B" },
+        ]);
+    });
+
+    it("tokenize C1 SOS with BEL terminator as invalid and stop", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u0098payload\u0007B");
+
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u0098payload\u0007B" },
+        ]);
+    });
+
+    it("tokenize incomplete C1 SOS as invalid and stop", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u0098payload");
+
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u0098payload" },
+        ]);
+    });
+
+    it("tokenize incomplete ESC SOS as invalid and stop", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u001BXpayload");
+
+        expect(tokens).toStrictEqual([
+            { type: "text", value: "A" },
+            { type: "invalid", value: "\u001BXpayload" },
+        ]);
+    });
+
+    it("tokenize SOS with escaped ESC in payload until final ST terminator", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u001BXfoo\u001B\u001B\\bar\u001B\\B");
+        const sosToken = tokens[1];
+
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "sos", "text"]);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (sosToken?.type !== "sos") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
+
+            return;
+        }
+
+        expect(sosToken.value).toContain("\u001B\u001B\\");
+        expect(sosToken.value.endsWith("\u001B\\")).toBe(true);
+    });
+
+    it("tokenize standalone C1 controls as c1 tokens", () => {
+        expect.hasAssertions();
+
+        const tokens = tokenizeAnsi("A\u0085B\u008EC");
+        const c1Token1 = tokens[1];
+        const c1Token2 = tokens[3];
+
+        expect(tokens.map((token) => token.type)).toStrictEqual(["text", "c1", "text", "c1", "text"]);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (c1Token1?.type !== "c1") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
+
+            return;
+        }
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (c1Token2?.type !== "c1") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect.fail();
+
+            return;
+        }
+
+        expect(c1Token1.value).toBe("\u0085");
+        expect(c1Token2.value).toBe("\u008E");
+    });
 });

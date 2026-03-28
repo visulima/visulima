@@ -1,288 +1,324 @@
 import { cursorDown, cursorNextLine, cursorTo, cursorUp, eraseLines } from "@visulima/ansi";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import logUpdate from "../../src/ink/log-update.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
-it("standard rendering - renders and updates output", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+describe("log-update", () => {
+    it("standard rendering - renders and updates output", () => {
+        expect.hasAssertions();
 
-    render("Hello\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(1);
-    expect((stdout.write as any).mock.calls[0][0]).toBe("Hello\n");
+        render("Hello\n");
 
-    render("World\n");
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
+        expect((stdout.write as any).mock.calls[0][0]).toBe("Hello\n");
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(2);
-    expect(((stdout.write as any).mock.calls[1][0] as string)).toContain("World");
-});
+        render("World\n");
 
-it("standard rendering - skips identical output", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
-
-    render("Hello\n");
-    render("Hello\n");
-
-    expect((stdout.write as any)).toHaveBeenCalledTimes(1);
-});
-
-it("incremental rendering - renders and updates output", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(stdout.write as any).toHaveBeenCalledTimes(2);
+        expect((stdout.write as any).mock.calls[1][0] as string).toContain("World");
     });
 
-    render("Hello\n");
+    it("standard rendering - skips identical output", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(1);
-    expect((stdout.write as any).mock.calls[0][0]).toBe("Hello\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    render("World\n");
+        render("Hello\n");
+        render("Hello\n");
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(2);
-    expect(((stdout.write as any).mock.calls[1][0] as string)).toContain("World");
-});
-
-it("incremental rendering - skips identical output", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
     });
 
-    render("Hello\n");
-    render("Hello\n");
+    it("incremental rendering - renders and updates output", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(1);
-});
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-it("incremental rendering - surgical updates", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        render("Hello\n");
+
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
+        expect((stdout.write as any).mock.calls[0][0]).toBe("Hello\n");
+
+        render("World\n");
+
+        expect(stdout.write as any).toHaveBeenCalledTimes(2);
+        expect((stdout.write as any).mock.calls[1][0] as string).toContain("World");
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render("Line 1\nUpdated\nLine 3\n");
+    it("incremental rendering - skips identical output", () => {
+        expect.hasAssertions();
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(secondCall).toContain(cursorNextLine());
-    expect(secondCall).toContain("Updated");
-    expect(secondCall).not.toContain("Line 1");
-    expect(secondCall).not.toContain("Line 3");
-});
+        render("Hello\n");
+        render("Hello\n");
 
-it("incremental rendering - clears extra lines when output shrinks", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render("Line 1\n");
+    it("incremental rendering - surgical updates", () => {
+        expect.hasAssertions();
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(secondCall).toContain(eraseLines(2));
-});
+        render("Line 1\nLine 2\nLine 3\n");
+        render("Line 1\nUpdated\nLine 3\n");
 
-it("incremental rendering - when output grows", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+
+        expect(secondCall).toContain(cursorNextLine());
+        expect(secondCall).toContain("Updated");
+        expect(secondCall).not.toContain("Line 1");
+        expect(secondCall).not.toContain("Line 3");
     });
 
-    render("Line 1\n");
-    render("Line 1\nLine 2\nLine 3\n");
+    it("incremental rendering - clears extra lines when output shrinks", () => {
+        expect.hasAssertions();
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(secondCall).toContain(cursorNextLine());
-    expect(secondCall).toContain("Line 2");
-    expect(secondCall).toContain("Line 3");
-    expect(secondCall).not.toContain("Line 1");
-});
+        render("Line 1\nLine 2\nLine 3\n");
+        render("Line 1\n");
 
-it("incremental rendering - single write call with multiple surgical updates", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+
+        expect(secondCall).toContain(eraseLines(2));
     });
 
-    render("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\n");
-    render("Line 1\nUpdated 2\nLine 3\nUpdated 4\nLine 5\nUpdated 6\nLine 7\nUpdated 8\nLine 9\nUpdated 10\n");
+    it("incremental rendering - when output grows", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(2);
-});
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-it("incremental rendering - shrinking output keeps screen tight", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        render("Line 1\n");
+        render("Line 1\nLine 2\nLine 3\n");
+
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+
+        expect(secondCall).toContain(cursorNextLine());
+        expect(secondCall).toContain("Line 2");
+        expect(secondCall).toContain("Line 3");
+        expect(secondCall).not.toContain("Line 1");
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render("Line 1\nLine 2\n");
-    render("Line 1\n");
+    it("incremental rendering - single write call with multiple surgical updates", () => {
+        expect.hasAssertions();
 
-    const thirdCall = stdout.get();
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(thirdCall).toBe(eraseLines(2) + cursorUp(1) + cursorNextLine());
-});
+        render("Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\n");
+        render("Line 1\nUpdated 2\nLine 3\nUpdated 4\nLine 5\nUpdated 6\nLine 7\nUpdated 8\nLine 9\nUpdated 10\n");
 
-it("incremental rendering - clear() fully resets incremental state", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(stdout.write as any).toHaveBeenCalledTimes(2);
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render.clear();
-    render("Line 1\n");
+    it("incremental rendering - shrinking output keeps screen tight", () => {
+        expect.hasAssertions();
 
-    const afterClear = stdout.get();
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(afterClear).toBe(`${eraseLines(0)}Line 1\n`);
-});
+        render("Line 1\nLine 2\nLine 3\n");
+        render("Line 1\nLine 2\n");
+        render("Line 1\n");
 
-it("incremental rendering - done() resets before next render", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        const thirdCall = stdout.get();
+
+        expect(thirdCall).toBe(eraseLines(2) + cursorUp(1) + cursorNextLine());
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render.done();
-    render("Line 1\n");
+    it("incremental rendering - clear() fully resets incremental state", () => {
+        expect.hasAssertions();
 
-    const afterDone = stdout.get();
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(afterDone).toBe(`${eraseLines(0)}Line 1\n`);
-});
+        render("Line 1\nLine 2\nLine 3\n");
+        render.clear();
+        render("Line 1\n");
 
-it("incremental rendering - multiple consecutive clear() calls (should be harmless no-ops)", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        const afterClear = stdout.get();
+
+        expect(afterClear).toBe(`${eraseLines(0)}Line 1\n`);
     });
 
-    render("Line 1\nLine 2\nLine 3\n");
-    render.clear();
-    render.clear();
-    render.clear();
+    it("incremental rendering - done() resets before next render", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(4);
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    render("New content\n");
-    const afterClears = stdout.get();
+        render("Line 1\nLine 2\nLine 3\n");
+        render.done();
+        render("Line 1\n");
 
-    expect(afterClears).toBe(`${eraseLines(0)}New content\n`);
-});
+        const afterDone = stdout.get();
 
-it("incremental rendering - sync() followed by update (assert incremental path is used)", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(afterDone).toBe(`${eraseLines(0)}Line 1\n`);
     });
 
-    render.sync("Line 1\nLine 2\nLine 3\n");
+    it("incremental rendering - multiple consecutive clear() calls (should be harmless no-ops)", () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(0);
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    render("Line 1\nUpdated\nLine 3\n");
+        render("Line 1\nLine 2\nLine 3\n");
+        render.clear();
+        render.clear();
+        render.clear();
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(1);
+        expect(stdout.write as any).toHaveBeenCalledTimes(4);
 
-    const firstCall = (stdout.write as any).mock.calls[0][0] as string;
+        render("New content\n");
+        const afterClears = stdout.get();
 
-    expect(firstCall).toContain(cursorNextLine());
-    expect(firstCall).toContain("Updated");
-    expect(firstCall).not.toContain("Line 1");
-    expect(firstCall).not.toContain("Line 3");
-});
+        expect(afterClears).toBe(`${eraseLines(0)}New content\n`);
+    });
 
-const showCursorEscape = "\u001B[?25h";
-const hideCursorEscape = "\u001B[?25l";
+    it("incremental rendering - sync() followed by update (assert incremental path is used)", () => {
+        expect.hasAssertions();
 
-const renderingModes = [
-    { incremental: false, name: "standard rendering" },
-    { incremental: true, name: "incremental rendering" },
-] as const;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-const createRenderForMode = (incremental: boolean) => {
-    const stdout = createStdout();
-    const render = incremental ? logUpdate.create(stdout, { incremental: true, showCursor: true }) : logUpdate.create(stdout, { showCursor: true });
+        render.sync("Line 1\nLine 2\nLine 3\n");
 
-    return { render, stdout };
-};
+        expect(stdout.write as any).toHaveBeenCalledTimes(0);
 
-it("standard rendering - positions cursor after output when cursorPosition is set", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+        render("Line 1\nUpdated\nLine 3\n");
 
-    render.setCursorPosition({ x: 5, y: 1 });
-    render("Line 1\nLine 2\nLine 3\n");
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
 
-    const written = (stdout.write as any).mock.calls[0][0] as string;
+        const firstCall = (stdout.write as any).mock.calls[0][0] as string;
 
-    expect(written).toContain("Line 3");
-    expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
-});
+        expect(firstCall).toContain(cursorNextLine());
+        expect(firstCall).toContain("Updated");
+        expect(firstCall).not.toContain("Line 1");
+        expect(firstCall).not.toContain("Line 3");
+    });
 
-it("standard rendering - hides cursor before erase when cursor was previously shown", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+    const showCursorEscape = "\u001B[?25h";
+    const hideCursorEscape = "\u001B[?25l";
 
-    render.setCursorPosition({ x: 0, y: 0 });
-    render("Hello\n");
-    render.setCursorPosition({ x: 0, y: 0 });
-    render("World\n");
+    const renderingModes = [
+        { incremental: false, name: "standard rendering" },
+        { incremental: true, name: "incremental rendering" },
+    ] as const;
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+    const createRenderForMode = (incremental: boolean) => {
+        const stdout = createStdout();
+        const render = incremental ? logUpdate.create(stdout, { incremental: true, showCursor: true }) : logUpdate.create(stdout, { showCursor: true });
 
-    expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
-    expect(secondCall.endsWith(cursorUp(1) + cursorTo(0) + showCursorEscape)).toBe(true);
-});
+        return { render, stdout };
+    };
 
-it("standard rendering - no cursor positioning when cursorPosition is undefined", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+    it("standard rendering - positions cursor after output when cursorPosition is set", () => {
+        expect.hasAssertions();
 
-    render("Hello\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    const written = (stdout.write as any).mock.calls[0][0] as string;
+        render.setCursorPosition({ x: 5, y: 1 });
+        render("Line 1\nLine 2\nLine 3\n");
 
-    expect(written).not.toContain(showCursorEscape);
-});
+        const written = (stdout.write as any).mock.calls[0][0] as string;
 
-it("standard rendering - cursor position at second-to-last line emits cursorUp(1)", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+        expect(written).toContain("Line 3");
+        expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
+    });
 
-    render.setCursorPosition({ x: 3, y: 2 });
-    render("Line 1\nLine 2\nLine 3\n");
+    it("standard rendering - hides cursor before erase when cursor was previously shown", () => {
+        expect.hasAssertions();
 
-    const written = (stdout.write as any).mock.calls[0][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    expect(written.endsWith(cursorUp(1) + cursorTo(3) + showCursorEscape)).toBe(true);
-});
+        render.setCursorPosition({ x: 0, y: 0 });
+        render("Hello\n");
+        render.setCursorPosition({ x: 0, y: 0 });
+        render("World\n");
 
-for (const { incremental, name } of renderingModes) {
-    it(`${name} - clear() returns cursor to bottom before erasing`, () => {
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+
+        expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
+        expect(secondCall.endsWith(cursorUp(1) + cursorTo(0) + showCursorEscape)).toBe(true);
+    });
+
+    it("standard rendering - no cursor positioning when cursorPosition is undefined", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
+
+        render("Hello\n");
+
+        const written = (stdout.write as any).mock.calls[0][0] as string;
+
+        expect(written).not.toContain(showCursorEscape);
+    });
+
+    it("standard rendering - cursor position at second-to-last line emits cursorUp(1)", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
+
+        render.setCursorPosition({ x: 3, y: 2 });
+        render("Line 1\nLine 2\nLine 3\n");
+
+        const written = (stdout.write as any).mock.calls[0][0] as string;
+
+        expect(written.endsWith(cursorUp(1) + cursorTo(3) + showCursorEscape)).toBe(true);
+    });
+
+    it.each(renderingModes)("$name - clear() returns cursor to bottom before erasing", ({ incremental }) => {
+        expect.hasAssertions();
+
         const { render, stdout } = createRenderForMode(incremental);
 
         render.setCursorPosition({ x: 5, y: 0 });
@@ -296,95 +332,103 @@ for (const { incremental, name } of renderingModes) {
         expect(clearCall).toContain(cursorDown(3));
         expect(clearCall).toContain(eraseLines(4));
     });
-}
 
-it("standard rendering - clearing cursor position stops cursor positioning", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+    it("standard rendering - clearing cursor position stops cursor positioning", () => {
+        expect.hasAssertions();
 
-    render.setCursorPosition({ x: 0, y: 0 });
-    render("Hello\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    render.setCursorPosition(undefined);
-    render("World\n");
+        render.setCursorPosition({ x: 0, y: 0 });
+        render("Hello\n");
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        render.setCursorPosition(undefined);
+        render("World\n");
 
-    expect(secondCall).not.toContain(showCursorEscape);
-});
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
 
-it("incremental rendering - positions cursor after surgical updates", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        expect(secondCall).not.toContain(showCursorEscape);
     });
 
-    render.setCursorPosition({ x: 5, y: 1 });
-    render("Line 1\nLine 2\nLine 3\n");
+    it("incremental rendering - positions cursor after surgical updates", () => {
+        expect.hasAssertions();
 
-    const written = (stdout.write as any).mock.calls[0][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
-});
+        render.setCursorPosition({ x: 5, y: 1 });
+        render("Line 1\nLine 2\nLine 3\n");
 
-it("incremental rendering - positions cursor after update", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, {
-        incremental: true,
-        showCursor: true,
+        const written = (stdout.write as any).mock.calls[0][0] as string;
+
+        expect(written.endsWith(cursorUp(2) + cursorTo(5) + showCursorEscape)).toBe(true);
     });
 
-    render.setCursorPosition({ x: 2, y: 0 });
-    render("Line 1\nLine 2\nLine 3\n");
-    render.setCursorPosition({ x: 2, y: 0 });
-    render("Line 1\nUpdated\nLine 3\n");
+    it("incremental rendering - positions cursor after update", () => {
+        expect.hasAssertions();
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, {
+            incremental: true,
+            showCursor: true,
+        });
 
-    expect(secondCall.endsWith(cursorUp(3) + cursorTo(2) + showCursorEscape)).toBe(true);
-});
+        render.setCursorPosition({ x: 2, y: 0 });
+        render("Line 1\nLine 2\nLine 3\n");
+        render.setCursorPosition({ x: 2, y: 0 });
+        render("Line 1\nUpdated\nLine 3\n");
 
-for (const { incremental, name } of renderingModes) {
-    it(`${name} - repositions cursor when only cursor position changes (same output)`, () => {
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+
+        expect(secondCall.endsWith(cursorUp(3) + cursorTo(2) + showCursorEscape)).toBe(true);
+    });
+
+    it.each(renderingModes)("$name - repositions cursor when only cursor position changes (same output)", ({ incremental }) => {
+        expect.hasAssertions();
+
         const { render, stdout } = createRenderForMode(incremental);
 
         render.setCursorPosition({ x: 2, y: 0 });
         render("Hello\n");
 
-        expect((stdout.write as any)).toHaveBeenCalledTimes(1);
+        expect(stdout.write as any).toHaveBeenCalledTimes(1);
 
         render.setCursorPosition({ x: 3, y: 0 });
         render("Hello\n");
 
-        expect((stdout.write as any)).toHaveBeenCalledTimes(2);
+        expect(stdout.write as any).toHaveBeenCalledTimes(2);
 
         const secondCall = (stdout.write as any).mock.calls[1][0] as string;
 
         expect(secondCall).toContain(showCursorEscape);
         expect(secondCall.endsWith(cursorTo(3) + showCursorEscape)).toBe(true);
     });
-}
 
-it("standard rendering - returns to bottom before erase when cursor was positioned", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+    it("standard rendering - returns to bottom before erase when cursor was positioned", () => {
+        expect.hasAssertions();
 
-    render.setCursorPosition({ x: 0, y: 0 });
-    render("Line 1\nLine 2\nLine 3\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    render.setCursorPosition({ x: 5, y: 0 });
-    render("Line A\nLine B\nLine C\n");
+        render.setCursorPosition({ x: 0, y: 0 });
+        render("Line 1\nLine 2\nLine 3\n");
 
-    const secondCall = (stdout.write as any).mock.calls[1][0] as string;
+        render.setCursorPosition({ x: 5, y: 0 });
+        render("Line A\nLine B\nLine C\n");
 
-    expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
-    expect(secondCall).toContain(cursorDown(3));
-    expect(secondCall).toContain("Line A");
-});
+        const secondCall = (stdout.write as any).mock.calls[1][0] as string;
 
-for (const { incremental, name } of renderingModes) {
-    it(`${name} - sync() resets cursor state`, () => {
+        expect(secondCall.startsWith(hideCursorEscape)).toBe(true);
+        expect(secondCall).toContain(cursorDown(3));
+        expect(secondCall).toContain("Line A");
+    });
+
+    it.each(renderingModes)("$name - sync() resets cursor state", ({ incremental }) => {
+        expect.hasAssertions();
+
         const { render, stdout } = createRenderForMode(incremental);
 
         render.setCursorPosition({ x: 5, y: 0 });
@@ -399,13 +443,15 @@ for (const { incremental, name } of renderingModes) {
         expect(afterSync).not.toContain(hideCursorEscape);
         expect(afterSync).not.toContain(cursorDown(3));
     });
-}
 
-it("standard rendering - sync() without cursor does not write to stream", () => {
-    const stdout = createStdout();
-    const render = logUpdate.create(stdout, { showCursor: true });
+    it("standard rendering - sync() without cursor does not write to stream", () => {
+        expect.hasAssertions();
 
-    render.sync("Line 1\nLine 2\nLine 3\n");
+        const stdout = createStdout();
+        const render = logUpdate.create(stdout, { showCursor: true });
 
-    expect((stdout.write as any)).toHaveBeenCalledTimes(0);
+        render.sync("Line 1\nLine 2\nLine 3\n");
+
+        expect(stdout.write as any).toHaveBeenCalledTimes(0);
+    });
 });

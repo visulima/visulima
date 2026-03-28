@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { Console } from "node:console";
 import { PassThrough } from "node:stream";
 
@@ -32,27 +33,27 @@ vi.mock(import("patch-console"), () => {
         const stdout = new PassThrough();
         const stderr = new PassThrough();
 
-        (stdout as any).write = (data: string) => {
+        (stdout as unknown as { write: (data: string) => boolean }).write = (data: string) => {
             callback("stdout", data);
 
             return true;
         };
-        (stderr as any).write = (data: string) => {
+        (stderr as unknown as { write: (data: string) => boolean }).write = (data: string) => {
             callback("stderr", data);
 
             return true;
         };
-        const internalConsole = new Console(stdout as any, stderr as any);
+        const internalConsole = new Console(stdout as unknown as NodeJS.WritableStream, stderr as unknown as NodeJS.WritableStream);
         const originalMethods: Record<string, unknown> = {};
 
         for (const method of consoleMethods) {
-            originalMethods[method] = console[method];
-            (console as any)[method] = (internalConsole as any)[method];
+            originalMethods[method] = console[method]; // eslint-disable-line no-console
+            (console as unknown as Record<string, unknown>)[method] = (internalConsole as unknown as Record<string, unknown>)[method];
         }
 
         return () => {
             for (const method of consoleMethods) {
-                (console as any)[method] = originalMethods[method];
+                (console as unknown as Record<string, unknown>)[method] = originalMethods[method];
             }
         };
     };
@@ -66,34 +67,43 @@ vi.mock(import("patch-console"), () => {
 vi.mock(import("../src/core/native-binding.js"), () => {
     return {
         Renderer: class MockRenderer {
-            width: number;
+            public width: number;
 
-            height: number;
+            public height: number;
 
-            constructor(width: number, height: number) {
+            public constructor(width: number, height: number) {
                 this.width = width;
                 this.height = height;
             }
 
-            resize(_w: number, _h: number) {}
+            // eslint-disable-next-line class-methods-use-this
+            public resize(_w: number, _h: number) {}
 
-            setRowOffset(_offset: number) {}
+            // eslint-disable-next-line class-methods-use-this
+            public setRowOffset(_offset: number) {}
 
-            render(_buf: Uint32Array) {}
+            // eslint-disable-next-line class-methods-use-this
+            public render(_buf: Uint32Array) {}
 
-            renderDiff(_buf: Uint32Array) {
+            // eslint-disable-next-line class-methods-use-this
+            public renderDiff(_buf: Uint32Array) {
                 return "";
             }
 
-            writeRaw(_data: string) {}
+            // eslint-disable-next-line class-methods-use-this
+            public writeRaw(_data: string) {}
         },
         TerminalGuard: class MockTerminalGuard {
-            leave() {}
+            // eslint-disable-next-line class-methods-use-this
+            public leave() {}
 
-            getSize() {
+            // eslint-disable-next-line class-methods-use-this
+            public getSize() {
                 return { cols: 80, rows: 24 };
             }
         },
-        terminalSize: () => { return { cols: 80, rows: 24 }; },
+        terminalSize: () => {
+            return { cols: 80, rows: 24 };
+        },
     };
 });

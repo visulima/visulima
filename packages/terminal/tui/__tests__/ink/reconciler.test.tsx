@@ -1,398 +1,420 @@
-import colorizeDefault from "@visulima/colorize";
+import { green } from "@visulima/colorize";
 import { Suspense } from "react";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
-it("update child", () => {
-    const Test = ({ update }: { readonly update?: boolean }) => <Text>{update ? "B" : "A"}</Text>;
+describe("reconciler", () => {
+    it("update child", () => {
+        expect.hasAssertions();
 
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
+        const Test = ({ update }: { readonly update?: boolean }) => <Text>{update ? "B" : "A"}</Text>;
 
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
+
+        const actual = render(<Test />, {
+            debug: true,
+            stdout: stdoutActual,
+        });
+
+        const expected = render(<Text>A</Text>, {
+            debug: true,
+            stdout: stdoutExpected,
+        });
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+
+        actual.rerender(<Test update />);
+        expected.rerender(<Text>B</Text>);
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    const expected = render(<Text>A</Text>, {
-        debug: true,
-        stdout: stdoutExpected,
+    it("update text node", () => {
+        expect.hasAssertions();
+
+        const Test = ({ update }: { readonly update?: boolean }) => (
+            <Box>
+                <Text>Hello </Text>
+                <Text>{update ? "B" : "A"}</Text>
+            </Box>
+        );
+
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
+
+        const actual = render(<Test />, {
+            debug: true,
+            stdout: stdoutActual,
+        });
+
+        const expected = render(<Text>Hello A</Text>, {
+            debug: true,
+            stdout: stdoutExpected,
+        });
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+
+        actual.rerender(<Test update />);
+        expected.rerender(<Text>Hello B</Text>);
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+    it("remove style prop from intrinsic node", () => {
+        expect.hasAssertions();
 
-    actual.rerender(<Test update />);
-    expected.rerender(<Text>B</Text>);
+        const Test = ({ withStyle }: { readonly withStyle: boolean }) => (
+            <ink-box style={withStyle ? { marginLeft: 1 } : undefined}>
+                <ink-text>X</ink-text>
+            </ink-box>
+        );
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
+        const stdout = createStdout();
 
-it("update text node", () => {
-    const Test = ({ update }: { readonly update?: boolean }) => (
-        <Box>
-            <Text>Hello </Text>
-            <Text>{update ? "B" : "A"}</Text>
-        </Box>
-    );
+        const { rerender } = render(<Test withStyle />, {
+            debug: true,
+            stdout,
+        });
 
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(" X");
 
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
+        rerender(<Test withStyle={false} />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("X");
     });
 
-    const expected = render(<Text>Hello A</Text>, {
-        debug: true,
-        stdout: stdoutExpected,
+    it("append child", () => {
+        expect.hasAssertions();
+
+        const Test = ({ append }: { readonly append?: boolean }) => {
+            if (append) {
+                return (
+                    <Box flexDirection="column">
+                        <Text>A</Text>
+                        <Text>B</Text>
+                    </Box>
+                );
+            }
+
+            return (
+                <Box flexDirection="column">
+                    <Text>A</Text>
+                </Box>
+            );
+        };
+
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
+
+        const actual = render(<Test />, {
+            debug: true,
+            stdout: stdoutActual,
+        });
+
+        const expected = render(
+            <Box flexDirection="column">
+                <Text>A</Text>
+            </Box>,
+            {
+                debug: true,
+                stdout: stdoutExpected,
+            },
+        );
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+
+        actual.rerender(<Test append />);
+
+        expected.rerender(
+            <Box flexDirection="column">
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+    it("insert child between other children", () => {
+        expect.hasAssertions();
 
-    actual.rerender(<Test update />);
-    expected.rerender(<Text>Hello B</Text>);
+        const Test = ({ insert }: { readonly insert?: boolean }) => {
+            if (insert) {
+                return (
+                    <Box flexDirection="column">
+                        <Text key="a">A</Text>
+                        <Text key="b">B</Text>
+                        <Text key="c">C</Text>
+                    </Box>
+                );
+            }
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
+            return (
+                <Box flexDirection="column">
+                    <Text key="a">A</Text>
+                    <Text key="c">C</Text>
+                </Box>
+            );
+        };
 
-it("remove style prop from intrinsic node", () => {
-    const Test = ({ withStyle }: { readonly withStyle: boolean }) => (
-        <ink-box style={withStyle ? { marginLeft: 1 } : undefined}>
-            <ink-text>X</ink-text>
-        </ink-box>
-    );
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
 
-    const stdout = createStdout();
+        const actual = render(<Test />, {
+            debug: true,
+            stdout: stdoutActual,
+        });
 
-    const { rerender } = render(<Test withStyle />, {
-        debug: true,
-        stdout,
+        const expected = render(
+            <Box flexDirection="column">
+                <Text>A</Text>
+                <Text>C</Text>
+            </Box>,
+            {
+                debug: true,
+                stdout: stdoutExpected,
+            },
+        );
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+
+        actual.rerender(<Test insert />);
+
+        expected.rerender(
+            <Box flexDirection="column">
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(" X");
+    it("remove child", () => {
+        expect.hasAssertions();
 
-    rerender(<Test withStyle={false} />);
+        const Test = ({ remove }: { readonly remove?: boolean }) => {
+            if (remove) {
+                return (
+                    <Box flexDirection="column">
+                        <Text>A</Text>
+                    </Box>
+                );
+            }
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("X");
-});
-
-it("append child", () => {
-    const Test = ({ append }: { readonly append?: boolean }) => {
-        if (append) {
             return (
                 <Box flexDirection="column">
                     <Text>A</Text>
                     <Text>B</Text>
                 </Box>
             );
-        }
+        };
 
-        return (
-            <Box flexDirection="column">
-                <Text>A</Text>
-            </Box>
-        );
-    };
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
 
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
-
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
-    });
-
-    const expected = render(
-        <Box flexDirection="column">
-            <Text>A</Text>
-        </Box>,
-        {
+        const actual = render(<Test />, {
             debug: true,
-            stdout: stdoutExpected,
-        },
-    );
+            stdout: stdoutActual,
+        });
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-
-    actual.rerender(<Test append />);
-
-    expected.rerender(
-        <Box flexDirection="column">
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
-
-it("insert child between other children", () => {
-    const Test = ({ insert }: { readonly insert?: boolean }) => {
-        if (insert) {
-            return (
-                <Box flexDirection="column">
-                    <Text key="a">A</Text>
-                    <Text key="b">B</Text>
-                    <Text key="c">C</Text>
-                </Box>
-            );
-        }
-
-        return (
-            <Box flexDirection="column">
-                <Text key="a">A</Text>
-                <Text key="c">C</Text>
-            </Box>
-        );
-    };
-
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
-
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
-    });
-
-    const expected = render(
-        <Box flexDirection="column">
-            <Text>A</Text>
-            <Text>C</Text>
-        </Box>,
-        {
-            debug: true,
-            stdout: stdoutExpected,
-        },
-    );
-
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-
-    actual.rerender(<Test insert />);
-
-    expected.rerender(
-        <Box flexDirection="column">
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
-
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
-
-it("remove child", () => {
-    const Test = ({ remove }: { readonly remove?: boolean }) => {
-        if (remove) {
-            return (
-                <Box flexDirection="column">
-                    <Text>A</Text>
-                </Box>
-            );
-        }
-
-        return (
+        const expected = render(
             <Box flexDirection="column">
                 <Text>A</Text>
                 <Text>B</Text>
-            </Box>
+            </Box>,
+            {
+                debug: true,
+                stdout: stdoutExpected,
+            },
         );
-    };
 
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
 
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
+        actual.rerender(<Test remove />);
+
+        expected.rerender(
+            <Box flexDirection="column">
+                <Text>A</Text>
+            </Box>,
+        );
+
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    const expected = render(
-        <Box flexDirection="column">
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-        {
-            debug: true,
-            stdout: stdoutExpected,
-        },
-    );
+    it("reorder children", () => {
+        expect.hasAssertions();
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+        const Test = ({ reorder }: { readonly reorder?: boolean }) => {
+            if (reorder) {
+                return (
+                    <Box flexDirection="column">
+                        <Text key="b">B</Text>
+                        <Text key="a">A</Text>
+                    </Box>
+                );
+            }
 
-    actual.rerender(<Test remove />);
-
-    expected.rerender(
-        <Box flexDirection="column">
-            <Text>A</Text>
-        </Box>,
-    );
-
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
-
-it("reorder children", () => {
-    const Test = ({ reorder }: { readonly reorder?: boolean }) => {
-        if (reorder) {
             return (
                 <Box flexDirection="column">
-                    <Text key="b">B</Text>
                     <Text key="a">A</Text>
+                    <Text key="b">B</Text>
                 </Box>
             );
-        }
+        };
 
-        return (
-            <Box flexDirection="column">
-                <Text key="a">A</Text>
-                <Text key="b">B</Text>
-            </Box>
-        );
-    };
+        const stdoutActual = createStdout();
+        const stdoutExpected = createStdout();
 
-    const stdoutActual = createStdout();
-    const stdoutExpected = createStdout();
-
-    const actual = render(<Test />, {
-        debug: true,
-        stdout: stdoutActual,
-    });
-
-    const expected = render(
-        <Box flexDirection="column">
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-        {
+        const actual = render(<Test />, {
             debug: true,
-            stdout: stdoutExpected,
-        },
-    );
+            stdout: stdoutActual,
+        });
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
+        const expected = render(
+            <Box flexDirection="column">
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+            {
+                debug: true,
+                stdout: stdoutExpected,
+            },
+        );
 
-    actual.rerender(<Test reorder />);
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
 
-    expected.rerender(
-        <Box flexDirection="column">
-            <Text>B</Text>
-            <Text>A</Text>
-        </Box>,
-    );
+        actual.rerender(<Test reorder />);
 
-    expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
-});
+        expected.rerender(
+            <Box flexDirection="column">
+                <Text>B</Text>
+                <Text>A</Text>
+            </Box>,
+        );
 
-it("replace child node with text", () => {
-    const stdout = createStdout();
-
-    const Dynamic = ({ replace }: { readonly replace?: boolean }) => <Text>{replace ? "x" : <Text color="green">test</Text>}</Text>;
-
-    const { rerender } = render(<Dynamic />, {
-        debug: true,
-        stdout,
+        expect((stdoutActual.write as any).mock.calls.at(-1)[0]).toBe((stdoutExpected.write as any).mock.calls.at(-1)[0]);
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(colorizeDefault.green("test"));
+    it("replace child node with text", () => {
+        expect.hasAssertions();
 
-    rerender(<Dynamic replace />);
+        const stdout = createStdout();
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("x");
-});
+        const Dynamic = ({ replace }: { readonly replace?: boolean }) => <Text>{replace ? "x" : <Text color="green">test</Text>}</Text>;
 
-it("support suspense", async () => {
-    const stdout = createStdout();
-
-    let promise: Promise<void> | undefined;
-    let state: "pending" | "done" | undefined;
-    let value: string | undefined;
-
-    const read = () => {
-        if (!promise) {
-            promise = new Promise((resolve) => {
-                setTimeout(resolve, 100);
-            });
-
-            state = "pending";
-
-            (async () => {
-                await promise;
-                state = "done";
-                value = "Hello World";
-            })();
-        }
-
-        if (state === "done") {
-            return value;
-        }
-
-        throw promise;
-    };
-
-    const Suspendable = () => <Text>{read()}</Text>;
-
-    const Test = () => (
-        <Suspense fallback={<Text>Loading</Text>}>
-            <Suspendable />
-        </Suspense>
-    );
-
-    const out = render(<Test />, {
-        debug: true,
-        stdout,
-    });
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Loading");
-
-    await promise;
-    out.rerender(<Test />);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello World");
-});
-
-it("support suspense with concurrent mode", async () => {
-    const stdout = createStdout();
-
-    let resolvePromise: () => void;
-    const promise = new Promise<void>((resolve) => {
-        resolvePromise = resolve;
-    });
-
-    let data: string | undefined;
-
-    const Suspendable = () => {
-        if (data === undefined) {
-            throw promise;
-        }
-
-        return <Text>{data}</Text>;
-    };
-
-    const Test = () => (
-        <Suspense fallback={<Text>Loading</Text>}>
-            <Suspendable />
-        </Suspense>
-    );
-
-    const { act } = await import("react");
-
-    await act(async () => {
-        render(<Test />, {
-            concurrent: true,
+        const { rerender } = render(<Dynamic />, {
             debug: true,
             stdout,
         });
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(green("test"));
+
+        rerender(<Dynamic replace />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("x");
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Loading");
+    it("support suspense", async () => {
+        expect.hasAssertions();
 
-    data = "Hello Concurrent World";
-    await act(async () => {
-        resolvePromise();
+        const stdout = createStdout();
+
+        let promise: Promise<void> | undefined;
+        let state: "pending" | "done" | undefined;
+        let value: string | undefined;
+
+        const read = () => {
+            if (!promise) {
+                promise = new Promise((resolve) => {
+                    setTimeout(resolve, 100);
+                });
+
+                state = "pending";
+
+                (async () => {
+                    await promise;
+                    state = "done";
+                    value = "Hello World";
+                })();
+            }
+
+            if (state === "done") {
+                return value;
+            }
+
+            throw promise;
+        };
+
+        const Suspendable = () => <Text>{read()}</Text>;
+
+        const Test = () => (
+            <Suspense fallback={<Text>Loading</Text>}>
+                <Suspendable />
+            </Suspense>
+        );
+
+        const out = render(<Test />, {
+            debug: true,
+            stdout,
+        });
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Loading");
+
         await promise;
+        out.rerender(<Test />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello World");
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello Concurrent World");
+    it("support suspense with concurrent mode", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        let resolvePromise: () => void;
+        const promise = new Promise<void>((resolve) => {
+            resolvePromise = resolve;
+        });
+
+        let data: string | undefined;
+
+        const Suspendable = () => {
+            if (data === undefined) {
+                throw promise;
+            }
+
+            return <Text>{data}</Text>;
+        };
+
+        const Test = () => (
+            <Suspense fallback={<Text>Loading</Text>}>
+                <Suspendable />
+            </Suspense>
+        );
+
+        const { act } = await import("react");
+
+        await act(async () => {
+            render(<Test />, {
+                concurrent: true,
+                debug: true,
+                stdout,
+            });
+        });
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Loading");
+
+        data = "Hello Concurrent World";
+        await act(async () => {
+            resolvePromise();
+            await promise;
+        });
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Hello Concurrent World");
+    });
 });

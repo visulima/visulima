@@ -1,7 +1,7 @@
 import { createRequire } from "node:module";
 
 import { strip as stripAnsi } from "@visulima/ansi";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
@@ -16,51 +16,63 @@ const ptyAvailable = (() => {
     }
 })();
 
-it.skipIf(!ptyAvailable)("useInput - ignore input if not active", async () => {
-    const ps = term("use-input-multiple");
+describe("hooks", () => {
+    it.skipIf(!ptyAvailable)("useInput - ignore input if not active", async () => {
+        expect.hasAssertions();
 
-    ps.write("x");
-    await ps.waitForExit();
+        const ps = term("use-input-multiple");
 
-    expect(ps.output).not.toContain("xx");
-    expect(ps.output).toContain("x");
-    expect(ps.output).toContain("exited");
-});
+        ps.write("x");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C when `exitOnCtrlC` is `false`", async () => {
-    const ps = term("use-input-ctrl-c");
+        expect(ps.output).not.toContain("xx");
+        expect(ps.output).toContain("x");
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u0003");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C when `exitOnCtrlC` is `false`", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input-ctrl-c");
 
-it.skipIf(!ptyAvailable)("useInput - no MaxListenersExceededWarning with many useInput hooks", async () => {
-    const ps = term("use-input-many");
+        ps.write("\u0003");
+        await ps.waitForExit();
 
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).not.toContain("MaxListenersExceededWarning");
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - no MaxListenersExceededWarning with many useInput hooks", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C via kitty codepoint-3 form when `exitOnCtrlC` is `false`", async () => {
-    const ps = term("use-input-ctrl-c");
+        const ps = term("use-input-many");
 
-    // Ctrl+C via kitty codepoint 3 form (modifier 5 = ctrl(4) + 1)
-    ps.write("\u001B[3;5u");
-    await ps.waitForExit();
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).not.toContain("MaxListenersExceededWarning");
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useStdout - write to stdout", async () => {
-    const ps = term("use-stdout");
+    it.skipIf(!ptyAvailable)("useInput - handle Ctrl+C via kitty codepoint-3 form when `exitOnCtrlC` is `false`", async () => {
+        expect.hasAssertions();
 
-    await ps.waitForExit();
+        const ps = term("use-input-ctrl-c");
 
-    const lines = stripAnsi(ps.output).split("\r\n");
+        // Ctrl+C via kitty codepoint 3 form (modifier 5 = ctrl(4) + 1)
+        ps.write("\u001B[3;5u");
+        await ps.waitForExit();
 
-    expect(lines.slice(1, -1)).toEqual(["Hello from Ink to stdout", "Hello World", "exited"]);
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useStdout - write to stdout", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-stdout");
+
+        await ps.waitForExit();
+
+        const lines = stripAnsi(ps.output).split("\r\n");
+
+        expect(lines.slice(1, -1)).toStrictEqual(["Hello from Ink to stdout", "Hello World", "exited"]);
+    });
 });

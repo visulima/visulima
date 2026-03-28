@@ -1,72 +1,86 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
-it("gap", () => {
-    const output = renderToString(
-        <Box flexWrap="wrap" gap={1} width={3}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+describe("gap", () => {
+    it("gap", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("A B\n\nC");
-});
+        const output = renderToString(
+            <Box flexWrap="wrap" gap={1} width={3}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
 
-it("column gap", () => {
-    const output = renderToString(
-        <Box gap={1}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        expect(output).toBe("A B\n\nC");
+    });
 
-    expect(output).toBe("A B");
-});
+    it("column gap", () => {
+        expect.hasAssertions();
 
-it("row gap", () => {
-    const output = renderToString(
-        <Box flexDirection="column" gap={1}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box gap={1}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("A\n\nB");
-});
+        expect(output).toBe("A B");
+    });
 
-it("gap - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box flexWrap="wrap" gap={1} width={3}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+    it("row gap", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("A B\n\nC");
-});
+        const output = renderToString(
+            <Box flexDirection="column" gap={1}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
 
-it("column gap - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box gap={1}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        expect(output).toBe("A\n\nB");
+    });
 
-    expect(output).toBe("A B");
-});
+    it("gap - concurrent", async () => {
+        expect.hasAssertions();
 
-it("row gap - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box flexDirection="column" gap={1}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        const output = await renderToStringAsync(
+            <Box flexWrap="wrap" gap={1} width={3}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("A\n\nB");
+        expect(output).toBe("A B\n\nC");
+    });
+
+    it("column gap - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Box gap={1}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A B");
+    });
+
+    it("row gap - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Box flexDirection="column" gap={1}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\n\nB");
+    });
 });

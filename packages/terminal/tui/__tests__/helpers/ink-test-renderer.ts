@@ -15,12 +15,12 @@ export type TestInstance = Instance & {
     stdout: ReturnType<typeof createStdout>;
 };
 
-export async function renderAsync(node: React.ReactNode, options: TestRenderOptions = {}): Promise<TestInstance> {
+export const renderAsync = async (node: React.ReactNode, options: TestRenderOptions = {}): Promise<TestInstance> => {
     const stdout = createStdout(options.columns ?? 100);
 
     let instance!: Instance;
 
-    await act(async () => {
+    await act(() => {
         instance = render(node, {
             concurrent: true,
             debug: true,
@@ -33,15 +33,15 @@ export async function renderAsync(node: React.ReactNode, options: TestRenderOpti
         ...instance,
         getOutput: () => stdout.get(),
         async rerenderAsync(newNode: React.ReactNode) {
-            await act(async () => {
+            await act(() => {
                 instance.rerender(newNode);
             });
         },
         stdout,
     };
-}
+};
 
-export function renderSync(node: React.ReactNode, options: TestRenderOptions = {}): TestInstance {
+export const renderSync = (node: React.ReactNode, options: TestRenderOptions = {}): TestInstance => {
     const stdout = createStdout(options.columns ?? 100);
 
     const instance = render(node, {
@@ -54,9 +54,10 @@ export function renderSync(node: React.ReactNode, options: TestRenderOptions = {
     return {
         ...instance,
         getOutput: () => stdout.get(),
-        async rerenderAsync(newNode: React.ReactNode) {
+        rerenderAsync(newNode: React.ReactNode) {
             instance.rerender(newNode);
+            return Promise.resolve();
         },
         stdout,
     };
-}
+};

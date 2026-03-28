@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, consistent-return, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
 /**
  * progress-bar.tsx — &lt;ProgressBar> component demo
  *

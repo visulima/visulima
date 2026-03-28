@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-perf/jsx-no-new-array-as-prop, react-refresh/only-export-components */
 /**
  * spinner.tsx — &lt;Spinner> component demo
  *

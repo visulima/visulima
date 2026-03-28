@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-plusplus, sonarjs/cognitive-complexity, unused-imports/no-unused-vars */
 /**
  * jitter.ts — Frame timing oscilloscope
  *

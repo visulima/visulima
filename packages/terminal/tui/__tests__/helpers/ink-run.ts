@@ -5,7 +5,7 @@ import url from "node:url";
 
 const require = createRequire(import.meta.url);
 
-const fixturesDir = url.fileURLToPath(new URL("../ink/fixtures", import.meta.url));
+const fixturesDirectory = url.fileURLToPath(new URL("../ink/fixtures", import.meta.url));
 
 // Lazy-load node-pty so that importing this helper does not fail on platforms
 // where the native module hasn't been compiled (e.g. Linux without build tools).
@@ -19,6 +19,7 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
 
 type Run = (fixture: string, props?: { columns?: number; env?: Record<string, string> }) => Promise<string>;
 
+// eslint-disable-next-line import/prefer-default-export
 export const run: Run = async (fixture, props) => {
     const spawn = getSpawn();
 
@@ -30,9 +31,9 @@ export const run: Run = async (fixture, props) => {
     };
 
     return new Promise<string>((resolve, reject) => {
-        const term = spawn("node", ["--import=tsx", path.join(fixturesDir, `${fixture}.tsx`)], {
+        const term = spawn("node", ["--import=tsx", path.join(fixturesDirectory, `${fixture}.tsx`)], {
             cols: typeof props?.columns === "number" ? props.columns : 100,
-            cwd: fixturesDir,
+            cwd: fixturesDirectory,
             env,
             name: "xterm-color",
         });
@@ -50,7 +51,7 @@ export const run: Run = async (fixture, props) => {
                 return;
             }
 
-            reject(new Error(`Process exited with a non-zero code: ${exitCode}`));
+            reject(new Error(`Process exited with a non-zero code: ${String(exitCode)}`));
         });
     });
 };

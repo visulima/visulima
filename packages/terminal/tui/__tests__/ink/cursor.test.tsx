@@ -240,8 +240,7 @@ describe("cursor", () => {
             setCursorPosition({ x: 5, y: 0 });
 
             if (suspended) {
-                // React Suspense requires throwing a thenable
-                throw promise as unknown as Error;
+                throwForSuspense(promise);
             }
 
             return <Text>loaded</Text>;
@@ -253,7 +252,7 @@ describe("cursor", () => {
             </Suspense>
         );
 
-        await act(async () => {
+        await act(() => {
             render(<Test />, { concurrent: true, stdin, stdout });
         });
 

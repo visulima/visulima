@@ -1,3 +1,4 @@
+/* eslint-disable func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components, react-x/no-array-index-key, unicorn/prevent-abbreviations */
 /**
  * use-paste.tsx — usePaste hook demo
  *

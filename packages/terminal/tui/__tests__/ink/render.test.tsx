@@ -10,7 +10,7 @@ import { boxen } from "@visulima/boxen";
 import delay from "delay";
 import type { ReactElement } from "react";
 import { PureComponent, useEffect, useState } from "react";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, render, Text, useApp } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -77,6 +77,8 @@ const term = (fixture: string, args: string[] = []) => {
     });
 
     ps.onExit(({ exitCode }) => {
+        expect.hasAssertions();
+
         if (exitCode === 0) {
             resolve();
 
@@ -92,8 +94,6 @@ const term = (fixture: string, args: string[] = []) => {
 const isWriteBarrierChunk = (chunk: string | Uint8Array): boolean =>
     (typeof chunk === "string" && chunk === "") || (chunk instanceof Uint8Array && chunk.length === 0);
 
-const toRenderedChunk = (chunk: string | Uint8Array): string => stripAnsi(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString());
-
 const isCursorOrSyncEscape = (chunk: string | Uint8Array): boolean => {
     const string_ = typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
@@ -105,279 +105,306 @@ const isRenderContent = (chunk: string | Uint8Array): boolean => !isWriteBarrier
 const getContentWrites = (writeSpy: any): string[] =>
     (writeSpy.mock.calls as string[][]).map((args: string[]) => args[0]!).filter((w: string) => isRenderContent(w));
 
-it.skipIf(!ptyAvailable)("do not erase screen", async () => {
-    const ps = term("erase", ["4"]);
+// eslint-disable-next-line vitest/prefer-describe-function-title -- String title is conventional for test describe blocks
+describe("render", () => {
+    it.skipIf(!ptyAvailable)("do not erase screen", async () => {
+        expect.hasAssertions();
 
-    await ps.waitForExit();
+        const ps = term("erase", ["4"]);
 
-    expect(ps.output).not.toContain(resetTerminal);
+        await ps.waitForExit();
 
-    for (const letter of ["A", "B", "C"]) {
-        expect(ps.output).toContain(letter);
-    }
-});
+        expect(ps.output).not.toContain(resetTerminal);
 
-it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than viewport", async () => {
-    const ps = term("erase-with-static", ["4"]);
-
-    await ps.waitForExit();
-
-    expect(ps.output).not.toContain(resetTerminal);
-
-    for (const letter of ["A", "B", "C", "D", "E", "F"]) {
-        expect(ps.output).toContain(letter);
-    }
-});
-
-it.skipIf(!ptyAvailable)("erase screen", async () => {
-    const ps = term("erase", ["3"]);
-
-    await ps.waitForExit();
-
-    expect(ps.output).toContain(resetTerminal);
-
-    for (const letter of ["A", "B", "C"]) {
-        expect(ps.output).toContain(letter);
-    }
-});
-
-it.skipIf(!ptyAvailable)("clear output", async () => {
-    const ps = term("clear");
-
-    await ps.waitForExit();
-
-    const secondFrame = ps.output.split(eraseLines(4))[1];
-
-    for (const letter of ["A", "B", "C"]) {
-        expect(secondFrame?.includes(letter)).toBe(false);
-    }
-});
-
-it.skipIf(!ptyAvailable)("intercept console methods and display result above output", async () => {
-    const ps = term("console");
-
-    await ps.waitForExit();
-
-    const frames = ps.output.split(eraseLines(2)).map((line) => stripAnsi(line));
-
-    expect(frames).toEqual(["Hello World\r\n", "First log\r\nHello World\r\nSecond log\r\n"]);
-});
-
-it.skipIf(!ptyAvailable)("rerender on resize", async () => {
-    const stdout = createStdout(10);
-
-    const Test = () => (
-        <Box borderStyle="round">
-            <Text>Test</Text>
-        </Box>
-    );
-
-    const { unmount } = render(<Test />, { stdout });
-
-    const contentWrites = getContentWrites(stdout.write);
-
-    expect(stripAnsi(contentWrites[0]!)).toBe(`${boxen("Test".padEnd(8), { borderStyle: "round" })}\n`);
-
-    expect(stdout.listeners("resize")).toHaveLength(1);
-
-    stdout.columns = 8;
-    stdout.emit("resize");
-    await delay(100);
-
-    const contentWritesAfterResize = getContentWrites(stdout.write);
-
-    expect(stripAnsi(contentWritesAfterResize.at(-1)!)).toBe(`${boxen("Test".padEnd(6), { borderStyle: "round" })}\n`);
-
-    unmount();
-
-    expect(stdout.listeners("resize")).toHaveLength(0);
-});
-
-it.skipIf(!ptyAvailable)("waitUntilExit resolves after stdout write callback", async () => {
-    let writeCallbackFired = false;
-
-    const stdout = new Writable({
-        write(_chunk, _encoding, callback) {
-            setTimeout(() => {
-                writeCallbackFired = true;
-                callback();
-            }, 150);
-        },
-    }) as unknown as NodeJS.WriteStream;
-
-    stdout.columns = 100;
-
-    const { unmount, waitUntilExit } = render(<Text>Hello</Text>, { stdout });
-    const exitPromise = waitUntilExit();
-
-    unmount();
-    await exitPromise;
-
-    expect(writeCallbackFired).toBe(true);
-});
-
-it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after unmount", async () => {
-    const stdout = createStdout();
-    const { unmount, waitUntilExit, waitUntilRenderFlush } = render(<Text>Hello</Text>, { stdout });
-
-    unmount();
-    await waitUntilRenderFlush();
-    await waitUntilExit();
-
-    expect(true).toBe(true); // No timeout
-});
-
-it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after exit with error", async () => {
-    const stdout = createStdout();
-
-    const Test = () => {
-        const { exit } = useApp();
-
-        useEffect(() => {
-            exit(new Error("Done"));
-        }, [exit]);
-
-        return <Text>Hello</Text>;
-    };
-
-    const { waitUntilExit, waitUntilRenderFlush } = render(<Test />, { stdout });
-
-    await expect(waitUntilExit()).rejects.toThrow("Done");
-
-    await waitUntilRenderFlush();
-});
-
-it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during synchronous render error handling", async () => {
-    class SynchronousErrorBoundary extends PureComponent<
-        {
-            children?: ReactElement;
-            onError: (error: Error) => void;
-        },
-        { error?: Error }
-    > {
-        static override getDerivedStateFromError(error: Error) {
-            return { error };
+        for (const letter of ["A", "B", "C"]) {
+            expect(ps.output).toContain(letter);
         }
+    });
 
-        override state: { error?: Error } = {
-            error: undefined,
+    it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than viewport", async () => {
+        expect.hasAssertions();
+
+        const ps = term("erase-with-static", ["4"]);
+
+        await ps.waitForExit();
+
+        expect(ps.output).not.toContain(resetTerminal);
+
+        for (const letter of ["A", "B", "C", "D", "E", "F"]) {
+            expect(ps.output).toContain(letter);
+        }
+    });
+
+    it.skipIf(!ptyAvailable)("erase screen", async () => {
+        expect.hasAssertions();
+
+        const ps = term("erase", ["3"]);
+
+        await ps.waitForExit();
+
+        expect(ps.output).toContain(resetTerminal);
+
+        for (const letter of ["A", "B", "C"]) {
+            expect(ps.output).toContain(letter);
+        }
+    });
+
+    it.skipIf(!ptyAvailable)("clear output", async () => {
+        expect.hasAssertions();
+
+        const ps = term("clear");
+
+        await ps.waitForExit();
+
+        const secondFrame = ps.output.split(eraseLines(4))[1];
+
+        for (const letter of ["A", "B", "C"]) {
+            expect(secondFrame?.includes(letter)).toBe(false);
+        }
+    });
+
+    it.skipIf(!ptyAvailable)("intercept console methods and display result above output", async () => {
+        expect.hasAssertions();
+
+        const ps = term("console");
+
+        await ps.waitForExit();
+
+        const frames = ps.output.split(eraseLines(2)).map((line) => stripAnsi(line));
+
+        expect(frames).toStrictEqual(["Hello World\r\n", "First log\r\nHello World\r\nSecond log\r\n"]);
+    });
+
+    it.skipIf(!ptyAvailable)("rerender on resize", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout(10);
+
+        const Test = () => (
+            <Box borderStyle="round">
+                <Text>Test</Text>
+            </Box>
+        );
+
+        const { unmount } = render(<Test />, { stdout });
+
+        const contentWrites = getContentWrites(stdout.write);
+
+        expect(stripAnsi(contentWrites[0]!)).toBe(`${boxen("Test".padEnd(8), { borderStyle: "round" })}\n`);
+
+        expect(stdout.listeners("resize")).toHaveLength(1);
+
+        stdout.columns = 8;
+        stdout.emit("resize");
+        await delay(100);
+
+        const contentWritesAfterResize = getContentWrites(stdout.write);
+
+        expect(stripAnsi(contentWritesAfterResize.at(-1)!)).toBe(`${boxen("Test".padEnd(6), { borderStyle: "round" })}\n`);
+
+        unmount();
+
+        expect(stdout.listeners("resize")).toHaveLength(0);
+    });
+
+    it.skipIf(!ptyAvailable)("waitUntilExit resolves after stdout write callback", async () => {
+        expect.hasAssertions();
+
+        let writeCallbackFired = false;
+
+        const stdout = new Writable({
+            write(_chunk, _encoding, callback) {
+                setTimeout(() => {
+                    writeCallbackFired = true;
+                    callback();
+                }, 150);
+            },
+        }) as unknown as NodeJS.WriteStream;
+
+        stdout.columns = 100;
+
+        const { unmount, waitUntilExit } = render(<Text>Hello</Text>, { stdout });
+        const exitPromise = waitUntilExit();
+
+        unmount();
+        await exitPromise;
+
+        expect(writeCallbackFired).toBe(true);
+    });
+
+    it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after unmount", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const { unmount, waitUntilExit, waitUntilRenderFlush } = render(<Text>Hello</Text>, { stdout });
+
+        unmount();
+        await waitUntilRenderFlush();
+        await waitUntilExit();
+
+        expect(true).toBe(true); // No timeout
+    });
+
+    it.skipIf(!ptyAvailable)("waitUntilRenderFlush resolves after exit with error", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        const Test = () => {
+            const { exit } = useApp();
+
+            useEffect(() => {
+                exit(new Error("Done"));
+            }, [exit]);
+
+            return <Text>Hello</Text>;
         };
 
-        override componentDidCatch(error: Error) {
-            this.props.onError(error);
-        }
+        const { waitUntilExit, waitUntilRenderFlush } = render(<Test />, { stdout });
 
-        override render() {
-            if (this.state.error) {
-                return null;
+        await expect(waitUntilExit()).rejects.toThrow("Done");
+
+        await waitUntilRenderFlush();
+    });
+
+    it.skipIf(!ptyAvailable)("should reject waitUntilExit when app exits during synchronous render error handling", async () => {
+        expect.hasAssertions();
+
+        class SynchronousErrorBoundary extends PureComponent<
+            {
+                children?: ReactElement;
+                onError: (error: Error) => void;
+            },
+            { error?: Error }
+        > {
+            static override getDerivedStateFromError(error: Error) {
+                return { error };
             }
 
-            return this.props.children;
-        }
-    }
+            override state: { error?: Error } = {
+                error: undefined,
+            };
 
-    function SynchronousRenderErrorComponent() {
-        throw new Error("Synchronous render error");
-    }
-
-    const ThrowingComponentWithBoundary = () => {
-        const { exit } = useApp();
-
-        return (
-            <SynchronousErrorBoundary onError={exit}>
-                <SynchronousRenderErrorComponent />
-            </SynchronousErrorBoundary>
-        );
-    };
-
-    const stdout = createStdout();
-    const { waitUntilExit } = render(<ThrowingComponentWithBoundary />, {
-        patchConsole: false,
-        stdout,
-    });
-
-    await expect(
-        Promise.race([
-            waitUntilExit(),
-            delay(500).then(() => {
-                throw new Error("waitUntilExit did not settle");
-            }),
-        ]),
-    ).rejects.toThrow("Synchronous render error");
-});
-
-it.skipIf(!ptyAvailable)("render only last frame when run in CI", async () => {
-    const Counter = () => {
-        const [count, setCount] = useState(0);
-        const { exit } = useApp();
-
-        useEffect(() => {
-            if (count >= 5) {
-                exit();
-
-                return;
+            override componentDidCatch(error: Error) {
+                this.props.onError(error);
             }
 
-            const timer = setTimeout(() => {
-                setCount((c) => c + 1);
-            }, 10);
+            override render() {
+                if (this.state.error) {
+                    return null;
+                }
 
-            return () => clearTimeout(timer);
-        }, [count, exit]);
+                return this.props.children;
+            }
+        }
 
-        return (
-            <Text>
-                Counter:
-                {count}
-            </Text>
-        );
-    };
+        const SynchronousRenderErrorComponent = () => {
+            throw new Error("Synchronous render error");
+        };
 
-    const stdout = createStdout(100, false);
-    const { waitUntilExit } = render(<Counter />, { debug: false, stdout });
+        const ThrowingComponentWithBoundary = () => {
+            const { exit } = useApp();
 
-    await waitUntilExit();
+            return (
+                <SynchronousErrorBoundary onError={exit}>
+                    <SynchronousRenderErrorComponent />
+                </SynchronousErrorBoundary>
+            );
+        };
 
-    const allWrites = stdout.getWrites().map((w) => stripAnsi(w));
-    const allContent = allWrites.join("");
-
-    // In non-interactive mode, only the last frame is written
-    for (const number_ of [0, 1, 2, 3, 4]) {
-        expect(allContent).not.toContain(`Counter: ${number_}`);
-    }
-
-    expect(allContent).toContain("Counter: 5");
-});
-
-it.skipIf(!ptyAvailable)("#725: non-TTY child process output is flushed", async () => {
-    const { spawn: spawnProcess } = await import("node:child_process");
-
-    const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/issue-725-child-process.tsx")], {
-        env: {
-            ...process.env,
-            CI: "false",
-            NODE_NO_WARNINGS: "1",
-        },
-        stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    let output = "";
-
-    fixtureProcess.stdout.on("data", (data: Uint8Array | string) => {
-        output += typeof data === "string" ? data : data.toString();
-    });
-
-    const exitCode = await new Promise<number>((resolve, reject) => {
-        fixtureProcess.on("error", reject);
-        fixtureProcess.on("close", (code) => {
-            resolve(code ?? 0);
+        const stdout = createStdout();
+        const { waitUntilExit } = render(<ThrowingComponentWithBoundary />, {
+            patchConsole: false,
+            stdout,
         });
+
+        await expect(
+            Promise.race([
+                waitUntilExit(),
+                delay(500).then(() => {
+                    throw new Error("waitUntilExit did not settle");
+                }),
+            ]),
+        ).rejects.toThrow("Synchronous render error");
     });
 
-    expect(exitCode).toBe(0);
+    it.skipIf(!ptyAvailable)("render only last frame when run in CI", async () => {
+        expect.hasAssertions();
 
-    const plainOutput = stripAnsi(output);
+        const Counter = () => {
+            const [count, setCount] = useState(0);
+            const { exit } = useApp();
 
-    expect(plainOutput).toContain("ready-stdin-not-tty");
-    expect(plainOutput).toContain("exited");
+            useEffect(() => {
+                if (count >= 5) {
+                    exit();
+
+                    return;
+                }
+
+                const timer = setTimeout(() => {
+                    setCount((c) => c + 1);
+                }, 10);
+
+                return () => { clearTimeout(timer); };
+            }, [count, exit]);
+
+            return (
+                <Text>
+                    Counter:
+                    {count}
+                </Text>
+            );
+        };
+
+        const stdout = createStdout(100, false);
+        const { waitUntilExit } = render(<Counter />, { debug: false, stdout });
+
+        await waitUntilExit();
+
+        const allWrites = stdout.getWrites().map((w) => stripAnsi(w));
+        const allContent = allWrites.join("");
+
+        // In non-interactive mode, only the last frame is written
+        for (const number_ of [0, 1, 2, 3, 4]) {
+            expect(allContent).not.toContain(`Counter: ${number_}`);
+        }
+
+        expect(allContent).toContain("Counter: 5");
+    });
+
+    it.skipIf(!ptyAvailable)("#725: non-TTY child process output is flushed", async () => {
+        expect.hasAssertions();
+
+        const { spawn: spawnProcess } = await import("node:child_process");
+
+        const fixtureProcess = spawnProcess("node", ["--import=tsx", join(__dirname, "./fixtures/issue-725-child-process.tsx")], {
+            env: {
+                ...process.env,
+                CI: "false",
+                NODE_NO_WARNINGS: "1",
+            },
+            stdio: ["ignore", "pipe", "pipe"],
+        });
+
+        let output = "";
+
+        fixtureProcess.stdout.on("data", (data: Uint8Array | string) => {
+            output += typeof data === "string" ? data : data.toString();
+        });
+
+        const exitCode = await new Promise<number>((resolve, reject) => {
+            fixtureProcess.on("error", reject);
+            fixtureProcess.on("close", (code) => {
+                resolve(code ?? 0);
+            });
+        });
+
+        expect(exitCode).toBe(0);
+
+        const plainOutput = stripAnsi(output);
+
+        expect(plainOutput).toContain("ready-stdin-not-tty");
+        expect(plainOutput).toContain("exited");
+    });
 });

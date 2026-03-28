@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
@@ -15,155 +15,191 @@ const ptyAvailable = (() => {
     }
 })();
 
-it.skipIf(!ptyAvailable)("useInput - handle up arrow", async () => {
-    const ps = term("use-input", ["upArrow"]);
+describe("hooks-use-input-navigation", () => {
+    it.skipIf(!ptyAvailable)("useInput - handle up arrow", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[A");
-    await ps.waitForExit();
+        const ps = term("use-input", ["upArrow"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[A");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle down arrow", async () => {
-    const ps = term("use-input", ["downArrow"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[B");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle down arrow", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input", ["downArrow"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle left arrow", async () => {
-    const ps = term("use-input", ["leftArrow"]);
+        ps.write("\u001B[B");
+        await ps.waitForExit();
 
-    ps.write("\u001B[D");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle left arrow", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle right arrow", async () => {
-    const ps = term("use-input", ["rightArrow"]);
+        const ps = term("use-input", ["leftArrow"]);
 
-    ps.write("\u001B[C");
-    await ps.waitForExit();
+        ps.write("\u001B[D");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handles rapid arrows and enter in one chunk", async () => {
-    const ps = term("use-input", ["rapidArrowsEnter"]);
+    it.skipIf(!ptyAvailable)("useInput - handle right arrow", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[B\u001B[B\u001B[B\r");
-    await ps.waitForExit();
+        const ps = term("use-input", ["rightArrow"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[C");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle meta + up arrow", async () => {
-    const ps = term("use-input", ["upArrowMeta"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B\u001B[A");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handles rapid arrows and enter in one chunk", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input", ["rapidArrowsEnter"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle meta + down arrow", async () => {
-    const ps = term("use-input", ["downArrowMeta"]);
+        ps.write("\u001B[B\u001B[B\u001B[B\r");
+        await ps.waitForExit();
 
-    ps.write("\u001B\u001B[B");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle meta + up arrow", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle meta + left arrow", async () => {
-    const ps = term("use-input", ["leftArrowMeta"]);
+        const ps = term("use-input", ["upArrowMeta"]);
 
-    ps.write("\u001B\u001B[D");
-    await ps.waitForExit();
+        ps.write("\u001B\u001B[A");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handle meta + right arrow", async () => {
-    const ps = term("use-input", ["rightArrowMeta"]);
+    it.skipIf(!ptyAvailable)("useInput - handle meta + down arrow", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B\u001B[C");
-    await ps.waitForExit();
+        const ps = term("use-input", ["downArrowMeta"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B\u001B[B");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle ctrl + up arrow", async () => {
-    const ps = term("use-input", ["upArrowCtrl"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[1;5A");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle meta + left arrow", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input", ["leftArrowMeta"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle ctrl + down arrow", async () => {
-    const ps = term("use-input", ["downArrowCtrl"]);
+        ps.write("\u001B\u001B[D");
+        await ps.waitForExit();
 
-    ps.write("\u001B[1;5B");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle meta + right arrow", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle ctrl + left arrow", async () => {
-    const ps = term("use-input", ["leftArrowCtrl"]);
+        const ps = term("use-input", ["rightArrowMeta"]);
 
-    ps.write("\u001B[1;5D");
-    await ps.waitForExit();
+        ps.write("\u001B\u001B[C");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handle ctrl + right arrow", async () => {
-    const ps = term("use-input", ["rightArrowCtrl"]);
+    it.skipIf(!ptyAvailable)("useInput - handle ctrl + up arrow", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[1;5C");
-    await ps.waitForExit();
+        const ps = term("use-input", ["upArrowCtrl"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[1;5A");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle page down", async () => {
-    const ps = term("use-input", ["pageDown"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[6~");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle ctrl + down arrow", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input", ["downArrowCtrl"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle page up", async () => {
-    const ps = term("use-input", ["pageUp"]);
+        ps.write("\u001B[1;5B");
+        await ps.waitForExit();
 
-    ps.write("\u001B[5~");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle ctrl + left arrow", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle home", async () => {
-    const ps = term("use-input", ["home"]);
+        const ps = term("use-input", ["leftArrowCtrl"]);
 
-    ps.write("\u001B[H");
-    await ps.waitForExit();
+        ps.write("\u001B[1;5D");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handle end", async () => {
-    const ps = term("use-input", ["end"]);
+    it.skipIf(!ptyAvailable)("useInput - handle ctrl + right arrow", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[F");
-    await ps.waitForExit();
+        const ps = term("use-input", ["rightArrowCtrl"]);
 
-    expect(ps.output).toContain("exited");
+        ps.write("\u001B[1;5C");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - handle page down", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input", ["pageDown"]);
+
+        ps.write("\u001B[6~");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - handle page up", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input", ["pageUp"]);
+
+        ps.write("\u001B[5~");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - handle home", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input", ["home"]);
+
+        ps.write("\u001B[H");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - handle end", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input", ["end"]);
+
+        ps.write("\u001B[F");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
 });

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-floating-promises, @typescript-eslint/no-non-null-assertion, jsdoc/escape-inline-tags, promise/always-return, promise/catch-or-return, react-perf/jsx-no-new-function-as-prop, react-refresh/only-export-components, unicorn/prefer-top-level-await */
+
 /**
  * inline-picker.tsx — React inline mode demo
  *

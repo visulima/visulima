@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/restrict-template-expressions, default-case, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-plusplus, unicorn/no-null */
+
 /**
  * inline-picker.ts — Inline mode demo
  *

@@ -19,7 +19,7 @@ export const renderToString = (node: React.JSX.Element, options?: RenderToString
 export const renderToStringAsync = async (node: React.JSX.Element, options?: RenderToStringOptions): Promise<string> => {
     const stdout = createStdout(options?.columns ?? 100);
 
-    await act(async () => {
+    await act(() => {
         render(node, { concurrent: true, debug: true, isScreenReaderEnabled: options?.isScreenReaderEnabled, stdout });
     });
 
