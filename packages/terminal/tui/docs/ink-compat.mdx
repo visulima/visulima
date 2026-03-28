@@ -30,8 +30,9 @@ description: "Ink API parity matrix, render option differences, and Ratatat-only
 | `useStderr()`                | ✅     | Buffered while app is running                                 |
 | `useBoxMetrics()`            | ✅     | Layout metrics + `hasMeasured` (intended for `render()` mode) |
 | `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)            |
+| `Cursor`                     | ✅     | Declarative cursor; inline mode + anchor mode                 |
+| `useCursor()`                | ✅     | Imperative cursor positioning with IME support                |
 | `useIsScreenReaderEnabled()` | ⚠️     | Stub: always `false`                                          |
-| `useCursor()`                | ⚠️     | Stub: `setCursorPosition` is a no-op                          |
 
 ## Render Option Differences
 
@@ -66,7 +67,7 @@ description: "Ink API parity matrix, render option differences, and Ratatat-only
 | Screen mode        | Inline rewrite model | Alternate screen model       |
 | `patchConsole`     | Integrated           | Not implemented              |
 | Screen reader hook | Functional           | Stub (`false`)               |
-| Cursor hook        | Functional           | Stub (no-op)                 |
+| Cursor hook        | Functional           | Functional                   |
 
 ## `compat-test/` Status
 
