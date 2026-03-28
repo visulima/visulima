@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null */
 import Yoga from "yoga-layout-prebuilt";
 
 import { measureTextBlock } from "./text-width.js";
@@ -154,7 +155,7 @@ export class LayoutNode {
         const staleParent = this.yogaNode.getParent();
 
         if (staleParent) {
-            this.yogaNode.remove();
+            staleParent.removeChild(this.yogaNode); // eslint-disable-line unicorn/prefer-dom-node-remove -- Yoga node, not DOM node
         }
 
         this.yogaNode.free();
