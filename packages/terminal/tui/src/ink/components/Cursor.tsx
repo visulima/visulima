@@ -2,7 +2,7 @@
 import type { RefObject } from "react";
 import React from "react";
 
-import type { CursorAnchorRef, DOMElement } from "../dom.js";
+import type { CursorAnchorRef, DOMElement } from "../dom";
 
 export type Props = {
     /**

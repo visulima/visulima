@@ -2,7 +2,7 @@
 import type { Context } from "react";
 import { createContext } from "react";
 
-import type { CursorPosition } from "../log-update.js";
+import type { CursorPosition } from "../log-update";
 
 export type Props = {
     /**

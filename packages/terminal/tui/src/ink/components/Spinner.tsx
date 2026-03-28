@@ -30,7 +30,7 @@ import spinners from "cli-spinners";
 import type { ReactElement } from "react";
 import { useEffect, useState } from "react";
 
-import Text from "./Text.js";
+import Text from "./Text";
 
 export type Props = {
     /**

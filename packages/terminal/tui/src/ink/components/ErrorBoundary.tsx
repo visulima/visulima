@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 
-import ErrorOverview from "./ErrorOverview.js";
+import ErrorOverview from "./ErrorOverview";
 
 type Props = {
     readonly children: ReactNode;

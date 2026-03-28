@@ -1,10 +1,10 @@
 /* eslint-disable consistent-return, e18e/prefer-static-regex, import/exports-last */
 import { useEffect, useRef } from "react";
 
-import { IMECompositionBuffer, isIMEInput } from "../ime-utils.js";
-import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress.js";
-import reconciler from "../reconciler.js";
-import { useStdinContext } from "./use-stdin.js";
+import { IMECompositionBuffer, isIMEInput } from "../ime-utils";
+import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress";
+import reconciler from "../reconciler";
+import { useStdinContext } from "./use-stdin";
 
 /**
  * Handy information about a key that was pressed.

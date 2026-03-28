@@ -3,9 +3,9 @@ import delay from "delay";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import type { DOMElement } from "../../src/ink/index.js";
-import { Box, measureElement, render, Text } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import type { DOMElement } from "../../src/ink/index";
+import { Box, measureElement, render, Text } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 
 describe("measure-element", () => {
     let currentUnmount: (() => void) | undefined;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import measureText from "../../src/ink/measure-text.js";
+import measureText from "../../src/ink/measure-text";
 
 describe("measure-text", () => {
     it("measure single word", () => {

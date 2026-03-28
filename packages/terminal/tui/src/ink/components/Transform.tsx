@@ -2,7 +2,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { useContext } from "react";
 
-import { accessibilityContext } from "./AccessibilityContext.js";
+import { accessibilityContext } from "./AccessibilityContext";
 
 export type Props = {
     /**

@@ -5,8 +5,8 @@ import patchConsole from "patch-console";
 import { useEffect } from "react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { render, Text, useStdin } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import { render, Text, useStdin } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 
 const ERROR_LOCATION_RE = /errors\.test\.tsx:\d+:\d+/u;
 const ERROR_COMPONENT_RE = /Test.*errors\.test\.tsx:\d+:\d+/u;

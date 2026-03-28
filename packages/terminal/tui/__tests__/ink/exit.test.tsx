@@ -6,7 +6,7 @@ import url from "node:url";
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { run } from "../helpers/ink-run.js";
+import { run } from "../helpers/ink-run";
 
 const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {

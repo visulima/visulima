@@ -1,5 +1,5 @@
 /* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
-import { runIssue450RerenderFixture } from "./issue-450-fixture-helpers.js";
+import { runIssue450RerenderFixture } from "./issue-450-fixture-helpers";
 
 // First frame at full height, second frame shrinks to rows - 1 with Static content.
 // Tests that Static output is not dropped in the incremental early-return path.

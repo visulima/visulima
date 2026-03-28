@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Newline, Text } from "../../src/ink/index.js";
-import { renderToString } from "../helpers/ink-render.js";
+import { Box, Newline, Text } from "../../src/ink/index";
+import { renderToString } from "../helpers/ink-render";
 
 describe("flex-align-items", () => {
     it("row - align text to center", () => {

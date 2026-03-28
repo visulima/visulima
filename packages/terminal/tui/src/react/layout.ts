@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null */
 import Yoga from "yoga-layout-prebuilt";
 
-import { measureTextBlock } from "./text-width.js";
+import { measureTextBlock } from "./text-width";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;
 

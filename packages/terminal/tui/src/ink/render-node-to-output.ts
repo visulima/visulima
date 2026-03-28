@@ -2,14 +2,14 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
-import type { DOMElement } from "./dom.js";
-import getMaxWidth from "./get-max-width.js";
-import { getAbsoluteContentPosition } from "./layout.js";
-import type Output from "./output.js";
-import renderBackground from "./render-background.js";
-import renderBorder from "./render-border.js";
-import squashTextNodes from "./squash-text-nodes.js";
-import wrapText from "./wrap-text.js";
+import type { DOMElement } from "./dom";
+import getMaxWidth from "./get-max-width";
+import { getAbsoluteContentPosition } from "./layout";
+import type Output from "./output";
+import renderBackground from "./render-background";
+import renderBorder from "./render-border";
+import squashTextNodes from "./squash-text-nodes";
+import wrapText from "./wrap-text";
 
 // If parent container is `<Box>`, text nodes will be treated as separate nodes in
 // the tree and will have their own coordinates in the layout.

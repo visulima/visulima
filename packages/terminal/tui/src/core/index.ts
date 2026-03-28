@@ -1,5 +1,5 @@
-export * from "./app.js";
-export * from "./cell.js";
-export * from "./inline.js";
-export * from "./input.js";
-export { Renderer, TerminalGuard, type TerminalSize, terminalSize } from "./native-binding.js";
+export * from "./app";
+export * from "./cell";
+export * from "./inline";
+export * from "./input";
+export { Renderer, TerminalGuard, type TerminalSize, terminalSize } from "./native-binding";

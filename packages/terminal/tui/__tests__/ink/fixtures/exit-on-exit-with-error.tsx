@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render, Text, useApp } from "../../../src/ink/index.js";
+import { render, Text, useApp } from "../../../src/ink/index";
 
 class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter: number }> {
     public timer?: NodeJS.Timeout;

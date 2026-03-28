@@ -14,7 +14,7 @@
  *   Ctrl+C   quit
  */
 
-import { createLoop, setCell } from "./harness.js";
+import { createLoop, setCell } from "./harness";
 
 // ─── 256-color palette ────────────────────────────────────────────────────────
 // Map a value in [0, 1] to a vivid 256-color index.

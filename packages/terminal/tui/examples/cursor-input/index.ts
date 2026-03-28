@@ -1,1 +1,1 @@
-import "./cursor-input.js";
+import "./cursor-input";

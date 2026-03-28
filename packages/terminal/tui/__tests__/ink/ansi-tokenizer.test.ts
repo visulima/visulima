@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { tokenizeAnsi } from "../../src/ink/ansi-tokenizer.js";
+import { tokenizeAnsi } from "../../src/ink/ansi-tokenizer";
 
 describe("ansi-tokenizer", () => {
     it("tokenize plain text", () => {

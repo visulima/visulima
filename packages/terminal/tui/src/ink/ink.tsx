@@ -12,23 +12,23 @@ import isInCi from "is-in-ci";
 import patchConsole from "patch-console";
 import type { ReactNode } from "react";
 import type { FiberRoot } from "react-reconciler";
-import { ConcurrentRoot, LegacyRoot } from "react-reconciler/constants.js";
+import { ConcurrentRoot, LegacyRoot } from "react-reconciler/constants";
 import { onExit as signalExit } from "signal-exit";
 import Yoga from "yoga-layout";
 
-import { accessibilityContext as AccessibilityContext } from "./components/AccessibilityContext.js";
-import App from "./components/App.js";
-import { hideCursorEscape, showCursorEscape } from "./cursor-helpers.js";
-import * as dom from "./dom.js";
-import instances from "./instances.js";
-import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard.js";
-import { resolveFlags } from "./kitty-keyboard.js";
-import type { CursorPosition, LogUpdate } from "./log-update.js";
-import logUpdate from "./log-update.js";
-import reconciler from "./reconciler.js";
-import render from "./renderer.js";
-import { getWindowSize } from "./utils.js";
-import { bsu, esu, shouldSynchronize } from "./write-synchronized.js";
+import { accessibilityContext as AccessibilityContext } from "./components/AccessibilityContext";
+import App from "./components/App";
+import { hideCursorEscape, showCursorEscape } from "./cursor-helpers";
+import * as dom from "./dom";
+import instances from "./instances";
+import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
+import { resolveFlags } from "./kitty-keyboard";
+import type { CursorPosition, LogUpdate } from "./log-update";
+import logUpdate from "./log-update";
+import reconciler from "./reconciler";
+import render from "./renderer";
+import { getWindowSize } from "./utils";
+import { bsu, esu, shouldSynchronize } from "./write-synchronized";
 
 // Ensure console.Console is available for patch-console (Vitest and some test
 // environments replace the global console without exposing Console as a constructor).

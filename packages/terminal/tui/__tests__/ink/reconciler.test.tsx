@@ -2,8 +2,8 @@ import { green } from "@visulima/colorize";
 import { Suspense } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import { Box, render, Text } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
 
 describe("reconciler", () => {
     it("update child", () => {

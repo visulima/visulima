@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
 
-import { Box, render, Text, useApp, useInput } from "../../../src/ink/index.js";
+import { Box, render, Text, useApp, useInput } from "../../../src/ink/index";
 
 const App = () => {
     const { exit } = useApp();

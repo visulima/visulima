@@ -7,8 +7,8 @@ import codeExcerpt from "code-excerpt";
 import type { ReactElement } from "react";
 import StackUtils from "stack-utils";
 
-import Box from "./Box.js";
-import Text from "./Text.js";
+import Box from "./Box";
+import Text from "./Text";
 
 // Error's source file is reported as file:///home/user/file.js
 // This function removes the file://[cwd] part

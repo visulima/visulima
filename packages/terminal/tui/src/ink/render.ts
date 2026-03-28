@@ -4,10 +4,10 @@ import { Stream } from "node:stream";
 
 import type { ReactNode } from "react";
 
-import type { Options as InkOptions, RenderMetrics } from "./ink.js";
-import Ink from "./ink.js";
-import instances from "./instances.js";
-import type { KittyKeyboardOptions } from "./kitty-keyboard.js";
+import type { Options as InkOptions, RenderMetrics } from "./ink";
+import Ink from "./ink";
+import instances from "./instances";
+import type { KittyKeyboardOptions } from "./kitty-keyboard";
 
 export type RenderOptions = {
     /**

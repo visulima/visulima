@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { Key } from "react";
 
-import type { DOMElement } from "./dom.js";
-import type { OutputTransformer } from "./render-node-to-output.js";
+import type { DOMElement } from "./dom";
+import type { OutputTransformer } from "./render-node-to-output";
 
 declare global {
     namespace Ink {

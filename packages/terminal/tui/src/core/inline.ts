@@ -13,8 +13,8 @@
  * render tick.
  */
 
-import type { RendererInstance } from "./native-binding.js";
-import { Renderer, terminalSize } from "./native-binding.js";
+import type { RendererInstance } from "./native-binding";
+import { Renderer, terminalSize } from "./native-binding";
 
 const DEC_2026_ON = "\u001B[?2026h";
 const DEC_2026_OFF = "\u001B[?2026l";

@@ -2,13 +2,13 @@
 // @ts-nocheck
 import { createContext } from "react";
 import ReactReconciler from "react-reconciler";
-import { DefaultEventPriority, DiscreteEventPriority, NoEventPriority } from "react-reconciler/constants.js";
+import { DefaultEventPriority, DiscreteEventPriority, NoEventPriority } from "react-reconciler/constants";
 import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unstable_shouldYield } from "scheduler";
 
-import { LayoutNode } from "./layout.js";
-import type { Styles } from "./styles.js";
-import { applyStyles, resolveColor } from "./styles.js";
-import { getStringWidth } from "./text-width.js";
+import { LayoutNode } from "./layout";
+import type { Styles } from "./styles";
+import { applyStyles, resolveColor } from "./styles";
+import { getStringWidth } from "./text-width";
 
 type Type = "box" | "text";
 type Props = any;

@@ -1,8 +1,8 @@
 /* eslint-disable import/exports-last */
 import { useEffect, useState } from "react";
 
-import { getWindowSize } from "../utils.js";
-import useStdout from "./use-stdout.js";
+import { getWindowSize } from "../utils";
+import useStdout from "./use-stdout";
 
 /**
  * Dimensions of the terminal window.

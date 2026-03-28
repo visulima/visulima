@@ -1,6 +1,6 @@
 import React from "react";
 
-import { render, Text, useApp, useStdin } from "../../../src/ink/index.js";
+import { render, Text, useApp, useStdin } from "../../../src/ink/index";
 
 class Exit extends React.Component<{
     onExit: (error: Error) => void;

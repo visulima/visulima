@@ -2,8 +2,8 @@ import EventEmitter from "node:events";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { render, Text } from "../../src/ink/index.js";
-import parseKeypress from "../../src/ink/parse-keypress.js";
+import { render, Text } from "../../src/ink/index";
+import parseKeypress from "../../src/ink/parse-keypress";
 
 // Helper to create kitty protocol CSI u sequences
 const kittyKey = (codepoint: number, modifiers?: number, eventType?: number, textCodepoints?: number[]): string => {

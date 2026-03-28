@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import type { InputEvent } from "../../src/ink/input-parser.js";
-import { createInputParser } from "../../src/ink/input-parser.js";
+import type { InputEvent } from "../../src/ink/input-parser";
+import { createInputParser } from "../../src/ink/input-parser";
 
 const parseChunks = (chunks: string[]): InputEvent[] => {
     const parser = createInputParser();

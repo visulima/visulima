@@ -6,12 +6,12 @@ import { green, red } from "@visulima/colorize";
 import React, { Component, useEffect, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { Box, Newline, render, Spacer, Static, Text, Transform, useInput, useStdin } from "../../src/ink/index.js";
-import { emitReadable } from "../helpers/ink-create-stdin.js";
-import createStdout from "../helpers/ink-create-stdout.js";
-import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
-import { run } from "../helpers/ink-run.js";
-import { renderAsync } from "../helpers/ink-test-renderer.js";
+import { Box, Newline, render, Spacer, Static, Text, Transform, useInput, useStdin } from "../../src/ink/index";
+import { emitReadable } from "../helpers/ink-create-stdin";
+import createStdout from "../helpers/ink-create-stdout";
+import { renderToString, renderToStringAsync } from "../helpers/ink-render";
+import { run } from "../helpers/ink-run";
+import { renderAsync } from "../helpers/ink-test-renderer";
 
 const TRAILING_NEWLINE_RE = /\n$/;
 

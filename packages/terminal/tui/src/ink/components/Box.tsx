@@ -3,10 +3,10 @@ import type { ForwardRefExoticComponent, PropsWithChildren, RefAttributes } from
 import { forwardRef, useContext } from "react";
 import type { Except } from "type-fest";
 
-import type { DOMElement } from "../dom.js";
-import type { Styles } from "../styles.js";
-import { accessibilityContext } from "./AccessibilityContext.js";
-import { backgroundContext } from "./BackgroundContext.js";
+import type { DOMElement } from "../dom";
+import type { Styles } from "../styles";
+import { accessibilityContext } from "./AccessibilityContext";
+import { backgroundContext } from "./BackgroundContext";
 
 export type Props = Except<Styles, "textWrap"> & {
     /**

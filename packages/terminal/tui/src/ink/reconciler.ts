@@ -4,12 +4,12 @@ import process from "node:process";
 import { createContext, version as reactVersion } from "react";
 import type { ReactContext } from "react-reconciler";
 import createReconciler from "react-reconciler";
-import { DefaultEventPriority, NoEventPriority } from "react-reconciler/constants.js";
+import { DefaultEventPriority, NoEventPriority } from "react-reconciler/constants";
 import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unstable_shouldYield } from "scheduler";
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
-import type { CursorMarker, DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom.js";
+import type { CursorMarker, DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom";
 import {
     appendChildNode,
     createNode,
@@ -20,10 +20,10 @@ import {
     setAttribute,
     setStyle,
     setTextNodeValue,
-} from "./dom.js";
-import type { OutputTransformer } from "./render-node-to-output.js";
-import type { Styles } from "./styles.js";
-import applyStyles from "./styles.js";
+} from "./dom";
+import type { OutputTransformer } from "./render-node-to-output";
+import type { Styles } from "./styles";
+import applyStyles from "./styles";
 
 // We need to conditionally perform devtools connection to avoid
 // accidentally breaking other third-party code.

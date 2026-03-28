@@ -2,9 +2,9 @@
 import colorizeDefault from "@visulima/colorize";
 import cliBoxes from "cli-boxes";
 
-import colorize from "./colorize.js";
-import type { DOMNode } from "./dom.js";
-import type Output from "./output.js";
+import colorize from "./colorize";
+import type { DOMNode } from "./dom";
+import type Output from "./output";
 
 const stylePiece = (segment: string, fg?: string, bg?: string, dim?: boolean): string => {
     let styled = colorize(segment, fg, "foreground");

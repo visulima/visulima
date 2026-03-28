@@ -12,9 +12,9 @@ import type { ReactElement } from "react";
 import { PureComponent, useEffect, useState } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text, useApp } from "../../src/ink/index.js";
-import createStdout from "../helpers/ink-create-stdout.js";
-import { run } from "../helpers/ink-run.js";
+import { Box, render, Text, useApp } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
+import { run } from "../helpers/ink-run";
 
 const require = createRequire(import.meta.url);
 

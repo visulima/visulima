@@ -1,8 +1,8 @@
 import { green } from "@visulima/colorize";
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index.js";
-import { renderToString } from "../helpers/ink-render.js";
+import { Box, Text } from "../../src/ink/index";
+import { renderToString } from "../helpers/ink-render";
 
 describe("flex-justify-content", () => {
     it("row - align text to center", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index.js";
-import { renderToString } from "../helpers/ink-render.js";
+import { Box, Text } from "../../src/ink/index";
+import { renderToString } from "../helpers/ink-render";
 
 describe("screen-reader", () => {
     it("render text for screen readers", () => {

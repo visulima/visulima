@@ -2,9 +2,9 @@ import { strip as stripAnsi } from "@visulima/ansi";
 import delay from "delay";
 import { describe, expect, it } from "vitest";
 
-import { Box, render, Text, useWindowSize } from "../../src/ink/index.js";
-import type { FakeStdout } from "../helpers/ink-create-stdout.js";
-import createStdout from "../helpers/ink-create-stdout.js";
+import { Box, render, Text, useWindowSize } from "../../src/ink/index";
+import type { FakeStdout } from "../helpers/ink-create-stdout";
+import createStdout from "../helpers/ink-create-stdout";
 
 const getWriteContents = (stdout: FakeStdout): string[] => stdout.getWrites().filter((w) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
 

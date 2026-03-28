@@ -1,7 +1,7 @@
 import React, { Suspense, useState, useTransition } from "react";
 import { describe, expect, it } from "vitest";
 
-import { Box, Newline, renderToString, Spacer, Static, Text, useFocus, useStderr, useStdout } from "../src/react/index.js";
+import { Box, Newline, renderToString, Spacer, Static, Text, useFocus, useStderr, useStdout } from "../src/react/index";
 
 const BLOCK_CHARS_RE = /[█▓▒░▪▫●○◆◇]/;
 

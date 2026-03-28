@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, func-style, import/exports-last, import/prefer-default-export, no-bitwise, no-console, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
 import cliBoxes from "cli-boxes";
 
-import type { LayoutNode } from "./layout.js";
-import { resolveColor } from "./styles.js";
-import { getCodePointWidth } from "./text-width.js";
+import type { LayoutNode } from "./layout";
+import { resolveColor } from "./styles";
+import { getCodePointWidth } from "./text-width";
 
 // Clip rectangle: cells outside [x0,x1) × [y0,y1) are not painted.
 // Passed down through paintNode so children can never overflow their parent.

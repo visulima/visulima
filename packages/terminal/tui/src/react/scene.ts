@@ -1,3 +1,3 @@
-export * from "./layout.js";
-export * from "./renderer.js";
-export * from "./styles.js";
+export * from "./layout";
+export * from "./renderer";
+export * from "./styles";

@@ -2,8 +2,8 @@
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
-import type { InputParser, MouseEvent, RatatatApp } from "../core/index.js";
-import type { LayoutNode } from "./layout.js";
+import type { InputParser, MouseEvent, RatatatApp } from "../core/index";
+import type { LayoutNode } from "./layout";
 
 export interface RatatatContextProps {
     app: RatatatApp;

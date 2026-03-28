@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { IMECompositionBuffer, isIMEInput } from "../../src/ink/ime-utils.js";
+import { IMECompositionBuffer, isIMEInput } from "../../src/ink/ime-utils";
 
 describe("isIMEInput", () => {
     describe("returns false for ASCII input", () => {

@@ -1,8 +1,8 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { DOMElement } from "./dom.js";
-import type { CursorPosition } from "./log-update.js";
-import Output, { OutputCaches } from "./output.js";
-import renderNodeToOutput, { renderNodeToScreenReaderOutput, type RenderState } from "./render-node-to-output.js";
+import type { DOMElement } from "./dom";
+import type { CursorPosition } from "./log-update";
+import Output, { OutputCaches } from "./output";
+import renderNodeToOutput, { renderNodeToScreenReaderOutput, type RenderState } from "./render-node-to-output";
 
 type Result = {
     cursorPosition: CursorPosition | undefined;

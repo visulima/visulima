@@ -1,8 +1,8 @@
 import { strip as stripAnsi } from "@visulima/ansi";
 import { describe, expect, it } from "vitest";
 
-import { Box, Text } from "../../src/ink/index.js";
-import { renderToString } from "../helpers/ink-render.js";
+import { Box, Text } from "../../src/ink/index";
+import { renderToString } from "../helpers/ink-render";
 
 describe("text-width", () => {
     it("wide characters do not add extra space inside fixed-width Box", () => {

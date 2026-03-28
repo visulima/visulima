@@ -1,5 +1,5 @@
-import type { DOMElement } from "./dom.js";
-import { getAbsolutePosition } from "./layout.js";
+import type { DOMElement } from "./dom";
+import { getAbsolutePosition } from "./layout";
 
 type Output = {
     /**

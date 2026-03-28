@@ -2,7 +2,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { useLayoutEffect, useMemo, useState } from "react";
 
-import type { Styles } from "../styles.js";
+import type { Styles } from "../styles";
 
 export type Props<T> = {
     /**

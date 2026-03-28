@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, useApp, useInput, usePaste } from "../../../src/ink/index.js";
+import { render, useApp, useInput, usePaste } from "../../../src/ink/index";
 
 const PasteDemo = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();

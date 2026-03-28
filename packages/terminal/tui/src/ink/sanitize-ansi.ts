@@ -1,5 +1,5 @@
 /* eslint-disable no-for-of-array/no-for-of-array */
-import { hasAnsiControlCharacters, tokenizeAnsi } from "./ansi-tokenizer.js";
+import { hasAnsiControlCharacters, tokenizeAnsi } from "./ansi-tokenizer";
 
 const sgrParametersRegex = /^[\d:;]*$/;
 

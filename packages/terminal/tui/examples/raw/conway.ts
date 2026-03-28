@@ -11,7 +11,7 @@
  *   Ctrl+C   quit
  */
 
-import { createLoop, setCell } from "./harness.js";
+import { createLoop, setCell } from "./harness";
 
 // ─── Palette ─────────────────────────────────────────────────────────────────
 

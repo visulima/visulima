@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React from "react";
 
-import { render, Text, useApp, useInput } from "../../../src/ink/index.js";
+import { render, Text, useApp, useInput } from "../../../src/ink/index";
 
 const IMEInput = ({ test }: { readonly test: string | undefined }) => {
     const { exit } = useApp();

@@ -3,7 +3,7 @@ import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";
 
-import type { OutputTransformer } from "./render-node-to-output.js";
+import type { OutputTransformer } from "./render-node-to-output";
 
 /**
  * "Virtual" output class

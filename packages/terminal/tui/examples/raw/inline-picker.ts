@@ -17,7 +17,7 @@
 
 import { createInlineLoop } from "@visulima/tui/core";
 
-import { setCell } from "./harness.js";
+import { setCell } from "./harness";
 
 const ITEMS = [
     "src/app.ts",

@@ -3,7 +3,7 @@ import process from "node:process";
 
 import React from "react";
 
-import { Box, render, Static, Text } from "../../../src/ink/index.js";
+import { Box, render, Static, Text } from "../../../src/ink/index";
 
 const EraseWithStatic = () => (
     <>

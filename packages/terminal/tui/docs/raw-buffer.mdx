@@ -89,7 +89,7 @@ buf[idx * 2 + 1] = attrCode;
 ### `setCell` Helper from Repo Examples
 
 ```ts
-import { setCell } from "./examples-raw/harness.js";
+import { setCell } from "./examples-raw/harness";
 
 setCell(buf, cols, x, y, "A", 196, 0, 1); // 1 = bold style bit
 ```
@@ -131,7 +131,7 @@ For moving marks, narrow foreground glyphs (`▪`, `·`, `│`, `─`) are often
 `examples-raw/harness.ts` wraps common loop boilerplate (guard, renderer, resize, Ctrl+C):
 
 ```ts
-import { createLoop } from "./examples-raw/harness.js";
+import { createLoop } from "./examples-raw/harness";
 
 const loop = createLoop((buf, cols, rows, frame) => {
     // paint frame
