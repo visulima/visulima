@@ -5,9 +5,9 @@ import type { LiteralUnion } from "type-fest";
 import type { ExtendedRfc5424LogLevels, StringifyAwareReporter } from "../../types";
 import type { AbstractJsonReporterOptions } from "../json/abstract-json-reporter";
 import { AbstractJsonReporter } from "../json/abstract-json-reporter";
-import compressData from "./utils/compression.js";
-import LogSizeError from "./utils/log-size-error.js";
-import sendWithRetry from "./utils/retry.js";
+import compressData from "./utils/compression";
+import LogSizeError from "./utils/log-size-error";
+import sendWithRetry from "./utils/retry";
 
 /**
  * Configuration options for the HTTP reporter.

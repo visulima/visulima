@@ -7,6 +7,6 @@ export { createClientRPCContext } from "./rpc/client";
 export { createServerRPCContext } from "./rpc/server";
 export type { TimelineStore } from "./timeline/index";
 export { getTimelineStore } from "./timeline/index";
-export { DevToolbar } from "./toolbar/index.js";
+export { DevToolbar } from "./toolbar/index";
 export { loadSettings, saveSettings, updateSettings } from "./toolbar/settings";
 export type * from "./types/index";

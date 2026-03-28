@@ -11,7 +11,7 @@ import {
     getSymbol,
     isValid,
     searchCurrencies,
-} from "../src/currencies.js";
+} from "../src/currencies";
 
 describe("currencies", () => {
     it("should get currency by code", () => {

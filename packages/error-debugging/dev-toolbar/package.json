@@ -32,9 +32,6 @@
     },
     "sideEffects": false,
     "type": "module",
-    "bin": {
-        "visulima-dev-toolbar-mcp": "./bin/mcp.js"
-    },
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -105,6 +102,9 @@
             "default": "./dist/ui/index.js"
         },
         "./package.json": "./package.json"
+    },
+    "bin": {
+        "visulima-dev-toolbar-mcp": "./bin/mcp.js"
     },
     "files": [
         "bin",

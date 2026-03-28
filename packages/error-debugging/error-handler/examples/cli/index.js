@@ -1,6 +1,6 @@
 // @ts-ignore - local workspace package is available at runtime
 import colorize from "@visulima/colorize";
-import { cliHandler } from "@visulima/error-handler/dist/handler/cli-handler.js";
+import { cliHandler } from "@visulima/error-handler/dist/handler/cli-handler";
 
 /**
  *

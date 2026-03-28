@@ -8,7 +8,7 @@ import {
     getIntermediaryRegions,
     getRegionsForCountry,
     getSubregions,
-} from "../src/regions.js";
+} from "../src/regions";
 
 describe("regions", () => {
     // Test data based on Wikipedia UN geoscheme

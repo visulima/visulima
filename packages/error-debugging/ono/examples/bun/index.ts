@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { Ono } from "../../dist/index.js";
-import createRequestContextPage from "../../dist/error-inspector/page/create-request-context.js";
+import { Ono } from "../../dist/index";
+import createRequestContextPage from "../../dist/error-inspector/page/create-request-context";
 
 const ono = new Ono();
 

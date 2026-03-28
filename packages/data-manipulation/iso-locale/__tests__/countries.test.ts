@@ -14,7 +14,7 @@ import {
     getLanguages,
     isValid,
     searchCountries,
-} from "../src/countries.js";
+} from "../src/countries";
 
 describe("countries", () => {
     it("should get country by alpha-2 code", () => {

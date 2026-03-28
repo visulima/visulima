@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { all as currencies } from "../src/currencies.js";
-import { currencySymbolMap } from "../src/data/currency-symbol.js";
+import { all as currencies } from "../src/currencies";
+import { currencySymbolMap } from "../src/data/currency-symbol";
 
 /**
  * Known currency name variations between Wikipedia and our data

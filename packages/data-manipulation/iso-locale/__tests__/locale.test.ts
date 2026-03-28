@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { convert6393To6391, iso6393To6391 } from "../src/data/iso-639-mapping.js";
-import { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "../src/locale.js";
+import { convert6393To6391, iso6393To6391 } from "../src/data/iso-639-mapping";
+import { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "../src/locale";
 
 describe("locale", () => {
     it("should get currency from BCP 47 locale", () => {

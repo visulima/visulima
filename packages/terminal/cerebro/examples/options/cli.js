@@ -1,13 +1,13 @@
 import { Cerebro } from "@visulima/cerebro";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
-import optionsBooleanOrValue from "./options-boolean-or-value.js";
-import optionsCommon from "./options-common.js";
-import optionsConflicts from "./options-conflicts.js";
-import optionsDefault from "./options-defaults.js";
-import optionsImplies from "./options-implies.js";
-import optionsNegatable from "./options-negatable.js";
-import optionsRequired from "./options-required.js";
+import optionsBooleanOrValue from "./options-boolean-or-value";
+import optionsCommon from "./options-common";
+import optionsConflicts from "./options-conflicts";
+import optionsDefault from "./options-defaults";
+import optionsImplies from "./options-implies";
+import optionsNegatable from "./options-negatable";
+import optionsRequired from "./options-required";
 
 const cli = new Cerebro("cerebro");
 
