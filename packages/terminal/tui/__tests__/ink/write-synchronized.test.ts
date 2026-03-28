@@ -20,13 +20,13 @@ describe("write-synchronized", () => {
         ["bsu", bsu, "\u001B[?2026h"],
         ["esu", esu, "\u001B[?2026l"],
     ] as const)("%s is the expected synchronized update sequence", (_, sequence, expected) => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(sequence).toBe(expected);
     });
 
     it("shouldSynchronize returns true for interactive TTY stream", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stream = createStream({ tty: true });
 
@@ -34,7 +34,7 @@ describe("write-synchronized", () => {
     });
 
     it("shouldSynchronize returns false for non-interactive TTY stream", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stream = createStream({ tty: true });
 
@@ -42,7 +42,7 @@ describe("write-synchronized", () => {
     });
 
     it("shouldSynchronize returns false for non-TTY stream", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stream = createStream({ tty: false });
 
@@ -50,7 +50,7 @@ describe("write-synchronized", () => {
     });
 
     it("shouldSynchronize uses CI detection when interactive is not specified", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ttyStream = createStream({ tty: true });
 
@@ -65,7 +65,7 @@ describe("write-synchronized", () => {
     });
 
     it("shouldSynchronize returns false for non-TTY stream when interactive is not specified", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stream = createStream({ tty: false });
 

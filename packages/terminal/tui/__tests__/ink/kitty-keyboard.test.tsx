@@ -28,7 +28,7 @@ const kittyKey = (codepoint: number, modifiers?: number, eventType?: number, tex
 
 describe("kitty-keyboard", () => {
     it("kitty protocol - simple character", () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const result = parseKeypress(kittyKey(97));
 
@@ -41,7 +41,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - uppercase character (shift)", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(65, 2));
 
@@ -52,7 +52,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - ctrl modifier", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(97, 5));
 
@@ -63,7 +63,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - alt/option modifier", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(97, 3));
 
@@ -74,7 +74,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - super modifier", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(97, 9));
 
@@ -85,7 +85,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - hyper modifier", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(97, 17));
 
@@ -96,7 +96,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - meta modifier", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress(kittyKey(97, 33));
 
@@ -106,7 +106,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - caps lock", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress(kittyKey(97, 65));
 
@@ -116,7 +116,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - num lock", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress(kittyKey(97, 129));
 
@@ -126,7 +126,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - combined modifiers (ctrl+shift)", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const result = parseKeypress(kittyKey(97, 6));
 
@@ -138,7 +138,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - combined modifiers (super+ctrl)", () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const result = parseKeypress(kittyKey(115, 13));
 
@@ -150,7 +150,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - escape key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(27));
 
@@ -159,7 +159,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - return/enter key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(13));
 
@@ -168,7 +168,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - tab key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(9));
 
@@ -177,7 +177,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - backspace key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(8));
 
@@ -186,7 +186,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - delete key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(127));
 
@@ -195,7 +195,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - space key", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(32));
 
@@ -204,7 +204,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - event type press", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(97, 1, 1));
 
@@ -213,7 +213,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - event type repeat", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(97, 1, 2));
 
@@ -222,7 +222,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - event type release", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(97, 1, 3));
 
@@ -231,7 +231,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - number keys", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(49));
 
@@ -240,7 +240,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - special character", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(64));
 
@@ -249,7 +249,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - ctrl+letter produces codepoint 1-26", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(1, 5));
 
@@ -258,7 +258,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - preserves sequence and raw", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const seq = kittyKey(97, 5);
         const result = parseKeypress(seq);
@@ -268,7 +268,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - text-as-codepoints field", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress(kittyKey(97, 2, 1, [65]));
 
@@ -279,7 +279,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - supplementary unicode codepoint", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress(kittyKey(128_512));
 
@@ -288,7 +288,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - invalid codepoint above U+10FFFF returns safe empty keypress", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress("\u001B[1114112u");
 
@@ -299,7 +299,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - surrogate codepoint returns safe empty keypress", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const result = parseKeypress("\u001B[55296u");
 
@@ -310,7 +310,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("non-kitty sequences fall back to legacy parsing", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = parseKeypress("\u001B[A");
 
@@ -319,7 +319,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("non-kitty sequences - ctrl+c", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress("\u0003");
 
@@ -329,7 +329,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - isPrintable is true for regular characters", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(97));
 
@@ -337,7 +337,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - isPrintable is false for escape", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(27));
 
@@ -345,7 +345,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - isPrintable is true for space", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(32));
 
@@ -353,7 +353,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - isPrintable is false for backspace", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(8));
 
@@ -361,7 +361,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - isPrintable is false for ctrl+letter", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(1, 5));
 
@@ -369,7 +369,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - capslock (57358) is non-printable", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress("\u001B[57358u");
 
@@ -379,7 +379,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - printscreen (57361) is non-printable", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress("\u001B[57361u");
 
@@ -389,7 +389,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - f13 (57376) is non-printable", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const result = parseKeypress("\u001B[57376u");
 
@@ -399,7 +399,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - space key has text field set to space character", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(32));
 
@@ -407,7 +407,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - return key has text field set to carriage return", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = parseKeypress(kittyKey(13));
 
@@ -444,7 +444,7 @@ describe("kitty-keyboard", () => {
     const getWrittenStrings = (write: ReturnType<typeof vi.fn>): string[] => write.mock.calls.map((args: any) => args[0] as string);
 
     it("kitty protocol - writes enable sequence on init when mode is enabled", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const { stdout, write } = createFakeStdout();
         const stdin = createFakeStdin();
@@ -461,7 +461,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - writes disable sequence on unmount", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const { stdout, write } = createFakeStdout();
         const stdin = createFakeStdin();
@@ -478,7 +478,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - not enabled when stdin is not a TTY", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const { stdout, write } = createFakeStdout();
         const stdin = createFakeStdin();
@@ -497,7 +497,7 @@ describe("kitty-keyboard", () => {
     });
 
     it("kitty protocol - not enabled when stdout is not a TTY", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const { stdout, write } = createFakeStdout();
 

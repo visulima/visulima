@@ -19,7 +19,7 @@ describe("hooks-use-input", () => {
     it.skipIf(!ptyAvailable)(
         "useInput - discrete priority keeps states in sync with useTransition during rapid input",
         async () => {
-            expect.hasAssertions();
+            expect.assertions(1);
 
             const ps = term("use-input-discrete-priority");
             const sleep = (ms: number) =>
@@ -50,7 +50,7 @@ describe("hooks-use-input", () => {
     );
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["lowercase"]);
 
@@ -61,7 +61,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle uppercase character", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["uppercase"]);
 
@@ -72,7 +72,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)(String.raw`useInput - \r should not count as an uppercase character`, async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["uppercase"]);
 
@@ -83,7 +83,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - pasted carriage return", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["pastedCarriageReturn"]);
 
@@ -94,7 +94,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - pasted tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["pastedTab"]);
 
@@ -105,7 +105,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - receives bracketed paste when no usePaste handler is active", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["bracketedPaste"]);
 
@@ -116,7 +116,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle escape", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["escape"]);
 
@@ -127,7 +127,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle ctrl", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["ctrl"]);
 
@@ -138,7 +138,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["meta"]);
 
@@ -149,7 +149,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - flushes ESC[ prefix as literal input", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["escapeBracketPrefix"]);
 
@@ -160,7 +160,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle meta + O with pending flush", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["metaUpperO"]);
 
@@ -171,7 +171,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["tab"]);
 
@@ -182,7 +182,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle shift + tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["shiftTab"]);
 
@@ -193,7 +193,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle backspace", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["backspace"]);
 
@@ -204,7 +204,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle delete", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["delete"]);
 
@@ -215,7 +215,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle remove (delete)", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["remove"]);
 
@@ -226,7 +226,7 @@ describe("hooks-use-input", () => {
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle option + return (macOS)", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const ps = term("use-input", ["returnMeta"]);
 

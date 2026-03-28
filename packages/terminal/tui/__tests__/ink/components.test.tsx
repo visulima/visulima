@@ -28,7 +28,7 @@ const ptyAvailable = (() => {
 
 describe("components", () => {
     it("text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>Hello World</Text>);
 
@@ -36,7 +36,7 @@ describe("components", () => {
     });
 
     it("text with variable", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -49,7 +49,7 @@ describe("components", () => {
     });
 
     it("multiple text nodes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -62,7 +62,7 @@ describe("components", () => {
     });
 
     it("text with component", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const World = () => <Text>World</Text>;
 
@@ -78,7 +78,7 @@ describe("components", () => {
     });
 
     it("text with fragment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -94,7 +94,7 @@ describe("components", () => {
     });
 
     it("wrap text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -106,7 +106,7 @@ describe("components", () => {
     });
 
     it("don't wrap text if there is enough space", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={20}>
@@ -118,7 +118,7 @@ describe("components", () => {
     });
 
     it("truncate text in the end", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -130,7 +130,7 @@ describe("components", () => {
     });
 
     it("truncate text in the middle", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -142,7 +142,7 @@ describe("components", () => {
     });
 
     it("truncate text in the beginning", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={7}>
@@ -154,7 +154,7 @@ describe("components", () => {
     });
 
     it("do not wrap text with BEL-terminated OSC hyperlinks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const hyperlinkBel = "\u001B]8;;https://example.com\u0007Click here\u001B]8;;\u0007";
         const output = renderToString(
@@ -167,7 +167,7 @@ describe("components", () => {
     });
 
     it("do not wrap text with ST-terminated OSC hyperlinks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const hyperlinkSt = "\u001B]8;;https://example.com\u001B\\Click here\u001B]8;;\u001B\\";
         const output = renderToString(
@@ -180,7 +180,7 @@ describe("components", () => {
     });
 
     it("do not wrap text with non-hyperlink OSC sequences", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const text = "\u001B]0;My Title\u0007Some text";
         const output = renderToString(
@@ -193,7 +193,7 @@ describe("components", () => {
     });
 
     it("hard-wrap single-word BEL-terminated OSC hyperlink", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const hyperlinkLong = "\u001B]8;;https://example.com\u0007abcdefghij\u001B]8;;\u0007";
         const output = renderToString(
@@ -207,7 +207,7 @@ describe("components", () => {
 
     // TODO: ST-terminated OSC hyperlinks are not yet hard-wrapped correctly by @visulima/string wordWrap
     it.skip("hard-wrap single-word ST-terminated OSC hyperlink", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const hyperlinkStLong = "\u001B]8;;https://example.com\u001B\\abcdefghij\u001B]8;;\u001B\\";
         const output = renderToString(
@@ -220,7 +220,7 @@ describe("components", () => {
     });
 
     it("ignore empty text node", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -235,7 +235,7 @@ describe("components", () => {
     });
 
     it("render a single empty text node", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text />);
 
@@ -243,7 +243,7 @@ describe("components", () => {
     });
 
     it("number", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>{1}</Text>);
 
@@ -251,7 +251,7 @@ describe("components", () => {
     });
 
     it("fail when text nodes are not within <Text> component", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         let error: Error | undefined;
 
@@ -288,7 +288,7 @@ describe("components", () => {
     });
 
     it("fail when text node is not within <Text> component", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         let error: Error | undefined;
 
@@ -322,7 +322,7 @@ describe("components", () => {
     });
 
     it("fail when <Box> is inside <Text> component", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         let error: Error | undefined;
 
@@ -359,7 +359,7 @@ describe("components", () => {
     });
 
     it("remeasure text dimensions on text change", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -382,7 +382,7 @@ describe("components", () => {
     });
 
     it("fragment", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <>
@@ -394,7 +394,7 @@ describe("components", () => {
     });
 
     it("transform children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(string: string, index: number) => `[${String(index)}: ${string}]`}>
@@ -410,7 +410,7 @@ describe("components", () => {
     });
 
     it("squash multiple text nodes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(string: string, index: number) => `[${String(index)}: ${string}]`}>
@@ -431,7 +431,7 @@ describe("components", () => {
     });
 
     it("transform with multiple lines", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(string: string, index: number) => `[${String(index)}: ${string}]`}>
@@ -452,7 +452,7 @@ describe("components", () => {
     });
 
     it("squash multiple nested text nodes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(string: string, index: number) => `[${String(index)}: ${string}]`}>
@@ -469,7 +469,7 @@ describe("components", () => {
     });
 
     it("squash empty `<Text>` nodes", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Transform transform={(string: string) => `[${string}]`}>
@@ -485,7 +485,7 @@ describe("components", () => {
     });
 
     it("<Transform> with undefined children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Transform transform={(children) => children} />);
 
@@ -493,7 +493,7 @@ describe("components", () => {
     });
 
     it("<Transform> with null children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Transform transform={(children) => children} />);
 
@@ -501,10 +501,10 @@ describe("components", () => {
     });
 
     it("hooks", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const WithHooks = () => {
-            expect.hasAssertions();
+            expect.assertions(1);
 
             const [value] = useState("Hello");
 
@@ -517,7 +517,7 @@ describe("components", () => {
     });
 
     it("static output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -535,7 +535,7 @@ describe("components", () => {
     });
 
     it("skip previous output when rendering new static output", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -554,7 +554,7 @@ describe("components", () => {
     });
 
     it("render only new items in static output on final render", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -581,7 +581,7 @@ describe("components", () => {
     });
 
     it("ensure wrap-ansi doesn't trim leading whitespace", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="red">{" ERROR "}</Text>);
 
@@ -589,7 +589,7 @@ describe("components", () => {
     });
 
     it("replace child node with text", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -608,7 +608,7 @@ describe("components", () => {
     });
 
     it("disable raw mode when all input components are unmounted", () => {
-        expect.hasAssertions();
+        expect.assertions(10);
 
         const stdout = createStdout();
 
@@ -679,7 +679,7 @@ describe("components", () => {
     });
 
     it("re-ref stdin when input is used after previous unmount", () => {
-        expect.hasAssertions();
+        expect.assertions(17);
 
         const stdin = new EventEmitter() as NodeJS.WriteStream;
 
@@ -769,7 +769,7 @@ describe("components", () => {
     });
 
     it("setRawMode() should throw if raw mode is not supported", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -831,7 +831,7 @@ describe("components", () => {
     });
 
     it("render different component based on whether stdin is a TTY or not", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
 
@@ -891,7 +891,7 @@ describe("components", () => {
     });
 
     it.skipIf(!ptyAvailable)("render only last frame when run in CI", async () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const output = await run("ci", {
             columns: 0,
@@ -906,7 +906,7 @@ describe("components", () => {
     });
 
     it.skipIf(!ptyAvailable)("render all frames if CI environment variable equals false", async () => {
-        expect.hasAssertions();
+        expect.assertions(6);
 
         const output = await run("ci", {
             columns: 0,
@@ -919,7 +919,7 @@ describe("components", () => {
     });
 
     it.skipIf(!ptyAvailable)("debug mode in CI does not replay final frame during unmount teardown", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("ci-debug", {
             columns: 0,
@@ -933,7 +933,7 @@ describe("components", () => {
     });
 
     it.skipIf(!ptyAvailable)("debug mode in CI keeps final newline separation after waitUntilExit", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await run("ci-debug-after-exit", {
             columns: 0,
@@ -946,13 +946,11 @@ describe("components", () => {
     });
 
     it.skipIf(!ptyAvailable)("render only last frame when stdout is not a TTY", async () => {
-        expect.hasAssertions();
+        expect.assertions(5);
 
         const stdout = createStdout(100, false);
 
         const Counter = () => {
-            expect.hasAssertions();
-
             const [count, setCount] = useState(0);
 
             useEffect(() => {
@@ -1008,7 +1006,7 @@ describe("components", () => {
     });
 
     it("reset prop when it's removed from the element", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -1031,7 +1029,7 @@ describe("components", () => {
     });
 
     it("newline", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -1045,7 +1043,7 @@ describe("components", () => {
     });
 
     it("multiple newlines", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text>
@@ -1059,7 +1057,7 @@ describe("components", () => {
     });
 
     it("horizontal spacer", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={20}>
@@ -1073,7 +1071,7 @@ describe("components", () => {
     });
 
     it("vertical spacer", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>
@@ -1087,7 +1085,7 @@ describe("components", () => {
     });
 
     it("link ansi escapes are closed properly", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>{createHyperlink("Example", "https://example.com")}</Text>);
 
@@ -1096,7 +1094,7 @@ describe("components", () => {
 
     // Concurrent mode tests
     it("text - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text>Hello World</Text>);
 
@@ -1104,7 +1102,7 @@ describe("components", () => {
     });
 
     it("multiple text nodes - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Text>
@@ -1117,7 +1115,7 @@ describe("components", () => {
     });
 
     it("wrap text - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box width={7}>
@@ -1129,7 +1127,7 @@ describe("components", () => {
     });
 
     it("truncate text in the end - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box width={7}>
@@ -1141,7 +1139,7 @@ describe("components", () => {
     });
 
     it("transform children - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Transform transform={(string: string, index: number) => `[${String(index)}: ${string}]`}>
@@ -1157,7 +1155,7 @@ describe("components", () => {
     });
 
     it("static output - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box>
@@ -1175,7 +1173,7 @@ describe("components", () => {
     });
 
     it("remeasure text dimensions on text change - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const { getOutput, rerenderAsync } = await renderAsync(
             <Box>
@@ -1195,7 +1193,7 @@ describe("components", () => {
     });
 
     it("newline - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Text>
@@ -1209,7 +1207,7 @@ describe("components", () => {
     });
 
     it("horizontal spacer - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box width={20}>
@@ -1223,7 +1221,7 @@ describe("components", () => {
     });
 
     it("vertical spacer - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box flexDirection="column" height={6}>

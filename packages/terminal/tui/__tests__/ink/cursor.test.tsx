@@ -98,7 +98,7 @@ describe("cursor", () => {
     });
 
     it("cursor is shown at specified position after render", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -115,7 +115,7 @@ describe("cursor", () => {
     });
 
     it("cursor is not hidden by useEffect after first render", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -133,7 +133,7 @@ describe("cursor", () => {
     });
 
     it("cursor follows text input", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -153,7 +153,7 @@ describe("cursor", () => {
     });
 
     it("cursor moves on space input even when output is identical", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -178,7 +178,7 @@ describe("cursor", () => {
     });
 
     it("cursor is cleared when component using useCursor unmounts", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -225,7 +225,7 @@ describe("cursor", () => {
     });
 
     it("cursor position does not leak from suspended concurrent render to fallback", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -273,7 +273,7 @@ describe("cursor", () => {
     });
 
     it("screen does not scroll up on subsequent renders", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -315,7 +315,7 @@ describe("cursor", () => {
     });
 
     it("debug mode: useStdout().write() replays latest frame", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const DebugStdoutWriteApp = () => {
             const { write } = useStdout();
@@ -341,7 +341,7 @@ describe("cursor", () => {
     });
 
     it("inline cursor positions at end of preceding text", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -366,7 +366,7 @@ describe("cursor", () => {
     });
 
     it("inline cursor positions between text nodes", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -392,7 +392,7 @@ describe("cursor", () => {
     });
 
     it("inline cursor follows text input", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -434,7 +434,7 @@ describe("cursor", () => {
     });
 
     it("inline cursor with no preceding text falls back to parent origin", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -459,7 +459,7 @@ describe("cursor", () => {
     });
 
     it("inline cursor handles text wrapping correctly", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout(10);
         const stdin = createStdin();

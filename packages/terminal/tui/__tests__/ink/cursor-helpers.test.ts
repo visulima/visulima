@@ -16,31 +16,31 @@ describe("cursor-helpers", () => {
     // CursorPositionChanged
 
     it("cursorPositionChanged - both undefined returns false", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(cursorPositionChanged(undefined, undefined)).toBe(false);
     });
 
     it("cursorPositionChanged - same position returns false", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(cursorPositionChanged({ x: 1, y: 2 }, { x: 1, y: 2 })).toBe(false);
     });
 
     it("cursorPositionChanged - different x returns true", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(cursorPositionChanged({ x: 1, y: 2 }, { x: 3, y: 2 })).toBe(true);
     });
 
     it("cursorPositionChanged - different y returns true", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(cursorPositionChanged({ x: 1, y: 2 }, { x: 1, y: 3 })).toBe(true);
     });
 
     it("cursorPositionChanged - undefined vs defined returns true", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         expect(cursorPositionChanged(undefined, { x: 0, y: 0 })).toBe(true);
         expect(cursorPositionChanged({ x: 0, y: 0 }, undefined)).toBe(true);
@@ -49,13 +49,13 @@ describe("cursor-helpers", () => {
     // BuildCursorSuffix
 
     it("buildCursorSuffix - returns empty string when cursorPosition is undefined", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(buildCursorSuffix(3, undefined)).toBe("");
     });
 
     it("buildCursorSuffix - moves up and positions cursor", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildCursorSuffix(3, { x: 5, y: 1 });
 
@@ -63,7 +63,7 @@ describe("cursor-helpers", () => {
     });
 
     it("buildCursorSuffix - no cursorUp when cursor is at last visible line", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildCursorSuffix(3, { x: 0, y: 3 });
 
@@ -71,7 +71,7 @@ describe("cursor-helpers", () => {
     });
 
     it("buildCursorSuffix - cursor at first line of single-line output", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildCursorSuffix(1, { x: 4, y: 0 });
 
@@ -81,13 +81,13 @@ describe("cursor-helpers", () => {
     // BuildReturnToBottom
 
     it("buildReturnToBottom - returns empty string when previousCursorPosition is undefined", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(buildReturnToBottom(4, undefined)).toBe("");
     });
 
     it("buildReturnToBottom - moves down to bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildReturnToBottom(4, { x: 5, y: 0 });
 
@@ -95,7 +95,7 @@ describe("cursor-helpers", () => {
     });
 
     it("buildReturnToBottom - no cursorDown when cursor already at bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildReturnToBottom(4, { x: 0, y: 3 });
 
@@ -105,7 +105,7 @@ describe("cursor-helpers", () => {
     // BuildCursorOnlySequence
 
     it("buildCursorOnlySequence - builds full sequence with hide prefix when cursor was shown", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildCursorOnlySequence({
             cursorPosition: { x: 3, y: 0 },
@@ -120,7 +120,7 @@ describe("cursor-helpers", () => {
     });
 
     it("buildCursorOnlySequence - no hide prefix when cursor was not shown", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const result = buildCursorOnlySequence({
             cursorPosition: { x: 3, y: 0 },
@@ -137,13 +137,13 @@ describe("cursor-helpers", () => {
     // BuildReturnToBottomPrefix
 
     it("buildReturnToBottomPrefix - returns empty string when cursor was not shown", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         expect(buildReturnToBottomPrefix(false, 4, { x: 0, y: 0 })).toBe("");
     });
 
     it("buildReturnToBottomPrefix - returns hide + returnToBottom when cursor was shown", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildReturnToBottomPrefix(true, 4, { x: 0, y: 0 });
 
@@ -151,7 +151,7 @@ describe("cursor-helpers", () => {
     });
 
     it("buildReturnToBottomPrefix - with undefined previousCursorPosition still hides cursor", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const result = buildReturnToBottomPrefix(true, 4, undefined);
 

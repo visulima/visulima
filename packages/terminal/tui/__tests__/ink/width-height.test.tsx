@@ -6,7 +6,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("width-height", () => {
     it("set width", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -21,7 +21,7 @@ describe("width-height", () => {
     });
 
     it("set width in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
@@ -36,7 +36,7 @@ describe("width-height", () => {
     });
 
     it("set min width", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const smallerOutput = renderToString(
             <Box>
@@ -62,7 +62,7 @@ describe("width-height", () => {
     });
 
     it.fails("set min width in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
@@ -77,7 +77,7 @@ describe("width-height", () => {
     });
 
     it("set height", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4}>
@@ -90,7 +90,7 @@ describe("width-height", () => {
     });
 
     it("set height in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>
@@ -105,7 +105,7 @@ describe("width-height", () => {
     });
 
     it("cut text over the set height", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={2}>
@@ -118,7 +118,7 @@ describe("width-height", () => {
     });
 
     it("set min height", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const smallerOutput = renderToString(
             <Box minHeight={4}>
@@ -140,7 +140,7 @@ describe("width-height", () => {
     });
 
     it("set min height in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>
@@ -155,7 +155,7 @@ describe("width-height", () => {
     });
 
     it("set max width", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const constrainedOutput = renderToString(
             <Box>
@@ -182,7 +182,7 @@ describe("width-height", () => {
     });
 
     it("clears maxWidth on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -208,7 +208,7 @@ describe("width-height", () => {
     });
 
     it("set max height", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const constrainedOutput = renderToString(
             <Box maxHeight={2}>
@@ -230,7 +230,7 @@ describe("width-height", () => {
     });
 
     it("clears maxHeight on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -255,7 +255,7 @@ describe("width-height", () => {
     });
 
     it("set aspect ratio with width", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -270,7 +270,7 @@ describe("width-height", () => {
     });
 
     it("set aspect ratio with height", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -285,7 +285,7 @@ describe("width-height", () => {
     });
 
     it("set aspect ratio with width and height", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -300,7 +300,7 @@ describe("width-height", () => {
     });
 
     it("set aspect ratio with maxHeight constraint", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -315,7 +315,7 @@ describe("width-height", () => {
     });
 
     it("clears aspectRatio on rerender", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -341,7 +341,7 @@ describe("width-height", () => {
     });
 
     it.fails("set max width in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box width={10}>
@@ -356,7 +356,7 @@ describe("width-height", () => {
     });
 
     it("set max height in percent", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={6}>
@@ -373,7 +373,7 @@ describe("width-height", () => {
     });
 
     it("set width - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box>
@@ -388,7 +388,7 @@ describe("width-height", () => {
     });
 
     it("set height - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box height={4}>

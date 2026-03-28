@@ -120,7 +120,7 @@ describe("focus", () => {
     });
 
     it("do not focus on register when auto focus is off", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -134,7 +134,7 @@ describe("focus", () => {
     });
 
     it("focus the first component to register", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -148,7 +148,7 @@ describe("focus", () => {
     });
 
     it("unfocus active component on Esc", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -164,7 +164,7 @@ describe("focus", () => {
     });
 
     it("switch focus to first component on Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -180,7 +180,7 @@ describe("focus", () => {
     });
 
     it("switch focus to the next component on Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -197,7 +197,7 @@ describe("focus", () => {
     });
 
     it("switch focus to the first component if currently focused component is the last one on Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -219,7 +219,7 @@ describe("focus", () => {
     });
 
     it("skip disabled component on Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -235,7 +235,7 @@ describe("focus", () => {
     });
 
     it("switch focus to the previous component on Shift+Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -256,7 +256,7 @@ describe("focus", () => {
     });
 
     it("switch focus to the last component if currently focused component is the first one on Shift+Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -272,7 +272,7 @@ describe("focus", () => {
     });
 
     it("skip disabled component on Shift+Tab", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -289,7 +289,7 @@ describe("focus", () => {
     });
 
     it("reset focus when focused component unregisters", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -304,7 +304,7 @@ describe("focus", () => {
     });
 
     it("focus first component after focused component unregisters", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -324,7 +324,7 @@ describe("focus", () => {
     });
 
     it("toggle focus management", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -348,7 +348,7 @@ describe("focus", () => {
     });
 
     it("manually focus next component", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -363,7 +363,7 @@ describe("focus", () => {
     });
 
     it("manually focus previous component", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -378,7 +378,7 @@ describe("focus", () => {
     });
 
     it("does not crash when focusing next on unmounted children", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -393,7 +393,7 @@ describe("focus", () => {
     });
 
     it("does not crash when focusing previous on unmounted children", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -408,7 +408,7 @@ describe("focus", () => {
     });
 
     it("focuses first non-disabled component", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -422,7 +422,7 @@ describe("focus", () => {
     });
 
     it("skips disabled elements when wrapping around", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -440,7 +440,7 @@ describe("focus", () => {
     });
 
     it("skips disabled elements when wrapping around from the front", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -456,7 +456,7 @@ describe("focus", () => {
     });
 
     it("focus component renders in concurrent mode", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -477,7 +477,7 @@ describe("focus", () => {
     });
 
     it("focus component with autoFocus renders in concurrent mode", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -516,7 +516,7 @@ describe("focus", () => {
     };
 
     it("activeId from useFocusManager reflects currently focused component", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -553,7 +553,7 @@ describe("focus", () => {
     });
 
     it("activeId resets to undefined on Esc", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -586,7 +586,7 @@ describe("focus", () => {
     });
 
     it("activeId is set immediately when component uses autoFocus", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -613,7 +613,7 @@ describe("focus", () => {
     });
 
     it("activeId updates when focus is changed programmatically", async () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const stdout = createStdout();
         const stdin = createStdin();
@@ -660,7 +660,7 @@ describe("focus", () => {
     });
 
     it("activeId resets to undefined when focused component unmounts", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
         const stdin = createStdin();

@@ -6,7 +6,7 @@ import { renderToString } from "../helpers/ink-render";
 
 describe("text-width", () => {
     it("wide characters do not add extra space inside fixed-width Box", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -33,7 +33,7 @@ describe("text-width", () => {
     });
 
     it("cJK characters occupy correct width in fixed-width Box", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -48,7 +48,7 @@ describe("text-width", () => {
     });
 
     it("mixed ASCII and wide characters align correctly", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box flexDirection="column">
@@ -75,7 +75,7 @@ describe("text-width", () => {
     });
 
     it("aNSI styled text does not affect layout width", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -92,7 +92,7 @@ describe("text-width", () => {
     });
 
     it("empty Text does not affect sibling layout", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>

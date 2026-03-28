@@ -5,7 +5,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("margin", () => {
     it("margin", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box margin={2}>
@@ -17,7 +17,7 @@ describe("margin", () => {
     });
 
     it("margin X", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -32,7 +32,7 @@ describe("margin", () => {
     });
 
     it("margin Y", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box marginY={2}>
@@ -44,7 +44,7 @@ describe("margin", () => {
     });
 
     it("margin top", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box marginTop={2}>
@@ -56,7 +56,7 @@ describe("margin", () => {
     });
 
     it("margin bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box marginBottom={2}>
@@ -68,7 +68,7 @@ describe("margin", () => {
     });
 
     it("margin left", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box marginLeft={2}>
@@ -80,7 +80,7 @@ describe("margin", () => {
     });
 
     it("margin right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -95,7 +95,7 @@ describe("margin", () => {
     });
 
     it("nested margin", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box margin={2}>
@@ -109,7 +109,7 @@ describe("margin", () => {
     });
 
     it("margin with multiline string", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box margin={2}>
@@ -121,7 +121,7 @@ describe("margin", () => {
     });
 
     it("apply margin to text with newlines", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box margin={1}>
@@ -137,7 +137,7 @@ describe("margin", () => {
     });
 
     it("apply margin to wrapped text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box margin={1} width={6}>
@@ -149,7 +149,7 @@ describe("margin", () => {
     });
 
     it("margin - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box margin={2}>
@@ -161,7 +161,7 @@ describe("margin", () => {
     });
 
     it("nested margin - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box margin={2}>

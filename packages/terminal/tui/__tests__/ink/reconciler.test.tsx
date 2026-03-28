@@ -7,7 +7,7 @@ import createStdout from "../helpers/ink-create-stdout";
 
 describe("reconciler", () => {
     it("update child", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ update }: { readonly update?: boolean }) => <Text>{update ? "B" : "A"}</Text>;
 
@@ -33,7 +33,7 @@ describe("reconciler", () => {
     });
 
     it("update text node", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ update }: { readonly update?: boolean }) => (
             <Box>
@@ -64,7 +64,7 @@ describe("reconciler", () => {
     });
 
     it("remove style prop from intrinsic node", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ withStyle }: { readonly withStyle: boolean }) => (
             <ink-box style={withStyle ? { marginLeft: 1 } : undefined}>
@@ -87,7 +87,7 @@ describe("reconciler", () => {
     });
 
     it("append child", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ append }: { readonly append?: boolean }) => {
             if (append) {
@@ -139,7 +139,7 @@ describe("reconciler", () => {
     });
 
     it("insert child between other children", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ insert }: { readonly insert?: boolean }) => {
             if (insert) {
@@ -195,7 +195,7 @@ describe("reconciler", () => {
     });
 
     it("remove child", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ remove }: { readonly remove?: boolean }) => {
             if (remove) {
@@ -247,7 +247,7 @@ describe("reconciler", () => {
     });
 
     it("reorder children", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ reorder }: { readonly reorder?: boolean }) => {
             if (reorder) {
@@ -301,7 +301,7 @@ describe("reconciler", () => {
     });
 
     it("replace child node with text", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -320,7 +320,7 @@ describe("reconciler", () => {
     });
 
     it("support suspense", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 
@@ -372,7 +372,7 @@ describe("reconciler", () => {
     });
 
     it("support suspense with concurrent mode", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const stdout = createStdout();
 

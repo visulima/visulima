@@ -20,7 +20,7 @@ const clipX = (text: string, columns: number): string =>
 
 describe("overflow", () => {
     it("overflowX - single text node in a box inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -34,7 +34,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - single text node inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" overflowX="hidden" width={6}>
@@ -48,7 +48,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - single text node in a box with border inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -62,7 +62,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - multiple text nodes in a box inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -77,7 +77,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - multiple text nodes in a box inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" overflowX="hidden" width={8}>
@@ -92,7 +92,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - multiple text nodes in a box with border inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={8}>
@@ -107,7 +107,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - multiple boxes inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -124,7 +124,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - multiple boxes inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" overflowX="hidden" width={8}>
@@ -141,7 +141,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box before left edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -155,7 +155,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box before left edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" overflowX="hidden" width={6}>
@@ -169,7 +169,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box intersecting with left edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -183,7 +183,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box intersecting with left edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" overflowX="hidden" width={8}>
@@ -197,7 +197,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box after right edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -211,7 +211,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - box intersecting with right edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box overflowX="hidden" width={6}>
@@ -225,7 +225,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - single text node inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={1} overflowY="hidden">
@@ -241,7 +241,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - single text node inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={3} overflowY="hidden" width={20}>
@@ -257,7 +257,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - multiple boxes inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box flexDirection="column" height={2} overflowY="hidden">
@@ -280,7 +280,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - multiple boxes inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" flexDirection="column" height={4} overflowY="hidden" width={9}>
@@ -303,7 +303,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box above top edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={1} overflowY="hidden">
@@ -321,7 +321,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box above top edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={3} overflowY="hidden" width={7}>
@@ -339,7 +339,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box intersecting with top edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={1} overflowY="hidden">
@@ -357,7 +357,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box intersecting with top edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={3} overflowY="hidden" width={7}>
@@ -375,7 +375,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box below bottom edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={1} overflowY="hidden">
@@ -393,7 +393,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box below bottom edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={3} overflowY="hidden" width={7}>
@@ -411,7 +411,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box intersecting with bottom edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={1} overflowY="hidden">
@@ -429,7 +429,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - box intersecting with bottom edge of overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box borderStyle="round" height={3} overflowY="hidden" width={7}>
@@ -447,7 +447,7 @@ describe("overflow", () => {
     });
 
     it("overflow - single text node inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={1}>
@@ -467,7 +467,7 @@ describe("overflow", () => {
     });
 
     it("overflow - single text node inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={1}>
@@ -487,7 +487,7 @@ describe("overflow", () => {
     });
 
     it("overflow - multiple boxes inside overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={1}>
@@ -514,7 +514,7 @@ describe("overflow", () => {
     });
 
     it("overflow - multiple boxes inside overflow container with border", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={1}>
@@ -541,7 +541,7 @@ describe("overflow", () => {
     });
 
     it("overflow - box intersecting with top left edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} overflow="hidden" width={4}>
@@ -563,7 +563,7 @@ describe("overflow", () => {
     });
 
     it("overflow - box intersecting with top right edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} overflow="hidden" width={4}>
@@ -585,7 +585,7 @@ describe("overflow", () => {
     });
 
     it("overflow - box intersecting with bottom left edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} overflow="hidden" width={4}>
@@ -607,7 +607,7 @@ describe("overflow", () => {
     });
 
     it("overflow - box intersecting with bottom right edge of overflow container", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box height={4} overflow="hidden" width={4}>
@@ -629,7 +629,7 @@ describe("overflow", () => {
     });
 
     it("nested overflow", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={1}>
@@ -665,7 +665,7 @@ describe("overflow", () => {
     });
 
     it("out of bounds writes do not crash", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Box borderStyle="round" height={10} width={12} />, { columns: 10 });
 
@@ -682,7 +682,7 @@ describe("overflow", () => {
     });
 
     it("overflowX - single text node in a box inside overflow container - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box overflowX="hidden" width={6}>
@@ -696,7 +696,7 @@ describe("overflow", () => {
     });
 
     it("overflowY - single text node inside overflow container - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box height={1} overflowY="hidden">
@@ -712,7 +712,7 @@ describe("overflow", () => {
     });
 
     it("overflow - single text node inside overflow container - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box paddingBottom={1}>
@@ -732,7 +732,7 @@ describe("overflow", () => {
     });
 
     it("nested overflow - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box paddingBottom={1}>

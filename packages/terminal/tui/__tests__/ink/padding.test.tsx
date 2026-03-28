@@ -5,7 +5,7 @@ import { renderToString, renderToStringAsync } from "../helpers/ink-render";
 
 describe("padding", () => {
     it("padding", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box padding={2}>
@@ -17,7 +17,7 @@ describe("padding", () => {
     });
 
     it("padding X", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -32,7 +32,7 @@ describe("padding", () => {
     });
 
     it("padding Y", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingY={2}>
@@ -44,7 +44,7 @@ describe("padding", () => {
     });
 
     it("padding top", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingTop={2}>
@@ -56,7 +56,7 @@ describe("padding", () => {
     });
 
     it("padding bottom", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingBottom={2}>
@@ -68,7 +68,7 @@ describe("padding", () => {
     });
 
     it("padding left", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box paddingLeft={2}>
@@ -80,7 +80,7 @@ describe("padding", () => {
     });
 
     it("padding right", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box>
@@ -95,7 +95,7 @@ describe("padding", () => {
     });
 
     it("nested padding", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box padding={2}>
@@ -109,7 +109,7 @@ describe("padding", () => {
     });
 
     it("padding with multiline string", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box padding={2}>
@@ -121,7 +121,7 @@ describe("padding", () => {
     });
 
     it("apply padding to text with newlines", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box padding={1}>
@@ -137,7 +137,7 @@ describe("padding", () => {
     });
 
     it("apply padding to wrapped text", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Box padding={1} width={5}>
@@ -149,7 +149,7 @@ describe("padding", () => {
     });
 
     it("text wrapping respects paddingX with flexGrow", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const output = renderToString(
             <Box borderStyle="round" width={40}>
@@ -172,7 +172,7 @@ describe("padding", () => {
     });
 
     it("padding - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box padding={2}>
@@ -184,7 +184,7 @@ describe("padding", () => {
     });
 
     it("nested padding - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(
             <Box padding={2}>

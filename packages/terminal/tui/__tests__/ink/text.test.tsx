@@ -16,7 +16,7 @@ const renderText = (text: string): string =>
 
 describe("text", () => {
     it("<Text> with undefined children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text />);
 
@@ -24,7 +24,7 @@ describe("text", () => {
     });
 
     it("<Text> with null children", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>{null}</Text>);
 
@@ -32,7 +32,7 @@ describe("text", () => {
     });
 
     it("text with standard color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="green">Test</Text>);
 
@@ -40,7 +40,7 @@ describe("text", () => {
     });
 
     it("text with dim+bold", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderToString(
             <Text bold dimColor>
@@ -53,7 +53,7 @@ describe("text", () => {
     });
 
     it("text with dimmed color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(
             <Text color="green" dimColor>
@@ -65,7 +65,7 @@ describe("text", () => {
     });
 
     it("text with hex color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="#FF8800">Test</Text>);
 
@@ -73,7 +73,7 @@ describe("text", () => {
     });
 
     it("text with rgb color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="rgb(255, 136, 0)">Test</Text>);
 
@@ -81,7 +81,7 @@ describe("text", () => {
     });
 
     it("text with ansi256 color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text color="ansi256(194)">Test</Text>);
 
@@ -89,7 +89,7 @@ describe("text", () => {
     });
 
     it("text with standard background color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text backgroundColor="green">Test</Text>);
 
@@ -97,7 +97,7 @@ describe("text", () => {
     });
 
     it("text with hex background color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text backgroundColor="#FF8800">Test</Text>);
 
@@ -105,7 +105,7 @@ describe("text", () => {
     });
 
     it("text with rgb background color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text backgroundColor="rgb(255, 136, 0)">Test</Text>);
 
@@ -113,7 +113,7 @@ describe("text", () => {
     });
 
     it("text with ansi256 background color", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text backgroundColor="ansi256(194)">Test</Text>);
 
@@ -121,7 +121,7 @@ describe("text", () => {
     });
 
     it("text with inversion", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text inverse>Test</Text>);
 
@@ -129,7 +129,7 @@ describe("text", () => {
     });
 
     it("text with empty-to-nonempty sibling does not wrap", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ show }: { readonly show?: boolean }) => (
             <Box>
@@ -151,7 +151,7 @@ describe("text", () => {
     });
 
     it("remeasure text when text is changed", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ add }: { readonly add?: boolean }) => (
             <Box>
@@ -170,7 +170,7 @@ describe("text", () => {
     });
 
     it("remeasure text when text nodes are changed", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ add }: { readonly add?: boolean }) => (
             <Box>
@@ -193,7 +193,7 @@ describe("text", () => {
     });
 
     it("text with content \"constructor\" wraps correctly", () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = renderToString(<Text>constructor</Text>);
 
@@ -201,7 +201,7 @@ describe("text", () => {
     });
 
     it("strip ANSI cursor movement sequences from text", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const input = "\u001B[1A\u001B[2KStarting client ... \u001B[32mdone\u001B[0m\u001B[1B";
 
@@ -218,7 +218,7 @@ describe("text", () => {
     });
 
     it("strip ANSI cursor position and erase sequences from text", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderToString(
             <Box>
@@ -232,7 +232,7 @@ describe("text", () => {
     });
 
     it("preserve SGR color sequences in text", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderToString(
             <Box>
@@ -245,7 +245,7 @@ describe("text", () => {
     });
 
     it("preserve OSC hyperlink sequences in text", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderText("\u001B]8;;https://example.com\u0007link\u001B]8;;\u0007");
 
@@ -254,7 +254,7 @@ describe("text", () => {
     });
 
     it("preserve OSC hyperlink sequences with ST terminator in text", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderText("\u001B]8;;https://example.com\u001B\\link\u001B]8;;\u001B\\");
 
@@ -264,7 +264,7 @@ describe("text", () => {
     });
 
     it("preserve C1 OSC sequences in text", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const input = "\u009D8;;https://example.com\u0007link\u009D8;;\u0007";
         const output = renderText(input);
@@ -275,7 +275,7 @@ describe("text", () => {
     });
 
     it("preserve C1 OSC hyperlink sequences with ST terminator in text", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const input = "\u009D8;;https://example.com\u001B\\link\u009D8;;\u001B\\";
         const output = renderText(input);
@@ -286,7 +286,7 @@ describe("text", () => {
     });
 
     it("preserve SGR sequences with colon parameters", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderText("A\u001B[38:2::255:100:0mcolor\u001B[0mB");
 
@@ -295,7 +295,7 @@ describe("text", () => {
     });
 
     it("strip complete non-SGR CSI sequences without leaking parameters", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const input = "A\u001B[>4;2mB\u001B[2 qC";
         const output = renderText(input);
@@ -306,7 +306,7 @@ describe("text", () => {
     });
 
     it("strip complete C1 non-SGR CSI sequences without leaking parameters", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderText("A\u009B>4;2mB\u009B2 qC");
 
@@ -316,7 +316,7 @@ describe("text", () => {
     });
 
     it("strip complete ESC control sequences with intermediates", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderText("A\u001B#8B\u001BcC");
 
@@ -326,7 +326,7 @@ describe("text", () => {
     });
 
     it("strip tmux DCS passthrough wrappers without leaking payload", () => {
-        expect.hasAssertions();
+        expect.assertions(4);
 
         const wrappedHyperlinkStart = "\u001BPtmux;\u001B\u001B]8;;https://example.com\u0007\u001B\\";
         const wrappedHyperlinkEnd = "\u001BPtmux;\u001B\u001B]8;;\u0007\u001B\\";
@@ -339,7 +339,7 @@ describe("text", () => {
     });
 
     it("strip ESC SOS control strings as complete units", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderText("A\u001BXpayload\u001B\\B");
 
@@ -348,7 +348,7 @@ describe("text", () => {
     });
 
     it("strip C1 SOS control strings as complete units", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderText("A\u0098payload\u001B\\B\u0098payload\u009CC");
 
@@ -357,7 +357,7 @@ describe("text", () => {
     });
 
     it("strip standalone ST bytes from text output", () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = renderText("A\u009CB");
 
@@ -366,7 +366,7 @@ describe("text", () => {
     });
 
     it("strip standalone C1 control characters from text output", () => {
-        expect.hasAssertions();
+        expect.assertions(3);
 
         const output = renderText("A\u0085B\u008EC");
 
@@ -377,7 +377,7 @@ describe("text", () => {
 
     // Concurrent mode tests
     it("<Text> with undefined children - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text />);
 
@@ -385,7 +385,7 @@ describe("text", () => {
     });
 
     it("<Text> with null children - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text>{null}</Text>);
 
@@ -393,7 +393,7 @@ describe("text", () => {
     });
 
     it("text with standard color - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text color="green">Test</Text>);
 
@@ -401,7 +401,7 @@ describe("text", () => {
     });
 
     it("text with dim+bold - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const output = await renderToStringAsync(
             <Text bold dimColor>
@@ -414,7 +414,7 @@ describe("text", () => {
     });
 
     it("text with hex color - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text color="#FF8800">Test</Text>);
 
@@ -422,7 +422,7 @@ describe("text", () => {
     });
 
     it("text with inversion - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(1);
 
         const output = await renderToStringAsync(<Text inverse>Test</Text>);
 
@@ -430,7 +430,7 @@ describe("text", () => {
     });
 
     it("remeasure text when text is changed - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ add }: { readonly add?: boolean }) => (
             <Box>
@@ -448,7 +448,7 @@ describe("text", () => {
     });
 
     it("remeasure text when text nodes are changed - concurrent", async () => {
-        expect.hasAssertions();
+        expect.assertions(2);
 
         const Test = ({ add }: { readonly add?: boolean }) => (
             <Box>
