@@ -65,8 +65,8 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "build": "cross-env NODE_ENV=development tsup",
-    "build:prod": "cross-env NODE_ENV=production tsup",
+    "build": "packem build --development",
+    "build:prod": "packem build --production",
     "clean": "rimraf node_modules dist .eslintcache",
     "dev": "pnpm run build --watch",
     "lint:eslint": "eslint . --cache --concurrency auto ",
@@ -101,8 +101,8 @@
     "@vitest/coverage-v8": "catalog:test",
     "@vitest/ui": "catalog:test",
     "conventional-changelog-conventionalcommits": "catalog:dev",
-    "cross-env": "catalog:dev",
     "dot-prop": "catalog:dev",
+    "esbuild": "catalog:build",
     "eslint": "catalog:lint",
     "eslint-plugin-jsx-a11y": "catalog:lint",
     "eslint-plugin-react": "catalog:lint",
@@ -122,7 +122,7 @@
     "react-dom": "catalog:frontend",
     "rimraf": "catalog:node",
     "semantic-release": "catalog:cli",
-    "tsup": "catalog:build",
+    "@visulima/packem": "catalog:dev",
     "typescript": "catalog:tsc",
     "vitest": "catalog:test"
   },
@@ -145,5 +145,7 @@
   "sources": [
     "src/index.ts",
     "src/next/index.ts"
-  ]
+  ],
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

@@ -325,7 +325,6 @@
         "sort-package-json": "catalog:dev",
         "taze": "catalog:cli",
         "textlint": "catalog:prod",
-        "tsup": "catalog:build",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
