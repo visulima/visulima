@@ -3,131 +3,148 @@ import process from "node:process";
 import { strip as stripAnsi } from "@visulima/ansi";
 import patchConsole from "patch-console";
 import { useEffect } from "react";
-import { afterAll, beforeAll, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { render, Text, useStdin } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
+const ERROR_LOCATION_RE = /errors\.test\.tsx:\d+:\d+/u;
+const ERROR_COMPONENT_RE = /Test.*errors\.test\.tsx:\d+:\d+/u;
+
+// eslint-disable-next-line vitest/require-hook -- restore must be module-scoped for beforeAll/afterAll
 let restore = () => {};
 
-beforeAll(() => {
-    restore = patchConsole(() => {});
-});
+describe("errors", () => {
+    beforeAll(() => {
+        restore = patchConsole(() => {});
+    });
 
-afterAll(() => {
-    restore();
-});
+    afterAll(() => {
+        restore();
+    });
 
-it("catch and display error", () => {
-    const stdout = createStdout();
+    it("catch and display error", () => {
+        expect.hasAssertions();
 
-    const Test = () => {
-        throw new Error("Oh no");
-    };
+        const stdout = createStdout();
 
-    render(<Test />, { stdout });
-
-    const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
-    const lastContentWrite = writes.at(-1)!;
-
-    const lines = stripAnsi(lastContentWrite).split("\n");
-
-    expect(lines[1]).toBe("  ERROR  Oh no");
-    expect(lines[3]).toMatch(/errors\.test\.tsx:\d+:\d+/);
-    expect(lines.some((l: string) => l.includes("throw new Error") && l.includes("Oh no"))).toBe(true);
-    expect(lines.some((l: string) => l.match(/Test.*errors\.test\.tsx:\d+:\d+/))).toBe(true);
-});
-
-it("does not emit unhandledRejection when render exits with an error and waitUntilExit is unused", async () => {
-    const stdout = createStdout();
-    const unhandledRejectionReasons: unknown[] = [];
-    const onUnhandledRejection = (reason: unknown) => {
-        unhandledRejectionReasons.push(reason);
-    };
-
-    process.on("unhandledRejection", onUnhandledRejection);
-
-    try {
         const Test = () => {
             throw new Error("Oh no");
         };
 
         render(<Test />, { stdout });
 
-        await new Promise<void>((resolve) => {
-            setImmediate(resolve);
-        });
-        await new Promise<void>((resolve) => {
-            setImmediate(resolve);
-        });
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const lastContentWrite = writes.at(-1)!;
 
-        expect(unhandledRejectionReasons).toHaveLength(0);
-    } finally {
-        process.off("unhandledRejection", onUnhandledRejection);
-    }
-});
+        const lines = stripAnsi(lastContentWrite).split("\n");
 
-it("errorBoundary catches and displays nested component errors", () => {
-    const stdout = createStdout();
+        expect(lines[1]).toBe("  ERROR  Oh no");
+        expect(lines[3]).toMatch(ERROR_LOCATION_RE);
+        expect(lines.some((l: string) => l.includes("throw new Error") && l.includes("Oh no"))).toBe(true);
+        expect(lines.some((l: string) => l.match(ERROR_COMPONENT_RE))).toBe(true);
+    });
 
-    const NestedComponent = () => {
-        throw new Error("Nested component error");
-    };
+    it("does not emit unhandledRejection when render exits with an error and waitUntilExit is unused", async () => {
+        expect.hasAssertions();
 
-    const Parent = () => (
-        <Text>
-            Before error
-            <NestedComponent />
-        </Text>
-    );
+        const stdout = createStdout();
+        const unhandledRejectionReasons: unknown[] = [];
+        const onUnhandledRejection = (reason: unknown) => {
+            unhandledRejectionReasons.push(reason);
+        };
 
-    render(<Parent />, { stdout });
+        process.on("unhandledRejection", onUnhandledRejection);
 
-    const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
-    const lastContentWrite = writes.at(-1)!;
-    const output = stripAnsi(lastContentWrite);
+        try {
+            const Test = () => {
+                throw new Error("Oh no");
+            };
 
-    expect(output).toContain("ERROR");
-    expect(output).toContain("Nested component error");
-});
+            render(<Test />, { stdout });
 
-it("clean up raw mode when error is thrown", async () => {
-    const stdout = createStdout();
+            await new Promise<void>((resolve) => {
+                setImmediate(resolve);
+            });
+            await new Promise<void>((resolve) => {
+                setImmediate(resolve);
+            });
 
-    const setRawModeCalls: boolean[] = [];
-    const originalSetRawMode = process.stdin.setRawMode?.bind(process.stdin);
+            expect(unhandledRejectionReasons).toHaveLength(0);
+        } finally {
+            process.off("unhandledRejection", onUnhandledRejection);
+        }
+    });
 
-    if (!process.stdin.isTTY) {
-        expect(true).toBe(true); // Skipping test - stdin is not a TTY
+    it("errorBoundary catches and displays nested component errors", () => {
+        expect.hasAssertions();
 
-        return;
-    }
+        const stdout = createStdout();
 
-    process.stdin.setRawMode = (mode: boolean) => {
-        setRawModeCalls.push(mode);
+        const NestedComponent = () => {
+            throw new Error("Nested component error");
+        };
 
-        return originalSetRawMode?.(mode) ?? process.stdin;
-    };
+        const Parent = () => (
+            <Text>
+                Before error
+                <NestedComponent />
+            </Text>
+        );
 
-    const Test = () => {
-        const { setRawMode } = useStdin();
+        render(<Parent />, { stdout });
 
-        useEffect(() => {
-            setRawMode(true);
-            throw new Error("Error after raw mode enabled");
-        }, [setRawMode]);
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const lastContentWrite = writes.at(-1)!;
+        const output = stripAnsi(lastContentWrite);
 
-        return <Text>Test</Text>;
-    };
+        expect(output).toContain("ERROR");
+        expect(output).toContain("Nested component error");
+    });
 
-    const app = render(<Test />, { stdout });
+    it("clean up raw mode when error is thrown", async () => {
+        expect.hasAssertions();
 
-    await expect(app.waitUntilExit()).rejects.toThrow();
+        const stdout = createStdout();
 
-    if (originalSetRawMode) {
-        process.stdin.setRawMode = originalSetRawMode;
-    }
+        const setRawModeCalls: boolean[] = [];
+        const originalSetRawMode = process.stdin.setRawMode?.bind(process.stdin);
 
-    expect(setRawModeCalls).toContain(true);
-    expect(setRawModeCalls).toContain(false);
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (!process.stdin.isTTY) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(true).toBe(true); // Skipping test - stdin is not a TTY
+
+            return;
+        }
+
+        process.stdin.setRawMode = (mode: boolean) => {
+            setRawModeCalls.push(mode);
+
+            return originalSetRawMode?.(mode) ?? process.stdin;
+        };
+
+        const Test = () => {
+            const { setRawMode } = useStdin();
+
+            useEffect(() => {
+                setRawMode(true);
+                throw new Error("Error after raw mode enabled");
+            }, [setRawMode]);
+
+            return <Text>Test</Text>;
+        };
+
+        const app = render(<Test />, { stdout });
+
+        await expect(app.waitUntilExit()).rejects.toThrow("Error after raw mode enabled");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (originalSetRawMode) {
+            process.stdin.setRawMode = originalSetRawMode;
+        }
+
+        expect(setRawModeCalls).toContain(true);
+        expect(setRawModeCalls).toContain(false);
+    });
 });

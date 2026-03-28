@@ -3,14 +3,18 @@ import EventEmitter from "node:events";
 import { vi } from "vitest";
 
 export const createStdin = (): NodeJS.WriteStream => {
+    // EventEmitter is required here for Node.js stream compatibility
     const stdin = new EventEmitter() as unknown as NodeJS.WriteStream;
 
     stdin.isTTY = true;
-    vi.spyOn(stdin, "setRawMode").mockImplementation();
-    stdin.setEncoding = () => {};
+    // Define properties before spying since EventEmitter doesn't have these natively
+    (stdin as Record<string, unknown>).setRawMode = () => stdin;
+    (stdin as Record<string, unknown>).read = () => undefined;
+    vi.spyOn(stdin, "setRawMode").mockImplementation(() => stdin);
+    stdin.setEncoding = () => stdin;
     vi.spyOn(stdin, "read").mockImplementation();
-    stdin.unref = () => {};
-    stdin.ref = () => {};
+    stdin.unref = () => stdin;
+    stdin.ref = () => stdin;
 
     return stdin;
 };

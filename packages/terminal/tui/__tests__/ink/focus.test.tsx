@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 
 import delay from "delay";
 import { useEffect } from "react";
-import { expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Box, render, Text, useFocus, useFocusManager } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -11,11 +11,13 @@ const createStdin = () => {
     const stdin = new EventEmitter() as unknown as NodeJS.WriteStream;
 
     stdin.isTTY = true;
-    vi.spyOn(stdin, "setRawMode").mockImplementation();
-    stdin.setEncoding = () => {};
+    (stdin as Record<string, unknown>).setRawMode = () => stdin;
+    (stdin as Record<string, unknown>).read = () => undefined;
+    vi.spyOn(stdin, "setRawMode").mockImplementation(() => stdin);
+    stdin.setEncoding = () => stdin;
     vi.spyOn(stdin, "read").mockImplementation();
-    stdin.unref = () => {};
-    stdin.ref = () => {};
+    stdin.unref = () => stdin;
+    stdin.ref = () => stdin;
 
     return stdin;
 };
@@ -108,492 +110,548 @@ const Item = ({ autoFocus, disabled = false, label }: ItemProps) => {
     );
 };
 
-it("do not focus on register when auto focus is off", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
+describe("focus", () => {
+    it("do not focus on register when auto focus is off", async () => {
+        expect.hasAssertions();
 
-    render(<Test />, { debug: true, stdin, stdout });
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    await delay(50);
+        render(<Test />, { debug: true, stdin, stdout });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
-});
+        await delay(50);
 
-it("focus the first component to register", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
-
-it("unfocus active component on Esc", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\u001B");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
-});
-
-it("switch focus to first component on Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
-
-it("switch focus to the next component on Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-});
-
-it("switch focus to the first component if currently focused component is the last one on Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
-
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
-
-it("skip disabled component on Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
-});
-
-it("switch focus to the previous component on Shift+Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-
-    emitReadable(stdin, "\u001B[Z");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
-
-it("switch focus to the last component if currently focused component is the first one on Shift+Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\u001B[Z");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
-});
-
-it("skip disabled component on Shift+Tab", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\u001B[Z");
-    emitReadable(stdin, "\u001B[Z");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
-
-it("reset focus when focused component unregisters", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test autoFocus showFirst={false} />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second", "Third"].join("\n"));
-});
-
-it("focus first component after focused component unregisters", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test autoFocus showFirst={false} />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second", "Third"].join("\n"));
-
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second ✔", "Third"].join("\n"));
-});
-
-it("toggle focus management", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test autoFocus disabled />);
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-
-    rerender(<Test autoFocus />);
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-});
-
-it("manually focus next component", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test autoFocus focusNext />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-});
-
-it("manually focus previous component", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test autoFocus focusPrevious />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
-});
-
-it("does not crash when focusing next on unmounted children", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test focusNext unmountChildren />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("");
-});
-
-it("does not crash when focusing previous on unmounted children", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    rerender(<Test focusPrevious unmountChildren />);
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("");
-});
-
-it("focuses first non-disabled component", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus disableFirst disableSecond />, { debug: true, stdin, stdout });
-
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
-});
-
-it("skips disabled elements when wrapping around", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus disableFirst />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-});
-
-it("skips disabled elements when wrapping around from the front", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-
-    render(<Test autoFocus disableThird />, { debug: true, stdin, stdout });
-
-    await delay(50);
-    emitReadable(stdin, "\u001B[Z");
-    await delay(50);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
-});
-
-it("focus component renders in concurrent mode", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { act } = await import("react");
-
-    await act(async () => {
-        render(<Test />, { concurrent: true, debug: true, stdin, stdout });
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
     });
 
-    await delay(50);
+    it("focus the first component to register", async () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
-});
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-it("focus component with autoFocus renders in concurrent mode", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    const { act } = await import("react");
+        render(<Test autoFocus />, { debug: true, stdin, stdout });
 
-    await act(async () => {
-        render(<Test autoFocus />, { concurrent: true, debug: true, stdin, stdout });
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
     });
 
-    await delay(50);
+    it("unfocus active component on Esc", async () => {
+        expect.hasAssertions();
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
-});
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-const ItemWithId = ({ autoFocus = false, id, label }: { readonly autoFocus?: boolean; readonly id: string; readonly label: string }) => {
-    const { isFocused } = useFocus({ autoFocus, id });
+        render(<Test />, { debug: true, stdin, stdout });
 
-    return (
-        <Text>
-            {label}
-            {" "}
-            {isFocused ? "✔" : null}
-        </Text>
-    );
-};
+        await delay(50);
+        emitReadable(stdin, "\u001B");
+        await delay(50);
 
-const ActiveIdReader = ({ onActiveId }: { readonly onActiveId: (id: string | undefined) => void }) => {
-    const { activeId } = useFocusManager();
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
+    });
 
-    onActiveId(activeId);
+    it("switch focus to first component on Tab", async () => {
+        expect.hasAssertions();
 
-    return null;
-};
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-it("activeId from useFocusManager reflects currently focused component", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    let capturedActiveId: string | undefined;
+        render(<Test />, { debug: true, stdin, stdout });
 
-    render(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <ItemWithId id="first" label="First" />
-            <ItemWithId id="second" label="Second" />
-        </Box>,
-        { debug: true, stdin, stdout },
-    );
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    await delay(50);
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+    });
 
-    expect(capturedActiveId).toBeUndefined();
+    it("switch focus to the next component on Tab", async () => {
+        expect.hasAssertions();
 
-    emitReadable(stdin, "\t");
-    await delay(50);
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    expect(capturedActiveId).toBe("first");
+        render(<Test />, { debug: true, stdin, stdout });
 
-    emitReadable(stdin, "\t");
-    await delay(50);
+        await delay(50);
+        emitReadable(stdin, "\t");
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    expect(capturedActiveId).toBe("second");
-});
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+    });
 
-it("activeId resets to undefined on Esc", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    let capturedActiveId: string | undefined;
+    it("switch focus to the first component if currently focused component is the last one on Tab", async () => {
+        expect.hasAssertions();
 
-    render(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <ItemWithId id="first" label="First" />
-        </Box>,
-        { debug: true, stdin, stdout },
-    );
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    await delay(50);
-    emitReadable(stdin, "\t");
-    await delay(50);
+        render(<Test autoFocus />, { debug: true, stdin, stdout });
 
-    expect(capturedActiveId).toBe("first");
+        await delay(50);
+        emitReadable(stdin, "\t");
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    emitReadable(stdin, "\u001B");
-    await delay(50);
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
 
-    expect(capturedActiveId).toBeUndefined();
-});
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-it("activeId is set immediately when component uses autoFocus", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    let capturedActiveId: string | undefined;
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+    });
 
-    render(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <ItemWithId autoFocus id="first" label="First" />
-            <ItemWithId id="second" label="Second" />
-        </Box>,
-        { debug: true, stdin, stdout },
-    );
+    it("skip disabled component on Tab", async () => {
+        expect.hasAssertions();
 
-    await delay(50);
+        const stdout = createStdout();
+        const stdin = createStdin();
 
-    expect(capturedActiveId).toBe("first");
-});
+        render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
 
-it("activeId updates when focus is changed programmatically", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    let capturedActiveId: string | undefined;
-    let capturedFocus: ((id: string) => void) | undefined;
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    const FocusCapture = () => {
-        const { focus } = useFocusManager();
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
+    });
 
-        capturedFocus = focus;
+    it("switch focus to the previous component on Shift+Tab", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+
+        emitReadable(stdin, "\u001B[Z");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+    });
+
+    it("switch focus to the last component if currently focused component is the first one on Shift+Tab", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        emitReadable(stdin, "\u001B[Z");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
+    });
+
+    it("skip disabled component on Shift+Tab", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        emitReadable(stdin, "\u001B[Z");
+        emitReadable(stdin, "\u001B[Z");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+    });
+
+    it("reset focus when focused component unregisters", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test autoFocus showFirst={false} />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second", "Third"].join("\n"));
+    });
+
+    it("focus first component after focused component unregisters", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test autoFocus showFirst={false} />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second", "Third"].join("\n"));
+
+        emitReadable(stdin, "\t");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second ✔", "Third"].join("\n"));
+    });
+
+    it("toggle focus management", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test autoFocus disabled />);
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+
+        rerender(<Test autoFocus />);
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+    });
+
+    it("manually focus next component", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test autoFocus focusNext />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+    });
+
+    it("manually focus previous component", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test autoFocus focusPrevious />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
+    });
+
+    it("does not crash when focusing next on unmounted children", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test focusNext unmountChildren />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("");
+    });
+
+    it("does not crash when focusing previous on unmounted children", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        rerender(<Test focusPrevious unmountChildren />);
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("");
+    });
+
+    it("focuses first non-disabled component", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus disableFirst disableSecond />, { debug: true, stdin, stdout });
+
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
+    });
+
+    it("skips disabled elements when wrapping around", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus disableFirst />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+    });
+
+    it("skips disabled elements when wrapping around from the front", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+
+        render(<Test autoFocus disableThird />, { debug: true, stdin, stdout });
+
+        await delay(50);
+        emitReadable(stdin, "\u001B[Z");
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
+    });
+
+    it("focus component renders in concurrent mode", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { act } = await import("react");
+
+        await act(async () => {
+            render(<Test />, { concurrent: true, debug: true, stdin, stdout });
+        });
+
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third"].join("\n"));
+    });
+
+    it("focus component with autoFocus renders in concurrent mode", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { act } = await import("react");
+
+        await act(async () => {
+            render(<Test autoFocus />, { concurrent: true, debug: true, stdin, stdout });
+        });
+
+        await delay(50);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
+    });
+
+    const ItemWithId = ({ autoFocus = false, id, label }: { readonly autoFocus?: boolean; readonly id: string; readonly label: string }) => {
+        const { isFocused } = useFocus({ autoFocus, id });
+
+        return (
+            <Text>
+                {label}
+                {" "}
+                {isFocused ? "✔" : null}
+            </Text>
+        );
+    };
+
+    const ActiveIdReader = ({ onActiveId }: { readonly onActiveId: (id: string | undefined) => void }) => {
+        const { activeId } = useFocusManager();
+
+        onActiveId(activeId);
 
         return null;
     };
 
-    render(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <FocusCapture />
-            <ItemWithId id="first" label="First" />
-            <ItemWithId id="second" label="Second" />
-        </Box>,
-        { debug: true, stdin, stdout },
-    );
+    it("activeId from useFocusManager reflects currently focused component", async () => {
+        expect.hasAssertions();
 
-    await delay(50);
+        const stdout = createStdout();
+        const stdin = createStdin();
+        let capturedActiveId: string | undefined;
 
-    expect(capturedActiveId).toBeUndefined();
+        render(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <ItemWithId id="first" label="First" />
+                <ItemWithId id="second" label="Second" />
+            </Box>,
+            { debug: true, stdin, stdout },
+        );
 
-    capturedFocus!("second");
-    await delay(50);
+        await delay(50);
 
-    expect(capturedActiveId).toBe("second");
+        expect(capturedActiveId).toBeUndefined();
 
-    capturedFocus!("first");
-    await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    expect(capturedActiveId).toBe("first");
-});
+        expect(capturedActiveId).toBe("first");
 
-it("activeId resets to undefined when focused component unmounts", async () => {
-    const stdout = createStdout();
-    const stdin = createStdin();
-    let capturedActiveId: string | undefined;
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    const { rerender } = render(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <ItemWithId autoFocus id="first" label="First" />
-            <ItemWithId id="second" label="Second" />
-        </Box>,
-        { debug: true, stdin, stdout },
-    );
+        expect(capturedActiveId).toBe("second");
+    });
 
-    await delay(50);
+    it("activeId resets to undefined on Esc", async () => {
+        expect.hasAssertions();
 
-    expect(capturedActiveId).toBe("first");
+        const stdout = createStdout();
+        const stdin = createStdin();
+        let capturedActiveId: string | undefined;
 
-    rerender(
-        <Box flexDirection="column">
-            <ActiveIdReader
-                onActiveId={(id) => {
-                    capturedActiveId = id;
-                }}
-            />
-            <ItemWithId id="second" label="Second" />
-        </Box>,
-    );
+        render(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <ItemWithId id="first" label="First" />
+            </Box>,
+            { debug: true, stdin, stdout },
+        );
 
-    await delay(50);
+        await delay(50);
+        emitReadable(stdin, "\t");
+        await delay(50);
 
-    expect(capturedActiveId).toBeUndefined();
+        expect(capturedActiveId).toBe("first");
+
+        emitReadable(stdin, "\u001B");
+        await delay(50);
+
+        expect(capturedActiveId).toBeUndefined();
+    });
+
+    it("activeId is set immediately when component uses autoFocus", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        let capturedActiveId: string | undefined;
+
+        render(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <ItemWithId autoFocus id="first" label="First" />
+                <ItemWithId id="second" label="Second" />
+            </Box>,
+            { debug: true, stdin, stdout },
+        );
+
+        await delay(50);
+
+        expect(capturedActiveId).toBe("first");
+    });
+
+    it("activeId updates when focus is changed programmatically", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        let capturedActiveId: string | undefined;
+        let capturedFocus: ((id: string) => void) | undefined;
+
+        const FocusCapture = () => {
+            const { focus } = useFocusManager();
+
+            capturedFocus = focus;
+
+            return null;
+        };
+
+        render(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <FocusCapture />
+                <ItemWithId id="first" label="First" />
+                <ItemWithId id="second" label="Second" />
+            </Box>,
+            { debug: true, stdin, stdout },
+        );
+
+        await delay(50);
+
+        expect(capturedActiveId).toBeUndefined();
+
+        capturedFocus!("second");
+        await delay(50);
+
+        expect(capturedActiveId).toBe("second");
+
+        capturedFocus!("first");
+        await delay(50);
+
+        expect(capturedActiveId).toBe("first");
+    });
+
+    it("activeId resets to undefined when focused component unmounts", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+        const stdin = createStdin();
+        let capturedActiveId: string | undefined;
+
+        const { rerender } = render(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <ItemWithId autoFocus id="first" label="First" />
+                <ItemWithId id="second" label="Second" />
+            </Box>,
+            { debug: true, stdin, stdout },
+        );
+
+        await delay(50);
+
+        expect(capturedActiveId).toBe("first");
+
+        rerender(
+            <Box flexDirection="column">
+                <ActiveIdReader
+                    onActiveId={(id) => {
+                        capturedActiveId = id;
+                    }}
+                />
+                <ItemWithId id="second" label="Second" />
+            </Box>,
+        );
+
+        await delay(50);
+
+        expect(capturedActiveId).toBeUndefined();
+    });
 });

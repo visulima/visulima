@@ -1,211 +1,223 @@
 import { strip as stripAnsi } from "@visulima/ansi";
 import delay from "delay";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { DOMElement } from "../../src/ink/index.js";
 import { Box, measureElement, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
-it("measure element", async () => {
-    const stdout = createStdout();
+describe("measure-element", () => {
+    it("measure element", async () => {
+        expect.hasAssertions();
 
-    const Test = () => {
-        const [width, setWidth] = useState(0);
-        const ref = useRef<DOMElement>(null);
+        const stdout = createStdout();
 
-        useEffect(() => {
-            if (!ref.current) {
-                return;
-            }
+        const Test = () => {
+            const [width, setWidth] = useState(0);
+            const ref = useRef<DOMElement>(null);
 
-            setWidth(measureElement(ref.current).width);
-        }, []);
+            useEffect(() => {
+                if (!ref.current) {
+                    return;
+                }
 
-        return (
-            <Box ref={ref}>
-                <Text>
-                    Width:
-                    {width}
-                </Text>
-            </Box>
-        );
-    };
+                setWidth(measureElement(ref.current).width);
+            }, []);
 
-    render(<Test />, { debug: true, stdout });
-
-    expect((stdout.write as any).mock.calls[0][0]).toBe("Width: 0");
-
-    await delay(100);
-
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Width: 100");
-});
-
-it("measure element after state update", async () => {
-    const stdout = createStdout();
-    let setTestItems!: (items: string[]) => void;
-
-    const Test = () => {
-        const [items, setItems] = useState<string[]>([]);
-        const [height, setHeight] = useState(0);
-        const ref = useRef<DOMElement>(null);
-
-        setTestItems = setItems;
-
-        useEffect(() => {
-            if (!ref.current) {
-                return;
-            }
-
-            setHeight(measureElement(ref.current).height);
-        }, [items.length]);
-
-        return (
-            <Box flexDirection="column">
-                <Box flexDirection="column" ref={ref}>
-                    {items.map((item) => (
-                        <Text key={item}>{item}</Text>
-                    ))}
+            return (
+                <Box ref={ref}>
+                    <Text>
+                        Width:
+                        {width}
+                    </Text>
                 </Box>
-                <Text>
-                    Height:
-                    {height}
-                </Text>
-            </Box>
-        );
-    };
+            );
+        };
 
-    render(<Test />, { debug: true, stdout });
-    await delay(50);
+        render(<Test />, { debug: true, stdout });
 
-    setTestItems(["line 1", "line 2", "line 3"]);
-    await delay(50);
+        expect((stdout.write as any).mock.calls[0][0]).toBe("Width:0");
 
-    expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight: 3");
-});
+        await delay(100);
 
-it("measure element after multiple state updates", async () => {
-    const stdout = createStdout();
-    let setTestItems!: (items: string[]) => void;
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("Width:100");
+    });
 
-    const Test = () => {
-        const [items, setItems] = useState<string[]>([]);
-        const [height, setHeight] = useState(0);
-        const ref = useRef<DOMElement>(null);
+    it("measure element after state update", async () => {
+        expect.hasAssertions();
 
-        setTestItems = setItems;
+        const stdout = createStdout();
+        let setTestItems!: (items: string[]) => void;
 
-        useEffect(() => {
-            if (!ref.current) {
-                return;
-            }
+        const Test = () => {
+            const [items, setItems] = useState<string[]>([]);
+            const [height, setHeight] = useState(0);
+            const ref = useRef<DOMElement>(null);
 
-            setHeight(measureElement(ref.current).height);
-        }, [items.length]);
+            setTestItems = setItems;
 
-        return (
-            <Box flexDirection="column">
-                <Box flexDirection="column" ref={ref}>
-                    {items.map((item) => (
-                        <Text key={item}>{item}</Text>
-                    ))}
+            useEffect(() => {
+                if (!ref.current) {
+                    return;
+                }
+
+                setHeight(measureElement(ref.current).height);
+            }, [items.length]);
+
+            return (
+                <Box flexDirection="column">
+                    <Box flexDirection="column" ref={ref}>
+                        {items.map((item) => (
+                            <Text key={item}>{item}</Text>
+                        ))}
+                    </Box>
+                    <Text>
+                        Height:
+                        {height}
+                    </Text>
                 </Box>
-                <Text>
-                    Height:
-                    {height}
-                </Text>
-            </Box>
-        );
-    };
+            );
+        };
 
-    render(<Test />, { debug: true, stdout });
-    await delay(50);
+        render(<Test />, { debug: true, stdout });
+        await delay(50);
 
-    setTestItems(["line 1", "line 2", "line 3"]);
-    await delay(50);
+        setTestItems(["line 1", "line 2", "line 3"]);
+        await delay(50);
 
-    setTestItems(["line 1"]);
-    await delay(50);
+        expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight:3");
+    });
 
-    expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nHeight: 1");
-});
+    it("measure element after multiple state updates", async () => {
+        expect.hasAssertions();
 
-it("measure element in useLayoutEffect after state update", async () => {
-    const stdout = createStdout();
-    let setTestItems!: (items: string[]) => void;
+        const stdout = createStdout();
+        let setTestItems!: (items: string[]) => void;
 
-    const Test = () => {
-        const [items, setItems] = useState<string[]>([]);
-        const [height, setHeight] = useState(0);
-        const ref = useRef<DOMElement>(null);
+        const Test = () => {
+            const [items, setItems] = useState<string[]>([]);
+            const [height, setHeight] = useState(0);
+            const ref = useRef<DOMElement>(null);
 
-        setTestItems = setItems;
+            setTestItems = setItems;
 
-        useLayoutEffect(() => {
-            if (!ref.current) {
-                return;
-            }
+            useEffect(() => {
+                if (!ref.current) {
+                    return;
+                }
 
-            setHeight(measureElement(ref.current).height);
-        }, [items.length]);
+                setHeight(measureElement(ref.current).height);
+            }, [items.length]);
 
-        return (
-            <Box flexDirection="column">
-                <Box flexDirection="column" ref={ref}>
-                    {items.map((item) => (
-                        <Text key={item}>{item}</Text>
-                    ))}
+            return (
+                <Box flexDirection="column">
+                    <Box flexDirection="column" ref={ref}>
+                        {items.map((item) => (
+                            <Text key={item}>{item}</Text>
+                        ))}
+                    </Box>
+                    <Text>
+                        Height:
+                        {height}
+                    </Text>
                 </Box>
-                <Text>
-                    Height:
-                    {height}
-                </Text>
-            </Box>
-        );
-    };
+            );
+        };
 
-    render(<Test />, { debug: true, stdout });
-    await delay(50);
+        render(<Test />, { debug: true, stdout });
+        await delay(50);
 
-    setTestItems(["line 1", "line 2", "line 3"]);
-    await delay(50);
+        setTestItems(["line 1", "line 2", "line 3"]);
+        await delay(50);
 
-    expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight: 3");
-});
+        setTestItems(["line 1"]);
+        await delay(50);
 
-// Timing-sensitive test that passes in isolation but can fail when run with other tests
-it.skip("calculate layout while rendering is throttled", async () => {
-    const stdout = createStdout();
+        expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nHeight:1");
+    });
 
-    const Test = () => {
-        const [width, setWidth] = useState(0);
-        const ref = useRef<DOMElement>(null);
+    it("measure element in useLayoutEffect after state update", async () => {
+        expect.hasAssertions();
 
-        useEffect(() => {
-            if (!ref.current) {
-                return;
-            }
+        const stdout = createStdout();
+        let setTestItems!: (items: string[]) => void;
 
-            setWidth(measureElement(ref.current).width);
-        }, []);
+        const Test = () => {
+            const [items, setItems] = useState<string[]>([]);
+            const [height, setHeight] = useState(0);
+            const ref = useRef<DOMElement>(null);
 
-        return (
-            <Box ref={ref}>
-                <Text>
-                    Width:
-                    {width}
-                </Text>
-            </Box>
-        );
-    };
+            setTestItems = setItems;
 
-    const { rerender } = render(null, { patchConsole: false, stdout });
+            useLayoutEffect(() => {
+                if (!ref.current) {
+                    return;
+                }
 
-    rerender(<Test />);
-    await delay(50);
+                setHeight(measureElement(ref.current).height);
+            }, [items.length]);
 
-    const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
-    const lastContentWrite = writes.at(-1)!;
+            return (
+                <Box flexDirection="column">
+                    <Box flexDirection="column" ref={ref}>
+                        {items.map((item) => (
+                            <Text key={item}>{item}</Text>
+                        ))}
+                    </Box>
+                    <Text>
+                        Height:
+                        {height}
+                    </Text>
+                </Box>
+            );
+        };
 
-    expect(stripAnsi(lastContentWrite).trim()).toBe("Width: 100");
+        render(<Test />, { debug: true, stdout });
+        await delay(50);
+
+        setTestItems(["line 1", "line 2", "line 3"]);
+        await delay(50);
+
+        expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nline 2\nline 3\nHeight:3");
+    });
+
+    // Timing-sensitive test that passes in isolation but can fail when run with other tests
+    it.skip("calculate layout while rendering is throttled", async () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        const Test = () => {
+            const [width, setWidth] = useState(0);
+            const ref = useRef<DOMElement>(null);
+
+            useEffect(() => {
+                if (!ref.current) {
+                    return;
+                }
+
+                setWidth(measureElement(ref.current).width);
+            }, []);
+
+            return (
+                <Box ref={ref}>
+                    <Text>
+                        Width:
+                        {width}
+                    </Text>
+                </Box>
+            );
+        };
+
+        const { rerender } = render(null, { patchConsole: false, stdout });
+
+        rerender(<Test />);
+        await delay(50);
+
+        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const lastContentWrite = writes.at(-1)!;
+
+        expect(stripAnsi(lastContentWrite).trim()).toBe("Width:100");
+    });
 });
