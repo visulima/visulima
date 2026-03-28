@@ -107,6 +107,7 @@ catalogs:
     '@aws-sdk/types': 3.973.6
     '@azure/storage-blob': ^12.31.0
     '@babel/core': 7.29.0
+    '@napi-rs/cli': ^3.5.1
     '@babel/types': ^7.29.0
     '@bomb.sh/tab': ^0.0.14
     '@cloudflare/workers-types': 4.20260317.1
@@ -142,6 +143,7 @@ catalogs:
     '@visulima/redact': 3.0.0-alpha.5
     '@visulima/string': 3.0.0-alpha.6
     '@visulima/tabular': 4.0.0-alpha.6
+    '@xterm/headless': ^6.0.0
     '@yarnpkg/pnp': 4.1.3
     ai: 6.0.134
     ajv: 8.18.0
@@ -176,6 +178,7 @@ catalogs:
     csstype: 3.2.3
     csv-parse: 6.2.1
     deeks: ^3.2.0
+    delay: 7.0.0
     detect-indent: ^7.0.2
     dot-prop: ^10.1.0
     email-providers: 2.22.0
@@ -212,6 +215,7 @@ catalogs:
     msw: 2.12.14
     next: 16.2.1
     node-fetch: ^3.3.2
+    node-pty: 1.1.0
     node-mocks-http: ^1.17.2
     nodemailer: 8.0.3
     npm: 11.12.0
@@ -396,6 +400,7 @@ catalogs:
     swagger-ui-dist: 5.32.1
     yaml: 2.8.3
   prod:
+    '@alcalzone/ansi-tokenize': ^0.3.0
     '@anolilab/commitlint-config': ^9.1.1
     '@anolilab/multi-semantic-release': ^4.1.1
     '@anolilab/textlint-config': ^12.1.2
@@ -451,6 +456,7 @@ catalogs:
     argparse: ^2.0.1
     args: ^5.0.3
     args-tokens: ^0.24.3
+    auto-bind: ^5.0.1
     aws-crt: ^1.29.1
     browserslist-config-anolilab: ^8.0.0
     bunyan: ^1.8.15
@@ -462,9 +468,11 @@ catalogs:
     change-case: 5.4.4
     class-variance-authority: 0.7.1
     cleye: ^2.3.0
+    cli-boxes: ^4.0.1
     cli-color: ^2.0.4
     cli-truncate: 5.2.0
     clone-deep: ^4.0.1
+    code-excerpt: ^4.0.0
     clsx: 2.1.1
     cmdk: ^1.1.1
     color-convert: ^3.1.3
@@ -489,6 +497,8 @@ catalogs:
     diary: 0.4.5
     dotenv: ^17.3.1
     empathic: 2.0.0
+    es-toolkit: ^1.45.1
+    eventemitter3: ^5.0.4
     fast-copy: ^4.0.2
     fast-redact: ^3.5.0
     fast-string-truncated-width: 3.0.3
@@ -508,6 +518,7 @@ catalogs:
     http-errors: ^2.0.1
     http-status-codes: ^2.3.0
     ical-generator: 10.1.0
+    is-in-ci: ^2.0.0
     isomorphic-dompurify: 3.6.0
     jackspeak: ^4.2.3
     json5: ^2.2.3
@@ -539,6 +550,7 @@ catalogs:
     nuxt: ^4.4.2
     nx: 22.6.1
     object-inspect: ^1.13.4
+    patch-console: ^2.0.0
     path-to-regexp: ^8.3.0
     picocolors: ^1.1.1
     pingman: ^2.1.0
@@ -559,13 +571,16 @@ catalogs:
     rslog: ^2.0.1
     sanitize-filename: 1.6.4
     sanitize-html: 2.17.2
+    scheduler: ^0.27.0
     schema-dts: ^1.1.5
     scule: 1.3.0
     sharp: ^0.34.5
+    signal-exit: ^4.1.0
     sirv: ^3.0.2
     slice-ansi: 8.0.0
     slug: 11.0.1
     slugify: 1.6.8
+    stack-utils: ^2.0.6
     string-ts: 2.3.1
     string-width: 8.2.0
     swagger-jsdoc: ^6.2.8
@@ -581,9 +596,12 @@ catalogs:
     walk: 2.3.15
     winston: ^3.19.0
     wrap-ansi: 10.0.0
+    ws: ^8.20.0
     yaml: 2.8.3
     yargs: ^18.0.0
     yargs-parser: ^22.0.0
+    yoga-layout: ~3.2.1
+    yoga-layout-prebuilt: ^1.10.0
     zod-to-ts: 2.0.0
   style:
     '@tailwindcss/typography': 0.5.19
@@ -647,15 +665,21 @@ catalogs:
     '@types/qs': ^6.15.0
     '@types/react': 19.2.14
     '@types/react-dom': 19.2.3
+    '@types/react-reconciler': ^0.33.0
     '@types/sanitize-html': 2.16.1
+    '@types/scheduler': ^0.26.0
+    '@types/signal-exit': ^4.0.0
+    '@types/stack-utils': ^2.0.3
     '@types/supertest': ^7.2.0
     '@types/swagger-ui-express': ^4.1.8
     '@types/swagger-ui-react': 5.18.0
     '@types/three': 0.183.1
     '@types/type-is': ^1.6.7
     '@types/webpack': ^5.28.5
+    '@types/ws': ^8.18.1
     '@types/yargs': ^17.0.35
     '@types/yargs-parser': 21.0.3
+    '@types/yoga-layout': ^3.1.0
   utils:
     embla-carousel-react: 8.6.0
     use-count-up: 3.0.1
