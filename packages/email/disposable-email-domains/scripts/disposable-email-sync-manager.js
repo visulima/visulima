@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-import Semaphore from "./semaphore";
+import Semaphore from "./semaphore.js";
 
 const require = createRequire(import.meta.url);
 
