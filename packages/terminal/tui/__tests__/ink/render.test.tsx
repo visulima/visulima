@@ -359,11 +359,7 @@ describe("render", () => {
                 };
             }, [count, exit]);
 
-            return (
-                <Text>
-                    Counter: {count}
-                </Text>
-            );
+            return <Text>Counter: {count}</Text>;
         };
 
         const stdout = createStdout(100, false);
@@ -436,20 +432,17 @@ describe("render", () => {
         10_000,
     );
 
-    it.skipIf(!ptyAvailable)(
-        "#450: incremental rendering should still emit Static output when shrinking from fullscreen",
-        async () => {
-            expect.hasAssertions();
+    it.skipIf(!ptyAvailable)("#450: incremental rendering should still emit Static output when shrinking from fullscreen", async () => {
+        expect.hasAssertions();
 
-            const rows = 6;
-            const output = await run("issue-450-incremental-static-shrink-rerender", { args: [String(rows)], rows });
+        const rows = 6;
+        const output = await run("issue-450-incremental-static-shrink-rerender", { args: [String(rows)], rows });
 
-            const stripped = stripAnsi(output);
+        const stripped = stripAnsi(output);
 
-            // Static content must not be dropped by the incremental early-return path
-            expect(stripped).toContain("#450 static line");
-            expect(stripped).toContain("#450 top");
-            expect(stripped).toContain("#450 bottom");
-        },
-    );
+        // Static content must not be dropped by the incremental early-return path
+        expect(stripped).toContain("#450 static line");
+        expect(stripped).toContain("#450 top");
+        expect(stripped).toContain("#450 bottom");
+    });
 });

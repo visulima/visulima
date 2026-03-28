@@ -115,7 +115,7 @@ describe("measure-element", () => {
             setTestItems = setItems;
 
             useEffect(() => {
-            // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
+                // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }
@@ -208,7 +208,7 @@ describe("measure-element", () => {
             const ref = useRef<DOMElement>(null);
 
             useEffect(() => {
-            // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
+                // eslint-disable-next-line react-you-might-not-need-an-effect/no-initialize-state -- intentionally testing effect-based measurement
                 if (!ref.current) {
                     return;
                 }
@@ -231,7 +231,9 @@ describe("measure-element", () => {
         rerender(<Test />);
         await delay(100);
 
-        const writes: string[] = (stdout.write as any).mock.calls.map((c: any) => c[0] as string).filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
+        const writes: string[] = (stdout.write as any).mock.calls
+            .map((c: any) => c[0] as string)
+            .filter((w: string) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
         const lastContentWrite = writes.at(-1)!;
 
         expect(stripAnsi(lastContentWrite).trim()).toBe("Width:100");

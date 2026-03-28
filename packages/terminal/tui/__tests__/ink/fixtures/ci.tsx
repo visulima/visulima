@@ -48,13 +48,10 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
             <>
                 <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
 
-                <Text>
-                    Counter: {counter}
-                </Text>
+                <Text>Counter: {counter}</Text>
             </>
         );
     }
-
 }
 
 render(<Test />);
