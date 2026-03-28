@@ -703,6 +703,7 @@ onlyBuiltDependencies:
   - geckodriver
   - msw
   - nx
+  - node-pty
   - oxc-resolver
   - prisma
   - protobufjs

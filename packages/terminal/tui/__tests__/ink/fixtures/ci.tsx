@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import React from "react";
 
 import { render, Static, Text } from "../../../src/ink/index.js";
@@ -8,36 +9,25 @@ type TestState = {
 };
 
 class Test extends React.Component<Record<string, unknown>, TestState> {
-    timer?: NodeJS.Timeout;
+    public timer?: NodeJS.Timeout;
 
-    override state: TestState = {
+    public override state: TestState = {
         counter: 0,
         items: [],
     };
 
-    override render() {
-        return (
-            <>
-                <Static items={this.state.items}>{(item) => <Text key={item}>{item}</Text>}</Static>
-
-                <Text>
-                    Counter:
-                    {this.state.counter}
-                </Text>
-            </>
-        );
-    }
-
-    override componentDidMount() {
+    public override componentDidMount() {
         const onTimeout = () => {
-            if (this.state.counter > 4) {
+            const { counter } = this.state;
+
+            if (counter > 4) {
                 return;
             }
 
             this.setState((previousState) => {
                 return {
                     counter: previousState.counter + 1,
-                    items: [...previousState.items, `#${previousState.counter + 1}`],
+                    items: [...previousState.items, `#${String(previousState.counter + 1)}`],
                 };
             });
 
@@ -47,9 +37,24 @@ class Test extends React.Component<Record<string, unknown>, TestState> {
         this.timer = setTimeout(onTimeout, 20);
     }
 
-    override componentWillUnmount() {
+    public override componentWillUnmount() {
         clearTimeout(this.timer);
     }
+
+    public override render() {
+        const { items, counter } = this.state;
+
+        return (
+            <>
+                <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>
+
+                <Text>
+                    Counter: {counter}
+                </Text>
+            </>
+        );
+    }
+
 }
 
 render(<Test />);

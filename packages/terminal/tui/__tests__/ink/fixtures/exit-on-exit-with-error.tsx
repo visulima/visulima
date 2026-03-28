@@ -3,24 +3,17 @@ import React from "react";
 import { render, Text, useApp } from "../../../src/ink/index.js";
 
 class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter: number }> {
-    timer?: NodeJS.Timeout;
+    public timer?: NodeJS.Timeout;
 
-    override state = {
+    public override state = {
         counter: 0,
     };
 
-    override render() {
-        return (
-            <Text>
-                Counter:
-                {this.state.counter}
-            </Text>
-        );
-    }
+    public override componentDidMount() {
+        const { onExit } = this.props;
 
-    override componentDidMount() {
         setTimeout(() => {
-            this.props.onExit(new Error("errored"));
+            onExit(new Error("errored"));
         }, 500);
 
         this.timer = setInterval(() => {
@@ -32,8 +25,18 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
         }, 100);
     }
 
-    override componentWillUnmount() {
+    public override componentWillUnmount() {
         clearInterval(this.timer);
+    }
+
+    public override render() {
+        const { counter } = this.state;
+
+        return (
+            <Text>
+                Counter: {counter}
+            </Text>
+        );
     }
 }
 

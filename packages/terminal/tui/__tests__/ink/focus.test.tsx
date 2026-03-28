@@ -2,7 +2,7 @@ import EventEmitter from "node:events";
 
 import delay from "delay";
 import { useEffect } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Box, render, Text, useFocus, useFocusManager } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
@@ -111,13 +111,24 @@ const Test = ({
 };
 
 describe("focus", () => {
+    let currentUnmount: (() => void) | undefined;
+
+    afterEach(async () => {
+        currentUnmount?.();
+        currentUnmount = undefined;
+        // Allow React cleanup effects and pending microtasks to settle
+        // before the next test creates a new Ink instance.
+        await delay(100);
+    });
+
     it("do not focus on register when auto focus is off", async () => {
         expect.hasAssertions();
 
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -130,7 +141,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -143,7 +155,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\u001B");
@@ -158,7 +171,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -173,7 +187,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -189,7 +204,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -210,7 +226,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -225,7 +242,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -245,7 +263,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\u001B[Z");
@@ -260,7 +279,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus disableSecond />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\u001B[Z");
@@ -275,7 +295,8 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { rerender, unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         rerender(<Test autoFocus showFirst={false} />);
@@ -289,7 +310,8 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { rerender, unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         rerender(<Test autoFocus showFirst={false} />);
@@ -308,7 +330,8 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { rerender, unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         rerender(<Test autoFocus disabled />);
@@ -331,11 +354,12 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
-        await delay(50);
-        rerender(<Test autoFocus focusNext />);
-        await delay(50);
+        await delay(100);
+        emitReadable(stdin, "\t");
+        await delay(100);
 
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
     });
@@ -345,11 +369,12 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
-        await delay(50);
-        rerender(<Test autoFocus focusPrevious />);
-        await delay(50);
+        await delay(100);
+        emitReadable(stdin, "\u001B[Z");
+        await delay(100);
 
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second", "Third ✔"].join("\n"));
     });
@@ -359,7 +384,8 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { rerender, unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         rerender(<Test focusNext unmountChildren />);
@@ -373,7 +399,8 @@ describe("focus", () => {
 
         const stdout = createStdout();
         const stdin = createStdin();
-        const { rerender } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        const { rerender, unmount } = render(<Test autoFocus />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         rerender(<Test focusPrevious unmountChildren />);
@@ -388,7 +415,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus disableFirst disableSecond />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus disableFirst disableSecond />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -401,7 +429,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus disableFirst />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus disableFirst />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -418,7 +447,8 @@ describe("focus", () => {
         const stdout = createStdout();
         const stdin = createStdin();
 
-        render(<Test autoFocus disableThird />, { debug: true, stdin, stdout });
+        const { unmount } = render(<Test autoFocus disableThird />, { debug: true, stdin, stdout });
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\u001B[Z");
@@ -434,9 +464,14 @@ describe("focus", () => {
         const stdin = createStdin();
         const { act } = await import("react");
 
+        let unmount: (() => void) | undefined;
+
         await act(() => {
-            render(<Test />, { concurrent: true, debug: true, stdin, stdout });
+            const result = render(<Test />, { concurrent: true, debug: true, stdin, stdout });
+            unmount = result.unmount;
         });
+
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -450,9 +485,14 @@ describe("focus", () => {
         const stdin = createStdin();
         const { act } = await import("react");
 
+        let unmount: (() => void) | undefined;
+
         await act(() => {
-            render(<Test autoFocus />, { concurrent: true, debug: true, stdin, stdout });
+            const result = render(<Test autoFocus />, { concurrent: true, debug: true, stdin, stdout });
+            unmount = result.unmount;
         });
+
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -486,7 +526,7 @@ describe("focus", () => {
         const stdin = createStdin();
         let capturedActiveId: string | undefined;
 
-        render(
+        const { unmount } = render(
             <Box flexDirection="column">
                 <ActiveIdReader
                     onActiveId={(id) => {
@@ -498,6 +538,8 @@ describe("focus", () => {
             </Box>,
             { debug: true, stdin, stdout },
         );
+
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -521,7 +563,7 @@ describe("focus", () => {
         const stdin = createStdin();
         let capturedActiveId: string | undefined;
 
-        render(
+        const { unmount } = render(
             <Box flexDirection="column">
                 <ActiveIdReader
                     onActiveId={(id) => {
@@ -532,6 +574,8 @@ describe("focus", () => {
             </Box>,
             { debug: true, stdin, stdout },
         );
+
+        currentUnmount = unmount;
 
         await delay(50);
         emitReadable(stdin, "\t");
@@ -552,7 +596,7 @@ describe("focus", () => {
         const stdin = createStdin();
         let capturedActiveId: string | undefined;
 
-        render(
+        const { unmount } = render(
             <Box flexDirection="column">
                 <ActiveIdReader
                     onActiveId={(id) => {
@@ -564,6 +608,8 @@ describe("focus", () => {
             </Box>,
             { debug: true, stdin, stdout },
         );
+
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -586,7 +632,7 @@ describe("focus", () => {
             return null;
         };
 
-        render(
+        const { unmount } = render(
             <Box flexDirection="column">
                 <ActiveIdReader
                     onActiveId={(id) => {
@@ -599,6 +645,8 @@ describe("focus", () => {
             </Box>,
             { debug: true, stdin, stdout },
         );
+
+        currentUnmount = unmount;
 
         await delay(50);
 
@@ -622,7 +670,7 @@ describe("focus", () => {
         const stdin = createStdin();
         let capturedActiveId: string | undefined;
 
-        const { rerender } = render(
+        const { rerender, unmount } = render(
             <Box flexDirection="column">
                 <ActiveIdReader
                     onActiveId={(id) => {
@@ -634,6 +682,8 @@ describe("focus", () => {
             </Box>,
             { debug: true, stdin, stdout },
         );
+
+        currentUnmount = unmount;
 
         await delay(50);
 

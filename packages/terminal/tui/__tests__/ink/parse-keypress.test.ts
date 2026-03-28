@@ -1,15 +1,64 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
+
+import parseKeypress from "../../src/ink/parse-keypress.js";
 
 describe("parse-keypress", () => {
-    // VT220-style modifier sequences (ESC [ 1 ; <mod> P/Q/R/S) are handled in
-    // upstream Ink but not yet in this fork's parse-keypress implementation.
-    // These tests document the expected behaviour for when support is added.
+    // VT220-style modifier sequences (ESC [ 1 ; <mod> P/Q/R/S)
+    // Modifier encoding: ctrl = 5 (bit 4 + 1), shift = 2 (bit 1 + 1)
 
-    it.todo("ctrl+F1 resolves to name \"f1\"");
-    it.todo("ctrl+F2 resolves to name \"f2\"");
-    it.todo("ctrl+F3 resolves to name \"f3\"");
-    it.todo("ctrl+F4 resolves to name \"f4\"");
-    it.todo("unmapped ctrl sequence returns empty name");
-    it.todo("another unmapped ctrl sequence returns empty name");
-    it.todo("shift+F1 resolves to name \"f1\" with shift");
+    it('ctrl+F1 resolves to name "f1"', () => {
+        const key = parseKeypress("\u001B[1;5P");
+
+        expect(key.name).toBe("f1");
+        expect(key.ctrl).toBe(true);
+        expect(key.shift).toBe(false);
+    });
+
+    it('ctrl+F2 resolves to name "f2"', () => {
+        const key = parseKeypress("\u001B[1;5Q");
+
+        expect(key.name).toBe("f2");
+        expect(key.ctrl).toBe(true);
+        expect(key.shift).toBe(false);
+    });
+
+    it('ctrl+F3 resolves to name "f3"', () => {
+        const key = parseKeypress("\u001B[1;5R");
+
+        expect(key.name).toBe("f3");
+        expect(key.ctrl).toBe(true);
+        expect(key.shift).toBe(false);
+    });
+
+    it('ctrl+F4 resolves to name "f4"', () => {
+        const key = parseKeypress("\u001B[1;5S");
+
+        expect(key.name).toBe("f4");
+        expect(key.ctrl).toBe(true);
+        expect(key.shift).toBe(false);
+    });
+
+    it("unmapped ctrl sequence returns undefined name", () => {
+        // ESC [ 1 ; 5 X — X is not a mapped function key letter
+        const key = parseKeypress("\u001B[1;5X");
+
+        expect(key.name).toBeUndefined();
+        expect(key.ctrl).toBe(true);
+    });
+
+    it("another unmapped ctrl sequence returns undefined name", () => {
+        // ESC [ 1 ; 5 Y — Y is not a mapped function key letter
+        const key = parseKeypress("\u001B[1;5Y");
+
+        expect(key.name).toBeUndefined();
+        expect(key.ctrl).toBe(true);
+    });
+
+    it('shift+F1 resolves to name "f1" with shift', () => {
+        const key = parseKeypress("\u001B[1;2P");
+
+        expect(key.name).toBe("f1");
+        expect(key.shift).toBe(true);
+        expect(key.ctrl).toBe(false);
+    });
 });
