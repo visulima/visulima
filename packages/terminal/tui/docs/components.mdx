@@ -32,6 +32,7 @@ Layout primitive backed by Yoga.
     justifyContent="space-between"
     borderStyle="round" // single | double | round | bold | classic | singleDouble | doubleSingle
     borderColor="cyan"
+    borderBackgroundColor="blue"
     borderTop={true}
     borderRight={true}
     borderBottom={true}
@@ -45,7 +46,9 @@ Notes:
 
 - `Box` defaults to `flexDirection="row"` unless you set it explicitly.
 - Border side toggles (`borderTop`, etc.) are supported.
-- `borderColor` is rendered; per-side border colors are currently not applied.
+- Per-side border colors are supported: `borderTopColor`, `borderBottomColor`, `borderLeftColor`, `borderRightColor`.
+- Per-side border background colors are supported: `borderTopBackgroundColor`, `borderBottomBackgroundColor`, `borderLeftBackgroundColor`, `borderRightBackgroundColor`.
+- Per-side dim is supported: `borderTopDimColor`, `borderBottomDimColor`, `borderLeftDimColor`, `borderRightDimColor`.
 
 ## `Text`
 
