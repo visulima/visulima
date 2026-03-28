@@ -11,11 +11,7 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
     };
 
     override render() {
-        return (
-            <Text>
-                Counter: {this.state.counter}
-            </Text>
-        );
+        return <Text>Counter: {this.state.counter}</Text>;
     }
 
     override componentDidMount() {

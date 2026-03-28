@@ -16,31 +16,38 @@ const ptyAvailable = (() => {
 })();
 
 describe("hooks-use-input", () => {
-    it.skipIf(!ptyAvailable)("useInput - discrete priority keeps states in sync with useTransition during rapid input", async () => {
-        expect.hasAssertions();
+    it.skipIf(!ptyAvailable)(
+        "useInput - discrete priority keeps states in sync with useTransition during rapid input",
+        async () => {
+            expect.hasAssertions();
 
-        const ps = term("use-input-discrete-priority");
-        const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
+            const ps = term("use-input-discrete-priority");
+            const sleep = (ms: number) =>
+                new Promise<void>((resolve) => {
+                    setTimeout(resolve, ms);
+                });
 
-        // Wait for the app to be ready and initial render to complete
-        await sleep(1000);
+            // Wait for the app to be ready and initial render to complete
+            await sleep(1000);
 
-        // Send 5 delete keys with enough delay between them for React concurrent
-        // scheduler to process each update. The fixture has a 30ms blocking useMemo
-        // per deferred update, so we need generous delays.
-        for (let index = 0; index < 5; index++) {
-            ps.write("\u001B[3~");
-            await sleep(200);
-        }
+            // Send 5 delete keys with enough delay between them for React concurrent
+            // scheduler to process each update. The fixture has a 30ms blocking useMemo
+            // per deferred update, so we need generous delays.
+            for (let index = 0; index < 5; index++) {
+                ps.write("\u001B[3~");
+                await sleep(200);
+            }
 
-        // Wait for React concurrent mode to process all transitions
-        await sleep(3000);
+            // Wait for React concurrent mode to process all transitions
+            await sleep(3000);
 
-        ps.write("\r");
-        await ps.waitForExit();
+            ps.write("\r");
+            await ps.waitForExit();
 
-        expect(ps.output).toContain("FINAL query:\"\" deferred:\"\"");
-    }, 15_000);
+            expect(ps.output).toContain('FINAL query:"" deferred:""');
+        },
+        15_000,
+    );
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {
         expect.hasAssertions();

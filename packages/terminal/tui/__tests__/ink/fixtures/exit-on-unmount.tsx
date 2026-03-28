@@ -11,11 +11,7 @@ class Test extends React.Component<Record<string, unknown>, { counter: number }>
     };
 
     override render() {
-        return (
-            <Text>
-                Counter: {this.state.counter}
-            </Text>
-        );
+        return <Text>Counter: {this.state.counter}</Text>;
     }
 
     override componentDidMount() {

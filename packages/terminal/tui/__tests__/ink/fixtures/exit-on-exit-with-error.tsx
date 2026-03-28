@@ -32,11 +32,7 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
     public override render() {
         const { counter } = this.state;
 
-        return (
-            <Text>
-                Counter: {counter}
-            </Text>
-        );
+        return <Text>Counter: {counter}</Text>;
     }
 }
 
