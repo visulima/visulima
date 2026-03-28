@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
@@ -15,40 +15,50 @@ const ptyAvailable = (() => {
     }
 })();
 
-it.skipIf(!ptyAvailable)("usePaste - receives bracketed paste as single text blob", async () => {
-    const ps = term("use-paste", ["basic"]);
+describe("hooks-use-paste", () => {
+    it.skipIf(!ptyAvailable)("usePaste - receives bracketed paste as single text blob", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[200~hello world\u001B[201~");
-    await ps.waitForExit();
+        const ps = term("use-paste", ["basic"]);
 
-    expect(ps.output).toContain("exited");
-    expect(ps.output).toContain("\u001B[?2004h");
-    expect(ps.output).toContain("\u001B[?2004l");
-});
+        ps.write("\u001B[200~hello world\u001B[201~");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("usePaste - paste content with escape sequences is delivered verbatim", async () => {
-    const ps = term("use-paste", ["escapeSequences"]);
+        expect(ps.output).toContain("exited");
+        expect(ps.output).toContain("\u001B[?2004h");
+        expect(ps.output).toContain("\u001B[?2004l");
+    });
 
-    ps.write("\u001B[200~hello\u001B[Aworld\u001B[201~");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("usePaste - paste content with escape sequences is delivered verbatim", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-paste", ["escapeSequences"]);
 
-it.skipIf(!ptyAvailable)("usePaste - useInput does not receive bracketed paste content", async () => {
-    const ps = term("use-paste", ["noUseInput"]);
+        ps.write("\u001B[200~hello\u001B[Aworld\u001B[201~");
+        await ps.waitForExit();
 
-    ps.write("\u001B[200~hello\u001B[201~");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("usePaste - useInput does not receive bracketed paste content", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("usePaste - multiple simultaneous hooks both receive the same paste event", async () => {
-    const ps = term("use-paste", ["multipleHooks"]);
+        const ps = term("use-paste", ["noUseInput"]);
 
-    ps.write("\u001B[200~hello\u001B[201~");
-    await ps.waitForExit();
+        ps.write("\u001B[200~hello\u001B[201~");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("usePaste - multiple simultaneous hooks both receive the same paste event", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-paste", ["multipleHooks"]);
+
+        ps.write("\u001B[200~hello\u001B[201~");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
 });

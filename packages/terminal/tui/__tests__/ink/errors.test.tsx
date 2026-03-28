@@ -42,7 +42,7 @@ describe("errors", () => {
         expect(lines[1]).toBe("  ERROR  Oh no");
         expect(lines[3]).toMatch(ERROR_LOCATION_RE);
         expect(lines.some((l: string) => l.includes("throw new Error") && l.includes("Oh no"))).toBe(true);
-        expect(lines.some((l: string) => l.match(ERROR_COMPONENT_RE))).toBe(true);
+        expect(lines.some((l: string) => ERROR_COMPONENT_RE.test(l))).toBe(true);
     });
 
     it("does not emit unhandledRejection when render exits with an error and waitUntilExit is unused", async () => {

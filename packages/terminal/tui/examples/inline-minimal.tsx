@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, import/no-duplicates, react-hooks/exhaustive-deps, react-refresh/only-export-components */
+
 /**
  * Minimal renderInline test — exits after 1 second, preserve mode.
  * If scrollback is wiped after this exits, the bug is structural in renderInline.

@@ -1,74 +1,88 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
-it("row - no wrap", () => {
-    const output = renderToString(
-        <Box width={2}>
-            <Text>A</Text>
-            <Text>BC</Text>
-        </Box>,
-    );
+describe("flex-wrap", () => {
+    it("row - no wrap", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("BC\n");
-});
+        const output = renderToString(
+            <Box width={2}>
+                <Text>A</Text>
+                <Text>BC</Text>
+            </Box>,
+        );
 
-it("column - no wrap", () => {
-    const output = renderToString(
-        <Box flexDirection="column" height={2}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+        expect(output).toBe("BC\n");
+    });
 
-    expect(output).toBe("B\nC");
-});
+    it("column - no wrap", () => {
+        expect.hasAssertions();
 
-it("row - wrap content", () => {
-    const output = renderToString(
-        <Box flexWrap="wrap" width={2}>
-            <Text>A</Text>
-            <Text>BC</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box flexDirection="column" height={2}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("A\nBC");
-});
+        expect(output).toBe("B\nC");
+    });
 
-it("column - wrap content", () => {
-    const output = renderToString(
-        <Box flexDirection="column" flexWrap="wrap" height={2}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+    it("row - wrap content", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("AC\nB");
-});
+        const output = renderToString(
+            <Box flexWrap="wrap" width={2}>
+                <Text>A</Text>
+                <Text>BC</Text>
+            </Box>,
+        );
 
-it("column - wrap content reverse", () => {
-    const output = renderToString(
-        <Box flexDirection="column" flexWrap="wrap-reverse" height={2} width={3}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+        expect(output).toBe("A\nBC");
+    });
 
-    expect(output).toBe(" CA\n  B");
-});
+    it("column - wrap content", () => {
+        expect.hasAssertions();
 
-it("row - wrap content reverse", () => {
-    const output = renderToString(
-        <Box flexWrap="wrap-reverse" height={3} width={2}>
-            <Text>A</Text>
-            <Text>B</Text>
-            <Text>C</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box flexDirection="column" flexWrap="wrap" height={2}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("\nC\nAB");
+        expect(output).toBe("AC\nB");
+    });
+
+    it("column - wrap content reverse", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column" flexWrap="wrap-reverse" height={2} width={3}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
+
+        expect(output).toBe(" CA\n  B");
+    });
+
+    it("row - wrap content reverse", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexWrap="wrap-reverse" height={3} width={2}>
+                <Text>A</Text>
+                <Text>B</Text>
+                <Text>C</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("\nC\nAB");
+    });
 });

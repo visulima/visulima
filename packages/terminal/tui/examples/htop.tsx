@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-confusing-void-expression, @typescript-eslint/restrict-template-expressions, e18e/prefer-static-regex, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-confusing-arrow, no-console, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/no-nested-conditional, sonarjs/no-os-command-from-path, unicorn/no-process-exit */
+
 /**
  * htop.tsx — htop-style system monitor (Unix-like environments)
  *

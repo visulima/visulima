@@ -1,105 +1,125 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Newline, Text } from "../../src/ink/index.js";
 import { renderToString } from "../helpers/ink-render.js";
 
-it("row - align text to center", () => {
-    const output = renderToString(
-        <Box alignItems="center" height={3}>
-            <Text>Test</Text>
-        </Box>,
-    );
+describe("flex-align-items", () => {
+    it("row - align text to center", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("\nTest\n");
-});
+        const output = renderToString(
+            <Box alignItems="center" height={3}>
+                <Text>Test</Text>
+            </Box>,
+        );
 
-it("row - align multiple text nodes to center", () => {
-    const output = renderToString(
-        <Box alignItems="center" height={3}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        expect(output).toBe("\nTest\n");
+    });
 
-    expect(output).toBe("\nAB\n");
-});
+    it("row - align multiple text nodes to center", () => {
+        expect.hasAssertions();
 
-it("row - align text to bottom", () => {
-    const output = renderToString(
-        <Box alignItems="flex-end" height={3}>
-            <Text>Test</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box alignItems="center" height={3}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("\n\nTest");
-});
+        expect(output).toBe("\nAB\n");
+    });
 
-it("row - align multiple text nodes to bottom", () => {
-    const output = renderToString(
-        <Box alignItems="flex-end" height={3}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+    it("row - align text to bottom", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("\n\nAB");
-});
+        const output = renderToString(
+            <Box alignItems="flex-end" height={3}>
+                <Text>Test</Text>
+            </Box>,
+        );
 
-it("column - align text to center", () => {
-    const output = renderToString(
-        <Box alignItems="center" flexDirection="column" width={10}>
-            <Text>Test</Text>
-        </Box>,
-    );
+        expect(output).toBe("\n\nTest");
+    });
 
-    expect(output).toBe("   Test");
-});
+    it("row - align multiple text nodes to bottom", () => {
+        expect.hasAssertions();
 
-it("column - align text to right", () => {
-    const output = renderToString(
-        <Box alignItems="flex-end" flexDirection="column" width={10}>
-            <Text>Test</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box alignItems="flex-end" height={3}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("      Test");
-});
+        expect(output).toBe("\n\nAB");
+    });
 
-it("row - align items stretch", () => {
-    const output = renderToString(
-        <Box alignItems="stretch" height={5}>
-            <Box borderStyle="single">
+    it("column - align text to center", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box alignItems="center" flexDirection="column" width={10}>
+                <Text>Test</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("   Test");
+    });
+
+    it("column - align text to right", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box alignItems="flex-end" flexDirection="column" width={10}>
+                <Text>Test</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("      Test");
+    });
+
+    it("row - align items stretch", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box alignItems="stretch" height={5}>
+                <Box borderStyle="single">
+                    <Text>X</Text>
+                </Box>
+            </Box>,
+        );
+
+        expect(output).toBe("┌─┐\n│X│\n│ │\n│ │\n└─┘");
+    });
+
+    it("row - default align items stretches children", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box height={5}>
+                <Box borderStyle="single">
+                    <Text>X</Text>
+                </Box>
+            </Box>,
+        );
+
+        expect(output).toBe("┌─┐\n│X│\n│ │\n│ │\n└─┘");
+    });
+
+    it("row - align text to baseline", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box alignItems="baseline" height={3}>
+                <Text>
+                    A
+                    <Newline />
+                    B
+                </Text>
                 <Text>X</Text>
-            </Box>
-        </Box>,
-    );
+            </Box>,
+        );
 
-    expect(output).toBe("┌─┐\n│X│\n│ │\n│ │\n└─┘");
-});
-
-it("row - default align items stretches children", () => {
-    const output = renderToString(
-        <Box height={5}>
-            <Box borderStyle="single">
-                <Text>X</Text>
-            </Box>
-        </Box>,
-    );
-
-    expect(output).toBe("┌─┐\n│X│\n│ │\n│ │\n└─┘");
-});
-
-it("row - align text to baseline", () => {
-    const output = renderToString(
-        <Box alignItems="baseline" height={3}>
-            <Text>
-                A
-                <Newline />
-                B
-            </Text>
-            <Text>X</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A\nBX\n");
+        expect(output).toBe("A\nBX\n");
+    });
 });

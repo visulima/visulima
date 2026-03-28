@@ -5,7 +5,7 @@ import url from "node:url";
 
 const require = createRequire(import.meta.url);
 
-const fixturesDir = url.fileURLToPath(new URL("../ink/fixtures", import.meta.url));
+const fixturesDirectory = url.fileURLToPath(new URL("../ink/fixtures", import.meta.url));
 
 // Lazy-load node-pty so that importing this helper does not fail on platforms
 // where the native module hasn't been compiled (e.g. Linux without build tools).
@@ -17,20 +17,20 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
     }
 };
 
-const term = (fixture: string, args: string[] = []) => {
+const term = (fixture: string, args: string[] = []): { output: string; waitForExit: () => Promise<unknown>; write: (input: string) => void } => {
     const spawn = getSpawn();
 
-    let resolve: (value?: any) => void;
+    let resolve: (value?: unknown) => void;
     let reject: (error?: Error) => void;
 
-    const exitPromise = new Promise((resolve2, reject2) => {
-        resolve = resolve2;
-        reject = reject2;
+    const exitPromise = new Promise((_resolve, _reject) => {
+        resolve = _resolve;
+        reject = _reject;
     });
 
     let readyResolve: () => void;
-    const readyPromise = new Promise<void>((r) => {
-        readyResolve = r;
+    const readyPromise = new Promise<void>((_resolve) => {
+        readyResolve = _resolve;
     });
 
     const env: Record<string, string> = {
@@ -39,9 +39,9 @@ const term = (fixture: string, args: string[] = []) => {
         NODE_NO_WARNINGS: "1",
     };
 
-    const ps = spawn("node", ["--import=tsx", path.join(fixturesDir, `${fixture}.tsx`), ...args], {
+    const ps = spawn("node", ["--import=tsx", path.join(fixturesDirectory, `${fixture}.tsx`), ...args], {
         cols: 100,
-        cwd: fixturesDir,
+        cwd: fixturesDirectory,
         env,
         name: "xterm-color",
     });
@@ -50,9 +50,15 @@ const term = (fixture: string, args: string[] = []) => {
         output: "",
         waitForExit: async () => exitPromise,
         write(input: string) {
-            void readyPromise.then(() => {
-                ps.write(input);
-            });
+            readyPromise
+                .then(() => {
+                    ps.write(input);
+
+                    return undefined;
+                })
+                .catch(() => {
+                    // ignore errors during write
+                });
         },
     };
 
@@ -71,7 +77,7 @@ const term = (fixture: string, args: string[] = []) => {
             return;
         }
 
-        reject(new Error(`Process exited with non-zero exit code: ${exitCode}`));
+        reject(new Error(`Process exited with non-zero exit code: ${String(exitCode)}`));
     });
 
     return result;

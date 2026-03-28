@@ -1,85 +1,111 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import measureText from "../../src/ink/measure-text.js";
 
-it("measure single word", () => {
-    expect(measureText("constructor")).toEqual({ height: 1, width: 11 });
-});
+describe("measure-text", () => {
+    it("measure single word", () => {
+        expect.hasAssertions();
 
-it("measure empty string", () => {
-    expect(measureText("")).toEqual({ height: 0, width: 0 });
-});
+        expect(measureText("constructor")).toStrictEqual({ height: 1, width: 11 });
+    });
 
-it("measure multiline text", () => {
-    const result = measureText("hello\nworld");
+    it("measure empty string", () => {
+        expect.hasAssertions();
 
-    expect(result.width).toBe(5);
-    expect(result.height).toBe(2);
-});
+        expect(measureText("")).toStrictEqual({ height: 0, width: 0 });
+    });
 
-it("measure multiline text with varying line lengths", () => {
-    const result = measureText("a\nfoo\nhi");
+    it("measure multiline text", () => {
+        expect.hasAssertions();
 
-    expect(result.width).toBe(3);
-    expect(result.height).toBe(3);
-});
+        const result = measureText("hello\nworld");
 
-it("measure text with trailing newline", () => {
-    const result = measureText("hello\n");
+        expect(result.width).toBe(5);
+        expect(result.height).toBe(2);
+    });
 
-    expect(result.width).toBe(5);
-    expect(result.height).toBe(2);
-});
+    it("measure multiline text with varying line lengths", () => {
+        expect.hasAssertions();
 
-it("measure text with only newlines", () => {
-    const result = measureText("\n\n");
+        const result = measureText("a\nfoo\nhi");
 
-    expect(result.width).toBe(0);
-    expect(result.height).toBe(3);
-});
+        expect(result.width).toBe(3);
+        expect(result.height).toBe(3);
+    });
 
-it("returns cached result on repeated calls", () => {
-    const first = measureText("cached-test");
+    it("measure text with trailing newline", () => {
+        expect.hasAssertions();
 
-    expect(first.width).toBe(11);
-    expect(first.height).toBe(1);
+        const result = measureText("hello\n");
 
-    const second = measureText("cached-test");
+        expect(result.width).toBe(5);
+        expect(result.height).toBe(2);
+    });
 
-    expect(first).toBe(second);
-});
+    it("measure text with only newlines", () => {
+        expect.hasAssertions();
 
-it("measure text with ANSI escape sequences", () => {
-    const result = measureText("\u001B[31mred\u001B[0m");
+        const result = measureText("\n\n");
 
-    expect(result.width).toBe(3);
-    expect(result.height).toBe(1);
-});
+        expect(result.width).toBe(0);
+        expect(result.height).toBe(3);
+    });
 
-it("measure text with 256-color ANSI", () => {
-    const result = measureText("\u001B[38;5;196mred\u001B[0m");
+    it("returns cached result on repeated calls", () => {
+        expect.hasAssertions();
 
-    expect(result.width).toBe(3);
-    expect(result.height).toBe(1);
-});
+        const first = measureText("cached-test");
 
-it("measure text with wide characters", () => {
-    const result = measureText("你好");
+        expect(first.width).toBe(11);
+        expect(first.height).toBe(1);
 
-    expect(result.width).toBe(4);
-    expect(result.height).toBe(1);
-});
+        const second = measureText("cached-test");
 
-it("measure text with emoji", () => {
-    const result = measureText("🍔");
+        expect(first).toBe(second);
+    });
 
-    expect(result.width).toBe(2);
-    expect(result.height).toBe(1);
-});
+    it("measure text with ANSI escape sequences", () => {
+        expect.hasAssertions();
 
-it("measure multiline with wide characters", () => {
-    const result = measureText("🍔🍟\nabc");
+        const result = measureText("\u001B[31mred\u001B[0m");
 
-    expect(result.width).toBe(4);
-    expect(result.height).toBe(2);
+        expect(result.width).toBe(3);
+        expect(result.height).toBe(1);
+    });
+
+    it("measure text with 256-color ANSI", () => {
+        expect.hasAssertions();
+
+        const result = measureText("\u001B[38;5;196mred\u001B[0m");
+
+        expect(result.width).toBe(3);
+        expect(result.height).toBe(1);
+    });
+
+    it("measure text with wide characters", () => {
+        expect.hasAssertions();
+
+        const result = measureText("你好");
+
+        expect(result.width).toBe(4);
+        expect(result.height).toBe(1);
+    });
+
+    it("measure text with emoji", () => {
+        expect.hasAssertions();
+
+        const result = measureText("🍔");
+
+        expect(result.width).toBe(2);
+        expect(result.height).toBe(1);
+    });
+
+    it("measure multiline with wide characters", () => {
+        expect.hasAssertions();
+
+        const result = measureText("🍔🍟\nabc");
+
+        expect(result.width).toBe(4);
+        expect(result.height).toBe(2);
+    });
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, react-refresh/only-export-components, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/counter
 // Original: https://github.com/vadimdemedes/ink/tree/master/examples/counter
@@ -6,7 +7,13 @@ import React from "react";
 
 // React 18 Scheduler Polyfills for Node
 if (globalThis.global !== undefined && !globalThis.document) {
-    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.document = {
+        addEventListener: () => {},
+        createElement: () => {
+            return {};
+        },
+        removeEventListener: () => {},
+    };
     globalThis.window = globalThis;
     Object.defineProperty(globalThis, "navigator", {
         configurable: true,

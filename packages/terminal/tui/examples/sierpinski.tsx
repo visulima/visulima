@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/restrict-template-expressions, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-empty, no-param-reassign, no-plusplus, no-restricted-properties, react-refresh/only-export-components, react-x/set-state-in-effect, unused-imports/no-unused-vars */
+
 /**
  * sierpinski.tsx — React Fiber stress test, ported to the terminal
  *

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions, jsdoc/escape-inline-tags, jsdoc/lines-before-block, no-plusplus, react-refresh/only-export-components, react-web-api/no-leaked-timeout, sonarjs/pseudo-random */
 /**
  * static.tsx — port of the Ink `static` example
  *

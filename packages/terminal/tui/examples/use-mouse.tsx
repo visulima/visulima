@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, default-case, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-plusplus, react-refresh/only-export-components, react-x/no-array-index-key, sonarjs/no-dead-store, sonarjs/no-unused-vars, unicorn/prevent-abbreviations, unused-imports/no-unused-vars */
+
 /**
  * examples/use-mouse.tsx
  *

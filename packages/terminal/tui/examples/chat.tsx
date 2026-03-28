@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-assignment, no-plusplus, react-refresh/only-export-components, sonarjs/different-types-comparison */
 // @ts-nocheck
 // Ratatat port of ink/examples/chat
 import { Box, render, Text, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {
-    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.document = {
+        addEventListener: () => {},
+        createElement: () => {
+            return {};
+        },
+        removeEventListener: () => {},
+    };
     globalThis.window = globalThis;
     Object.defineProperty(globalThis, "navigator", {
         configurable: true,

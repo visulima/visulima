@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/restrict-template-expressions, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-for-of-array/no-for-of-array, no-plusplus, no-restricted-properties, unicorn/no-null */
+
 /**
  * ascii-3d.ts — Spinning ASCII cube (software 3D)
  *

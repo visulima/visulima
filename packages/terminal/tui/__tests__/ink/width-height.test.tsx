@@ -1,356 +1,402 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
-it("set width", () => {
-    const output = renderToString(
-        <Box>
-            <Box width={5}>
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
+describe("width-height", () => {
+    it("set width", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("A    B");
-});
+        const output = renderToString(
+            <Box>
+                <Box width={5}>
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
 
-it("set width in percent", () => {
-    const output = renderToString(
-        <Box width={10}>
-            <Box width="50%">
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A    B");
-});
-
-it("set min width", () => {
-    const smallerOutput = renderToString(
-        <Box>
-            <Box minWidth={5}>
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(smallerOutput).toBe("A    B");
-
-    const largerOutput = renderToString(
-        <Box>
-            <Box minWidth={2}>
-                <Text>AAAAA</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(largerOutput).toBe("AAAAAB");
-});
-
-it.fails("set min width in percent", () => {
-    const output = renderToString(
-        <Box width={10}>
-            <Box minWidth="50%">
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A    B");
-});
-
-it("set height", () => {
-    const output = renderToString(
-        <Box height={4}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("AB\n\n\n");
-});
-
-it("set height in percent", () => {
-    const output = renderToString(
-        <Box flexDirection="column" height={6}>
-            <Box height="50%">
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A\n\n\nB\n\n");
-});
-
-it("cut text over the set height", () => {
-    const output = renderToString(
-        <Box height={2}>
-            <Text>AAAABBBBCCCC</Text>
-        </Box>,
-        { columns: 4 },
-    );
-
-    expect(output).toBe("AAAA\nBBBB");
-});
-
-it("set min height", () => {
-    const smallerOutput = renderToString(
-        <Box minHeight={4}>
-            <Text>A</Text>
-        </Box>,
-    );
-
-    expect(smallerOutput).toBe("A\n\n\n");
-
-    const largerOutput = renderToString(
-        <Box minHeight={2}>
-            <Box height={4}>
-                <Text>A</Text>
-            </Box>
-        </Box>,
-    );
-
-    expect(largerOutput).toBe("A\n\n\n");
-});
-
-it("set min height in percent", () => {
-    const output = renderToString(
-        <Box flexDirection="column" height={6}>
-            <Box minHeight="50%">
-                <Text>A</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("A\n\n\nB\n\n");
-});
-
-it("set max width", () => {
-    const constrainedOutput = renderToString(
-        <Box>
-            <Box maxWidth={3}>
-                <Text>AAAAA</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-        { columns: 10 },
-    );
-
-    expect(constrainedOutput).toBe("AAAB\nAA");
-
-    const unconstrainedOutput = renderToString(
-        <Box>
-            <Box maxWidth={10}>
-                <Text>AAA</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>,
-    );
-
-    expect(unconstrainedOutput).toBe("AAAB");
-});
-
-it("clears maxWidth on rerender", () => {
-    const stdout = createStdout();
-
-    const Test = ({ maxWidth }: { readonly maxWidth?: number }) => (
-        <Box>
-            <Box maxWidth={maxWidth}>
-                <Text>AAAAA</Text>
-            </Box>
-            <Text>B</Text>
-        </Box>
-    );
-
-    const { rerender } = render(<Test maxWidth={3} />, {
-        debug: true,
-        stdout,
+        expect(output).toBe("A    B");
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAB\nAA");
+    it("set width in percent", () => {
+        expect.hasAssertions();
 
-    rerender(<Test maxWidth={undefined} />);
+        const output = renderToString(
+            <Box width={10}>
+                <Box width="50%">
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAAAB");
-});
-
-it("set max height", () => {
-    const constrainedOutput = renderToString(
-        <Box maxHeight={2}>
-            <Box height={4}>
-                <Text>A</Text>
-            </Box>
-        </Box>,
-    );
-
-    expect(constrainedOutput).toBe("A\n");
-
-    const unconstrainedOutput = renderToString(
-        <Box maxHeight={4}>
-            <Text>A</Text>
-        </Box>,
-    );
-
-    expect(unconstrainedOutput).toBe("A");
-});
-
-it("clears maxHeight on rerender", () => {
-    const stdout = createStdout();
-
-    const Test = ({ maxHeight }: { readonly maxHeight?: number }) => (
-        <Box maxHeight={maxHeight}>
-            <Box height={4}>
-                <Text>A</Text>
-            </Box>
-        </Box>
-    );
-
-    const { rerender } = render(<Test maxHeight={2} />, {
-        debug: true,
-        stdout,
+        expect(output).toBe("A    B");
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n");
+    it("set min width", () => {
+        expect.hasAssertions();
 
-    rerender(<Test maxHeight={undefined} />);
+        const smallerOutput = renderToString(
+            <Box>
+                <Box minWidth={5}>
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n\n\n");
-});
+        expect(smallerOutput).toBe("A    B");
 
-it("set aspect ratio with width", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box aspectRatio={2} borderStyle="single" width={8}>
-                <Text>X</Text>
-            </Box>
-            <Text>Y</Text>
-        </Box>,
-    );
+        const largerOutput = renderToString(
+            <Box>
+                <Box minWidth={2}>
+                    <Text>AAAAA</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
-});
-
-it("set aspect ratio with height", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box aspectRatio={2} borderStyle="single" height={3}>
-                <Text>X</Text>
-            </Box>
-            <Text>Y</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
-});
-
-it("set aspect ratio with width and height", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box aspectRatio={2} borderStyle="single" height={3} width={8}>
-                <Text>X</Text>
-            </Box>
-            <Text>Y</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
-});
-
-it("set aspect ratio with maxHeight constraint", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box aspectRatio={2} borderStyle="single" maxHeight={3} width={10}>
-                <Text>X</Text>
-            </Box>
-            <Text>Y</Text>
-        </Box>,
-    );
-
-    expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
-});
-
-it("clears aspectRatio on rerender", () => {
-    const stdout = createStdout();
-
-    const Test = ({ aspectRatio }: { readonly aspectRatio?: number }) => (
-        <Box flexDirection="column">
-            <Box aspectRatio={aspectRatio} borderStyle="single" width={8}>
-                <Text>X</Text>
-            </Box>
-            <Text>Y</Text>
-        </Box>
-    );
-
-    const { rerender } = render(<Test aspectRatio={2} />, {
-        debug: true,
-        stdout,
+        expect(largerOutput).toBe("AAAAAB");
     });
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
+    it.fails("set min width in percent", () => {
+        expect.hasAssertions();
 
-    rerender(<Test aspectRatio={undefined} />);
+        const output = renderToString(
+            <Box width={10}>
+                <Box minWidth="50%">
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
 
-    expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n└──────┘\nY");
-});
+        expect(output).toBe("A    B");
+    });
 
-it.fails("set max width in percent", () => {
-    const output = renderToString(
-        <Box width={10}>
-            <Box maxWidth="50%">
-                <Text>AAAAAAAAAA</Text>
+    it("set height", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box height={4}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("AB\n\n\n");
+    });
+
+    it("set height in percent", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column" height={6}>
+                <Box height="50%">
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\n\n\nB\n\n");
+    });
+
+    it("cut text over the set height", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box height={2}>
+                <Text>AAAABBBBCCCC</Text>
+            </Box>,
+            { columns: 4 },
+        );
+
+        expect(output).toBe("AAAA\nBBBB");
+    });
+
+    it("set min height", () => {
+        expect.hasAssertions();
+
+        const smallerOutput = renderToString(
+            <Box minHeight={4}>
+                <Text>A</Text>
+            </Box>,
+        );
+
+        expect(smallerOutput).toBe("A\n\n\n");
+
+        const largerOutput = renderToString(
+            <Box minHeight={2}>
+                <Box height={4}>
+                    <Text>A</Text>
+                </Box>
+            </Box>,
+        );
+
+        expect(largerOutput).toBe("A\n\n\n");
+    });
+
+    it("set min height in percent", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column" height={6}>
+                <Box minHeight="50%">
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\n\n\nB\n\n");
+    });
+
+    it("set max width", () => {
+        expect.hasAssertions();
+
+        const constrainedOutput = renderToString(
+            <Box>
+                <Box maxWidth={3}>
+                    <Text>AAAAA</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+            { columns: 10 },
+        );
+
+        expect(constrainedOutput).toBe("AAAB\nAA");
+
+        const unconstrainedOutput = renderToString(
+            <Box>
+                <Box maxWidth={10}>
+                    <Text>AAA</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(unconstrainedOutput).toBe("AAAB");
+    });
+
+    it("clears maxWidth on rerender", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        const Test = ({ maxWidth }: { readonly maxWidth?: number }) => (
+            <Box>
+                <Box maxWidth={maxWidth}>
+                    <Text>AAAAA</Text>
+                </Box>
+                <Text>B</Text>
             </Box>
-            <Text>B</Text>
-        </Box>,
-    );
+        );
 
-    expect(output).toBe("AAAAAB");
-});
+        const { rerender } = render(<Test maxWidth={3} />, {
+            debug: true,
+            stdout,
+        });
 
-it("set max height in percent", () => {
-    const output = renderToString(
-        <Box flexDirection="column" height={6}>
-            <Box maxHeight="50%">
-                <Box height={6}>
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAB\nAA");
+
+        rerender(<Test maxWidth={undefined} />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("AAAAAB");
+    });
+
+    it("set max height", () => {
+        expect.hasAssertions();
+
+        const constrainedOutput = renderToString(
+            <Box maxHeight={2}>
+                <Box height={4}>
+                    <Text>A</Text>
+                </Box>
+            </Box>,
+        );
+
+        expect(constrainedOutput).toBe("A\n");
+
+        const unconstrainedOutput = renderToString(
+            <Box maxHeight={4}>
+                <Text>A</Text>
+            </Box>,
+        );
+
+        expect(unconstrainedOutput).toBe("A");
+    });
+
+    it("clears maxHeight on rerender", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        const Test = ({ maxHeight }: { readonly maxHeight?: number }) => (
+            <Box maxHeight={maxHeight}>
+                <Box height={4}>
                     <Text>A</Text>
                 </Box>
             </Box>
-            <Text>B</Text>
-        </Box>,
-    );
+        );
 
-    expect(output).toBe("A\n\n\nB\n\n");
-});
+        const { rerender } = render(<Test maxHeight={2} />, {
+            debug: true,
+            stdout,
+        });
 
-it("set width - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box>
-            <Box width={5}>
-                <Text>A</Text>
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n");
+
+        rerender(<Test maxHeight={undefined} />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\n\n\n");
+    });
+
+    it("set aspect ratio with width", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box aspectRatio={2} borderStyle="single" width={8}>
+                    <Text>X</Text>
+                </Box>
+                <Text>Y</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
+    });
+
+    it("set aspect ratio with height", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box aspectRatio={2} borderStyle="single" height={3}>
+                    <Text>X</Text>
+                </Box>
+                <Text>Y</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
+    });
+
+    it("set aspect ratio with width and height", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box aspectRatio={2} borderStyle="single" height={3} width={8}>
+                    <Text>X</Text>
+                </Box>
+                <Text>Y</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
+    });
+
+    it("set aspect ratio with maxHeight constraint", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box aspectRatio={2} borderStyle="single" maxHeight={3} width={10}>
+                    <Text>X</Text>
+                </Box>
+                <Text>Y</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("┌────┐\n│X   │\n└────┘\nY");
+    });
+
+    it("clears aspectRatio on rerender", () => {
+        expect.hasAssertions();
+
+        const stdout = createStdout();
+
+        const Test = ({ aspectRatio }: { readonly aspectRatio?: number }) => (
+            <Box flexDirection="column">
+                <Box aspectRatio={aspectRatio} borderStyle="single" width={8}>
+                    <Text>X</Text>
+                </Box>
+                <Text>Y</Text>
             </Box>
-            <Text>B</Text>
-        </Box>,
-    );
+        );
 
-    expect(output).toBe("A    B");
-});
+        const { rerender } = render(<Test aspectRatio={2} />, {
+            debug: true,
+            stdout,
+        });
 
-it("set height - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box height={4}>
-            <Text>A</Text>
-            <Text>B</Text>
-        </Box>,
-    );
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n│      │\n└──────┘\nY");
 
-    expect(output).toBe("AB\n\n\n");
+        rerender(<Test aspectRatio={undefined} />);
+
+        expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("┌──────┐\n│X     │\n└──────┘\nY");
+    });
+
+    it.fails("set max width in percent", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box width={10}>
+                <Box maxWidth="50%">
+                    <Text>AAAAAAAAAA</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("AAAAAB");
+    });
+
+    it("set max height in percent", () => {
+        expect.hasAssertions();
+
+        const output = renderToString(
+            <Box flexDirection="column" height={6}>
+                <Box maxHeight="50%">
+                    <Box height={6}>
+                        <Text>A</Text>
+                    </Box>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A\n\n\nB\n\n");
+    });
+
+    it("set width - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Box>
+                <Box width={5}>
+                    <Text>A</Text>
+                </Box>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("A    B");
+    });
+
+    it("set height - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Box height={4}>
+                <Text>A</Text>
+                <Text>B</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("AB\n\n\n");
+    });
 });

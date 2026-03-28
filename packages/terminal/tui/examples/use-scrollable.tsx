@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/escape-inline-tags, jsdoc/lines-before-block, react-refresh/only-export-components */
 /**
  * scroll-test.tsx — minimal useScrollable demo
  *
@@ -12,7 +13,7 @@ import React, { useCallback } from "react";
 
 const ITEMS = Array.from({ length: 40 }, (_, i) => {
     return {
-    // alternate colors to make rows easy to track visually
+        // alternate colors to make rows easy to track visually
         color: i % 2 === 0 ? "white" : "blackBright",
         id: i,
         label: `item ${String(i + 1).padStart(2, "0")}`,

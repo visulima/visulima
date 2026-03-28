@@ -1,3 +1,5 @@
+/* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, func-style, jsdoc/check-indentation, jsdoc/escape-inline-tags, no-for-of-array/no-for-of-array, no-plusplus, no-secrets/no-secrets, no-useless-concat, sonarjs/cognitive-complexity, sonarjs/pseudo-random */
+
 /**
  * matrix.ts — Matrix digital rain
  *

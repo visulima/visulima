@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
@@ -15,137 +15,169 @@ const ptyAvailable = (() => {
     }
 })();
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super modifier", async () => {
-    const ps = term("use-input-kitty", ["super"]);
+describe("hooks-use-input-kitty", () => {
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super modifier", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[115;9u");
-    await ps.waitForExit();
+        const ps = term("use-input-kitty", ["super"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[115;9u");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol hyper modifier", async () => {
-    const ps = term("use-input-kitty", ["hyper"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[104;17u");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol hyper modifier", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input-kitty", ["hyper"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol capsLock", async () => {
-    const ps = term("use-input-kitty", ["capsLock"]);
+        ps.write("\u001B[104;17u");
+        await ps.waitForExit();
 
-    ps.write("\u001B[97;65u");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol capsLock", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol numLock", async () => {
-    const ps = term("use-input-kitty", ["numLock"]);
+        const ps = term("use-input-kitty", ["capsLock"]);
 
-    ps.write("\u001B[97;129u");
-    await ps.waitForExit();
+        ps.write("\u001B[97;65u");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super+ctrl", async () => {
-    const ps = term("use-input-kitty", ["superCtrl"]);
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol numLock", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[115;13u");
-    await ps.waitForExit();
+        const ps = term("use-input-kitty", ["numLock"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[97;129u");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol press event", async () => {
-    const ps = term("use-input-kitty", ["press"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[97;1:1u");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol super+ctrl", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input-kitty", ["superCtrl"]);
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol repeat event", async () => {
-    const ps = term("use-input-kitty", ["repeat"]);
+        ps.write("\u001B[115;13u");
+        await ps.waitForExit();
 
-    ps.write("\u001B[97;1:2u");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol press event", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol release event", async () => {
-    const ps = term("use-input-kitty", ["release"]);
+        const ps = term("use-input-kitty", ["press"]);
 
-    ps.write("\u001B[97;1:3u");
-    await ps.waitForExit();
+        ps.write("\u001B[97;1:1u");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - handle kitty protocol escape key", async () => {
-    const ps = term("use-input-kitty", ["escapeKitty"]);
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol repeat event", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[27u");
-    await ps.waitForExit();
+        const ps = term("use-input-kitty", ["repeat"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[97;1:2u");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (capslock) produces empty input", async () => {
-    const ps = term("use-input-kitty", ["nonPrintable"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[57358u");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol release event", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input-kitty", ["release"]);
 
-it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (f13) produces empty input", async () => {
-    const ps = term("use-input-kitty", ["nonPrintable"]);
+        ps.write("\u001B[97;1:3u");
+        await ps.waitForExit();
 
-    ps.write("\u001B[57376u");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
-});
+    it.skipIf(!ptyAvailable)("useInput - handle kitty protocol escape key", async () => {
+        expect.hasAssertions();
 
-it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (printscreen) produces empty input", async () => {
-    const ps = term("use-input-kitty", ["nonPrintable"]);
+        const ps = term("use-input-kitty", ["escapeKitty"]);
 
-    ps.write("\u001B[57361u");
-    await ps.waitForExit();
+        ps.write("\u001B[27u");
+        await ps.waitForExit();
 
-    expect(ps.output).toContain("exited");
-});
+        expect(ps.output).toContain("exited");
+    });
 
-it.skipIf(!ptyAvailable)("useInput - kitty protocol space key produces space input", async () => {
-    const ps = term("use-input-kitty", ["space"]);
+    it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (capslock) produces empty input", async () => {
+        expect.hasAssertions();
 
-    ps.write("\u001B[32u");
-    await ps.waitForExit();
+        const ps = term("use-input-kitty", ["nonPrintable"]);
 
-    expect(ps.output).toContain("exited");
-});
+        ps.write("\u001B[57358u");
+        await ps.waitForExit();
 
-it.skipIf(!ptyAvailable)("useInput - kitty protocol return key produces carriage return input", async () => {
-    const ps = term("use-input-kitty", ["returnKey"]);
+        expect(ps.output).toContain("exited");
+    });
 
-    ps.write("\u001B[13u");
-    await ps.waitForExit();
+    it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (f13) produces empty input", async () => {
+        expect.hasAssertions();
 
-    expect(ps.output).toContain("exited");
-});
+        const ps = term("use-input-kitty", ["nonPrintable"]);
 
-it.skipIf(!ptyAvailable)("useInput - kitty protocol ctrl+letter via codepoint 1-26 produces input", async () => {
-    const ps = term("use-input-kitty", ["ctrlLetter"]);
+        ps.write("\u001B[57376u");
+        await ps.waitForExit();
 
-    ps.write("\u001B[1;5u");
-    await ps.waitForExit();
+        expect(ps.output).toContain("exited");
+    });
 
-    expect(ps.output).toContain("exited");
+    it.skipIf(!ptyAvailable)("useInput - non-printable kitty key (printscreen) produces empty input", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input-kitty", ["nonPrintable"]);
+
+        ps.write("\u001B[57361u");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - kitty protocol space key produces space input", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input-kitty", ["space"]);
+
+        ps.write("\u001B[32u");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - kitty protocol return key produces carriage return input", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input-kitty", ["returnKey"]);
+
+        ps.write("\u001B[13u");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
+
+    it.skipIf(!ptyAvailable)("useInput - kitty protocol ctrl+letter via codepoint 1-26 produces input", async () => {
+        expect.hasAssertions();
+
+        const ps = term("use-input-kitty", ["ctrlLetter"]);
+
+        ps.write("\u001B[1;5u");
+        await ps.waitForExit();
+
+        expect(ps.output).toContain("exited");
+    });
 });

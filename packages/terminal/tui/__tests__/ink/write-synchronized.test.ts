@@ -1,7 +1,7 @@
 import EventEmitter from "node:events";
 
 import isInCi from "is-in-ci";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { bsu, esu, shouldSynchronize } from "../../src/ink/write-synchronized.js";
 
@@ -15,45 +15,60 @@ const createStream = ({ tty = false } = {}) => {
     return stream;
 };
 
-for (const [sequenceName, sequence, expected] of [
-    ["bsu", bsu, "\u001B[?2026h"],
-    ["esu", esu, "\u001B[?2026l"],
-] as const) {
-    it(`${sequenceName} is the expected synchronized update sequence`, () => {
+describe("write-synchronized", () => {
+    it.each([
+        ["bsu", bsu, "\u001B[?2026h"],
+        ["esu", esu, "\u001B[?2026l"],
+    ] as const)("%s is the expected synchronized update sequence", (_, sequence, expected) => {
+        expect.hasAssertions();
+
         expect(sequence).toBe(expected);
     });
-}
 
-it("shouldSynchronize returns true for interactive TTY stream", () => {
-    const stream = createStream({ tty: true });
+    it("shouldSynchronize returns true for interactive TTY stream", () => {
+        expect.hasAssertions();
 
-    expect(shouldSynchronize(stream, true)).toBe(true);
-});
+        const stream = createStream({ tty: true });
 
-it("shouldSynchronize returns false for non-interactive TTY stream", () => {
-    const stream = createStream({ tty: true });
+        expect(shouldSynchronize(stream, true)).toBe(true);
+    });
 
-    expect(shouldSynchronize(stream, false)).toBe(false);
-});
+    it("shouldSynchronize returns false for non-interactive TTY stream", () => {
+        expect.hasAssertions();
 
-it("shouldSynchronize returns false for non-TTY stream", () => {
-    const stream = createStream({ tty: false });
+        const stream = createStream({ tty: true });
 
-    expect(shouldSynchronize(stream, true)).toBe(false);
-});
+        expect(shouldSynchronize(stream, false)).toBe(false);
+    });
 
-it("shouldSynchronize uses CI detection when interactive is not specified", () => {
-    const ttyStream = createStream({ tty: true });
+    it("shouldSynchronize returns false for non-TTY stream", () => {
+        expect.hasAssertions();
 
-    if (isInCi) {
-        expect(shouldSynchronize(ttyStream)).toBe(false);
-    } else {
-        expect(shouldSynchronize(ttyStream)).toBe(true);
-    }
-});
+        const stream = createStream({ tty: false });
 
-it("shouldSynchronize returns false for non-TTY stream when interactive is not specified", () => {
-    const stream = createStream({ tty: false });
+        expect(shouldSynchronize(stream, true)).toBe(false);
+    });
 
-    expect(shouldSynchronize(stream)).toBe(false);
+    it("shouldSynchronize uses CI detection when interactive is not specified", () => {
+        expect.hasAssertions();
+
+        const ttyStream = createStream({ tty: true });
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (isInCi) {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(shouldSynchronize(ttyStream)).toBe(false);
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(shouldSynchronize(ttyStream)).toBe(true);
+        }
+    });
+
+    it("shouldSynchronize returns false for non-TTY stream when interactive is not specified", () => {
+        expect.hasAssertions();
+
+        const stream = createStream({ tty: false });
+
+        expect(shouldSynchronize(stream)).toBe(false);
+    });
 });

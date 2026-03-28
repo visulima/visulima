@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { getStringWidth as stringWidth } from "@visulima/string";
 import { Box, render, Text, useCursor, useInput } from "@visulima/tui/react";
 import React, { useState } from "react";

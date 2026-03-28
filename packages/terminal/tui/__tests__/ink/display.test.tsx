@@ -1,50 +1,60 @@
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/ink/index.js";
 import { renderToString, renderToStringAsync } from "../helpers/ink-render.js";
 
-it("display flex", () => {
-    const output = renderToString(
-        <Box display="flex">
-            <Text>X</Text>
-        </Box>,
-    );
+describe("display", () => {
+    it("display flex", () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("X");
-});
+        const output = renderToString(
+            <Box display="flex">
+                <Text>X</Text>
+            </Box>,
+        );
 
-it("display none", () => {
-    const output = renderToString(
-        <Box flexDirection="column">
-            <Box display="none">
-                <Text>Kitty!</Text>
-            </Box>
-            <Text>Doggo</Text>
-        </Box>,
-    );
+        expect(output).toBe("X");
+    });
 
-    expect(output).toBe("Doggo");
-});
+    it("display none", () => {
+        expect.hasAssertions();
 
-it("display flex - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box display="flex">
-            <Text>X</Text>
-        </Box>,
-    );
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box display="none">
+                    <Text>Kitty!</Text>
+                </Box>
+                <Text>Doggo</Text>
+            </Box>,
+        );
 
-    expect(output).toBe("X");
-});
+        expect(output).toBe("Doggo");
+    });
 
-it("display none - concurrent", async () => {
-    const output = await renderToStringAsync(
-        <Box flexDirection="column">
-            <Box display="none">
-                <Text>Kitty!</Text>
-            </Box>
-            <Text>Doggo</Text>
-        </Box>,
-    );
+    it("display flex - concurrent", async () => {
+        expect.hasAssertions();
 
-    expect(output).toBe("Doggo");
+        const output = await renderToStringAsync(
+            <Box display="flex">
+                <Text>X</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("X");
+    });
+
+    it("display none - concurrent", async () => {
+        expect.hasAssertions();
+
+        const output = await renderToStringAsync(
+            <Box flexDirection="column">
+                <Box display="none">
+                    <Text>Kitty!</Text>
+                </Box>
+                <Text>Doggo</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("Doggo");
+    });
 });
