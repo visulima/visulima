@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "baseUrl": ".",
         "jsx": "react-jsx",
         "lib": ["ES2020", "DOM", "DOM.Iterable"],
         "allowJs": true,
@@ -16,7 +15,7 @@
         "isolatedModules": true,
         "noEmit": true,
         "paths": {
-            "fumadocs-mdx:collections/*": [".source/*"],
+            "fumadocs-mdx:collections/*": ["./.source/*"],
             "@/*": ["./src/*"]
         },
         "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom", "unplugin-fonts/client", "vite-plugin-svgr/client"]

@@ -9,9 +9,8 @@
         "strict": false,
         "skipLibCheck": true,
         "noEmit": true,
-        "baseUrl": ".",
         "paths": {
-            "@visulima/api-platform": ["../../dist/index-server.d.ts"]
+            "@visulima/api-platform": ["./../../dist/index-server.d.ts"]
         }
     }
 }

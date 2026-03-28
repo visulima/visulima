@@ -4,7 +4,6 @@
         "target": "ES2022",
         "jsx": "react-jsx",
         "lib": ["DOM", "DOM.Iterable", "ES2022"],
-        "baseUrl": ".",
         "module": "ESNext",
         "moduleResolution": "bundler",
         "paths": {

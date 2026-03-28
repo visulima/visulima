@@ -3,10 +3,9 @@
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
         "jsx": "react-jsx",
-        "baseUrl": ".",
         "moduleResolution": "bundler",
         "paths": {
-            "zod": ["node_modules/zod"]
+            "zod": ["./node_modules/zod"]
         },
         "types": ["node"],
         "verbatimModuleSyntax": false
