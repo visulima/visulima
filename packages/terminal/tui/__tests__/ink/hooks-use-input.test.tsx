@@ -4,10 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term.js";
 
-const _request = createRequire(import.meta.url);
+const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {
     try {
-        _request("node-pty");
+        ptyRequire("node-pty");
 
         return true;
     } catch {
@@ -30,11 +30,11 @@ describe("hooks-use-input", () => {
             ps.write("\u001B[3~");
         };
 
-        for (const delayMilliseconds of [0, 30, 60, 90, 120]) {
+        [0, 30, 60, 90, 120].forEach((delayMilliseconds) => {
             setTimeout(() => {
                 pressDeleteKey();
             }, delayMilliseconds);
-        }
+        });
 
         await delay(200);
         await delay(2000);

@@ -7,14 +7,14 @@ import parseKeypress from "../../src/ink/parse-keypress.js";
 
 // Helper to create kitty protocol CSI u sequences
 const kittyKey = (codepoint: number, modifiers?: number, eventType?: number, textCodepoints?: number[]): string => {
-    let seq = `\u001B[${codepoint}`;
+    let seq = `\u001B[${String(codepoint)}`;
 
     if (modifiers !== undefined || eventType !== undefined || textCodepoints !== undefined) {
-        seq += `;${modifiers ?? 1}`;
+        seq += `;${String(modifiers ?? 1)}`;
     }
 
     if (eventType !== undefined || textCodepoints !== undefined) {
-        seq += `:${eventType ?? 1}`;
+        seq += `:${String(eventType ?? 1)}`;
     }
 
     if (textCodepoints !== undefined) {
@@ -421,7 +421,7 @@ describe("kitty-keyboard", () => {
 
         stdout.columns = 100;
         stdout.isTTY = true;
-        const write = vi.fn();
+        const write = vi.fn<(...arguments_: unknown[]) => boolean>();
 
         stdout.write = write;
 

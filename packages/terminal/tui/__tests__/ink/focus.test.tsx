@@ -31,6 +31,27 @@ const emitReadable = (stdin: NodeJS.WriteStream, chunk: string) => {
     read.mockReset();
 };
 
+type ItemProps = {
+    readonly autoFocus: boolean;
+    readonly disabled?: boolean;
+    readonly label: string;
+};
+
+const Item = ({ autoFocus, disabled = false, label }: ItemProps) => {
+    const { isFocused } = useFocus({
+        autoFocus,
+        isActive: !disabled,
+    });
+
+    return (
+        <Text>
+            {label}
+            {" "}
+            {isFocused ? "✔" : null}
+        </Text>
+    );
+};
+
 type TestProps = {
     readonly autoFocus?: boolean;
     readonly disabled?: boolean;
@@ -62,19 +83,19 @@ const Test = ({
         } else {
             focusManager.enableFocus();
         }
-    }, [disabled]);
+    }, [disabled, focusManager]);
 
     useEffect(() => {
         if (focusNext) {
             focusManager.focusNext();
         }
-    }, [focusNext]);
+    }, [focusNext, focusManager]);
 
     useEffect(() => {
         if (focusPrevious) {
             focusManager.focusPrevious();
         }
-    }, [focusPrevious]);
+    }, [focusPrevious, focusManager]);
 
     if (unmountChildren) {
         return null;
@@ -86,27 +107,6 @@ const Test = ({
             <Item autoFocus={autoFocus} disabled={disableSecond} label="Second" />
             <Item autoFocus={autoFocus} disabled={disableThird} label="Third" />
         </Box>
-    );
-};
-
-type ItemProps = {
-    readonly autoFocus: boolean;
-    readonly disabled?: boolean;
-    readonly label: string;
-};
-
-const Item = ({ autoFocus, disabled = false, label }: ItemProps) => {
-    const { isFocused } = useFocus({
-        autoFocus,
-        isActive: !disabled,
-    });
-
-    return (
-        <Text>
-            {label}
-            {" "}
-            {isFocused ? "✔" : null}
-        </Text>
     );
 };
 
@@ -434,7 +434,7 @@ describe("focus", () => {
         const stdin = createStdin();
         const { act } = await import("react");
 
-        await act(async () => {
+        await act(() => {
             render(<Test />, { concurrent: true, debug: true, stdin, stdout });
         });
 
@@ -450,7 +450,7 @@ describe("focus", () => {
         const stdin = createStdin();
         const { act } = await import("react");
 
-        await act(async () => {
+        await act(() => {
             render(<Test autoFocus />, { concurrent: true, debug: true, stdin, stdout });
         });
 
