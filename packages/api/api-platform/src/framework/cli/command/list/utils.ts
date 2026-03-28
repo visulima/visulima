@@ -8,7 +8,7 @@ interface AppExport {
     app?: string | { app?: string };
 }
 
-export const ALLOWED_EXTENSIONS = [".js", ".ts", ".mjs", ".cjs"];
+export const ALLOWED_EXTENSIONS: string[] = [".js", ".ts", ".mjs", ".cjs"];
 
 export const getAppWorkingDirectoryPath = (appFilePath: string): string | null => {
     let lastParsedPath = parse(appFilePath);

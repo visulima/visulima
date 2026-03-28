@@ -18,7 +18,7 @@ const withOpenApi
         output: string;
         sources: string[];
         verbose?: boolean;
-    }) =>
+    }): ((nextConfig: NextConfig) => NextConfig) =>
         (nextConfig: NextConfig): NextConfig =>
             ({
                 ...nextConfig,

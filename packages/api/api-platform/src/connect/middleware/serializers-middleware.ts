@@ -10,7 +10,7 @@ import { serialize } from "../../serializers";
 const log = debug("api-platform:connect:serializers-middleware");
 
 const serializersMiddleware
-    = (serializers: Serializers = [], defaultContentType = "application/json; charset=utf-8") =>
+    = (serializers: Serializers = [], defaultContentType: string = "application/json; charset=utf-8"): (<Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler) => Promise<ValueOrPromise<void>>) =>
         async <Request extends IncomingMessage, Response extends ServerResponse>(
             request: Request,
             response: NextApiResponse | Response,

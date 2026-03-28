@@ -1,11 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
+import type { Nextable, NodeRequestHandler } from "@visulima/connect";
 import { expressWrapper } from "@visulima/connect";
-import type { CorsOptions, CorsOptionsDelegate } from "cors";
 import cors from "cors";
+import type CorsTypes from "cors";
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const corsMiddleware = <Request extends IncomingMessage, Response extends ServerResponse>(options?: CorsOptions | CorsOptionsDelegate) =>
+const corsMiddleware = <Request extends IncomingMessage, Response extends ServerResponse>(options?: CorsTypes.CorsOptions | CorsTypes.CorsOptionsDelegate): Nextable<NodeRequestHandler<Request, Response>> =>
     expressWrapper<Request, Response>(cors(options));
 
 export default corsMiddleware;
