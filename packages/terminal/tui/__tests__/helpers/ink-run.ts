@@ -17,7 +17,7 @@ const getSpawn = (): (typeof import("node-pty"))["spawn"] => {
     }
 };
 
-type Run = (fixture: string, props?: { columns?: number; env?: Record<string, string> }) => Promise<string>;
+type Run = (fixture: string, props?: { args?: string[]; columns?: number; env?: Record<string, string>; rows?: number }) => Promise<string>;
 
 // eslint-disable-next-line import/prefer-default-export
 export const run: Run = async (fixture, props) => {
@@ -31,11 +31,12 @@ export const run: Run = async (fixture, props) => {
     };
 
     return new Promise<string>((resolve, reject) => {
-        const term = spawn("node", ["--import=tsx", path.join(fixturesDirectory, `${fixture}.tsx`)], {
+        const term = spawn("node", ["--import=tsx", path.join(fixturesDirectory, `${fixture}.tsx`), ...(props?.args ?? [])], {
             cols: typeof props?.columns === "number" ? props.columns : 100,
             cwd: fixturesDirectory,
             env,
             name: "xterm-color",
+            rows: typeof props?.rows === "number" ? props.rows : 24,
         });
 
         let output = "";

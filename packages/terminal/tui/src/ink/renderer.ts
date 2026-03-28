@@ -1,9 +1,12 @@
 /* eslint-disable sonarjs/cognitive-complexity */
 import type { DOMElement } from "./dom.js";
+import type { CursorPosition } from "./log-update.js";
 import Output, { OutputCaches } from "./output.js";
-import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output.js";
+import renderNodeToOutput, { renderNodeToScreenReaderOutput, type RenderState } from "./render-node-to-output.js";
 
 type Result = {
+    cursorPosition: CursorPosition | undefined;
+    cursorRequested: boolean;
     output: string;
     outputHeight: number;
     staticOutput: string;
@@ -57,6 +60,8 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             }
 
             return {
+                cursorPosition: undefined,
+                cursorRequested: false,
                 output,
                 outputHeight,
                 staticOutput: staticOutput ? `${staticOutput}\n` : "",
@@ -71,7 +76,13 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             width: node.yogaNode.getComputedWidth(),
         });
 
+        const renderState: RenderState = {
+            cursorPosition: undefined,
+            cursorRequested: false,
+        };
+
         renderNodeToOutput(node, output, {
+            renderState,
             skipStaticElements: true,
         });
 
@@ -99,10 +110,14 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             // Newline at the end is needed, because static output doesn't have one, so
             // interactive output will override last line of static output
             staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+            cursorRequested: renderState.cursorRequested,
+            cursorPosition: renderState.cursorPosition,
         };
     }
 
     return {
+        cursorPosition: undefined,
+        cursorRequested: false,
         output: "",
         outputHeight: 0,
         staticOutput: "",

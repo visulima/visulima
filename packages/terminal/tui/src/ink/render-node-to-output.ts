@@ -4,6 +4,7 @@ import Yoga from "yoga-layout";
 
 import type { DOMElement } from "./dom.js";
 import getMaxWidth from "./get-max-width.js";
+import { getAbsoluteContentPosition } from "./layout.js";
 import type Output from "./output.js";
 import renderBackground from "./render-background.js";
 import renderBorder from "./render-border.js";
@@ -98,7 +99,35 @@ const mightExceedWidth = (text: string, maxWidth: number): boolean => {
     return false;
 };
 
+const isNodeHidden = (node: DOMElement): boolean =>
+    (node.internal_hidden ?? false) || node.yogaNode?.getDisplay() === Yoga.DISPLAY_NONE;
+
+const isNodeOrAncestorHidden = (node: DOMElement): boolean => {
+    let currentNode: DOMElement | undefined = node;
+
+    while (currentNode) {
+        if (isNodeHidden(currentNode)) {
+            return true;
+        }
+
+        currentNode = currentNode.parentNode;
+    }
+
+    return false;
+};
+
 export type OutputTransformer = (s: string, index: number) => string;
+
+export type CursorOutputPosition = {
+    x: number;
+    y: number;
+};
+
+export type RenderState = {
+    cursorPosition: CursorOutputPosition | undefined;
+    cursorRequested: boolean;
+    lastTextWriteEnd?: CursorOutputPosition;
+};
 
 export const renderNodeToScreenReaderOutput = (
     node: DOMElement,
@@ -108,6 +137,10 @@ export const renderNodeToScreenReaderOutput = (
     } = {},
 ): string => {
     if (options.skipStaticElements && node.internal_static) {
+        return "";
+    }
+
+    if (node.internal_hidden) {
         return "";
     }
 
@@ -165,13 +198,76 @@ const renderNodeToOutput = (
     options: {
         offsetX?: number;
         offsetY?: number;
+        renderState?: RenderState;
         skipStaticElements: boolean;
         transformers?: OutputTransformer[];
     },
 ): void => {
-    const { offsetX = 0, offsetY = 0, skipStaticElements, transformers = [] } = options;
+    const { offsetX = 0, offsetY = 0, renderState, skipStaticElements, transformers = [] } = options;
 
     if (skipStaticElements && node.internal_static) {
+        return;
+    }
+
+    if (node.internal_hidden) {
+        return;
+    }
+
+    if (node.nodeName === "ink-cursor") {
+        if (!renderState) {
+            return;
+        }
+
+        renderState.cursorRequested = true;
+
+        const marker = node.internal_cursor;
+
+        if (!marker) {
+            renderState.cursorPosition = undefined;
+            return;
+        }
+
+        // Inline mode: position cursor where the preceding text ended
+        if (marker.inline) {
+            if (renderState.lastTextWriteEnd) {
+                renderState.cursorPosition = {
+                    x: renderState.lastTextWriteEnd.x,
+                    y: renderState.lastTextWriteEnd.y,
+                };
+            } else {
+                // No preceding text — fall back to parent's content origin
+                const parentPosition = node.parentNode ? getAbsoluteContentPosition(node.parentNode) : undefined;
+
+                renderState.cursorPosition = parentPosition ? { x: parentPosition.x, y: parentPosition.y } : undefined;
+            }
+
+            return;
+        }
+
+        const resolvedAnchorNode = marker.anchorRef ? marker.anchorRef.current : node.parentNode;
+
+        if (!resolvedAnchorNode) {
+            renderState.cursorPosition = undefined;
+            return;
+        }
+
+        if (marker.anchorRef && isNodeOrAncestorHidden(resolvedAnchorNode)) {
+            renderState.cursorPosition = undefined;
+            return;
+        }
+
+        const anchorPosition = getAbsoluteContentPosition(resolvedAnchorNode);
+
+        if (!anchorPosition) {
+            renderState.cursorPosition = undefined;
+            return;
+        }
+
+        renderState.cursorPosition = {
+            x: anchorPosition.x + marker.x,
+            y: anchorPosition.y + marker.y,
+        };
+
         return;
     }
 
@@ -213,6 +309,17 @@ const renderNodeToOutput = (
                 text = applyPaddingToText(node, text);
 
                 output.write(x, y, text, { transformers: newTransformers });
+
+                // Track where this text ends for inline cursor positioning
+                if (renderState) {
+                    const lines = text.split("\n");
+                    const lastLine = lines.at(-1) ?? "";
+
+                    renderState.lastTextWriteEnd = {
+                        x: x + getStringWidth(lastLine),
+                        y: y + lines.length - 1,
+                    };
+                }
             }
 
             return;
@@ -246,6 +353,7 @@ const renderNodeToOutput = (
                 renderNodeToOutput(childNode as DOMElement, output, {
                     offsetX: x,
                     offsetY: y,
+                    renderState,
                     skipStaticElements,
                     transformers: newTransformers,
                 });

@@ -279,7 +279,11 @@ export default class Ink {
 
     private readonly log: LogUpdate;
 
-    private cursorPosition: CursorPosition | undefined;
+    private manualCursorPosition: CursorPosition | undefined;
+
+    private renderedCursorPosition: CursorPosition | undefined;
+
+    private renderedCursorRequested: boolean;
 
     private readonly throttledLog: LogUpdate | DebouncedFunc<(output: string) => void>;
 
@@ -371,7 +375,9 @@ export default class Ink {
         this.log = logUpdate.create(options.stdout, {
             incremental: options.incrementalRendering,
         });
-        this.cursorPosition = undefined;
+        this.manualCursorPosition = undefined;
+        this.renderedCursorPosition = undefined;
+        this.renderedCursorRequested = false;
         this.throttledLog = unthrottled
             ? this.log
             : throttle(
@@ -500,9 +506,17 @@ export default class Ink {
         this.unmount();
     };
 
+    getActiveCursorPosition = (): CursorPosition | undefined => {
+        if (this.renderedCursorRequested) {
+            return this.renderedCursorPosition;
+        }
+
+        return this.manualCursorPosition;
+    };
+
     setCursorPosition = (position: CursorPosition | undefined): void => {
-        this.cursorPosition = position;
-        this.log.setCursorPosition(position);
+        this.manualCursorPosition = position;
+        this.log.setCursorPosition(this.getActiveCursorPosition());
     };
 
     restoreLastOutput = (): void => {
@@ -512,7 +526,7 @@ export default class Ink {
 
         // Clear() resets log-update's cursor state, so replay the latest cursor intent
         // before restoring output after external stdout/stderr writes.
-        this.log.setCursorPosition(this.cursorPosition);
+        this.log.setCursorPosition(this.getActiveCursorPosition());
         this.log(this.lastOutputToRender || `${this.lastOutput}\n`);
     };
 
@@ -537,7 +551,17 @@ export default class Ink {
         }
 
         const startTime = performance.now();
-        const { output, outputHeight, staticOutput } = render(this.rootNode, this.isScreenReaderEnabled);
+        const { cursorPosition, cursorRequested, output, outputHeight, staticOutput } = render(this.rootNode, this.isScreenReaderEnabled);
+
+        this.renderedCursorRequested = cursorRequested;
+        this.renderedCursorPosition = cursorPosition;
+
+        // When a <Cursor> component is rendered, sync its position to log-update.
+        // Only do this when cursorRequested is true to avoid marking cursor dirty
+        // on every frame when no <Cursor> is mounted (which would cause render loops).
+        if (cursorRequested) {
+            this.log.setCursorPosition(this.getActiveCursorPosition());
+        }
 
         this.options.onRender?.({ renderTime: performance.now() - startTime });
 
@@ -1030,6 +1054,26 @@ export default class Ink {
         });
 
         if (shouldClearTerminal) {
+            // Skip clearTerminal in incremental mode to avoid erase-then-redraw flicker.
+            // Instead, fall through to the normal incremental update path below so that
+            // static output is still handled and the log-update diffing takes care of it.
+            if (this.options.incrementalRendering) {
+                if (hasStaticOutput) {
+                    this.log.clear();
+                    this.options.stdout.write(staticOutput);
+                }
+
+                if (output !== this.lastOutput || this.log.isCursorDirty() || hasStaticOutput) {
+                    this.throttledLog(outputToRender);
+                }
+
+                this.lastOutput = output;
+                this.lastOutputToRender = outputToRender;
+                this.lastOutputHeight = outputHeight;
+
+                return;
+            }
+
             const sync = this.shouldSync();
 
             if (sync) {

@@ -9,6 +9,7 @@ type RerenderFixtureOptions = {
     readonly frameLimit?: number;
     readonly heightForFrame: (rows: number, frameCount: number) => number;
     readonly includeStaticLine?: boolean;
+    readonly incrementalRendering?: boolean;
     readonly rowsFallback?: number;
 };
 
@@ -72,6 +73,7 @@ export const runIssue450RerenderFixture = ({
     frameLimit = 8,
     heightForFrame,
     includeStaticLine = false,
+    incrementalRendering = false,
     rowsFallback = 6,
 }: RerenderFixtureOptions): void => {
     const rows = Number(process.argv[2]) || rowsFallback;
@@ -86,6 +88,7 @@ export const runIssue450RerenderFixture = ({
             includeStaticLine={includeStaticLine}
             rows={rows}
         />,
+        { incrementalRendering },
     );
 };
 

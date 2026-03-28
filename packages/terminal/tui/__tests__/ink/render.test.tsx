@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import { Box, render, Text, useApp } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
+import { run } from "../helpers/ink-run.js";
 
 const require = createRequire(import.meta.url);
 
@@ -44,12 +45,12 @@ const getSpawn = () => {
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
 const term = (fixture: string, args: string[] = []) => {
-    let resolve: (value?: unknown) => void;
-    let reject: (error: Error) => void;
+    let resolveExit: (value?: unknown) => void;
+    let rejectExit: (error: Error) => void;
 
     const exitPromise = new Promise((resolve2, reject2) => {
-        resolve = resolve2;
-        reject = reject2;
+        resolveExit = resolve2;
+        rejectExit = reject2;
     });
 
     const env = {
@@ -80,12 +81,12 @@ const term = (fixture: string, args: string[] = []) => {
         expect.hasAssertions();
 
         if (exitCode === 0) {
-            resolve();
+            resolveExit();
 
             return;
         }
 
-        reject(new Error(`Process exited with non-zero exit code: ${exitCode}`));
+        rejectExit(new Error(`Process exited with non-zero exit code: ${String(exitCode)}`));
     });
 
     return result;
@@ -95,9 +96,9 @@ const isWriteBarrierChunk = (chunk: string | Uint8Array): boolean =>
     (typeof chunk === "string" && chunk === "") || (chunk instanceof Uint8Array && chunk.length === 0);
 
 const isCursorOrSyncEscape = (chunk: string | Uint8Array): boolean => {
-    const string_ = typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
+    const chunkString = typeof chunk === "string" ? chunk : Buffer.from(chunk).toString();
 
-    return string_.startsWith("\u001B[?25") || string_ === "\u001B[?2026h" || string_ === "\u001B[?2026l";
+    return chunkString.startsWith("\u001B[?25") || chunkString === "\u001B[?2026h" || chunkString === "\u001B[?2026l";
 };
 
 const isRenderContent = (chunk: string | Uint8Array): boolean => !isWriteBarrierChunk(chunk) && !isCursorOrSyncEscape(chunk);
@@ -116,9 +117,9 @@ describe("render", () => {
 
         expect(ps.output).not.toContain(resetTerminal);
 
-        for (const letter of ["A", "B", "C"]) {
+        ["A", "B", "C"].forEach((letter) => {
             expect(ps.output).toContain(letter);
-        }
+        });
     });
 
     it.skipIf(!ptyAvailable)("do not erase screen where <Static> is taller than viewport", async () => {
@@ -130,9 +131,9 @@ describe("render", () => {
 
         expect(ps.output).not.toContain(resetTerminal);
 
-        for (const letter of ["A", "B", "C", "D", "E", "F"]) {
+        ["A", "B", "C", "D", "E", "F"].forEach((letter) => {
             expect(ps.output).toContain(letter);
-        }
+        });
     });
 
     it.skipIf(!ptyAvailable)("erase screen", async () => {
@@ -144,9 +145,9 @@ describe("render", () => {
 
         expect(ps.output).toContain(resetTerminal);
 
-        for (const letter of ["A", "B", "C"]) {
+        ["A", "B", "C"].forEach((letter) => {
             expect(ps.output).toContain(letter);
-        }
+        });
     });
 
     it.skipIf(!ptyAvailable)("clear output", async () => {
@@ -277,24 +278,30 @@ describe("render", () => {
             },
             { error?: Error }
         > {
-            static override getDerivedStateFromError(error: Error) {
+            public static override getDerivedStateFromError(error: Error) {
                 return { error };
             }
 
-            override state: { error?: Error } = {
+            public override state: { error?: Error } = {
                 error: undefined,
             };
 
-            override componentDidCatch(error: Error) {
-                this.props.onError(error);
+            public override componentDidCatch(error: Error) {
+                const { onError } = this.props;
+
+                onError(error);
             }
 
-            override render() {
-                if (this.state.error) {
+            public override render() {
+                const { error } = this.state;
+
+                if (error) {
                     return null;
                 }
 
-                return this.props.children;
+                const { children } = this.props;
+
+                return children;
             }
         }
 
@@ -339,20 +346,22 @@ describe("render", () => {
                 if (count >= 5) {
                     exit();
 
-                    return;
+                    return undefined;
                 }
 
-                const timer = setTimeout(() => {
+                const increment = () => {
                     setCount((c) => c + 1);
-                }, 10);
+                };
+                const timer = setTimeout(increment, 10);
 
-                return () => { clearTimeout(timer); };
+                return () => {
+                    clearTimeout(timer);
+                };
             }, [count, exit]);
 
             return (
                 <Text>
-                    Counter:
-                    {count}
+                    Counter: {count}
                 </Text>
             );
         };
@@ -366,9 +375,9 @@ describe("render", () => {
         const allContent = allWrites.join("");
 
         // In non-interactive mode, only the last frame is written
-        for (const number_ of [0, 1, 2, 3, 4]) {
-            expect(allContent).not.toContain(`Counter: ${number_}`);
-        }
+        [0, 1, 2, 3, 4].forEach((counter) => {
+            expect(allContent).not.toContain(`Counter: ${String(counter)}`);
+        });
 
         expect(allContent).toContain("Counter: 5");
     });
@@ -407,4 +416,40 @@ describe("render", () => {
         expect(plainOutput).toContain("ready-stdin-not-tty");
         expect(plainOutput).toContain("exited");
     });
+
+    it.skipIf(!ptyAvailable)(
+        "#450: incremental rendering should not clearTerminal for fullscreen rerenders",
+        async () => {
+            expect.hasAssertions();
+
+            const rows = 6;
+            const output = await run("issue-450-incremental-fullscreen-rerender", { args: [String(rows)], rows });
+
+            // resetTerminal contains ESC c (RIS) — incremental mode should never emit it
+            expect(output).not.toContain(resetTerminal);
+
+            const stripped = stripAnsi(output);
+
+            expect(stripped).toContain("#450 top");
+            expect(stripped).toContain("#450 bottom");
+        },
+        10_000,
+    );
+
+    it.skipIf(!ptyAvailable)(
+        "#450: incremental rendering should still emit Static output when shrinking from fullscreen",
+        async () => {
+            expect.hasAssertions();
+
+            const rows = 6;
+            const output = await run("issue-450-incremental-static-shrink-rerender", { args: [String(rows)], rows });
+
+            const stripped = stripAnsi(output);
+
+            // Static content must not be dropped by the incremental early-return path
+            expect(stripped).toContain("#450 static line");
+            expect(stripped).toContain("#450 top");
+            expect(stripped).toContain("#450 bottom");
+        },
+    );
 });

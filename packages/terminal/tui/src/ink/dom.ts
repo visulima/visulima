@@ -18,9 +18,20 @@ type InkNode = {
 type LayoutListener = () => void;
 
 export type TextName = "#text";
-export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-virtual-text";
+export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-cursor" | "ink-virtual-text";
 
 export type NodeNames = ElementNames | TextName;
+
+export type CursorAnchorRef = {
+    readonly current: DOMElement | undefined | null;
+};
+
+export type CursorMarker = {
+    anchorRef?: CursorAnchorRef;
+    inline?: boolean;
+    x: number;
+    y: number;
+};
 
 export type DOMElement = InkNode & {
     attributes: Record<string, DOMNodeAttribute>;
@@ -59,6 +70,10 @@ export type DOMElement = InkNode & {
     };
     internal_layoutListeners?: Set<LayoutListener>;
 
+    internal_cursor?: CursorMarker;
+
+    internal_hidden?: boolean;
+
     internal_transform?: OutputTransformer;
 
     // Internal properties
@@ -94,7 +109,7 @@ export const createNode = (nodeName: ElementNames): DOMElement => {
         nodeName,
         parentNode: undefined,
         style: {},
-        yogaNode: nodeName === "ink-virtual-text" ? undefined : Yoga.Node.create(),
+        yogaNode: nodeName === "ink-virtual-text" || nodeName === "ink-cursor" ? undefined : Yoga.Node.create(),
     };
 
     if (nodeName === "ink-text") {
@@ -140,7 +155,8 @@ export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, before
         node.childNodes.splice(index, 0, newChildNode);
 
         if (newChildNode.yogaNode) {
-            node.yogaNode?.insertChild(newChildNode.yogaNode, index);
+            const yogaIndex = node.childNodes.slice(0, index).filter((childNode) => Boolean(childNode.yogaNode)).length;
+            node.yogaNode?.insertChild(newChildNode.yogaNode, yogaIndex);
         }
     }
 
