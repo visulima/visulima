@@ -1,13 +1,21 @@
 import { strip as stripAnsi } from "@visulima/ansi";
 import delay from "delay";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { DOMElement } from "../../src/ink/index.js";
 import { Box, measureElement, render, Text } from "../../src/ink/index.js";
 import createStdout from "../helpers/ink-create-stdout.js";
 
 describe("measure-element", () => {
+    let currentUnmount: (() => void) | undefined;
+
+    afterEach(async () => {
+        currentUnmount?.();
+        currentUnmount = undefined;
+        await delay(50);
+    });
+
     it("measure element", async () => {
         expect.hasAssertions();
 
@@ -36,7 +44,8 @@ describe("measure-element", () => {
             );
         };
 
-        render(<Test />, { debug: true, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdout });
+        currentUnmount = unmount;
 
         expect((stdout.write as any).mock.calls[0][0]).toBe("Width:0");
 
@@ -82,7 +91,8 @@ describe("measure-element", () => {
             );
         };
 
-        render(<Test />, { debug: true, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdout });
+        currentUnmount = unmount;
         await delay(50);
 
         setTestItems(["line 1", "line 2", "line 3"]);
@@ -128,14 +138,15 @@ describe("measure-element", () => {
             );
         };
 
-        render(<Test />, { debug: true, stdout });
-        await delay(50);
+        const { unmount } = render(<Test />, { debug: true, stdout });
+        currentUnmount = unmount;
+        await delay(100);
 
         setTestItems(["line 1", "line 2", "line 3"]);
-        await delay(50);
+        await delay(100);
 
         setTestItems(["line 1"]);
-        await delay(50);
+        await delay(100);
 
         expect(stripAnsi((stdout.write as any).mock.calls.at(-1)[0] as string).trim()).toBe("line 1\nHeight:1");
     });
@@ -176,7 +187,8 @@ describe("measure-element", () => {
             );
         };
 
-        render(<Test />, { debug: true, stdout });
+        const { unmount } = render(<Test />, { debug: true, stdout });
+        currentUnmount = unmount;
         await delay(50);
 
         setTestItems(["line 1", "line 2", "line 3"]);

@@ -20,29 +20,26 @@ describe("hooks-use-input", () => {
         expect.hasAssertions();
 
         const ps = term("use-input-discrete-priority");
-        const delay = async (ms: number) =>
-            new Promise((resolve) => {
-                expect.hasAssertions();
+        const sleep = (ms: number) => new Promise<void>((resolve) => { setTimeout(resolve, ms); });
 
-                setTimeout(resolve, ms);
-            });
-        const pressDeleteKey = () => {
+        // Wait for the app to be ready before sending input
+        await sleep(500);
+
+        // Send 5 delete keys with delays between them to ensure each is processed
+        // as a separate input event by the terminal and React scheduler
+        for (let index = 0; index < 5; index++) {
             ps.write("\u001B[3~");
-        };
+            await sleep(50);
+        }
 
-        [0, 30, 60, 90, 120].forEach((delayMilliseconds) => {
-            setTimeout(() => {
-                pressDeleteKey();
-            }, delayMilliseconds);
-        });
+        // Wait for React concurrent mode to process all transitions
+        await sleep(2000);
 
-        await delay(200);
-        await delay(2000);
         ps.write("\r");
         await ps.waitForExit();
 
         expect(ps.output).toContain("FINAL query:\"\" deferred:\"\"");
-    });
+    }, 10_000);
 
     it.skipIf(!ptyAvailable)("useInput - handle lowercase character", async () => {
         expect.hasAssertions();

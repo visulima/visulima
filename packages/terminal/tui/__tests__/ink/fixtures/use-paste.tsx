@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import process from "node:process";
 
 import React from "react";

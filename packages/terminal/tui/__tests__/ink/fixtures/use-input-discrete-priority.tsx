@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import process from "node:process";
 
 import React, { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -53,18 +54,9 @@ const App = () => {
 
     return (
         <Box flexDirection="column">
-            <Text>
-                query:
-                {query}
-            </Text>
-            <Text>
-                deferred:
-                {deferredQuery}
-            </Text>
-            <Text>
-                filtered:
-                {filteredResult}
-            </Text>
+            <Text>query: {query}</Text>
+            <Text>deferred: {deferredQuery}</Text>
+            <Text>filtered: {filteredResult}</Text>
         </Box>
     );
 };

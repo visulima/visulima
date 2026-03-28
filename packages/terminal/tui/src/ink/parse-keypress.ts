@@ -91,6 +91,11 @@ const keyName: Record<string, string> = {
     OQ: "f2",
     OR: "f3",
     OS: "f4",
+    /* VT220-style modifier sequences: ESC [ 1 ; mod P/Q/R/S */
+    "[P": "f1",
+    "[Q": "f2",
+    "[R": "f3",
+    "[S": "f4",
 };
 
 export const nonAlphanumericKeys: string[] = [...Object.values(keyName), "backspace"];

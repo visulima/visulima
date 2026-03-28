@@ -336,17 +336,17 @@ describe("reconciler", () => {
 
                 state = "pending";
 
-                (async () => {
-                    await promise;
+                void promise.then(() => {
                     state = "done";
                     value = "Hello World";
-                })();
+                });
             }
 
             if (state === "done") {
                 return value;
             }
 
+            // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense requires throwing a Promise
             throw promise;
         };
 
@@ -385,6 +385,7 @@ describe("reconciler", () => {
 
         const Suspendable = () => {
             if (data === undefined) {
+                // eslint-disable-next-line @typescript-eslint/only-throw-error -- React Suspense requires throwing a Promise
                 throw promise;
             }
 
@@ -399,7 +400,7 @@ describe("reconciler", () => {
 
         const { act } = await import("react");
 
-        await act(async () => {
+        await act(() => {
             render(<Test />, {
                 concurrent: true,
                 debug: true,

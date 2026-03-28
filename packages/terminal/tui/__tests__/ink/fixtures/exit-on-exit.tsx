@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import React from "react";
 
 import { render, Text, useApp } from "../../../src/ink/index.js";
@@ -12,8 +13,7 @@ class Exit extends React.Component<{ onExit: (error: Error) => void }, { counter
     override render() {
         return (
             <Text>
-                Counter:
-                {this.state.counter}
+                Counter: {this.state.counter}
             </Text>
         );
     }

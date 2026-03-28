@@ -1,3 +1,4 @@
+/* eslint-disable vitest/require-hook -- standalone fixture script executed by node-pty, not a test file */
 import { gameReducer } from "../../examples/alternate-screen/alternate-screen.js";
 
 const boardWidth = 20;
@@ -6,9 +7,9 @@ const initialSnakeLength = 3;
 
 const snake = [];
 
-for (let y = 0; y < boardHeight; y++) {
+for (let y = 0; y < boardHeight; y += 1) {
     if (y % 2 === 0) {
-        for (let x = 0; x < boardWidth; x++) {
+        for (let x = 0; x < boardWidth; x += 1) {
             if (x === 0 && y === 0) {
                 continue;
             }
@@ -16,7 +17,7 @@ for (let y = 0; y < boardHeight; y++) {
             snake.push({ x, y });
         }
     } else {
-        for (let x = boardWidth - 1; x >= 0; x--) {
+        for (let x = boardWidth - 1; x >= 0; x -= 1) {
             snake.push({ x, y });
         }
     }

@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return, e18e/prefer-static-regex, import/exports-last */
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
+import { IMECompositionBuffer, isIMEInput } from "../ime-utils.js";
 import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress.js";
 import reconciler from "../reconciler.js";
 import { useStdinContext } from "./use-stdin.js";
@@ -129,6 +130,21 @@ type Handler = (input: string, key: Key) => void;
 
 type Options = {
     /**
+     * Enable IME (Input Method Editor) composition buffering for Vietnamese, Chinese,
+     * Japanese, Korean, and other non-ASCII input methods.
+     *
+     * @default true
+     */
+    imeEnabled?: boolean;
+
+    /**
+     * Timeout in milliseconds to wait before flushing IME composition buffer.
+     *
+     * @default 50
+     */
+    imeTimeout?: number;
+
+    /**
      * Enable or disable capturing of user input. Useful when there are multiple `useInput` hooks used at once to avoid handling the same input several times.
      * @default true
      */
@@ -161,6 +177,64 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { internal_eventEmitter, internal_exitOnCtrlC, setRawMode, stdin } = useStdinContext();
 
+    const imeEnabled = options.imeEnabled ?? true;
+    const imeTimeout = options.imeTimeout ?? 50;
+
+    // IME composition buffer ref
+    const imeBufferRef = useRef<IMECompositionBuffer | null>(null);
+    const inputHandlerRef = useRef(inputHandler);
+
+    // Keep inputHandler ref up to date
+    useEffect(() => {
+        inputHandlerRef.current = inputHandler;
+    }, [inputHandler]);
+
+    // Initialize IME buffer
+    useEffect(() => {
+        if (!imeEnabled) {
+            return;
+        }
+
+        imeBufferRef.current = new IMECompositionBuffer({
+            onFlush: (text: string) => {
+                // Create a key object for IME input (no special keys pressed)
+                const key: Key = {
+                    backspace: false,
+                    capsLock: false,
+                    ctrl: false,
+                    delete: false,
+                    downArrow: false,
+                    end: false,
+                    escape: false,
+                    home: false,
+                    hyper: false,
+                    leftArrow: false,
+                    meta: false,
+                    numLock: false,
+                    pageDown: false,
+                    pageUp: false,
+                    return: false,
+                    rightArrow: false,
+                    shift: false,
+                    super: false,
+                    tab: false,
+                    upArrow: false,
+                };
+
+                // @ts-expect-error Types require 5 arguments (fn, a, b, c, d) but only fn is needed at runtime.
+                reconciler.discreteUpdates(() => {
+                    inputHandlerRef.current(text, key);
+                });
+            },
+            timeout: imeTimeout,
+        });
+
+        return () => {
+            imeBufferRef.current?.destroy();
+            imeBufferRef.current = null;
+        };
+    }, [imeEnabled, imeTimeout]);
+
     useEffect(() => {
         if (options.isActive === false) {
             return;
@@ -179,6 +253,16 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
         }
 
         const handleData = (data: string) => {
+            // Check if this is IME input
+            if (imeEnabled && isIMEInput(data)) {
+                imeBufferRef.current?.add(data);
+
+                return;
+            }
+
+            // Flush any pending IME input before processing regular input
+            imeBufferRef.current?.flush();
+
             const keypress = parseKeypress(data);
 
             const key: Key = {
@@ -264,7 +348,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
         return () => {
             internal_eventEmitter.removeListener("input", handleData);
         };
-    }, [options.isActive, stdin, internal_exitOnCtrlC, inputHandler]);
+    }, [options.isActive, stdin, internal_exitOnCtrlC, inputHandler, imeEnabled]);
 };
 
 export default useInput;
