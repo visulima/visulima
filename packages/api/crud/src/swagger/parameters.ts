@@ -63,8 +63,8 @@ const queryParameters: Record<string, SwaggerParameter> = {
     },
 };
 
-export const commonQueryParameters = [queryParameters.select, queryParameters.include];
-export const listQueryParameters = [
+export const commonQueryParameters: SwaggerParameter[] = [queryParameters.select, queryParameters.include];
+export const listQueryParameters: SwaggerParameter[] = [
     ...commonQueryParameters,
     queryParameters.limit,
     queryParameters.skip,
