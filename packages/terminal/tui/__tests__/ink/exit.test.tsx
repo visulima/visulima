@@ -8,12 +8,10 @@ import { describe, expect, it } from "vitest";
 
 import { run } from "../helpers/ink-run.js";
 
-const require = createRequire(import.meta.url);
-
-const _request = createRequire(import.meta.url);
+const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {
     try {
-        _request("node-pty");
+        ptyRequire("node-pty");
 
         return true;
     } catch {
@@ -21,20 +19,20 @@ const ptyAvailable = (() => {
     }
 })();
 
-let _spawn: (typeof import("node-pty"))["spawn"] | undefined;
+let cachedSpawn: (typeof import("node-pty"))["spawn"] | undefined;
 const getSpawn = () => {
-    if (!_spawn) {
+    if (!cachedSpawn) {
         try {
-            _spawn = (require("node-pty") as typeof import("node-pty")).spawn;
+            cachedSpawn = (ptyRequire("node-pty") as typeof import("node-pty")).spawn;
         } catch {
             throw new Error("node-pty not available on this platform");
         }
     }
 
-    return _spawn;
+    return cachedSpawn;
 };
 
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+const currentDirectory = url.fileURLToPath(new URL(".", import.meta.url));
 
 describe("exit", () => {
     it.skipIf(!ptyAvailable)("exit normally without unmount() or exit()", async () => {
@@ -144,14 +142,15 @@ describe("exit", () => {
                 NODE_NO_WARNINGS: "1",
             };
 
-            const term = getSpawn()("node", ["--import=tsx", join(__dirname, "./fixtures/exit-double-raw-mode.tsx")], {
+            const term = getSpawn()("node", ["--import=tsx", join(currentDirectory, "./fixtures/exit-double-raw-mode.tsx")], {
                 cols: 100,
-                cwd: __dirname,
+                cwd: currentDirectory,
                 env,
                 name: "xterm-color",
             });
 
             let output = "";
+            let isExited = false;
 
             term.onData((data) => {
                 if (data === "s") {
@@ -171,8 +170,6 @@ describe("exit", () => {
                 }
             });
 
-            let isExited = false;
-
             term.onExit(({ exitCode }) => {
                 isExited = true;
 
@@ -185,7 +182,7 @@ describe("exit", () => {
                     return;
                 }
 
-                reject(new Error(`Process exited with code ${exitCode}`));
+                reject(new Error(`Process exited with code ${String(exitCode)}`));
             });
         });
     });

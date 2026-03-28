@@ -108,7 +108,6 @@ describe("errors", () => {
         const stdout = createStdout();
 
         const setRawModeCalls: boolean[] = [];
-        const originalSetRawMode = process.stdin.setRawMode?.bind(process.stdin);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (!process.stdin.isTTY) {
@@ -118,10 +117,12 @@ describe("errors", () => {
             return;
         }
 
+        const originalSetRawMode = process.stdin.setRawMode.bind(process.stdin);
+
         process.stdin.setRawMode = (mode: boolean) => {
             setRawModeCalls.push(mode);
 
-            return originalSetRawMode?.(mode) ?? process.stdin;
+            return originalSetRawMode(mode);
         };
 
         const Test = () => {
@@ -139,10 +140,7 @@ describe("errors", () => {
 
         await expect(app.waitUntilExit()).rejects.toThrow("Error after raw mode enabled");
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (originalSetRawMode) {
-            process.stdin.setRawMode = originalSetRawMode;
-        }
+        process.stdin.setRawMode = originalSetRawMode;
 
         expect(setRawModeCalls).toContain(true);
         expect(setRawModeCalls).toContain(false);
