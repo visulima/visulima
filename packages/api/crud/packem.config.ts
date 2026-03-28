@@ -5,6 +5,11 @@ import transformer from "@visulima/packem/transformer/esbuild";
 
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
+    externals: [/^next($|\/)/, /^react($|\/)/, /^@prisma\/client($|\/)/],
+    node10Compatibility: {
+        writeToPackageJson: true,
+        typeScriptVersion: ">=5.0",
+    },
     rollup: {
         license: {
             path: "./LICENSE.md",

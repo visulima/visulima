@@ -49,7 +49,7 @@ class PrismaJsonSchemaParser {
     public constructor(private readonly dmmf: any) {}
 
     // eslint-disable-next-line class-methods-use-this,@typescript-eslint/explicit-module-boundary-types
-    public formatInputTypeData(inputType: any) {
+    public formatInputTypeData(inputType: any): any {
         if (inputType.kind === "object") {
             const reference = formatSchemaReference(inputType.type.name);
 

@@ -85,9 +85,6 @@ catalogs:
     rollup:
       specifier: 4.60.0
       version: 4.60.0
-    tsup:
-      specifier: ^8.5.1
-      version: 8.5.1
     unplugin-fonts:
       specifier: 1.4.0
       version: 1.4.0
@@ -1636,6 +1633,9 @@ catalogs:
     '@types/scheduler':
       specifier: ^0.26.0
       version: 0.26.0
+    '@types/signal-exit':
+      specifier: 4.0.0
+      version: 4.0.0
     '@types/stack-utils':
       specifier: ^2.0.3
       version: 2.0.3
@@ -1869,9 +1869,6 @@ importers:
       textlint:
         specifier: catalog:prod
         version: 15.5.2
-      tsup:
-        specifier: catalog:build
-        version: 8.5.1(@swc/core@1.15.11)(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@6.0.2)(yaml@2.8.3)
       typescript:
         specifier: catalog:tsc
         version: 6.0.2
@@ -2418,6 +2415,9 @@ importers:
       '@visulima/crud':
         specifier: 3.0.0-alpha.8
         version: link:../crud
+      '@visulima/packem':
+        specifier: catalog:dev
+        version: 2.0.0-alpha.60(b782c601bed2325e186e48aba2719e34)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.2(@vitest/browser@4.1.2(msw@2.12.14(@types/node@25.5.0)(typescript@6.0.2))(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))(vitest@4.1.2))(vitest@4.1.2)
@@ -2439,9 +2439,9 @@ importers:
       cors:
         specifier: catalog:dev
         version: 2.8.6
-      cross-env:
-        specifier: catalog:dev
-        version: 10.1.0
+      esbuild:
+        specifier: catalog:build
+        version: 0.27.4
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
@@ -2486,10 +2486,10 @@ importers:
         version: 6.15.0
       next:
         specifier: catalog:dev
-        version: 16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-test-api-route-handler:
         specifier: catalog:test
-        version: 5.0.4(next@16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+        version: 5.0.4(next@16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       node-mocks-http:
         specifier: catalog:dev
         version: 1.17.2(@types/express@4.17.21)(@types/node@25.5.0)
@@ -2532,9 +2532,6 @@ importers:
       swagger-ui-react:
         specifier: ^4.19.1
         version: 4.19.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(debug@4.4.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      tsup:
-        specifier: catalog:build
-        version: 8.5.1(@swc/core@1.15.11)(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@6.0.2)(yaml@2.8.3)
       type-fest:
         specifier: catalog:dev
         version: 5.5.0
@@ -2715,6 +2712,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 25.5.0
+      '@visulima/packem':
+        specifier: catalog:dev
+        version: 2.0.0-alpha.60(b782c601bed2325e186e48aba2719e34)
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.2(@vitest/browser@4.1.2(msw@2.12.14(@types/node@25.5.0)(typescript@6.0.2))(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))(vitest@4.1.2))(vitest@4.1.2)
@@ -2724,12 +2724,12 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.0
-      cross-env:
-        specifier: catalog:dev
-        version: 10.1.0
       dot-prop:
         specifier: catalog:dev
         version: 10.1.0
+      esbuild:
+        specifier: catalog:build
+        version: 0.27.4
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
@@ -2757,12 +2757,15 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.1.0(jiti@2.6.1))
+      json-schema:
+        specifier: catalog:dev
+        version: 0.4.0
       next:
         specifier: catalog:dev
-        version: 16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       next-test-api-route-handler:
         specifier: catalog:test
-        version: 5.0.4(next@16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
+        version: 5.0.4(next@16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
       node-mocks-http:
         specifier: catalog:dev
         version: 1.17.2(@types/express@5.0.6)(@types/node@25.5.0)
@@ -2787,9 +2790,6 @@ importers:
       semantic-release:
         specifier: catalog:cli
         version: 25.0.3(typescript@6.0.2)
-      tsup:
-        specifier: catalog:build
-        version: 8.5.1(@swc/core@1.15.11)(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@6.0.2)(yaml@2.8.3)
       typescript:
         specifier: catalog:tsc
         version: 6.0.2
@@ -8361,6 +8361,9 @@ importers:
       '@types/scheduler':
         specifier: catalog:types
         version: 0.26.0
+      '@types/signal-exit':
+        specifier: catalog:types
+        version: 4.0.0
       '@types/stack-utils':
         specifier: catalog:types
         version: 2.0.3
@@ -11159,7 +11162,7 @@ packages:
     resolution: {integrity: sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -15854,7 +15857,7 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3
       vite: '>=7.1.11'
     peerDependenciesMeta:
@@ -15867,7 +15870,7 @@ packages:
     resolution: {integrity: sha512-ILXmxC7HAsnkK2eslgPetrqqW1BKSL7LktsFgqzNj83MaivMGZzluWq32m25j2mDOjmSKX7GGWahePhuEs7P/g==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       vite: ^8.0.0-beta.7 || ^8.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
@@ -17256,6 +17259,10 @@ packages:
 
   '@types/serve-static@2.2.0':
     resolution: {integrity: sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ==}
+
+  '@types/signal-exit@4.0.0':
+    resolution: {integrity: sha512-jedWBlHic/rm8C/i+e/U1gVhYPsfNC8KLhzziglnPupn7fBIit/4a/Cp3IGgvigRdHT/trnm4J+osWameksqrw==}
+    deprecated: This is a stub types definition. signal-exit provides its own type definitions, so you do not need this installed.
 
   '@types/sinon@17.0.4':
     resolution: {integrity: sha512-RHnIrhfPO3+tJT0s7cFaXGZvsL4bbR3/k7z3P312qMS4JaS2Tk+KiwiLx1S0rQ56ERj00u1/BtdyVd0FY+Pdew==}
@@ -19100,12 +19107,6 @@ packages:
   bundle-name@4.1.0:
     resolution: {integrity: sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==}
     engines: {node: '>=18'}
-
-  bundle-require@5.1.0:
-    resolution: {integrity: sha512-3WrrOuZiyaaZPWiEt4G3+IffISVC9HYlWueJEBWED4ZH4aIAC2PnkdnuRrR94M+w6yGWn4AglWtJtBI8YqvgoA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    peerDependencies:
-      esbuild: '>=0.25.11'
 
   bunyan@1.8.15:
     resolution: {integrity: sha512-0tECWShh6wUysgucJcBAoYegf3JJoZWibxdqhTm7OHPeT42qdjkZ29QCMcKwbgU1kiH+auSIasNRXMLWXafXig==}
@@ -21849,9 +21850,6 @@ packages:
     resolution: {integrity: sha512-OFRzsL6ZMHz5s0JrsEr+TpdGNCtrVtnuG3x1yzGNiQHT0yaDnXAj8V/lWcpJVrnoDpcwXcASxAZYbuXda2Y82A==}
     engines: {node: '>= 10.13.0'}
 
-  fix-dts-default-cjs-exports@1.0.1:
-    resolution: {integrity: sha512-pVIECanWFC61Hzl2+oOCtoJ3F17kglZC/6N94eRWycFgBH35hHx0Li604ZIzhseh97mf2p0cv7vVrOZGoqhlEg==}
-
   flagged-respawn@2.0.0:
     resolution: {integrity: sha512-Gq/a6YCi8zexmGHMuJwahTGzXlAZAOsbCVKduWXC6TlLCjjFRlExMJc4GC2NYPYZ0r/brw9P7CpRgQmlPVeOoA==}
     engines: {node: '>= 10.13.0'}
@@ -23666,10 +23664,6 @@ packages:
   jose@6.1.3:
     resolution: {integrity: sha512-0TpaTfihd4QMNwrz/ob2Bp7X04yuxJkjRGi4aKmOqwhov54i6u79oCv7T+C7lo70MKH6BesI3vscD1yb/yzKXQ==}
 
-  joycon@3.1.1:
-    resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
-    engines: {node: '>=10'}
-
   jpeg-js@0.4.4:
     resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
 
@@ -24080,10 +24074,6 @@ packages:
 
   load-plugin@5.1.0:
     resolution: {integrity: sha512-Lg1CZa1CFj2CbNaxijTL6PCbzd4qGTlZov+iH2p5Xwy/ApcZJh+i6jMN2cYePouTfjJfrNu3nXFdEw8LvbjPFQ==}
-
-  load-tsconfig@0.2.5:
-    resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   loader-runner@4.3.1:
     resolution: {integrity: sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==}
@@ -25381,7 +25371,7 @@ packages:
     resolution: {integrity: sha512-bvLRJAfK6NHVLVwJm+HRCxrU3UQbXLuuj1qcLg1sJK40lRzHmGtVGHLxFWj3LnEoH8UZFTwV0Be0jTg4zHckkw==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -28746,7 +28736,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.6.0:
@@ -29101,9 +29091,6 @@ packages:
     resolution: {integrity: sha512-Ae3OVUqifDw0wBriIBS7yVaW44Dp6eSHQcyq4Igc7eN2TJH/2YsicswaW+J/OuMvhpDPOKEgpAZCjkb4hpoyeA==}
     engines: {node: ^16.14.0 || >= 17.3.0}
 
-  tinyexec@0.3.2:
-    resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
-
   tinyexec@1.0.4:
     resolution: {integrity: sha512-u9r3uZC0bdpGOXtlxUIdwf9pkmvhqJdrVCH9fapQtgy/OeTTMZ1nqH7agtvEfmGui6e1XxjcdrlxvxJvc3sMqw==}
     engines: {node: '>=18'}
@@ -29358,25 +29345,6 @@ packages:
   tsscmp@1.0.6:
     resolution: {integrity: sha512-LxhtAkPDTkVCMQjt2h6eBVY28KCjikZqZfMcC15YBeNjkgUpdCfBu5HoiOTDu86v6smE8yOjyEktJ8hlbANHQA==}
     engines: {node: '>=0.6.x'}
-
-  tsup@8.5.1:
-    resolution: {integrity: sha512-xtgkqwdhpKWr3tKPmCkvYmS9xnQK3m3XgxZHwSUjvfTjp7YfXe5tT3GgWi0F2N+ZSMsOeWeZFh7ZZFg5iPhing==}
-    engines: {node: '>=18'}
-    hasBin: true
-    peerDependencies:
-      '@microsoft/api-extractor': ^7.36.0
-      '@swc/core': ^1
-      postcss: ^8.4.12
-      typescript: '>=4.5.0'
-    peerDependenciesMeta:
-      '@microsoft/api-extractor':
-        optional: true
-      '@swc/core':
-        optional: true
-      postcss:
-        optional: true
-      typescript:
-        optional: true
 
   tsutils@3.21.0:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
@@ -40930,6 +40898,10 @@ snapshots:
       '@types/http-errors': 2.0.5
       '@types/node': 25.5.0
 
+  '@types/signal-exit@4.0.0':
+    dependencies:
+      signal-exit: 4.1.0
+
   '@types/sinon@17.0.4':
     dependencies:
       '@types/sinonjs__fake-timers': 8.1.5
@@ -43163,11 +43135,6 @@ snapshots:
     dependencies:
       run-applescript: 7.1.0
 
-  bundle-require@5.1.0(esbuild@0.27.4):
-    dependencies:
-      esbuild: 0.27.4
-      load-tsconfig: 0.2.5
-
   bunyan@1.8.15:
     optionalDependencies:
       moment: 2.30.1
@@ -43703,7 +43670,8 @@ snapshots:
 
   commander@3.0.2: {}
 
-  commander@4.1.1: {}
+  commander@4.1.1:
+    optional: true
 
   commander@5.1.0: {}
 
@@ -45077,7 +45045,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
@@ -46522,12 +46490,6 @@ snapshots:
       object.defaults: 1.1.0
       object.pick: 1.3.0
       parse-filepath: 1.0.2
-
-  fix-dts-default-cjs-exports@1.0.1:
-    dependencies:
-      magic-string: 0.30.21
-      mlly: 1.8.2
-      rollup: 4.60.0
 
   flagged-respawn@2.0.0: {}
 
@@ -48733,8 +48695,6 @@ snapshots:
 
   jose@6.1.3: {}
 
-  joycon@3.1.1: {}
-
   jpeg-js@0.4.4: {}
 
   js-beautify@1.15.4:
@@ -49180,8 +49140,6 @@ snapshots:
     dependencies:
       '@npmcli/config': 6.4.1
       import-meta-resolve: 2.2.2
-
-  load-tsconfig@0.2.5: {}
 
   loader-runner@4.3.1: {}
 
@@ -51237,12 +51195,12 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  next-test-api-route-handler@5.0.4(next@16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
+  next-test-api-route-handler@5.0.4(next@16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)):
     dependencies:
       '@whatwg-node/server': 0.10.18
       cookie: 1.1.1
       core-js: 3.49.0
-      next: 16.2.1(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next: 16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(@playwright/test@1.58.2)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
 
   next-themes@0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
@@ -52876,6 +52834,7 @@ snapshots:
       postcss: 8.5.8
       tsx: 4.21.0
       yaml: 2.8.3
+    optional: true
 
   postcss-merge-longhand@7.0.5(postcss@8.5.8):
     dependencies:
@@ -55250,7 +55209,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
@@ -55550,6 +55509,7 @@ snapshots:
       mz: 2.7.0
       pirates: 4.0.7
       ts-interface-checker: 0.1.13
+    optional: true
 
   suffix-thumb@5.0.2: {}
 
@@ -56127,8 +56087,6 @@ snapshots:
 
   tinyclip@0.1.12: {}
 
-  tinyexec@0.3.2: {}
-
   tinyexec@1.0.4: {}
 
   tinyglobby@0.2.15:
@@ -56292,7 +56250,8 @@ snapshots:
 
   ts-deepmerge@7.0.3: {}
 
-  ts-interface-checker@0.1.13: {}
+  ts-interface-checker@0.1.13:
+    optional: true
 
   ts-japi@1.12.3: {}
 
@@ -56371,35 +56330,6 @@ snapshots:
   tslog@4.10.2: {}
 
   tsscmp@1.0.6: {}
-
-  tsup@8.5.1(@swc/core@1.15.11)(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(typescript@6.0.2)(yaml@2.8.3):
-    dependencies:
-      bundle-require: 5.1.0(esbuild@0.27.4)
-      cac: 6.7.14
-      chokidar: 4.0.3
-      consola: 3.4.2
-      debug: 4.4.3(supports-color@8.1.1)
-      esbuild: 0.27.4
-      fix-dts-default-cjs-exports: 1.0.1
-      joycon: 3.1.1
-      picocolors: 1.1.1
-      postcss-load-config: 6.0.1(jiti@2.6.1)(postcss@8.5.8)(tsx@4.21.0)(yaml@2.8.3)
-      resolve-from: 5.0.0
-      rollup: 4.60.0
-      source-map: 0.7.6
-      sucrase: 3.35.0
-      tinyexec: 0.3.2
-      tinyglobby: 0.2.15
-      tree-kill: 1.2.2
-    optionalDependencies:
-      '@swc/core': 1.15.11
-      postcss: 8.5.8
-      typescript: 6.0.2
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
-      - tsx
-      - yaml
 
   tsutils@3.21.0(typescript@6.0.2):
     dependencies:
