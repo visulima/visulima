@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define, @typescript-eslint/unbound-method, import/exports-last */
 import process from "node:process";
 import { Stream } from "node:stream";
 
@@ -16,11 +17,10 @@ export type RenderOptions = {
      *
      * Note: Ink intentionally treats alternate-screen teardown output as disposable. It does not preserve or replay teardown-time frames, hook writes, or `console.*` output after restoring the primary screen.
      *
-	Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
-     
-	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-     
-	@default false
+     * Only works in interactive mode. Ignored when `interactive` is `false` or in a non-interactive environment (CI, piped stdout).
+     *
+     *Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
+     * @default false
      */
     alternateScreen?: boolean;
 
@@ -30,11 +30,10 @@ export type RenderOptions = {
      * When enabled:
      * - Suspense boundaries work correctly with async data
      * - `useTransition` and `useDeferredValue` are fully functional
-	- Updates can be interrupted for higher priority work
-     
-	Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
-     
-	@default false
+     * - Updates can be interrupted for higher priority work
+     *
+     *Note: Concurrent mode changes the timing of renders. Some tests may need to use `act()` to properly await updates. Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change the rendering mode or create a fresh instance.
+     * @default false
      */
     concurrent?: boolean;
 
@@ -64,11 +63,10 @@ export type RenderOptions = {
      *
      * When non-interactive, Ink disables ANSI erase sequences, cursor manipulation, synchronized output, resize handling, and kitty keyboard auto-detection, writing only the final frame at unmount.
      *
-	Set to `false` to force non-interactive mode or `true` to force interactive mode when the automatic detection doesn't suit your use case.
-     
-	Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
-     
-	@default true (false if in CI or `stdout.isTTY` is falsy)
+     * Set to `false` to force non-interactive mode or `true` to force interactive mode when the automatic detection doesn't suit your use case.
+     *
+     *Note: Reusing the same stdout across multiple `render()` calls without unmounting is unsupported. Call `unmount()` first if you need to change this option or create a fresh instance.
+     * @default true (false if in CI or `stdout.isTTY` is falsy)
      */
     interactive?: boolean;
 
@@ -158,13 +156,13 @@ export type Instance = {
      * It resolves with the value passed to `exit(value)` and rejects with the error passed to `exit(error)`.
      *When `unmount()` is called manually, it settles after unmount-related stdout writes complete.
      * @example
-	* ```jsx
-	const {unmount, waitUntilExit} = render(<MyApp />);
-     
-	setTimeout(unmount, 1000);
-     
-	await waitUntilExit(); // resolves after `unmount()` is called
-	```
+     * ```jsx
+     * const {unmount, waitUntilExit} = render(<MyApp />);
+     *
+     * setTimeout(unmount, 1000);
+     *
+     * await waitUntilExit(); // resolves after `unmount()` is called
+     * ```
      */
     waitUntilExit: Ink["waitUntilExit"];
 
@@ -174,13 +172,13 @@ export type Instance = {
      *This can be used after `rerender()` when you need to run code only after the frame is written.
      * @example
      * ```jsx
-	* const {rerender, waitUntilRenderFlush} = render(<MyApp step="loading" />);
-     
-	rerender(<MyApp step="ready" />);
-	await waitUntilRenderFlush(); // output for "ready" is flushed
-     
-	runNextCommand();
-	```
+     * const {rerender, waitUntilRenderFlush} = render(<MyApp step="loading" />);
+     *
+     * rerender(<MyApp step="ready" />);
+     * await waitUntilRenderFlush(); // output for "ready" is flushed
+     *
+     * runNextCommand();
+     * ```
      */
     waitUntilRenderFlush: Ink["waitUntilRenderFlush"];
 };

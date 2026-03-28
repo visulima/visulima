@@ -1,3 +1,4 @@
+/* eslint-disable no-for-of-array/no-for-of-array */
 import { hasAnsiControlCharacters, tokenizeAnsi } from "./ansi-tokenizer.js";
 
 const sgrParametersRegex = /^[\d:;]*$/;

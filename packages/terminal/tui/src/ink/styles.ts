@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, import/exports-last, sonarjs/cognitive-complexity */
 import type { AnsiColors } from "@visulima/colorize";
 import type { Boxes, BoxStyle } from "cli-boxes";
 import type { LiteralUnion } from "type-fest";
@@ -44,6 +45,11 @@ export type Styles = {
     readonly borderBottom?: boolean;
 
     /**
+     * Change the bottom border background color. Accepts the same values as `backgroundColor` in `Text` component.
+     */
+    readonly borderBottomBackgroundColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
      * Change the bottom border color. Accepts the same values as `color` in `Text` component.
      */
     readonly borderBottomColor?: LiteralUnion<AnsiColors, string>;
@@ -60,6 +66,11 @@ export type Styles = {
     readonly borderColor?: LiteralUnion<AnsiColors, string>;
 
     /**
+     * Change border background color. A shorthand for setting `borderTopBackgroundColor`, `borderRightBackgroundColor`, `borderBottomBackgroundColor`, and `borderLeftBackgroundColor`.
+     */
+    readonly borderBackgroundColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
      * Dim the border color. A shorthand for setting `borderTopDimColor`, `borderBottomDimColor`, `borderLeftDimColor`, and `borderRightDimColor`.
      * @default false
      */
@@ -70,6 +81,11 @@ export type Styles = {
      * @default true
      */
     readonly borderLeft?: boolean;
+
+    /**
+     * Change the left border background color. Accepts the same values as `backgroundColor` in `Text` component.
+     */
+    readonly borderLeftBackgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
      * Change the left border color. Accepts the same values as `color` in `Text` component.
@@ -87,6 +103,11 @@ export type Styles = {
      * @default true
      */
     readonly borderRight?: boolean;
+
+    /**
+     * Change the right border background color. Accepts the same values as `backgroundColor` in `Text` component.
+     */
+    readonly borderRightBackgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
      * Change the right border color. Accepts the same values as `color` in `Text` component.
@@ -109,6 +130,11 @@ export type Styles = {
      * @default true
      */
     readonly borderTop?: boolean;
+
+    /**
+     * Change the top border background color. Accepts the same values as `backgroundColor` in `Text` component.
+     */
+    readonly borderTopBackgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
      * Change the top border color. Accepts the same values as `color` in `Text` component.

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, import/exports-last, no-param-reassign, unicorn/no-null, unicorn/prefer-dom-node-remove */
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 

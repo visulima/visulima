@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-identical-functions */
 const bellCharacter = "\u0007";
 const escapeCharacter = "\u001B";
 const stringTerminatorCharacter = "\u009C";

@@ -1,3 +1,4 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 import type { ReactElement } from "react";
 
 import Box from "./Box.js";

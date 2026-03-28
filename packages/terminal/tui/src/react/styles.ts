@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
 import Yoga from "yoga-layout-prebuilt";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;

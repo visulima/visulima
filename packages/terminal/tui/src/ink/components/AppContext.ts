@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-redundant-type-constituents, @typescript-eslint/no-unnecessary-type-arguments, import/exports-last, jsdoc/check-alignment, jsdoc/require-asterisk-prefix, sonarjs/no-tab, unicorn/filename-case */
 import type { Context } from "react";
 import { createContext } from "react";
 

@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return, sonarjs/pseudo-random */
 import { useContext, useEffect, useMemo } from "react";
 
 import FocusContext from "../components/FocusContext.js";

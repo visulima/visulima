@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, import/no-named-as-default, no-console */
 import "./devtools-window-polyfill.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

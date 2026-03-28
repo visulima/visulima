@@ -1,3 +1,4 @@
+/* eslint-disable func-style, no-for-of-array/no-for-of-array, no-plusplus */
 import { getStringWidth as visulimaGetStringWidth } from "@visulima/string";
 
 /** Display width of a single Unicode code point (at least 1 cell). */

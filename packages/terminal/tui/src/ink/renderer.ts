@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import type { DOMElement } from "./dom.js";
 import Output, { OutputCaches } from "./output.js";
 import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output.js";

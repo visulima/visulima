@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, @typescript-eslint/no-base-to-string, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment, import/exports-last, jsdoc/require-asterisk-prefix, jsdoc/tag-lines, jsdoc/text-escaping, sonarjs/no-tab, unicorn/no-null */
 import type { ReactNode } from "react";
 import { LegacyRoot } from "react-reconciler/constants.js";
 import Yoga from "yoga-layout";

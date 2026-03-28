@@ -9,13 +9,13 @@ type Output = {
      * @example
      * ```tsx
      * import {Text, useFocusManager} from 'ink';
-     
-	const Example = () => {
-		const {activeId} = useFocusManager();
-     
-		return <Text>Focused: {activeId ?? 'none'}</Text>;
-	};
-	```
+     *
+     * const Example = () => {
+     * const {activeId} = useFocusManager();
+     *
+     * return <Text>Focused: {activeId ?? 'none'}</Text>;
+     * };
+     * ```
      */
     activeId: Props["activeId"];
 

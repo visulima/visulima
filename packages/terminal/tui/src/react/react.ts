@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-explicit-any, @typescript-eslint/no-shadow, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, func-style, import/exports-last, jsdoc/match-description, no-console, promise/param-names, sonarjs/no-dead-store, unicorn/no-null, unicorn/no-process-exit, unused-imports/no-unused-vars */
 // @ts-nocheck — reconciler createContainer arity varies between React versions
 import React from "react";
 

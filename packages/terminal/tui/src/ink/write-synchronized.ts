@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 import type { Writable } from "node:stream";
 
 import isInCi from "is-in-ci";

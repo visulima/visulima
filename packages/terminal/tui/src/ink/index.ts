@@ -1,3 +1,4 @@
+/* eslint-disable perfectionist/sort-exports */
 export type { Props as AppProps } from "./components/AppContext.js";
 export type { Props as BoxProps } from "./components/Box.js";
 export { default as Box } from "./components/Box.js";
@@ -29,11 +30,11 @@ export { default as useStdin } from "./hooks/use-stdin.js";
 export { default as useStdout } from "./hooks/use-stdout.js";
 export type { WindowSize } from "./hooks/use-window-size.js";
 export { default as useWindowSize } from "./hooks/use-window-size.js";
-export type { KittyFlagName,KittyKeyboardOptions } from "./kitty-keyboard.js";
+export type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard.js";
 export { kittyFlags, kittyModifiers } from "./kitty-keyboard.js";
 export type { CursorPosition } from "./log-update.js";
 export { default as measureElement } from "./measure-element.js";
-export type { Instance,RenderOptions } from "./render.js";
+export type { Instance, RenderOptions } from "./render.js";
 export { default as render } from "./render.js";
 export type { RenderToStringOptions } from "./render-to-string.js";
 export { default as renderToString } from "./render-to-string.js";

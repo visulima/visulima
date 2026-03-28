@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, func-style, no-plusplus, react/function-component-definition */
 import type { ReactElement, ReactNode } from "react";
 import React, { useMemo, useRef } from "react";
 
@@ -59,7 +60,9 @@ export function Static<T>({ children: renderItem, items, style }: StaticProps<T>
         lastIndexRef.current = items.length;
     }
 
-    const containerStyle = useMemo(() => { return { flexDirection: "column" as const, ...style }; }, [style]);
+    const containerStyle = useMemo(() => {
+        return { flexDirection: "column" as const, ...style };
+    }, [style]);
 
     // Return ALL accumulated items every render.
     // React's reconciler reconciles by key, so existing nodes are never remounted —

@@ -1,3 +1,4 @@
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, import/exports-last, no-confusing-arrow, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
 import type { Context } from "react";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 

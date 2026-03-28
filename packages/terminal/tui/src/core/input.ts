@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, e18e/prefer-static-regex, import/no-named-as-default, no-bitwise, no-control-regex, no-underscore-dangle, radix, sonarjs/cognitive-complexity, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prefer-code-point */
 import EventEmitter from "eventemitter3";
 
 export interface MouseEvent {

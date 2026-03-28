@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/prefer-nullish-coalescing, n/no-unsupported-features/node-builtins, no-secrets/no-secrets, no-underscore-dangle */
 // Ignoring missing types error to avoid adding another dependency for this hack to work
 import ws from "ws";
 

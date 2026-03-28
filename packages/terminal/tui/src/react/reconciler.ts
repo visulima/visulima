@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/prefer-nullish-coalescing, func-style, import/exports-last, import/no-mutable-exports, jsdoc/match-description, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, sonarjs/redundant-type-aliases, unicorn/no-null, unused-imports/no-unused-vars */
 // @ts-nocheck
 import { createContext } from "react";
 import ReactReconciler from "react-reconciler";
