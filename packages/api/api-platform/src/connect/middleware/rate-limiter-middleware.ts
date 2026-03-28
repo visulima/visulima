@@ -14,7 +14,7 @@ const getIP: (request: IncomingMessage & { ip?: string }) => string | undefined 
 type HeaderValue = ReadonlyArray<string> | number | string;
 
 const rateLimiterMiddleware
-    = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => Record<string, HeaderValue>) =>
+    = (rateLimiter: RateLimiterAbstract, headers?: (limiterResponse: RateLimiterRes) => Record<string, HeaderValue>): (<Request extends IncomingMessage, Response extends ServerResponse>(request: Request, response: NextApiResponse | Response, next: NextHandler) => Promise<void>) =>
         async <Request extends IncomingMessage, Response extends ServerResponse>(
             request: Request,
             response: NextApiResponse | Response,

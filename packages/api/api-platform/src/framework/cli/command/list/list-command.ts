@@ -66,8 +66,7 @@ const listCommand = async (
         if (existsSync(environmentFilePath)) {
             // Loads environment vars in the current process so application
             // that depends on them can be loaded properly below
-            const dotEnvironmentFilePath = `${appWorkingDirectoryPath}/node_modules/dotenv/lib/main.js`;
-            const dotenv = await import(dotEnvironmentFilePath);
+            const dotenv = await import("dotenv");
 
             dotenv.config({ path: environmentFilePath });
         }
@@ -99,7 +98,9 @@ const listCommand = async (
                 ? join(appWorkingDirectoryPath, "framework-list", frameworkPath.replace(appWorkingDirectoryPath, "").replace(".ts", ".js"))
                 : frameworkPath;
 
-            const { default: defaultExport } = await import(appJsFilePath);
+            // eslint-disable-next-line no-new-func
+            const dynamicImport = new Function("path", "return import(path)") as (path: string) => Promise<{ default: unknown }>;
+            const { default: defaultExport } = await dynamicImport(appJsFilePath);
 
             routes = await getRoutes(
                 ["AsyncFunction", "Function"].includes(defaultExport.constructor.name as string) ? await defaultExport() : getApp(defaultExport, framework),

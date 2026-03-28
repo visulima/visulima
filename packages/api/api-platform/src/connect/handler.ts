@@ -8,7 +8,7 @@ import ProblemErrorHandler from "../error-handler/problem-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "../error-handler/types";
 
 export const onError
-    = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean) =>
+    = <Request extends IncomingMessage, Response extends ServerResponse>(errorHandlers: ErrorHandlers, showTrace: boolean): ((error: unknown, request: Request, response: Response) => Promise<void>) =>
         async (error: unknown, request: Request, response: Response): Promise<void> => {
             const apiFormat: string = request.headers.accept as string;
 
