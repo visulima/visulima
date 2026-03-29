@@ -1,10 +1,22 @@
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
-#[napi(object)]
+#[napi(object, object_from_js = false)]
 pub struct ResolvedCommand {
     pub bin: String,
     pub args: Vec<String>,
     pub warnings: Vec<String>,
+}
+
+/// Validates that the PM name is one of the supported values.
+fn validate_pm(pm: &str) -> napi::Result<()> {
+    match pm {
+        "pnpm" | "npm" | "yarn" | "bun" => Ok(()),
+        _ => Err(Error::new(
+            Status::InvalidArg,
+            format!("Unsupported package manager: '{pm}'. Supported: pnpm, npm, yarn, bun"),
+        )),
+    }
 }
 
 // ── Install ──────────────────────────────────────────────────────────
@@ -25,8 +37,9 @@ pub struct InstallOptions {
     pub filter: Vec<String>,
 }
 
-#[napi]
-pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -44,9 +57,11 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> Res
             if opts.lockfile_only { args.push("--lockfile-only".into()); }
             if opts.offline { args.push("--offline".into()); }
             if opts.silent { args.push("--silent".into()); }
-            ResolvedCommand { bin: "pnpm".into(), args, warnings }
         }
         "npm" => {
+            if opts.frozen_lockfile && opts.lockfile_only {
+                warnings.push("npm ci and --package-lock-only are contradictory. Using ci.".into());
+            }
             args.push(if opts.frozen_lockfile { "ci".into() } else { "install".into() });
             if opts.prod { args.push("--omit=dev".into()); }
             if opts.no_optional { args.push("--omit=optional".into()); }
@@ -54,10 +69,10 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> Res
             if opts.recursive { args.push("--workspaces".into()); }
             if opts.workspace_root { args.push("--include-workspace-root".into()); }
             if opts.ignore_scripts { args.push("--ignore-scripts".into()); }
-            if opts.lockfile_only { args.push("--package-lock-only".into()); }
+            if opts.force { args.push("--force".into()); }
+            if !opts.frozen_lockfile && opts.lockfile_only { args.push("--package-lock-only".into()); }
             if opts.offline { args.push("--offline".into()); }
             if opts.silent { args.push("--loglevel".into()); args.push("silent".into()); }
-            ResolvedCommand { bin: "npm".into(), args, warnings }
         }
         "yarn" => {
             if version.starts_with("1.") {
@@ -78,7 +93,6 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> Res
                 }
                 if opts.offline { args.push("--cached".into()); }
             }
-            ResolvedCommand { bin: "yarn".into(), args, warnings }
         }
         "bun" => {
             args.push("install".into());
@@ -87,13 +101,11 @@ pub fn resolve_install(pm: String, version: String, opts: InstallOptions) -> Res
             if opts.force { args.push("--force".into()); }
             if opts.ignore_scripts { args.push("--ignore-scripts".into()); }
             if opts.no_optional { args.push("--no-optional".into()); }
-            ResolvedCommand { bin: "bun".into(), args, warnings }
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            ResolvedCommand { bin: pm, args: vec!["install".into()], warnings }
-        }
+        _ => unreachable!(), // validate_pm already checked
     }
+
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Add ──────────────────────────────────────────────────────────────
@@ -111,8 +123,9 @@ pub struct AddOptions {
     pub filter: Vec<String>,
 }
 
-#[napi]
-pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -123,7 +136,7 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
         if opts.save_dev { args.push("--save-dev".into()); }
         if opts.exact { args.push("--save-exact".into()); }
         args.extend(opts.packages);
-        return ResolvedCommand { bin: "npm".into(), args, warnings };
+        return Ok(ResolvedCommand { bin: "npm".into(), args, warnings });
     }
 
     match pm.as_str() {
@@ -138,7 +151,6 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
             if opts.global { args.push("-g".into()); }
             if opts.workspace { args.push("--workspace".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "pnpm".into(), args, warnings }
         }
         "npm" => {
             args.push("install".into());
@@ -150,7 +162,6 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
             for f in &opts.filter { args.push("--workspace".into()); args.push(f.clone()); }
             if opts.workspace_root { args.push("-w".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "npm".into(), args, warnings }
         }
         "yarn" => {
             if version.starts_with("1.") {
@@ -166,23 +177,17 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
             } else {
                 if opts.global {
                     warnings.push("yarn berry does not support global packages. Using npm.".into());
-                    return ResolvedCommand {
-                        bin: "npm".into(),
-                        args: {
-                            let mut a = vec!["install".into(), "--global".into()];
-                            a.extend(opts.packages);
-                            a
-                        },
-                        warnings,
-                    };
+                    let mut a = vec!["install".into(), "--global".into()];
+                    a.extend(opts.packages);
+                    return Ok(ResolvedCommand { bin: "npm".into(), args: a, warnings });
                 }
                 args.push("add".into());
                 if opts.save_dev { args.push("--dev".into()); }
                 if opts.exact { args.push("--exact".into()); }
                 if opts.peer { args.push("--peer".into()); }
+                if opts.optional { args.push("--optional".into()); }
                 args.extend(opts.packages);
             }
-            ResolvedCommand { bin: "yarn".into(), args, warnings }
         }
         "bun" => {
             args.push("add".into());
@@ -192,13 +197,11 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
             if opts.optional { args.push("--optional".into()); }
             if opts.global { args.push("--global".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "bun".into(), args, warnings }
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            ResolvedCommand { bin: pm, args: vec!["add".into()], warnings }
-        }
+        _ => unreachable!(),
     }
+
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Remove ───────────────────────────────────────────────────────────
@@ -213,17 +216,16 @@ pub struct RemoveOptions {
     pub filter: Vec<String>,
 }
 
-#[napi]
-pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
-    let mut warnings = Vec::new();
+    let warnings = Vec::new();
 
     if opts.global && pm != "bun" {
-        return ResolvedCommand {
-            bin: "npm".into(),
-            args: { let mut a = vec!["uninstall".into(), "--global".into()]; a.extend(opts.packages); a },
-            warnings,
-        };
+        let mut a = vec!["uninstall".into(), "--global".into()];
+        a.extend(opts.packages);
+        return Ok(ResolvedCommand { bin: "npm".into(), args: a, warnings });
     }
 
     match pm.as_str() {
@@ -235,7 +237,6 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> Resol
             if opts.global { args.push("-g".into()); }
             if opts.recursive { args.push("--recursive".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "pnpm".into(), args, warnings }
         }
         "npm" => {
             args.push("uninstall".into());
@@ -245,7 +246,6 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> Resol
             if opts.recursive { args.push("--workspaces".into()); }
             if opts.workspace_root { args.push("-w".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "npm".into(), args, warnings }
         }
         "yarn" => {
             if version.starts_with("1.") {
@@ -260,25 +260,23 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> Resol
                 args.push("remove".into());
                 args.extend(opts.packages);
             }
-            ResolvedCommand { bin: "yarn".into(), args, warnings }
         }
         "bun" => {
             args.push("remove".into());
             if opts.global { args.push("--global".into()); }
             args.extend(opts.packages);
-            ResolvedCommand { bin: "bun".into(), args, warnings }
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            ResolvedCommand { bin: pm, args, warnings }
-        }
+        _ => unreachable!(),
     }
+
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Dedupe ───────────────────────────────────────────────────────────
 
-#[napi]
-pub fn resolve_dedupe(pm: String, version: String, check: bool) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_dedupe(pm: String, version: String, check: bool) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -294,21 +292,19 @@ pub fn resolve_dedupe(pm: String, version: String, check: bool) -> ResolvedComma
         "yarn" => {
             if version.starts_with("1.") {
                 warnings.push("yarn v1 does not support dedupe. Upgrade to yarn berry (v2+).".into());
-                return ResolvedCommand { bin: "yarn".into(), args: vec!["install".into()], warnings };
+                return Ok(ResolvedCommand { bin: "yarn".into(), args: vec!["install".into()], warnings });
             }
             args.push("dedupe".into());
             if check { args.push("--check".into()); }
         }
         "bun" => {
             warnings.push("bun does not support dedupe operations.".into());
-            return ResolvedCommand { bin: "bun".into(), args: vec!["install".into()], warnings };
+            return Ok(ResolvedCommand { bin: "bun".into(), args: vec!["install".into()], warnings });
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-        }
+        _ => unreachable!(),
     }
 
-    ResolvedCommand { bin: pm, args, warnings }
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Why ──────────────────────────────────────────────────────────────
@@ -324,12 +320,14 @@ pub struct WhyOptions {
     pub prod: bool,
     pub no_optional: bool,
     pub global: bool,
-    pub depth: Option<f64>,
+    /// Depth limit. Uses Option<i32> directly (napi supports it).
+    pub depth: Option<i32>,
     pub filter: Vec<String>,
 }
 
-#[napi]
-pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -345,7 +343,7 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> ResolvedCom
             if opts.prod { args.push("--prod".into()); }
             if opts.no_optional { args.push("--no-optional".into()); }
             if opts.global { args.push("--global".into()); }
-            if let Some(d) = opts.depth { args.push("--depth".into()); args.push((d as i32).to_string()); }
+            if let Some(d) = opts.depth { args.push("--depth".into()); args.push(d.to_string()); }
             args.extend(opts.packages);
         }
         "npm" => {
@@ -370,15 +368,13 @@ pub fn resolve_why(pm: String, version: String, opts: WhyOptions) -> ResolvedCom
         }
         "bun" => {
             args.push("why".into());
-            if let Some(d) = opts.depth { args.push("--depth".into()); args.push((d as i32).to_string()); }
+            if let Some(d) = opts.depth { args.push("--depth".into()); args.push(d.to_string()); }
             args.extend(opts.packages);
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-        }
+        _ => unreachable!(),
     }
 
-    ResolvedCommand { bin: pm, args, warnings }
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Outdated ─────────────────────────────────────────────────────────
@@ -398,8 +394,9 @@ pub struct OutdatedOptions {
     pub global: bool,
 }
 
-#[napi]
-pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -448,25 +445,25 @@ pub fn resolve_outdated(pm: String, version: String, opts: OutdatedOptions) -> R
             for f in &opts.filter { args.push("--filter".into()); args.push(f.clone()); }
             args.extend(opts.packages);
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-        }
+        _ => unreachable!(),
     }
 
-    ResolvedCommand { bin: pm, args, warnings }
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Link / Unlink ────────────────────────────────────────────────────
 
-#[napi]
-pub fn resolve_link(pm: String, _version: String, target: Option<String>) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_link(pm: String, target: Option<String>) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = vec!["link".to_string()];
     if let Some(t) = target { args.push(t); }
-    ResolvedCommand { bin: pm, args, warnings: Vec::new() }
+    Ok(ResolvedCommand { bin: pm, args, warnings: Vec::new() })
 }
 
-#[napi]
-pub fn resolve_unlink(pm: String, version: String, packages: Vec<String>, recursive: bool) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_unlink(pm: String, version: String, packages: Vec<String>, recursive: bool) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -495,13 +492,10 @@ pub fn resolve_unlink(pm: String, version: String, packages: Vec<String>, recurs
             if recursive { warnings.push("bun does not support --recursive for unlink.".into()); }
             args.extend(packages);
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            args.push("unlink".into());
-        }
+        _ => unreachable!(),
     }
 
-    ResolvedCommand { bin: pm, args, warnings }
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }
 
 // ── Dlx ──────────────────────────────────────────────────────────────
@@ -515,10 +509,12 @@ pub struct DlxOptions {
     pub silent: bool,
 }
 
-#[napi]
-pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
+    let mut bin = pm.clone();
 
     match pm.as_str() {
         "pnpm" => {
@@ -528,7 +524,6 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> ResolvedCom
             if opts.silent { args.push("--silent".into()); }
             args.push(opts.package);
             args.extend(opts.args);
-            ResolvedCommand { bin: "pnpm".into(), args, warnings }
         }
         "npm" => {
             args.push("exec".into());
@@ -537,22 +532,26 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> ResolvedCom
             args.push(format!("--package={}", opts.package));
             if opts.shell_mode { args.push("-c".into()); }
             if opts.silent { args.push("--loglevel".into()); args.push("silent".into()); }
-            let bin_name = opts.package.split('@').next().unwrap_or(&opts.package)
-                .split('/').last().unwrap_or(&opts.package).to_string();
+            // Extract binary name: handle scoped packages like @scope/pkg@1.0
+            let without_version = opts.package.split('@').enumerate()
+                .take_while(|(i, _)| *i < 2) // keep @scope/pkg, drop @version
+                .map(|(_, s)| s)
+                .collect::<Vec<_>>()
+                .join("@");
+            let bin_name = without_version.split('/').last().unwrap_or(&opts.package).to_string();
             args.push("--".into());
-            args.push(bin_name);
+            args.push(if bin_name.is_empty() { opts.package.clone() } else { bin_name });
             args.extend(opts.args);
-            ResolvedCommand { bin: "npm".into(), args, warnings }
         }
         "yarn" => {
             if version.starts_with("1.") {
                 warnings.push("yarn v1 does not support dlx. Falling back to npx.".into());
+                bin = "npx".into();
                 args.push("--yes".into());
                 for pkg in &opts.additional_packages { args.push("--package".into()); args.push(pkg.clone()); }
                 if opts.silent { args.push("--quiet".into()); }
                 args.push(opts.package);
                 args.extend(opts.args);
-                ResolvedCommand { bin: "npx".into(), args, warnings }
             } else {
                 args.push("dlx".into());
                 for pkg in &opts.additional_packages { args.push("-p".into()); args.push(pkg.clone()); }
@@ -560,7 +559,6 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> ResolvedCom
                 if opts.silent { args.push("--quiet".into()); }
                 args.push(opts.package);
                 args.extend(opts.args);
-                ResolvedCommand { bin: "yarn".into(), args, warnings }
             }
         }
         "bun" => {
@@ -568,13 +566,11 @@ pub fn resolve_dlx(pm: String, version: String, opts: DlxOptions) -> ResolvedCom
             for pkg in &opts.additional_packages { args.push("--package".into()); args.push(pkg.clone()); }
             args.push(opts.package);
             args.extend(opts.args);
-            ResolvedCommand { bin: "bun".into(), args, warnings }
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            ResolvedCommand { bin: pm, args, warnings }
-        }
+        _ => unreachable!(),
     }
+
+    Ok(ResolvedCommand { bin, args, warnings })
 }
 
 // ── Exec ─────────────────────────────────────────────────────────────
@@ -591,10 +587,12 @@ pub struct ExecOptions {
     pub filter: Vec<String>,
 }
 
-#[napi]
-pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
+    let mut bin = pm.clone();
 
     match pm.as_str() {
         "pnpm" => {
@@ -606,7 +604,6 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> ResolvedC
             if opts.shell_mode { args.push("-c".into()); }
             args.push(opts.command);
             args.extend(opts.args);
-            ResolvedCommand { bin: "pnpm".into(), args, warnings }
         }
         "npm" => {
             args.push("exec".into());
@@ -617,14 +614,13 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> ResolvedC
             args.push("--".into());
             args.push(opts.command);
             args.extend(opts.args);
-            ResolvedCommand { bin: "npm".into(), args, warnings }
         }
         "yarn" => {
             if version.starts_with("1.") {
                 warnings.push("yarn v1 does not support exec. Falling back to npx.".into());
+                bin = "npx".into();
                 args.push(opts.command);
                 args.extend(opts.args);
-                ResolvedCommand { bin: "npx".into(), args, warnings }
             } else {
                 if opts.recursive || !opts.filter.is_empty() {
                     args.push("workspaces".into()); args.push("foreach".into()); args.push("--all".into());
@@ -634,25 +630,24 @@ pub fn resolve_exec(pm: String, version: String, opts: ExecOptions) -> ResolvedC
                 args.push("exec".into());
                 args.push(opts.command);
                 args.extend(opts.args);
-                ResolvedCommand { bin: "yarn".into(), args, warnings }
             }
         }
         "bun" => {
+            bin = "bunx".into();
             args.push(opts.command);
             args.extend(opts.args);
-            ResolvedCommand { bin: "bunx".into(), args, warnings }
         }
-        _ => {
-            warnings.push(format!("Unsupported package manager: {pm}"));
-            ResolvedCommand { bin: pm, args, warnings }
-        }
+        _ => unreachable!(),
     }
+
+    Ok(ResolvedCommand { bin, args, warnings })
 }
 
 // ── PM utilities ─────────────────────────────────────────────────────
 
-#[napi]
-pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra_args: Vec<String>) -> ResolvedCommand {
+#[napi(catch_unwind)]
+pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra_args: Vec<String>) -> napi::Result<ResolvedCommand> {
+    validate_pm(&pm)?;
     let mut args = Vec::new();
     let mut warnings = Vec::new();
 
@@ -664,7 +659,7 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
         }
         args.push(subcommand);
         args.extend(extra_args);
-        return ResolvedCommand { bin: "npm".into(), args, warnings };
+        return Ok(ResolvedCommand { bin: "npm".into(), args, warnings });
     }
 
     // Cache: special handling
@@ -677,15 +672,15 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
                     Some("clean") => { args.push("store".into()); args.push("prune".into()); args.extend(extra_args.into_iter().skip(1)); }
                     _ => { args.push("store".into()); args.extend(extra_args); }
                 }
-                return ResolvedCommand { bin: "pnpm".into(), args, warnings };
+                return Ok(ResolvedCommand { bin: "pnpm".into(), args, warnings });
             }
             "bun" => {
                 args.push("pm".into()); args.push("cache".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: "bun".into(), args, warnings };
+                return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
             _ => {
                 args.push("cache".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: pm, args, warnings };
+                return Ok(ResolvedCommand { bin: pm, args, warnings });
             }
         }
     }
@@ -695,11 +690,11 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
         match pm.as_str() {
             "bun" => {
                 args.push("pm".into()); args.push("ls".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: "bun".into(), args, warnings };
+                return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
             _ => {
                 args.push("list".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: pm, args, warnings };
+                return Ok(ResolvedCommand { bin: pm, args, warnings });
             }
         }
     }
@@ -709,11 +704,11 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
         match pm.as_str() {
             "bun" => {
                 args.push("pm".into()); args.push("pack".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: "bun".into(), args, warnings };
+                return Ok(ResolvedCommand { bin: "bun".into(), args, warnings });
             }
             _ => {
                 args.push("pack".into()); args.extend(extra_args);
-                return ResolvedCommand { bin: pm, args, warnings };
+                return Ok(ResolvedCommand { bin: pm, args, warnings });
             }
         }
     }
@@ -722,7 +717,7 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
     if subcommand == "view" || subcommand == "info" {
         let cmd = if pm == "yarn" && version.starts_with("1.") { "info" } else { "view" };
         args.push(cmd.into()); args.extend(extra_args);
-        return ResolvedCommand { bin: pm, args, warnings };
+        return Ok(ResolvedCommand { bin: pm, args, warnings });
     }
 
     // Unsupported checks
@@ -737,5 +732,5 @@ pub fn resolve_pm_command(pm: String, version: String, subcommand: String, extra
     args.push(subcommand);
     args.extend(extra_args);
 
-    ResolvedCommand { bin: pm, args, warnings }
+    Ok(ResolvedCommand { bin: pm, args, warnings })
 }

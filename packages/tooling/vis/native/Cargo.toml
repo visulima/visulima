@@ -8,7 +8,7 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = { version = "2", default-features = false, features = ["napi4"] }
+napi = { version = "2", default-features = false, features = ["napi4", "error_anyhow"] }
 napi-derive = "2"
 serde_json = "1"
 which = "7"
@@ -21,3 +21,4 @@ lto = true
 codegen-units = 1
 opt-level = 3
 strip = "symbols"
+panic = "unwind"

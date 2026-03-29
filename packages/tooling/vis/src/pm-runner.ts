@@ -21,7 +21,7 @@ const detectPm = (cwd: string): PmInfo => {
     if (native) {
         const detected = native.detectPackageManager(cwd);
 
-        return { name: detected.name as PmInfo["name"], version: detected.version };
+        return { name: detected.name as PmInfo["name"], version: detected.version || "latest" };
     }
 
     // Fallback to @visulima/package
@@ -140,7 +140,7 @@ const runOutdated = (pm: PmInfo, opts: OutdatedOptions, cwd: string, logger: Con
 const runLink = (pm: PmInfo, target: string | null, cwd: string, logger: Console): number =>
     resolveAndRun(
         "link",
-        (native) => native.resolveLink(pm.name, pm.version, target),
+        (native) => native.resolveLink(pm.name, target),
         pm.name,
         ["link", ...(target ? [target] : [])],
         cwd,

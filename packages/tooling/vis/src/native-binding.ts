@@ -18,7 +18,8 @@
 interface DetectedPackageManager {
     isWorkspace: boolean;
     name: string;
-    version: string;
+    /** Version from packageManager field, or undefined if unknown */
+    version?: string;
 }
 
 interface ResolvedCommand {
@@ -70,7 +71,8 @@ interface RemoveOptions {
 }
 
 interface WhyOptions {
-    depth: number | null;
+    /** Uses Option<i32> in Rust - pass undefined for no depth limit (not null!) */
+    depth?: number;
     dev: boolean;
     filter: string[];
     global: boolean;
@@ -125,7 +127,7 @@ interface NativeBindings {
     resolveDlx: (pm: string, version: string, opts: DlxOptions) => ResolvedCommand;
     resolveExec: (pm: string, version: string, opts: ExecOptions) => ResolvedCommand;
     resolveInstall: (pm: string, version: string, opts: InstallOptions) => ResolvedCommand;
-    resolveLink: (pm: string, version: string, target: string | null) => ResolvedCommand;
+    resolveLink: (pm: string, target: string | null) => ResolvedCommand;
     resolveOutdated: (pm: string, version: string, opts: OutdatedOptions) => ResolvedCommand;
     resolvePmCommand: (pm: string, version: string, subcommand: string, extraArgs: string[]) => ResolvedCommand;
     resolveRemove: (pm: string, version: string, opts: RemoveOptions) => ResolvedCommand;

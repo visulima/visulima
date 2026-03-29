@@ -32,7 +32,7 @@ const why: Command = {
         const pm = detectPm(cwd);
 
         const code = runWhy(pm, {
-            depth: options.depth !== undefined ? Number(options.depth) : null,
+            depth: options.depth !== undefined ? Number(options.depth) : undefined,
             dev: (options.dev as boolean) || false,
             filter: toStringArray(options.filter),
             global: (options.global as boolean) || false,
