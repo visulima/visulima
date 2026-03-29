@@ -104,7 +104,7 @@ cli.addCommand(implodeCommand);
 
 // Tips plugin: show contextual tips after command execution
 cli.addPlugin({
-    afterCommand: async (toolbox) => {
+    afterCommand: async () => {
         const args = process.argv.slice(2);
         const command = args[0] ?? "";
 

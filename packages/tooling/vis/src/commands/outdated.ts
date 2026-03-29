@@ -1,7 +1,11 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runOutdated } from "../pm-runner";
+
+const toStringArray = (value: unknown): string[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value as string[] : [value as string];
+};
 
 const outdated: Command = {
     argument: {
@@ -15,22 +19,16 @@ const outdated: Command = {
         ["vis outdated react", "Check specific package"],
         ["vis outdated --format json", "Output as JSON"],
         ["vis outdated -r", "Check across all workspaces"],
-        ["vis outdated -g", "Check globally installed packages"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
         const packages = (argument as string[]) || [];
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const native = loadNativeBindings();
 
-        if (!native) {
-            throw new Error("Native bindings not available.");
-        }
-
-        const resolved = native.resolveOutdated(pm.name, pm.version, {
+        const code = runOutdated(pm, {
             compatible: (options.compatible as boolean) || false,
             dev: (options.dev as boolean) || false,
-            filter: options.filter ? [].concat(options.filter as never) : [],
+            filter: toStringArray(options.filter),
             format: (options.format as string) || "table",
             global: (options.global as boolean) || false,
             long: (options.long as boolean) || false,
@@ -39,11 +37,8 @@ const outdated: Command = {
             prod: (options.prod as boolean) || false,
             recursive: (options.recursive as boolean) || false,
             workspaceRoot: (options["workspace-root"] as boolean) || false,
-        });
+        }, cwd, logger);
 
-        const code = runInteractive(resolved, cwd, logger);
-
-        // Exit code 1 means outdated packages found - this is expected, not an error
         if (code !== 0 && code !== 1) {
             process.exitCode = code;
         }

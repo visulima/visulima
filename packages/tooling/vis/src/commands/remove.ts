@@ -1,7 +1,11 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runRemove } from "../pm-runner";
+
+const toStringArray = (value: unknown): string[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value as string[] : [value as string];
+};
 
 const remove: Command = {
     alias: ["rm", "un", "uninstall"],
@@ -16,7 +20,6 @@ const remove: Command = {
         ["vis rm old-package", "Remove using alias"],
         ["vis remove --filter app react", "Remove from specific workspace"],
         ["vis remove -g typescript", "Remove global package"],
-        ["vis remove -r lodash", "Remove from all workspace packages"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
         const packages = argument as string[];
@@ -25,24 +28,17 @@ const remove: Command = {
             throw new Error("No packages specified. Usage: vis remove <packages...>");
         }
 
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const native = loadNativeBindings();
 
-        if (!native) {
-            throw new Error("Native bindings not available.");
-        }
-
-        const resolved = native.resolveRemove(pm.name, pm.version, {
-            filter: options.filter ? [].concat(options.filter as never) : [],
+        const code = runRemove(pm, {
+            filter: toStringArray(options.filter),
             global: (options.global as boolean) || false,
             packages,
             recursive: (options.recursive as boolean) || false,
             saveDev: (options["save-dev"] as boolean) || false,
             workspaceRoot: (options["workspace-root"] as boolean) || false,
-        });
-
-        const code = runInteractive(resolved, cwd, logger);
+        }, cwd, logger);
 
         if (code !== 0) {
             process.exitCode = code;

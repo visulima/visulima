@@ -111,6 +111,11 @@ const env: Command = {
                     throw new Error("Usage: vis env pin <version>");
                 }
 
+                // Allow semver ranges and partials for pin (e.g., "22", "22.13", "^22.0.0")
+                if (!/^[~^]?\d+(\.\d+){0,2}([.-]\w+)*$/.test(version)) {
+                    throw new Error(`Invalid version "${version}".`);
+                }
+
                 writeFileSync(join(cwd, ".node-version"), version + "\n");
                 logger.info(`Pinned Node.js ${version} in ${join(cwd, ".node-version")}`);
                 break;
@@ -174,6 +179,11 @@ const env: Command = {
                     throw new Error("Usage: vis env install <version>");
                 }
 
+                // Strict version validation to prevent command injection and path traversal
+                if (!/^\d+\.\d+\.\d+$/.test(version)) {
+                    throw new Error(`Invalid Node.js version "${version}". Expected format: X.Y.Z (e.g., 22.13.1)`);
+                }
+
                 const targetDir = join(NODE_DIR, version);
 
                 if (existsSync(targetDir)) {
@@ -185,14 +195,17 @@ const env: Command = {
                 const { platform, arch } = process;
                 const os = platform === "darwin" ? "darwin" : platform === "win32" ? "win" : "linux";
                 const cpu = arch === "arm64" ? "arm64" : "x64";
-                const ext = platform === "win32" ? "zip" : "tar.gz";
-                const url = `https://nodejs.org/dist/v${version}/node-v${version}-${os}-${cpu}.${ext}`;
+                const url = `https://nodejs.org/dist/v${version}/node-v${version}-${os}-${cpu}.tar.gz`;
 
                 logger.info(`Downloading Node.js ${version} for ${os}-${cpu}...`);
                 ensureDir(targetDir);
 
+                if (platform === "win32") {
+                    throw new Error("Automated Node.js installation is not yet supported on Windows. Download manually from https://nodejs.org/");
+                }
+
                 try {
-                    execSync(`curl -fsSL "${url}" | tar -xz --strip-components=1 -C "${targetDir}"`, {
+                    spawnSync("sh", ["-c", `curl -fsSL '${url}' | tar -xz --strip-components=1 -C '${targetDir}'`], {
                         stdio: "inherit",
                     });
                     logger.info(`\u2713 Installed Node.js ${version} to ${targetDir}`);
@@ -208,6 +221,11 @@ const env: Command = {
 
                 if (!version) {
                     throw new Error("Usage: vis env uninstall <version>");
+                }
+
+                // Strict version validation to prevent path traversal
+                if (!/^\d+\.\d+\.\d+$/.test(version)) {
+                    throw new Error(`Invalid Node.js version "${version}". Expected format: X.Y.Z (e.g., 22.13.1)`);
                 }
 
                 const targetDir = join(NODE_DIR, version);
@@ -227,7 +245,8 @@ const env: Command = {
 
             case "which": {
                 const tool = args[1] || "node";
-                const result = spawnSync("which", [tool], { encoding: "utf8" });
+                const whichCmd = process.platform === "win32" ? "where" : "which";
+                const result = spawnSync(whichCmd, [tool], { encoding: "utf8" });
 
                 if (result.status === 0) {
                     logger.info(result.stdout.trim());

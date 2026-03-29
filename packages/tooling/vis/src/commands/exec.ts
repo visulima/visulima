@@ -1,7 +1,11 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runExec } from "../pm-runner";
+
+const toStringArray = (value: unknown): string[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value as string[] : [value as string];
+};
 
 const exec: Command = {
     argument: {
@@ -14,7 +18,6 @@ const exec: Command = {
         ["vis exec eslint .", "Run local eslint"],
         ["vis exec tsc --noEmit", "Run local TypeScript check"],
         ["vis exec -r -- eslint .", "Run in all workspace packages"],
-        ["vis exec --filter 'app...' -- tsc --noEmit", "Run in filtered packages"],
         ["vis exec -c 'echo $PATH'", "Shell mode"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
@@ -25,26 +28,19 @@ const exec: Command = {
         }
 
         const [command, ...rest] = args;
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const native = loadNativeBindings();
 
-        if (!native) {
-            throw new Error("Native bindings not available.");
-        }
-
-        const resolved = native.resolveExec(pm.name, pm.version, {
+        const code = runExec(pm, {
             args: rest,
             command: command as string,
-            filter: options.filter ? [].concat(options.filter as never) : [],
+            filter: toStringArray(options.filter),
             parallel: (options.parallel as boolean) || false,
             recursive: (options.recursive as boolean) || false,
             reverse: (options.reverse as boolean) || false,
             shellMode: (options["shell-mode"] as boolean) || false,
             workspaceRoot: (options["workspace-root"] as boolean) || false,
-        });
-
-        const code = runInteractive(resolved, cwd, logger);
+        }, cwd, logger);
 
         if (code !== 0) {
             process.exitCode = code;

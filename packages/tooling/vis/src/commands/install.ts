@@ -1,7 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runInstall } from "../pm-runner";
 
 const install: Command = {
     alias: "i",
@@ -14,17 +13,13 @@ const install: Command = {
         ["vis install --ignore-scripts", "Install without running lifecycle scripts"],
     ],
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const native = loadNativeBindings();
+        const filters = options.filter ? (Array.isArray(options.filter) ? options.filter as string[] : [options.filter as string]) : [];
 
-        if (!native) {
-            throw new Error("Native bindings not available. Rebuild with: napi build --platform --release --manifest-path native/Cargo.toml --output-dir .");
-        }
-
-        const resolved = native.resolveInstall(pm.name, pm.version, {
+        const code = runInstall(pm, {
             dev: (options.dev as boolean) || false,
-            filter: options.filter ? [].concat(options.filter as never) : [],
+            filter: filters,
             force: (options.force as boolean) || false,
             frozenLockfile: (options["frozen-lockfile"] as boolean) || false,
             ignoreScripts: (options["ignore-scripts"] as boolean) || false,
@@ -35,9 +30,7 @@ const install: Command = {
             recursive: (options.recursive as boolean) || false,
             silent: (options.silent as boolean) || false,
             workspaceRoot: (options["workspace-root"] as boolean) || false,
-        });
-
-        const code = runInteractive(resolved, cwd, logger);
+        }, cwd, logger);
 
         if (code !== 0) {
             process.exitCode = code;

@@ -1,7 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runPmSubcommand } from "../pm-runner";
 
 const pm: Command = {
     argument: {
@@ -15,12 +14,10 @@ const pm: Command = {
         ["vis pm cache clean", "Clean cache"],
         ["vis pm publish --dry-run", "Preview publishing"],
         ["vis pm list --depth 0", "List direct dependencies"],
-        ["vis pm view react version", "View package info"],
         ["vis pm audit", "Run security audit"],
         ["vis pm whoami", "Show logged-in user"],
-        ["vis pm config get registry", "Get config value"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
         const args = argument as string[];
 
         if (!args || args.length === 0) {
@@ -30,17 +27,10 @@ const pm: Command = {
         }
 
         const [subcommand, ...rest] = args;
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm_ = detectPm(cwd);
-        const native = loadNativeBindings();
 
-        if (!native) {
-            throw new Error("Native bindings not available.");
-        }
-
-        const resolved = native.resolvePmCommand(pm_.name, pm_.version, subcommand as string, rest);
-
-        const code = runInteractive(resolved, cwd, logger);
+        const code = runPmSubcommand(pm_, subcommand as string, rest, cwd, logger);
 
         if (code !== 0) {
             process.exitCode = code;

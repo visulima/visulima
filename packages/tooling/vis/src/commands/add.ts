@@ -1,7 +1,11 @@
 import type { Command } from "@visulima/cerebro";
 
-import { loadNativeBindings } from "../native-binding";
-import { detectPm, runInteractive } from "../pm-runner";
+import { detectPm, runAdd } from "../pm-runner";
+
+const toStringArray = (value: unknown): string[] => {
+    if (!value) return [];
+    return Array.isArray(value) ? value as string[] : [value as string];
+};
 
 const add: Command = {
     argument: {
@@ -24,17 +28,12 @@ const add: Command = {
             throw new Error("No packages specified. Usage: vis add <packages...>");
         }
 
-        const cwd = (options.cwd as string) ?? wsRoot ?? process.cwd();
+        const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const native = loadNativeBindings();
 
-        if (!native) {
-            throw new Error("Native bindings not available.");
-        }
-
-        const resolved = native.resolveAdd(pm.name, pm.version, {
+        const code = runAdd(pm, {
             exact: (options.exact as boolean) || false,
-            filter: options.filter ? [].concat(options.filter as never) : [],
+            filter: toStringArray(options.filter),
             global: (options.global as boolean) || false,
             optional: (options["save-optional"] as boolean) || false,
             packages,
@@ -42,9 +41,7 @@ const add: Command = {
             saveDev: (options["save-dev"] as boolean) || false,
             workspace: (options.workspace as boolean) || false,
             workspaceRoot: (options["workspace-root"] as boolean) || false,
-        });
-
-        const code = runInteractive(resolved, cwd, logger);
+        }, cwd, logger);
 
         if (code !== 0) {
             process.exitCode = code;

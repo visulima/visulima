@@ -155,7 +155,7 @@ pub fn resolve_add(pm: String, version: String, opts: AddOptions) -> ResolvedCom
         "yarn" => {
             if version.starts_with("1.") {
                 if opts.global { args.push("global".into()); }
-                if opts.filter.len() > 0 { args.push("workspace".into()); args.push(opts.filter[0].clone()); }
+                if !opts.filter.is_empty() { args.push("workspace".into()); args.push(opts.filter[0].clone()); }
                 args.push("add".into());
                 if opts.save_dev { args.push("--dev".into()); }
                 if opts.exact { args.push("--exact".into()); }
@@ -249,7 +249,7 @@ pub fn resolve_remove(pm: String, version: String, opts: RemoveOptions) -> Resol
         }
         "yarn" => {
             if version.starts_with("1.") {
-                if opts.filter.len() > 0 { args.push("workspace".into()); args.push(opts.filter[0].clone()); }
+                if !opts.filter.is_empty() { args.push("workspace".into()); args.push(opts.filter[0].clone()); }
                 args.push("remove".into());
                 args.extend(opts.packages);
             } else {
