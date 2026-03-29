@@ -2,17 +2,33 @@ import { createCerebro } from "@visulima/cerebro";
 import { findMonorepoRootSync } from "@visulima/package";
 
 import pkg from "../package.json";
+import addCommand from "./commands/add";
 import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import checkCommand from "./commands/check";
+import createCommand from "./commands/create";
+import dedupeCommand from "./commands/dedupe";
+import dlxCommand from "./commands/dlx";
+import envCommand from "./commands/env";
+import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
+import implodeCommand from "./commands/implode";
+import installCommand from "./commands/install";
+import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
+import outdatedCommand from "./commands/outdated";
+import pmCommand from "./commands/pm";
+import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import stagedCommand from "./commands/staged";
+import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
+import upgradeCommand from "./commands/upgrade";
+import whyCommand from "./commands/why";
 import { loadVisConfig } from "./config";
+import { showTip } from "./tips";
 
 /**
  * Attempts to load and enable V8 compile cache for better performance.
@@ -55,6 +71,7 @@ cli.addPlugin({
     name: "config-loader",
 });
 
+// Existing commands
 cli.addCommand(runCommand);
 cli.addCommand(graphCommand);
 cli.addCommand(affectedCommand);
@@ -65,5 +82,35 @@ cli.addCommand(aiCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(migrateCommand);
 cli.addCommand(stagedCommand);
+
+// Package management commands (native Rust-backed)
+cli.addCommand(installCommand);
+cli.addCommand(addCommand);
+cli.addCommand(removeCommand);
+cli.addCommand(dedupeCommand);
+cli.addCommand(whyCommand);
+cli.addCommand(outdatedCommand);
+cli.addCommand(linkCommand);
+cli.addCommand(unlinkCommand);
+cli.addCommand(dlxCommand);
+cli.addCommand(execCommand);
+cli.addCommand(pmCommand);
+
+// Project & environment commands
+cli.addCommand(createCommand);
+cli.addCommand(envCommand);
+cli.addCommand(upgradeCommand);
+cli.addCommand(implodeCommand);
+
+// Tips plugin: show contextual tips after command execution
+cli.addPlugin({
+    afterCommand: async (toolbox) => {
+        const args = process.argv.slice(2);
+        const command = args[0] ?? "";
+
+        showTip({ args, command, success: process.exitCode === undefined || process.exitCode === 0 });
+    },
+    name: "cli-tips",
+});
 
 await cli.run();
