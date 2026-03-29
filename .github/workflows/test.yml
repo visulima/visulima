@@ -122,6 +122,7 @@ jobs:
                   bun-version: "${{ matrix.bun_version }}"
 
             - name: "Wait for Build Native workflow"
+              if: "matrix.os == 'ubuntu-latest'"
               uses: "lewagon/wait-on-check-action@3603e826ee561ea102b58accb5ea55a1a7482343" # v1.4.1
               timeout-minutes: 30
               with:
