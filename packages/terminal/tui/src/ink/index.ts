@@ -27,6 +27,12 @@ export type {
     ScrollViewRef,
 } from "./components/scroll";
 export { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "./components/scroll";
+export type { SelectInputEntry, Item as SelectInputItemType, Props as SelectInputProps, SeparatorItem as SelectInputSeparator } from "./components/SelectInput";
+export { default as SelectInput } from "./components/SelectInput";
+export type { Props as SelectInputIndicatorProps } from "./components/SelectInputIndicator";
+export { default as SelectInputIndicator } from "./components/SelectInputIndicator";
+export type { Props as SelectInputItemProps } from "./components/SelectInputItem";
+export { default as SelectInputItem } from "./components/SelectInputItem";
 export { default as Spacer } from "./components/Spacer";
 export type { Props as SpinnerProps } from "./components/Spinner";
 export { default as Spinner } from "./components/Spinner";
