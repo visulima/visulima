@@ -5,6 +5,13 @@ import type { Styles } from "./styles";
 
 const cache: Record<string, string> = {};
 
+const wrapWordMode: Record<string, string> = {
+    wrap: "BREAK_WORDS",
+    "wrap-anywhere": "BREAK_AT_CHARACTERS",
+    "wrap-preserve-words": "PRESERVE_WORDS",
+    "wrap-strict": "STRICT_WIDTH",
+};
+
 const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]): string => {
     const cacheKey = text + String(maxWidth) + String(wrapType);
     const cachedText = cache[cacheKey];
@@ -14,16 +21,15 @@ const wrapText = (text: string, maxWidth: number, wrapType: Styles["textWrap"]):
     }
 
     let wrappedText = text;
+    const wordMode = wrapWordMode[wrapType!];
 
-    if (wrapType === "wrap") {
+    if (wordMode) {
         wrappedText = wordWrap(text, {
             trim: false,
             width: maxWidth,
-            wrapMode: "BREAK_WORDS",
+            wrapMode: wordMode as "BREAK_AT_CHARACTERS" | "BREAK_WORDS" | "PRESERVE_WORDS" | "STRICT_WIDTH",
         }).replace(/\n$/, "");
-    }
-
-    if (wrapType!.startsWith("truncate")) {
+    } else if (wrapType!.startsWith("truncate")) {
         let position: "end" | "middle" | "start" = "end";
 
         if (wrapType === "truncate-middle") {

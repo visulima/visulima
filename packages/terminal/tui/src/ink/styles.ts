@@ -381,7 +381,18 @@ export type Styles = {
      */
     readonly rowGap?: number;
 
-    readonly textWrap?: "wrap" | "end" | "middle" | "truncate-end" | "truncate" | "truncate-middle" | "truncate-start";
+    /**
+     * Controls how text wraps when it exceeds the container width.
+     *
+     * - `wrap` (default) — Wrap at word boundaries; break inside words only when a single word exceeds the width.
+     * - `wrap-anywhere` — Break at any character boundary, even when a whitespace break exists earlier.
+     * - `wrap-preserve-words` — Wrap at word boundaries; never break inside words (long words may overflow).
+     * - `wrap-strict` — Enforce exact width; always break at the column limit.
+     * - `truncate` / `truncate-end` — Truncate at the end with an ellipsis.
+     * - `truncate-start` — Truncate at the start with an ellipsis.
+     * - `truncate-middle` — Truncate in the middle with an ellipsis.
+     */
+    readonly textWrap?: "wrap" | "wrap-anywhere" | "wrap-preserve-words" | "wrap-strict" | "end" | "middle" | "truncate-end" | "truncate" | "truncate-middle" | "truncate-start";
 
     /**
      * Top offset for positioned elements.
