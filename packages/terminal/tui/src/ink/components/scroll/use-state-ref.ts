@@ -6,7 +6,7 @@ import { useCallback, useRef, useState } from "react";
  * Useful for values that need to be read synchronously in imperative methods
  * but also trigger re-renders when changed.
  */
-export function useStateRef<T>(initialValue: T) {
+export function useStateRef<T>(initialValue: T): readonly [T, (update: React.SetStateAction<T>) => void, () => T] {
     const [state, setStateInternal] = useState<T>(initialValue);
     const ref = useRef<T>(initialValue);
 
@@ -16,7 +16,7 @@ export function useStateRef<T>(initialValue: T) {
         setStateInternal(nextValue);
     }, []);
 
-    const getState = useCallback(() => ref.current, []);
+    const getState = useCallback((): T => ref.current, []);
 
     return [state, setState, getState] as const;
 }
