@@ -19,6 +19,8 @@ export type { Props as SpinnerProps } from "./components/Spinner";
 export { default as Spinner } from "./components/Spinner";
 export type { Props as StaticProps } from "./components/Static";
 export { default as Static } from "./components/Static";
+export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as TableScalar, ScalarDict as TableScalarDict } from "./components/Table";
+export { default as Table } from "./components/Table";
 export type { Props as StderrProps } from "./components/StderrContext";
 export type { PublicProps as StdinProps } from "./components/StdinContext";
 export type { Props as StdoutProps } from "./components/StdoutContext";
