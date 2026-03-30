@@ -1,5 +1,7 @@
 /* eslint-disable perfectionist/sort-exports */
 export type { Props as AppProps } from "./components/AppContext";
+export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/BigText";
+export { default as BigText } from "./components/BigText";
 export type { Props as BoxProps } from "./components/Box";
 export { default as Box } from "./components/Box";
 export type { Props as CursorProps } from "./components/Cursor";
@@ -49,6 +51,7 @@ export {
     Fullscreen,
     isIntersecting,
     MouseProvider,
+    parseSgrMouse,
     useElementDimensions,
     useElementPosition,
     useMouseAction,
@@ -60,10 +63,13 @@ export {
 } from "./mouse";
 export type {
     MouseAction,
+    MouseButton,
     MouseClickAction,
     MouseContextShape,
     MouseDragAction,
     MouseEvents,
     MousePosition,
     MouseScrollAction,
+    SgrMouseEvent,
+    UseOnMouseClickOptions,
 } from "./mouse";
