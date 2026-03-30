@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/filename-case */
 import type React from "react";
 import type { ReactNode, Ref } from "react";
-import { isValidElement, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, isValidElement, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 
 import type { DOMElement } from "../../dom";
 import measureElement from "../../measure-element";
@@ -45,7 +45,24 @@ const toChildArray = (children: ReactNode): ReactNode[] => {
     }
 
     if (Array.isArray(children)) {
-        return children as ReactNode[];
+        const result: ReactNode[] = [];
+
+        // eslint-disable-next-line unicorn/no-for-loop
+        for (let index = 0; index < children.length; index += 1) {
+            const child = children[index] as ReactNode;
+
+            if (isValidElement(child) && child.type === Fragment) {
+                result.push(...toChildArray((child.props as { children?: ReactNode }).children));
+            } else {
+                result.push(child);
+            }
+        }
+
+        return result;
+    }
+
+    if (isValidElement(children) && children.type === Fragment) {
+        return toChildArray((children.props as { children?: ReactNode }).children);
     }
 
     return [children];
