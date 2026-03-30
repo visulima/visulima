@@ -6,9 +6,10 @@
  */
 import Yoga from "yoga-layout";
 
-import type { DOMElement } from "./dom";
+import type { DOMElement, DOMNode } from "./dom";
 import { getAbsolutePosition } from "./layout";
 import { getScrollLeft, getScrollTop } from "./scroll";
+import squashTextNodes from "./squash-text-nodes";
 
 type Output = {
     /**
@@ -420,4 +421,155 @@ export const getRelativeLeft = (node: DOMElement, ancestor?: DOMElement): number
     }
 
     return left;
+};
+
+/**
+ * A text fragment from the layout tree with its position and dimensions.
+ * Used by `processLayout` for text extraction and selection.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export type TextFragment = {
+    height: number;
+    node: DOMElement;
+    text: string;
+    visualX: number;
+    visualY: number;
+    width: number;
+    x: number;
+    y: number;
+};
+
+/**
+ * Get the text content of a DOM node (text node value or squashed children).
+ */
+export const getText = (node: DOMNode): string => {
+    if (node.nodeName === "#text") {
+        return node.nodeValue;
+    }
+
+    if (node.nodeName === "ink-text" || node.nodeName === "ink-virtual-text") {
+        return squashTextNodes(node as DOMElement);
+    }
+
+    return "";
+};
+
+/**
+ * Walk the layout tree to collect all text fragments in document order,
+ * with their positions adjusted for borders and flex layout.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export const collectSortedFragments = (
+    node: DOMNode,
+): { fragments: TextFragment[]; removedHorizontal: number; removedVertical: number } => {
+    const fragments: TextFragment[] = [];
+
+    const collect = (
+        currentNode: DOMNode,
+        coords: { visualX: number; visualY: number; x: number; y: number },
+        selectable: boolean,
+    ): { h: number; hasContent: boolean; v: number } => {
+        const { visualX, visualY, x, y } = coords;
+        let v = 0;
+        let h = 0;
+
+        let currentSelectable = selectable;
+        const { userSelect } = currentNode.style;
+
+        if (userSelect === "none") {
+            currentSelectable = false;
+        } else if (userSelect === "text" || userSelect === "all") {
+            currentSelectable = true;
+        }
+
+        if (currentNode.nodeName === "ink-text" || currentNode.nodeName === "ink-virtual-text") {
+            if (currentSelectable) {
+                const text = getText(currentNode);
+                fragments.push({
+                    height: currentNode.yogaNode?.getComputedHeight() ?? 0,
+                    node: currentNode as DOMElement,
+                    text,
+                    visualX,
+                    visualY,
+                    width: currentNode.yogaNode?.getComputedWidth() ?? 0,
+                    x,
+                    y,
+                });
+
+                return { h: 0, hasContent: true, v: 0 };
+            }
+
+            return {
+                h: currentNode.yogaNode?.getComputedWidth() ?? 0,
+                hasContent: false,
+                v: currentNode.yogaNode?.getComputedHeight() ?? 0,
+            };
+        }
+
+        if (currentNode.nodeName === "ink-box" || currentNode.nodeName === "ink-root") {
+            if (!currentNode.yogaNode || currentNode.yogaNode.getDisplay() === Yoga.DISPLAY_NONE) {
+                return { h: 0, hasContent: false, v: 0 };
+            }
+
+            const borderTop = currentNode.yogaNode.getComputedBorder(Yoga.EDGE_TOP);
+            const borderBottom = currentNode.yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
+            const borderLeft = currentNode.yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
+            const borderRight = currentNode.yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
+
+            v += borderTop + borderBottom;
+            h += borderLeft + borderRight;
+
+            const flexDirection = currentNode.yogaNode.getFlexDirection();
+            const isColumn = flexDirection === Yoga.FLEX_DIRECTION_COLUMN || flexDirection === Yoga.FLEX_DIRECTION_COLUMN_REVERSE;
+
+            let siblingRemovedH = 0;
+            let siblingRemovedV = 0;
+            let childHasContent = false;
+
+            for (const child of (currentNode as DOMElement).childNodes) {
+                if (child.yogaNode) {
+                    const childX = x + child.yogaNode.getComputedLeft() - borderLeft - siblingRemovedH;
+                    const childY = y + child.yogaNode.getComputedTop() - borderTop - siblingRemovedV;
+                    const childVisualX = visualX + child.yogaNode.getComputedLeft();
+                    const childVisualY = visualY + child.yogaNode.getComputedTop();
+
+                    const res = collect(child, { visualX: childVisualX, visualY: childVisualY, x: childX, y: childY }, currentSelectable);
+
+                    if (res.hasContent) {
+                        childHasContent = true;
+                    }
+
+                    if (isColumn) {
+                        siblingRemovedV += res.v;
+                    } else {
+                        siblingRemovedH += res.h;
+                    }
+                }
+            }
+
+            if (isColumn) {
+                v += siblingRemovedV;
+            } else {
+                h += siblingRemovedH;
+            }
+
+            return { h, hasContent: childHasContent, v };
+        }
+
+        return { h: 0, hasContent: false, v: 0 };
+    };
+
+    const { h, v } = collect(node, { visualX: 0, visualY: 0, x: 0, y: 0 }, true);
+
+    fragments.sort((a, b) => {
+        if (a.y !== b.y) {
+            return a.y - b.y;
+        }
+
+        return a.x - b.x;
+    });
+
+    return { fragments, removedHorizontal: h, removedVertical: v };
 };
