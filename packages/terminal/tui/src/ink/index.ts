@@ -4,6 +4,8 @@ export type { Props as BoxProps } from "./components/Box";
 export { default as Box } from "./components/Box";
 export type { Props as CursorProps } from "./components/Cursor";
 export { default as Cursor } from "./components/Cursor";
+export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
+export { default as Gradient } from "./components/Gradient";
 export type { Props as NewlineProps } from "./components/Newline";
 export { default as Newline } from "./components/Newline";
 export { default as Spacer } from "./components/Spacer";
@@ -43,3 +45,25 @@ export type { Instance, RenderOptions } from "./render";
 export { default as render } from "./render";
 export type { RenderToStringOptions } from "./render-to-string";
 export { default as renderToString } from "./render-to-string";
+export {
+    Fullscreen,
+    isIntersecting,
+    MouseProvider,
+    useElementDimensions,
+    useElementPosition,
+    useMouseAction,
+    useMouseContext,
+    useMousePosition,
+    useOnMouseClick,
+    useOnMouseHover,
+    useOnMouseState,
+} from "./mouse";
+export type {
+    MouseAction,
+    MouseClickAction,
+    MouseContextShape,
+    MouseDragAction,
+    MouseEvents,
+    MousePosition,
+    MouseScrollAction,
+} from "./mouse";
