@@ -30,32 +30,32 @@ export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-cursor" | 
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
 export type StickyHeader = {
+    /** Content-relative end row. */
+    endRow: number;
+    /** Height in rows. */
+    height?: number;
+    /** If true, natural 'lines' are already in background content. */
+    isStuckOnly: boolean;
+    /** Lines rendered in the natural (scrolling) position. */
+    lines: ReadonlyArray<ReadonlyArray<StyledChar>>;
+    /** Natural row offset relative to content start. */
+    naturalRow: number;
+    /** Reference to the DOM node for this header. */
+    node?: DOMElement;
     /** Unique ID of the sticky node. */
     nodeId: number;
-    /** Lines rendered in the natural (scrolling) position. */
-    lines: ReadonlyArray<readonly StyledChar[]>;
+    /** ID of the scroll container this header belongs to. */
+    scrollContainerId: number | string;
+    /** Content-relative start row. */
+    startRow: number;
     /** Lines rendered in the stuck (pinned) position, if different. */
-    stuckLines?: ReadonlyArray<readonly StyledChar[]>;
+    stuckLines?: ReadonlyArray<ReadonlyArray<StyledChar>>;
+    /** Sticky type: top-pinned or bottom-pinned. */
+    type?: "top" | "bottom";
     /** Stuck X position relative to region. */
     x: number;
     /** Stuck Y position relative to region. */
     y: number;
-    /** Natural row offset relative to content start. */
-    naturalRow: number;
-    /** Content-relative start row. */
-    startRow: number;
-    /** Content-relative end row. */
-    endRow: number;
-    /** ID of the scroll container this header belongs to. */
-    scrollContainerId: number | string;
-    /** If true, natural 'lines' are already in background content. */
-    isStuckOnly: boolean;
-    /** Sticky type: top-pinned or bottom-pinned. */
-    type?: "top" | "bottom";
-    /** Reference to the DOM node for this header. */
-    node?: DOMElement;
-    /** Height in rows. */
-    height?: number;
 };
 
 export type NodeNames = ElementNames | TextName;
@@ -111,18 +111,9 @@ export type DOMElement = InkNode & {
     internal_hidden?: boolean;
 
     /**
-     * Last measured size for ResizeObserver tracking.
+     * Auto-incrementing unique identifier for this node.
      */
-    internal_lastMeasuredSize?: { height: number; width: number };
-
-    internal_layoutListeners?: Set<LayoutListener>;
-
-    /**
-     * Scroll state computed by calculateScroll() for elements with overflow: 'scroll'.
-     */
-    internal_scrollState?: ScrollState;
-
-    internal_transform?: OutputTransformer;
+    internal_id: number;
 
     /**
      * Whether this element's scrollback buffer is dirty (needs recalculation).
@@ -130,14 +121,16 @@ export type DOMElement = InkNode & {
     internal_isScrollbackDirty?: boolean;
 
     /**
+     * Last measured size for ResizeObserver tracking.
+     */
+    internal_lastMeasuredSize?: { height: number; width: number };
+
+    internal_layoutListeners?: Set<LayoutListener>;
+
+    /**
      * Maximum scrollTop ever reached, used with stableScrollback.
      */
     internal_maxScrollTop?: number;
-
-    /**
-     * Whether this element is opaque (prevents rendering of covered content beneath it).
-     */
-    internal_opaque?: boolean;
 
     /**
      * Callback invoked before rendering this node.
@@ -145,10 +138,20 @@ export type DOMElement = InkNode & {
     internal_onBeforeRender?: (node: DOMElement) => void;
 
     /**
+     * Whether this element is opaque (prevents rendering of covered content beneath it).
+     */
+    internal_opaque?: boolean;
+
+    /**
      * Whether the scrollbar should be rendered for this scrollable element.
      * Defaults to true for elements with overflow: 'scroll'.
      */
     internal_scrollbar?: boolean;
+
+    /**
+     * Scroll state computed by calculateScroll() for elements with overflow: 'scroll'.
+     */
+    internal_scrollState?: ScrollState;
 
     /**
      * Whether this element is sticky (pinned during scroll).
@@ -173,13 +176,10 @@ export type DOMElement = InkNode & {
      */
     internal_terminalCursorPosition?: number;
 
+    internal_transform?: OutputTransformer;
+
     // Internal properties
     isStaticDirty?: boolean;
-
-    /**
-     * Auto-incrementing unique identifier for this node.
-     */
-    internal_id: number;
 
     nodeName: ElementNames;
     onComputeLayout?: () => void;
@@ -278,7 +278,13 @@ export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, before
 
 export const removeChildNode = (node: DOMElement, removeNode: DOMNode): void => {
     if (removeNode.yogaNode) {
-        removeNode.parentNode?.yogaNode?.removeChild(removeNode.yogaNode);
+        // Use Yoga's internal parent reference (authoritative) rather than
+        // the JS parentNode which can become stale.
+        const parentYogaNode = removeNode.yogaNode.getParent();
+
+        if (parentYogaNode) {
+            parentYogaNode.removeChild(removeNode.yogaNode);
+        }
     }
 
     removeNode.parentNode = undefined;
@@ -323,6 +329,10 @@ export const createTextNode = (text: string): TextNode => {
     return node;
 };
 
+// Note: measureTextNode intentionally uses string-based measurement to stay
+// consistent with the string-based render path in render-node-to-output.ts.
+// When the render path is fully migrated to StyledChar (via render-text-node.ts),
+// this should switch to toStyledCharacters + measureStyledChars + wrapOrTruncateStyledChars.
 const measureTextNode = function (node: DOMNode, width: number): { height: number; width: number } {
     const text = node.nodeName === "#text" ? node.nodeValue : squashTextNodes(node);
 
@@ -369,7 +379,7 @@ export const setTextNodeValue = (node: TextNode, text: string): void => {
     markNodeAsDirty(node);
 };
 
-export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): () => void => {
+export const addLayoutListener = (rootNode: DOMElement, listener: LayoutListener): (() => void) => {
     if (rootNode.nodeName !== "ink-root") {
         return () => {};
     }

@@ -34,7 +34,7 @@ type Output = {
 };
 
 /**
- * Measure the dimensions of a particular `<Box>` element.
+ * Measure the dimensions of a particular `&lt;Box>` element.
  * Returns an object with `x`, `y`, `width` and `height` properties.
  */
 const measureElement = (node: DOMElement): Output => {
@@ -157,23 +157,20 @@ export type ScrollbarBoundingBox = {
 export const calculateScrollbarThumb = (options: {
     axis: "horizontal" | "vertical";
     clientDimension: number;
+    scrollbarDimension: number;
     scrollDimension: number;
     scrollPosition: number;
-    scrollbarDimension: number;
 }): {
     endIndex: number;
     startIndex: number;
     thumbEndHalf: number;
     thumbStartHalf: number;
 } => {
-    const { axis, clientDimension, scrollDimension, scrollPosition, scrollbarDimension } = options;
+    const { axis, clientDimension, scrollbarDimension, scrollDimension, scrollPosition } = options;
 
     const scrollbarDimensionHalves = scrollbarDimension * 2;
 
-    const thumbDimensionHalves = Math.max(
-        axis === "vertical" ? 2 : 1,
-        Math.round((clientDimension / scrollDimension) * scrollbarDimensionHalves),
-    );
+    const thumbDimensionHalves = Math.max(axis === "vertical" ? 2 : 1, Math.round((clientDimension / scrollDimension) * scrollbarDimensionHalves));
 
     const maxScrollPosition = scrollDimension - clientDimension;
     const maxThumbPosition = scrollbarDimensionHalves - thumbDimensionHalves;
@@ -202,8 +199,7 @@ export const calculateScrollbarLayout = (options: {
     x: number;
     y: number;
 }): ScrollbarBoundingBox | undefined => {
-    const { axis, clientDimension, hasOppositeScrollbar, height, marginBottom, marginRight, scrollDimension, scrollPosition, width, x, y } =
-        options;
+    const { axis, clientDimension, hasOppositeScrollbar, height, marginBottom, marginRight, scrollDimension, scrollPosition, width, x, y } = options;
 
     if (scrollDimension <= clientDimension) {
         return undefined;
@@ -213,9 +209,9 @@ export const calculateScrollbarLayout = (options: {
         const { endIndex, startIndex, thumbEndHalf, thumbStartHalf } = calculateScrollbarThumb({
             axis,
             clientDimension,
+            scrollbarDimension: height,
             scrollDimension,
             scrollPosition,
-            scrollbarDimension: height,
         });
 
         const scrollbarX = x + width - 1 - marginRight;
@@ -242,9 +238,9 @@ export const calculateScrollbarLayout = (options: {
     const { endIndex, startIndex, thumbEndHalf, thumbStartHalf } = calculateScrollbarThumb({
         axis,
         clientDimension,
+        scrollbarDimension: scrollbarWidth,
         scrollDimension,
         scrollPosition,
-        scrollbarDimension: scrollbarWidth,
     });
 
     const scrollbarY = y + height - 1 - marginBottom;
@@ -270,10 +266,7 @@ export const calculateScrollbarLayout = (options: {
 /**
  * Get the bounding box of the vertical scrollbar.
  */
-export const getVerticalScrollbarBoundingBox = (
-    node: DOMElement,
-    offset?: { x: number; y: number },
-): ScrollbarBoundingBox | undefined => {
+export const getVerticalScrollbarBoundingBox = (node: DOMElement, offset?: { x: number; y: number }): ScrollbarBoundingBox | undefined => {
     const { yogaNode } = node;
 
     if (!yogaNode) {
@@ -295,8 +288,7 @@ export const getVerticalScrollbarBoundingBox = (
     }
 
     const { x, y } = offset ?? getBoundingBox(node);
-    const scrollbarHeight =
-        yogaNode.getComputedHeight() - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
+    const scrollbarHeight = yogaNode.getComputedHeight() - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
 
     return calculateScrollbarLayout({
         axis: "vertical",
@@ -316,10 +308,7 @@ export const getVerticalScrollbarBoundingBox = (
 /**
  * Get the bounding box of the horizontal scrollbar.
  */
-export const getHorizontalScrollbarBoundingBox = (
-    node: DOMElement,
-    offset?: { x: number; y: number },
-): ScrollbarBoundingBox | undefined => {
+export const getHorizontalScrollbarBoundingBox = (node: DOMElement, offset?: { x: number; y: number }): ScrollbarBoundingBox | undefined => {
     const { yogaNode } = node;
 
     if (!yogaNode) {
@@ -356,10 +345,7 @@ export const getHorizontalScrollbarBoundingBox = (
         marginRight: yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
         scrollDimension: scrollWidth,
         scrollPosition: node.internal_scrollState?.scrollLeft ?? 0,
-        width:
-            yogaNode.getComputedWidth() -
-            yogaNode.getComputedBorder(Yoga.EDGE_LEFT) -
-            yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
+        width: yogaNode.getComputedWidth() - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
         x: x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT),
         y: y + yogaNode.getComputedBorder(Yoga.EDGE_TOP),
     });
@@ -449,7 +435,7 @@ export const getText = (node: DOMNode): string => {
     }
 
     if (node.nodeName === "ink-text" || node.nodeName === "ink-virtual-text") {
-        return squashTextNodes(node as DOMElement);
+        return squashTextNodes(node);
     }
 
     return "";
@@ -461,9 +447,7 @@ export const getText = (node: DOMNode): string => {
  *
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
-export const collectSortedFragments = (
-    node: DOMNode,
-): { fragments: TextFragment[]; removedHorizontal: number; removedVertical: number } => {
+export const collectSortedFragments = (node: DOMNode): { fragments: TextFragment[]; removedHorizontal: number; removedVertical: number } => {
     const fragments: TextFragment[] = [];
 
     const collect = (
@@ -487,9 +471,10 @@ export const collectSortedFragments = (
         if (currentNode.nodeName === "ink-text" || currentNode.nodeName === "ink-virtual-text") {
             if (currentSelectable) {
                 const text = getText(currentNode);
+
                 fragments.push({
                     height: currentNode.yogaNode?.getComputedHeight() ?? 0,
-                    node: currentNode as DOMElement,
+                    node: currentNode,
                     text,
                     visualX,
                     visualY,
@@ -528,7 +513,7 @@ export const collectSortedFragments = (
             let siblingRemovedV = 0;
             let childHasContent = false;
 
-            for (const child of (currentNode as DOMElement).childNodes) {
+            for (const child of currentNode.childNodes) {
                 if (child.yogaNode) {
                     const childX = x + child.yogaNode.getComputedLeft() - borderLeft - siblingRemovedH;
                     const childY = y + child.yogaNode.getComputedTop() - borderTop - siblingRemovedV;

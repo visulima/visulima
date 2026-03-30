@@ -13,6 +13,149 @@ type Clip = { x0: number; x1: number; y0: number; y1: number };
 // Must be outside Unicode scalar range so it never collides with real text.
 const CONTINUATION_CELL_CODE = 0x11_00_00;
 
+// Scrollbar Unicode characters for half-step rendering
+const SCROLLBAR_FULL = 0x25_88; // █
+const SCROLLBAR_UPPER = 0x25_80; // ▀
+const SCROLLBAR_LOWER = 0x25_84; // ▄
+
+function getScrollContentHeight(node: LayoutNode): number {
+    let maxBottom = 0;
+
+    for (const child of node.children) {
+        const layout = child.getLayout();
+        const bottom = layout.top + layout.height;
+
+        if (bottom > maxBottom) {
+            maxBottom = bottom;
+        }
+    }
+
+    return maxBottom;
+}
+
+function paintScrollbar(
+    node: LayoutNode,
+    buffer: Uint32Array,
+    cols: number,
+    rows: number,
+    absX: number,
+    absY: number,
+    w: number,
+    h: number,
+    fg: number,
+    parentStyles: number,
+    clip: Clip,
+    nodeStyle: Record<string, unknown>,
+): void {
+    const borderWidth = nodeStyle.borderStyle ? 1 : 0;
+    const innerHeight = h - borderWidth * 2;
+    const scrollTop = (nodeStyle.scrollTop as number) ?? 0;
+    const scrollHeight = getScrollContentHeight(node);
+    const clientHeight = innerHeight;
+
+    if (scrollHeight <= clientHeight || innerHeight <= 0) {
+        return;
+    }
+
+    // Calculate thumb position using half-step precision
+    const halves = innerHeight * 2;
+    const thumbHalves = Math.max(2, Math.round((clientHeight / scrollHeight) * halves));
+    const maxScroll = scrollHeight - clientHeight;
+    const maxThumbPos = halves - thumbHalves;
+    const thumbPos = maxScroll > 0 ? Math.round((scrollTop / maxScroll) * maxThumbPos) : 0;
+
+    const thumbColor = typeof nodeStyle.scrollbarThumbColor === "string" ? resolveColor(nodeStyle.scrollbarThumbColor) : fg;
+
+    const scrollbarX = absX + w - 1 - borderWidth;
+    const attributeCode = (parentStyles << 16) | (255 << 8) | thumbColor;
+
+    for (let index = 0; index < innerHeight; index++) {
+        const halfTop = index * 2;
+        const halfBottom = halfTop + 1;
+        const hasUpper = halfTop >= thumbPos && halfTop < thumbPos + thumbHalves;
+        const hasLower = halfBottom >= thumbPos && halfBottom < thumbPos + thumbHalves;
+
+        if (!hasUpper && !hasLower) {
+            continue;
+        }
+
+        let charCode = SCROLLBAR_FULL;
+
+        if (hasUpper && !hasLower) {
+            charCode = SCROLLBAR_UPPER;
+        } else if (!hasUpper && hasLower) {
+            charCode = SCROLLBAR_LOWER;
+        }
+
+        writeCell(buffer, cols, rows, scrollbarX, absY + borderWidth + index, charCode, attributeCode, clip);
+    }
+}
+
+function paintStickyHeaders(
+    node: LayoutNode,
+    buffer: Uint32Array,
+    cols: number,
+    rows: number,
+    absX: number,
+    absY: number,
+    _w: number,
+    _h: number,
+    fg: number,
+    bg: number,
+    parentStyles: number,
+    borderJobs: {
+        absX: number;
+        absY: number;
+        bg: number;
+        clip: Clip;
+        fg: number;
+        h: number;
+        node: LayoutNode;
+        styles: number;
+        w: number;
+    }[],
+    clip: Clip,
+    nodeStyle: Record<string, unknown>,
+): void {
+    const borderWidth = nodeStyle.borderStyle ? 1 : 0;
+    const scrollTop = (nodeStyle.scrollTop as number) ?? 0;
+    const contentY = absY + borderWidth;
+
+    for (const child of node.children) {
+        if (!child._style?.sticky) {
+            continue;
+        }
+
+        const childLayout = child.getLayout();
+        const childNaturalY = childLayout.top;
+
+        // Only pin if the child has scrolled above the viewport
+        if (childNaturalY >= scrollTop) {
+            continue;
+        }
+
+        // Check parent section is still visible
+        const childParent = child.parent;
+
+        if (childParent && childParent !== node) {
+            const parentLayout = childParent.getLayout();
+            const parentBottom = parentLayout.top + parentLayout.height;
+
+            if (parentBottom <= scrollTop) {
+                continue;
+            }
+        }
+
+        // Paint the sticky child at the pinned position (top of viewport)
+        const stickyY = contentY;
+        const childFg = child.fg === 255 ? fg : child.fg;
+        const childBg = child.bg === 255 ? bg : child.bg;
+        const childStyles = child.styles === 0 ? parentStyles : child.styles;
+
+        paintNode(child, buffer, cols, rows, absX - childLayout.left, stickyY - childLayout.top, childFg, childBg, childStyles, borderJobs, clip);
+    }
+}
+
 export function renderTreeToBuffer(root: LayoutNode, buffer: Uint32Array, cols: number, rows: number): void {
     // Clear buffer first
     for (let i = 0; i < buffer.length; i += 2) {
@@ -51,11 +194,9 @@ export function renderTreeToBuffer(root: LayoutNode, buffer: Uint32Array, cols: 
 
 function writeCell(buffer: Uint32Array, cols: number, rows: number, sx: number, sy: number, charCode: number, attributeCode: number, clip: Clip) {
     // Clip to parent bounds first, then terminal bounds
-    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1)
-        return;
+    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1) return;
 
-    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows)
-        return;
+    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) return;
 
     const index = (sy * cols + sx) * 2;
 
@@ -77,8 +218,7 @@ function paintBorder(
     styles: number,
     clip: Clip,
 ) {
-    if (!node._style?.borderStyle)
-        return;
+    if (!node._style?.borderStyle) return;
 
     const box = (cliBoxes as any)[node._style.borderStyle];
     const borderFg = node._style.borderColor === undefined ? fg : resolveColor(node._style.borderColor);
@@ -109,18 +249,15 @@ function paintBorder(
     const yEnd = showBottom ? h - 1 : h;
 
     for (let y = yStart; y < yEnd; y++) {
-        if (showLeft)
-            writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        if (showLeft) writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
 
-        if (showRight)
-            writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        if (showRight) writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
     }
 }
 
 /** Recursively collect all text content from a node's descendants. */
 function collectText(node: LayoutNode): string {
-    if (node.text !== undefined)
-        return node.text;
+    if (node.text !== undefined) return node.text;
 
     return node.children.map(collectText).join("");
 }
@@ -138,8 +275,7 @@ function paintText(
     attributeCode: number,
     clip: Clip,
 ) {
-    if (w <= 0 || h <= 0)
-        return;
+    if (w <= 0 || h <= 0) return;
 
     let cursorX = 0;
     let cursorY = 0;
@@ -160,8 +296,7 @@ function paintText(
             cursorY++;
         }
 
-        if (cursorY >= h)
-            break;
+        if (cursorY >= h) break;
 
         writeCell(buffer, cols, rows, absX + cursorX, absY + cursorY, charCode, attributeCode, clip);
 
@@ -199,8 +334,7 @@ function paintNode(
     clip: Clip,
 ) {
     // Suspense hides nodes by setting _hidden — skip the entire subtree
-    if (node._hidden)
-        return;
+    if (node._hidden) return;
 
     const layout = node.getLayout();
 
@@ -223,8 +357,7 @@ function paintNode(
     };
 
     // If the node is entirely outside the clip, skip it and its children
-    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1)
-        return;
+    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1) return;
 
     // <Transform> node: collect all descendant text, apply transform fn, paint result
     if (typeof node.transform === "function") {
@@ -266,8 +399,60 @@ function paintNode(
         }
     }
 
-    // Recurse into children — they inherit this node's clip rectangle
+    // Determine overflow and scroll state
+    const nodeStyle = node._style;
+    const overflow = nodeStyle?.overflow ?? "visible";
+    const overflowX = nodeStyle?.overflowX ?? overflow;
+    const overflowY = nodeStyle?.overflowY ?? overflow;
+
+    const clipH = overflowX === "hidden" || overflowX === "scroll";
+    const clipV = overflowY === "hidden" || overflowY === "scroll";
+
+    // Tighten clip to content area (inside borders) for overflow: hidden/scroll
+    let childClip = nodeClip;
+    let scrollOffsetX = 0;
+    let scrollOffsetY = 0;
+
+    if (clipH || clipV) {
+        const borderTop = nodeStyle?.borderStyle ? 1 : 0;
+        const borderLeft = nodeStyle?.borderStyle ? 1 : 0;
+        const borderRight = nodeStyle?.borderStyle ? 1 : 0;
+        const borderBottom = nodeStyle?.borderStyle ? 1 : 0;
+
+        childClip = {
+            x0: clipH ? Math.max(nodeClip.x0, absX + borderLeft) : nodeClip.x0,
+            x1: clipH ? Math.min(nodeClip.x1, absX + w - borderRight) : nodeClip.x1,
+            y0: clipV ? Math.max(nodeClip.y0, absY + borderTop) : nodeClip.y0,
+            y1: clipV ? Math.min(nodeClip.y1, absY + h - borderBottom) : nodeClip.y1,
+        };
+
+        // Apply scroll offsets
+        if (overflowY === "scroll" && typeof nodeStyle?.scrollTop === "number") {
+            scrollOffsetY = -nodeStyle.scrollTop;
+        }
+
+        if (overflowX === "scroll" && typeof nodeStyle?.scrollLeft === "number") {
+            scrollOffsetX = -nodeStyle.scrollLeft;
+        }
+    }
+
+    // Recurse into children with scroll offset applied
     for (const child of node.children) {
-        paintNode(child, buffer, cols, rows, absX, absY, fg, bg, styles, borderJobs, nodeClip);
+        // Skip sticky alternate nodes during normal render
+        if (child._style?.internalStickyAlternate) {
+            continue;
+        }
+
+        paintNode(child, buffer, cols, rows, absX + scrollOffsetX, absY + scrollOffsetY, fg, bg, styles, borderJobs, childClip);
+    }
+
+    // Paint scrollbar for scrollable containers
+    if ((overflowY === "scroll" || overflowX === "scroll") && nodeStyle?.scrollbar !== false) {
+        paintScrollbar(node, buffer, cols, rows, absX, absY, w, h, fg, styles, nodeClip, nodeStyle);
+    }
+
+    // Paint sticky headers at their pinned positions
+    if (overflowY === "scroll" && typeof nodeStyle?.scrollTop === "number") {
+        paintStickyHeaders(node, buffer, cols, rows, absX, absY, w, h, fg, bg, styles, borderJobs, childClip, nodeStyle);
     }
 }

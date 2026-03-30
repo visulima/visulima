@@ -21,15 +21,36 @@ const widthCache = new Map<string, number>();
 // Cache for styled character tokenization
 const styledCharsCache = new DataLimitedLruMap<StyledChar[]>(10_000, 1_000_000);
 
+let styledCharsCacheEnabled = true;
+
 let currentStringWidth: StringWidthFunction = getStringWidth;
+
+/**
+ * Enable or disable the StyledChar tokenization cache at runtime.
+ * Disabling clears the existing cache.
+ */
+export const setEnableToStyledCharactersCache = (enabled: boolean): void => {
+    styledCharsCacheEnabled = enabled;
+
+    if (!enabled) {
+        styledCharsCache.clear();
+    }
+};
+
+/**
+ * Clear only the StyledChar tokenization cache.
+ */
+export const clearToStyledCharactersCache = (): void => {
+    styledCharsCache.clear();
+};
 
 /**
  * Replace the string width function used for text measurement.
  * Useful for terminals with non-standard character widths.
  * Clears the measurement cache when called.
  */
-export const setStringWidthFunction = (fn: StringWidthFunction): void => {
-    currentStringWidth = fn;
+export const setStringWidthFunction = (function_: StringWidthFunction): void => {
+    currentStringWidth = function_;
     clearStringWidthCache();
 };
 
@@ -90,10 +111,12 @@ export const styledCharsWidth = (styledChars: ReadonlyArray<StyledChar>): number
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
 export const toStyledCharacters = (text: string): StyledChar[] => {
-    const cached = styledCharsCache.get(text);
+    if (styledCharsCacheEnabled) {
+        const cached = styledCharsCache.get(text);
 
-    if (cached !== undefined) {
-        return cached;
+        if (cached !== undefined) {
+            return cached;
+        }
     }
 
     const tokens = tokenize(text);
@@ -110,6 +133,7 @@ export const toStyledCharacters = (text: string): StyledChar[] => {
         // Convert tabs to 4 spaces
         if (character.value === "\t") {
             const spaceCharacter: StyledChar = { ...character, value: " " };
+
             combinedCharacters.push(spaceCharacter, spaceCharacter, spaceCharacter, spaceCharacter);
             continue;
         }
@@ -186,7 +210,9 @@ export const toStyledCharacters = (text: string): StyledChar[] => {
         }
     }
 
-    styledCharsCache.set(text, combinedCharacters);
+    if (styledCharsCacheEnabled) {
+        styledCharsCache.set(text, combinedCharacters);
+    }
 
     return combinedCharacters;
 };

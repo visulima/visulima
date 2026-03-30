@@ -33,11 +33,7 @@ export const sliceStyledChars = (styledChars: StyledChar[], begin: number, end?:
     return result;
 };
 
-export const truncateStyledChars = (
-    styledChars: StyledChar[],
-    columns: number,
-    options: { position?: "end" | "middle" | "start" } = {},
-): StyledChar[] => {
+export const truncateStyledChars = (styledChars: StyledChar[], columns: number, options: { position?: "end" | "middle" | "start" } = {}): StyledChar[] => {
     const { position = "end" } = options;
     const truncationCharacter = "\u2026";
     const truncationStyledChar: StyledChar = {
@@ -173,11 +169,7 @@ export const wrapStyledChars = (styledChars: StyledChar[], columns: number): Sty
     return rows;
 };
 
-export const wrapOrTruncateStyledChars = (
-    styledChars: StyledChar[],
-    maxWidth: number,
-    textWrap = "wrap",
-): StyledChar[][] => {
+export const wrapOrTruncateStyledChars = (styledChars: StyledChar[], maxWidth: number, textWrap = "wrap"): StyledChar[][] => {
     if (textWrap.startsWith("truncate")) {
         let position: "end" | "middle" | "start" = "end";
 

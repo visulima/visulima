@@ -39,6 +39,7 @@ export const applyPaddingToStyledChars = (node: DOMElement, lines: StyledChar[][
         lines = lines.map((line) => [...paddingLeft, ...line]);
 
         const paddingTop: StyledChar[][] = Array.from<StyledChar[]>({ length: offsetY }).fill([]);
+
         lines.unshift(...paddingTop);
     }
 
@@ -123,9 +124,9 @@ export const handleTextNode = (
     options: {
         selectionMap?: Map<DOMNode, { end: number; start: number }>;
         selectionStyle?: (char: StyledChar) => StyledChar;
+        transformers: OutputTransformer[];
         x: number;
         y: number;
-        transformers: OutputTransformer[];
     },
 ): void => {
     const { selectionMap, selectionStyle, transformers, x, y } = options;
@@ -136,11 +137,7 @@ export const handleTextNode = (
     const selectionRange = selectionMap?.get(node);
 
     if (selectionRange) {
-        styledChars = applySelectionToStyledChars(
-            styledChars,
-            { currentOffset: 0, range: selectionRange },
-            selectionStyle,
-        );
+        styledChars = applySelectionToStyledChars(styledChars, { currentOffset: 0, range: selectionRange }, selectionStyle);
     }
 
     if (styledChars.length === 0) {
@@ -151,9 +148,7 @@ export const handleTextNode = (
     const maxWidth = getMaxWidth(node.yogaNode!);
 
     let lines: StyledChar[][] =
-        currentWidth > maxWidth
-            ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap")
-            : splitStyledCharsByNewline(styledChars);
+        currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
 
     lines = applyPaddingToStyledChars(node, lines);
 

@@ -55,13 +55,9 @@ const calculateScrollDimensions = (node: DOMElement): { scrollHeight: number; sc
     return { scrollHeight, scrollWidth };
 };
 
-export const getScrollHeight = (node: DOMElement): number => {
-    return node.internal_scrollState?.scrollHeight ?? 0;
-};
+export const getScrollHeight = (node: DOMElement): number => node.internal_scrollState?.scrollHeight ?? 0;
 
-export const getScrollWidth = (node: DOMElement): number => {
-    return node.internal_scrollState?.scrollWidth ?? 0;
-};
+export const getScrollWidth = (node: DOMElement): number => node.internal_scrollState?.scrollWidth ?? 0;
 
 export const calculateScroll = (node: DOMElement): void => {
     const { yogaNode } = node;
@@ -73,10 +69,7 @@ export const calculateScroll = (node: DOMElement): void => {
     const { scrollHeight: actualScrollHeight, scrollWidth } = calculateScrollDimensions(node);
     let scrollHeight = actualScrollHeight;
 
-    const clientHeight = Math.max(
-        0,
-        yogaNode.getComputedHeight() - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM),
-    );
+    const clientHeight = Math.max(0, yogaNode.getComputedHeight() - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM));
 
     if (node.style.stableScrollback && node.style.overflowToBackbuffer) {
         const actualMaxScrollTop = Math.max(0, actualScrollHeight - clientHeight);
@@ -93,10 +86,7 @@ export const calculateScroll = (node: DOMElement): void => {
 
     const scrollTop = Math.max(0, Math.min(node.style.scrollTop ?? 0, scrollHeight - clientHeight));
 
-    const clientWidth = Math.max(
-        0,
-        yogaNode.getComputedWidth() - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT),
-    );
+    const clientWidth = Math.max(0, yogaNode.getComputedWidth() - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT));
 
     const scrollLeft = Math.max(0, Math.min(node.style.scrollLeft ?? 0, scrollWidth - clientWidth));
 
@@ -115,14 +105,10 @@ export const calculateScroll = (node: DOMElement): void => {
  * Get the effective scroll top position from the pre-computed scroll state.
  * Falls back to computing from style if scroll state hasn't been calculated yet.
  */
-export const getScrollTop = (node: DOMElement): number => {
-    return node.internal_scrollState?.scrollTop ?? 0;
-};
+export const getScrollTop = (node: DOMElement): number => node.internal_scrollState?.scrollTop ?? 0;
 
 /**
  * Get the effective scroll left position from the pre-computed scroll state.
  * Falls back to computing from style if scroll state hasn't been calculated yet.
  */
-export const getScrollLeft = (node: DOMElement): number => {
-    return node.internal_scrollState?.scrollLeft ?? 0;
-};
+export const getScrollLeft = (node: DOMElement): number => node.internal_scrollState?.scrollLeft ?? 0;

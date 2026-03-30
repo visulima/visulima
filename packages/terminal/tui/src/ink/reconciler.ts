@@ -6,10 +6,9 @@ import type { ReactContext } from "react-reconciler";
 import createReconciler from "react-reconciler";
 import { DefaultEventPriority, NoEventPriority } from "react-reconciler/constants";
 import { unstable_cancelCallback, unstable_now, unstable_scheduleCallback, unstable_shouldYield } from "scheduler";
-import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
-import type { CursorMarker, DOMElement, DOMNodeAttribute, ElementNames, TextNode } from "./dom";
+import type { CursorMarker, DOMElement, DOMNode, DOMNodeAttribute, ElementNames, TextNode } from "./dom";
 import {
     appendChildNode,
     createNode,
@@ -79,9 +78,36 @@ const diff = (before: AnyObject, after: AnyObject): AnyObject | undefined => {
     return isChanged ? changed : undefined;
 };
 
-const cleanupYogaNode = (node?: YogaNode): void => {
-    node?.unsetMeasureFunc();
-    node?.freeRecursive();
+/**
+ * Recursively clean up a node tree, freeing Yoga nodes, clearing
+ * resize observers, and resetting references to prevent memory leaks.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+const cleanupNodeTree = (node?: DOMNode): void => {
+    if (!node) {
+        return;
+    }
+
+    node.yogaNode?.unsetMeasureFunc();
+
+    if ("resizeObservers" in node) {
+        node.resizeObservers?.clear();
+    }
+
+    if ("childNodes" in node && node.childNodes) {
+        for (const child of node.childNodes) {
+            cleanupNodeTree(child);
+        }
+    }
+
+    node.yogaNode?.free();
+
+    if ("childNodes" in node) {
+        node.childNodes = [];
+    }
+
+    node.parentNode = undefined;
 };
 
 type Props = Record<string, unknown>;
@@ -100,9 +126,9 @@ async function loadPackageJson() {
 
     const parsedContent = JSON.parse(content) as
         | {
-            name?: string;
-            version?: string;
-        }
+              name?: string;
+              version?: string;
+          }
         | undefined;
 
     return {
@@ -383,11 +409,11 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     prepareScopeUpdate() {},
     removeChild(node, removeNode) {
         removeChildNode(node, removeNode);
-        cleanupYogaNode(removeNode.yogaNode);
+        cleanupNodeTree(removeNode);
     },
     removeChildFromContainer(node, removeNode) {
         removeChildNode(node, removeNode);
-        cleanupYogaNode(removeNode.yogaNode);
+        cleanupNodeTree(removeNode);
     },
     rendererPackageName: packageInfo.name,
     rendererVersion: packageInfo.version,

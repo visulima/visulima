@@ -109,8 +109,10 @@ export {
 export type { StringWidthFunction } from "./measure-text";
 export {
     clearStringWidthCache,
+    clearToStyledCharactersCache,
     inkCharacterWidth,
     measureStyledChars,
+    setEnableToStyledCharactersCache,
     setStringWidthFunction,
     splitStyledCharsByNewline,
     styledCharsToString,

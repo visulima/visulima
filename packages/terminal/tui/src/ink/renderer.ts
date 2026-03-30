@@ -1,16 +1,178 @@
 /* eslint-disable sonarjs/cognitive-complexity */
-import type { DOMElement } from "./dom";
+import type { StyledChar } from "@alcalzone/ansi-tokenize";
+
+import type { DOMElement, DOMNode } from "./dom";
+import { isNodeSelectable } from "./dom";
 import type { CursorPosition } from "./log-update";
 import Output, { OutputCaches } from "./output";
 import type { RenderState } from "./render-node-to-output";
 import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output";
+import type { Selection } from "./selection";
 
 type Result = {
     cursorPosition: CursorPosition | undefined;
     cursorRequested: boolean;
     output: string;
+    outputBuffer?: Uint32Array;
     outputHeight: number;
+    outputWidth?: number;
     staticOutput: string;
+};
+
+/**
+ * Build a map of DOM nodes to their selected character ranges.
+ * Used to apply selection highlighting during rendering.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+const calculateSelectionMap = (root: DOMElement, selection: Selection): Map<DOMNode, { end: number; start: number }> => {
+    const map = new Map<DOMNode, { end: number; start: number }>();
+
+    if (selection.rangeCount === 0) {
+        return map;
+    }
+
+    const range = selection.getRangeAt(0);
+    const { endContainer, endOffset, startContainer, startOffset } = range;
+
+    if (!startContainer || !endContainer) {
+        return map;
+    }
+
+    let hasFoundStart = false;
+    let hasFoundEnd = false;
+
+    const visitChildren = (
+        node: DOMNode,
+        localLengthRef: { value: number },
+        startRef: { value: number },
+        endRef: { value: number },
+        startFoundRef: { value: boolean },
+        endFoundRef: { value: boolean },
+    ): void => {
+        if (node.nodeName === "#text") {
+            const { length } = node.nodeValue;
+
+            if (startContainer === node) {
+                startFoundRef.value = true;
+                startRef.value = localLengthRef.value + startOffset;
+            }
+
+            if (endContainer === node) {
+                endFoundRef.value = true;
+                endRef.value = localLengthRef.value + endOffset;
+            }
+
+            localLengthRef.value += length;
+        } else if ("childNodes" in node) {
+            for (const child of node.childNodes) {
+                if (node === startContainer) {
+                    startFoundRef.value = true;
+                    startRef.value = localLengthRef.value;
+                }
+
+                if (node === endContainer) {
+                    endFoundRef.value = true;
+                    endRef.value = localLengthRef.value;
+                }
+
+                visitChildren(child, localLengthRef, startRef, endRef, startFoundRef, endFoundRef);
+            }
+
+            if (node === startContainer && startOffset === node.childNodes.length) {
+                startFoundRef.value = true;
+                startRef.value = localLengthRef.value;
+            }
+
+            if (node === endContainer && endOffset === node.childNodes.length) {
+                endFoundRef.value = true;
+                endRef.value = localLengthRef.value;
+            }
+        }
+    };
+
+    const visit = (node: DOMNode): void => {
+        if (node.nodeName === "ink-text") {
+            if (!isNodeSelectable(node)) {
+                return;
+            }
+
+            const localLengthRef = { value: 0 };
+            const nodeStartRef = { value: -1 };
+            const nodeEndRef = { value: -1 };
+            const foundStartRef = { value: false };
+            const foundEndRef = { value: false };
+
+            for (const child of node.childNodes) {
+                if (node === startContainer) {
+                    foundStartRef.value = true;
+                    nodeStartRef.value = localLengthRef.value;
+                }
+
+                if (node === endContainer) {
+                    foundEndRef.value = true;
+                    nodeEndRef.value = localLengthRef.value;
+                }
+
+                visitChildren(child, localLengthRef, nodeStartRef, nodeEndRef, foundStartRef, foundEndRef);
+            }
+
+            if (node === startContainer && startOffset === node.childNodes.length) {
+                foundStartRef.value = true;
+                nodeStartRef.value = localLengthRef.value;
+            }
+
+            if (node === endContainer && endOffset === node.childNodes.length) {
+                foundEndRef.value = true;
+                nodeEndRef.value = localLengthRef.value;
+            }
+
+            if ((hasFoundStart || foundStartRef.value) && (!hasFoundEnd || foundEndRef.value)) {
+                const start = foundStartRef.value ? nodeStartRef.value : 0;
+                const end = foundEndRef.value ? nodeEndRef.value : localLengthRef.value;
+
+                if (start !== -1 && end !== -1 && start < end) {
+                    map.set(node, { end, start });
+                }
+            }
+
+            if (foundStartRef.value) {
+                hasFoundStart = true;
+            }
+
+            if (foundEndRef.value) {
+                hasFoundEnd = true;
+            }
+        } else {
+            const { childNodes } = node as DOMElement;
+
+            if (childNodes) {
+                for (const child of childNodes) {
+                    if (node === startContainer) {
+                        hasFoundStart = true;
+                    }
+
+                    if (node === endContainer) {
+                        hasFoundEnd = true;
+                    }
+
+                    visit(child);
+                }
+
+                if (node === startContainer && startOffset === childNodes.length) {
+                    hasFoundStart = true;
+                }
+
+                if (node === endContainer && endOffset === childNodes.length) {
+                    hasFoundEnd = true;
+                }
+            }
+        }
+    };
+
+    visit(root);
+
+    return map;
 };
 
 const interactiveOutputCaches = new OutputCaches();
@@ -43,7 +205,15 @@ const getReusableOutput = ({ caches, height, node, outputs, width }: ReusableOut
     return output;
 };
 
-const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
+const renderer = (
+    node: DOMElement,
+    isScreenReaderEnabled: boolean,
+    options?: {
+        selection?: Selection;
+        selectionStyle?: (char: StyledChar) => StyledChar;
+        useNativeRenderer?: boolean;
+    },
+): Result => {
     if (node.yogaNode) {
         if (isScreenReaderEnabled) {
             const output = renderNodeToScreenReaderOutput(node, {
@@ -69,6 +239,9 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             };
         }
 
+        // Build selection map if a selection is active
+        const selectionMap = options?.selection && options.selection.rangeCount > 0 ? calculateSelectionMap(node, options.selection) : undefined;
+
         const output = getReusableOutput({
             caches: interactiveOutputCaches,
             height: node.yogaNode.getComputedHeight(),
@@ -84,6 +257,8 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
 
         renderNodeToOutput(node, output, {
             renderState,
+            selectionMap,
+            selectionStyle: options?.selectionStyle,
             skipStaticElements: true,
         });
 
@@ -101,6 +276,22 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
             renderNodeToOutput(node.staticNode, staticOutput, {
                 skipStaticElements: false,
             });
+        }
+
+        // When native renderer is requested, produce a Uint32Array buffer
+        // alongside the string output (string is still needed for static output)
+        if (options?.useNativeRenderer) {
+            const { buffer: outputBuffer, height: outputHeight } = output.getBuffer();
+
+            return {
+                cursorPosition: renderState.cursorPosition,
+                cursorRequested: renderState.cursorRequested,
+                output: "",
+                outputBuffer,
+                outputHeight,
+                outputWidth: output.width,
+                staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
+            };
         }
 
         const { height: outputHeight, output: generatedOutput } = output.get();

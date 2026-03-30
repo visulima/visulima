@@ -10,6 +10,85 @@ import type { StyledChar } from "@alcalzone/ansi-tokenize";
 
 import type { DOMElement, DOMNode } from "./dom";
 import { getPathToRoot } from "./dom";
+import { toStyledCharacters } from "./measure-text";
+import type { CharOffsetMap } from "./squash-text-nodes";
+import { squashTextNodesWithMap } from "./squash-text-nodes";
+
+/**
+ * Extract styled characters from a DOM node with character offset mapping.
+ * Used for resolving selection ranges to character positions.
+ */
+const getPlainTextFromDomNode = (node: DOMNode): { charOffsetMap: CharOffsetMap; styledChars: StyledChar[] } => {
+    if (node.nodeName === "#text") {
+        const styledChars = toStyledCharacters(node.nodeValue);
+        const charOffsetMap: CharOffsetMap = new Map([[node, { end: styledChars.length, start: 0 }]]);
+
+        return { charOffsetMap, styledChars };
+    }
+
+    const charOffsetMap: CharOffsetMap = new Map();
+    const offsetRef = { current: 0 };
+    const text = squashTextNodesWithMap(node, charOffsetMap, offsetRef);
+    const styledChars = toStyledCharacters(text);
+
+    charOffsetMap.set(node, { end: styledChars.length, start: 0 });
+
+    return { charOffsetMap, styledChars };
+};
+
+/**
+ * Resolve a Range to character offsets using a CharOffsetMap.
+ */
+const getRangeCharacterOffsets = (range: Range, charOffsetMap: CharOffsetMap): { end: number; start: number } | undefined => {
+    if (!range.startContainer || !range.endContainer) {
+        return undefined;
+    }
+
+    const getOffset = (node: DOMNode, offset: number): number | undefined => {
+        const nodeRange = charOffsetMap.get(node);
+
+        if (!nodeRange) {
+            return undefined;
+        }
+
+        if (node.nodeName === "#text") {
+            return nodeRange.start + offset;
+        }
+
+        const element = node;
+
+        if (offset >= element.childNodes.length) {
+            return nodeRange.end;
+        }
+
+        const child = element.childNodes[offset];
+        const childRange = charOffsetMap.get(child!);
+
+        if (childRange) {
+            return childRange.start;
+        }
+
+        for (let index = offset - 1; index >= 0; index--) {
+            const sibling = element.childNodes[index];
+            const siblingRange = charOffsetMap.get(sibling!);
+
+            if (siblingRange) {
+                return siblingRange.end;
+            }
+        }
+
+        return nodeRange.start;
+    };
+
+    const start = getOffset(range.startContainer, range.startOffset);
+    const end = getOffset(range.endContainer, range.endOffset);
+
+    if (start === undefined || end === undefined) {
+        return undefined;
+    }
+
+    return { end, start };
+};
 
 /**
  * Compare the document position of two points in the DOM tree.
@@ -71,10 +150,15 @@ export const comparePoints = (nodeA: DOMNode, offsetA: number, nodeB: DOMNode, o
  */
 export class Range {
     startContainer: DOMNode | undefined = undefined;
+
     startOffset = 0;
+
     endContainer: DOMNode | undefined = undefined;
+
     endOffset = 0;
+
     collapsed = true;
+
     commonAncestorContainer: DOMNode | undefined = undefined;
 
     setStart(node: DOMNode, offset: number): void {
@@ -110,6 +194,7 @@ export class Range {
         }
 
         const index = node.parentNode.childNodes.indexOf(node);
+
         this.setStart(node.parentNode, index);
         this.setEnd(node.parentNode, index + 1);
     }
@@ -133,7 +218,17 @@ export class Range {
             return "";
         }
 
-        return "";
+        const { charOffsetMap, styledChars } = getPlainTextFromDomNode(this.commonAncestorContainer);
+        const offsets = getRangeCharacterOffsets(this, charOffsetMap);
+
+        if (!offsets) {
+            return "";
+        }
+
+        return styledChars
+            .slice(offsets.start, offsets.end)
+            .map((char) => char.value)
+            .join("");
     }
 
     private updateCollapsed(): void {
@@ -143,11 +238,13 @@ export class Range {
     private updateCommonAncestor(): void {
         if (!this.startContainer || !this.endContainer) {
             this.commonAncestorContainer = undefined;
+
             return;
         }
 
         if (this.startContainer === this.endContainer) {
             this.commonAncestorContainer = this.startContainer;
+
             return;
         }
 
@@ -174,13 +271,19 @@ export class Range {
  */
 export class Selection {
     anchorNode: DOMNode | undefined = undefined;
+
     anchorOffset = 0;
+
     focusNode: DOMNode | undefined = undefined;
+
     focusOffset = 0;
+
     isCollapsed = true;
+
     rangeCount = 0;
 
     private ranges: Range[] = [];
+
     private readonly listeners = new Set<() => void>();
 
     onChange(listener: () => void): () => void {
@@ -241,6 +344,7 @@ export class Selection {
     collapse(node: DOMNode, offset: number): void {
         this.removeAllRanges();
         const range = new Range();
+
         range.setStart(node, offset);
         range.setEnd(node, offset);
         this.addRange(range);

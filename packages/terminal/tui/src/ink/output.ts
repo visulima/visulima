@@ -3,6 +3,7 @@ import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";
 
+import { CONTINUATION_CELL_CODE, packStyledChar } from "./ansi-to-cell";
 import type { OutputTransformer } from "./render-node-to-output";
 
 /**
@@ -308,6 +309,11 @@ export default class Output {
 
     private readonly styleTransitionCache = new WeakMap<StyledChar["styles"], WeakMap<StyledChar["styles"], string>>();
 
+    /**
+     * Real-time clip stack for visibility queries during rendering.
+     */
+    private readonly activeClipStack: Clip[] = [];
+
     private lineMemoizationEnabled = true;
 
     private memoizationProbeCountdown = 0;
@@ -324,6 +330,7 @@ export default class Output {
         this.width = width;
         this.height = height;
         this.operations.length = 0;
+        this.activeClipStack.length = 0;
     }
 
     write(x: number, y: number, text: string, options: { transformers: OutputTransformer[] }): void {
@@ -365,12 +372,22 @@ export default class Output {
             clip,
             type: "clip",
         });
+        this.activeClipStack.push(clip);
     }
 
     unclip(): void {
         this.operations.push({
             type: "unclip",
         });
+        this.activeClipStack.pop();
+    }
+
+    /**
+     * Get the current clip region, if any. Used for visibility optimization
+     * to skip rendering nodes that are entirely outside the visible area.
+     */
+    getCurrentClip(): Clip | undefined {
+        return this.activeClipStack.at(-1);
     }
 
     get(): { height: number; output: string } {
@@ -393,6 +410,13 @@ export default class Output {
                     break;
                 }
 
+                case "styledWrite": {
+                    const clip = clips.at(-1);
+
+                    this.processStyledWriteOperation(operation, output, clip);
+                    break;
+                }
+
                 case "unclip": {
                     clips.pop();
                     break;
@@ -402,13 +426,6 @@ export default class Output {
                     const clip = clips.at(-1);
 
                     this.processWriteOperation(operation, output, clip);
-                    break;
-                }
-
-                case "styledWrite": {
-                    const clip = clips.at(-1);
-
-                    this.processStyledWriteOperation(operation, output, clip);
                     break;
                 }
             }
@@ -463,6 +480,92 @@ export default class Output {
     }
 
     /**
+     * Convert the output to a Uint32Array in the packed cell format used by
+     * the Rust renderer: [charCode, (styles &lt;< 16) | (bg &lt;< 8) | fg] per cell.
+     *
+     * This is the buffer-based alternative to `get()` — it reuses the same
+     * operation processing and grid building, but packs cells into the native
+     * format instead of generating ANSI strings.
+     */
+    getBuffer(): { buffer: Uint32Array; height: number } {
+        const output = this.getOutputGrid();
+
+        const clips: Clip[] = [];
+
+        for (const operation of this.operations) {
+            switch (operation.type) {
+                case "clip": {
+                    clips.push(operation.clip);
+                    break;
+                }
+
+                case "styledWrite": {
+                    const clip = clips.at(-1);
+
+                    this.processStyledWriteOperation(operation, output, clip);
+                    break;
+                }
+
+                case "unclip": {
+                    clips.pop();
+                    break;
+                }
+
+                case "write": {
+                    const clip = clips.at(-1);
+
+                    this.processWriteOperation(operation, output, clip);
+                    break;
+                }
+            }
+        }
+
+        const rows = output.length;
+        const buffer = new Uint32Array(this.width * rows * 2);
+
+        // Default: space with terminal default colors
+        const defaultAttribute = (0 << 16) | (255 << 8) | 255;
+
+        for (let index = 0; index < buffer.length; index += 2) {
+            buffer[index] = 32; // space
+            buffer[index + 1] = defaultAttribute;
+        }
+
+        for (let y = 0; y < rows; y++) {
+            const row = output[y];
+
+            if (!row) {
+                continue;
+            }
+
+            for (let x = 0; x < row.length && x < this.width; x++) {
+                const cell = row[x];
+
+                if (!cell || cell.value.length === 0) {
+                    continue;
+                }
+
+                const bufIndex = (y * this.width + x) * 2;
+                const [charCode, attributeCode] = packStyledChar(cell);
+
+                buffer[bufIndex] = charCode;
+                buffer[bufIndex + 1] = attributeCode;
+
+                // Handle wide characters: write continuation sentinel to next cell
+                if (cell.fullWidth && x + 1 < this.width) {
+                    const nextIndex = bufIndex + 2;
+
+                    buffer[nextIndex] = CONTINUATION_CELL_CODE;
+                    buffer[nextIndex + 1] = attributeCode;
+                    x++; // Skip the continuation cell
+                }
+            }
+        }
+
+        return { buffer, height: rows };
+    }
+
+    /**
      * Write pre-tokenized StyledChar arrays directly to the output grid.
      * This bypasses text tokenization, preserving styles from the wrapping phase.
      */
@@ -471,7 +574,11 @@ export default class Output {
 
         // Ensure the output grid has enough rows
         while (output.length <= y) {
-            output.push(Array.from({ length: this.width }).map(() => ({ fullWidth: false, styles: [], type: "char" as const, value: " " })));
+            output.push(
+                Array.from({ length: this.width }).map(() => {
+                    return { fullWidth: false, styles: [], type: "char" as const, value: " " };
+                }),
+            );
         }
 
         const row = output[y];

@@ -37,7 +37,7 @@ export const getStickyDescendants = (node: DOMElement, result: StickyNodeInfo[] 
             continue;
         }
 
-        const domChild = child as DOMElement;
+        const domChild = child;
 
         // Skip alternate sticky versions (they're rendered only when stuck)
         if (domChild.internal_stickyAlternate) {
@@ -74,11 +74,11 @@ export const identifyActiveStickyNodes = (
     node: DOMElement,
     scrollTop: number,
     viewportBottom: number,
-): Array<{
+): {
     nextStickyNodeInfo?: StickyNodeInfo;
     stickyNode: DOMElement;
     type: "top" | "bottom";
-}> => {
+}[] => {
     let activeTopStickyNode: StickyNodeInfo | undefined;
     let activeTopStickyNodeIndex = -1;
     let activeBottomStickyNode: StickyNodeInfo | undefined;
@@ -119,11 +119,11 @@ export const identifyActiveStickyNodes = (
         }
     }
 
-    const result: Array<{
+    const result: {
         nextStickyNodeInfo?: StickyNodeInfo;
         stickyNode: DOMElement;
         type: "top" | "bottom";
-    }> = [];
+    }[] = [];
 
     if (activeTopStickyNode) {
         // Find the next non-bottom sticky node (for push-up calculation)
@@ -170,15 +170,14 @@ export const identifyActiveStickyNodes = (
 /**
  * Render active sticky headers and write them to the output at their stuck positions.
  * Called during the rendering of a scrollable container.
- *
  * @param createOutput Factory function for creating Output instances (avoids circular imports).
  */
 export const renderActiveStickyNodes = (
-    activeStickyNodes: Array<{
+    activeStickyNodes: {
         nextStickyNodeInfo?: StickyNodeInfo;
         stickyNode: DOMElement;
         type: "top" | "bottom";
-    }>,
+    }[],
     node: DOMElement,
     output: Output,
     createOutput: OutputFactory,
@@ -276,9 +275,7 @@ export const renderActiveStickyNodes = (
         const renderedResult = stickyOutput.get();
         const renderedLines = renderedResult.output.split("\n");
 
-        for (let lineIndex = 0; lineIndex < renderedLines.length; lineIndex++) {
-            const line = renderedLines[lineIndex];
-
+        for (const [lineIndex, line] of renderedLines.entries()) {
             if (line && line.length > 0) {
                 output.write(stickyOffsetX - (x + currentBorderLeft), finalStickyY - (y + currentBorderTop) + lineIndex, line, {
                     transformers: [],
