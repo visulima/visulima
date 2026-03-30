@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui/react: Box, Text, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
+description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
 ---
 
 # Components
@@ -123,6 +123,56 @@ Notes:
 - If multiple `<Cursor>` components are rendered, the last one controls the terminal cursor.
 - If `anchorRef` is set but unresolved, the cursor is hidden for that frame.
 - See also [`useCursor()`](./hooks.mdx#usecursor) for imperative cursor control (e.g. IME support).
+
+## `BigText`
+
+Render large ASCII art text using [CFonts](https://github.com/dominikwilkowski/cfonts). Ported from [`ink-big-text`](https://github.com/sindresorhus/ink-big-text).
+
+```tsx
+import { BigText } from "@visulima/tui/ink";
+
+<BigText text="Hello" />
+<BigText text="Cool" font="chrome" colors={["red", "blue"]} />
+```
+
+| Prop              | Type                          | Default         |
+| ----------------- | ----------------------------- | --------------- |
+| `text`            | `string`                      | required        |
+| `font`            | `Font`                        | `'block'`       |
+| `align`           | `'left' \| 'center' \| 'right'` | `'left'`     |
+| `colors`          | `string[]`                    | `['system']`    |
+| `backgroundColor` | `BackgroundColor`             | `'transparent'` |
+| `letterSpacing`   | `number`                      | `1`             |
+| `lineHeight`      | `number`                      | `1`             |
+| `space`           | `boolean`                     | `true`          |
+| `maxLength`       | `number`                      | `0`             |
+
+Available fonts: `block`, `slick`, `tiny`, `grid`, `pallet`, `shade`, `simple`, `simpleBlock`, `3d`, `simple3d`, `chrome`, `huge`.
+
+## `Gradient`
+
+Apply a terminal color gradient to child text. Ported from [`ink-gradient`](https://github.com/sindresorhus/ink-gradient), uses `@visulima/colorize` internally.
+
+```tsx
+import { Gradient, Text } from "@visulima/tui/ink";
+
+<Gradient name="rainbow">
+    <Text>Hello, World!</Text>
+</Gradient>
+
+<Gradient colors={["#ff0000", "#00ff00", "#0000ff"]}>
+    <Text>Custom gradient</Text>
+</Gradient>
+```
+
+| Prop     | Type             | Default |
+| -------- | ---------------- | ------- |
+| `name`   | `GradientName`   | —       |
+| `colors` | `GradientColors` | —       |
+
+`name` and `colors` are mutually exclusive — exactly one must be provided.
+
+Built-in presets: `rainbow`, `cristal`, `teen`, `mind`, `morning`, `vice`, `passion`, `fruit`, `instagram`, `atlas`, `retro`, `summer`, `pastel`.
 
 ## `Newline`
 

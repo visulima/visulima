@@ -8336,6 +8336,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
+      '@byteland/ink-scroll-bar':
+        specifier: 1.0.0
+        version: 1.0.0(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4)
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint
         version: 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
@@ -8435,6 +8438,12 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.1.0(jiti@2.6.1))
+      ink-scroll-list:
+        specifier: 0.4.1
+        version: 0.4.1(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4)
+      ink-scroll-view:
+        specifier: 0.3.6
+        version: 0.3.6(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4)
       is-in-ci:
         specifier: catalog:prod
         version: 2.0.0
@@ -9280,6 +9289,10 @@ packages:
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
 
+  '@alcalzone/ansi-tokenize@0.2.5':
+    resolution: {integrity: sha512-3NX/MpTdroi0aKz134A6RC2Gb2iXVECN4QaAXnvCIxxIm3C3AVB1mkUe8NaaiyvOpDfsrqWhYtj+Q6a62RrTsw==}
+    engines: {node: '>=18'}
+
   '@alcalzone/ansi-tokenize@0.3.0':
     resolution: {integrity: sha512-p+CMKJ93HFmLkjXKlXiVGlMQEuRb6H0MokBSwUsX+S6BRX8eV5naFZpQJFfJHjRZY0Hmnqy1/r6UWl3x+19zYA==}
     engines: {node: '>=18'}
@@ -10087,6 +10100,12 @@ packages:
   '@bramus/specificity@2.4.2':
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
+
+  '@byteland/ink-scroll-bar@1.0.0':
+    resolution: {integrity: sha512-5wfUK9H6iQI3v66uk7nQ3mJIahooA2oYpVKc5PtXMb68+z8EbWFT15wxVSJ9/x8an8oGgeGvdJcLCKdv9bjVdg==}
+    peerDependencies:
+      ink: '>=6'
+      react: '>=19'
 
   '@clack/core@0.5.0':
     resolution: {integrity: sha512-p3y0FIOwaYRUPRcMO7+dlmLh8PSRcrjuTndsiA0WAFbWES0mLZlrjVoBRZ9DzkPFJZG6KGkJmoEAY0ZcVWTkow==}
@@ -19442,6 +19461,10 @@ packages:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==}
     engines: {node: '>=8'}
 
+  cli-cursor@4.0.0:
+    resolution: {integrity: sha512-VGtlMu3x/4DOtIUwEkRezxUZ2lBacNJCHash0N0WeZDBS+7Ux1dm3XWAgWYxLJFMMdOeXMHXorshEFhbMSGelg==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
     engines: {node: '>=18'}
@@ -22957,6 +22980,31 @@ packages:
   ini@6.0.0:
     resolution: {integrity: sha512-IBTdIkzZNOpqm7q3dRqJvMaldXjDHWkEDfrwGEQTs5eaQMWV+djAhR+wahyNNMAa+qpbDUhBMVt4ZKNwpPm7xQ==}
     engines: {node: ^20.17.0 || >=22.9.0}
+
+  ink-scroll-list@0.4.1:
+    resolution: {integrity: sha512-2GcjnBXRe0sTSMC03SCKX6IkNAsYYgcpvAN+ggAiaqeg+s+qA9Ls0iVTOmB+Ize/9AVts8xloG4aRcrOy/7Xxg==}
+    peerDependencies:
+      ink: '>=6'
+      react: '>=19'
+
+  ink-scroll-view@0.3.6:
+    resolution: {integrity: sha512-XqLkmFFCA5Ow2lVyvv7q0aVHzB78XojIM8gZMQ3//lvy8ZDpJsXWtTRwsCEsdQHnwvMCDCnKCzgF4xkkzoN8mQ==}
+    peerDependencies:
+      ink: ^5 || ^6
+      react: ^18 || ^19
+
+  ink@6.8.0:
+    resolution: {integrity: sha512-sbl1RdLOgkO9isK42WCZlJCFN9hb++sX9dsklOvfd1YQ3bQ2AiFu12Q6tFlr0HvEUvzraJntQCCpfEoUe9DSzA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@types/react': '>=19.0.0'
+      react: '>=19.0.0'
+      react-devtools-core: '>=6.1.2'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      react-devtools-core:
+        optional: true
 
   inline-style-parser@0.2.7:
     resolution: {integrity: sha512-Nb2ctOyNR8DqQoR0OwRG95uNWIC0C1lCgf5Naz5H6Ji72KZ8OcFZLz2P5sNgwlyoJ8Yif11oMuYs5pBQa86csA==}
@@ -27704,6 +27752,10 @@ packages:
     resolution: {integrity: sha512-l+sSefzHpj5qimhFSE5a8nufZYAM3sBSVMAPtYkmC+4EH2anSGaEMXSD0izRQbu9nfyQ9y5JrVmp7E8oZrUjvA==}
     engines: {node: '>=8'}
 
+  restore-cursor@4.0.0:
+    resolution: {integrity: sha512-I9fPXU9geO9bHOt9pHHOhOkYerIMsmVaWB0rA2AI9ERh/+x/i7MV5HKBNrg+ljO5eoPVgCcnFuRjJ9uH6I/3eg==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
   restore-cursor@5.1.0:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
@@ -30699,6 +30751,10 @@ packages:
     resolution: {integrity: sha512-c9bZp7b5YtRj2wOe6dlj32MK+Bx/M/d+9VB2SHM1OtsUHR0aV0tdP6DWh/iMt0kWi1t5g1Iudu6hQRNd1A4PVA==}
     engines: {node: '>=18'}
 
+  widest-line@6.0.0:
+    resolution: {integrity: sha512-U89AsyEeAsyoF0zVJBkG9zBgekjgjK7yk9sje3F4IQpXBJ10TF6ByLlIfjMhcmHMJgHZI4KHt4rdNfktzxIAMA==}
+    engines: {node: '>=20'}
+
   window-size@1.1.1:
     resolution: {integrity: sha512-5D/9vujkmVQ7pSmc0SCBmHXbkv6eaHwXEx65MywhmUMsI8sGqJ972APq1lotfcwMKPFLuCFfL8xGHLIp7jaBmA==}
     engines: {node: '>= 0.10.0'}
@@ -31147,6 +31203,11 @@ snapshots:
   '@ai-sdk/provider@3.0.8':
     dependencies:
       json-schema: 0.4.0
+
+  '@alcalzone/ansi-tokenize@0.2.5':
+    dependencies:
+      ansi-styles: 6.2.3
+      is-fullwidth-code-point: 5.1.0
 
   '@alcalzone/ansi-tokenize@0.3.0':
     dependencies:
@@ -32699,6 +32760,11 @@ snapshots:
   '@bramus/specificity@2.4.2':
     dependencies:
       css-tree: 3.2.1
+
+  '@byteland/ink-scroll-bar@1.0.0(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      ink: 6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4)
+      react: 19.2.4
 
   '@clack/core@0.5.0':
     dependencies:
@@ -43499,6 +43565,10 @@ snapshots:
     dependencies:
       restore-cursor: 3.1.0
 
+  cli-cursor@4.0.0:
+    dependencies:
+      restore-cursor: 4.0.0
+
   cli-cursor@5.0.0:
     dependencies:
       restore-cursor: 5.1.0
@@ -45078,7 +45148,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
@@ -47777,6 +47847,52 @@ snapshots:
   ini@4.1.3: {}
 
   ini@6.0.0: {}
+
+  ink-scroll-list@0.4.1(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4):
+    dependencies:
+      ink: 6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4)
+      ink-scroll-view: 0.3.6(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4)
+      react: 19.2.4
+
+  ink-scroll-view@0.3.6(ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4))(react@19.2.4):
+    dependencies:
+      ink: 6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4)
+      react: 19.2.4
+
+  ink@6.8.0(@types/react@19.2.14)(react-devtools-core@7.0.1)(react@19.2.4):
+    dependencies:
+      '@alcalzone/ansi-tokenize': 0.2.5
+      ansi-escapes: 7.3.0
+      ansi-styles: 6.2.3
+      auto-bind: 5.0.1
+      chalk: 5.6.2
+      cli-boxes: 3.0.0
+      cli-cursor: 4.0.0
+      cli-truncate: 5.2.0
+      code-excerpt: 4.0.0
+      es-toolkit: 1.45.1
+      indent-string: 5.0.0
+      is-in-ci: 2.0.0
+      patch-console: 2.0.0
+      react: 19.2.4
+      react-reconciler: 0.33.0(react@19.2.4)
+      scheduler: 0.27.0
+      signal-exit: 3.0.7
+      slice-ansi: 8.0.0
+      stack-utils: 2.0.6
+      string-width: 8.2.0
+      terminal-size: 4.0.1
+      type-fest: 5.5.0
+      widest-line: 6.0.0
+      wrap-ansi: 9.0.2
+      ws: 8.20.0
+      yoga-layout: 3.2.1
+    optionalDependencies:
+      '@types/react': 19.2.14
+      react-devtools-core: 7.0.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   inline-style-parser@0.2.7: {}
 
@@ -54279,6 +54395,11 @@ snapshots:
       onetime: 5.1.2
       signal-exit: 3.0.7
 
+  restore-cursor@4.0.0:
+    dependencies:
+      onetime: 5.1.2
+      signal-exit: 3.0.7
+
   restore-cursor@5.1.0:
     dependencies:
       onetime: 7.0.0
@@ -55250,7 +55371,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
@@ -57890,6 +58011,10 @@ snapshots:
   widest-line@5.0.0:
     dependencies:
       string-width: 7.2.0
+
+  widest-line@6.0.0:
+    dependencies:
+      string-width: 8.2.0
 
   window-size@1.1.1:
     dependencies:
