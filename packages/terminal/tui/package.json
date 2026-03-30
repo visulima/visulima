@@ -94,6 +94,7 @@
         "@visulima/ansi": "workspace:*",
         "@visulima/colorize": "workspace:*",
         "@visulima/string": "workspace:*",
+        "@visulima/tabular": "workspace:*",
         "cfonts": "3.3.1",
         "code-excerpt": "catalog:prod",
         "eventemitter3": "catalog:prod",

@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Link, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar"
+description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Link, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar, Table"
 ---
 
 # Components
@@ -9,7 +9,7 @@ description: "Reference for all React components in @visulima/tui: Box, Text, Bi
 
 ```tsx
 import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui/ink";
-import { BigText, Gradient, ProgressBar, Spinner } from "@visulima/tui/ink";
+import { BigText, Gradient, ProgressBar, Spinner, Table } from "@visulima/tui/ink";
 ```
 
 ## `Box`
@@ -292,3 +292,84 @@ Example with labels:
     <Text> 60%</Text>
 </Box>
 ```
+
+## `Table`
+
+Render data as a formatted table in the terminal. Uses [`@visulima/tabular`](https://visulima.com/packages/tabular) as the rendering engine, supporting multiple border styles, column configuration, cell formatting, and word wrap. Ported from [`ink-table`](https://github.com/maticzav/ink-table).
+
+```tsx
+import { Table } from "@visulima/tui/ink";
+
+const data = [
+    { name: "Alice", age: 30, city: "NYC" },
+    { name: "Bob", age: 25, city: "LA" },
+];
+
+<Table data={data} />
+<Table data={data} borderStyle="rounded" padding={2} />
+```
+
+### Props
+
+| Prop           | Type                                          | Default     | Description                                                                |
+| -------------- | --------------------------------------------- | ----------- | -------------------------------------------------------------------------- |
+| `data`         | `T[]`                                         | _(required)_| Array of objects to display as rows                                        |
+| `columns`      | `(string \| ColumnConfig)[]`                  | all keys    | Columns to display and their order                                         |
+| `padding`      | `number`                                      | `1`         | Cell padding (left and right) in characters                                |
+| `borderStyle`  | `string \| BorderStyle`                       | `"default"` | Border preset or custom object (see below)                                 |
+| `maxWidth`     | `number`                                      | —           | Maximum table width; columns truncate/wrap to fit                          |
+| `showHeader`   | `boolean`                                     | `true`      | Whether to show the header row                                             |
+| `formatCell`   | `(value, column, rowIndex) => string`         | —           | Custom cell value formatter                                                |
+| `formatHeader` | `(column) => string`                          | —           | Custom header label formatter                                              |
+| `skeleton`     | `string`                                      | `""`        | Replacement for `null`/`undefined` cells                                   |
+| `wordWrap`     | `boolean`                                     | `false`     | Enable word wrap instead of truncation                                     |
+
+### Column Configuration
+
+Columns accept either simple key strings or `ColumnConfig` objects for advanced control:
+
+```tsx
+<Table
+    data={data}
+    columns={[
+        { key: "name", header: "Full Name", width: 20, align: "left" },
+        { key: "age", header: "Years", align: "right" },
+        "city",
+    ]}
+/>
+```
+
+| ColumnConfig field | Type                  | Description                           |
+| ------------------ | --------------------- | ------------------------------------- |
+| `key`              | `string` _(required)_ | Key from the data object              |
+| `header`           | `string`              | Custom header label (defaults to key) |
+| `width`            | `number`              | Fixed column width in characters      |
+| `align`            | `"left" \| "center" \| "right"` | Horizontal alignment       |
+
+### Border Styles
+
+Available presets: `"default"`, `"rounded"`, `"double"`, `"minimal"`, `"dots"`, `"markdown"`, `"ascii"`, `"none"`, `"block"`, `"thick"`.
+
+```tsx
+<Table data={data} borderStyle="rounded" />
+<Table data={data} borderStyle="ascii" />
+<Table data={data} borderStyle="none" />
+```
+
+You can also pass a custom `BorderStyle` object from `@visulima/tabular` for full control.
+
+### Custom Formatting
+
+```tsx
+<Table
+    data={data}
+    formatCell={(value, column, rowIndex) => {
+        if (column === "name") return String(value).toUpperCase();
+        return String(value ?? "");
+    }}
+    formatHeader={(column) => column.toUpperCase()}
+    skeleton="N/A"
+/>
+```
+
+> **Note:** Unlike the original `ink-table`, this component uses function-based formatters (`formatCell`, `formatHeader`) instead of custom React component props (`header`, `cell`, `skeleton`), because the table is rendered as a single string via `@visulima/tabular`.
