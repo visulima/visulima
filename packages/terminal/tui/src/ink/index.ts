@@ -8,6 +8,8 @@ export type { Props as CursorProps } from "./components/Cursor";
 export { default as Cursor } from "./components/Cursor";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
 export { default as Gradient } from "./components/Gradient";
+export type { Props as LinkProps } from "./components/Link";
+export { default as Link } from "./components/Link";
 export type { Props as NewlineProps } from "./components/Newline";
 export { default as Newline } from "./components/Newline";
 export type { Props as ProgressBarProps } from "./components/ProgressBar";
