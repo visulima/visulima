@@ -38,7 +38,6 @@ export type Props = PublicProps & {
  */
 
 const StdinContext: Context<Props> = createContext<Props>({
-
     internal_eventEmitter: new EventEmitter(),
 
     internal_exitOnCtrlC: true,

@@ -7,7 +7,7 @@
  * MIT License
  * Copyright (c) Frankie Bagnardi
  */
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 import type { ReactElement } from "react";
 
 import useWindowSize from "../hooks/use-window-size";
@@ -17,7 +17,6 @@ import Text from "./Text";
 export type Props = {
     /**
      * The fill character used for the completed portion of the bar.
-     *
      * @default "█"
      */
     readonly character?: string;
@@ -25,28 +24,24 @@ export type Props = {
     /**
      * Override the terminal width used for calculation.
      * When 0, uses the actual terminal width.
-     *
      * @default 0
      */
     readonly columns?: number;
 
     /**
      * Number of columns reserved on the left side (e.g. for labels).
-     *
      * @default 0
      */
     readonly left?: number;
 
     /**
      * Completion percentage between 0 and 1.
-     *
      * @default 1
      */
     readonly percent?: number;
 
     /**
      * Number of columns reserved on the right side (e.g. for percentage text).
-     *
      * @default 0
      */
     readonly right?: number;
@@ -54,7 +49,6 @@ export type Props = {
     /**
      * Whether to pad the remaining space with whitespace.
      * Useful when rendering the bar over a background color.
-     *
      * @default false
      */
     readonly rightPad?: boolean;
@@ -64,8 +58,8 @@ export type Props = {
  * A terminal progress bar that fills proportionally to a percentage value.
  *
  * ```tsx
- * <ProgressBar percent={0.5} />
- * <ProgressBar percent={0.75} color="green" left={10} right={5} />
+ * &lt;ProgressBar percent={0.5} />
+ * &lt;ProgressBar percent={0.75} color="green" left={10} right={5} />
  * ```
  */
 export default function ProgressBar({

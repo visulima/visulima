@@ -1,4 +1,4 @@
-/* eslint-disable react-perf/jsx-no-new-object-as-prop, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable unicorn/filename-case */
 import React, { useMemo } from "react";
 
 import type { Props as BoxProps } from "../Box";
@@ -50,11 +50,13 @@ const CORNER_CHARS: Record<string, { bottomLeft: string; bottomRight: string; to
 
 const getStyleChars = (style: ScrollBarStyle | undefined): { lowerThumb?: string; thumb: string; track: string; upperThumb?: string } => {
     const key = typeof style === "string" ? style : "single";
+
     return STYLE_CHARS[key] ?? STYLE_CHARS.single!;
 };
 
 const getCornerChars = (style: ScrollBarStyle | undefined): { bottomLeft: string; bottomRight: string; topLeft: string; topRight: string } => {
     const key = typeof style === "string" ? style : "single";
+
     return CORNER_CHARS[key] ?? CORNER_CHARS.single!;
 };
 

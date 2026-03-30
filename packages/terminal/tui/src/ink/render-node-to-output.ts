@@ -99,8 +99,7 @@ const mightExceedWidth = (text: string, maxWidth: number): boolean => {
     return false;
 };
 
-const isNodeHidden = (node: DOMElement): boolean =>
-    (node.internal_hidden ?? false) || node.yogaNode?.getDisplay() === Yoga.DISPLAY_NONE;
+const isNodeHidden = (node: DOMElement): boolean => (node.internal_hidden ?? false) || node.yogaNode?.getDisplay() === Yoga.DISPLAY_NONE;
 
 const isNodeOrAncestorHidden = (node: DOMElement): boolean => {
     let currentNode: DOMElement | undefined = node;
@@ -224,6 +223,7 @@ const renderNodeToOutput = (
 
         if (!marker) {
             renderState.cursorPosition = undefined;
+
             return;
         }
 
@@ -248,11 +248,13 @@ const renderNodeToOutput = (
 
         if (!resolvedAnchorNode) {
             renderState.cursorPosition = undefined;
+
             return;
         }
 
         if (marker.anchorRef && isNodeOrAncestorHidden(resolvedAnchorNode)) {
             renderState.cursorPosition = undefined;
+
             return;
         }
 
@@ -260,6 +262,7 @@ const renderNodeToOutput = (
 
         if (!anchorPosition) {
             renderState.cursorPosition = undefined;
+
             return;
         }
 

@@ -136,17 +136,17 @@ import { BigText } from "@visulima/tui/ink";
 <BigText text="Cool" font="chrome" colors={["red", "blue"]} />
 ```
 
-| Prop              | Type                          | Default         |
-| ----------------- | ----------------------------- | --------------- |
-| `text`            | `string`                      | required        |
-| `font`            | `Font`                        | `'block'`       |
-| `align`           | `'left' \| 'center' \| 'right'` | `'left'`     |
-| `colors`          | `string[]`                    | `['system']`    |
-| `backgroundColor` | `BackgroundColor`             | `'transparent'` |
-| `letterSpacing`   | `number`                      | `1`             |
-| `lineHeight`      | `number`                      | `1`             |
-| `space`           | `boolean`                     | `true`          |
-| `maxLength`       | `number`                      | `0`             |
+| Prop              | Type                            | Default         |
+| ----------------- | ------------------------------- | --------------- |
+| `text`            | `string`                        | required        |
+| `font`            | `Font`                          | `'block'`       |
+| `align`           | `'left' \| 'center' \| 'right'` | `'left'`        |
+| `colors`          | `string[]`                      | `['system']`    |
+| `backgroundColor` | `BackgroundColor`               | `'transparent'` |
+| `letterSpacing`   | `number`                        | `1`             |
+| `lineHeight`      | `number`                        | `1`             |
+| `space`           | `boolean`                       | `true`          |
+| `maxLength`       | `number`                        | `0`             |
 
 Available fonts: `block`, `slick`, `tiny`, `grid`, `pallet`, `shade`, `simple`, `simpleBlock`, `3d`, `simple3d`, `chrome`, `huge`.
 
@@ -192,11 +192,11 @@ import { Link, Text } from "@visulima/tui/ink";
 </Link>
 ```
 
-| Prop       | Type                                              | Default | Description                                   |
-| ---------- | ------------------------------------------------- | ------- | --------------------------------------------- |
-| `url`      | `string`                                          | —       | The URL to link to (required)                 |
-| `fallback` | `boolean \| ((text: string, url: string) => string)` | `true`  | Fallback for unsupported terminals            |
-| `children` | `ReactNode`                                       | —       | Link text content                             |
+| Prop       | Type                                                 | Default | Description                        |
+| ---------- | ---------------------------------------------------- | ------- | ---------------------------------- |
+| `url`      | `string`                                             | —       | The URL to link to (required)      |
+| `fallback` | `boolean \| ((text: string, url: string) => string)` | `true`  | Fallback for unsupported terminals |
+| `children` | `ReactNode`                                          | —       | Link text content                  |
 
 When `fallback` is `true`, unsupported terminals show: `My Website https://example.com`. When `false`, only the text is shown. A function receives `(text, url)` for custom formatting.
 
@@ -274,14 +274,14 @@ import { ProgressBar } from "@visulima/tui/ink";
 
 All `Text` props (color, bold, dimColor, etc.) are forwarded to the underlying `<Text>`.
 
-| Prop        | Type      | Default | Description                                      |
-| ----------- | --------- | ------- | ------------------------------------------------ |
-| `percent`   | `number`  | `1`     | Completion between 0 and 1 (clamped)             |
-| `columns`   | `number`  | `0`     | Override terminal width (0 = auto-detect)        |
-| `left`      | `number`  | `0`     | Columns reserved on the left (e.g. for labels)   |
-| `right`     | `number`  | `0`     | Columns reserved on the right                    |
-| `character` | `string`  | `'█'`   | Fill character for the completed portion         |
-| `rightPad`  | `boolean` | `false` | Pad remaining space with whitespace              |
+| Prop        | Type      | Default | Description                                    |
+| ----------- | --------- | ------- | ---------------------------------------------- |
+| `percent`   | `number`  | `1`     | Completion between 0 and 1 (clamped)           |
+| `columns`   | `number`  | `0`     | Override terminal width (0 = auto-detect)      |
+| `left`      | `number`  | `0`     | Columns reserved on the left (e.g. for labels) |
+| `right`     | `number`  | `0`     | Columns reserved on the right                  |
+| `character` | `string`  | `'█'`   | Fill character for the completed portion       |
+| `rightPad`  | `boolean` | `false` | Pad remaining space with whitespace            |
 
 Example with labels:
 
@@ -311,40 +311,33 @@ const data = [
 
 ### Props
 
-| Prop           | Type                                          | Default     | Description                                                                |
-| -------------- | --------------------------------------------- | ----------- | -------------------------------------------------------------------------- |
-| `data`         | `T[]`                                         | _(required)_| Array of objects to display as rows                                        |
-| `columns`      | `(string \| ColumnConfig)[]`                  | all keys    | Columns to display and their order                                         |
-| `padding`      | `number`                                      | `1`         | Cell padding (left and right) in characters                                |
-| `borderStyle`  | `string \| BorderStyle`                       | `"default"` | Border preset or custom object (see below)                                 |
-| `maxWidth`     | `number`                                      | —           | Maximum table width; columns truncate/wrap to fit                          |
-| `showHeader`   | `boolean`                                     | `true`      | Whether to show the header row                                             |
-| `formatCell`   | `(value, column, rowIndex) => string`         | —           | Custom cell value formatter                                                |
-| `formatHeader` | `(column) => string`                          | —           | Custom header label formatter                                              |
-| `skeleton`     | `string`                                      | `""`        | Replacement for `null`/`undefined` cells                                   |
-| `wordWrap`     | `boolean`                                     | `false`     | Enable word wrap instead of truncation                                     |
+| Prop           | Type                                  | Default      | Description                                       |
+| -------------- | ------------------------------------- | ------------ | ------------------------------------------------- |
+| `data`         | `T[]`                                 | _(required)_ | Array of objects to display as rows               |
+| `columns`      | `(string \| ColumnConfig)[]`          | all keys     | Columns to display and their order                |
+| `padding`      | `number`                              | `1`          | Cell padding (left and right) in characters       |
+| `borderStyle`  | `string \| BorderStyle`               | `"default"`  | Border preset or custom object (see below)        |
+| `maxWidth`     | `number`                              | —            | Maximum table width; columns truncate/wrap to fit |
+| `showHeader`   | `boolean`                             | `true`       | Whether to show the header row                    |
+| `formatCell`   | `(value, column, rowIndex) => string` | —            | Custom cell value formatter                       |
+| `formatHeader` | `(column) => string`                  | —            | Custom header label formatter                     |
+| `skeleton`     | `string`                              | `""`         | Replacement for `null`/`undefined` cells          |
+| `wordWrap`     | `boolean`                             | `false`      | Enable word wrap instead of truncation            |
 
 ### Column Configuration
 
 Columns accept either simple key strings or `ColumnConfig` objects for advanced control:
 
 ```tsx
-<Table
-    data={data}
-    columns={[
-        { key: "name", header: "Full Name", width: 20, align: "left" },
-        { key: "age", header: "Years", align: "right" },
-        "city",
-    ]}
-/>
+<Table data={data} columns={[{ key: "name", header: "Full Name", width: 20, align: "left" }, { key: "age", header: "Years", align: "right" }, "city"]} />
 ```
 
-| ColumnConfig field | Type                  | Description                           |
-| ------------------ | --------------------- | ------------------------------------- |
-| `key`              | `string` _(required)_ | Key from the data object              |
-| `header`           | `string`              | Custom header label (defaults to key) |
-| `width`            | `number`              | Fixed column width in characters      |
-| `align`            | `"left" \| "center" \| "right"` | Horizontal alignment       |
+| ColumnConfig field | Type                            | Description                           |
+| ------------------ | ------------------------------- | ------------------------------------- |
+| `key`              | `string` _(required)_           | Key from the data object              |
+| `header`           | `string`                        | Custom header label (defaults to key) |
+| `width`            | `number`                        | Fixed column width in characters      |
+| `align`            | `"left" \| "center" \| "right"` | Horizontal alignment                  |
 
 ### Border Styles
 

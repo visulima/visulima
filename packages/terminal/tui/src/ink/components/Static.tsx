@@ -40,16 +40,13 @@ export default function Static<T>(props: Props<T>): ReactElement {
 
     const children = itemsToRender.map((item, itemIndex): ReactNode => render(item, index + itemIndex));
 
-    const style: Styles = useMemo(
-        () => {
-            return {
-                flexDirection: "column",
-                position: "absolute",
-                ...customStyle,
-            };
-        },
-        [customStyle],
-    );
+    const style: Styles = useMemo(() => {
+        return {
+            flexDirection: "column",
+            position: "absolute",
+            ...customStyle,
+        };
+    }, [customStyle]);
 
     return (
         <ink-box internal_static style={style}>

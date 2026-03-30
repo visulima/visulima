@@ -1,4 +1,4 @@
-/* eslint-disable react-perf/jsx-no-new-function-as-prop, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 import { strip } from "@visulima/ansi";
 import { multilineGradient } from "@visulima/colorize/gradient";
 import type { Key, ReactElement, ReactNode } from "react";
@@ -16,20 +16,20 @@ type GradientStop = Parameters<typeof multilineGradient>[0][number];
 /**
  * Built-in gradient presets.
  */
-export type GradientName =
-    | "atlas"
-    | "cristal"
-    | "fruit"
-    | "instagram"
-    | "mind"
-    | "morning"
-    | "pastel"
-    | "passion"
-    | "rainbow"
-    | "retro"
-    | "summer"
-    | "teen"
-    | "vice";
+export type GradientName
+    = | "atlas"
+        | "cristal"
+        | "fruit"
+        | "instagram"
+        | "mind"
+        | "morning"
+        | "pastel"
+        | "passion"
+        | "rainbow"
+        | "retro"
+        | "summer"
+        | "teen"
+        | "vice";
 
 /**
  * Custom gradient colors — an array of color stops accepted by `@visulima/colorize`'s gradient API.
@@ -43,8 +43,8 @@ const presets: Record<GradientName, { colors: GradientStop[]; options?: { hsvSpi
     instagram: { colors: ["#833ab4", "#fd1d1d", "#fcb045"] },
     mind: { colors: ["#473b7b", "#3584a7", "#30d2be"] },
     morning: { colors: ["#ff5f6d", "#ffc371"], options: { interpolation: "hsv" } },
-    pastel: { colors: ["#74ebd5", "#74ecd5"], options: { hsvSpin: "long", interpolation: "hsv" } },
     passion: { colors: ["#f43b47", "#453a94"] },
+    pastel: { colors: ["#74ebd5", "#74ecd5"], options: { hsvSpin: "long", interpolation: "hsv" } },
     rainbow: { colors: ["#ff0000", "#ff0100"], options: { hsvSpin: "long", interpolation: "hsv" } },
     retro: { colors: ["#3f51b1", "#5a55ae", "#7b5fac", "#8f6aae", "#a86aa4", "#cc6b8e", "#f18271", "#f3a469", "#f7c978"] },
     summer: { colors: ["#fdbb2d", "#22c1c3"] },
@@ -56,9 +56,9 @@ export type Props = {
     /**
      * The content to colorize.
      *
-     * Multiple `<Text>` children are treated as separate nodes, which preserves layout when `<Gradient>` is placed inside a `<Box flexDirection="column">`.
+     * Multiple `&lt;Text>` children are treated as separate nodes, which preserves layout when `&lt;Gradient>` is placed inside a `&lt;Box flexDirection="column">`.
      *
-     * If you want a continuous gradient across multiple lines, pass a single string or a single `<Text>` with `\n`.
+     * If you want a continuous gradient across multiple lines, pass a single string or a single `&lt;Text>` with `\n`.
      */
     readonly children: ReactNode;
 
@@ -79,7 +79,6 @@ export type Props = {
 
 /**
  * Apply a terminal gradient to child text content using `@visulima/colorize`.
- *
  * @example
  * ```tsx
  * import { Gradient, Text } from "@visulima/tui/ink";
@@ -98,9 +97,11 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
         throw new Error("Either `name` or `colors` prop must be provided");
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const gradientFn = useMemo(() => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors!)), [name, colors]);
-    const applyGradient = (text: string) => gradientFn(strip(text));
+    const gradientFunction = useMemo(
+        () => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors!)),
+        [name, colors],
+    );
+    const applyGradient = (text: string) => gradientFunction(strip(text));
 
     const containsBoxDescendant = (nodeChildren: ReactNode): boolean => {
         let hasBox = false;
@@ -117,6 +118,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
 
                 if (child.type === Box) {
                     hasBox = true;
+
                     return;
                 }
 
@@ -167,6 +169,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
             }
 
             const text = bufferedText;
+
             bufferedText = "";
             pushTransformed(<Text>{text}</Text>, createKey());
         };
@@ -178,6 +181,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
 
             if (isPlainTextNode(child)) {
                 bufferedText += String(child);
+
                 return;
             }
 
@@ -189,17 +193,21 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
 
                 if (child.type === Text) {
                     pushTransformed(child, childKey);
+
                     return;
                 }
 
                 if (child.type === Box) {
                     if (hasChildrenProp(childProps)) {
                         const childChildren = childProps["children"] as ReactNode;
+
                         nodes.push(cloneElement(child, { key: childKey }, applyGradientToChildren(childChildren)));
+
                         return;
                     }
 
                     nodes.push(cloneElement(child, { key: childKey }));
+
                     return;
                 }
 
@@ -208,14 +216,17 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
 
                     if (!containsBoxDescendant(childChildren)) {
                         pushTransformed(child, childKey);
+
                         return;
                     }
 
                     nodes.push(cloneElement(child, { key: childKey }, applyGradientToChildren(childChildren)));
+
                     return;
                 }
 
                 pushTransformed(child, childKey);
+
                 return;
             }
 

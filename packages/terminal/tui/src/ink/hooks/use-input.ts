@@ -132,14 +132,12 @@ type Options = {
     /**
      * Enable IME (Input Method Editor) composition buffering for Vietnamese, Chinese,
      * Japanese, Korean, and other non-ASCII input methods.
-     *
      * @default true
      */
     imeEnabled?: boolean;
 
     /**
      * Timeout in milliseconds to wait before flushing IME composition buffer.
-     *
      * @default 50
      */
     imeTimeout?: number;

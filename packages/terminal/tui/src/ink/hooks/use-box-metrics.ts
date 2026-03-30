@@ -135,15 +135,12 @@ const useBoxMetrics = (ref: RefObject<DOMElement>): UseBoxMetricsResult => {
         };
     }, [stdout, updateMetrics]);
 
-    return useMemo(
-        () => {
-            return {
-                ...metrics,
-                hasMeasured,
-            };
-        },
-        [metrics, hasMeasured],
-    );
+    return useMemo(() => {
+        return {
+            ...metrics,
+            hasMeasured,
+        };
+    }, [metrics, hasMeasured]);
 };
 
 export default useBoxMetrics;

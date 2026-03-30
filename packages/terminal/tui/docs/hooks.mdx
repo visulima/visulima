@@ -252,15 +252,18 @@ setCursorPosition({ x: stringWidth(prompt + text), y: 1 });
 return (
     <Box flexDirection="column">
         <Text>Header</Text>
-        <Text>{prompt}{text}</Text>
+        <Text>
+            {prompt}
+            {text}
+        </Text>
     </Box>
 );
 ```
 
 ### `setCursorPosition`
 
-| Argument   | Type                             | Description                        |
-| ---------- | -------------------------------- | ---------------------------------- |
+| Argument   | Type                                      | Description                               |
+| ---------- | ----------------------------------------- | ----------------------------------------- |
 | `position` | `{ x: number, y: number }` or `undefined` | Absolute position, or `undefined` to hide |
 
 Notes:
@@ -279,6 +282,7 @@ const isEnabled = useIsScreenReaderEnabled();
 ```
 
 Screen reader mode is enabled by either:
+
 - Passing `isScreenReaderEnabled: true` to `render()`
 - Setting the `INK_SCREEN_READER=true` environment variable
 

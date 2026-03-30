@@ -27,14 +27,7 @@ Wrap your app with `<MouseProvider>` and use the hooks inside child components.
 
 ```tsx
 import { Box, Text, render, useInput } from "@visulima/tui/ink";
-import {
-    Fullscreen,
-    MouseProvider,
-    useMousePosition,
-    useOnMouseClick,
-    useOnMouseHover,
-    useOnMouseState,
-} from "@visulima/tui/ink";
+import { Fullscreen, MouseProvider, useMousePosition, useOnMouseClick, useOnMouseHover, useOnMouseState } from "@visulima/tui/ink";
 import React, { useMemo, useRef, useState } from "react";
 import type { ComponentProps, RefObject } from "react";
 import type { DOMElement } from "@visulima/tui/ink";
@@ -185,11 +178,11 @@ useOnMouseClick(
 return <Box ref={ref}>...</Box>;
 ```
 
-| Argument   | Type                                          |
-| ---------- | --------------------------------------------- |
-| `ref`      | `RefObject<DOMElement \| null>`               |
+| Argument   | Type                                                |
+| ---------- | --------------------------------------------------- |
+| `ref`      | `RefObject<DOMElement \| null>`                     |
 | `onChange` | `(clicking: boolean, button?: MouseButton) => void` |
-| `options?` | `{ button?: MouseButton }`                    |
+| `options?` | `{ button?: MouseButton }`                          |
 
 When `options.button` is set, the hook only fires for that specific button.
 
@@ -207,10 +200,10 @@ useOnMouseHover(ref, (isHovering) => {
 return <Box ref={ref}>...</Box>;
 ```
 
-| Argument   | Type                              |
-| ---------- | --------------------------------- |
-| `ref`      | `RefObject<DOMElement \| null>`   |
-| `onChange` | `(hovering: boolean) => void`     |
+| Argument   | Type                            |
+| ---------- | ------------------------------- |
+| `ref`      | `RefObject<DOMElement \| null>` |
+| `onChange` | `(hovering: boolean) => void`   |
 
 ### `useOnMouseState(ref)`
 
@@ -281,17 +274,17 @@ import type {
 } from "@visulima/tui/ink";
 ```
 
-| Type                 | Definition                                     |
-| -------------------- | ---------------------------------------------- |
-| `MouseButton`        | `"left" \| "middle" \| "right"`                |
-| `MousePosition`      | `{ x: number; y: number }`                     |
-| `MouseClickAction`   | `"press" \| "release" \| null`                 |
-| `MouseScrollAction`  | `"scrollup" \| "scrolldown" \| null`           |
-| `MouseDragAction`    | `"dragging" \| null`                           |
-| `MouseAction`        | `MouseClickAction \| MouseScrollAction`        |
-| `MouseContextShape`  | Full context value shape (includes `button`)    |
-| `MouseEvents`        | `EventEmitter` for position/click/scroll/drag   |
-| `SgrMouseEvent`      | Discriminated union from `parseSgrMouse()`      |
+| Type                | Definition                                    |
+| ------------------- | --------------------------------------------- |
+| `MouseButton`       | `"left" \| "middle" \| "right"`               |
+| `MousePosition`     | `{ x: number; y: number }`                    |
+| `MouseClickAction`  | `"press" \| "release" \| null`                |
+| `MouseScrollAction` | `"scrollup" \| "scrolldown" \| null`          |
+| `MouseDragAction`   | `"dragging" \| null`                          |
+| `MouseAction`       | `MouseClickAction \| MouseScrollAction`       |
+| `MouseContextShape` | Full context value shape (includes `button`)  |
+| `MouseEvents`       | `EventEmitter` for position/click/scroll/drag |
+| `SgrMouseEvent`     | Discriminated union from `parseSgrMouse()`    |
 
 ## Architecture
 

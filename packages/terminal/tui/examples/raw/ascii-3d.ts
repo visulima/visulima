@@ -52,7 +52,14 @@ function makeCubeSurface(step = 0.16): SurfacePoint[] {
     // 6 faces: x=±1, y=±1, z=±1
     for (let u = -1; u <= 1.0001; u += step) {
         for (let v = -1; v <= 1.0001; v += step) {
-            pts.push({ n: { x: 1, y: 0, z: 0 }, p: { x: 1, y: u, z: v } }, { n: { x: -1, y: 0, z: 0 }, p: { x: -1, y: u, z: v } }, { n: { x: 0, y: 1, z: 0 }, p: { x: u, y: 1, z: v } }, { n: { x: 0, y: -1, z: 0 }, p: { x: u, y: -1, z: v } }, { n: { x: 0, y: 0, z: 1 }, p: { x: u, y: v, z: 1 } }, { n: { x: 0, y: 0, z: -1 }, p: { x: u, y: v, z: -1 } });
+            pts.push(
+                { n: { x: 1, y: 0, z: 0 }, p: { x: 1, y: u, z: v } },
+                { n: { x: -1, y: 0, z: 0 }, p: { x: -1, y: u, z: v } },
+                { n: { x: 0, y: 1, z: 0 }, p: { x: u, y: 1, z: v } },
+                { n: { x: 0, y: -1, z: 0 }, p: { x: u, y: -1, z: v } },
+                { n: { x: 0, y: 0, z: 1 }, p: { x: u, y: v, z: 1 } },
+                { n: { x: 0, y: 0, z: -1 }, p: { x: u, y: v, z: -1 } },
+            );
         }
     }
 
@@ -128,11 +135,9 @@ function faceKeyFromNormal(n: Vec3): FaceKey {
     const ay = Math.abs(n.y);
     const az = Math.abs(n.z);
 
-    if (ax >= ay && ax >= az)
-        return n.x >= 0 ? "px" : "nx";
+    if (ax >= ay && ax >= az) return n.x >= 0 ? "px" : "nx";
 
-    if (ay >= ax && ay >= az)
-        return n.y >= 0 ? "py" : "ny";
+    if (ay >= ax && ay >= az) return n.y >= 0 ? "py" : "ny";
 
     return n.z >= 0 ? "pz" : "nz";
 }
@@ -140,15 +145,13 @@ function faceKeyFromNormal(n: Vec3): FaceKey {
 function projectPoint(p: Vec3, cols: number, rows: number, cameraZ: number, fov: number, xScale: number, yScale: number): ProjectedPoint | null {
     const zc = p.z + cameraZ;
 
-    if (zc <= 0.05)
-        return null;
+    if (zc <= 0.05) return null;
 
     const inv = fov / zc;
     const sx = Math.floor(cols * 0.5 + p.x * inv * xScale);
     const sy = Math.floor(rows * 0.5 - p.y * inv * yScale);
 
-    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1)
-        return null;
+    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1) return null;
 
     return { depth: 1 / zc, sx, sy };
 }
@@ -163,15 +166,13 @@ function drawEdge(buf: Uint32Array, cols: number, rows: number, a: ProjectedPoin
         const x = Math.round(a.sx + dx * t);
         const y = Math.round(a.sy + dy * t);
 
-        if (x < 0 || x >= cols || y < 1 || y >= rows - 1)
-            continue;
+        if (x < 0 || x >= cols || y < 1 || y >= rows - 1) continue;
 
         const depth = a.depth + (b.depth - a.depth) * t;
         const index = y * cols + x;
 
         // Skip edge points clearly behind already-rendered face points.
-        if (depth + 0.004 < zBuf[index]!)
-            continue;
+        if (depth + 0.004 < zBuf[index]!) continue;
 
         setCell(buf, cols, x, y, "#", 231, 0, 1);
     }
@@ -240,14 +241,12 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
 
         const proj = projectPoint(p, cols, rows, cameraZ, fov, xScale, yScale);
 
-        if (!proj)
-            continue;
+        if (!proj) continue;
 
         // Depth test (larger = closer)
         const index = proj.sy * cols + proj.sx;
 
-        if (proj.depth <= zBuf[index]!)
-            continue;
+        if (proj.depth <= zBuf[index]!) continue;
 
         zBuf[index] = proj.depth;
 
@@ -279,8 +278,7 @@ function paint(buf: Uint32Array, cols: number, rows: number, frame: number) {
         const pa = projectedCorners[a];
         const pb = projectedCorners[b];
 
-        if (!pa || !pb)
-            continue;
+        if (!pa || !pb) continue;
 
         drawEdge(buf, cols, rows, pa, pb, zBuf);
     }

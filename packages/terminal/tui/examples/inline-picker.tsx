@@ -33,11 +33,9 @@ const Picker = ({ onSelect }: PickerProps) => {
     const { quit } = useApp();
 
     useInput((_input, key) => {
-        if (key.upArrow)
-            setSelected((s) => Math.max(0, s - 1));
+        if (key.upArrow) setSelected((s) => Math.max(0, s - 1));
 
-        if (key.downArrow)
-            setSelected((s) => Math.min(ITEMS.length - 1, s + 1));
+        if (key.downArrow) setSelected((s) => Math.min(ITEMS.length - 1, s + 1));
 
         if (key.return) {
             onSelect(ITEMS[selected]!);
@@ -84,6 +82,5 @@ const { waitUntilExit } = renderInline(
 );
 
 waitUntilExit().then(() => {
-    if (result)
-        process.stdout.write(`\nSelected: ${result}\n`);
+    if (result) process.stdout.write(`\nSelected: ${result}\n`);
 });

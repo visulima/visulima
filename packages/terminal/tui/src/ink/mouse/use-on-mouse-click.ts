@@ -1,26 +1,27 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
-import { useCallback, useEffect, type RefObject } from "react";
+import type { RefObject } from "react";
+import { useCallback, useEffect } from "react";
 
 import type { DOMElement } from "../dom";
+import isIntersecting from "./is-intersecting";
 import type { MouseButton, MouseClickAction, MousePosition } from "./mouse-context";
-import { isIntersecting } from "./is-intersecting";
 import { getElementDimensions, getElementPosition } from "./use-element-position";
-import { useMouseContext } from "./use-mouse";
+import useMouseContext from "./use-mouse";
 
 type UseOnMouseClickOptions = {
     /** Filter to only respond to a specific mouse button. Defaults to all buttons. */
     button?: MouseButton;
 };
 
-function useOnMouseClick(
+const useOnMouseClick = (
     ref: RefObject<DOMElement | null>,
     onChange: (clicking: boolean, button?: MouseButton) => void,
     options?: UseOnMouseClickOptions,
-): void {
+): void => {
     const mouse = useMouseContext();
 
     const handler = useCallback(
@@ -43,23 +44,20 @@ function useOnMouseClick(
 
             onChange(isIntersecting({ element, mouse: position }) && action === "press", eventButton);
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [ref, onChange, options?.button],
     );
 
-    useEffect(
-        function handleIntersection() {
-            const events = mouse.events;
+    useEffect(() => {
+        const { events } = mouse;
 
-            events.on("click", handler);
+        events.on("click", handler);
 
-            return () => {
-                events.off("click", handler);
-            };
-        },
-        [mouse.events, handler],
-    );
-}
+        return () => {
+            events.off("click", handler);
+        };
+    }, [mouse.events, handler]);
+};
 
 export { useOnMouseClick };
 export type { UseOnMouseClickOptions };

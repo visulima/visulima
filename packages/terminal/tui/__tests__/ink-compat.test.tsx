@@ -228,13 +228,7 @@ describe("ink compatibility - counter", () => {
     const Counter = () => {
         const [counter] = useState(0);
 
-        return (
-            <Text color="green">
-                {counter}
-                {" "}
-                tests passed
-            </Text>
-        );
+        return <Text color="green">{counter} tests passed</Text>;
     };
 
     it("should render initial counter value", () => {
@@ -298,10 +292,7 @@ describe("ink compatibility - static component", () => {
                 <Static items={tests}>
                     {(test) => (
                         <Box key={test.id}>
-                            <Text color="green">
-                                ✔
-                                {test.title}
-                            </Text>
+                            <Text color="green">✔{test.title}</Text>
                         </Box>
                     )}
                 </Static>
@@ -433,7 +424,9 @@ describe("ink compatibility - use-input", () => {
 
         return (
             <Box flexDirection="column">
-                <Text>Use arrow keys to move the face. Press {'"'}q{'"'} to exit.</Text>
+                <Text>
+                    Use arrow keys to move the face. Press {'"'}q{'"'} to exit.
+                </Text>
                 <Box height={12} paddingLeft={x} paddingTop={y}>
                     <Text>^_^</Text>
                 </Box>
@@ -465,9 +458,7 @@ describe("ink compatibility - use-focus", () => {
 
         return (
             <Text>
-                {label}
-                {" "}
-                {isFocused && <Text color="green">(focused)</Text>}
+                {label} {isFocused && <Text color="green">(focused)</Text>}
             </Text>
         );
     };
@@ -509,9 +500,7 @@ describe("ink compatibility - use-focus-with-id", () => {
 
         return (
             <Text>
-                {label}
-                {" "}
-                {isFocused && <Text color="green">(focused)</Text>}
+                {label} {isFocused && <Text color="green">(focused)</Text>}
             </Text>
         );
     };
@@ -574,16 +563,12 @@ describe("ink compatibility - use-stdout", () => {
                 </Text>
                 <Box marginTop={1}>
                     <Text>
-                        Width:
-                        {" "}
-                        <Text bold>{stdout.columns}</Text>
+                        Width: <Text bold>{stdout.columns}</Text>
                     </Text>
                 </Box>
                 <Box>
                     <Text>
-                        Height:
-                        {" "}
-                        <Text bold>{stdout.rows}</Text>
+                        Height: <Text bold>{stdout.rows}</Text>
                     </Text>
                 </Box>
             </Box>
@@ -704,9 +689,7 @@ describe("ink compatibility - cursor-ime", () => {
             <Box flexDirection="column">
                 <Text>Type Korean (Ctrl+C to exit):</Text>
                 <Text>
-                    {">"}
-                    {" "}
-                    {text}
+                    {">"} {text}
                 </Text>
             </Box>
         );

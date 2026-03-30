@@ -68,11 +68,11 @@ export type DOMElement = InkNode & {
             selected?: boolean;
         };
     };
-    internal_layoutListeners?: Set<LayoutListener>;
-
     internal_cursor?: CursorMarker;
 
     internal_hidden?: boolean;
+
+    internal_layoutListeners?: Set<LayoutListener>;
 
     internal_transform?: OutputTransformer;
 
@@ -156,6 +156,7 @@ export const insertBeforeNode = (node: DOMElement, newChildNode: DOMNode, before
 
         if (newChildNode.yogaNode) {
             const yogaIndex = node.childNodes.slice(0, index).filter((childNode) => Boolean(childNode.yogaNode)).length;
+
             node.yogaNode?.insertChild(newChildNode.yogaNode, yogaIndex);
         }
     }

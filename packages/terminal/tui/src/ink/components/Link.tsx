@@ -5,9 +5,9 @@
  * @see https://github.com/sindresorhus/ink-link
  *
  * MIT License
- * Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
  */
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition */
 import { hyperlink } from "@visulima/ansi";
 import type { ReactElement, ReactNode } from "react";
 
@@ -23,7 +23,6 @@ export type Props = {
      * - `true` (default): appends the URL after the text, e.g. `"My website https://example.com"`
      * - `false`: renders just the text with no URL
      * - `function`: custom fallback formatting, e.g. `(text, url) => \`[\${text}](\${url})\``
-     *
      * @default true
      */
     readonly fallback?: ((text: string, url: string) => string) | boolean;
@@ -44,9 +43,9 @@ export type Props = {
  * ```tsx
  * import { Link, Text } from "@visulima/tui/ink";
  *
- * <Link url="https://example.com">
- *     <Text color="cyan">My Website</Text>
- * </Link>
+ * &lt;Link url="https://example.com">
+ *     &lt;Text color="cyan">My Website&lt;/Text>
+ * &lt;/Link>
  * ```
  */
 export default function Link({ children, fallback = true, url }: Props): ReactElement {

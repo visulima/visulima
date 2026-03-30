@@ -7,9 +7,9 @@ import type { CursorAnchorRef, DOMElement } from "../dom";
 export type Props = {
     /**
      * Optional reference to anchor cursor coordinates to a different element.
-     * If omitted, `<Cursor>` uses the parent container as anchor.
+     * If omitted, `&lt;Cursor>` uses the parent container as anchor.
      * If `anchorRef` is set but currently unresolved, Ink hides the cursor for that frame.
-     * If multiple `<Cursor>` components are rendered in one frame, the last rendered one controls the terminal cursor position.
+     * If multiple `&lt;Cursor>` components are rendered in one frame, the last rendered one controls the terminal cursor position.
      */
     readonly anchorRef?: RefObject<DOMElement | null>;
 
@@ -26,14 +26,13 @@ export type Props = {
 
 /**
  * Declaratively position the terminal cursor.
- * `<Cursor>` must not be rendered inside `<Text>`.
+ * `&lt;Cursor>` must not be rendered inside `&lt;Text>`.
  *
- * **Inline mode** (no props): place `<Cursor />` after a `<Text>` node and the
+ * **Inline mode** (no props): place `&lt;Cursor />` after a `&lt;Text>` node and the
  * cursor appears where that text ended — even when text wraps across lines.
  *
  * **Anchor mode**: pass `anchorRef` and/or `x`/`y` to position relative to
  * another element's content origin.
- *
  * @example Inline mode — cursor follows text naturally
  * ```jsx
  * <Box>
@@ -41,7 +40,6 @@ export type Props = {
  *     <Cursor />
  * </Box>
  * ```
- *
  * @example Anchor mode — offset from a referenced element
  * ```jsx
  * <Box ref={ref} />

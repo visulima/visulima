@@ -70,9 +70,7 @@ describe("Link", () => {
         it("should render plain text children", () => {
             vi.stubEnv("FORCE_HYPERLINK", "0");
 
-            const output = renderToString(
-                <Link url="https://example.com">Visit</Link>,
-            );
+            const output = renderToString(<Link url="https://example.com">Visit</Link>);
 
             expect(output).toBe("Visit https://example.com");
         });

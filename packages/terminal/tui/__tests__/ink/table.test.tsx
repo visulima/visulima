@@ -29,9 +29,7 @@ describe("Table", () => {
     });
 
     it("should render only specified columns in order", () => {
-        const data = [
-            { name: "Alice", age: 30, city: "NYC" },
-        ];
+        const data = [{ name: "Alice", age: 30, city: "NYC" }];
 
         const output = strip(renderToString(<Table data={data} columns={["city", "name"]} />));
 
@@ -47,19 +45,19 @@ describe("Table", () => {
     });
 
     it("should support ColumnConfig objects with custom headers", () => {
-        const data = [
-            { name: "Alice", age: 30 },
-        ];
+        const data = [{ name: "Alice", age: 30 }];
 
-        const output = strip(renderToString(
-            <Table
-                data={data}
-                columns={[
-                    { key: "name", header: "Full Name" },
-                    { key: "age", header: "Years" },
-                ]}
-            />,
-        ));
+        const output = strip(
+            renderToString(
+                <Table
+                    data={data}
+                    columns={[
+                        { key: "name", header: "Full Name" },
+                        { key: "age", header: "Years" },
+                    ]}
+                />,
+            ),
+        );
 
         expect(output).toContain("Full Name");
         expect(output).toContain("Years");
@@ -68,19 +66,9 @@ describe("Table", () => {
     });
 
     it("should support mixed string and ColumnConfig columns", () => {
-        const data = [
-            { name: "Alice", age: 30 },
-        ];
+        const data = [{ name: "Alice", age: 30 }];
 
-        const output = strip(renderToString(
-            <Table
-                data={data}
-                columns={[
-                    "name",
-                    { key: "age", header: "Years" },
-                ]}
-            />,
-        ));
+        const output = strip(renderToString(<Table data={data} columns={["name", { key: "age", header: "Years" }]} />));
 
         expect(output).toContain("name");
         expect(output).toContain("Years");
@@ -164,9 +152,7 @@ describe("Table", () => {
     });
 
     it("should hide headers when showHeader is false", () => {
-        const data = [
-            { name: "Alice", age: 30 },
-        ];
+        const data = [{ name: "Alice", age: 30 }];
 
         const withHeader = strip(renderToString(<Table data={data} showHeader />));
         const withoutHeader = strip(renderToString(<Table data={data} showHeader={false} />));
@@ -178,37 +164,30 @@ describe("Table", () => {
     });
 
     it("should apply formatCell", () => {
-        const data = [
-            { name: "alice", age: 30 },
-        ];
+        const data = [{ name: "alice", age: 30 }];
 
-        const output = strip(renderToString(
-            <Table
-                data={data}
-                formatCell={(value, column) => {
-                    if (column === "name" && typeof value === "string") {
-                        return value.toUpperCase();
-                    }
+        const output = strip(
+            renderToString(
+                <Table
+                    data={data}
+                    formatCell={(value, column) => {
+                        if (column === "name" && typeof value === "string") {
+                            return value.toUpperCase();
+                        }
 
-                    return String(value ?? "");
-                }}
-            />,
-        ));
+                        return String(value ?? "");
+                    }}
+                />,
+            ),
+        );
 
         expect(output).toContain("ALICE");
     });
 
     it("should apply formatHeader", () => {
-        const data = [
-            { name: "Alice" },
-        ];
+        const data = [{ name: "Alice" }];
 
-        const output = strip(renderToString(
-            <Table
-                data={data}
-                formatHeader={(column) => column.toUpperCase()}
-            />,
-        ));
+        const output = strip(renderToString(<Table data={data} formatHeader={(column) => column.toUpperCase()} />));
 
         expect(output).toContain("NAME");
     });
@@ -219,17 +198,13 @@ describe("Table", () => {
             { name: "Bob", city: undefined },
         ];
 
-        const output = strip(renderToString(
-            <Table data={data} skeleton="N/A" />,
-        ));
+        const output = strip(renderToString(<Table data={data} skeleton="N/A" />));
 
         expect(output).toContain("N/A");
     });
 
     it("should default skeleton to empty string", () => {
-        const data = [
-            { name: null },
-        ];
+        const data = [{ name: null }];
 
         const output = strip(renderToString(<Table data={data} />));
 
@@ -238,10 +213,7 @@ describe("Table", () => {
     });
 
     it("should render a single column table", () => {
-        const data = [
-            { id: 1 },
-            { id: 2 },
-        ];
+        const data = [{ id: 1 }, { id: 2 }];
 
         const output = strip(renderToString(<Table data={data} />));
 
@@ -251,9 +223,7 @@ describe("Table", () => {
     });
 
     it("should render a single row table", () => {
-        const data = [
-            { name: "Alice", age: 30 },
-        ];
+        const data = [{ name: "Alice", age: 30 }];
 
         const output = strip(renderToString(<Table data={data} />));
 
@@ -262,10 +232,7 @@ describe("Table", () => {
     });
 
     it("should handle boolean values", () => {
-        const data = [
-            { active: true },
-            { active: false },
-        ];
+        const data = [{ active: true }, { active: false }];
 
         const output = strip(renderToString(<Table data={data} />));
 
@@ -288,25 +255,17 @@ describe("Table", () => {
     });
 
     it("should support ColumnConfig with fixed width", () => {
-        const data = [
-            { name: "Alice" },
-        ];
+        const data = [{ name: "Alice" }];
 
-        const narrowOutput = strip(renderToString(
-            <Table data={data} columns={[{ key: "name", width: 10 }]} />,
-        ));
-        const wideOutput = strip(renderToString(
-            <Table data={data} columns={[{ key: "name", width: 20 }]} />,
-        ));
+        const narrowOutput = strip(renderToString(<Table data={data} columns={[{ key: "name", width: 10 }]} />));
+        const wideOutput = strip(renderToString(<Table data={data} columns={[{ key: "name", width: 20 }]} />));
 
         // Wider column should produce longer output lines
         expect(wideOutput.length).toBeGreaterThan(narrowOutput.length);
     });
 
     it("should render with maxWidth constraint", () => {
-        const data = [
-            { name: "A very long name value", description: "Another long description value" },
-        ];
+        const data = [{ name: "A very long name value", description: "Another long description value" }];
 
         const output = strip(renderToString(<Table data={data} maxWidth={40} />));
 

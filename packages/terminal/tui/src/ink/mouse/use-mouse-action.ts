@@ -1,15 +1,16 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
 import { useEffect, useState } from "react";
 
 import type { MouseClickAction, MouseDragAction, MouseScrollAction } from "./mouse-context";
-import { useMouseContext } from "./use-mouse";
+import useMouseContext from "./use-mouse";
 
-function useMouseAction(): MouseClickAction | MouseDragAction | MouseScrollAction | null {
+const useMouseAction = (): MouseClickAction | MouseDragAction | MouseScrollAction | null => {
     const mouse = useMouseContext();
+    // eslint-disable-next-line unicorn/no-null
     const [action, setAction] = useState<MouseClickAction | MouseDragAction | MouseScrollAction | null>(null);
 
     useEffect(() => {
@@ -37,6 +38,6 @@ function useMouseAction(): MouseClickAction | MouseDragAction | MouseScrollActio
     }, [mouse.events]);
 
     return action;
-}
+};
 
-export { useMouseAction };
+export default useMouseAction;

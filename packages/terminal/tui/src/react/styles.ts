@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
 import Yoga from "yoga-layout-prebuilt";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;
@@ -379,16 +379,19 @@ const applyBorderStyles = (node: YogaNode, style: Styles, currentStyle: Styles):
 };
 
 const applyGapStyles = (node: YogaNode, style: Styles): void => {
-    // @ts-ignore
+    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
     if ("gap" in style && node.setGap)
+        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
         node.setGap(Yoga.GUTTER_ALL, style.gap ?? 0);
 
-    // @ts-ignore
+    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
     if ("columnGap" in style && node.setGap)
+        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
         node.setGap(Yoga.GUTTER_COLUMN, style.columnGap ?? 0);
 
-    // @ts-ignore
+    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
     if ("rowGap" in style && node.setGap)
+        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
         node.setGap(Yoga.GUTTER_ROW, style.rowGap ?? 0);
 };
 

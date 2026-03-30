@@ -23,8 +23,7 @@ if (globalThis.global !== undefined && !globalThis.document) {
 function generateItems(filter) {
     const all = Array.from({ length: 200 }, (_, i) => `Item ${i + 1}: ${["Apple", "Banana", "Cherry", "Date", "Elderberry"][i % 5]}`);
 
-    if (!filter)
-        return all.slice(0, 10);
+    if (!filter) return all.slice(0, 10);
 
     const start = Date.now();
 
@@ -57,9 +56,7 @@ const SearchApp = () => {
     return (
         <Box flexDirection="column" padding={1}>
             <Text>
-                Search:
-                {" "}
-                {query}
+                Search: {query}
                 {isPending ? <Text color="yellow"> (filtering...)</Text> : null}
             </Text>
             <Box flexDirection="column" marginTop={1}>

@@ -151,6 +151,7 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
     appendChildToContainer: appendChildNode,
     appendInitialChild: appendChildNode,
     beforeActiveInstanceBlur() {},
+    // @ts-expect-error cancelCallback is not in @types/react-reconciler but required at runtime
     cancelCallback: unstable_cancelCallback,
     cancelTimeout: clearTimeout,
     clearContainer: () => false,
@@ -360,7 +361,6 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
 
         return DefaultEventPriority;
     },
-    // @ts-expect-error @types/react-reconciler is outdated and doesn't include scheduleCallback
     scheduleCallback: unstable_scheduleCallback,
     scheduleMicrotask: queueMicrotask,
     scheduleTimeout: setTimeout,

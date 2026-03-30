@@ -39,17 +39,13 @@ const App = () => {
                     return;
                 }
 
-                if (key.upArrow)
-                    scroll.scrollUp();
+                if (key.upArrow) scroll.scrollUp();
 
-                if (key.downArrow)
-                    scroll.scrollDown();
+                if (key.downArrow) scroll.scrollDown();
 
-                if (key.pageUp)
-                    scroll.scrollBy(-5);
+                if (key.pageUp) scroll.scrollBy(-5);
 
-                if (key.pageDown)
-                    scroll.scrollBy(5);
+                if (key.pageDown) scroll.scrollBy(5);
             },
             [scroll, exit],
         ),
@@ -62,8 +58,7 @@ const App = () => {
             {/* title */}
             <Box paddingX={1}>
                 <Text bold color="cyan">
-                    scroll-test
-                    {" "}
+                    scroll-test{" "}
                 </Text>
                 <Text color="blackBright">↑↓ scroll · PgUp/PgDn jump 5 · q quit</Text>
             </Box>
@@ -86,9 +81,7 @@ const App = () => {
             {/* scroll position readout */}
             <Box flexDirection="row" gap={2} paddingX={1}>
                 <Text color="blackBright">
-                    offset
-                    {" "}
-                    <Text color="white">{scroll.offset}</Text>
+                    offset <Text color="white">{scroll.offset}</Text>
                     {" / "}
                     <Text color="white">{ITEMS.length - VIEWPORT_H}</Text>
                 </Text>

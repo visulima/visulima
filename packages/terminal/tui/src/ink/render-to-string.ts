@@ -118,9 +118,7 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
 
         // Re-throw after full cleanup so callers see the original error.
         if (uncaughtError !== undefined) {
-            throw uncaughtError instanceof Error
-                ? uncaughtError
-                : new Error(String(uncaughtError));
+            throw uncaughtError instanceof Error ? uncaughtError : new Error(String(uncaughtError));
         }
 
         // The renderer appends a trailing newline to static output for terminal

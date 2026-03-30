@@ -57,45 +57,41 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                 </Text>
             </Box>
 
-            {origin && filePath
-                ? (
-                    <Box marginTop={1}>
-                        <Text dimColor>
-                            {filePath}
-                            :
-                            {origin.line}
-                            :
-                            {origin.column}
-                        </Text>
-                    </Box>
-                )
-                : null}
+            {origin && filePath ? (
+                <Box marginTop={1}>
+                    <Text dimColor>
+                        {filePath}
+                        :
+                        {origin.line}
+                        :
+                        {origin.column}
+                    </Text>
+                </Box>
+            ) : null}
 
-            {origin && excerpt
-                ? (
-                    <Box flexDirection="column" marginTop={1}>
-                        {excerpt.map(({ line, value }) => (
-                            <Box key={line}>
-                                <Box width={lineWidth + 1}>
-                                    <Text
-                                        aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
-                                        backgroundColor={line === origin.line ? "red" : undefined}
-                                        color={line === origin.line ? "white" : undefined}
-                                        dimColor={line !== origin.line}
-                                    >
-                                        {String(line).padStart(lineWidth, " ")}
-                                        :
-                                    </Text>
-                                </Box>
-
-                                <Text backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined} key={line}>
-                                    {` ${value}`}
+            {origin && excerpt ? (
+                <Box flexDirection="column" marginTop={1}>
+                    {excerpt.map(({ line, value }) => (
+                        <Box key={line}>
+                            <Box width={lineWidth + 1}>
+                                <Text
+                                    aria-label={line === origin.line ? `Line ${line}, error` : `Line ${line}`}
+                                    backgroundColor={line === origin.line ? "red" : undefined}
+                                    color={line === origin.line ? "white" : undefined}
+                                    dimColor={line !== origin.line}
+                                >
+                                    {String(line).padStart(lineWidth, " ")}
+                                    :
                                 </Text>
                             </Box>
-                        ))}
-                    </Box>
-                )
-                : null}
+
+                            <Text backgroundColor={line === origin.line ? "red" : undefined} color={line === origin.line ? "white" : undefined} key={line}>
+                                {` ${value}`}
+                            </Text>
+                        </Box>
+                    ))}
+                </Box>
+            ) : null}
 
             {error.stack ? (
                 <Box flexDirection="column" marginTop={1}>

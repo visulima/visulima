@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, no-bitwise, no-cond-assign, no-confusing-arrow, no-control-regex, no-param-reassign, no-secrets/no-secrets, sonarjs/cognitive-complexity, sonarjs/different-types-comparison, sonarjs/no-control-regex, sonarjs/no-nested-assignment, unicorn/no-null, unicorn/prefer-code-point */
+/* eslint-disable @typescript-eslint/no-misused-spread, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, no-bitwise, no-cond-assign, no-control-regex, no-param-reassign, no-secrets/no-secrets, sonarjs/cognitive-complexity, sonarjs/different-types-comparison, sonarjs/no-control-regex, sonarjs/no-nested-assignment, unicorn/no-null, unicorn/prefer-code-point */
 // Copied from https://github.com/enquirer/enquirer/blob/36785f3399a41cd61e9d28d1eb9c2fcd73d69b4c/lib/keypress.js
 import { Buffer } from "node:buffer";
 
@@ -69,20 +69,25 @@ const keyName: Record<string, string> = {
     "[F": "end",
 
     "[H": "home",
+    /* VT220-style modifier sequences: ESC [ 1 ; mod P/Q/R/S */
+    "[P": "f1",
+    "[Q": "f2",
+    "[R": "f3",
+    "[S": "f4",
     /* misc. */
     "[Z": "tab",
+
     /* xterm/gnome ESC O letter */
     OA: "up",
     Oa: "up",
     OB: "down",
     Ob: "down",
-
     OC: "right",
+
     Oc: "right",
     OD: "left",
     Od: "left",
     OE: "clear",
-
     Oe: "clear",
     OF: "end",
     OH: "home",
@@ -91,11 +96,6 @@ const keyName: Record<string, string> = {
     OQ: "f2",
     OR: "f3",
     OS: "f4",
-    /* VT220-style modifier sequences: ESC [ 1 ; mod P/Q/R/S */
-    "[P": "f1",
-    "[Q": "f2",
-    "[R": "f3",
-    "[S": "f4",
 };
 
 export const nonAlphanumericKeys: string[] = [...Object.values(keyName), "backspace"];
@@ -270,7 +270,8 @@ const kittyCodepointNames: Record<number, string> = {
 // Valid Unicode codepoint range, excluding surrogates
 const isValidCodepoint = (cp: number): boolean => cp >= 0 && cp <= 0x10_ff_ff && !(cp >= 0xd8_00 && cp <= 0xdf_ff);
 
-const safeFromCodePoint = (cp: number): string => isValidCodepoint(cp) ? String.fromCodePoint(cp) : "?";
+// eslint-disable-next-line @stylistic/no-extra-parens
+const safeFromCodePoint = (cp: number): string => (isValidCodepoint(cp) ? String.fromCodePoint(cp) : "?");
 
 type EventType = "press" | "repeat" | "release";
 
@@ -452,7 +453,7 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
     switch (s) {
         case "\r":
         case "\u001B\r": {
-        // carriage return (or option+return on macOS)
+            // carriage return (or option+return on macOS)
             key.raw = undefined;
             key.name = "return";
             key.option = s.length === 2;
@@ -460,13 +461,13 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
             break;
         }
         case "\n": {
-        // enter, should have been called linefeed
+            // enter, should have been called linefeed
             key.name = "enter";
 
             break;
         }
         case "\t": {
-        // tab
+            // tab
             key.name = "tab";
 
             break;
@@ -480,7 +481,7 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
         }
         case "\b":
         case "\u001B\b": {
-        // backspace or ctrl+h
+            // backspace or ctrl+h
             key.name = "backspace";
             key.meta = s.charAt(0) === "\u001B";
 
@@ -488,7 +489,7 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
         }
         case "\u001B":
         case "\u001B\u001B": {
-        // escape key
+            // escape key
             key.name = "escape";
             key.meta = s.length === 2;
 
@@ -496,55 +497,56 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
         }
         case "\u001B\u007F":
         case "\u007F": {
-        // TODO(vadimdemedes): `enquirer` detects delete key as backspace, but I had to split them up to avoid breaking changes in Ink. Merge them back together in the next major version.
-        // delete
+            // TODO(vadimdemedes): `enquirer` detects delete key as backspace, but I had to split them up to avoid breaking changes in Ink. Merge them back together in the next major version.
+            // delete
             key.name = "delete";
             key.meta = s.charAt(0) === "\u001B";
 
             break;
         }
-        default: { if (s.length === 1 && s <= "\u001A") {
-        // ctrl+letter
-            key.name = String.fromCharCode(s.charCodeAt(0) + "a".charCodeAt(0) - 1);
-            key.ctrl = true;
-        } else if (s.length === 1 && s >= "0" && s <= "9") {
-        // number
-            key.name = "number";
-        } else if (s.length === 1 && s >= "a" && s <= "z") {
-        // lowercase letter
-            key.name = s;
-        } else if (s.length === 1 && s >= "A" && s <= "Z") {
-        // shift+letter
-            key.name = s.toLowerCase();
-            key.shift = true;
-        } else if (parts = metaKeyCodeRe.exec(s)) {
-        // meta+character key
-            key.meta = true;
-            key.shift = /^[A-Z]$/.test(parts[1]!);
-        } else if (parts = functionKeyRe.exec(s)) {
-            const segs = [...s];
+        default: {
+            if (s.length === 1 && s <= "\u001A") {
+                // ctrl+letter
+                key.name = String.fromCharCode(s.charCodeAt(0) + "a".charCodeAt(0) - 1);
+                key.ctrl = true;
+            } else if (s.length === 1 && s >= "0" && s <= "9") {
+                // number
+                key.name = "number";
+            } else if (s.length === 1 && s >= "a" && s <= "z") {
+                // lowercase letter
+                key.name = s;
+            } else if (s.length === 1 && s >= "A" && s <= "Z") {
+                // shift+letter
+                key.name = s.toLowerCase();
+                key.shift = true;
+            } else if (parts = metaKeyCodeRe.exec(s)) {
+                // meta+character key
+                key.meta = true;
+                key.shift = /^[A-Z]$/.test(parts[1]!);
+            } else if (parts = functionKeyRe.exec(s)) {
+                const segs = [...s];
 
-            if (segs[0] === "\u001B" && segs[1] === "\u001B") {
-                key.option = true;
+                if (segs[0] === "\u001B" && segs[1] === "\u001B") {
+                    key.option = true;
+                }
+
+                // ansi escape sequence
+                // reassemble the key code leaving out leading \x1b's,
+                // the modifier key bitflag and any meaningless "1;" sequence
+                const code = [parts[1], parts[2], parts[4], parts[6]].filter(Boolean).join("");
+
+                const modifier = ((parts[3] || parts[5] || 1) as number) - 1;
+
+                // Parse the key modifier
+                key.ctrl = !!(modifier & 4);
+                key.meta = !!(modifier & 10);
+                key.shift = !!(modifier & 1);
+                key.code = code;
+
+                key.name = keyName[code]!;
+                key.shift = isShiftKey(code) || key.shift;
+                key.ctrl = isCtrlKey(code) || key.ctrl;
             }
-
-            // ansi escape sequence
-            // reassemble the key code leaving out leading \x1b's,
-            // the modifier key bitflag and any meaningless "1;" sequence
-            const code = [parts[1], parts[2], parts[4], parts[6]].filter(Boolean).join("");
-
-            const modifier = ((parts[3] || parts[5] || 1) as number) - 1;
-
-            // Parse the key modifier
-            key.ctrl = !!(modifier & 4);
-            key.meta = !!(modifier & 10);
-            key.shift = !!(modifier & 1);
-            key.code = code;
-
-            key.name = keyName[code]!;
-            key.shift = isShiftKey(code) || key.shift;
-            key.ctrl = isCtrlKey(code) || key.ctrl;
-        }
         }
     }
 

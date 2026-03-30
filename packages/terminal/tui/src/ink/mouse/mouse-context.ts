@@ -1,5 +1,5 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
@@ -23,11 +23,12 @@ type MouseAction = MouseClickAction | MouseDragAction | MouseScrollAction;
 
 /**
  * Internal event emitter for mouse state changes.
+ *
  * Events:
- *   - "position" (position: MousePosition)
- *   - "click" (position: MousePosition, action: MouseClickAction, button: MouseButton)
- *   - "scroll" (position: MousePosition, direction: MouseScrollAction)
- *   - "drag" (position: MousePosition, action: MouseDragAction, button: MouseButton)
+ * - "position" (position: MousePosition)
+ * - "click" (position: MousePosition, action: MouseClickAction, button: MouseButton)
+ * - "scroll" (position: MousePosition, direction: MouseScrollAction)
+ * - "drag" (position: MousePosition, action: MouseDragAction, button: MouseButton)
  */
 type MouseEvents = EventEmitter;
 

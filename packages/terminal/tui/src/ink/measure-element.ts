@@ -24,7 +24,7 @@ type Output = {
 };
 
 /**
- * Measure the dimensions of a particular `<Box>` element.
+ * Measure the dimensions of a particular `&lt;Box>` element.
  * Returns an object with `x`, `y`, `width` and `height` properties.
  * This function is useful when your component needs to know the amount of available space it has. You can use it when you need to change the layout based on the length of its content.
  *

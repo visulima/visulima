@@ -5,7 +5,13 @@ import { Box, render, Text, useApp, useInput } from "@visulima/tui/react";
 import React from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {
-    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.document = {
+        addEventListener: () => {},
+        createElement: () => {
+            return {};
+        },
+        removeEventListener: () => {},
+    };
     globalThis.window = globalThis;
     Object.defineProperty(globalThis, "navigator", {
         configurable: true,
@@ -20,20 +26,15 @@ const Robot = () => {
     const [y, setY] = React.useState(1);
 
     useInput((input, key) => {
-        if (input === "q")
-            exit();
+        if (input === "q") exit();
 
-        if (key.leftArrow)
-            setX((x) => Math.max(1, x - 1));
+        if (key.leftArrow) setX((x) => Math.max(1, x - 1));
 
-        if (key.rightArrow)
-            setX((x) => Math.min(20, x + 1));
+        if (key.rightArrow) setX((x) => Math.min(20, x + 1));
 
-        if (key.upArrow)
-            setY((y) => Math.max(1, y - 1));
+        if (key.upArrow) setY((y) => Math.max(1, y - 1));
 
-        if (key.downArrow)
-            setY((y) => Math.min(10, y + 1));
+        if (key.downArrow) setY((y) => Math.min(10, y + 1));
     });
 
     return (

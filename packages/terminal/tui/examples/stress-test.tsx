@@ -88,25 +88,16 @@ const StatsBar = ({ cols, fps, frame, rows }: { cols: number; fps: number; frame
                 {"  "}
             </Text>
             <Text>
-                {String(fps).padStart(3)}
-                {" "}
-                updates/sec
+                {String(fps).padStart(3)} updates/sec
                 {"  "}
-                Frame:
-                {" "}
-                <Text color="white">{String(frame).padStart(7)}</Text>
+                Frame: <Text color="white">{String(frame).padStart(7)}</Text>
                 {"  "}
-                Terminal:
-                {" "}
+                Terminal:{" "}
                 <Text color="white">
-                    {cols}
-                    ×
-                    {rows}
+                    {cols}×{rows}
                 </Text>
                 {"  "}
-                Cells/frame:
-                {" "}
-                <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
+                Cells/frame: <Text color="white">{(gridCols * gridRows).toLocaleString()}</Text>
                 {"  "}
                 <Text dim>q / Esc / Ctrl+C to exit</Text>
             </Text>
@@ -135,8 +126,7 @@ const StressTest = () => {
         let loopFrame = 0;
 
         function loop() {
-            if (!running)
-                return;
+            if (!running) return;
 
             loopFrame++;
             setFrame((f) => {
@@ -170,8 +160,7 @@ const StressTest = () => {
     useEffect(() => {
         const app = (globalThis as any).__ratatatApp;
 
-        if (!app)
-            return;
+        if (!app) return;
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             paintGrid(buffer, w, h, HEADER_ROWS, (globalThis as any).__ratatatFrame ?? 0);

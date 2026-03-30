@@ -238,25 +238,25 @@ describe("parseSgrMouse", () => {
         it("should return null for non-mouse input", () => {
             expect.assertions(1);
 
-            expect(parseSgrMouse("hello")).toBeNull();
+            expect(parseSgrMouse("hello")).toBeUndefined();
         });
 
         it("should return null for partial sequence", () => {
             expect.assertions(1);
 
-            expect(parseSgrMouse("\x1b[<0;10")).toBeNull();
+            expect(parseSgrMouse("\x1b[<0;10")).toBeUndefined();
         });
 
         it("should return null for empty string", () => {
             expect.assertions(1);
 
-            expect(parseSgrMouse("")).toBeNull();
+            expect(parseSgrMouse("")).toBeUndefined();
         });
 
         it("should return null for keyboard escape sequence", () => {
             expect.assertions(1);
 
-            expect(parseSgrMouse("\x1b[A")).toBeNull();
+            expect(parseSgrMouse("\x1b[A")).toBeUndefined();
         });
     });
 });

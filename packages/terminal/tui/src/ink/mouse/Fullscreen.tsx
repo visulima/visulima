@@ -1,15 +1,15 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
-import React from "react";
 import type { PropsWithChildren } from "react";
+import React from "react";
 
 import Box from "../components/Box";
 import useWindowSize from "../hooks/use-window-size";
 
-function Fullscreen({ children }: PropsWithChildren): React.JSX.Element {
+const Fullscreen = ({ children }: PropsWithChildren): React.JSX.Element => {
     const { columns, rows } = useWindowSize();
 
     return (
@@ -17,6 +17,6 @@ function Fullscreen({ children }: PropsWithChildren): React.JSX.Element {
             {children}
         </Box>
     );
-}
+};
 
 export { Fullscreen };

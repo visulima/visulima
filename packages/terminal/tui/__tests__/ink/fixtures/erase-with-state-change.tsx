@@ -20,15 +20,13 @@ const Erase = () => {
 
     return (
         <Box flexDirection="column">
-            {show
-                ? (
-                    <>
-                        <Text>A</Text>
-                        <Text>B</Text>
-                        <Text>C</Text>
-                    </>
-                )
-                : null}
+            {show ? (
+                <>
+                    <Text>A</Text>
+                    <Text>B</Text>
+                    <Text>C</Text>
+                </>
+            ) : null}
         </Box>
     );
 };

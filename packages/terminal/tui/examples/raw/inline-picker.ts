@@ -107,13 +107,12 @@ const loop = createInlineLoop(
 
 // Input handling
 process.stdin.on("data", (key: string) => {
-    if (done)
-        return;
+    if (done) return;
 
     switch (key) {
         case "\r":
         case "\n": {
-        // Enter — select and exit
+            // Enter — select and exit
             done = true;
             result = ITEMS[selected]!;
             loop.stop();
@@ -121,7 +120,7 @@ process.stdin.on("data", (key: string) => {
             break;
         }
         case "\u0003": {
-        // Ctrl+C
+            // Ctrl+C
             done = true;
             loop.stop();
 
@@ -129,19 +128,19 @@ process.stdin.on("data", (key: string) => {
         }
         case "\u001B[A":
         case "k": {
-        // Up
+            // Up
             selected = Math.max(0, selected - 1);
 
             break;
         }
         case "\u001B[B":
         case "j": {
-        // Down
+            // Down
             selected = Math.min(ITEMS.length - 1, selected + 1);
 
             break;
         }
-    // No default
+        // No default
     }
 });
 

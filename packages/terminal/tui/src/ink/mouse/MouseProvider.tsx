@@ -1,5 +1,5 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  *
  * Rewritten to integrate with the ink input pipeline instead of
@@ -9,8 +9,8 @@
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { PropsWithChildren } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { useStdinContext } from "../hooks/use-stdin";
 import useStdout from "../hooks/use-stdout";
@@ -19,12 +19,12 @@ import { ANSI_CODES } from "./constants";
 import type { MouseButton, MouseClickAction, MouseContextShape, MouseDragAction, MousePosition, MouseScrollAction } from "./mouse-context";
 import { MouseContext } from "./mouse-context";
 
-function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
+const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
     const { internal_eventEmitter } = useStdinContext();
     const { stdout } = useStdout();
     const events = useRef(new EventEmitter());
 
-    const [position, setPosition] = useState<MousePosition>({ x: 0, y: 0 });
+    const [position, setPosition] = useState({ x: 0, y: 0 });
     const [button, setButton] = useState<MouseButton | null>(null);
     const [click, setClick] = useState<MouseClickAction>(null);
     const [scroll, setScroll] = useState<MouseScrollAction>(null);
@@ -40,9 +40,7 @@ function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
         out.write(ANSI_CODES.mouseButton.on + ANSI_CODES.mouseMotion.on + ANSI_CODES.mouseMotionOthers.on + ANSI_CODES.mouseSGR.on);
 
         return () => {
-            out.write(
-                ANSI_CODES.mouseSGR.off + ANSI_CODES.mouseMotionOthers.off + ANSI_CODES.mouseMotion.off + ANSI_CODES.mouseButton.off,
-            );
+            out.write(ANSI_CODES.mouseSGR.off + ANSI_CODES.mouseMotionOthers.off + ANSI_CODES.mouseMotion.off + ANSI_CODES.mouseButton.off);
         };
     }, [stdout]);
 
@@ -83,6 +81,11 @@ function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
                     break;
                 }
 
+                case "move": {
+                    // position already emitted above
+                    break;
+                }
+
                 case "scroll": {
                     setScroll(event.direction);
                     events.current.emit("scroll", pos, event.direction);
@@ -91,11 +94,6 @@ function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
                     scrollTimeoutRef.current = setTimeout(() => {
                         setScroll(null);
                     }, 100);
-                    break;
-                }
-
-                case "move": {
-                    // position already emitted above
                     break;
                 }
             }
@@ -110,19 +108,18 @@ function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
         };
     }, [internal_eventEmitter]);
 
-    const value: MouseContextShape = useMemo(
-        () => ({
+    const value: MouseContextShape = useMemo(() => {
+        return {
             button,
             click,
             drag,
             events: events.current,
             position,
             scroll,
-        }),
-        [button, click, drag, position, scroll],
-    );
+        };
+    }, [button, click, drag, position, scroll]);
 
     return <MouseContext.Provider value={value}>{children}</MouseContext.Provider>;
-}
+};
 
 export { MouseProvider };

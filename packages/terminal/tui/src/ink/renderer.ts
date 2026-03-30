@@ -2,7 +2,8 @@
 import type { DOMElement } from "./dom";
 import type { CursorPosition } from "./log-update";
 import Output, { OutputCaches } from "./output";
-import renderNodeToOutput, { renderNodeToScreenReaderOutput, type RenderState } from "./render-node-to-output";
+import type { RenderState } from "./render-node-to-output";
+import renderNodeToOutput, { renderNodeToScreenReaderOutput } from "./render-node-to-output";
 
 type Result = {
     cursorPosition: CursorPosition | undefined;
@@ -105,13 +106,13 @@ const renderer = (node: DOMElement, isScreenReaderEnabled: boolean): Result => {
         const { height: outputHeight, output: generatedOutput } = output.get();
 
         return {
+            cursorPosition: renderState.cursorPosition,
+            cursorRequested: renderState.cursorRequested,
             output: generatedOutput,
             outputHeight,
             // Newline at the end is needed, because static output doesn't have one, so
             // interactive output will override last line of static output
             staticOutput: staticOutput ? `${staticOutput.get().output}\n` : "",
-            cursorRequested: renderState.cursorRequested,
-            cursorPosition: renderState.cursorPosition,
         };
     }
 
