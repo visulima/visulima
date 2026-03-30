@@ -1,0 +1,128 @@
+/**
+ * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Copyright Zeno Jiricek, licensed under Apache-2.0
+ *
+ * Rewritten to integrate with the ink input pipeline instead of
+ * listening on process.stdin directly.
+ */
+
+import { EventEmitter } from "node:events";
+import process from "node:process";
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import type { PropsWithChildren } from "react";
+
+import { useStdinContext } from "../hooks/use-stdin";
+import useStdout from "../hooks/use-stdout";
+import { parseSgrMouse } from "./ansi-parser";
+import { ANSI_CODES } from "./constants";
+import type { MouseButton, MouseClickAction, MouseContextShape, MouseDragAction, MousePosition, MouseScrollAction } from "./mouse-context";
+import { MouseContext } from "./mouse-context";
+
+function MouseProvider({ children }: PropsWithChildren): React.JSX.Element {
+    const { internal_eventEmitter } = useStdinContext();
+    const { stdout } = useStdout();
+    const events = useRef(new EventEmitter());
+
+    const [position, setPosition] = useState<MousePosition>({ x: 0, y: 0 });
+    const [button, setButton] = useState<MouseButton | null>(null);
+    const [click, setClick] = useState<MouseClickAction>(null);
+    const [scroll, setScroll] = useState<MouseScrollAction>(null);
+    const [drag, setDrag] = useState<MouseDragAction>(null);
+
+    const clickTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    // Enable mouse tracking on mount, disable on unmount
+    useEffect(() => {
+        const out = stdout.isTTY ? stdout : process.stdout;
+
+        out.write(ANSI_CODES.mouseButton.on + ANSI_CODES.mouseMotion.on + ANSI_CODES.mouseMotionOthers.on + ANSI_CODES.mouseSGR.on);
+
+        return () => {
+            out.write(
+                ANSI_CODES.mouseSGR.off + ANSI_CODES.mouseMotionOthers.off + ANSI_CODES.mouseMotion.off + ANSI_CODES.mouseButton.off,
+            );
+        };
+    }, [stdout]);
+
+    // Listen for mouse sequences on ink's input event emitter
+    useEffect(() => {
+        const handleInput = (input: string): void => {
+            const event = parseSgrMouse(input);
+
+            if (!event) {
+                return;
+            }
+
+            const pos: MousePosition = { x: event.x, y: event.y };
+
+            setPosition(pos);
+            events.current.emit("position", pos);
+
+            switch (event.type) {
+                case "click": {
+                    setButton(event.button);
+                    setClick(event.action);
+                    events.current.emit("click", pos, event.action, event.button);
+
+                    clearTimeout(clickTimeoutRef.current);
+                    clickTimeoutRef.current = setTimeout(() => {
+                        setClick(null);
+                        setButton(null);
+                    }, 100);
+                    break;
+                }
+
+                case "drag": {
+                    const dragAction = event.action === "press" ? "dragging" : null;
+
+                    setButton(event.button);
+                    setDrag(dragAction);
+                    events.current.emit("drag", pos, dragAction, event.button);
+                    break;
+                }
+
+                case "scroll": {
+                    setScroll(event.direction);
+                    events.current.emit("scroll", pos, event.direction);
+
+                    clearTimeout(scrollTimeoutRef.current);
+                    scrollTimeoutRef.current = setTimeout(() => {
+                        setScroll(null);
+                    }, 100);
+                    break;
+                }
+
+                case "move": {
+                    // position already emitted above
+                    break;
+                }
+            }
+        };
+
+        internal_eventEmitter.on("input", handleInput);
+
+        return () => {
+            internal_eventEmitter.off("input", handleInput);
+            clearTimeout(clickTimeoutRef.current);
+            clearTimeout(scrollTimeoutRef.current);
+        };
+    }, [internal_eventEmitter]);
+
+    const value: MouseContextShape = useMemo(
+        () => ({
+            button,
+            click,
+            drag,
+            events: events.current,
+            position,
+            scroll,
+        }),
+        [button, click, drag, position, scroll],
+    );
+
+    return <MouseContext.Provider value={value}>{children}</MouseContext.Provider>;
+}
+
+export { MouseProvider };
