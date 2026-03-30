@@ -75,29 +75,21 @@ export type {
 } from "./mouse";
 export {
     ControlledScrollView,
+    ScrollBar,
+    ScrollBarBox,
+    ScrollList,
     ScrollView,
-} from "ink-scroll-view";
+} from "./components/scroll";
 export type {
     ControlledScrollViewProps,
     ControlledScrollViewRef,
-    ScrollViewProps,
-    ScrollViewRef,
-} from "ink-scroll-view";
-export {
-    ScrollBar,
-    ScrollBarBox,
-} from "@byteland/ink-scroll-bar";
-export type {
+    ScrollAlignment,
     ScrollBarBoxProps,
     ScrollBarPlacement,
     ScrollBarProps,
     ScrollBarStyle,
-} from "@byteland/ink-scroll-bar";
-export {
-    ScrollList,
-} from "ink-scroll-list";
-export type {
-    ScrollAlignment,
     ScrollListProps,
     ScrollListRef,
-} from "ink-scroll-list";
+    ScrollViewProps,
+    ScrollViewRef,
+} from "./components/scroll";
