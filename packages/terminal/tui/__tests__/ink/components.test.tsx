@@ -111,6 +111,55 @@ describe("components", () => {
         expect(output).toBe("Hello World");
     });
 
+    it("wrap-anywhere breaks at character boundaries", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={7}>
+                <Text wrap="wrap-anywhere">Hello World</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("Hello W\norld");
+    });
+
+    it("wrap-anywhere with long unspaced token", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={5}>
+                <Text wrap="wrap-anywhere">abcdefghij</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("abcde\nfghij");
+    });
+
+    it("wrap-preserve-words never breaks inside words", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={5}>
+                <Text wrap="wrap-preserve-words">abcdefghij</Text>
+            </Box>,
+        );
+
+        // Long word overflows rather than being broken
+        expect(output).toBe("abcdefghij");
+    });
+
+    it("wrap-strict enforces exact width", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={5}>
+                <Text wrap="wrap-strict">abcdefghij</Text>
+            </Box>,
+        );
+
+        expect(output).toBe("abcde\nfghij");
+    });
+
     it("truncate text in the end", () => {
         expect.assertions(1);
 

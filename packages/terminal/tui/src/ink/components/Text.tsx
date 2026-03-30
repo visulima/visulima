@@ -64,7 +64,15 @@ export type Props = {
     readonly underline?: boolean;
 
     /**
-     * This property tells Ink to wrap or truncate text if its width is larger than the container. If `wrap` is passed (the default), Ink will wrap text and split it into multiple lines. If `truncate-*` is passed, Ink will truncate text instead, resulting in one line of text with the rest cut off.
+     * Controls how text wraps when it exceeds the container width.
+     *
+     * - `wrap` (default) — Wrap at word boundaries; break inside words only when a single word exceeds the width.
+     * - `wrap-anywhere` — Break at any character boundary, even when a whitespace break exists earlier.
+     * - `wrap-preserve-words` — Wrap at word boundaries; never break inside words (long words may overflow).
+     * - `wrap-strict` — Enforce exact width; always break at the column limit.
+     * - `truncate` / `truncate-end` — Truncate at the end with an ellipsis.
+     * - `truncate-start` — Truncate at the start with an ellipsis.
+     * - `truncate-middle` — Truncate in the middle with an ellipsis.
      */
     readonly wrap?: Styles["textWrap"];
 };
