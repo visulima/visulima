@@ -98,7 +98,7 @@
         "@visulima/tabular": "workspace:*",
         "cfonts": "3.3.1",
         "cli-boxes": "catalog:prod",
-        "cli-spinners": "catalog:dev",
+        "cli-spinners": "catalog:prod",
         "code-excerpt": "catalog:prod",
         "es-toolkit": "catalog:prod",
         "eventemitter3": "catalog:prod",
