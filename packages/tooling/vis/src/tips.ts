@@ -1,6 +1,13 @@
 /**
  * CLI tips system - displays contextual hints after command execution.
- * Tips are rate-limited (once per 5 minutes) and shown in dimmed styling.
+ *
+ * Features (per vite-plus RFC):
+ * - Probabilistic frequency control with per-tip cooldowns
+ * - Contextual matching based on command, args, and success state
+ * - Rate-limited globally (max 1 tip per 5 minutes)
+ * - Per-tip cooldown tracking (each tip has its own cooldown)
+ * - Suppressed in CI/test environments
+ * - Dimmed styling to avoid being intrusive
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -14,79 +21,154 @@ interface TipContext {
 }
 
 interface Tip {
+    /** Unique identifier for per-tip cooldown tracking */
+    id: string;
+    /** Probability of showing when matched (0.0 - 1.0). Default: 1.0 */
+    probability?: number;
+    /** Per-tip cooldown in milliseconds. Default: GLOBAL_COOLDOWN_MS */
+    cooldownMs?: number;
     matches: (context: TipContext) => boolean;
     message: (context: TipContext) => string;
 }
 
-const RATE_LIMIT_MS = 5 * 60 * 1000; // 5 minutes
-const STATE_FILE = join(homedir(), ".vis", ".tip-state");
+const GLOBAL_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const STATE_FILE = join(homedir(), ".vis", ".tip-state.json");
 
-const getLastTipTime = (): number => {
+interface TipState {
+    /** Last time any tip was shown (global rate limit) */
+    lastGlobal: number;
+    /** Per-tip cooldown timestamps keyed by tip id */
+    perTip: Record<string, number>;
+}
+
+const readState = (): TipState => {
     try {
         if (existsSync(STATE_FILE)) {
-            return Number.parseInt(readFileSync(STATE_FILE, "utf8").trim(), 10) || 0;
+            return JSON.parse(readFileSync(STATE_FILE, "utf8")) as TipState;
         }
     } catch {
-        // Ignore
+        // Corrupted state, reset
     }
 
-    return 0;
+    return { lastGlobal: 0, perTip: {} };
 };
 
-const setLastTipTime = (time: number): void => {
+const writeState = (state: TipState): void => {
     try {
         const dir = join(homedir(), ".vis");
 
         if (existsSync(dir)) {
-            writeFileSync(STATE_FILE, String(time));
+            writeFileSync(STATE_FILE, JSON.stringify(state));
         }
     } catch {
-        // Ignore
+        // Non-critical, skip
     }
 };
 
 // ── Tip definitions ──────────────────────────────────────────────────
 
-const shortAliasesTip: Tip = {
-    matches: (ctx) => {
-        const longCommands = ["install", "remove", "uninstall", "update", "link"];
+const tips: Tip[] = [
+    {
+        cooldownMs: 30 * 60 * 1000, // 30 minutes
+        id: "short-aliases",
+        matches: (ctx) => ["install", "remove", "uninstall", "update", "link"].includes(ctx.command),
+        message: (ctx) => {
+            const aliases: Record<string, string> = {
+                install: "i",
+                link: "ln",
+                remove: "rm",
+                uninstall: "rm",
+                update: "up",
+            };
+            const alias = aliases[ctx.command];
 
-        return longCommands.includes(ctx.command);
+            return alias ? `You can use 'vis ${alias}' as a shorthand for 'vis ${ctx.command}'` : "";
+        },
+        probability: 0.5,
     },
-    message: (ctx) => {
-        const aliases: Record<string, string> = {
-            install: "i",
-            link: "ln",
-            remove: "rm",
-            uninstall: "rm",
-            update: "up",
-        };
-
-        const alias = aliases[ctx.command];
-
-        return alias ? `tip: You can use 'vis ${alias}' as a shorthand for 'vis ${ctx.command}'` : "";
+    {
+        id: "use-exec",
+        matches: (ctx) => ctx.command === "dlx" && ctx.success,
+        message: () => "Use 'vis exec' to run locally installed binaries without downloading.",
     },
-};
-
-const useExecTip: Tip = {
-    matches: (ctx) => ctx.command === "dlx" && ctx.success,
-    message: () => "tip: Use 'vis exec' to run locally installed binaries without downloading.",
-};
-
-const checkSecurityTip: Tip = {
-    matches: (ctx) => (ctx.command === "check" || ctx.command === "update") && !ctx.args.includes("--security"),
-    message: () => "tip: Add --security to check for known vulnerabilities via OSV.dev",
-};
-
-const aiAnalysisTip: Tip = {
-    matches: (ctx) => (ctx.command === "check" || ctx.command === "update") && !ctx.args.includes("--ai"),
-    message: () => "tip: Add --ai to run AI analysis on outdated packages before updating.",
-};
-
-const tips: Tip[] = [shortAliasesTip, useExecTip, checkSecurityTip, aiAnalysisTip];
+    {
+        id: "security-check",
+        matches: (ctx) =>
+            (ctx.command === "check" || ctx.command === "update") &&
+            ctx.success &&
+            !ctx.args.includes("--security"),
+        message: () => "Add --security to check for known vulnerabilities via OSV.dev",
+        probability: 0.3,
+    },
+    {
+        cooldownMs: 60 * 60 * 1000, // 1 hour
+        id: "ai-analysis",
+        matches: (ctx) =>
+            (ctx.command === "check" || ctx.command === "update") &&
+            ctx.success &&
+            !ctx.args.includes("--ai"),
+        message: () => "Add --ai to run AI analysis on outdated packages before updating.",
+        probability: 0.2,
+    },
+    {
+        id: "dedupe-after-install",
+        matches: (ctx) => ctx.command === "install" && ctx.success,
+        message: () => "Run 'vis dedupe' periodically to remove duplicate dependencies.",
+        probability: 0.15,
+    },
+    {
+        id: "why-command",
+        matches: (ctx) => ctx.command === "outdated" && ctx.success,
+        message: () => "Use 'vis why <package>' to understand why a dependency is installed.",
+        probability: 0.3,
+    },
+    {
+        id: "graph-command",
+        matches: (ctx) => ctx.command === "run" && ctx.success,
+        message: () => "Use 'vis graph' to visualize your project dependency graph.",
+        probability: 0.1,
+    },
+    {
+        id: "affected-command",
+        matches: (ctx) => ctx.command === "run" && ctx.success && !ctx.args.includes("--projects"),
+        message: () => "Use 'vis affected <target>' to run tasks only on changed projects.",
+        probability: 0.2,
+    },
+    {
+        id: "pm-cache",
+        matches: (ctx) => ctx.command === "install" && ctx.success,
+        message: () => "Use 'vis pm cache dir' to find your package manager's cache location.",
+        probability: 0.1,
+    },
+    {
+        id: "create-editor",
+        matches: (ctx) => ctx.command === "create" && ctx.success,
+        message: () => "Add --editor vscode to generate VS Code configuration during project creation.",
+        probability: 0.5,
+    },
+    {
+        id: "env-pin",
+        matches: (ctx) => ctx.command === "env" && ctx.args.includes("install") && ctx.success,
+        message: () => "Use 'vis env pin <version>' to pin the Node.js version for your project.",
+        probability: 0.5,
+    },
+    {
+        id: "upgrade-check",
+        matches: (ctx) => ctx.command !== "upgrade" && ctx.success,
+        message: () => "Run 'vis upgrade --check' periodically to see if a newer version of vis is available.",
+        probability: 0.05, // Very low probability - occasional reminder
+    },
+];
 
 /**
- * Show a contextual tip if rate-limit allows and a tip matches.
+ * Show a contextual tip if rate-limits allow and a tip matches.
+ *
+ * Flow:
+ * 1. Check environment (skip in CI/test)
+ * 2. Check global cooldown (max 1 tip per 5 minutes)
+ * 3. Find matching tips, filter by per-tip cooldowns
+ * 4. Apply probability filter
+ * 5. Show the first surviving tip, update state
  */
 const showTip = (context: TipContext): void => {
     // Skip in test/CI environments
@@ -95,25 +177,54 @@ const showTip = (context: TipContext): void => {
     }
 
     const now = Date.now();
+    const state = readState();
 
-    if (now - getLastTipTime() < RATE_LIMIT_MS) {
+    // Global rate limit
+    if (now - state.lastGlobal < GLOBAL_COOLDOWN_MS) {
         return;
     }
 
-    for (const tip of tips) {
-        if (tip.matches(context)) {
-            const message = tip.message(context);
-
-            if (message) {
-                // Dimmed styling
-                process.stderr.write(`\n\x1B[2m${message}\x1B[0m\n`);
-                setLastTipTime(now);
-
-                break;
-            }
+    // Find matching tips, respecting per-tip cooldowns
+    const candidates = tips.filter((tip) => {
+        if (!tip.matches(context)) {
+            return false;
         }
+
+        const lastShown = state.perTip[tip.id] ?? 0;
+        const cooldown = tip.cooldownMs ?? GLOBAL_COOLDOWN_MS;
+
+        return now - lastShown >= cooldown;
+    });
+
+    if (candidates.length === 0) {
+        return;
     }
+
+    // Apply probabilistic filtering
+    const selected = candidates.find((tip) => {
+        const probability = tip.probability ?? 1.0;
+
+        return Math.random() < probability;
+    });
+
+    if (!selected) {
+        return;
+    }
+
+    const message = selected.message(context);
+
+    if (!message) {
+        return;
+    }
+
+    // Dimmed styling
+    process.stderr.write(`\n\x1B[2mtip: ${message}\x1B[0m\n`);
+
+    // Update state
+    state.lastGlobal = now;
+    state.perTip[selected.id] = now;
+    writeState(state);
 };
 
 export type { Tip, TipContext };
-export { showTip };
+export { showTip, tips };

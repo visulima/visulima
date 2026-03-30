@@ -28,7 +28,11 @@ import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
 import { loadVisConfig } from "./config";
+import { injectVersion } from "./output";
 import { showTip } from "./tips";
+
+// Inject VIS_VERSION for child processes before any commands run
+injectVersion();
 
 /**
  * Attempts to load and enable V8 compile cache for better performance.
