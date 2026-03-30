@@ -1,5 +1,5 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  *
  * Rewritten to use a unified SGR 1006 parser with full button support.
@@ -9,11 +9,11 @@
 import { SGR_MOUSE_PATTERN } from "./constants";
 import type { MouseButton } from "./mouse-context";
 
-type SgrMouseEvent =
-    | { action: "press" | "release"; button: MouseButton; type: "click"; x: number; y: number }
-    | { action: "press" | "release"; button: MouseButton; type: "drag"; x: number; y: number }
-    | { type: "move"; x: number; y: number }
-    | { direction: "scrolldown" | "scrollup"; type: "scroll"; x: number; y: number };
+type SgrMouseEvent
+    = | { action: "press" | "release"; button: MouseButton; type: "click"; x: number; y: number }
+        | { action: "press" | "release"; button: MouseButton; type: "drag"; x: number; y: number }
+        | { type: "move"; x: number; y: number }
+        | { direction: "scrolldown" | "scrollup"; type: "scroll"; x: number; y: number };
 
 const CLICK_BUTTONS: Record<number, MouseButton> = { 0: "left", 1: "middle", 2: "right" };
 const DRAG_BUTTONS: Record<number, MouseButton> = { 32: "left", 33: "middle", 34: "right" };
@@ -21,13 +21,13 @@ const DRAG_BUTTONS: Record<number, MouseButton> = { 32: "left", 33: "middle", 34
 /**
  * Parse an SGR 1006 mouse escape sequence into a structured event.
  *
- * Returns `null` if the input is not a valid SGR mouse sequence.
+ * Returns `undefined` if the input is not a valid SGR mouse sequence.
  */
-function parseSgrMouse(input: string): SgrMouseEvent | null {
+const parseSgrMouse = (input: string): SgrMouseEvent | undefined => {
     const match = SGR_MOUSE_PATTERN.exec(input);
 
     if (!match) {
-        return null;
+        return undefined;
     }
 
     const rawButton = Number(match[1]);
@@ -62,8 +62,8 @@ function parseSgrMouse(input: string): SgrMouseEvent | null {
         return { action: isRelease ? "release" : "press", button: clickButton, type: "click", x, y };
     }
 
-    return null;
-}
+    return undefined;
+};
 
 export { parseSgrMouse };
 export type { SgrMouseEvent };

@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, import/exports-last, jsdoc/check-indentation, jsdoc/match-description, no-control-regex, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/slow-regex, unicorn/no-null */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-arguments, @typescript-eslint/prefer-optional-chain, consistent-return, default-case, e18e/prefer-static-regex, import/exports-last, jsdoc/check-indentation, jsdoc/match-description, no-control-regex, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/slow-regex, unicorn/no-null */
 import type { Context, RefObject } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -402,7 +402,9 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
         };
     }, [context, updateMetrics]);
 
-    return useMemo(() => { return { ...metrics, hasMeasured }; }, [metrics, hasMeasured]);
+    return useMemo(() => {
+        return { ...metrics, hasMeasured };
+    }, [metrics, hasMeasured]);
 };
 
 /**
@@ -481,21 +483,18 @@ export const useScrollable = ({ contentHeight, viewportHeight }: UseScrollableOp
         setOffset((o) => clamp(o));
     }, [max, clamp]);
 
-    return useMemo(
-        () => {
-            return {
-                atBottom: clamp(offset) >= max,
-                atTop: clamp(offset) <= 0,
-                offset: clamp(offset),
-                scrollBy: (n: number) => setOffset((o) => clamp(o + n)),
-                scrollDown: () => setOffset((o) => clamp(o + 1)),
-                scrollToBottom: () => setOffset(max),
-                scrollToTop: () => setOffset(0),
-                scrollUp: () => setOffset((o) => clamp(o - 1)),
-            };
-        },
-        [offset, max, clamp],
-    );
+    return useMemo(() => {
+        return {
+            atBottom: clamp(offset) >= max,
+            atTop: clamp(offset) <= 0,
+            offset: clamp(offset),
+            scrollBy: (n: number) => setOffset((o) => clamp(o + n)),
+            scrollDown: () => setOffset((o) => clamp(o + 1)),
+            scrollToBottom: () => setOffset(max),
+            scrollToTop: () => setOffset(0),
+            scrollUp: () => setOffset((o) => clamp(o - 1)),
+        };
+    }, [offset, max, clamp]);
 };
 
 // ─── useMouse ─────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable func-style, react/function-component-definition, unicorn/filename-case */
 import type { BorderStyle, HorizontalAlignment } from "@visulima/tabular";
 import { Table as TabularTable } from "@visulima/tabular";
 import {
@@ -21,17 +21,17 @@ import Text from "./Text";
 /**
  * Scalar value that can be displayed in a table cell.
  */
-export type Scalar = bigint | boolean | number | string | null | undefined;
+type Scalar = bigint | boolean | number | string | null | undefined;
 
 /**
  * Dictionary with scalar values, representing a single row of data.
  */
-export type ScalarDict = Record<string, Scalar>;
+type ScalarDict = Record<string, Scalar>;
 
 /**
  * Configuration for a single table column.
  */
-export type ColumnConfig<T extends ScalarDict> = {
+type ColumnConfig<T extends ScalarDict> = {
     /**
      * Horizontal alignment of cell content.
      */
@@ -53,10 +53,9 @@ export type ColumnConfig<T extends ScalarDict> = {
     readonly width?: number;
 };
 
-export type Props<T extends ScalarDict> = {
+type Props<T extends ScalarDict> = {
     /**
      * Border style preset name or a custom `BorderStyle` object from `@visulima/tabular`.
-     *
      * @default "default"
      */
     readonly borderStyle?: "ascii" | "block" | "default" | "dots" | "double" | "markdown" | "minimal" | "none" | "rounded" | "thick" | BorderStyle;
@@ -74,12 +73,12 @@ export type Props<T extends ScalarDict> = {
     readonly data: T[];
 
     /**
-     * Custom cell value formatter. Return a string to display in the cell.
+     * Format a cell value before rendering. Return a string to display in the cell.
      */
     readonly formatCell?: (value: Scalar, column: keyof T & string, rowIndex: number) => string;
 
     /**
-     * Custom header label formatter. Return a string to display as the column header.
+     * Format a header label before rendering. Return a string to display as the column header.
      */
     readonly formatHeader?: (column: keyof T & string) => string;
 
@@ -90,28 +89,21 @@ export type Props<T extends ScalarDict> = {
 
     /**
      * Cell padding (left and right) in characters.
-     *
      * @default 1
      */
     readonly padding?: number;
 
     /**
      * Whether to show the header row.
-     *
      * @default true
      */
     readonly showHeader?: boolean;
 
-    /**
-     * Value to display for `null` or `undefined` cells.
-     *
-     * @default ""
-     */
+    /** Placeholder shown in place of `null` or `undefined` cell values. Defaults to an empty string. */
     readonly skeleton?: string;
 
     /**
      * Enable word wrap instead of truncation when cells exceed their width.
-     *
      * @default false
      */
     readonly wordWrap?: boolean;
@@ -135,7 +127,6 @@ const BORDER_PRESETS: Record<string, BorderStyle> = {
  *
  * Uses `@visulima/tabular` as the rendering engine, supporting multiple border styles,
  * column configuration, cell formatting, and word wrap.
- *
  * @example
  * ```tsx
  * import { Table } from "@visulima/tui/ink";
@@ -168,8 +159,10 @@ function TableComponent<T extends ScalarDict>({
 
         // Resolve column configs
         const resolvedColumns: ColumnConfig<T>[] = columnsProp
-            ? columnsProp.map((col) => (typeof col === "string" ? { key: col } : col))
-            : (Object.keys(data[0] as object) as (keyof T & string)[]).map((key) => ({ key }));
+            ? columnsProp.map((col) => typeof col === "string" ? { key: col } : col)
+            : (Object.keys(data[0] as object) as (keyof T & string)[]).map((key) => {
+                return { key };
+            });
 
         if (resolvedColumns.length === 0) {
             return "";
@@ -214,11 +207,8 @@ function TableComponent<T extends ScalarDict>({
                     return formatCell(value, col.key, rowIndex);
                 }
 
-                if (value === null || value === undefined) {
-                    return skeleton;
-                }
-
-                return String(value);
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
+                return value === undefined || value === null ? skeleton : String(value);
             });
 
             table.addRow(cells);
@@ -231,3 +221,4 @@ function TableComponent<T extends ScalarDict>({
 }
 
 export default TableComponent as <T extends ScalarDict>(props: Props<T>) => ReactElement;
+export type { ColumnConfig, Props, Scalar, ScalarDict };

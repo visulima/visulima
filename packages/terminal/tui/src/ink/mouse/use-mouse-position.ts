@@ -1,16 +1,16 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
 import { useEffect, useState } from "react";
 
 import type { MousePosition } from "./mouse-context";
-import { useMouseContext } from "./use-mouse";
+import useMouseContext from "./use-mouse";
 
-function useMousePosition(): MousePosition {
+const useMousePosition = (): MousePosition => {
     const mouse = useMouseContext();
-    const [position, setPosition] = useState<MousePosition>({
+    const [position, setPosition] = useState({
         x: mouse.position.x,
         y: mouse.position.y,
     });
@@ -31,6 +31,6 @@ function useMousePosition(): MousePosition {
     }, [mouse.events]);
 
     return position;
-}
+};
 
-export { useMousePosition };
+export default useMousePosition;

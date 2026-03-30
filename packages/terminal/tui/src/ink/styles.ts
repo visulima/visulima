@@ -39,6 +39,11 @@ export type Styles = {
     readonly backgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
+     * Change border background color. A shorthand for setting `borderTopBackgroundColor`, `borderRightBackgroundColor`, `borderBottomBackgroundColor`, and `borderLeftBackgroundColor`.
+     */
+    readonly borderBackgroundColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
      * Determines whether the bottom border is visible.
      * @default true
      */
@@ -64,11 +69,6 @@ export type Styles = {
      * Change border color. A shorthand for setting `borderTopColor`, `borderRightColor`, `borderBottomColor`, and `borderLeftColor`.
      */
     readonly borderColor?: LiteralUnion<AnsiColors, string>;
-
-    /**
-     * Change border background color. A shorthand for setting `borderTopBackgroundColor`, `borderRightBackgroundColor`, `borderBottomBackgroundColor`, and `borderLeftBackgroundColor`.
-     */
-    readonly borderBackgroundColor?: LiteralUnion<AnsiColors, string>;
 
     /**
      * Dim the border color. A shorthand for setting `borderTopDimColor`, `borderBottomDimColor`, `borderLeftDimColor`, and `borderRightDimColor`.

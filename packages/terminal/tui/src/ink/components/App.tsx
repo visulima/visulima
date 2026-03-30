@@ -444,99 +444,83 @@ const App = ({
     }, []);
 
     // Handle cursor visibility, raw mode, and bracketed paste mode cleanup on unmount
-    useEffect(() => () => {
-        const canWriteToStdout = !stdout.destroyed && !stdout.writableEnded;
+    useEffect(
+        () => () => {
+            const canWriteToStdout = !stdout.destroyed && !stdout.writableEnded;
 
-        if (interactive && canWriteToStdout) {
-            stdout.write(cursorShow);
-        }
-
-        if (isRawModeSupported && rawModeEnabledCount.current > 0) {
-            disableRawMode();
-        }
-
-        if (bracketedPasteModeEnabledCount.current > 0) {
-            if (stdout.isTTY && canWriteToStdout) {
-                stdout.write("\u001B[?2004l");
+            if (interactive && canWriteToStdout) {
+                stdout.write(cursorShow);
             }
 
-            bracketedPasteModeEnabledCount.current = 0;
-        }
-    }, [stdout, isRawModeSupported, disableRawMode, interactive]);
+            if (isRawModeSupported && rawModeEnabledCount.current > 0) {
+                disableRawMode();
+            }
+
+            if (bracketedPasteModeEnabledCount.current > 0) {
+                if (stdout.isTTY && canWriteToStdout) {
+                    stdout.write("\u001B[?2004l");
+                }
+
+                bracketedPasteModeEnabledCount.current = 0;
+            }
+        },
+        [stdout, isRawModeSupported, disableRawMode, interactive],
+    );
 
     // Memoize context values to prevent unnecessary re-renders
-    const appContextValue = useMemo(
-        () => {
-            return {
-                exit: handleExit,
-                waitUntilRenderFlush: onWaitUntilRenderFlush,
-            };
-        },
-        [handleExit, onWaitUntilRenderFlush],
-    );
+    const appContextValue = useMemo(() => {
+        return {
+            exit: handleExit,
+            waitUntilRenderFlush: onWaitUntilRenderFlush,
+        };
+    }, [handleExit, onWaitUntilRenderFlush]);
 
-    const stdinContextValue = useMemo(
-        () => {
-            return {
+    const stdinContextValue = useMemo(() => {
+        return {
+            internal_eventEmitter: internal_eventEmitter.current,
 
-                internal_eventEmitter: internal_eventEmitter.current,
+            internal_exitOnCtrlC: exitOnCtrlC,
+            isRawModeSupported,
+            setBracketedPasteMode: handleSetBracketedPasteMode,
+            setRawMode: handleSetRawMode,
+            stdin,
+        };
+    }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC]);
 
-                internal_exitOnCtrlC: exitOnCtrlC,
-                isRawModeSupported,
-                setBracketedPasteMode: handleSetBracketedPasteMode,
-                setRawMode: handleSetRawMode,
-                stdin,
-            };
-        },
-        [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC],
-    );
+    const stdoutContextValue = useMemo(() => {
+        return {
+            stdout,
+            write: writeToStdout,
+        };
+    }, [stdout, writeToStdout]);
 
-    const stdoutContextValue = useMemo(
-        () => {
-            return {
-                stdout,
-                write: writeToStdout,
-            };
-        },
-        [stdout, writeToStdout],
-    );
+    const stderrContextValue = useMemo(() => {
+        return {
+            stderr,
+            write: writeToStderr,
+        };
+    }, [stderr, writeToStderr]);
 
-    const stderrContextValue = useMemo(
-        () => {
-            return {
-                stderr,
-                write: writeToStderr,
-            };
-        },
-        [stderr, writeToStderr],
-    );
+    const cursorContextValue = useMemo(() => {
+        return {
+            setCursorPosition,
+        };
+    }, [setCursorPosition]);
 
-    const cursorContextValue = useMemo(
-        () => {
-            return {
-                setCursorPosition,
-            };
-        },
-        [setCursorPosition],
-    );
-
-    const focusContextValue = useMemo(
-        () => {
-            return {
-                activate: activateFocusable,
-                activeId: activeFocusId,
-                add: addFocusable,
-                deactivate: deactivateFocusable,
-                disableFocus,
-                enableFocus,
-                focus,
-                focusNext,
-                focusPrevious,
-                remove: removeFocusable,
-            };
-        },
-        [activeFocusId, addFocusable, removeFocusable, activateFocusable, deactivateFocusable, enableFocus, disableFocus, focusNext, focusPrevious, focus],
-    );
+    const focusContextValue = useMemo(() => {
+        return {
+            activate: activateFocusable,
+            activeId: activeFocusId,
+            add: addFocusable,
+            deactivate: deactivateFocusable,
+            disableFocus,
+            enableFocus,
+            focus,
+            focusNext,
+            focusPrevious,
+            remove: removeFocusable,
+        };
+    }, [activeFocusId, addFocusable, removeFocusable, activateFocusable, deactivateFocusable, enableFocus, disableFocus, focusNext, focusPrevious, focus]);
 
     return (
         <AppContext.Provider value={appContextValue}>

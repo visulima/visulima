@@ -1,14 +1,14 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
 import { useContext } from "react";
 
-import { MouseContext } from "./mouse-context";
 import type { MouseContextShape } from "./mouse-context";
+import { MouseContext } from "./mouse-context";
 
-function useMouseContext(): MouseContextShape {
+const useMouseContext = (): MouseContextShape => {
     const context = useContext(MouseContext);
 
     if (!context) {
@@ -16,6 +16,6 @@ function useMouseContext(): MouseContextShape {
     }
 
     return context;
-}
+};
 
-export { useMouseContext };
+export default useMouseContext;

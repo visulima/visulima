@@ -1,21 +1,30 @@
 /**
  * Mouse tracking for terminal UIs.
  *
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
-export { parseSgrMouse } from "./ansi-parser";
 export type { SgrMouseEvent } from "./ansi-parser";
+export { parseSgrMouse } from "./ansi-parser";
 export { Fullscreen } from "./Fullscreen";
-export { isIntersecting } from "./is-intersecting";
-export type { MouseAction, MouseButton, MouseClickAction, MouseContextShape, MouseDragAction, MouseEvents, MousePosition, MouseScrollAction } from "./mouse-context";
+export { default as isIntersecting } from "./is-intersecting";
+export type {
+    MouseAction,
+    MouseButton,
+    MouseClickAction,
+    MouseContextShape,
+    MouseDragAction,
+    MouseEvents,
+    MousePosition,
+    MouseScrollAction,
+} from "./mouse-context";
 export { MouseProvider } from "./MouseProvider";
 export { useElementDimensions, useElementPosition } from "./use-element-position";
-export { useMouseContext } from "./use-mouse";
-export { useMouseAction } from "./use-mouse-action";
-export { useMousePosition } from "./use-mouse-position";
-export { useOnMouseClick } from "./use-on-mouse-click";
+export { default as useMouseContext } from "./use-mouse";
+export { default as useMouseAction } from "./use-mouse-action";
+export { default as useMousePosition } from "./use-mouse-position";
 export type { UseOnMouseClickOptions } from "./use-on-mouse-click";
-export { useOnMouseHover } from "./use-on-mouse-hover";
-export { useOnMouseState } from "./use-on-mouse-state";
+export { useOnMouseClick } from "./use-on-mouse-click";
+export { default as useOnMouseHover } from "./use-on-mouse-hover";
+export { default as useOnMouseState } from "./use-on-mouse-state";

@@ -514,7 +514,7 @@ export default class Output {
     }
 
     private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { lines: string[]; x: number } {
-        const clippedLines = Array.from({ length: lines.length }).fill("");
+        const clippedLines: string[] = Array.from<string>({ length: lines.length }).fill("");
 
         for (const [lineIndex, line] of lines.entries()) {
             const from = x < x1 ? x1 - x : 0;

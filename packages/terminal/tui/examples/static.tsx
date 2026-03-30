@@ -24,8 +24,7 @@ const App = () => {
         const TOTAL = 12;
 
         const run = () => {
-            if (count >= TOTAL)
-                return;
+            if (count >= TOTAL) return;
 
             const passed = Math.random() > 0.15; // ~85% pass rate
 
@@ -59,9 +58,7 @@ const App = () => {
                 {(test) => (
                     <Box key={test.id}>
                         <Text color={test.passed ? "green" : "red"}>
-                            {test.passed ? "✔" : "✘"}
-                            {" "}
-                            {test.title}
+                            {test.passed ? "✔" : "✘"} {test.title}
                         </Text>
                     </Box>
                 )}
@@ -71,29 +68,14 @@ const App = () => {
             <Box flexDirection="column" marginTop={1}>
                 <Box>
                     <Text dimColor>
-                        Running tests...
-                        {" "}
-                        {done}
-                        /
-                        {TOTAL}
+                        Running tests... {done}/{TOTAL}
                         {done === TOTAL ? " — done!" : ""}
                     </Text>
                 </Box>
                 {done > 0 && (
                     <Box>
-                        <Text color="green">
-                            {passed}
-                            {" "}
-                            passed
-                        </Text>
-                        {failed > 0 && (
-                            <Text color="red">
-                                {" "}
-                                {failed}
-                                {" "}
-                                failed
-                            </Text>
-                        )}
+                        <Text color="green">{passed} passed</Text>
+                        {failed > 0 && <Text color="red"> {failed} failed</Text>}
                     </Box>
                 )}
             </Box>

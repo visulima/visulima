@@ -102,14 +102,11 @@ const nextCanned = () => CANNED[cannedIndex++ % CANNED.length];
 
 // How many terminal rows a committed message occupies
 function messageRows(message: Message): number {
-    if (message.kind === "system")
-        return 1;
+    if (message.kind === "system") return 1;
 
-    if (message.kind === "tool")
-        return 1;
+    if (message.kind === "tool") return 1;
 
-    if (message.kind === "diff")
-        return message.text.split("\n").length;
+    if (message.kind === "diff") return message.text.split("\n").length;
 
     // user / ai: 1 blank line + 1 per line of text
     return 1 + message.text.split("\n").length;
@@ -131,7 +128,9 @@ const FILES = [
     { dir: false, indent: 1, name: "stress-test.tsx", selectable: true },
     { dir: false, indent: 1, name: "rattata.tsx", selectable: true },
 ];
-const SELECTABLE = FILES.map((f, i) => { return { ...f, index: i }; }).filter((f) => f.selectable);
+const SELECTABLE = FILES.map((f, i) => {
+    return { ...f, index: i };
+}).filter((f) => f.selectable);
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
@@ -198,11 +197,7 @@ const Header = ({ focus, time, tokens }: { focus: Focus; time: string; tokens: n
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">{hints[focus]}</Text>
-                <Text color="blackBright">
-                    {tokens.toLocaleString()}
-                    {" "}
-                    tok
-                </Text>
+                <Text color="blackBright">{tokens.toLocaleString()} tok</Text>
                 <Text color="blackBright">{time}</Text>
             </Box>
         </Box>
@@ -224,27 +219,16 @@ const Sidebar = ({ focused, selectedIdx, width }: { focused: boolean; selectedId
 
                 return (
                     <Box key={i} paddingLeft={1 + f.indent * 2}>
-                        {f.dir
-                            ? (
-                                <Text color="blueBright">
-                                    ▸
-                                    {f.name}
-                                </Text>
-                            )
-                            : isSelected
-                                ? (
-                                    <Text bold color="cyan" inverse>
-                                        {" "}
-                                        {f.name}
-                                        {" "}
-                                    </Text>
-                                )
-                                : (
-                                    <Text color="blackBright">
-                                        {" "}
-                                        {f.name}
-                                    </Text>
-                                )}
+                        {f.dir ? (
+                            <Text color="blueBright">▸{f.name}</Text>
+                        ) : isSelected ? (
+                            <Text bold color="cyan" inverse>
+                                {" "}
+                                {f.name}{" "}
+                            </Text>
+                        ) : (
+                            <Text color="blackBright"> {f.name}</Text>
+                        )}
                     </Box>
                 );
             })}
@@ -281,8 +265,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
         return (
             <Box marginTop={1} paddingX={2}>
                 <Text bold color="yellow">
-                    you
-                    {" "}
+                    you{" "}
                 </Text>
                 <Text color="blackBright">{msg.text}</Text>
             </Box>
@@ -305,8 +288,7 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
     return (
         <Box marginTop={1} paddingX={2}>
             <Text bold color="cyan">
-                rat
-                {" "}
+                rat{" "}
             </Text>
             <Box flexDirection="column" flexGrow={1}>
                 {msg.text.split("\n").map((line, i) => (
@@ -321,20 +303,17 @@ const MessageBlock = ({ msg }: { msg: Message }) => {
 
 const InputBar = ({ disabled, focused, value }: { disabled: boolean; focused: boolean; value: string }) => {
     const borderColor = focused ? "yellow" : "blackBright";
-    const prompt = disabled
-        ? (
-            <Text color="blackBright"> waiting for rattata…</Text>
-        )
-        : (
-            <>
-                <Text bold color="yellow">
-                    ▸
-                    {" "}
-                </Text>
-                <Text color={focused ? "white" : "blackBright"}>{value}</Text>
-                {focused && <Text color="yellow">█</Text>}
-            </>
-        );
+    const prompt = disabled ? (
+        <Text color="blackBright"> waiting for rattata…</Text>
+    ) : (
+        <>
+            <Text bold color="yellow">
+                ▸{" "}
+            </Text>
+            <Text color={focused ? "white" : "blackBright"}>{value}</Text>
+            {focused && <Text color="yellow">█</Text>}
+        </>
+    );
 
     return (
         <Box alignItems="center" borderColor={borderColor} borderStyle="single" height={3} paddingX={1}>
@@ -353,20 +332,16 @@ const StatusBar = ({ focus, scriptDone, spinner, thinking }: { focus: Focus; scr
     return (
         <Box borderColor="blackBright" borderStyle="single" flexDirection="row" justifyContent="space-between" paddingX={1}>
             <Box flexDirection="row" gap={1}>
-                {thinking
-                    ? (
-                        <>
-                            <Text color="cyan">{spinner}</Text>
-                            <Text color="cyan">thinking…</Text>
-                        </>
-                    )
-                    : scriptDone
-                        ? (
-                            <Text color="greenBright">✓ ready</Text>
-                        )
-                        : (
-                            <Text color="blackBright">ready</Text>
-                        )}
+                {thinking ? (
+                    <>
+                        <Text color="cyan">{spinner}</Text>
+                        <Text color="cyan">thinking…</Text>
+                    </>
+                ) : scriptDone ? (
+                    <Text color="greenBright">✓ ready</Text>
+                ) : (
+                    <Text color="blackBright">ready</Text>
+                )}
             </Box>
             <Box flexDirection="row" gap={2}>
                 <Text color="blackBright">focus: </Text>
@@ -415,8 +390,8 @@ const RattataApp = () => {
     const allMessages: Message[] = active
         ? [...settled, active]
         : thinking
-            ? [...settled, { done: false, id: -1, kind: "tool" as MessageKind, text: `${spinner} running…` }]
-            : settled;
+          ? [...settled, { done: false, id: -1, kind: "tool" as MessageKind, text: `${spinner} running…` }]
+          : settled;
 
     const contentHeight = allMessages.reduce((sum, m) => sum + messageRows(m), 0);
 
@@ -492,8 +467,7 @@ const RattataApp = () => {
             }
 
             if (key.downArrow) {
-                if (scroll.atBottom)
-                    setPinned(false);
+                if (scroll.atBottom) setPinned(false);
                 else scroll.scrollDown();
 
                 return;
@@ -512,8 +486,7 @@ const RattataApp = () => {
                 } else {
                     scroll.scrollBy(5);
 
-                    if (scroll.atBottom)
-                        setPinned(false);
+                    if (scroll.atBottom) setPinned(false);
                 }
 
                 return;
@@ -546,8 +519,7 @@ const RattataApp = () => {
         }
 
         // 'q' quits from sidebar and chat; not from input (user may want to type 'q')
-        if (char === "q" && focus !== "input")
-            exit();
+        if (char === "q" && focus !== "input") exit();
     });
 
     // ── Stream a single message then call onDone
@@ -557,8 +529,7 @@ const RattataApp = () => {
         const tick = () => {
             streamTimer.current = setTimeout(() => {
                 setActive((current) => {
-                    if (!current)
-                        return current;
+                    if (!current) return current;
 
                     charIndex.current++;
                     const next = fullText.slice(0, charIndex.current);
@@ -645,11 +616,9 @@ const RattataApp = () => {
         stepTimer.current = setTimeout(advanceScript, 400);
 
         return () => {
-            if (streamTimer.current)
-                clearTimeout(streamTimer.current);
+            if (streamTimer.current) clearTimeout(streamTimer.current);
 
-            if (stepTimer.current)
-                clearTimeout(stepTimer.current);
+            if (stepTimer.current) clearTimeout(stepTimer.current);
         };
     }, []);
 
@@ -679,8 +648,7 @@ const RattataApp = () => {
             rowsSkipped = displayOffset;
         }
 
-        if (rowsShown >= chatViewport)
-            break;
+        if (rowsShown >= chatViewport) break;
 
         visibleMessages.push(message);
         rowsShown += h;
@@ -695,12 +663,7 @@ const RattataApp = () => {
                     <Box borderColor={focus === "chat" ? "cyan" : "blackBright"} borderStyle="single" flexDirection="column" flexGrow={1} paddingX={1}>
                         {!atTop && (
                             <Box justifyContent="center">
-                                <Text color="blackBright">
-                                    ↑
-                                    {displayOffset}
-                                    {" "}
-                                    rows above
-                                </Text>
+                                <Text color="blackBright">↑{displayOffset} rows above</Text>
                             </Box>
                         )}
                         {visibleMessages.map((message) => (

@@ -73,6 +73,7 @@ export class IMECompositionBuffer {
 
         if (this.buffer.length > 0) {
             const text = this.buffer;
+
             this.buffer = "";
             this.onFlush(text);
         }

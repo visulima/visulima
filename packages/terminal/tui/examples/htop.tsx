@@ -45,8 +45,7 @@ function cpuPercents(previous: CpuSnapshot, current: CpuSnapshot): number[] {
         const totalDiff = currentTotal - previousTotal;
         const idleDiff = c.idle - p.idle;
 
-        if (totalDiff === 0)
-            return 0;
+        if (totalDiff === 0) return 0;
 
         return Math.round(((totalDiff - idleDiff) / totalDiff) * 100);
     });
@@ -98,11 +97,9 @@ function formatUptime(secs: number) {
     const m = Math.floor((secs % 3600) / 60);
     const parts = [];
 
-    if (d > 0)
-        parts.push(`${d}d`);
+    if (d > 0) parts.push(`${d}d`);
 
-    if (h > 0 || d > 0)
-        parts.push(`${h}h`);
+    if (h > 0 || d > 0) parts.push(`${h}h`);
 
     parts.push(`${m}m`);
 
@@ -110,8 +107,7 @@ function formatUptime(secs: number) {
 }
 
 function formatMem(bytes: number) {
-    if (bytes >= 1e9)
-        return `${(bytes / 1e9).toFixed(1)}G`;
+    if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)}G`;
 
     return `${(bytes / 1e6).toFixed(0)}M`;
 }
@@ -147,14 +143,11 @@ const App = () => {
     }, []);
 
     useInput((input, key) => {
-        if (key.escape || input === "q" || input === "Q")
-            exit();
+        if (key.escape || input === "q" || input === "Q") exit();
 
-        if (input === "c" || input === "C")
-            setSort("cpu");
+        if (input === "c" || input === "C") setSort("cpu");
 
-        if (input === "m" || input === "M")
-            setSort("mem");
+        if (input === "m" || input === "M") setSort("mem");
     });
 
     const totalMem = os.totalmem();
@@ -162,7 +155,7 @@ const App = () => {
     const cpuCount = cpuPcts.length;
     const barW = Math.max(8, Math.floor((columns - 20) / Math.min(cpuCount, 10)) - 2);
 
-    const sorted = procs.toSorted((a, b) => sort === "cpu" ? b.cpu - a.cpu : b.mem - a.mem).slice(0, 20);
+    const sorted = procs.toSorted((a, b) => (sort === "cpu" ? b.cpu - a.cpu : b.mem - a.mem)).slice(0, 20);
     const hostname = os.hostname().split(".")[0];
 
     return (
@@ -172,28 +165,16 @@ const App = () => {
                     {hostname}
                 </Text>
                 <Text dim>
-                    up
-                    {" "}
-                    <Text color="white">{formatUptime(uptime)}</Text>
+                    up <Text color="white">{formatUptime(uptime)}</Text>
                 </Text>
                 <Text dim>
-                    load
-                    {" "}
-                    <Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>
-                    {" "}
+                    load <Text color={loadAvg[0] > cpuCount ? "red" : loadAvg[0] > cpuCount * 0.7 ? "yellow" : "green"}>{loadAvg[0].toFixed(2)}</Text>{" "}
                     <Text dim>
-                        {loadAvg[1].toFixed(2)}
-                        {" "}
-                        {loadAvg[2].toFixed(2)}
+                        {loadAvg[1].toFixed(2)} {loadAvg[2].toFixed(2)}
                     </Text>
                 </Text>
                 <Spacer />
-                <Text dim>
-                    {cpuCount}
-                    {" "}
-                    cores ·
-                    {" "}
-                </Text>
+                <Text dim>{cpuCount} cores · </Text>
                 <Text color="cyan">{formatMem(totalMem)}</Text>
                 <Text dim> RAM · q quit</Text>
             </Box>
@@ -208,17 +189,13 @@ const App = () => {
 
                         return (
                             <Box flexDirection="row" key={i} width={barW + 12}>
-                                <Text dim>
-                                    {String(i + 1).padStart(2)}
-                                    {" "}
-                                </Text>
+                                <Text dim>{String(i + 1).padStart(2)} </Text>
                                 <Text color={color}>[</Text>
                                 {miniBar(pct, barW, color)}
                                 <Text color={color}>]</Text>
                                 <Text bold color={color}>
                                     {" "}
-                                    {String(pct).padStart(3)}
-                                    %
+                                    {String(pct).padStart(3)}%
                                 </Text>
                             </Box>
                         );
@@ -234,14 +211,10 @@ const App = () => {
                 {miniBar(memPct, 40, memPct > 80 ? "red" : memPct > 60 ? "yellow" : "cyan")}
                 <Text color="cyan">]</Text>
                 <Text bold color="cyan">
-                    {String(memPct).padStart(3)}
-                    %
+                    {String(memPct).padStart(3)}%
                 </Text>
                 <Text dim>
-                    {formatMem(memUsed)}
-                    {" "}
-                    /
-                    {formatMem(totalMem)}
+                    {formatMem(memUsed)} /{formatMem(totalMem)}
                 </Text>
             </Box>
 
@@ -282,15 +255,14 @@ const App = () => {
                     <Text dim>em</Text>
                 </Box>
 
-                {sorted.length === 0
-                    ? (
-                        <Text dim>no process rows available (check `ps` availability)</Text>
-                    )
-                    : sorted.map((p, i) => {
+                {sorted.length === 0 ? (
+                    <Text dim>no process rows available (check `ps` availability)</Text>
+                ) : (
+                    sorted.map((p, i) => {
                         const cpuColor = p.cpu > 50 ? "red" : p.cpu > 20 ? "yellow" : "white";
                         const memColor = p.mem > 10 ? "red" : p.mem > 5 ? "yellow" : "white";
                         const cmd = p.cmd.length > columns - 40 ? `${p.cmd.slice(0, columns - 43)}…` : p.cmd;
-                        const cmdDisplay = cmd.startsWith("/") ? cmd.split("/").pop() ?? cmd : cmd;
+                        const cmdDisplay = cmd.startsWith("/") ? (cmd.split("/").pop() ?? cmd) : cmd;
 
                         return (
                             <Box flexDirection="row" key={`${p.pid}-${i}`}>
@@ -311,7 +283,8 @@ const App = () => {
                                 <Text color={i === 0 ? "white" : "gray"}>{cmdDisplay}</Text>
                             </Box>
                         );
-                    })}
+                    })
+                )}
             </Box>
         </Box>
     );

@@ -38,9 +38,7 @@ describe("render-to-string", () => {
 
         const output = renderToString(
             <Text>
-                Hello
-                {" "}
-                <World />
+                Hello <World />
             </Text>,
         );
 

@@ -58,7 +58,7 @@ const App = () => {
 
                 break;
             }
-        // No default
+            // No default
         }
     });
 
@@ -115,13 +115,7 @@ const App = () => {
             {log.length > logViewport && (
                 <Box justifyContent="flex-end" paddingRight={1}>
                     <Text dim>
-                        {scroll.offset + 1}
-                        –
-                        {Math.min(scroll.offset + logViewport, log.length)}
-                        /
-                        {log.length}
-                        {" "}
-                        ↑↓ scroll
+                        {scroll.offset + 1}–{Math.min(scroll.offset + logViewport, log.length)}/{log.length} ↑↓ scroll
                     </Text>
                 </Box>
             )}

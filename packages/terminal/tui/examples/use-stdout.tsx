@@ -38,16 +38,12 @@ const Example = () => {
             </Text>
             <Box marginTop={1}>
                 <Text>
-                    Width:
-                    {" "}
-                    <Text bold>{stdout.columns}</Text>
+                    Width: <Text bold>{stdout.columns}</Text>
                 </Text>
             </Box>
             <Box>
                 <Text>
-                    Height:
-                    {" "}
-                    <Text bold>{stdout.rows}</Text>
+                    Height: <Text bold>{stdout.rows}</Text>
                 </Text>
             </Box>
         </Box>

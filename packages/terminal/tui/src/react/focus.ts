@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, import/exports-last, no-confusing-arrow, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-confusing-void-expression, import/exports-last, sonarjs/pseudo-random, unicorn/prevent-abbreviations */
 import type { Context } from "react";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
@@ -66,7 +66,7 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const remove = useCallback((id: string) => {
         itemsRef.current = itemsRef.current.filter((e) => e.id !== id);
-        setActiveId((previous) => previous === id ? undefined : previous);
+        setActiveId((previous) => (previous === id ? undefined : previous));
     }, []);
 
     const activate = useCallback((id: string) => {
@@ -75,7 +75,7 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const deactivate = useCallback((id: string) => {
         itemsRef.current = itemsRef.current.map((e) => (e.id === id ? { ...e, isActive: false } : e));
-        setActiveId((previous) => previous === id ? undefined : previous);
+        setActiveId((previous) => (previous === id ? undefined : previous));
     }, []);
 
     const enableFocus = useCallback(() => setIsEnabled(true), []);
@@ -134,23 +134,20 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         [isEnabled],
     );
 
-    const value = useMemo<FocusContextProps>(
-        () => {
-            return {
-                activate,
-                activeId,
-                add,
-                deactivate,
-                disableFocus,
-                enableFocus,
-                focus,
-                focusNext,
-                focusPrevious,
-                remove,
-            };
-        },
-        [activeId, add, remove, activate, deactivate, enableFocus, disableFocus, focusNext, focusPrevious, focus],
-    );
+    const value = useMemo<FocusContextProps>(() => {
+        return {
+            activate,
+            activeId,
+            add,
+            deactivate,
+            disableFocus,
+            enableFocus,
+            focus,
+            focusNext,
+            focusPrevious,
+            remove,
+        };
+    }, [activeId, add, remove, activate, deactivate, enableFocus, disableFocus, focusNext, focusPrevious, focus]);
 
     return React.createElement(FocusContext.Provider, { value }, children);
 };

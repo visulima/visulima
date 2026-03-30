@@ -20,9 +20,7 @@ describe("use-box-metrics", () => {
             return (
                 <Box ref={ref}>
                     <Text>
-                        {width}
-                        x
-                        {height}
+                        {width}x{height}
                     </Text>
                 </Box>
             );
@@ -50,9 +48,7 @@ describe("use-box-metrics", () => {
                     <Text>first line</Text>
                     <Box marginLeft={5} ref={ref}>
                         <Text>
-                            {left}
-                            ,
-                            {top}
+                            {left},{top}
                         </Text>
                     </Box>
                 </Box>
@@ -224,15 +220,7 @@ describe("use-box-metrics", () => {
             return (
                 <Box>
                     <Text>
-                        {width}
-                        ,
-                        {height}
-                        ,
-                        {left}
-                        ,
-                        {top}
-                        ,
-                        {String(hasMeasured)}
+                        {width},{height},{left},{top},{String(hasMeasured)}
                     </Text>
                 </Box>
             );
@@ -290,25 +278,13 @@ describe("use-box-metrics", () => {
 
             return (
                 <Box flexDirection="column">
-                    {isTrackedElementMounted
-                        ? (
-                            <Box ref={ref} width={10}>
-                                <Text>1234567890</Text>
-                            </Box>
-                        )
-                        : undefined}
+                    {isTrackedElementMounted ? (
+                        <Box ref={ref} width={10}>
+                            <Text>1234567890</Text>
+                        </Box>
+                    ) : undefined}
                     <Text>
-                        Metrics:
-                        {" "}
-                        {width}
-                        ,
-                        {height}
-                        ,
-                        {left}
-                        ,
-                        {top}
-                        ,
-                        {String(hasMeasured)}
+                        Metrics: {width},{height},{left},{top},{String(hasMeasured)}
                     </Text>
                 </Box>
             );

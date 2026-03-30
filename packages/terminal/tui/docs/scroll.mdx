@@ -8,13 +8,7 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 Ported from the [ByteLand](https://github.com/ByteLandTechnology) scroll ecosystem. Import from `@visulima/tui/ink`.
 
 ```tsx
-import {
-    ControlledScrollView,
-    ScrollBar,
-    ScrollBarBox,
-    ScrollList,
-    ScrollView,
-} from "@visulima/tui/ink";
+import { ControlledScrollView, ScrollBar, ScrollBarBox, ScrollList, ScrollView } from "@visulima/tui/ink";
 ```
 
 ## `ScrollView`
@@ -68,30 +62,30 @@ const Demo = () => {
 
 Extends `BoxProps`.
 
-| Prop                    | Type       | Description                              |
-| ----------------------- | ---------- | ---------------------------------------- |
-| `onScroll`              | `function` | Callback with current scroll offset      |
-| `onViewportSizeChange`  | `function` | Fires when viewport dimensions change    |
-| `onContentHeightChange` | `function` | Fires when total content height changes  |
-| `onItemHeightChange`    | `function` | Fires when an individual item resizes    |
-| `debug`                 | `boolean`  | Disables overflow hidden for debugging   |
+| Prop                    | Type       | Description                             |
+| ----------------------- | ---------- | --------------------------------------- |
+| `onScroll`              | `function` | Callback with current scroll offset     |
+| `onViewportSizeChange`  | `function` | Fires when viewport dimensions change   |
+| `onContentHeightChange` | `function` | Fires when total content height changes |
+| `onItemHeightChange`    | `function` | Fires when an individual item resizes   |
+| `debug`                 | `boolean`  | Disables overflow hidden for debugging  |
 
 ### Ref Methods
 
-| Method              | Description                              |
-| ------------------- | ---------------------------------------- |
-| `scrollTo(offset)`  | Scroll to absolute position              |
-| `scrollBy(delta)`   | Scroll by relative amount                |
-| `scrollToTop()`     | Scroll to top                            |
-| `scrollToBottom()`  | Scroll to bottom                         |
-| `getScrollOffset()` | Current scroll position                  |
-| `getContentHeight()`| Total content height                     |
-| `getViewportHeight()`| Visible viewport height                 |
-| `getBottomOffset()` | Max scroll offset                        |
-| `getItemHeight(i)`  | Height of item at index                  |
-| `getItemPosition(i)`| Position and height of item at index     |
-| `remeasure()`       | Re-measure viewport dimensions           |
-| `remeasureItem(i)`  | Re-measure a specific child              |
+| Method                | Description                          |
+| --------------------- | ------------------------------------ |
+| `scrollTo(offset)`    | Scroll to absolute position          |
+| `scrollBy(delta)`     | Scroll by relative amount            |
+| `scrollToTop()`       | Scroll to top                        |
+| `scrollToBottom()`    | Scroll to bottom                     |
+| `getScrollOffset()`   | Current scroll position              |
+| `getContentHeight()`  | Total content height                 |
+| `getViewportHeight()` | Visible viewport height              |
+| `getBottomOffset()`   | Max scroll offset                    |
+| `getItemHeight(i)`    | Height of item at index              |
+| `getItemPosition(i)`  | Position and height of item at index |
+| `remeasure()`         | Re-measure viewport dimensions       |
+| `remeasureItem(i)`    | Re-measure a specific child          |
 
 ## `ControlledScrollView`
 
@@ -147,30 +141,24 @@ import { Box, ScrollBar, Text } from "@visulima/tui/ink";
     <Box borderStyle="single" borderRight={false} height={10}>
         <Text>Content here</Text>
     </Box>
-    <ScrollBar
-        placement="right"
-        style="single"
-        contentHeight={100}
-        viewportHeight={10}
-        scrollOffset={scrollOffset}
-    />
-</Box>
+    <ScrollBar placement="right" style="single" contentHeight={100} viewportHeight={10} scrollOffset={scrollOffset} />
+</Box>;
 ```
 
 ### Props
 
-| Prop             | Type                 | Default     | Description                         |
-| ---------------- | -------------------- | ----------- | ----------------------------------- |
-| `contentHeight`  | `number`             | required    | Total content height                |
-| `viewportHeight` | `number`             | required    | Visible viewport height             |
-| `scrollOffset`   | `number`             | required    | Current scroll position             |
-| `placement`      | `ScrollBarPlacement` | `'right'`   | `'left'`, `'right'`, or `'inset'`   |
-| `style`          | `ScrollBarStyle`     | varies      | Visual style                        |
-| `thumbChar`      | `string`             | ---         | Custom thumb character (inset only) |
-| `trackChar`      | `string`             | ---         | Custom track character (inset only) |
-| `autoHide`       | `boolean`            | `false`     | Hide when content fits (inset only) |
-| `color`          | `string`             | ---         | Scroll bar color                    |
-| `dimColor`       | `boolean`            | `false`     | Dimmed styling                      |
+| Prop             | Type                 | Default   | Description                         |
+| ---------------- | -------------------- | --------- | ----------------------------------- |
+| `contentHeight`  | `number`             | required  | Total content height                |
+| `viewportHeight` | `number`             | required  | Visible viewport height             |
+| `scrollOffset`   | `number`             | required  | Current scroll position             |
+| `placement`      | `ScrollBarPlacement` | `'right'` | `'left'`, `'right'`, or `'inset'`   |
+| `style`          | `ScrollBarStyle`     | varies    | Visual style                        |
+| `thumbChar`      | `string`             | ---       | Custom thumb character (inset only) |
+| `trackChar`      | `string`             | ---       | Custom track character (inset only) |
+| `autoHide`       | `boolean`            | `false`   | Hide when content fits (inset only) |
+| `color`          | `string`             | ---       | Scroll bar color                    |
+| `dimColor`       | `boolean`            | `false`   | Dimmed styling                      |
 
 ## `ScrollBarBox`
 
@@ -179,31 +167,25 @@ A `Box` with a built-in scroll bar on one border.
 ```tsx
 import { ScrollBarBox, Text } from "@visulima/tui/ink";
 
-<ScrollBarBox
-    height={12}
-    borderStyle="single"
-    contentHeight={50}
-    viewportHeight={10}
-    scrollOffset={scrollOffset}
->
+<ScrollBarBox height={12} borderStyle="single" contentHeight={50} viewportHeight={10} scrollOffset={scrollOffset}>
     {visibleItems.map((item) => (
         <Text key={item.id}>{item.label}</Text>
     ))}
-</ScrollBarBox>
+</ScrollBarBox>;
 ```
 
 ### Props
 
 Extends `BoxProps`.
 
-| Prop                 | Type                  | Default   | Description                      |
-| -------------------- | --------------------- | --------- | -------------------------------- |
-| `contentHeight`      | `number`              | required  | Total content height             |
-| `viewportHeight`     | `number`              | required  | Visible viewport height          |
-| `scrollOffset`       | `number`              | required  | Current scroll position          |
-| `scrollBarPosition`  | `'left' \| 'right'`  | `'right'` | Which side to show the bar       |
-| `scrollBarAutoHide`  | `boolean`             | `false`   | Hide thumb when content fits     |
-| `thumbChar`          | `string`              | ---       | Custom thumb character            |
+| Prop                | Type                | Default   | Description                  |
+| ------------------- | ------------------- | --------- | ---------------------------- |
+| `contentHeight`     | `number`            | required  | Total content height         |
+| `viewportHeight`    | `number`            | required  | Visible viewport height      |
+| `scrollOffset`      | `number`            | required  | Current scroll position      |
+| `scrollBarPosition` | `'left' \| 'right'` | `'right'` | Which side to show the bar   |
+| `scrollBarAutoHide` | `boolean`           | `false`   | Hide thumb when content fits |
+| `thumbChar`         | `string`            | ---       | Custom thumb character       |
 
 ## `ScrollList`
 
@@ -257,10 +239,10 @@ const Demo = () => {
 
 Extends `ScrollViewProps`.
 
-| Prop              | Type              | Default  | Description                                  |
-| ----------------- | ----------------- | -------- | -------------------------------------------- |
-| `selectedIndex`   | `number`          | ---      | Currently selected item (controlled)         |
-| `scrollAlignment` | `ScrollAlignment` | `'auto'` | How to position the selected item in view    |
+| Prop              | Type              | Default  | Description                               |
+| ----------------- | ----------------- | -------- | ----------------------------------------- |
+| `selectedIndex`   | `number`          | ---      | Currently selected item (controlled)      |
+| `scrollAlignment` | `ScrollAlignment` | `'auto'` | How to position the selected item in view |
 
 Alignment modes:
 

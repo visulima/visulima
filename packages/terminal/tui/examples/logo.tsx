@@ -60,19 +60,16 @@ function paintLogo(buffer: Uint32Array, cols: number, rows: number, logoRow: num
     for (let y = 0; y < LOGO_HEIGHT; y++) {
         const termY = logoRow + y;
 
-        if (termY < 0 || termY >= rows)
-            continue;
+        if (termY < 0 || termY >= rows) continue;
 
         const cells = LOGO_CELLS[y];
 
         for (const [x, cp] of cells.entries()) {
             const termX = logoCol + x;
 
-            if (termX < 0 || termX >= cols)
-                continue;
+            if (termX < 0 || termX >= cols) continue;
 
-            if (cp === 32)
-                continue;
+            if (cp === 32) continue;
 
             const index = (termY * cols + termX) * 2;
             const paletteIndex = (x + frame) % PALETTE.length;
@@ -104,8 +101,7 @@ const LogoApp = () => {
     logoColRef.current = logoCol;
 
     useInput((input, key) => {
-        if (input === "q" || (key.ctrl && input === "c") || key.escape || key.return)
-            exit();
+        if (input === "q" || (key.ctrl && input === "c") || key.escape || key.return) exit();
     });
 
     // Animation loop — runs once, advances frameRef, triggers re-render via forceUpdate
@@ -139,8 +135,7 @@ const LogoApp = () => {
     useEffect(() => {
         const app = (globalThis as any).__ratatatApp;
 
-        if (!app)
-            return;
+        if (!app) return;
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             paintLogo(buffer, w, h, logoRowRef.current, logoColRef.current, frameRef.current);

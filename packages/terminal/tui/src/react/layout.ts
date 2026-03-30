@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null */
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null, unicorn/prefer-dom-node-remove */
 import Yoga from "yoga-layout-prebuilt";
 
 import { measureTextBlock } from "./text-width";
@@ -86,14 +86,14 @@ export class LayoutNode {
         const currentOwner = yogaOwner.get(child.yogaNode);
 
         if (currentOwner) {
-            child.remove();
+            currentOwner.removeChild(child);
         }
 
         // Belt-and-suspenders: ask Yoga directly in case yogaOwner is stale
         const staleParent = child.yogaNode.getParent();
 
         if (staleParent) {
-            child.yogaNode.remove();
+            staleParent.removeChild(child.yogaNode);
         }
 
         // Clamp index to Yoga's actual child count to stay in sync
@@ -121,7 +121,12 @@ export class LayoutNode {
             this.children.splice(i, 1);
             child.parent = null;
             yogaOwner.delete(child.yogaNode);
-            child.yogaNode.remove();
+
+            const yogaParent = child.yogaNode.getParent();
+
+            if (yogaParent) {
+                yogaParent.removeChild(child.yogaNode);
+            }
         }
     }
 
@@ -155,7 +160,7 @@ export class LayoutNode {
         const staleParent = this.yogaNode.getParent();
 
         if (staleParent) {
-            staleParent.removeChild(this.yogaNode); // eslint-disable-line unicorn/prefer-dom-node-remove -- Yoga node, not DOM node
+            staleParent.removeChild(this.yogaNode);
         }
 
         this.yogaNode.free();

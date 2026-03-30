@@ -68,9 +68,7 @@ describe("components", () => {
 
         const output = renderToString(
             <Text>
-                Hello
-                {" "}
-                <World />
+                Hello <World />
             </Text>,
         );
 
@@ -82,11 +80,7 @@ describe("components", () => {
 
         const output = renderToString(
             <Text>
-                Hello
-                {" "}
-                <>World</>
-                {" "}
-                {}
+                Hello <>World</> {}
             </Text>,
         );
 
@@ -284,7 +278,7 @@ describe("components", () => {
         );
 
         expect(error).toBeInstanceOf(Error);
-        expect(error?.message).toBe("Text string \"Hello\" must be rendered inside <Text> component");
+        expect(error?.message).toBe('Text string "Hello" must be rendered inside <Text> component');
     });
 
     it("fail when text node is not within <Text> component", () => {
@@ -318,7 +312,7 @@ describe("components", () => {
         );
 
         expect(error).toBeInstanceOf(Error);
-        expect(error?.message).toBe("Text string \"Hello World\" must be rendered inside <Text> component");
+        expect(error?.message).toBe('Text string "Hello World" must be rendered inside <Text> component');
     });
 
     it("fail when <Box> is inside <Text> component", () => {

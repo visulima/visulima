@@ -1,16 +1,10 @@
-/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, import/exports-last, no-confusing-arrow, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-identical-functions */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/restrict-plus-operands, import/exports-last, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-identical-functions */
 import type { Writable } from "node:stream";
 
 import { cursorHide, cursorNextLine, cursorShow, cursorTo, cursorUp, eraseLineEnd, eraseLines } from "@visulima/ansi";
 
 import type { CursorPosition } from "./cursor-helpers";
-import {
-    buildCursorOnlySequence,
-    buildCursorSuffix,
-    buildReturnToBottomPrefix,
-    cursorPositionChanged,
-    hideCursorEscape,
-} from "./cursor-helpers";
+import { buildCursorOnlySequence, buildCursorSuffix, buildReturnToBottomPrefix, cursorPositionChanged, hideCursorEscape } from "./cursor-helpers";
 
 export type { CursorPosition } from "./cursor-helpers";
 
@@ -27,18 +21,16 @@ export type LogUpdate = {
 
 // Count visible lines in a string, ignoring the trailing empty element
 // that `split('\n')` produces when the string ends with '\n'.
-const visibleLineCount = (lines: string[], string_: string): number => string_.endsWith("\n") ? lines.length - 1 : lines.length;
+const visibleLineCount = (lines: string[], string_: string): number => (string_.endsWith("\n") ? lines.length - 1 : lines.length);
 
 // Get the viewport height from a stream. TTY streams expose `.rows`;
 // non-TTY streams don't, so we fall back to Infinity (no clamping).
-const getViewportRows = (stream: Writable): number =>
-    (stream as NodeJS.WriteStream).rows || Infinity; // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- .rows may be undefined at runtime
+const getViewportRows = (stream: Writable): number => (stream as NodeJS.WriteStream).rows || Infinity;
 
 // Clamp a line count so that eraseLines / cursorUp never move the cursor
 // above the visible viewport. Lines beyond the viewport have already
 // scrolled into terminal scrollback and cannot be erased.
-const clampToViewport = (lineCount: number, stream: Writable): number =>
-    Math.min(lineCount, getViewportRows(stream));
+const clampToViewport = (lineCount: number, stream: Writable): number => Math.min(lineCount, getViewportRows(stream));
 
 const createStandard = (stream: Writable, { showCursor = false } = {}): LogUpdate => {
     let previousLineCount = 0;
@@ -242,10 +234,7 @@ const createIncremental = (stream: Writable, { showCursor = false } = {}): LogUp
             const previousHadTrailingNewline = previousOutput.endsWith("\n");
             const extraSlot = previousHadTrailingNewline ? 1 : 0;
 
-            buffer.push(
-                eraseLines(Math.min(previousVisible - visibleCount + extraSlot, viewportRows)),
-                cursorUp(Math.min(visibleCount, viewportRows - 1)),
-            );
+            buffer.push(eraseLines(Math.min(previousVisible - visibleCount + extraSlot, viewportRows)), cursorUp(Math.min(visibleCount, viewportRows - 1)));
         } else {
             buffer.push(cursorUp(Math.min(previousVisible - 1, viewportRows - 1)));
         }

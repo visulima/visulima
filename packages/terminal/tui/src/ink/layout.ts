@@ -25,9 +25,7 @@ const getAbsoluteBorderPosition = (node: DOMElement): Position | undefined => {
     return { x, y };
 };
 
-export const getAbsolutePosition = (node: DOMElement): Position | undefined => {
-    return getAbsoluteBorderPosition(node);
-};
+export const getAbsolutePosition = (node: DOMElement): Position | undefined => getAbsoluteBorderPosition(node);
 
 export const getAbsoluteContentPosition = (node: DOMElement): Position | undefined => {
     const borderPosition = getAbsoluteBorderPosition(node);

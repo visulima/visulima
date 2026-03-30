@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import type { Key } from "react";
+import type { Key, ReactNode } from "react";
 
 import type { DOMElement } from "./dom";
 import type { OutputTransformer } from "./render-node-to-output";
@@ -7,6 +7,7 @@ import type { OutputTransformer } from "./render-node-to-output";
 declare global {
     namespace Ink {
         type Box = {
+            children?: ReactNode;
             internal_accessibility?: DOMElement["internal_accessibility"];
             internal_static?: boolean;
             internal_transform?: OutputTransformer;
@@ -16,6 +17,7 @@ declare global {
         };
 
         type Text = {
+            children?: ReactNode;
             internal_transform?: (children: string, index: number) => string;
             key?: Key;
             style?: DOMElement["style"];
@@ -26,7 +28,10 @@ declare global {
             key?: Key;
         };
     }
+}
 
+declare module "react" {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace JSX {
         interface IntrinsicElements {
             "ink-box": Ink.Box;

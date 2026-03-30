@@ -7,11 +7,12 @@ import { useCallback, useRef, useState } from "react";
  * but also trigger re-renders when changed.
  */
 export function useStateRef<T>(initialValue: T): readonly [T, (update: React.SetStateAction<T>) => void, () => T] {
-    const [state, setStateInternal] = useState<T>(initialValue);
-    const ref = useRef<T>(initialValue);
+    const [state, setStateInternal] = useState(initialValue);
+    const ref = useRef(initialValue);
 
     const setState = useCallback((update: React.SetStateAction<T>) => {
-        const nextValue = typeof update === "function" ? (update as (prev: T) => T)(ref.current) : update;
+        const nextValue = typeof update === "function" ? (update as (previous: T) => T)(ref.current) : update;
+
         ref.current = nextValue;
         setStateInternal(nextValue);
     }, []);

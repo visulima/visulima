@@ -148,9 +148,7 @@ describe("gradient", () => {
     it("renders with custom hex colors", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <Gradient colors={["#ff0000", "#00ff00", "#0000ff"]}>Custom gradient</Gradient>,
-        );
+        const output = renderToString(<Gradient colors={["#ff0000", "#00ff00", "#0000ff"]}>Custom gradient</Gradient>);
 
         expect(stripAnsi(output)).toBe("Custom gradient");
         expect(output).not.toBe("Custom gradient");
@@ -159,9 +157,7 @@ describe("gradient", () => {
     it("renders with two custom colors", () => {
         expect.assertions(2);
 
-        const output = renderToString(
-            <Gradient colors={["#000000", "#ffffff"]}>Mono</Gradient>,
-        );
+        const output = renderToString(<Gradient colors={["#000000", "#ffffff"]}>Mono</Gradient>);
 
         expect(stripAnsi(output)).toBe("Mono");
         expect(output).not.toBe("Mono");
@@ -396,9 +392,7 @@ describe("gradient", () => {
     it("custom colors gradient contains expected RGB escape sequences", () => {
         expect.assertions(3);
 
-        const output = renderToString(
-            <Gradient colors={["#ff0000", "#0000ff"]}>Hello World</Gradient>,
-        );
+        const output = renderToString(<Gradient colors={["#ff0000", "#0000ff"]}>Hello World</Gradient>);
 
         // First character should use the start color (red: rgb 255,0,0)
         expect(output).toContain("[38;2;255;0;0m");

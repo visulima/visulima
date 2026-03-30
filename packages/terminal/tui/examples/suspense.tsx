@@ -5,7 +5,13 @@ import { render, Text } from "@visulima/tui/react";
 import React, { Suspense } from "react";
 
 if (globalThis.global !== undefined && !globalThis.document) {
-    globalThis.document = { addEventListener: () => {}, createElement: () => { return {}; }, removeEventListener: () => {} };
+    globalThis.document = {
+        addEventListener: () => {},
+        createElement: () => {
+            return {};
+        },
+        removeEventListener: () => {},
+    };
     globalThis.window = globalThis;
     Object.defineProperty(globalThis, "navigator", {
         configurable: true,
@@ -29,11 +35,9 @@ const read = () => {
         })();
     }
 
-    if (state === "pending")
-        throw promise;
+    if (state === "pending") throw promise;
 
-    if (state === "done")
-        return value;
+    if (state === "done") return value;
 };
 
 const Dynamic = () => {

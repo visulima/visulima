@@ -1,17 +1,18 @@
 /**
- * Ported from @zenobius/ink-mouse (https://github.com/zenobi-us/ink-mouse)
+ * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
  */
 
-import { useCallback, useEffect, type RefObject } from "react";
+import type { RefObject } from "react";
+import { useCallback, useEffect } from "react";
 
 import type { DOMElement } from "../dom";
+import isIntersecting from "./is-intersecting";
 import type { MousePosition } from "./mouse-context";
-import { isIntersecting } from "./is-intersecting";
 import { getElementDimensions, getElementPosition } from "./use-element-position";
-import { useMouseContext } from "./use-mouse";
+import useMouseContext from "./use-mouse";
 
-function useOnMouseHover(ref: RefObject<DOMElement | null>, onChange: (event: boolean) => void): void {
+const useOnMouseHover = (ref: RefObject<DOMElement | null>, onChange: (event: boolean) => void): void => {
     const mouse = useMouseContext();
 
     const handler = useCallback(
@@ -30,22 +31,19 @@ function useOnMouseHover(ref: RefObject<DOMElement | null>, onChange: (event: bo
 
             onChange(isIntersecting({ element, mouse: position }));
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [ref, onChange],
     );
 
-    useEffect(
-        function handleIntersection() {
-            const events = mouse.events;
+    useEffect(() => {
+        const { events } = mouse;
 
-            events.on("position", handler);
+        events.on("position", handler);
 
-            return () => {
-                events.off("position", handler);
-            };
-        },
-        [mouse.events, handler],
-    );
-}
+        return () => {
+            events.off("position", handler);
+        };
+    }, [mouse.events, handler]);
+};
 
-export { useOnMouseHover };
+export default useOnMouseHover;

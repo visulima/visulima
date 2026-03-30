@@ -30,240 +30,240 @@ import { describe, it, expect } from "vitest";
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("Item", () => {
-  /**
-   * Test: Scroll behavior when items are added to the list.
-   *
-   * Scenario:
-   * - Start with 3 items, selectedIndex = 2
-   * - Add 7 more items at the end (total 10)
-   * - Verify selected item (index 2) is still visible
-   *
-   * Expected Behavior:
-   * - Adding items at the end shouldn't affect the scroll position
-   * - Item 2 remains at the same position and visible
-   * - Scroll offset should remain 0 (items 0-2 fit in viewport)
-   *
-   * Note: When adding items at the BEGINNING, the parent must adjust selectedIndex
-   * to continue pointing to the same logical item (selectedIndex += addedCount).
-   */
-  it("should scroll to selected item when items are added", async () => {
-    let scrollListRef: ScrollListRef | null = null;
-    let setItemsFn: (items: number[]) => void;
+    /**
+     * Test: Scroll behavior when items are added to the list.
+     *
+     * Scenario:
+     * - Start with 3 items, selectedIndex = 2
+     * - Add 7 more items at the end (total 10)
+     * - Verify selected item (index 2) is still visible
+     *
+     * Expected Behavior:
+     * - Adding items at the end shouldn't affect the scroll position
+     * - Item 2 remains at the same position and visible
+     * - Scroll offset should remain 0 (items 0-2 fit in viewport)
+     *
+     * Note: When adding items at the BEGINNING, the parent must adjust selectedIndex
+     * to continue pointing to the same logical item (selectedIndex += addedCount).
+     */
+    it("should scroll to selected item when items are added", async () => {
+        let scrollListRef: ScrollListRef | null = null;
+        let setItemsFn: (items: number[]) => void;
 
-    const TestComponent = () => {
-      const ref = useRef<ScrollListRef>(null);
-      const [items, setItems] = useState([1, 2, 3]);
+        const TestComponent = () => {
+            const ref = useRef<ScrollListRef>(null);
+            const [items, setItems] = useState([1, 2, 3]);
 
-      useEffect(() => {
-        scrollListRef = ref.current;
-      });
+            useEffect(() => {
+                scrollListRef = ref.current;
+            });
 
-      useEffect(() => {
-        setItemsFn = setItems;
-      }, []);
+            useEffect(() => {
+                setItemsFn = setItems;
+            }, []);
 
-      return (
-        <ScrollList ref={ref} height={5} selectedIndex={2}>
-          {items.map((i) => (
-            <Box key={i} height={1}>
-              <Text>{i}</Text>
-            </Box>
-          ))}
-        </ScrollList>
-      );
-    };
+            return (
+                <ScrollList ref={ref} height={5} selectedIndex={2}>
+                    {items.map((i) => (
+                        <Box key={i} height={1}>
+                            <Text>{i}</Text>
+                        </Box>
+                    ))}
+                </ScrollList>
+            );
+        };
 
-    const { unmount } = render(<TestComponent />);
-    await delay(100);
+        const { unmount } = render(<TestComponent />);
+        await delay(100);
 
-    const scrollList = scrollListRef!;
-    // Initially 3 items (height 3), viewport 5. Item 2 at line 2. No scroll needed.
-    expect(scrollList.getScrollOffset()).toBe(0);
+        const scrollList = scrollListRef!;
+        // Initially 3 items (height 3), viewport 5. Item 2 at line 2. No scroll needed.
+        expect(scrollList.getScrollOffset()).toBe(0);
 
-    // Add items at end. Total now 10 items.
-    // selectedIndex 2 still points to what was originally item 3.
-    // Item 2 is still at line 2, still visible. No scroll change.
-    setItemsFn!([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    await delay(100);
+        // Add items at end. Total now 10 items.
+        // selectedIndex 2 still points to what was originally item 3.
+        // Item 2 is still at line 2, still visible. No scroll change.
+        setItemsFn!([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        await delay(100);
 
-    expect(scrollList.getScrollOffset()).toBe(0);
+        expect(scrollList.getScrollOffset()).toBe(0);
 
-    unmount();
-  });
+        unmount();
+    });
 
-  /**
-   * Test: Parent responsibility to update selectedIndex when items are removed.
-   *
-   * Scenario:
-   * - Start with 5 items, selectedIndex = 4 (last item)
-   * - Remove 3 items, leaving only 2 items
-   * - Parent clamps selectedIndex to 1 (new last valid index)
-   *
-   * Expected Behavior:
-   * - After removal, selectedIndex 4 would be invalid (out of bounds)
-   * - Parent must update selectedIndex to a valid value
-   * - Component scrolls to show the new selected item
-   *
-   * Note: This test demonstrates the controlled component pattern - the parent
-   * is responsible for keeping selectedIndex within valid bounds.
-   */
-  it("should handle selectedIndex when items are removed", async () => {
-    let scrollListRef: ScrollListRef | null = null;
-    let setItemsFn: (items: number[]) => void;
-    let setIndexFn: (index: number) => void;
+    /**
+     * Test: Parent responsibility to update selectedIndex when items are removed.
+     *
+     * Scenario:
+     * - Start with 5 items, selectedIndex = 4 (last item)
+     * - Remove 3 items, leaving only 2 items
+     * - Parent clamps selectedIndex to 1 (new last valid index)
+     *
+     * Expected Behavior:
+     * - After removal, selectedIndex 4 would be invalid (out of bounds)
+     * - Parent must update selectedIndex to a valid value
+     * - Component scrolls to show the new selected item
+     *
+     * Note: This test demonstrates the controlled component pattern - the parent
+     * is responsible for keeping selectedIndex within valid bounds.
+     */
+    it("should handle selectedIndex when items are removed", async () => {
+        let scrollListRef: ScrollListRef | null = null;
+        let setItemsFn: (items: number[]) => void;
+        let setIndexFn: (index: number) => void;
 
-    const TestComponent = () => {
-      const ref = useRef<ScrollListRef>(null);
-      const [items, setItems] = useState([1, 2, 3, 4, 5]);
-      const [index, setIndex] = useState(4); // Select last item
+        const TestComponent = () => {
+            const ref = useRef<ScrollListRef>(null);
+            const [items, setItems] = useState([1, 2, 3, 4, 5]);
+            const [index, setIndex] = useState(4); // Select last item
 
-      useEffect(() => {
-        scrollListRef = ref.current;
-      });
+            useEffect(() => {
+                scrollListRef = ref.current;
+            });
 
-      useEffect(() => {
-        setItemsFn = setItems;
-        setIndexFn = setIndex;
-      }, []);
+            useEffect(() => {
+                setItemsFn = setItems;
+                setIndexFn = setIndex;
+            }, []);
 
-      return (
-        <ScrollList ref={ref} height={5} selectedIndex={index}>
-          {items.map((i) => (
-            <Box key={i} height={1}>
-              <Text>{i}</Text>
-            </Box>
-          ))}
-        </ScrollList>
-      );
-    };
+            return (
+                <ScrollList ref={ref} height={5} selectedIndex={index}>
+                    {items.map((i) => (
+                        <Box key={i} height={1}>
+                            <Text>{i}</Text>
+                        </Box>
+                    ))}
+                </ScrollList>
+            );
+        };
 
-    const { unmount } = render(<TestComponent />);
-    await delay(100);
+        const { unmount } = render(<TestComponent />);
+        await delay(100);
 
-    // Remove items to leave only 2 items
-    setItemsFn!([1, 2]);
-    // Parent MUST clamp selectedIndex - component doesn't do this
-    setIndexFn!(1); // Clamp to last valid index
-    await delay(100);
+        // Remove items to leave only 2 items
+        setItemsFn!([1, 2]);
+        // Parent MUST clamp selectedIndex - component doesn't do this
+        setIndexFn!(1); // Clamp to last valid index
+        await delay(100);
 
-    const scrollList = scrollListRef!;
-    // With only 2 items and height 5, no scrolling needed
-    expect(scrollList.getScrollOffset()).toBe(0);
+        const scrollList = scrollListRef!;
+        // With only 2 items and height 5, no scrolling needed
+        expect(scrollList.getScrollOffset()).toBe(0);
 
-    unmount();
-  });
+        unmount();
+    });
 
-  /**
-   * Test: Empty list handling.
-   *
-   * Scenario:
-   * - ScrollList with no children
-   * - selectedIndex = 0 (pointing to non-existent item)
-   *
-   * Expected Behavior:
-   * - Component should NOT crash
-   * - Scroll offset should be 0
-   * - Content height should be 0
-   * - No scrolling occurs (getItemPosition returns null for invalid index)
-   */
-  it("should handle empty list gracefully", async () => {
-    let scrollListRef: ScrollListRef | null = null;
+    /**
+     * Test: Empty list handling.
+     *
+     * Scenario:
+     * - ScrollList with no children
+     * - selectedIndex = 0 (pointing to non-existent item)
+     *
+     * Expected Behavior:
+     * - Component should NOT crash
+     * - Scroll offset should be 0
+     * - Content height should be 0
+     * - No scrolling occurs (getItemPosition returns null for invalid index)
+     */
+    it("should handle empty list gracefully", async () => {
+        let scrollListRef: ScrollListRef | null = null;
 
-    const TestComponent = () => {
-      const ref = useRef<ScrollListRef>(null);
-      useEffect(() => {
-        scrollListRef = ref.current;
-      }, []);
-      return (
-        <ScrollList ref={ref} height={5} selectedIndex={0}>
-          {/* Empty list */}
-        </ScrollList>
-      );
-    };
+        const TestComponent = () => {
+            const ref = useRef<ScrollListRef>(null);
+            useEffect(() => {
+                scrollListRef = ref.current;
+            }, []);
+            return (
+                <ScrollList ref={ref} height={5} selectedIndex={0}>
+                    {/* Empty list */}
+                </ScrollList>
+            );
+        };
 
-    const { unmount } = render(<TestComponent />);
-    await delay(100);
-    const scrollList = scrollListRef!;
+        const { unmount } = render(<TestComponent />);
+        await delay(100);
+        const scrollList = scrollListRef!;
 
-    // Empty list should work without errors
-    expect(scrollList.getScrollOffset()).toBe(0);
-    expect(scrollList.getContentHeight()).toBe(0);
+        // Empty list should work without errors
+        expect(scrollList.getScrollOffset()).toBe(0);
+        expect(scrollList.getContentHeight()).toBe(0);
 
-    unmount();
-  });
+        unmount();
+    });
 
-  /**
-   * Test: Item height changes (accordion/expand behavior).
-   *
-   * Scenario:
-   * - 4 items, selectedIndex = 2
-   * - Item 1 (above selected) expands from height 1 to height 3
-   *
-   * Expected Behavior:
-   * - When an item ABOVE the selected item changes height, the scroll
-   *   position should be adjusted to keep the selected item at the
-   *   same visual position
-   * - The handleItemHeightChange callback handles this by calling
-   *   scrollBy(heightDelta) for items above the selection
-   *
-   * Layout Changes:
-   * - Before: items at lines [0], [1], [2], [3] - selected at line 2
-   * - After:  items at lines [0], [1-3], [4], [5] - selected at line 4
-   * - Scroll should adjust to keep item visible
-   */
-  it("should handle item height changes correctly", async () => {
-    let scrollListRef: ScrollListRef | null = null;
-    let setExpandedFn: (expanded: boolean) => void;
+    /**
+     * Test: Item height changes (accordion/expand behavior).
+     *
+     * Scenario:
+     * - 4 items, selectedIndex = 2
+     * - Item 1 (above selected) expands from height 1 to height 3
+     *
+     * Expected Behavior:
+     * - When an item ABOVE the selected item changes height, the scroll
+     *   position should be adjusted to keep the selected item at the
+     *   same visual position
+     * - The handleItemHeightChange callback handles this by calling
+     *   scrollBy(heightDelta) for items above the selection
+     *
+     * Layout Changes:
+     * - Before: items at lines [0], [1], [2], [3] - selected at line 2
+     * - After:  items at lines [0], [1-3], [4], [5] - selected at line 4
+     * - Scroll should adjust to keep item visible
+     */
+    it("should handle item height changes correctly", async () => {
+        let scrollListRef: ScrollListRef | null = null;
+        let setExpandedFn: (expanded: boolean) => void;
 
-    const TestComponent = () => {
-      const ref = useRef<ScrollListRef>(null);
-      const [expanded, setExpanded] = useState(false);
+        const TestComponent = () => {
+            const ref = useRef<ScrollListRef>(null);
+            const [expanded, setExpanded] = useState(false);
 
-      useEffect(() => {
-        scrollListRef = ref.current;
-        setExpandedFn = setExpanded;
-      }, []);
+            useEffect(() => {
+                scrollListRef = ref.current;
+                setExpandedFn = setExpanded;
+            }, []);
 
-      return (
-        <ScrollList ref={ref} height={3} selectedIndex={2}>
-          {/* Item 0: fixed height 1 */}
-          <Box height={1}>
-            <Text>Item 0</Text>
-          </Box>
-          {/* Item 1: expandable from 1 to 3 lines */}
-          <Box height={expanded ? 3 : 1}>
-            <Text>Item 1 (expandable)</Text>
-          </Box>
-          {/* Item 2: selected item, fixed height 1 */}
-          <Box height={1}>
-            <Text>Item 2</Text>
-          </Box>
-          {/* Item 3: fixed height 1 */}
-          <Box height={1}>
-            <Text>Item 3</Text>
-          </Box>
-        </ScrollList>
-      );
-    };
+            return (
+                <ScrollList ref={ref} height={3} selectedIndex={2}>
+                    {/* Item 0: fixed height 1 */}
+                    <Box height={1}>
+                        <Text>Item 0</Text>
+                    </Box>
+                    {/* Item 1: expandable from 1 to 3 lines */}
+                    <Box height={expanded ? 3 : 1}>
+                        <Text>Item 1 (expandable)</Text>
+                    </Box>
+                    {/* Item 2: selected item, fixed height 1 */}
+                    <Box height={1}>
+                        <Text>Item 2</Text>
+                    </Box>
+                    {/* Item 3: fixed height 1 */}
+                    <Box height={1}>
+                        <Text>Item 3</Text>
+                    </Box>
+                </ScrollList>
+            );
+        };
 
-    const { unmount } = render(<TestComponent />);
-    await delay(100);
+        const { unmount } = render(<TestComponent />);
+        await delay(100);
 
-    const scrollList = scrollListRef!;
-    const initialOffset = scrollList.getScrollOffset();
+        const scrollList = scrollListRef!;
+        const initialOffset = scrollList.getScrollOffset();
 
-    // Expand item 1 (which is before selected item 2)
-    // This triggers handleItemHeightChange which should adjust scroll
-    setExpandedFn!(true);
-    await delay(100);
+        // Expand item 1 (which is before selected item 2)
+        // This triggers handleItemHeightChange which should adjust scroll
+        setExpandedFn!(true);
+        await delay(100);
 
-    // The scroll position should have adjusted to keep item 2 visible
-    // Before expansion: items at 0, 1, 2, 3. Total height 4. Selected at line 2.
-    // After expansion: items at 0, 1-3, 4, 5. Total height 6. Selected at line 4.
-    // With viewport 3, scroll should increase to show line 4.
-    const newOffset = scrollList.getScrollOffset();
-    expect(newOffset).toBeGreaterThanOrEqual(initialOffset);
+        // The scroll position should have adjusted to keep item 2 visible
+        // Before expansion: items at 0, 1, 2, 3. Total height 4. Selected at line 2.
+        // After expansion: items at 0, 1-3, 4, 5. Total height 6. Selected at line 4.
+        // With viewport 3, scroll should increase to show line 4.
+        const newOffset = scrollList.getScrollOffset();
+        expect(newOffset).toBeGreaterThanOrEqual(initialOffset);
 
-    unmount();
-  });
+        unmount();
+    });
 });

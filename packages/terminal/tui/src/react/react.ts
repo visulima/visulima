@@ -31,8 +31,7 @@ export const Box: React.FC<BoxProps> = (props) => React.createElement("box", pro
 
 export const Text: React.FC<TextProps> = (props) =>
     // Wrap simple strings inside a text layout node
-    React.createElement("text", props, props.children)
-;
+    React.createElement("text", props, props.children);
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 

@@ -46,9 +46,7 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
 
         const contentWidth = width - (showLeftBorder ? 1 : 0) - (showRightBorder ? 1 : 0);
 
-        let topBorder = showTopBorder
-            ? (showLeftBorder ? box.topLeft : "") + box.top.repeat(contentWidth) + (showRightBorder ? box.topRight : "")
-            : undefined;
+        let topBorder = showTopBorder ? (showLeftBorder ? box.topLeft : "") + box.top.repeat(contentWidth) + (showRightBorder ? box.topRight : "") : undefined;
 
         topBorder &&= stylePiece(topBorder, topBorderColor, topBorderBackgroundColor, dimTopBorderColor);
 
