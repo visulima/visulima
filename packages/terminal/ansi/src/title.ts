@@ -86,63 +86,61 @@ export const setWindowTitle = (title: string): string => `${OSC}2;${title}${BEL}
 
 /**
  * Sets a DEC Special Window Title (DECSWT) using an OSC sequence.
- * The original Go library implemented this by prepending "1;" to the title and using `setWindowTitle`,
- * resulting in an `OSC 2 ; 1;&lt;title&gt; BEL` sequence.
- * This differs from some interpretations where DECSWT might use `OSC 1`.
- * This implementation replicates the Go library's specific behavior.
  *
- * Note: DECSWT (`OSC 2;1;...BEL`) was introduced in the DEC VT520/VT525 family
- * and is ignored by earlier DEC terminals. Support varies across modern emulators;
- * for example, Zutty 0.6+ claims VT520 compatibility, but many others that handle
- * common OSC sequences may drop or ignore DECSWT.
- * If relying on this sequence, testing on actual VT520 hardware or emulators
- * with known VT520 support is recommended. Unsupported sequences are typically
- * silently ignored by most terminals.
+ * DECSWT was introduced in the DEC VT520/VT525 family and uses the dedicated
+ * OSC code `21` (not to be confused with OSC 2 for standard window titles).
+ * It is terminated with ST (String Terminator) per the VT520 specification.
  *
- * Uses the sequence: `OSC 2 ; 1;&lt;title&gt; BEL` (based on Go library's behavior)
+ * Uses the sequence: `OSC 21 ; title ST`
+ * - `OSC`: Operating System Command (`\x1b]`).
+ * - `21`: Parameter for DEC Special Window Title.
+ * - `title`: The string to set.
+ * - `ST`: String Terminator (`\x1b\\`).
+ *
+ * Support varies across modern emulators; Zutty 0.6+ claims VT520 compatibility,
+ * and Microsoft's Windows Terminal also supports this sequence.
+ * Unsupported sequences are typically silently ignored by most terminals.
  * @param title The title string.
- * @returns The ANSI escape sequence for DECSWT (as implemented).
+ * @returns The ANSI escape sequence for DECSWT.
  * @see EK-VT520-RM 5–134 (VT520 Programmer Reference Manual)
- * @see setWindowTitle
  * @example
  * ```typescript
  * import { decswt } from "@visulima/ansi";
  *
  * process.stdout.write(decswt("My Special Window"));
- * // Sends: "\\x1b]2;1;My Special Window\\x07"
+ * // Sends: "\x1b]21;My Special Window\x1b\\"
  * ```
  */
-export const decswt = (title: string): string => setWindowTitle(`1;${title}`);
+export const decswt = (title: string): string => `${OSC}21;${title}${ST}`;
 
 /**
  * Sets a DEC Special Icon Name (DECSIN) using an OSC sequence.
- * The original Go library implemented this by prepending "L;" to the name and using `setWindowTitle`,
- * resulting in an `OSC 2 ; L;&lt;name&gt; BEL` sequence.
- * This differs from some interpretations where DECSIN might use `OSC L` or `OSC 1`.
- * This implementation replicates the Go library's specific behavior.
  *
- * Note: DECSIN (`OSC 2;L;...BEL`) was introduced in the DEC VT520/VT525 family
- * and is ignored by earlier DEC terminals. Support varies across modern emulators;
- * for example, Zutty 0.6+ claims VT520 compatibility, but many others that handle
- * common OSC sequences may drop or ignore DECSIN.
- * If relying on this sequence, testing on actual VT520 hardware or emulators
- * with known VT520 support is recommended. Unsupported sequences are typically
- * silently ignored by most terminals.
+ * DECSIN was introduced in the DEC VT520/VT525 family and uses the dedicated
+ * OSC code `2L` (not to be confused with OSC 1 for standard icon names).
+ * It is terminated with ST (String Terminator) per the VT520 specification.
  *
- * Uses the sequence: `OSC 2 ; L;&lt;name&gt; BEL` (based on Go library's behavior)
+ * Uses the sequence: `OSC 2L ; name ST`
+ * - `OSC`: Operating System Command (`\x1b]`).
+ * - `2L`: Parameter for DEC Special Icon Name.
+ * - `name`: The string to set.
+ * - `ST`: String Terminator (`\x1b\\`).
+ *
+ * Support varies across modern emulators; Zutty 0.6+ claims VT520 compatibility,
+ * and Microsoft's Windows Terminal also supports this sequence.
+ * Unsupported sequences are typically silently ignored by most terminals.
  * @param name The name or content for the DEC-style icon name.
- * @returns The ANSI escape sequence for DECSIN (as implemented).
+ * @returns The ANSI escape sequence for DECSIN.
  * @see EK-VT520-RM 5–134 (VT520 Programmer Reference Manual)
- * @see setWindowTitle
  * @example
  * ```typescript
  * import { decsin } from "@visulima/ansi";
  *
  * process.stdout.write(decsin("SpecialIcon"));
- * // Sends: "\\x1b]2;L;SpecialIcon\\x07"
+ * // Sends: "\x1b]2L;SpecialIcon\x1b\\"
  * ```
  */
-export const decsin = (name: string): string => setWindowTitle(`L;${name}`);
+export const decsin = (name: string): string => `${OSC}2L;${name}${ST}`;
 
 /**
  * Sets the icon name and window title using an OSC sequence, terminated with ST (String Terminator).
