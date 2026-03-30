@@ -10,9 +10,16 @@ declare global {
             children?: ReactNode;
             internal_accessibility?: DOMElement["internal_accessibility"];
             internal_static?: boolean;
+            internal_terminalCursorFocus?: boolean;
+            internal_terminalCursorPosition?: number;
             internal_transform?: OutputTransformer;
+            internalOnBeforeRender?: DOMElement["internal_onBeforeRender"];
+            internalStickyAlternate?: boolean;
             key?: Key;
+            opaque?: boolean;
             ref?: unknown;
+            scrollbar?: boolean;
+            sticky?: boolean | "top" | "bottom";
             style?: DOMElement["style"];
         };
 

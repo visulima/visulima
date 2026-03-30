@@ -19,7 +19,7 @@ description: "Ink API parity matrix, render option differences, and Ratatat-only
 | `Static`                     | ✅     | Append-only semantics                                         |
 | `Transform`                  | ✅     | Transform callback support                                    |
 | `renderToString()`           | ✅     | Synchronous snapshot                                          |
-| `measureElement()`           | ✅     | Returns `{ width, height }`                                   |
+| `measureElement()`           | ✅     | Returns `{ x, y, width, height }`                             |
 | `useApp()`                   | ✅     | `exit` + `quit`                                               |
 | `useInput()`                 | ✅     | Arrows, Enter, Escape, Ctrl, Meta, paging keys                |
 | `usePaste()`                 | ✅     | Bracketed paste routing                                       |
@@ -90,6 +90,26 @@ Ported from [`ink-scroll-view`](https://github.com/ByteLandTechnology/ink-scroll
 | `<ScrollList>`           | ScrollView + externally controlled selection with auto-scroll |
 
 See the [Scroll Components](./scroll) page for full documentation.
+
+## CSS-Level Scroll and Measurement APIs
+
+Ported from [jacob314/ink](https://github.com/jacob314/ink) (Google's Gemini CLI fork). These extend Ink's `Box` with CSS-level overflow scrolling, sticky headers, and advanced measurement.
+
+| Export | Description |
+| --- | --- |
+| `Box` `overflow="scroll"` | CSS-level overflow scrolling with integrated scrollbar rendering |
+| `Box` `sticky` | Sticky headers that pin to viewport edges during scroll |
+| `Box` `scrollbar` | Show/hide scrollbar on scrollable containers |
+| `ResizeObserver` | Browser-like API for observing element size changes |
+| `getBoundingBox()` | Scroll-aware absolute position and dimensions |
+| `getInnerWidth()` / `getInnerHeight()` | Inner dimensions excluding borders |
+| `getScrollHeight()` / `getScrollWidth()` | Total scroll content dimensions |
+| `getScrollTop()` / `getScrollLeft()` | Current scroll position |
+| `calculateScroll()` | Compute scroll state for a scrollable element |
+| `getVerticalScrollbarBoundingBox()` | Scrollbar thumb position for hit testing |
+| `getHorizontalScrollbarBoundingBox()` | Horizontal scrollbar position |
+| `setStringWidthFunction()` | Replace the string width function for custom terminals |
+| `getRelativeTop()` / `getRelativeLeft()` | Position relative to an ancestor element |
 
 ## Ratatat-only API (No Ink Equivalent)
 

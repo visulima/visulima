@@ -5,9 +5,13 @@ import Yoga from "yoga-layout";
 import type { DOMElement } from "./dom";
 import getMaxWidth from "./get-max-width";
 import { getAbsoluteContentPosition } from "./layout";
-import type Output from "./output";
+import { calculateScrollbarLayout } from "./measure-element";
+import Output from "./output";
 import renderBackground from "./render-background";
 import renderBorder from "./render-border";
+import { renderScrollbar } from "./render-scrollbar";
+import { getStickyDescendants, identifyActiveStickyNodes, renderActiveStickyNodes } from "./render-sticky";
+import { getScrollTop } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
 import wrapText from "./wrap-text";
 
@@ -329,37 +333,149 @@ const renderNodeToOutput = (
         }
 
         let clipped = false;
+        let scrollOffsetX = 0;
+        let scrollOffsetY = 0;
 
         if (node.nodeName === "ink-box") {
             renderBackground(x, y, node, output);
             renderBorder(x, y, node, output);
 
-            const clipHorizontally = node.style.overflowX === "hidden" || node.style.overflow === "hidden";
-            const clipVertically = node.style.overflowY === "hidden" || node.style.overflow === "hidden";
+            const overflow = node.style.overflow ?? "visible";
+            const overflowX = node.style.overflowX ?? overflow;
+            const overflowY = node.style.overflowY ?? overflow;
+
+            const clipHorizontally = overflowX === "hidden" || overflowX === "scroll";
+            const clipVertically = overflowY === "hidden" || overflowY === "scroll";
 
             if (clipHorizontally || clipVertically) {
-                const x1 = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : undefined;
+                const borderLeft = yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
+                const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
+                const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
+                const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
 
-                const x2 = clipHorizontally ? x + yogaNode.getComputedWidth() - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT) : undefined;
-
-                const y1 = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : undefined;
-
-                const y2 = clipVertically ? y + yogaNode.getComputedHeight() - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM) : undefined;
+                const x1 = clipHorizontally ? x + borderLeft : undefined;
+                const x2 = clipHorizontally ? x + yogaNode.getComputedWidth() - borderRight : undefined;
+                const y1 = clipVertically ? y + borderTop : undefined;
+                const y2 = clipVertically ? y + yogaNode.getComputedHeight() - borderBottom : undefined;
 
                 output.clip({ x1, x2, y1, y2 });
                 clipped = true;
+
+                // Apply scroll offsets for children
+                if (overflowY === "scroll" && node.internal_scrollState) {
+                    scrollOffsetY = -node.internal_scrollState.scrollTop;
+                }
+
+                if (overflowX === "scroll" && node.internal_scrollState) {
+                    scrollOffsetX = -node.internal_scrollState.scrollLeft;
+                }
             }
         }
 
         if (node.nodeName === "ink-root" || node.nodeName === "ink-box") {
             for (const childNode of node.childNodes) {
                 renderNodeToOutput(childNode as DOMElement, output, {
-                    offsetX: x,
-                    offsetY: y,
+                    offsetX: x + scrollOffsetX,
+                    offsetY: y + scrollOffsetY,
                     renderState,
                     skipStaticElements,
                     transformers: newTransformers,
                 });
+            }
+
+            // Render sticky headers after content (so they appear on top of scrolled content)
+            if (node.nodeName === "ink-box" && node.internal_scrollState) {
+                const stickyNodes = getStickyDescendants(node);
+
+                if (stickyNodes.length > 0) {
+                    const currentScrollTop = getScrollTop(node);
+                    const currentClientHeight = node.internal_scrollState.clientHeight;
+                    const viewportBottom = currentScrollTop + currentClientHeight;
+
+                    const activeStickyNodes = identifyActiveStickyNodes(stickyNodes, node, currentScrollTop, viewportBottom);
+
+                    if (activeStickyNodes.length > 0) {
+                        const createOutput = (opts: { height: number; width: number }) => new Output(opts);
+
+                        renderActiveStickyNodes(activeStickyNodes, node, output, createOutput, {
+                            newTransformers,
+                            skipStaticElements,
+                            x,
+                            y,
+                        });
+                    }
+                }
+            }
+
+            // Render scrollbars after content and sticky headers (so they appear on top)
+            if (node.nodeName === "ink-box" && node.internal_scrollState) {
+                const overflow = node.style.overflow ?? "visible";
+                const overflowX = node.style.overflowX ?? overflow;
+                const overflowY = node.style.overflowY ?? overflow;
+                const borderLeft = yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
+                const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
+                const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
+                const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
+                const innerWidth = yogaNode.getComputedWidth() - borderLeft - borderRight;
+                const innerHeight = yogaNode.getComputedHeight() - borderTop - borderBottom;
+
+                const { clientHeight, clientWidth, scrollHeight, scrollLeft, scrollTop, scrollWidth } = node.internal_scrollState;
+
+                const isVerticalScrollable = overflowY === "scroll" && scrollHeight > clientHeight;
+                const isHorizontalScrollable = overflowX === "scroll" && scrollWidth > clientWidth;
+
+                // Respect scrollbar prop (defaults to true)
+                const showScrollbar = node.internal_scrollbar !== false;
+
+                if (isVerticalScrollable && showScrollbar) {
+                    const verticalLayout = calculateScrollbarLayout({
+                        axis: "vertical",
+                        clientDimension: clientHeight,
+                        hasOppositeScrollbar: false,
+                        height: innerHeight,
+                        marginBottom: 0,
+                        marginRight: 0,
+                        scrollDimension: scrollHeight,
+                        scrollPosition: scrollTop,
+                        width: innerWidth,
+                        x: x + borderLeft,
+                        y: y + borderTop,
+                    });
+
+                    if (verticalLayout) {
+                        renderScrollbar({
+                            axis: "vertical",
+                            color: node.style.scrollbarThumbColor,
+                            layout: verticalLayout,
+                            output,
+                        });
+                    }
+                }
+
+                if (isHorizontalScrollable && showScrollbar) {
+                    const horizontalLayout = calculateScrollbarLayout({
+                        axis: "horizontal",
+                        clientDimension: clientWidth,
+                        hasOppositeScrollbar: isVerticalScrollable,
+                        height: innerHeight,
+                        marginBottom: 0,
+                        marginRight: 0,
+                        scrollDimension: scrollWidth,
+                        scrollPosition: scrollLeft,
+                        width: innerWidth,
+                        x: x + borderLeft,
+                        y: y + borderTop,
+                    });
+
+                    if (horizontalLayout) {
+                        renderScrollbar({
+                            axis: "horizontal",
+                            color: node.style.scrollbarThumbColor,
+                            layout: horizontalLayout,
+                            output,
+                        });
+                    }
+                }
             }
 
             if (clipped) {

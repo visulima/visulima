@@ -43,6 +43,50 @@ Layout primitive backed by Yoga.
 </Box>
 ```
 
+### Overflow and CSS-Level Scrolling
+
+`Box` supports CSS-level scrolling via `overflow: 'scroll'`. This is separate from the component-based `ScrollView` and provides native-style overflow clipping with integrated scrollbar rendering.
+
+```tsx
+<Box
+    overflow="scroll"       // visible | hidden | scroll
+    overflowX="hidden"      // per-axis overflow control
+    overflowY="scroll"      // per-axis overflow control
+    scrollTop={0}           // vertical scroll position (rows)
+    scrollLeft={0}          // horizontal scroll position (columns)
+    scrollbarThumbColor="gray" // scrollbar thumb color
+    scrollbar={true}        // show/hide scrollbar (default: true)
+    height={10}
+    width={40}
+>
+    {longContent}
+</Box>
+```
+
+### Sticky Headers
+
+Elements within a scrollable `Box` can be pinned to the top or bottom of the viewport using the `sticky` prop. A sticky header remains pinned only while its parent section is visible.
+
+```tsx
+<Box overflow="scroll" height={15}>
+    <Box sticky>
+        <Text bold>Section A</Text>
+    </Box>
+    {sectionAContent}
+
+    <Box sticky>
+        <Text bold>Section B</Text>
+    </Box>
+    {sectionBContent}
+</Box>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `sticky` | `boolean \| 'top' \| 'bottom'` | Pin this element during scroll. `true` and `'top'` pin to the top; `'bottom'` pins to the bottom. |
+| `opaque` | `boolean` | Marks this element as opaque for rendering optimization (not yet active). |
+| `scrollbar` | `boolean` | Show/hide the scrollbar for scrollable elements. Defaults to `true`. |
+
 Notes:
 
 - `Box` defaults to `flexDirection="row"` unless you set it explicitly.

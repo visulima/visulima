@@ -193,6 +193,41 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
                     continue;
                 }
 
+                if (key === "sticky") {
+                    node.internal_sticky = value as boolean | "top" | "bottom";
+                    continue;
+                }
+
+                if (key === "internalStickyAlternate") {
+                    node.internal_stickyAlternate = value as boolean;
+                    continue;
+                }
+
+                if (key === "opaque") {
+                    node.internal_opaque = value as boolean;
+                    continue;
+                }
+
+                if (key === "scrollbar") {
+                    node.internal_scrollbar = value as boolean;
+                    continue;
+                }
+
+                if (key === "internal_terminalCursorFocus") {
+                    node.internal_terminalCursorFocus = value as boolean;
+                    continue;
+                }
+
+                if (key === "internal_terminalCursorPosition") {
+                    node.internal_terminalCursorPosition = value as number;
+                    continue;
+                }
+
+                if (key === "internalOnBeforeRender") {
+                    node.internal_onBeforeRender = value as () => void;
+                    continue;
+                }
+
                 setAttribute(node, key, value as DOMNodeAttribute);
             }
         }
@@ -247,6 +282,41 @@ const reconcilerInstance: ReturnType<typeof createReconciler> = createReconciler
                 // Save reference to <Static> node to skip traversal of entire
                 // node tree to find it
                 rootNode.staticNode = node;
+                continue;
+            }
+
+            if (key === "sticky") {
+                node.internal_sticky = value as boolean | "top" | "bottom";
+                continue;
+            }
+
+            if (key === "internalStickyAlternate") {
+                node.internal_stickyAlternate = value as boolean;
+                continue;
+            }
+
+            if (key === "opaque") {
+                node.internal_opaque = value as boolean;
+                continue;
+            }
+
+            if (key === "scrollbar") {
+                node.internal_scrollbar = value as boolean;
+                continue;
+            }
+
+            if (key === "internal_terminalCursorFocus") {
+                node.internal_terminalCursorFocus = value as boolean;
+                continue;
+            }
+
+            if (key === "internal_terminalCursorPosition") {
+                node.internal_terminalCursorPosition = value as number;
+                continue;
+            }
+
+            if (key === "internalOnBeforeRender") {
+                node.internal_onBeforeRender = value as () => void;
                 continue;
             }
 

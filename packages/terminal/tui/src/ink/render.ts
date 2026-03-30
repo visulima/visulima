@@ -4,6 +4,7 @@ import { Stream } from "node:stream";
 
 import type { ReactNode } from "react";
 
+import type { DOMElement } from "./dom";
 import type { Options as InkOptions, RenderMetrics } from "./ink";
 import Ink from "./ink";
 import instances from "./instances";
@@ -146,6 +147,12 @@ export type Instance = {
     rerender: Ink["render"];
 
     /**
+     * The root DOM element of the rendered tree.
+     * Useful for programmatic DOM inspection and advanced measurement.
+     */
+    rootNode: DOMElement;
+
+    /**
      * Manually unmount the whole Ink app.
      */
     unmount: Ink["unmount"];
@@ -211,6 +218,7 @@ const render = (node: ReactNode, options?: NodeJS.WriteStream | RenderOptions): 
         },
         clear: instance.clear,
         rerender: instance.render,
+        rootNode: instance.rootNode,
         unmount() {
             instance.unmount();
         },

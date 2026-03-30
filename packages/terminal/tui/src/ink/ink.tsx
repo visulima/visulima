@@ -27,6 +27,8 @@ import type { CursorPosition, LogUpdate } from "./log-update";
 import logUpdate from "./log-update";
 import reconciler from "./reconciler";
 import render from "./renderer";
+import ResizeObserver, { ResizeObserverEntry } from "./resize-observer";
+import { calculateScroll } from "./scroll";
 import { getWindowSize } from "./utils";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
 
@@ -308,7 +310,7 @@ export default class Ink {
 
     private readonly container: FiberRoot;
 
-    private readonly rootNode: dom.DOMElement;
+    public readonly rootNode: dom.DOMElement;
 
     // This variable is used only in debug mode to store full static output
     // so that it's rerendered every time, not just new static parts, like in non-debug mode
@@ -536,7 +538,59 @@ export default class Ink {
         this.rootNode.yogaNode!.setWidth(terminalWidth);
 
         this.rootNode.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
+
+        // Calculate scroll state and trigger resize observers after layout
+        const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
+        this.calculateScrollAndTriggerObservers(this.rootNode, observerEntries);
+
+        for (const [observer, entries] of observerEntries) {
+            observer.internalTrigger(entries);
+        }
     };
+
+    private calculateScrollAndTriggerObservers(
+        node: dom.DOMElement,
+        observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>,
+    ): void {
+        if (node.nodeName === "ink-box") {
+            const { style } = node;
+            const overflow = style.overflow ?? "visible";
+            const overflowX = style.overflowX ?? overflow;
+            const overflowY = style.overflowY ?? overflow;
+
+            if (overflowX === "scroll" || overflowY === "scroll") {
+                calculateScroll(node);
+            } else if (node.internal_scrollState) {
+                delete node.internal_scrollState;
+            }
+        }
+
+        if (node.resizeObservers && node.resizeObservers.size > 0 && node.yogaNode) {
+            const width = node.yogaNode.getComputedWidth();
+            const height = node.yogaNode.getComputedHeight();
+            const lastSize = node.internal_lastMeasuredSize;
+
+            if (!lastSize || lastSize.width !== width || lastSize.height !== height) {
+                const entry = new ResizeObserverEntry(node, { height, width });
+
+                for (const observer of node.resizeObservers) {
+                    if (!observerEntries.has(observer)) {
+                        observerEntries.set(observer, []);
+                    }
+
+                    observerEntries.get(observer)!.push(entry);
+                }
+
+                node.internal_lastMeasuredSize = { height, width };
+            }
+        }
+
+        for (const child of node.childNodes) {
+            if (child.nodeName !== "#text") {
+                this.calculateScrollAndTriggerObservers(child as dom.DOMElement, observerEntries);
+            }
+        }
+    }
 
     onRender: () => void = () => {
         this.hasPendingThrottledRender = false;

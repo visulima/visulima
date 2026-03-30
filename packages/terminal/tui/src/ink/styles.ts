@@ -274,19 +274,19 @@ export type Styles = {
      * Behavior for an element's overflow in both directions.
      * @default 'visible'
      */
-    readonly overflow?: "visible" | "hidden";
+    readonly overflow?: "visible" | "hidden" | "scroll";
 
     /**
      * Behavior for an element's overflow in the horizontal direction.
      * @default 'visible'
      */
-    readonly overflowX?: "visible" | "hidden";
+    readonly overflowX?: "visible" | "hidden" | "scroll";
 
     /**
      * Behavior for an element's overflow in the vertical direction.
      * @default 'visible'
      */
-    readonly overflowY?: "visible" | "hidden";
+    readonly overflowY?: "visible" | "hidden" | "scroll";
 
     /**
      * Padding on all sides. Equivalent to setting `paddingTop`, `paddingBottom`, `paddingLeft`, and `paddingRight`.
@@ -331,6 +331,47 @@ export type Styles = {
     readonly position?: "absolute" | "relative" | "static";
 
     /**
+     * Color of the scrollbar thumb when overflow is set to 'scroll'.
+     */
+    readonly scrollbarThumbColor?: LiteralUnion<AnsiColors, string>;
+
+    /**
+     * Horizontal scroll position (in columns). Only applies when overflowX or overflow is 'scroll'.
+     */
+    readonly scrollLeft?: number;
+
+    /**
+     * Vertical scroll position (in rows). Only applies when overflowY or overflow is 'scroll'.
+     */
+    readonly scrollTop?: number;
+
+    /**
+     * If true, content that is scrolled out of the top of the box (when overflowY is 'scroll')
+     * will be added to the terminal's scrollback history.
+     *
+     * Results are undefined if more than one scrollable region in the app has
+     * overflowToBackbuffer enabled.
+     *
+     * Note: Scroll height tracking is implemented but actual backbuffer writes
+     * require worker-based rendering (not yet ported).
+     *
+     * @default false
+     */
+    readonly overflowToBackbuffer?: boolean;
+
+    /**
+     * If true, and `overflowToBackbuffer` is also enabled, the `scrollHeight` of the box
+     * will never decrease as long as the existing history remains valid.
+     * This prevents the terminal's scrollback from being corrupted when content shrinks.
+     *
+     * Note: Scroll height tracking is implemented but actual backbuffer writes
+     * require worker-based rendering (not yet ported).
+     *
+     * @default false
+     */
+    readonly stableScrollback?: boolean;
+
+    /**
      * Right offset for positioned elements.
      */
     readonly right?: number | string;
@@ -346,6 +387,15 @@ export type Styles = {
      * Top offset for positioned elements.
      */
     readonly top?: number | string;
+
+    /**
+     * Determines whether the user can select text within this element.
+     * - `auto`: Default behavior, text is selectable.
+     * - `none`: Text cannot be selected.
+     * - `text`: Only text can be selected.
+     * - `all`: All content is selected on click.
+     */
+    readonly userSelect?: "auto" | "none" | "text" | "all";
 
     /**
      * Width of the element in spaces. You can also set it as a percentage, which will calculate the width based on the width of the parent element.
@@ -700,6 +750,23 @@ const applyGapStyles = (node: YogaNode, style: Styles): void => {
     }
 };
 
+const applyOverflowStyles = (node: YogaNode, style: Styles): void => {
+    const overflow = style.overflow ?? "visible";
+    const overflowX = style.overflowX ?? overflow;
+    const overflowY = style.overflowY ?? overflow;
+
+    // Yoga only supports a single overflow property (not per-axis).
+    // Per-axis clipping and scroll behavior is handled at the rendering level
+    // in render-node-to-output.ts. Here we set the Yoga hint for layout.
+    if (overflowX === "scroll" || overflowY === "scroll") {
+        node.setOverflow(Yoga.OVERFLOW_SCROLL);
+    } else if (overflowX === "hidden" || overflowY === "hidden") {
+        node.setOverflow(Yoga.OVERFLOW_HIDDEN);
+    } else {
+        node.setOverflow(Yoga.OVERFLOW_VISIBLE);
+    }
+};
+
 const styles = (node: YogaNode, style: Styles = {}, currentStyle: Styles = style): void => {
     applyPositionStyles(node, style);
     applyMarginStyles(node, style);
@@ -709,6 +776,7 @@ const styles = (node: YogaNode, style: Styles = {}, currentStyle: Styles = style
     applyDisplayStyles(node, style);
     applyBorderStyles(node, style, currentStyle);
     applyGapStyles(node, style);
+    applyOverflowStyles(node, currentStyle);
 };
 
 export default styles;

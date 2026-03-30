@@ -63,7 +63,7 @@ export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
 export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
 export { default as UnorderedList } from "./components/UnorderedList";
-export type { DOMElement } from "./dom";
+export type { DOMElement, StickyHeader } from "./dom";
 export { default as useApp } from "./hooks/use-app";
 export type { BoxMetrics, UseBoxMetricsResult } from "./hooks/use-box-metrics";
 export { default as useBoxMetrics } from "./hooks/use-box-metrics";
@@ -93,6 +93,8 @@ export {
     getHorizontalScrollbarBoundingBox,
     getInnerHeight,
     getInnerWidth,
+    getRelativeLeft,
+    getRelativeTop,
     getVerticalScrollbarBoundingBox,
 } from "./measure-element";
 export type { StringWidthFunction } from "./measure-text";
