@@ -88,7 +88,8 @@ export type Props<V> = {
     /**
      * Controlled selected index. When provided, the component becomes controlled
      * and `initialIndex` is ignored. Update this value in the `onHighlight` callback
-     * to track selection externally.
+     * to track selection externally. If the index points to a separator, the nearest
+     * selectable item is highlighted instead.
      */
     readonly index?: number;
 
@@ -101,6 +102,7 @@ export type Props<V> = {
      * Index of initially-selected item in `items` array.
      * Ignored when `index` is provided.
      * When omitted (`undefined`), no item is highlighted until the user presses a key.
+     * If the index points to a separator, the nearest selectable item is used.
      */
     readonly initialIndex?: number;
 
@@ -149,6 +151,7 @@ const EMPTY_ITEMS: ReadonlyArray<never> = [];
 const NUMBER_KEY_PATTERN = /^[1-9]$/;
 const NO_SELECTION = -1;
 const DEFAULT_SEPARATOR_LABEL = "───";
+const SEPARATOR_SENTINEL: unique symbol = Symbol("separator");
 
 type SelectionState = {
     readonly rotateIndex: number;
@@ -158,7 +161,7 @@ type SelectionState = {
 
 // eslint-disable-next-line @stylistic/operator-linebreak
 type SelectionAction =
-    | { readonly hasInitialSelection: boolean; readonly type: "reset" }
+    | { readonly hasInitialSelection: boolean; readonly initialIndex: number; readonly type: "reset" }
     | { readonly rotateIndex: number; readonly selectedIndex: number; readonly type: "navigate" }
     | { readonly selectedIndex: number; readonly type: "set" };
 
@@ -169,7 +172,10 @@ const selectionReducer = (state: SelectionState, action: SelectionAction): Selec
         }
 
         case "reset": {
-            return { rotateIndex: 0, selectedIndex: action.hasInitialSelection ? 0 : NO_SELECTION };
+            return {
+                rotateIndex: 0,
+                selectedIndex: action.hasInitialSelection ? action.initialIndex : NO_SELECTION,
+            };
         }
 
         case "set": {
@@ -222,7 +228,8 @@ const findNextSelectableIndex = <V,>(entries: ReadonlyArray<SelectInputEntry<V>>
     const { length } = entries;
 
     for (let step = 0; step < length; step += 1) {
-        const candidate = (fromIndex + (step + 1) * direction + length * length) % length;
+        // Double-modulo idiom handles negative intermediate values correctly
+        const candidate = (((fromIndex + (step + 1) * direction) % length) + length) % length;
 
         if (!isSeparator(entries[candidate] as SelectInputEntry<V>)) {
             return candidate;
@@ -230,6 +237,27 @@ const findNextSelectableIndex = <V,>(entries: ReadonlyArray<SelectInputEntry<V>>
     }
 
     return NO_SELECTION;
+};
+
+/**
+ * Resolve a requested index to the nearest selectable (non-separator) entry.
+ * If the target itself is selectable, returns it unchanged.
+ * If it's a separator, scans forward for the nearest selectable.
+ * Returns NO_SELECTION if all entries are separators.
+ */
+const resolveSelectableIndex = <V,>(entries: ReadonlyArray<SelectInputEntry<V>>, targetIndex: number): number => {
+    if (targetIndex < 0 || targetIndex >= entries.length) {
+        return NO_SELECTION;
+    }
+
+    const entry = entries[targetIndex];
+
+    if (entry && !isSeparator(entry)) {
+        return targetIndex;
+    }
+
+    // Scan forward from the target to find the nearest selectable
+    return findNextSelectableIndex(entries, targetIndex - 1, 1);
 };
 
 /**
@@ -264,25 +292,28 @@ export default function SelectInput<V>({
 
     const hasInitialSelection = typeof index === "number" || typeof initialIndex === "number";
     // eslint-disable-next-line @stylistic/no-extra-parens
-    const resolvedInitial = typeof index === "number" ? index : (initialIndex ?? NO_SELECTION);
+    const rawInitial = typeof index === "number" ? index : (initialIndex ?? NO_SELECTION);
+    // Clamp and skip separators for the initial selection
+    const resolvedInitial = rawInitial === NO_SELECTION ? NO_SELECTION : resolveSelectableIndex(items, Math.min(rawInitial, lastIndex));
 
     const [state, dispatch] = useReducer(selectionReducer, {
         rotateIndex: resolvedInitial > lastIndex ? lastIndex - resolvedInitial : 0,
-        selectedIndex: resolvedInitial === NO_SELECTION ? NO_SELECTION : Math.min(resolvedInitial, lastIndex),
+        selectedIndex: resolvedInitial,
     });
 
     const hasInitialSelectionRef = useRef(hasInitialSelection);
+    const resolvedInitialRef = useRef(resolvedInitial);
     const previousItems = useRef(items);
 
-    // Extract values for comparison, treating separators as a stable sentinel
+    // Extract values for comparison, treating separators as a stable sentinel (Symbol avoids value collisions)
     const itemValues = useMemo(
         () =>
             items.map((entry) => {
                 if (isSeparator(entry)) {
-                    return "__separator__" as V | string;
+                    return SEPARATOR_SENTINEL as symbol | V;
                 }
 
-                return entry.value as V | string;
+                return entry.value as symbol | V;
             }),
         [items],
     );
@@ -291,11 +322,16 @@ export default function SelectInput<V>({
 
     useEffect(() => {
         hasInitialSelectionRef.current = hasInitialSelection;
+        resolvedInitialRef.current = resolvedInitial;
     });
 
     useEffect(() => {
         if (resetOnItemsChange && !isDeepStrictEqual(previousItemValues.current, itemValues)) {
-            dispatch({ hasInitialSelection: hasInitialSelectionRef.current, type: "reset" });
+            dispatch({
+                hasInitialSelection: hasInitialSelectionRef.current,
+                initialIndex: resolvedInitialRef.current,
+                type: "reset",
+            });
         }
 
         previousItemValues.current = itemValues;
@@ -304,9 +340,12 @@ export default function SelectInput<V>({
 
     useEffect(() => {
         if (typeof index === "number") {
-            dispatch({ selectedIndex: index, type: "set" });
+            // Clamp and skip separators for controlled index
+            const safeIndex = resolveSelectableIndex(items, Math.min(index, lastIndex));
+
+            dispatch({ selectedIndex: safeIndex === NO_SELECTION ? 0 : safeIndex, type: "set" });
         }
-    }, [index]);
+    }, [index, items, lastIndex]);
 
     const handleUpArrow = useCallback(
         (currentRotateIndex: number, currentSelectedIndex: number) => {
@@ -329,7 +368,8 @@ export default function SelectInput<V>({
                 return;
             }
 
-            // Find next non-separator going up
+            // Navigate up: when at first position, wrap to bottom (incrementing rotateIndex
+            // shifts the window forward, bringing earlier items into view at the bottom)
             const currentLastIndex = (hasLimit ? limit : items.length) - 1;
             const atFirstIndex = currentSelectedIndex === 0;
             const rawNextIndex = atFirstIndex ? currentLastIndex : currentSelectedIndex - 1;
@@ -374,7 +414,8 @@ export default function SelectInput<V>({
                 return;
             }
 
-            // Find next non-separator going down
+            // Navigate down: when at last position, wrap to top (decrementing rotateIndex
+            // shifts the window backward, bringing later items into view at the top)
             const currentLastIndex = (hasLimit ? limit : items.length) - 1;
             const atLastIndex = currentSelectedIndex === currentLastIndex;
             const rawNextIndex = atLastIndex ? 0 : currentSelectedIndex + 1;

@@ -905,5 +905,68 @@ describe("SelectInput", () => {
 
             expect(onHighlight).toHaveBeenCalledWith({ label: "B", value: "b" }, 3);
         });
+
+        it("should skip separator when initialIndex points to one", async () => {
+            expect.assertions(1);
+
+            const onSelect = vi.fn();
+            // Index 1 is a separator — should resolve to index 2 (Second)
+            const { stdin } = await setup(<SelectInput initialIndex={1} items={separatorItems} onSelect={onSelect} />);
+
+            emitReadable(stdin, "\r");
+            await delay(50);
+
+            expect(onSelect).toHaveBeenCalledWith({ label: "Second", value: "second" });
+        });
+
+        it("should skip separator when controlled index points to one", async () => {
+            expect.assertions(1);
+
+            const onSelect = vi.fn();
+            // index=1 is a separator — should resolve to nearest selectable
+            const { stdin } = await setup(<SelectInput index={1} items={separatorItems} onSelect={onSelect} />);
+
+            emitReadable(stdin, "\r");
+            await delay(50);
+
+            expect(onSelect).toHaveBeenCalledWith({ label: "Second", value: "second" });
+        });
+
+        it("should handle all-separator list without crashing", async () => {
+            expect.assertions(2);
+
+            const allSeparators = [{ isSeparator: true as const }, { isSeparator: true as const }];
+            const onHighlight = vi.fn();
+            const onSelect = vi.fn();
+
+            const { stdin } = await setup(<SelectInput items={allSeparators} onHighlight={onHighlight} onSelect={onSelect} />);
+
+            emitReadable(stdin, "\u001B[B");
+            await delay(50);
+            emitReadable(stdin, "\r");
+            await delay(50);
+
+            expect(onHighlight).not.toHaveBeenCalled();
+            expect(onSelect).not.toHaveBeenCalled();
+        });
+
+        it("should handle single selectable item with wrap-around", async () => {
+            expect.assertions(2);
+
+            const singleItem = [{ label: "Only", value: "only" }];
+            const onHighlight = vi.fn();
+
+            const { stdin } = await setup(<SelectInput initialIndex={0} items={singleItem} onHighlight={onHighlight} />);
+
+            emitReadable(stdin, "\u001B[B");
+            await delay(50);
+
+            expect(onHighlight).toHaveBeenCalledWith({ label: "Only", value: "only" }, 0);
+
+            emitReadable(stdin, "\u001B[A");
+            await delay(50);
+
+            expect(onHighlight).toHaveBeenCalledTimes(2);
+        });
     });
 });
