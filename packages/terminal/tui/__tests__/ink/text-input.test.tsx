@@ -172,4 +172,21 @@ describe("TextInput", () => {
 
         expect(getOutput()).toContain("test");
     });
+
+    it("should ignore ctrl/meta chord characters", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(<TextInput onChange={onChange} />);
+
+        // Ctrl+S (0x13), Ctrl+D (0x04), Meta+S (ESC s)
+        emitReadable(stdin, "\u0013");
+        await delay(50);
+        emitReadable(stdin, "\u0004");
+        await delay(50);
+        emitReadable(stdin, "\u001Bs");
+        await delay(50);
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
 });
