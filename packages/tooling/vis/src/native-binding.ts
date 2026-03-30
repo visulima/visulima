@@ -118,7 +118,14 @@ interface ExecOptions {
     workspaceRoot: boolean;
 }
 
+interface CleanResult {
+    errors: string[];
+    lockfilesRemoved: string[];
+    removed: string[];
+}
+
 interface NativeBindings {
+    cleanWorkspace: (root: string, removeLockfile: boolean) => CleanResult;
     detectPackageManager: (cwd: string) => DetectedPackageManager;
     execPmCommand: (bin: string, args: string[], cwd: string) => ExecResult;
     execPmCommandInteractive: (bin: string, args: string[], cwd: string) => number;
@@ -167,6 +174,7 @@ const isNativeAvailable = (): boolean => loadNativeBindings() !== undefined;
 
 export type {
     AddOptions,
+    CleanResult,
     DetectedPackageManager,
     DlxOptions,
     ExecOptions,

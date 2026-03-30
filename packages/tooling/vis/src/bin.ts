@@ -7,6 +7,7 @@ import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import checkCommand from "./commands/check";
+import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
 import dlxCommand from "./commands/dlx";
@@ -101,6 +102,7 @@ cli.addCommand(execCommand);
 cli.addCommand(pmCommand);
 
 // Project & environment commands
+cli.addCommand(cleanCommand);
 cli.addCommand(createCommand);
 cli.addCommand(envCommand);
 cli.addCommand(upgradeCommand);
