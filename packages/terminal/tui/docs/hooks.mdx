@@ -270,8 +270,16 @@ Notes:
 - The cursor is automatically hidden when the component using `useCursor` unmounts.
 - For most text input use cases, prefer the declarative [`<Cursor />`](./components.mdx#cursor) component instead.
 
-## Compatibility Stubs
+## `useIsScreenReaderEnabled`
 
-### `useIsScreenReaderEnabled`
+Returns whether screen reader mode is active. When enabled, components render `aria-label` text instead of visual content.
 
-Always returns `false`.
+```tsx
+const isEnabled = useIsScreenReaderEnabled();
+```
+
+Screen reader mode is enabled by either:
+- Passing `isScreenReaderEnabled: true` to `render()`
+- Setting the `INK_SCREEN_READER=true` environment variable
+
+Defaults to `false`. This matches upstream Ink behavior — there is no automatic detection of screen readers.

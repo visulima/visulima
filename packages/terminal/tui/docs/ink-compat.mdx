@@ -32,8 +32,9 @@ description: "Ink API parity matrix, render option differences, and Ratatat-only
 | `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)            |
 | `Cursor`                     | ✅     | Declarative cursor; inline mode + anchor mode                 |
 | `useCursor()`                | ✅     | Imperative cursor positioning with IME support                |
+| `Link`                       | ✅     | Ported from `ink-link`, OSC 8 clickable hyperlinks            |
 | `ProgressBar`                | ✅     | Ported from `ink-progress-bar`, percent-based fill            |
-| `useIsScreenReaderEnabled()` | ⚠️     | Stub: always `false`                                          |
+| `useIsScreenReaderEnabled()` | ✅     | Enabled via `render()` option or `INK_SCREEN_READER` env var  |
 
 ## Render Option Differences
 
@@ -100,7 +101,7 @@ See the [Scroll Components](./scroll) page for full documentation.
 | Render strategy    | JS string renderer   | Rust diff over `Uint32Array` |
 | Screen mode        | Inline rewrite model | Alternate screen model       |
 | `patchConsole`     | Integrated           | Not implemented              |
-| Screen reader hook | Functional           | Stub (`false`)               |
+| Screen reader hook | Functional           | Functional (opt-in)          |
 | Cursor hook        | Functional           | Functional                   |
 
 ## `compat-test/` Status
