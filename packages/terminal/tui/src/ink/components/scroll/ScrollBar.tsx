@@ -5,11 +5,11 @@ import type { Props as BoxProps } from "../Box";
 import Box from "../Box";
 import Text from "../Text";
 
-export type ScrollBarPlacement = "inset" | "left" | "right";
+type ScrollBarPlacement = "inset" | "left" | "right";
 
-export type ScrollBarStyle = BoxProps["borderStyle"] | "block" | "line" | "thick" | "dots";
+type ScrollBarStyle = BoxProps["borderStyle"] | "block" | "line" | "thick" | "dots";
 
-export interface ScrollBarProps {
+interface ScrollBarProps {
     autoHide?: boolean;
     color?: string;
     contentHeight: number;
@@ -51,16 +51,16 @@ const CORNER_CHARS: Record<string, { bottomLeft: string; bottomRight: string; to
 const getStyleChars = (style: ScrollBarStyle | undefined): { lowerThumb?: string; thumb: string; track: string; upperThumb?: string } => {
     const key = typeof style === "string" ? style : "single";
 
-    return STYLE_CHARS[key] ?? STYLE_CHARS.single!;
+    return STYLE_CHARS[key] ?? STYLE_CHARS["single"] ?? { thumb: "┃", track: "│" };
 };
 
 const getCornerChars = (style: ScrollBarStyle | undefined): { bottomLeft: string; bottomRight: string; topLeft: string; topRight: string } => {
     const key = typeof style === "string" ? style : "single";
 
-    return CORNER_CHARS[key] ?? CORNER_CHARS.single!;
+    return CORNER_CHARS[key] ?? CORNER_CHARS["single"] ?? { bottomLeft: "└", bottomRight: "┘", topLeft: "┌", topRight: "┐" };
 };
 
-export const ScrollBar: React.FC<ScrollBarProps> = ({
+const ScrollBar: React.FC<ScrollBarProps> = ({
     autoHide = false,
     color,
     contentHeight,
@@ -94,7 +94,7 @@ export const ScrollBar: React.FC<ScrollBarProps> = ({
 
         const result: string[] = [];
 
-        for (let row = 0; row < viewportHeight; row++) {
+        for (let row = 0; row < viewportHeight; row += 1) {
             const upperHalf = row * 2;
             const lowerHalf = row * 2 + 1;
             const upperIsThumb = upperHalf >= thumbStartHalf && upperHalf < thumbEndHalf;
@@ -122,6 +122,7 @@ export const ScrollBar: React.FC<ScrollBarProps> = ({
         return (
             <Box flexDirection="column" flexShrink={0} width={1}>
                 {chars.map((char, index) => (
+                    // eslint-disable-next-line react-x/no-array-index-key
                     <Text color={color} dimColor={dimColor} key={index}>
                         {char}
                     </Text>
@@ -140,6 +141,7 @@ export const ScrollBar: React.FC<ScrollBarProps> = ({
                 {topCorner}
             </Text>
             {chars.map((char, index) => (
+                // eslint-disable-next-line react-x/no-array-index-key
                 <Text color={color} dimColor={dimColor} key={index}>
                     {char}
                 </Text>
@@ -151,4 +153,6 @@ export const ScrollBar: React.FC<ScrollBarProps> = ({
     );
 };
 
+export type { ScrollBarPlacement, ScrollBarProps, ScrollBarStyle };
+export { ScrollBar };
 export default ScrollBar;

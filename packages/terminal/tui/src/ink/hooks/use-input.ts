@@ -179,7 +179,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
     const imeTimeout = options.imeTimeout ?? 50;
 
     // IME composition buffer ref
-    const imeBufferRef = useRef<IMECompositionBuffer | null>(null);
+    const imeBufferRef = useRef<IMECompositionBuffer | undefined>(undefined);
     const inputHandlerRef = useRef(inputHandler);
 
     // Keep inputHandler ref up to date
@@ -229,7 +229,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
         return () => {
             imeBufferRef.current?.destroy();
-            imeBufferRef.current = null;
+            imeBufferRef.current = undefined;
         };
     }, [imeEnabled, imeTimeout]);
 
@@ -250,6 +250,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
             return;
         }
 
+        // eslint-disable-next-line sonarjs/cognitive-complexity
         const handleData = (data: string) => {
             // Check if this is IME input
             if (imeEnabled && isIMEInput(data)) {

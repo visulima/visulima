@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 import type { RefObject } from "react";
-import React from "react";
+import React, { useMemo } from "react";
 
 import type { CursorAnchorRef, DOMElement } from "../dom";
 
@@ -50,14 +50,14 @@ export default function Cursor({ anchorRef, x = 0, y = 0 }: Props): React.JSX.El
     const normalizedAnchorReference: CursorAnchorRef | undefined = anchorRef ?? undefined;
     const isInline = normalizedAnchorReference === undefined && x === 0 && y === 0;
 
-    return (
-        <ink-cursor
-            internal_cursor={{
-                anchorRef: normalizedAnchorReference,
-                inline: isInline,
-                x,
-                y,
-            }}
-        />
-    );
+    const internalCursor = useMemo(() => {
+        return {
+            anchorRef: normalizedAnchorReference,
+            inline: isInline,
+            x,
+            y,
+        };
+    }, [normalizedAnchorReference, isInline, x, y]);
+
+    return <ink-cursor internal_cursor={internalCursor} />;
 }

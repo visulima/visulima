@@ -2,7 +2,7 @@ import Yoga from "yoga-layout";
 
 import type { DOMElement } from "./dom";
 
-export type Position = {
+type Position = {
     x: number;
     y: number;
 };
@@ -12,6 +12,7 @@ const getAbsoluteBorderPosition = (node: DOMElement): Position | undefined => {
     let x = 0;
     let y = 0;
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     while (currentNode?.parentNode) {
         if (!currentNode.yogaNode) {
             return undefined;
@@ -25,9 +26,9 @@ const getAbsoluteBorderPosition = (node: DOMElement): Position | undefined => {
     return { x, y };
 };
 
-export const getAbsolutePosition = (node: DOMElement): Position | undefined => getAbsoluteBorderPosition(node);
+const getAbsolutePosition = (node: DOMElement): Position | undefined => getAbsoluteBorderPosition(node);
 
-export const getAbsoluteContentPosition = (node: DOMElement): Position | undefined => {
+const getAbsoluteContentPosition = (node: DOMElement): Position | undefined => {
     const borderPosition = getAbsoluteBorderPosition(node);
 
     if (!borderPosition || !node.yogaNode) {
@@ -39,3 +40,6 @@ export const getAbsoluteContentPosition = (node: DOMElement): Position | undefin
         y: borderPosition.y + node.yogaNode.getComputedBorder(Yoga.EDGE_TOP) + node.yogaNode.getComputedPadding(Yoga.EDGE_TOP),
     };
 };
+
+export type { Position };
+export { getAbsoluteContentPosition, getAbsolutePosition };

@@ -1,3 +1,5 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
+
 /**
  * Progress bar component for Ink.
  *
@@ -7,7 +9,6 @@
  * MIT License
  * Copyright (c) Frankie Bagnardi
  */
-/* eslint-disable react/function-component-definition */
 import type { ReactElement } from "react";
 
 import useWindowSize from "../hooks/use-window-size";
@@ -15,10 +16,7 @@ import type { Props as TextProps } from "./Text";
 import Text from "./Text";
 
 export type Props = {
-    /**
-     * The fill character used for the completed portion of the bar.
-     * @default "█"
-     */
+    /** Fill glyph repeated across the completed portion of the progress bar. Defaults to "█". */
     readonly character?: string;
 
     /**
@@ -78,5 +76,6 @@ export default function ProgressBar({
     const filled = Math.min(Math.floor(space * Math.max(0, Math.min(1, percent))), space);
     const bar = character.repeat(filled) + (rightPad ? " ".repeat(space - filled) : "");
 
+    // eslint-disable-next-line react/jsx-props-no-spreading
     return <Text {...textProps}>{bar}</Text>;
 }

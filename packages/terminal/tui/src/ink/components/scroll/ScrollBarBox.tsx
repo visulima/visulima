@@ -5,7 +5,7 @@ import type { Props as BoxProps } from "../Box";
 import Box from "../Box";
 import { ScrollBar } from "./ScrollBar";
 
-export interface ScrollBarBoxProps extends BoxProps {
+interface ScrollBarBoxProps extends BoxProps {
     children?: React.ReactNode;
     contentHeight: number;
     scrollBarAutoHide?: boolean;
@@ -39,6 +39,7 @@ const ScrollBarBox = ({
     const scrollBarDimColor = isLeft ? borderLeftDimColor ?? borderDimColor : borderRightDimColor ?? borderDimColor;
 
     return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
         <Box flexDirection="row" height={height} {...boxProps}>
             {isLeft && (
                 <ScrollBar
@@ -80,6 +81,8 @@ const ScrollBarBox = ({
         </Box>
     );
 };
+
+export type { ScrollBarBoxProps };
 
 export { ScrollBarBox };
 export default ScrollBarBox;

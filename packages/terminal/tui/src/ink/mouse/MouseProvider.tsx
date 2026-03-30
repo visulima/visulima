@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/filename-case */
+
 /**
  * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
@@ -20,8 +22,9 @@ import type { MouseButton, MouseClickAction, MouseContextShape, MouseDragAction,
 import { MouseContext } from "./mouse-context";
 
 const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
-    const { internal_eventEmitter } = useStdinContext();
+    const { internal_eventEmitter: internalEventEmitter } = useStdinContext();
     const { stdout } = useStdout();
+    // eslint-disable-next-line unicorn/prefer-event-target
     const events = useRef(new EventEmitter());
 
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -96,17 +99,21 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
                     }, 100);
                     break;
                 }
+
+                default: {
+                    break;
+                }
             }
         };
 
-        internal_eventEmitter.on("input", handleInput);
+        internalEventEmitter.on("input", handleInput);
 
         return () => {
-            internal_eventEmitter.off("input", handleInput);
+            internalEventEmitter.off("input", handleInput);
             clearTimeout(clickTimeoutRef.current);
             clearTimeout(scrollTimeoutRef.current);
         };
-    }, [internal_eventEmitter]);
+    }, [internalEventEmitter]);
 
     const value: MouseContextShape = useMemo(() => {
         return {
@@ -119,7 +126,7 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
         };
     }, [button, click, drag, position, scroll]);
 
-    return <MouseContext.Provider value={value}>{children}</MouseContext.Provider>;
+    return <MouseContext value={value}>{children}</MouseContext>;
 };
 
-export { MouseProvider };
+export default MouseProvider;

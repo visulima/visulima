@@ -1,13 +1,13 @@
 /* eslint-disable unicorn/filename-case */
 import type React from "react";
-import type { ForwardRefExoticComponent, ReactNode, RefAttributes } from "react";
-import { Children, forwardRef, isValidElement, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
+import type { ReactNode, Ref } from "react";
+import { isValidElement, useCallback, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 
 import type { DOMElement } from "../../dom";
 import measureElement from "../../measure-element";
 import type { Props as BoxProps } from "../Box";
 import Box from "../Box";
-import { useStateRef } from "./use-state-ref";
+import useStateRef from "./use-state-ref";
 
 const MeasurableItem = ({
     children,
@@ -39,6 +39,18 @@ const MeasurableItem = ({
     );
 };
 
+const toChildArray = (children: ReactNode): ReactNode[] => {
+    if (children == null) {
+        return [];
+    }
+
+    if (Array.isArray(children)) {
+        return children as ReactNode[];
+    }
+
+    return [children];
+};
+
 export interface ControlledScrollViewProps extends BoxProps {
     children?: ReactNode;
     debug?: boolean;
@@ -58,10 +70,16 @@ export interface ControlledScrollViewRef {
     remeasureItem: (index: number) => void;
 }
 
-export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollViewProps & RefAttributes<ControlledScrollViewRef>> = forwardRef<
-    ControlledScrollViewRef,
-    ControlledScrollViewProps
->(({ children, debug = false, onContentHeightChange, onItemHeightChange, onViewportSizeChange, scrollOffset, ...boxProps }, ref) => {
+export const ControlledScrollView = ({
+    children,
+    debug = false,
+    onContentHeightChange,
+    onItemHeightChange,
+    onViewportSizeChange,
+    ref,
+    scrollOffset,
+    ...boxProps
+}: ControlledScrollViewProps & { ref?: Ref<ControlledScrollViewRef> }): React.JSX.Element => {
     const [viewportSize, setViewportSize, getViewportSize] = useStateRef({
         height: 0,
         width: 0,
@@ -86,10 +104,10 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
 
     const handleItemMeasure = useCallback(
         (index: number, height: number) => {
-            const key = itemKeysRef.current[index] || index;
+            const key = itemKeysRef.current[index] ?? index;
 
             if (itemHeightsRef.current[key] !== height) {
-                const previousHeight = itemHeightsRef.current[key] || 0;
+                const previousHeight = itemHeightsRef.current[key] ?? 0;
 
                 itemHeightsRef.current = {
                     ...itemHeightsRef.current,
@@ -98,8 +116,12 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
 
                 let newTotalHeight = 0;
 
-                for (const itemKey of itemKeysRef.current) {
-                    newTotalHeight += itemHeightsRef.current[itemKey] || 0;
+                for (let i = 0; i < itemKeysRef.current.length; i += 1) {
+                    const itemKey = itemKeysRef.current[i];
+
+                    if (itemKey != null) {
+                        newTotalHeight += itemHeightsRef.current[itemKey] ?? 0;
+                    }
                 }
 
                 const currentHeight = getContentHeight();
@@ -140,15 +162,17 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
         const newItemKeys: (string | number)[] = [];
         const newItemHeights: Record<string | number, number> = {};
 
-        Children.forEach(children, (child, index) => {
+        const childArray = toChildArray(children);
+
+        childArray.forEach((child: ReactNode, index: number) => {
             if (!child)
                 return;
 
             const key = isValidElement(child) ? child.key : null;
-            const effectiveKey = key === null ? index : key;
+            const effectiveKey = key ?? index;
 
             newItemKeys[index] = effectiveKey;
-            const itemHeight = itemHeightsRef.current[effectiveKey] || 0;
+            const itemHeight = itemHeightsRef.current[effectiveKey] ?? 0;
 
             newItemHeights[effectiveKey] = itemHeight;
         });
@@ -161,7 +185,7 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
         let newTotalHeight = 0;
 
         newItemKeys.forEach((itemKey) => {
-            newTotalHeight += newItemHeights[itemKey] || 0;
+            newTotalHeight += newItemHeights[itemKey] ?? 0;
         });
 
         const currentHeight = getContentHeight();
@@ -176,9 +200,9 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
             getBottomOffset: () => Math.max(0, getContentHeight() - getViewportSize().height),
             getContentHeight,
             getItemHeight: (index: number) => {
-                const key = itemKeysRef.current[index] || index;
+                const key = itemKeysRef.current[index] ?? index;
 
-                return itemHeightsRef.current[key] || 0;
+                return itemHeightsRef.current[key] ?? 0;
             },
             getItemPosition: (index: number) => {
                 if (index < 0 || index >= itemKeysRef.current.length) {
@@ -192,16 +216,16 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
                     if (firstInvalidOffsetIndexRef.current > 0) {
                         startIndex = firstInvalidOffsetIndexRef.current;
                         const previousIndex = startIndex - 1;
-                        const previousKey = itemKeysRef.current[previousIndex] || previousIndex;
-                        const previousHeight = itemHeightsRef.current[previousKey] || 0;
+                        const previousKey = itemKeysRef.current[previousIndex] ?? previousIndex;
+                        const previousHeight = itemHeightsRef.current[previousKey] ?? 0;
 
                         currentOffset = (itemOffsetsRef.current[previousIndex] ?? 0) + previousHeight;
                     }
 
-                    for (let i = startIndex; i <= index; i++) {
+                    for (let i = startIndex; i <= index; i += 1) {
                         itemOffsetsRef.current[i] = currentOffset;
-                        const key = itemKeysRef.current[i] || i;
-                        const height = itemHeightsRef.current[key] || 0;
+                        const key = itemKeysRef.current[i] ?? i;
+                        const height = itemHeightsRef.current[key] ?? 0;
 
                         currentOffset += height;
                     }
@@ -210,8 +234,8 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
                 }
 
                 const top = itemOffsetsRef.current[index] ?? 0;
-                const key = itemKeysRef.current[index] || index;
-                const height = itemHeightsRef.current[key] || 0;
+                const key = itemKeysRef.current[index] ?? index;
+                const height = itemHeightsRef.current[key] ?? 0;
 
                 return { height, top };
             },
@@ -221,26 +245,29 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
                 setItemMeasureKeys((previous) => {
                     return {
                         ...previous,
-                        [index]: (previous[index] || 0) + 1,
+                        [index]: (previous[index] ?? 0) + 1,
                     };
                 });
             },
         };
     }, [measureViewport, getContentHeight, getViewportSize, setItemMeasureKeys]);
 
+    const childArray = toChildArray(children);
+
     return (
+        // eslint-disable-next-line react/jsx-props-no-spreading
         <Box {...boxProps}>
             <Box ref={viewportRef} width="100%">
                 <Box overflow={debug ? undefined : "hidden"} width="100%">
                     <Box flexDirection="column" marginTop={-scrollOffset} width="100%">
-                        {Children.map(children, (child, index) => {
+                        {childArray.map((child: ReactNode, index: number) => {
                             if (!child)
                                 return null;
 
                             return (
                                 <MeasurableItem
                                     index={index}
-                                    key={isValidElement(child) ? child.key || index : index}
+                                    key={isValidElement(child) ? child.key ?? index : index}
                                     measureKey={itemMeasureKeys[index]}
                                     onMeasure={handleItemMeasure}
                                     width={viewportSize.width}
@@ -254,4 +281,4 @@ export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollVie
             </Box>
         </Box>
     );
-});
+};

@@ -8,19 +8,19 @@ import Text from "./Text";
 /**
  * Available CFonts font faces.
  */
-export type Font = "3d" | "block" | "chrome" | "grid" | "huge" | "pallet" | "shade" | "simple" | "simple3d" | "simpleBlock" | "slick" | "tiny";
+type Font = "3d" | "block" | "chrome" | "grid" | "huge" | "pallet" | "shade" | "simple" | "simple3d" | "simpleBlock" | "slick" | "tiny";
 
 /**
  * Horizontal text alignment.
  */
-export type Align = "center" | "left" | "right";
+type Align = "center" | "left" | "right";
 
 /**
  * Terminal background color names supported by CFonts.
  */
-export type BackgroundColor = "black" | "blue" | "cyan" | "green" | "magenta" | "red" | "transparent" | "white" | "yellow";
+type BackgroundColor = "black" | "blue" | "cyan" | "green" | "magenta" | "red" | "transparent" | "white" | "yellow";
 
-export type Props = {
+type Props = {
     /**
      * Horizontal alignment of the text.
      * @default "left"
@@ -104,3 +104,5 @@ export default function BigText({ align, backgroundColor, colors, font, letterSp
 
     return <Text>{rendered && rendered.string}</Text>;
 }
+
+export type { Align, BackgroundColor, Font, Props };
