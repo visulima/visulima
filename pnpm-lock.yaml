@@ -1058,6 +1058,9 @@ catalogs:
     cli-color:
       specifier: ^2.0.4
       version: 2.0.4
+    cli-spinners:
+      specifier: 3.4.0
+      version: 3.4.0
     cli-truncate:
       specifier: 5.2.0
       version: 5.2.0
@@ -1886,7 +1889,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 25.0.0(1edd632541452362a24da68c6f6ca4db)
+        version: 25.0.0(2e24b7819bed73845577a6c12cdd8d25)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -8291,7 +8294,7 @@ importers:
         specifier: catalog:prod
         version: 4.0.1
       cli-spinners:
-        specifier: catalog:dev
+        specifier: catalog:prod
         version: 3.4.0
       code-excerpt:
         specifier: catalog:prod
@@ -8344,7 +8347,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 25.0.0(2e24b7819bed73845577a6c12cdd8d25)
+        version: 25.0.0(1edd632541452362a24da68c6f6ca4db)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)

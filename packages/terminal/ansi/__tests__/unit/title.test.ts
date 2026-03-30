@@ -32,20 +32,20 @@ describe("title and Icon Name Sequences", () => {
             expect(setWindowTitle(testTitle)).toBe(`${OSC}2;${testTitle}${BEL}`);
         });
 
-        it("decswt should format correctly (OSC 2 ; 1;<name> BEL)", () => {
+        it("decswt should format correctly (OSC 21;<title> ST)", () => {
             expect.assertions(1);
 
             const decName = "DEC Window";
 
-            expect(decswt(decName)).toBe(`${OSC}2;1;${decName}${BEL}`);
+            expect(decswt(decName)).toBe(`${OSC}21;${decName}${ST}`);
         });
 
-        it("decsin should format correctly (OSC 2 ; L;<name> BEL - replicating Go behavior)", () => {
+        it("decsin should format correctly (OSC 2L;<name> ST)", () => {
             expect.assertions(1);
 
             const decName = "DEC Icon";
 
-            expect(decsin(decName)).toBe(`${OSC}2;L;${decName}${BEL}`);
+            expect(decsin(decName)).toBe(`${OSC}2L;${decName}${ST}`);
         });
     });
 

@@ -469,6 +469,7 @@ catalogs:
     cleye: ^2.3.0
     cli-boxes: ^4.0.1
     cli-color: ^2.0.4
+    cli-spinners: 3.4.0
     cli-truncate: 5.2.0
     clone-deep: ^4.0.1
     clsx: 2.1.1
