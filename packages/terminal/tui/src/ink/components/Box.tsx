@@ -1,5 +1,5 @@
 /* eslint-disable import/exports-last, react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, react-x/no-forward-ref, react-x/no-use-context, unicorn/filename-case */
-import type { ForwardRefExoticComponent, PropsWithChildren, RefAttributes } from "react";
+import type { ForwardRefExoticComponent, PropsWithChildren, ReactNode, RefAttributes } from "react";
 import { forwardRef, useContext } from "react";
 import type { Except } from "type-fest";
 
@@ -18,25 +18,6 @@ export type Props = Except<Styles, "textWrap"> & {
      * A label for the element for screen readers.
      */
     readonly "aria-label"?: string;
-
-    /**
-     * Whether this element is opaque (prevents rendering of covered content beneath it).
-     * Useful for performance optimization with layered content.
-     */
-    readonly opaque?: boolean;
-
-    /**
-     * Whether to render a scrollbar for this scrollable element.
-     * Only applies when `overflow` is `'scroll'`. Defaults to `true`.
-     */
-    readonly scrollbar?: boolean;
-
-    /**
-     * Makes this element sticky within its scroll container.
-     * - `true` or `'top'`: pinned to the top during scroll
-     * - `'bottom'`: pinned to the bottom during scroll
-     */
-    readonly sticky?: boolean | "top" | "bottom";
 
     /**
      * The role of the element.
@@ -75,13 +56,53 @@ export type Props = Except<Styles, "textWrap"> & {
         readonly required?: boolean;
         readonly selected?: boolean;
     };
+
+    /**
+     * Whether this element is opaque (prevents rendering of covered content beneath it).
+     * Useful for performance optimization with layered content.
+     */
+    readonly opaque?: boolean;
+
+    /**
+     * Whether to render a scrollbar for this scrollable element.
+     * Only applies when `overflow` is `'scroll'`. Defaults to `true`.
+     */
+    readonly scrollbar?: boolean;
+
+    /**
+     * Makes this element sticky within its scroll container.
+     * - `true` or `'top'`: pinned to the top during scroll
+     * - `'bottom'`: pinned to the bottom during scroll
+     */
+    readonly sticky?: boolean | "top" | "bottom";
+
+    /**
+     * Alternate content to render when this element is in its sticky (pinned) state.
+     * Only applies when `sticky` is set. When omitted, the normal children are used.
+     */
+    readonly stickyChildren?: ReactNode;
 };
 
 /**
  * `&lt;Box>` is an essential Ink component to build your layout. It's like `&lt;div style="display: flex">` in the browser.
  */
 const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DOMElement>> = forwardRef<DOMElement, PropsWithChildren<Props>>(
-    ({ "aria-hidden": ariaHidden, "aria-label": ariaLabel, "aria-role": role, "aria-state": ariaState, backgroundColor, children, opaque, scrollbar, sticky, ...style }, ref) => {
+    (
+        {
+            "aria-hidden": ariaHidden,
+            "aria-label": ariaLabel,
+            "aria-role": role,
+            "aria-state": ariaState,
+            backgroundColor,
+            children,
+            opaque,
+            scrollbar,
+            sticky,
+            stickyChildren,
+            ...style
+        },
+        ref,
+    ) => {
         const { isScreenReaderEnabled } = useContext(accessibilityContext);
         const label = ariaLabel ? <ink-text>{ariaLabel}</ink-text> : undefined;
 
@@ -111,6 +132,17 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                 }}
             >
                 {isScreenReaderEnabled && label ? label : children}
+                {sticky && stickyChildren && !isScreenReaderEnabled && (
+                    <ink-box
+                        internalStickyAlternate
+                        style={{
+                            position: "absolute",
+                            ...style,
+                        }}
+                    >
+                        {stickyChildren}
+                    </ink-box>
+                )}
             </ink-box>
         );
 

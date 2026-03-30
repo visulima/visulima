@@ -25,9 +25,12 @@ import type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
 import { resolveFlags } from "./kitty-keyboard";
 import type { CursorPosition, LogUpdate } from "./log-update";
 import logUpdate from "./log-update";
+import type { NativeLogUpdate } from "./log-update-native";
+import { createNative } from "./log-update-native";
 import reconciler from "./reconciler";
 import render from "./renderer";
-import ResizeObserver, { ResizeObserverEntry } from "./resize-observer";
+import type ResizeObserver from "./resize-observer";
+import { ResizeObserverEntry } from "./resize-observer";
 import { calculateScroll } from "./scroll";
 import { getWindowSize } from "./utils";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
@@ -58,9 +61,9 @@ const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineB
 
 const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
     if (
-        buffer[startIndex] !== kittyQueryEscapeByte
-        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
-        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
+        buffer[startIndex] !== kittyQueryEscapeByte ||
+        buffer[startIndex + 1] !== kittyQueryOpenBracketByte ||
+        buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
     ) {
         return undefined;
     }
@@ -148,13 +151,13 @@ const shouldClearTerminalForFrame = ({
 
     return (
         // Overflowing frames still need full clear fallback.
-        wasOverflowing
-        || (isOverflowing && hadPreviousFrame)
+        wasOverflowing ||
+        (isOverflowing && hadPreviousFrame) ||
         // Clear when shrinking from fullscreen to non-fullscreen output.
-        || isLeavingFullscreen
+        isLeavingFullscreen ||
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
-        || shouldClearOnUnmount
+        shouldClearOnUnmount
     );
 };
 
@@ -262,11 +265,23 @@ export type Options = {
     maxFps?: number;
     onRender?: (metrics: RenderMetrics) => void;
     patchConsole: boolean;
+    standardReactLayoutTiming?: boolean;
 
     stderr: NodeJS.WriteStream;
-    stdin: NodeJS.ReadStream;
 
+    stdin: NodeJS.ReadStream;
     stdout: NodeJS.WriteStream;
+
+    /**
+     * Use the native Rust cell-diff renderer instead of ANSI string-based log-update.
+     * Produces a Uint32Array buffer that the Rust renderer diffs cell-by-cell,
+     * generating minimal ANSI escape sequences. Significantly reduces GC pressure
+     * and improves rendering performance for complex UIs.
+     *
+     * Falls back to the string-based path if native bindings are not available.
+     * @default false
+     */
+    useNativeRenderer?: boolean;
 
     waitUntilExit?: () => Promise<unknown>;
 };
@@ -307,6 +322,10 @@ export default class Ink {
     private lastOutputHeight: number;
 
     private lastTerminalWidth: number;
+
+    private readonly nativeLog: NativeLogUpdate | undefined;
+
+    private readonly useNativeRenderer: boolean;
 
     private readonly container: FiberRoot;
 
@@ -356,53 +375,94 @@ export default class Ink {
         const maxFps = options.maxFps ?? 30;
         const renderThrottleMs = maxFps > 0 ? Math.max(1, Math.ceil(1000 / maxFps)) : 0;
 
+        const baseOnRender = unthrottled
+            ? this.onRender
+            : (() => {
+                  const throttled = throttle(this.onRender, renderThrottleMs, {
+                      leading: true,
+                      trailing: true,
+                  });
+
+                  this.throttledOnRender = throttled;
+
+                  return () => {
+                      this.hasPendingThrottledRender = true;
+                      throttled();
+                  };
+              })();
+
         if (unthrottled) {
-            this.rootNode.onRender = this.onRender;
             this.throttledOnRender = undefined;
         } else {
-            const throttled = throttle(this.onRender, renderThrottleMs, {
-                leading: true,
-                trailing: true,
-            });
-
-            this.rootNode.onRender = () => {
-                this.hasPendingThrottledRender = true;
-                throttled();
-            };
-
-            this.throttledOnRender = throttled;
+            // throttledOnRender already set above
         }
 
-        this.rootNode.onImmediateRender = this.onRender;
+        // When standardReactLayoutTiming is enabled, defer frame output via
+        // queueMicrotask so useLayoutEffect hooks complete before the frame
+        // is written to the terminal.
+        if (options.standardReactLayoutTiming) {
+            let isRenderScheduled = false;
+            const deferredRender = () => {
+                if (isRenderScheduled) {
+                    return;
+                }
+
+                isRenderScheduled = true;
+                queueMicrotask(() => {
+                    isRenderScheduled = false;
+                    this.onRender();
+                });
+            };
+
+            this.rootNode.onRender = deferredRender;
+            this.rootNode.onImmediateRender = deferredRender;
+        } else {
+            this.rootNode.onRender = baseOnRender;
+            this.rootNode.onImmediateRender = this.onRender;
+        }
+
         this.log = logUpdate.create(options.stdout, {
             incremental: options.incrementalRendering,
         });
+
+        // Initialize native (Rust) renderer if requested and available
+        this.useNativeRenderer = options.useNativeRenderer ?? false;
+
+        if (this.useNativeRenderer) {
+            this.nativeLog = createNative(options.stdout);
+
+            if (!this.nativeLog) {
+                // Fall back to string path if native binding unavailable
+                this.useNativeRenderer = false;
+            }
+        }
+
         this.manualCursorPosition = undefined;
         this.renderedCursorPosition = undefined;
         this.renderedCursorRequested = false;
         this.throttledLog = unthrottled
             ? this.log
             : throttle(
-                (output: string) => {
-                    const shouldWrite = this.log.willRender(output);
-                    const sync = this.shouldSync();
+                  (output: string) => {
+                      const shouldWrite = this.log.willRender(output);
+                      const sync = this.shouldSync();
 
-                    if (sync && shouldWrite) {
-                        this.options.stdout.write(bsu);
-                    }
+                      if (sync && shouldWrite) {
+                          this.options.stdout.write(bsu);
+                      }
 
-                    this.log(output);
+                      this.log(output);
 
-                    if (sync && shouldWrite) {
-                        this.options.stdout.write(esu);
-                    }
-                },
-                undefined,
-                {
-                    leading: true,
-                    trailing: true,
-                },
-            );
+                      if (sync && shouldWrite) {
+                          this.options.stdout.write(esu);
+                      }
+                  },
+                  undefined,
+                  {
+                      leading: true,
+                      trailing: true,
+                  },
+              );
 
         // Ignore last render after unmounting a tree to prevent empty output before exit
         this.isUnmounted = false;
@@ -541,6 +601,7 @@ export default class Ink {
 
         // Calculate scroll state and trigger resize observers after layout
         const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
+
         this.calculateScrollAndTriggerObservers(this.rootNode, observerEntries);
 
         for (const [observer, entries] of observerEntries) {
@@ -548,10 +609,7 @@ export default class Ink {
         }
     };
 
-    private calculateScrollAndTriggerObservers(
-        node: dom.DOMElement,
-        observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>,
-    ): void {
+    private calculateScrollAndTriggerObservers(node: dom.DOMElement, observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>): void {
         if (node.nodeName === "ink-box") {
             const { style } = node;
             const overflow = style.overflow ?? "visible";
@@ -570,7 +628,7 @@ export default class Ink {
             const height = node.yogaNode.getComputedHeight();
             const lastSize = node.internal_lastMeasuredSize;
 
-            if (!lastSize || lastSize.width !== width || lastSize.height !== height) {
+            if (lastSize?.width !== width || lastSize.height !== height) {
                 const entry = new ResizeObserverEntry(node, { height, width });
 
                 for (const observer of node.resizeObservers) {
@@ -587,7 +645,29 @@ export default class Ink {
 
         for (const child of node.childNodes) {
             if (child.nodeName !== "#text") {
-                this.calculateScrollAndTriggerObservers(child as dom.DOMElement, observerEntries);
+                this.calculateScrollAndTriggerObservers(child, observerEntries);
+            }
+        }
+    }
+
+    /**
+     * Force a full layout recalculation by marking all text nodes dirty.
+     * Useful when the string width function changes or terminal font changes.
+     */
+    recalculateLayout(): void {
+        this.markAllTextNodesDirty(this.rootNode);
+        this.calculateLayout();
+        this.onRender();
+    }
+
+    private markAllTextNodesDirty(node: dom.DOMElement): void {
+        if (node.nodeName === "ink-text" && node.yogaNode) {
+            node.yogaNode.markDirty();
+        }
+
+        for (const child of node.childNodes) {
+            if (child.nodeName !== "#text") {
+                this.markAllTextNodesDirty(child);
             }
         }
     }
@@ -605,10 +685,28 @@ export default class Ink {
         }
 
         const startTime = performance.now();
-        const { cursorPosition, cursorRequested, output, outputHeight, staticOutput } = render(this.rootNode, this.isScreenReaderEnabled);
+        const renderResult = render(this.rootNode, this.isScreenReaderEnabled, {
+            useNativeRenderer: this.useNativeRenderer,
+        });
+
+        const { cursorPosition, cursorRequested, output, outputBuffer, outputHeight, outputWidth, staticOutput } = renderResult;
 
         this.renderedCursorRequested = cursorRequested;
         this.renderedCursorPosition = cursorPosition;
+
+        // Native renderer path: write buffer directly via Rust diff engine
+        if (this.useNativeRenderer && this.nativeLog && outputBuffer && outputWidth) {
+            // Handle static output through the normal string path
+            if (staticOutput && staticOutput !== "\n") {
+                this.options.stdout.write(staticOutput);
+            }
+
+            this.nativeLog.render(outputBuffer, outputWidth, outputHeight);
+            this.options.onRender?.({ renderTime: performance.now() - startTime });
+            this.lastOutputHeight = outputHeight;
+
+            return;
+        }
 
         // When a <Cursor> component is rendered, sync its position to log-update.
         // Only do this when cursorRequested is true to avoid marking cursor dirty

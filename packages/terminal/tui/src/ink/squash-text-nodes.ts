@@ -1,6 +1,9 @@
 /* eslint-disable no-plusplus */
-import type { DOMElement } from "./dom";
+import type { DOMElement, DOMNode } from "./dom";
 import sanitizeAnsi from "./sanitize-ansi";
+
+export type CharOffsetRange = { end: number; start: number };
+export type CharOffsetMap = Map<DOMNode, CharOffsetRange>;
 
 // Squashing text nodes allows to combine multiple text nodes into one and write
 // to `Output` instance only once. For example, <Text>hello{' '}world</Text>
@@ -41,3 +44,50 @@ const squashTextNodes = (node: DOMElement): string => {
 };
 
 export default squashTextNodes;
+
+/**
+ * Squash text nodes while building a character offset map.
+ * Each DOM node is mapped to its start/end character offsets in the resulting string.
+ * Used for selection text extraction and cursor position calculation.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export const squashTextNodesWithMap = (node: DOMElement, map: CharOffsetMap, offsetRef: { current: number }): string => {
+    let text = "";
+
+    for (let index = 0; index < node.childNodes.length; index++) {
+        const childNode = node.childNodes[index];
+
+        if (childNode === undefined) {
+            continue;
+        }
+
+        let nodeText = "";
+        const startOffset = offsetRef.current;
+
+        if (childNode.nodeName === "#text") {
+            nodeText = childNode.nodeValue;
+            map.set(childNode, {
+                end: startOffset + nodeText.length,
+                start: startOffset,
+            });
+            offsetRef.current += nodeText.length;
+        } else {
+            if (childNode.nodeName === "ink-text" || childNode.nodeName === "ink-virtual-text") {
+                nodeText = squashTextNodesWithMap(childNode, map, offsetRef);
+                map.set(childNode, {
+                    end: offsetRef.current,
+                    start: startOffset,
+                });
+            }
+
+            if (nodeText.length > 0 && typeof childNode.internal_transform === "function") {
+                nodeText = childNode.internal_transform(nodeText, index);
+            }
+        }
+
+        text += nodeText;
+    }
+
+    return text;
+};

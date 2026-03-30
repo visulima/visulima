@@ -19,6 +19,7 @@ export class ResizeObserverEntry {
 
 class ResizeObserver {
     private readonly callback: ResizeObserverCallback;
+
     private readonly observedElements = new Set<DOMElement>();
 
     constructor(callback: ResizeObserverCallback) {
@@ -39,6 +40,7 @@ class ResizeObserver {
         if (lastMeasuredSize === undefined && element.yogaNode) {
             const width = element.yogaNode.getComputedWidth();
             const height = element.yogaNode.getComputedHeight();
+
             lastMeasuredSize = { height, width };
             element.internal_lastMeasuredSize = lastMeasuredSize;
         }

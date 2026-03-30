@@ -110,6 +110,19 @@ export type RenderOptions = {
     patchConsole?: boolean;
 
     /**
+     * If true, Ink defers frame output until after React's commit phase completes,
+     * ensuring `useLayoutEffect` hooks run before the frame is written to the terminal.
+     *
+     * This eliminates the one-frame flicker when components measure layout
+     * (e.g., scroll position, element size) in `useLayoutEffect` and adjust state.
+     *
+     * **Warning:** Incompatible with the `&lt;Static>` component, which relies on
+     * immediate render timing to append output.
+     * @default false
+     */
+    standardReactLayoutTiming?: boolean;
+
+    /**
      * Error stream.
      * @default process.stderr
      */
@@ -126,6 +139,17 @@ export type RenderOptions = {
      * @default process.stdout
      */
     stdout?: NodeJS.WriteStream;
+
+    /**
+     * Use the native Rust cell-diff renderer for terminal output.
+     * Produces a Uint32Array buffer that the Rust renderer diffs cell-by-cell,
+     * generating minimal ANSI escape sequences. Reduces GC pressure and
+     * improves rendering performance for complex UIs.
+     *
+     * Falls back to string-based rendering if native bindings are not available.
+     * @default false
+     */
+    useNativeRenderer?: boolean;
 };
 
 export type Instance = {

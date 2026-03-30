@@ -2,7 +2,7 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
-import type { DOMElement } from "./dom";
+import type { DOMElement, DOMNode } from "./dom";
 import getMaxWidth from "./get-max-width";
 import { getAbsoluteContentPosition } from "./layout";
 import { calculateScrollbarLayout } from "./measure-element";
@@ -147,6 +147,12 @@ export const renderNodeToScreenReaderOutput = (
         return "";
     }
 
+    // Sticky alternate nodes are invisible duplicates for sticky header rendering;
+    // they should not appear in screen reader output
+    if (node.internal_stickyAlternate) {
+        return "";
+    }
+
     if (node.yogaNode?.getDisplay() === Yoga.DISPLAY_NONE) {
         return "";
     }
@@ -158,8 +164,8 @@ export const renderNodeToScreenReaderOutput = (
     } else if (node.nodeName === "ink-box" || node.nodeName === "ink-root") {
         const separator = node.style.flexDirection === "row" || node.style.flexDirection === "row-reverse" ? " " : "\n";
 
-        const childNodes
-            = node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
+        const childNodes =
+            node.style.flexDirection === "row-reverse" || node.style.flexDirection === "column-reverse" ? node.childNodes.toReversed() : [...node.childNodes];
 
         output = childNodes
             .map((childNode) => {
@@ -199,14 +205,28 @@ const renderNodeToOutput = (
     node: DOMElement,
     output: Output,
     options: {
+        absoluteOffsetX?: number;
+        absoluteOffsetY?: number;
         offsetX?: number;
         offsetY?: number;
         renderState?: RenderState;
+        selectionMap?: Map<DOMNode, { end: number; start: number }>;
+        selectionStyle?: (char: import("@alcalzone/ansi-tokenize").StyledChar) => import("@alcalzone/ansi-tokenize").StyledChar;
         skipStaticElements: boolean;
         transformers?: OutputTransformer[];
     },
 ): void => {
-    const { offsetX = 0, offsetY = 0, renderState, skipStaticElements, transformers = [] } = options;
+    const {
+        absoluteOffsetX,
+        absoluteOffsetY,
+        offsetX = 0,
+        offsetY = 0,
+        renderState,
+        selectionMap,
+        selectionStyle,
+        skipStaticElements,
+        transformers = [],
+    } = options;
 
     if (skipStaticElements && node.internal_static) {
         return;
@@ -288,6 +308,30 @@ const renderNodeToOutput = (
         // Left and top positions in Yoga are relative to their parent node
         const x = offsetX + yogaNode.getComputedLeft();
         const y = offsetY + yogaNode.getComputedTop();
+
+        // Absolute offsets track the true screen position (for correct nested clip calculation)
+        const absX = (absoluteOffsetX ?? offsetX) + yogaNode.getComputedLeft();
+        const absY = (absoluteOffsetY ?? offsetY) + yogaNode.getComputedTop();
+
+        // Visibility optimization: skip rendering nodes entirely outside the clip region
+        const currentClip = output.getCurrentClip();
+
+        if (currentClip) {
+            const nodeWidth = yogaNode.getComputedWidth();
+            const nodeHeight = yogaNode.getComputedHeight();
+
+            const nodeRight = absX + nodeWidth;
+            const nodeBottom = absY + nodeHeight;
+
+            const clipLeft = currentClip.x1 ?? -Infinity;
+            const clipRight = currentClip.x2 ?? Infinity;
+            const clipTop = currentClip.y1 ?? -Infinity;
+            const clipBottom = currentClip.y2 ?? Infinity;
+
+            if (nodeRight <= clipLeft || absX >= clipRight || nodeBottom <= clipTop || absY >= clipBottom) {
+                return;
+            }
+        }
 
         // Transformers are functions that transform final text output of each component
         // See Output class for logic that applies transformers
@@ -375,9 +419,13 @@ const renderNodeToOutput = (
         if (node.nodeName === "ink-root" || node.nodeName === "ink-box") {
             for (const childNode of node.childNodes) {
                 renderNodeToOutput(childNode as DOMElement, output, {
+                    absoluteOffsetX: absX + scrollOffsetX,
+                    absoluteOffsetY: absY + scrollOffsetY,
                     offsetX: x + scrollOffsetX,
                     offsetY: y + scrollOffsetY,
                     renderState,
+                    selectionMap,
+                    selectionStyle,
                     skipStaticElements,
                     transformers: newTransformers,
                 });
@@ -395,7 +443,7 @@ const renderNodeToOutput = (
                     const activeStickyNodes = identifyActiveStickyNodes(stickyNodes, node, currentScrollTop, viewportBottom);
 
                     if (activeStickyNodes.length > 0) {
-                        const createOutput = (opts: { height: number; width: number }) => new Output(opts);
+                        const createOutput = (options_: { height: number; width: number }) => new Output(options_);
 
                         renderActiveStickyNodes(activeStickyNodes, node, output, createOutput, {
                             newTransformers,

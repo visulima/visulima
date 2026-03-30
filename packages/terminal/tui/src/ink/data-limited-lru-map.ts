@@ -9,7 +9,9 @@
  */
 class DataLimitedLruMap<V> {
     private readonly map: Map<string, V>;
+
     private readonly maxDataSize: number;
+
     private readonly maxKeys: number;
 
     private currentDataSize = 0;
