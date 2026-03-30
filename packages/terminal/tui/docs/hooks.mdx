@@ -233,10 +233,33 @@ Returns zeroed metrics until first layout pass.
 
 ## `measureElement`
 
-Imperative element measurement.
+Imperative element measurement. Returns position and dimensions.
 
 ```tsx
-const { width, height } = measureElement(ref.current);
+const { x, y, width, height } = measureElement(ref.current);
+```
+
+Additional measurement utilities are available for advanced use cases:
+
+```tsx
+import {
+    getBoundingBox,       // scroll-aware absolute position
+    getInnerWidth,        // width excluding borders
+    getInnerHeight,       // height excluding borders
+    getScrollHeight,      // total scrollable content height
+    getScrollWidth,       // total scrollable content width
+    getScrollTop,         // current vertical scroll position
+    getScrollLeft,        // current horizontal scroll position
+    ResizeObserver,       // observe element size changes
+} from "@visulima/tui/ink";
+
+// ResizeObserver example
+const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+        console.log(`Size changed: ${entry.contentRect.width}x${entry.contentRect.height}`);
+    }
+});
+observer.observe(ref.current);
 ```
 
 ## `useCursor`

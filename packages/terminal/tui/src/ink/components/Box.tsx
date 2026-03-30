@@ -20,6 +20,25 @@ export type Props = Except<Styles, "textWrap"> & {
     readonly "aria-label"?: string;
 
     /**
+     * Whether this element is opaque (prevents rendering of covered content beneath it).
+     * Useful for performance optimization with layered content.
+     */
+    readonly opaque?: boolean;
+
+    /**
+     * Whether to render a scrollbar for this scrollable element.
+     * Only applies when `overflow` is `'scroll'`. Defaults to `true`.
+     */
+    readonly scrollbar?: boolean;
+
+    /**
+     * Makes this element sticky within its scroll container.
+     * - `true` or `'top'`: pinned to the top during scroll
+     * - `'bottom'`: pinned to the bottom during scroll
+     */
+    readonly sticky?: boolean | "top" | "bottom";
+
+    /**
      * The role of the element.
      */
     readonly "aria-role"?:
@@ -62,7 +81,7 @@ export type Props = Except<Styles, "textWrap"> & {
  * `&lt;Box>` is an essential Ink component to build your layout. It's like `&lt;div style="display: flex">` in the browser.
  */
 const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DOMElement>> = forwardRef<DOMElement, PropsWithChildren<Props>>(
-    ({ "aria-hidden": ariaHidden, "aria-label": ariaLabel, "aria-role": role, "aria-state": ariaState, backgroundColor, children, ...style }, ref) => {
+    ({ "aria-hidden": ariaHidden, "aria-label": ariaLabel, "aria-role": role, "aria-state": ariaState, backgroundColor, children, opaque, scrollbar, sticky, ...style }, ref) => {
         const { isScreenReaderEnabled } = useContext(accessibilityContext);
         const label = ariaLabel ? <ink-text>{ariaLabel}</ink-text> : undefined;
 
@@ -76,7 +95,10 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                     role,
                     state: ariaState,
                 }}
+                opaque={opaque}
                 ref={ref}
+                scrollbar={scrollbar}
+                sticky={sticky}
                 style={{
                     flexDirection: "row",
                     flexGrow: 0,

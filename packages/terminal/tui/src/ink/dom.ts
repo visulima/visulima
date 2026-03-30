@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, import/exports-last, no-param-reassign, unicorn/no-null, unicorn/prefer-dom-node-remove */
+import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
 import measureText from "./measure-text";
 import type { OutputTransformer } from "./render-node-to-output";
+import type ResizeObserver from "./resize-observer";
+import type { ScrollState } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
 import type { Styles } from "./styles";
 import wrapText from "./wrap-text";
@@ -17,8 +20,43 @@ type InkNode = {
 
 type LayoutListener = () => void;
 
+let idCounter = 0;
+
 export type TextName = "#text";
 export type ElementNames = "ink-root" | "ink-box" | "ink-text" | "ink-cursor" | "ink-virtual-text";
+
+/**
+ * Describes a sticky header that should be composited on top of scrolled content.
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export type StickyHeader = {
+    /** Unique ID of the sticky node. */
+    nodeId: number;
+    /** Lines rendered in the natural (scrolling) position. */
+    lines: ReadonlyArray<readonly StyledChar[]>;
+    /** Lines rendered in the stuck (pinned) position, if different. */
+    stuckLines?: ReadonlyArray<readonly StyledChar[]>;
+    /** Stuck X position relative to region. */
+    x: number;
+    /** Stuck Y position relative to region. */
+    y: number;
+    /** Natural row offset relative to content start. */
+    naturalRow: number;
+    /** Content-relative start row. */
+    startRow: number;
+    /** Content-relative end row. */
+    endRow: number;
+    /** ID of the scroll container this header belongs to. */
+    scrollContainerId: number | string;
+    /** If true, natural 'lines' are already in background content. */
+    isStuckOnly: boolean;
+    /** Sticky type: top-pinned or bottom-pinned. */
+    type?: "top" | "bottom";
+    /** Reference to the DOM node for this header. */
+    node?: DOMElement;
+    /** Height in rows. */
+    height?: number;
+};
 
 export type NodeNames = ElementNames | TextName;
 
@@ -72,16 +110,87 @@ export type DOMElement = InkNode & {
 
     internal_hidden?: boolean;
 
+    /**
+     * Last measured size for ResizeObserver tracking.
+     */
+    internal_lastMeasuredSize?: { height: number; width: number };
+
     internal_layoutListeners?: Set<LayoutListener>;
+
+    /**
+     * Scroll state computed by calculateScroll() for elements with overflow: 'scroll'.
+     */
+    internal_scrollState?: ScrollState;
 
     internal_transform?: OutputTransformer;
 
+    /**
+     * Whether this element's scrollback buffer is dirty (needs recalculation).
+     */
+    internal_isScrollbackDirty?: boolean;
+
+    /**
+     * Maximum scrollTop ever reached, used with stableScrollback.
+     */
+    internal_maxScrollTop?: number;
+
+    /**
+     * Whether this element is opaque (prevents rendering of covered content beneath it).
+     */
+    internal_opaque?: boolean;
+
+    /**
+     * Callback invoked before rendering this node.
+     */
+    internal_onBeforeRender?: (node: DOMElement) => void;
+
+    /**
+     * Whether the scrollbar should be rendered for this scrollable element.
+     * Defaults to true for elements with overflow: 'scroll'.
+     */
+    internal_scrollbar?: boolean;
+
+    /**
+     * Whether this element is sticky (pinned during scroll).
+     * - `true` or `'top'`: pinned to the top of the scroll container
+     * - `'bottom'`: pinned to the bottom of the scroll container
+     */
+    internal_sticky?: boolean | "top" | "bottom";
+
+    /**
+     * Whether this element is the alternate (stuck) version of a sticky header.
+     * The stuck version is rendered when the header is pinned.
+     */
+    internal_stickyAlternate?: boolean;
+
+    /**
+     * Whether this element should receive the terminal cursor focus.
+     */
+    internal_terminalCursorFocus?: boolean;
+
+    /**
+     * Terminal cursor position offset within this element.
+     */
+    internal_terminalCursorPosition?: number;
+
     // Internal properties
     isStaticDirty?: boolean;
+
+    /**
+     * Auto-incrementing unique identifier for this node.
+     */
+    internal_id: number;
+
     nodeName: ElementNames;
     onComputeLayout?: () => void;
     onImmediateRender?: () => void;
     onRender?: () => void;
+
+    /**
+     * Set of ResizeObservers attached to this element.
+     */
+    resizeObservers?: Set<ResizeObserver>;
+
     staticNode?: DOMElement;
 };
 
@@ -106,6 +215,7 @@ export const createNode = (nodeName: ElementNames): DOMElement => {
         childNodes: [],
 
         internal_accessibility: {},
+        internal_id: idCounter++,
         nodeName,
         parentNode: undefined,
         style: {},

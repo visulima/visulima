@@ -5,6 +5,15 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 
 # Scroll Components
 
+`@visulima/tui` provides two approaches to scrolling:
+
+1. **CSS-level scrolling** via `Box` props (`overflow="scroll"`, `scrollTop`, `sticky`) — integrated into the layout engine with native scrollbar rendering and sticky header support. See the [Box component docs](./components#overflow-and-css-level-scrolling).
+2. **Component-based scrolling** via `ScrollView`, `ScrollList`, etc. — higher-level React components with imperative APIs, selection management, and alignment modes.
+
+Both can be used independently or together. CSS-level scroll is best for simple overflow clipping with scrollbars; component-based scroll is best for lists with selection, dynamic content measurement, and keyboard-driven navigation.
+
+## Component-Based Scroll
+
 Ported from the [ByteLand](https://github.com/ByteLandTechnology) scroll ecosystem. Import from `@visulima/tui/ink`.
 
 ```tsx

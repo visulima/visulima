@@ -123,9 +123,10 @@ const App = ({
 
     const handleInput = useCallback(
         (input: string): void => {
-            // Exit on Ctrl+C
+            // Exit on Ctrl+C — use includes() to handle multi-byte input buffers
+            // where Ctrl+C may be embedded within a larger chunk
             // eslint-disable-next-line unicorn/no-hex-escape
-            if (input === "\x03" && exitOnCtrlC) {
+            if (input.includes("\x03") && exitOnCtrlC) {
                 handleExit();
 
                 return;
