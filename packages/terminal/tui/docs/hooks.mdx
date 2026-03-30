@@ -70,7 +70,7 @@ usePaste(handler, { isActive: false });
 
 ## `useMouse` (Ratatat-only)
 
-Subscribe to mouse events.
+Low-level callback hook for mouse events. Subscribe to every mouse event with full modifier info.
 
 ```tsx
 useMouse((event) => {
@@ -90,6 +90,8 @@ useMouse((event) => {
 | `shift`  | `boolean` | modifier                              |
 | `ctrl`   | `boolean` | modifier                              |
 | `meta`   | `boolean` | modifier                              |
+
+> For higher-level mouse hooks with element hover/click detection, see [Mouse Support](./mouse) (Ink layer, imported from `@visulima/tui/ink`).
 
 ## `useTextInput` (Ratatat-only)
 
