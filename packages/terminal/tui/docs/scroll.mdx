@@ -5,7 +5,7 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 
 # Scroll Components
 
-`@visulima/tui/ink` re-exports scroll primitives from the ByteLand ecosystem for building scrollable terminal interfaces.
+Ported from the [ByteLand](https://github.com/ByteLandTechnology) scroll ecosystem. Import from `@visulima/tui/ink`.
 
 ```tsx
 import {
@@ -20,6 +20,8 @@ import {
 ## `ScrollView`
 
 A scrollable viewport that manages its own scroll state. Control it imperatively via a ref.
+
+![Scrolling Demo](./_media/scroll/scroll.svg)
 
 ```tsx
 import { useRef } from "react";
@@ -46,9 +48,25 @@ const Demo = () => {
 };
 ```
 
+### Dynamic Items
+
+![Dynamic Items Demo](./_media/scroll/items.svg)
+
+### Expand / Collapse
+
+![Expand Demo](./_media/scroll/expand.svg)
+
+### Terminal Resize
+
+![Resize Demo](./_media/scroll/resize.svg)
+
+### Width Changes (Text Wrapping)
+
+![Width Demo](./_media/scroll/width.svg)
+
 ### Props
 
-Extends `BoxProps` from Ink.
+Extends `BoxProps`.
 
 | Prop                    | Type       | Description                              |
 | ----------------------- | ---------- | ---------------------------------------- |
@@ -110,6 +128,18 @@ A visual scroll position indicator. Works in two placement modes:
 - **Border mode** (`placement="left"` or `"right"`): Integrates with a container's border.
 - **Inset mode** (`placement="inset"`): Placed inside the content area.
 
+### Border Mode
+
+![Border Mode Demo](./_media/scroll/scrollbar-border.svg)
+
+### Inset Mode
+
+![Inset Mode Demo](./_media/scroll/scrollbar-inset.svg)
+
+### Auto Hide
+
+![Auto Hide Demo](./_media/scroll/scrollbar-autohide.svg)
+
 ```tsx
 import { Box, ScrollBar, Text } from "@visulima/tui/ink";
 
@@ -136,10 +166,10 @@ import { Box, ScrollBar, Text } from "@visulima/tui/ink";
 | `scrollOffset`   | `number`             | required    | Current scroll position             |
 | `placement`      | `ScrollBarPlacement` | `'right'`   | `'left'`, `'right'`, or `'inset'`   |
 | `style`          | `ScrollBarStyle`     | varies      | Visual style                        |
-| `thumbChar`      | `string`             | —           | Custom thumb character (inset only) |
-| `trackChar`      | `string`             | —           | Custom track character (inset only) |
+| `thumbChar`      | `string`             | ---         | Custom thumb character (inset only) |
+| `trackChar`      | `string`             | ---         | Custom track character (inset only) |
 | `autoHide`       | `boolean`            | `false`     | Hide when content fits (inset only) |
-| `color`          | `string`             | —           | Scroll bar color                    |
+| `color`          | `string`             | ---         | Scroll bar color                    |
 | `dimColor`       | `boolean`            | `false`     | Dimmed styling                      |
 
 ## `ScrollBarBox`
@@ -173,11 +203,27 @@ Extends `BoxProps`.
 | `scrollOffset`       | `number`              | required  | Current scroll position          |
 | `scrollBarPosition`  | `'left' \| 'right'`  | `'right'` | Which side to show the bar       |
 | `scrollBarAutoHide`  | `boolean`             | `false`   | Hide thumb when content fits     |
-| `thumbChar`          | `string`              | —         | Custom thumb character            |
+| `thumbChar`          | `string`              | ---       | Custom thumb character            |
 
 ## `ScrollList`
 
 A `ScrollView` with externally controlled selection and automatic scroll-into-view.
+
+### Selection & Navigation
+
+![Selection Demo](./_media/scroll/list-selection.svg)
+
+### Scroll Alignment Modes
+
+![Alignment Demo](./_media/scroll/list-alignment.svg)
+
+### Expand / Collapse
+
+![Expand Demo](./_media/scroll/list-expand.svg)
+
+### Dynamic Items
+
+![Dynamic Demo](./_media/scroll/list-dynamic.svg)
 
 ```tsx
 import { useRef, useState } from "react";
@@ -213,12 +259,12 @@ Extends `ScrollViewProps`.
 
 | Prop              | Type              | Default  | Description                                  |
 | ----------------- | ----------------- | -------- | -------------------------------------------- |
-| `selectedIndex`   | `number`          | —        | Currently selected item (controlled)         |
+| `selectedIndex`   | `number`          | ---      | Currently selected item (controlled)         |
 | `scrollAlignment` | `ScrollAlignment` | `'auto'` | How to position the selected item in view    |
 
 Alignment modes:
 
-- `'auto'` — Minimal scrolling to bring item into view
-- `'top'` — Align item to top of viewport
-- `'bottom'` — Align item to bottom of viewport
-- `'center'` — Center item in viewport
+- `'auto'` --- Minimal scrolling to bring item into view
+- `'top'` --- Align item to top of viewport
+- `'bottom'` --- Align item to bottom of viewport
+- `'center'` --- Center item in viewport
