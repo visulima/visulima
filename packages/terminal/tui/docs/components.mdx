@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, OrderedList, Spacer, Static, StatusMessage, Tab, Tabs, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -337,6 +337,50 @@ Example with labels:
 </Box>
 ```
 
+## `Slider`
+
+A keyboard-driven range input for selecting numeric values. Supports horizontal and vertical orientations.
+
+```tsx
+import { Slider } from "@visulima/tui/ink";
+
+<Slider defaultValue={50} onChange={(v) => console.log(v)} />
+<Slider defaultValue={22} min={10} max={40} step={1} accentColor="red" width={30} />
+<Slider defaultValue={60} orientation="vertical" width={8} />
+```
+
+| Prop              | Type                              | Default        | Description                                  |
+| ----------------- | --------------------------------- | -------------- | -------------------------------------------- |
+| `value`           | `number`                          | —              | Controlled value                             |
+| `defaultValue`    | `number`                          | `0`            | Initial value (uncontrolled)                 |
+| `min`             | `number`                          | `0`            | Minimum value                                |
+| `max`             | `number`                          | `100`          | Maximum value                                |
+| `step`            | `number`                          | `1`            | Increment per arrow key press                |
+| `orientation`     | `"horizontal"` \| `"vertical"`   | `"horizontal"` | Layout direction                             |
+| `width`           | `number`                          | `20`           | Track width in columns (or rows if vertical) |
+| `isFocused`       | `boolean`                         | `true`         | Whether the component responds to input      |
+| `isDisabled`      | `boolean`                         | `false`        | Ignores all input and dims the slider        |
+| `filledCharacter` | `string`                          | `"█"`          | Character for the filled portion             |
+| `emptyCharacter`  | `string`                          | `"░"`          | Character for the empty portion              |
+| `thumbCharacter`  | `string`                          | `"●"`          | Character marking the current position       |
+| `accentColor`     | `string`                          | `"green"`      | Color for filled portion and thumb           |
+| `defaultColor`    | `string`                          | `"gray"`       | Color for empty portion                      |
+| `onChange`         | `(value: number) => void`         | —              | Called when value changes                    |
+
+### Keyboard
+
+- **Left/Right arrows** (horizontal) or **Up/Down** (vertical): move by `step`
+- **Home/End**: jump to min/max
+- **Page Up/Down**: move by 10 × step
+- **0–9**: jump to 0%, 10%, … 90% of the range
+
+### Controlled mode
+
+```tsx
+const [value, setValue] = useState(50);
+<Slider value={value} onChange={setValue} />
+```
+
 ## `ConfirmInput`
 
 A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
@@ -438,6 +482,71 @@ Keyboard: left/right arrows for cursor, Home/End or Ctrl+A/E for start/end, Ctrl
 ```
 
 The first matching suggestion is shown dimmed after the cursor. Press right arrow or Enter to accept it.
+
+## `Textarea`
+
+Multi-line text input with cursor navigation, selection, clipboard copy (OSC 52), undo/redo, paste support, and viewport scrolling.
+
+```tsx
+import { Textarea } from "@visulima/tui/ink";
+
+<Textarea
+    placeholder="Write something..."
+    rows={8}
+    showLineNumbers
+    onChange={(value) => console.log(value)}
+    onSubmit={(value) => console.log("Submitted:", value)}
+/>
+```
+
+| Prop              | Type                      | Default | Description                                    |
+| ----------------- | ------------------------- | ------- | ---------------------------------------------- |
+| `defaultValue`    | `string`                  | `""`    | Starting content                               |
+| `placeholder`     | `string`                  | —       | Greyed-out text shown when empty               |
+| `rows`            | `number`                  | `5`     | Visible rows (viewport height)                 |
+| `maxRows`         | `number`                  | —       | Auto-grow up to this height before scrolling   |
+| `isDisabled`      | `boolean`                 | `false` | Ignores all input and dims the text            |
+| `isFocused`       | `boolean`                 | `true`  | Whether the component responds to input        |
+| `showLineNumbers` | `boolean`                 | `false` | Show line numbers in the left gutter           |
+| `tabSize`         | `number`                  | `2`     | Number of spaces inserted for Tab              |
+| `onChange`         | `(value: string) => void` | —       | Called on every edit                           |
+| `onSubmit`        | `(value: string) => void` | —       | Called on Meta+Enter or Ctrl+Enter             |
+
+### Keyboard
+
+| Key | Action |
+|-----|--------|
+| Arrow keys | Move cursor |
+| Shift+Arrows | Extend selection |
+| Home / Ctrl+A | Start of line |
+| End / Ctrl+E | End of line |
+| Ctrl+Home | Start of buffer |
+| Ctrl+End | End of buffer |
+| Enter | Insert newline |
+| Meta+Enter / Ctrl+Enter | Submit (`onSubmit`) |
+| Backspace / Delete | Delete character |
+| Ctrl+U | Kill to line start |
+| Ctrl+K | Kill to line end |
+| Ctrl+W | Kill word backward |
+| Tab | Insert spaces (`tabSize`) |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
+| Ctrl+Shift+A | Select all |
+| Ctrl+C (with selection) | Copy to clipboard (OSC 52) |
+| Escape | Clear selection |
+| Paste (bracketed) | Insert pasted text |
+
+### Auto-growing height
+
+```tsx
+<Textarea rows={3} maxRows={15} placeholder="Grows from 3 to 15 rows..." />
+```
+
+### With line numbers
+
+```tsx
+<Textarea showLineNumbers defaultValue={"function hello() {\n  return 'world';\n}"} rows={5} />
+```
 
 ## `SelectInput`
 
