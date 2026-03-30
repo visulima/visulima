@@ -19,12 +19,20 @@ type Options = {
     width: number;
 };
 
-type Operation = WriteOperation | ClipOperation | UnclipOperation;
+type Operation = WriteOperation | StyledWriteOperation | ClipOperation | UnclipOperation;
 
 type WriteOperation = {
     text: string;
     transformers: OutputTransformer[];
     type: "write";
+    x: number;
+    y: number;
+};
+
+type StyledWriteOperation = {
+    styledChars: StyledChar[];
+    transformers: OutputTransformer[];
+    type: "styledWrite";
     x: number;
     y: number;
 };
@@ -334,6 +342,24 @@ export default class Output {
         });
     }
 
+    /**
+     * Write pre-tokenized StyledChar arrays directly to the output.
+     * Bypasses re-tokenization, preserving styling through wrap boundaries.
+     */
+    writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
+        if (styledChars.length === 0) {
+            return;
+        }
+
+        this.operations.push({
+            styledChars,
+            transformers: options.transformers,
+            type: "styledWrite",
+            x,
+            y,
+        });
+    }
+
     clip(clip: Clip): void {
         this.operations.push({
             clip,
@@ -376,6 +402,13 @@ export default class Output {
                     const clip = clips.at(-1);
 
                     this.processWriteOperation(operation, output, clip);
+                    break;
+                }
+
+                case "styledWrite": {
+                    const clip = clips.at(-1);
+
+                    this.processStyledWriteOperation(operation, output, clip);
                     break;
                 }
             }
@@ -427,6 +460,67 @@ export default class Output {
             height: output.length,
             output: generatedLines.join("\n"),
         };
+    }
+
+    /**
+     * Write pre-tokenized StyledChar arrays directly to the output grid.
+     * This bypasses text tokenization, preserving styles from the wrapping phase.
+     */
+    private processStyledWriteOperation(operation: StyledWriteOperation, output: StyledChar[][], clip: Clip | undefined): void {
+        const { styledChars, x, y } = operation;
+
+        // Ensure the output grid has enough rows
+        while (output.length <= y) {
+            output.push(Array.from({ length: this.width }).map(() => ({ fullWidth: false, styles: [], type: "char" as const, value: " " })));
+        }
+
+        const row = output[y];
+
+        if (!row) {
+            return;
+        }
+
+        let col = x;
+
+        for (const char of styledChars) {
+            if (col < 0) {
+                col++;
+                continue;
+            }
+
+            if (col >= this.width) {
+                break;
+            }
+
+            // Apply clip bounds
+            if (clip) {
+                if (clip.x1 !== undefined && col < clip.x1) {
+                    col++;
+                    continue;
+                }
+
+                if (clip.x2 !== undefined && col >= clip.x2) {
+                    break;
+                }
+
+                if (clip.y1 !== undefined && y < clip.y1) {
+                    return;
+                }
+
+                if (clip.y2 !== undefined && y >= clip.y2) {
+                    return;
+                }
+            }
+
+            row[col] = char;
+            col++;
+
+            // Handle full-width characters
+            if (char.fullWidth && col < this.width) {
+                row[col] = { fullWidth: false, styles: [], type: "char", value: "" };
+                col++;
+            }
+        }
     }
 
     private processWriteOperation(operation: WriteOperation, output: StyledChar[][], clip: Clip | undefined) {

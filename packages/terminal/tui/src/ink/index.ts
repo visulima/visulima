@@ -64,6 +64,7 @@ export { default as Transform } from "./components/Transform";
 export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
 export { default as UnorderedList } from "./components/UnorderedList";
 export type { DOMElement, StickyHeader } from "./dom";
+export { getPathToRoot, isNodeSelectable } from "./dom";
 export { default as useApp } from "./hooks/use-app";
 export type { BoxMetrics, UseBoxMetricsResult } from "./hooks/use-box-metrics";
 export { default as useBoxMetrics } from "./hooks/use-box-metrics";
@@ -98,7 +99,23 @@ export {
     getVerticalScrollbarBoundingBox,
 } from "./measure-element";
 export type { StringWidthFunction } from "./measure-text";
-export { clearStringWidthCache, setStringWidthFunction } from "./measure-text";
+export {
+    clearStringWidthCache,
+    inkCharacterWidth,
+    measureStyledChars,
+    setStringWidthFunction,
+    splitStyledCharsByNewline,
+    styledCharsToString,
+    styledCharsWidth,
+    toStyledCharacters,
+} from "./measure-text";
+export { applySelectionStyle, applySelectionToStyledChars, comparePoints, Range, Selection } from "./selection";
+export {
+    sliceStyledChars,
+    truncateStyledChars,
+    wrapOrTruncateStyledChars,
+    wrapStyledChars,
+} from "./text-wrap";
 export type {
     MouseAction,
     MouseButton,
