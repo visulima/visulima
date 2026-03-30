@@ -29,9 +29,10 @@ const ScrollBarBox = ({
     borderLeftDimColor,
     borderRightDimColor,
     height,
+    thumbChar,
     children,
     ...boxProps
-}: ScrollBarBoxProps) => {
+}: ScrollBarBoxProps): React.JSX.Element => {
     const isLeft = scrollBarPosition === "left";
     const scrollBarPlacement = isLeft ? "left" : "right";
     const scrollBarColor = isLeft ? (borderLeftColor ?? borderColor) : (borderRightColor ?? borderColor);
@@ -48,7 +49,8 @@ const ScrollBarBox = ({
                     contentHeight={contentHeight}
                     viewportHeight={viewportHeight}
                     scrollOffset={scrollOffset}
-                    thumbChar={boxProps.thumbChar}
+                    autoHide={scrollBarAutoHide}
+                    thumbChar={thumbChar}
                 />
             )}
             <Box
@@ -71,11 +73,13 @@ const ScrollBarBox = ({
                     contentHeight={contentHeight}
                     viewportHeight={viewportHeight}
                     scrollOffset={scrollOffset}
-                    thumbChar={boxProps.thumbChar}
+                    autoHide={scrollBarAutoHide}
+                    thumbChar={thumbChar}
                 />
             )}
         </Box>
     );
 };
 
+export { ScrollBarBox };
 export default ScrollBarBox;

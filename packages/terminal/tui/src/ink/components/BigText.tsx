@@ -1,6 +1,7 @@
 /* eslint-disable react/function-component-definition, unicorn/filename-case */
 import CFonts from "cfonts";
 import type { ReactElement } from "react";
+import { useMemo } from "react";
 
 import Text from "./Text";
 
@@ -125,9 +126,11 @@ const defaults = {
  * <BigText text="Hello" font="block" />
  * ```
  */
-export default function BigText({ text, ...props }: Props): ReactElement | null {
-    const options = { ...defaults, ...props };
-    const rendered = CFonts.render(text, options);
+export default function BigText({ align, backgroundColor, colors, font, letterSpacing, lineHeight, maxLength, space, text }: Props): ReactElement {
+    const rendered = useMemo(
+        () => CFonts.render(text, { ...defaults, align, backgroundColor, colors, font, letterSpacing, lineHeight, maxLength, space }),
+        [text, align, backgroundColor, colors, font, letterSpacing, lineHeight, maxLength, space],
+    );
 
     return <Text>{rendered.string}</Text>;
 }

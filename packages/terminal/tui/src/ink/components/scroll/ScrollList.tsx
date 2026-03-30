@@ -1,4 +1,5 @@
 /* eslint-disable react/function-component-definition, unicorn/filename-case */
+import type { ForwardRefExoticComponent, RefAttributes } from "react";
 import {
     forwardRef,
     useCallback,
@@ -21,7 +22,7 @@ export interface ScrollListProps extends ScrollViewProps {
 
 export interface ScrollListRef extends ScrollViewRef {}
 
-export const ScrollList = forwardRef<ScrollListRef, ScrollListProps>((props, ref) => {
+export const ScrollList: ForwardRefExoticComponent<ScrollListProps & RefAttributes<ScrollListRef>> = forwardRef<ScrollListRef, ScrollListProps>((props, ref) => {
     const {
         children,
         onContentHeightChange,
@@ -154,14 +155,6 @@ export const ScrollList = forwardRef<ScrollListRef, ScrollListProps>((props, ref
         }
     }, [renderScrollOffset, scrollOffset, updateScroll]);
 
-    const scrollToIndex = useCallback(
-        (index: number, mode: ScrollAlignment = scrollAlignment, viewportHeightOverride?: number) => {
-            const newOffset = getConstrainedScrollOffset(index, scrollOffset, mode, viewportHeightOverride);
-            updateScroll(newOffset);
-        },
-        [getConstrainedScrollOffset, scrollOffset, scrollAlignment, updateScroll],
-    );
-
     const handleViewportSizeChange = useCallback(
         (size: { height: number; width: number }, previousSize: { height: number; width: number }) => {
             if (selectedIndexRef.current !== undefined && selectedIndexRef.current >= 0) {
@@ -171,7 +164,7 @@ export const ScrollList = forwardRef<ScrollListRef, ScrollListProps>((props, ref
 
             onViewportSizeChange?.(size, previousSize);
         },
-        [onViewportSizeChange, scrollToIndex],
+        [onViewportSizeChange, getConstrainedScrollOffset, scrollOffset, scrollAlignment, updateScroll],
     );
 
     const handleItemHeightChange = useCallback(
@@ -202,7 +195,7 @@ export const ScrollList = forwardRef<ScrollListRef, ScrollListProps>((props, ref
 
             onContentHeightChange?.(height, previousHeight);
         },
-        [onContentHeightChange, scrollToIndex],
+        [onContentHeightChange, getConstrainedScrollOffset, scrollOffset, scrollAlignment, updateScroll],
     );
 
     useImperativeHandle(
@@ -237,7 +230,7 @@ export const ScrollList = forwardRef<ScrollListRef, ScrollListProps>((props, ref
                 updateScroll(clampedY);
             },
         }),
-        [],
+        [clampToSelectionBounds, updateScroll],
     );
 
     return (

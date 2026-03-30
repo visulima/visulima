@@ -1,6 +1,7 @@
 /* eslint-disable react-perf/jsx-no-new-function-as-prop, react-perf/jsx-no-new-object-as-prop, react/function-component-definition, unicorn/filename-case */
-import type { ReactNode } from "react";
-import React, {
+import type React from "react";
+import type { ForwardRefExoticComponent, ReactNode, RefAttributes } from "react";
+import {
   useState,
   useRef,
   forwardRef,
@@ -15,6 +16,7 @@ import type { DOMElement } from "../../dom";
 import measureElement from "../../measure-element";
 import type { Props as BoxProps } from "../Box";
 import Box from "../Box";
+import { useStateRef } from "./use-state-ref";
 
 const MeasurableItem = ({
   children,
@@ -28,7 +30,7 @@ const MeasurableItem = ({
   index: number;
   width: number;
   measureKey?: number;
-}) => {
+}): React.JSX.Element => {
   const ref = useRef<DOMElement>(null);
 
   useLayoutEffect(() => {
@@ -44,24 +46,6 @@ const MeasurableItem = ({
     </Box>
   );
 };
-
-function useStateRef<T>(initialValue: T) {
-  const [state, setStateInternal] = useState<T>(initialValue);
-  const ref = useRef<T>(initialValue);
-
-  const setState = useCallback((update: React.SetStateAction<T>) => {
-    const nextValue =
-      typeof update === "function"
-        ? (update as (prev: T) => T)(ref.current)
-        : update;
-    ref.current = nextValue;
-    setStateInternal(nextValue);
-  }, []);
-
-  const getState = useCallback(() => ref.current, []);
-
-  return [state, setState, getState] as const;
-}
 
 export interface ControlledScrollViewProps extends BoxProps {
   scrollOffset: number;
@@ -89,7 +73,7 @@ export interface ControlledScrollViewRef {
   remeasureItem: (index: number) => void;
 }
 
-export const ControlledScrollView = forwardRef<
+export const ControlledScrollView: ForwardRefExoticComponent<ControlledScrollViewProps & RefAttributes<ControlledScrollViewRef>> = forwardRef<
   ControlledScrollViewRef,
   ControlledScrollViewProps
 >(
@@ -115,7 +99,6 @@ export const ControlledScrollView = forwardRef<
     >({});
 
     const viewportRef = useRef<DOMElement>(null);
-    const contentRef = useRef<DOMElement>(null);
     const prevContentHeightRef = useRef(0);
 
     useLayoutEffect(() => {
@@ -162,7 +145,6 @@ export const ControlledScrollView = forwardRef<
       },
       [
         onItemHeightChange,
-        onContentHeightChange,
         getContentHeight,
         setContentHeight,
       ],
@@ -266,7 +248,7 @@ export const ControlledScrollView = forwardRef<
           return { top, height };
         },
       }),
-      [],
+      [measureViewport, getContentHeight, getViewportSize, setItemMeasureKeys],
     );
 
     return (
@@ -274,7 +256,6 @@ export const ControlledScrollView = forwardRef<
         <Box ref={viewportRef} width="100%">
           <Box overflow={debug ? undefined : "hidden"} width="100%">
             <Box
-              ref={contentRef}
               width="100%"
               flexDirection="column"
               marginTop={-scrollOffset}
