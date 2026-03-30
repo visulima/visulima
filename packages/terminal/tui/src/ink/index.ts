@@ -53,6 +53,10 @@ export { default as StatusMessage } from "./components/StatusMessage";
 export type { Props as StderrProps } from "./components/StderrContext";
 export type { PublicProps as StdinProps } from "./components/StdinContext";
 export type { Props as StdoutProps } from "./components/StdoutContext";
+export type { Props as TabProps } from "./components/Tab";
+export { default as Tab } from "./components/Tab";
+export type { KeyMap as TabsKeyMap, Props as TabsProps, TabColors } from "./components/Tabs";
+export { default as Tabs } from "./components/Tabs";
 export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as TableScalar, ScalarDict as TableScalarDict } from "./components/Table";
 export { default as Table } from "./components/Table";
 export type { Props as TextProps } from "./components/Text";
@@ -83,14 +87,18 @@ export { default as useWindowSize } from "./hooks/use-window-size";
 export { IMECompositionBuffer, isIMEInput } from "./ime-utils";
 export type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
 export { kittyFlags, kittyModifiers } from "./kitty-keyboard";
+export type { LayoutCallbacks } from "./layout";
+export { processLayout } from "./layout";
 export type { CursorPosition } from "./log-update";
-export type { ScrollbarBoundingBox } from "./measure-element";
+export type { ScrollbarBoundingBox, TextFragment } from "./measure-element";
 export { default as measureElement } from "./measure-element";
 export {
     calculateScrollbarLayout,
     calculateScrollbarThumb,
+    collectSortedFragments,
     getAddedScrollHeight,
     getBoundingBox,
+    getText,
     getHorizontalScrollbarBoundingBox,
     getInnerHeight,
     getInnerWidth,
@@ -110,6 +118,8 @@ export {
     toStyledCharacters,
 } from "./measure-text";
 export { applySelectionStyle, applySelectionToStyledChars, comparePoints, Range, Selection } from "./selection";
+export type { CharOffsetMap, CharOffsetRange } from "./squash-text-nodes";
+export { squashTextNodesWithMap } from "./squash-text-nodes";
 export {
     sliceStyledChars,
     truncateStyledChars,
