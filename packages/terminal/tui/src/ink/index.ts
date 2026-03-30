@@ -10,6 +10,8 @@ export type { GradientColors, GradientName, Props as GradientProps } from "./com
 export { default as Gradient } from "./components/Gradient";
 export type { Props as NewlineProps } from "./components/Newline";
 export { default as Newline } from "./components/Newline";
+export type { Props as ProgressBarProps } from "./components/ProgressBar";
+export { default as ProgressBar } from "./components/ProgressBar";
 export { default as Spacer } from "./components/Spacer";
 export type { Props as SpinnerProps } from "./components/Spinner";
 export { default as Spinner } from "./components/Spinner";

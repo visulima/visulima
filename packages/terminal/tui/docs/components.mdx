@@ -8,7 +8,8 @@ description: "Reference for all React components in @visulima/tui: Box, Text, Bi
 `@visulima/tui` exposes Ink-compatible core components plus Ratatat-only additions.
 
 ```tsx
-import { Box, Cursor, Newline, ProgressBar, Spacer, Spinner, Static, Text, Transform } from "@visulima/tui/react";
+import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui/ink";
+import { BigText, Gradient, ProgressBar, Spinner } from "@visulima/tui/ink";
 ```
 
 ## `Box`
@@ -232,22 +233,35 @@ Props (plus all `Text` props):
 | `frames`   | `string[]` | Braille frames |
 | `interval` | `number`   | `80`           |
 
-## `ProgressBar` (Ratatat-only)
+## `ProgressBar`
+
+A terminal progress bar that fills proportionally to a percentage value. Ported from [`ink-progress-bar`](https://github.com/brigand/ink-progress-bar).
 
 ```tsx
-<ProgressBar value={42} />
-<ProgressBar value={downloaded} max={total} width={30} color="green" />
-<ProgressBar value={50} showPercentage={false} />
+import { ProgressBar } from "@visulima/tui/ink";
+
+<ProgressBar percent={0.5} />
+<ProgressBar percent={0.75} color="green" left={10} right={5} />
+<ProgressBar percent={1} character="▓" rightPad />
 ```
 
-Props (plus all `Text` props):
+All `Text` props (color, bold, dimColor, etc.) are forwarded to the underlying `<Text>`.
 
-| Prop             | Type      | Default  |
-| ---------------- | --------- | -------- |
-| `value`          | `number`  | required |
-| `max`            | `number`  | `100`    |
-| `width`          | `number`  | `20`     |
-| `completeChar`   | `string`  | `'█'`    |
-| `incompleteChar` | `string`  | `'░'`    |
-| `bracket`        | `boolean` | `true`   |
-| `showPercentage` | `boolean` | `true`   |
+| Prop        | Type      | Default | Description                                      |
+| ----------- | --------- | ------- | ------------------------------------------------ |
+| `percent`   | `number`  | `1`     | Completion between 0 and 1 (clamped)             |
+| `columns`   | `number`  | `0`     | Override terminal width (0 = auto-detect)        |
+| `left`      | `number`  | `0`     | Columns reserved on the left (e.g. for labels)   |
+| `right`     | `number`  | `0`     | Columns reserved on the right                    |
+| `character` | `string`  | `'█'`   | Fill character for the completed portion         |
+| `rightPad`  | `boolean` | `false` | Pad remaining space with whitespace              |
+
+Example with labels:
+
+```tsx
+<Box>
+    <Text>Progress: </Text>
+    <ProgressBar percent={0.6} left={10} right={5} color="cyan" />
+    <Text> 60%</Text>
+</Box>
+```
