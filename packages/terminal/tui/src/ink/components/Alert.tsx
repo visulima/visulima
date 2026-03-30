@@ -1,0 +1,60 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+
+/**
+ * Alert component for Ink.
+ *
+ * Inspired by ink-ui Alert by Vadim Demedes.
+ * @see https://github.com/vadimdemedes/ink-ui
+ *
+ * MIT License
+ * Copyright (c) Vadym Demedes (github.com/vadimdemedes)
+ */
+import type { ReactElement, ReactNode } from "react";
+
+import Box from "./Box";
+import Text from "./Text";
+
+export type AlertVariant = "error" | "info" | "success" | "warning";
+
+export type Props = {
+    /**
+     * Alert message content.
+     */
+    readonly children: ReactNode;
+
+    /**
+     * Optional heading displayed above the message.
+     */
+    readonly title?: string;
+
+    /**
+     * Determines the border color and icon.
+     */
+    readonly variant: AlertVariant;
+};
+
+const VARIANT_CONFIG: Record<AlertVariant, { color: string; icon: string }> = {
+    error: { color: "red", icon: "✖" },
+    info: { color: "blue", icon: "ℹ" },
+    success: { color: "green", icon: "✔" },
+    warning: { color: "yellow", icon: "⚠" },
+};
+
+/**
+ * Renders a bordered alert box with a variant-specific icon, optional title, and message.
+ */
+export default function Alert({ children, title, variant }: Props): ReactElement {
+    const { color, icon } = VARIANT_CONFIG[variant];
+
+    return (
+        <Box borderColor={color} borderStyle="round" flexGrow={1} gap={1} paddingX={1}>
+            <Box flexShrink={0}>
+                <Text color={color}>{icon}</Text>
+            </Box>
+            <Box flexDirection="column" flexGrow={1} flexShrink={1} gap={1} minWidth={0}>
+                {title ? <Text bold>{title}</Text> : undefined}
+                <Text>{children}</Text>
+            </Box>
+        </Box>
+    );
+}

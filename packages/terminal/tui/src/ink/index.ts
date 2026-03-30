@@ -1,4 +1,8 @@
+export type { Props as AlertProps, AlertVariant } from "./components/Alert";
+export { default as Alert } from "./components/Alert";
 export type { Props as AppProps } from "./components/AppContext";
+export type { Props as BadgeProps } from "./components/Badge";
+export { default as Badge } from "./components/Badge";
 export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, Font as BigTextFont, Props as BigTextProps } from "./components/BigText";
 export { default as BigText } from "./components/BigText";
 export type { Props as BoxProps } from "./components/Box";
@@ -15,6 +19,8 @@ export type { MultiSelectOption, Props as MultiSelectProps } from "./components/
 export { default as MultiSelect } from "./components/MultiSelect";
 export type { Props as NewlineProps } from "./components/Newline";
 export { default as Newline } from "./components/Newline";
+export type { OrderedListEntry, Props as OrderedListProps } from "./components/OrderedList";
+export { default as OrderedList } from "./components/OrderedList";
 export type { Props as ProgressBarProps } from "./components/ProgressBar";
 export { default as ProgressBar } from "./components/ProgressBar";
 export type {
@@ -42,6 +48,8 @@ export type { Props as SpinnerProps } from "./components/Spinner";
 export { default as Spinner } from "./components/Spinner";
 export type { Props as StaticProps } from "./components/Static";
 export { default as Static } from "./components/Static";
+export type { Props as StatusMessageProps, StatusMessageVariant } from "./components/StatusMessage";
+export { default as StatusMessage } from "./components/StatusMessage";
 export type { Props as StderrProps } from "./components/StderrContext";
 export type { PublicProps as StdinProps } from "./components/StdinContext";
 export type { Props as StdoutProps } from "./components/StdoutContext";
@@ -53,6 +61,8 @@ export type { Props as TextInputProps } from "./components/TextInput";
 export { default as TextInput } from "./components/TextInput";
 export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
+export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
+export { default as UnorderedList } from "./components/UnorderedList";
 export type { DOMElement } from "./dom";
 export { default as useApp } from "./hooks/use-app";
 export type { BoxMetrics, UseBoxMetricsResult } from "./hooks/use-box-metrics";
@@ -73,7 +83,20 @@ export { IMECompositionBuffer, isIMEInput } from "./ime-utils";
 export type { KittyFlagName, KittyKeyboardOptions } from "./kitty-keyboard";
 export { kittyFlags, kittyModifiers } from "./kitty-keyboard";
 export type { CursorPosition } from "./log-update";
+export type { ScrollbarBoundingBox } from "./measure-element";
 export { default as measureElement } from "./measure-element";
+export {
+    calculateScrollbarLayout,
+    calculateScrollbarThumb,
+    getAddedScrollHeight,
+    getBoundingBox,
+    getHorizontalScrollbarBoundingBox,
+    getInnerHeight,
+    getInnerWidth,
+    getVerticalScrollbarBoundingBox,
+} from "./measure-element";
+export type { StringWidthFunction } from "./measure-text";
+export { clearStringWidthCache, setStringWidthFunction } from "./measure-text";
 export type {
     MouseAction,
     MouseButton,
@@ -104,3 +127,7 @@ export type { Instance, RenderOptions } from "./render";
 export { default as render } from "./render";
 export type { RenderToStringOptions } from "./render-to-string";
 export { default as renderToString } from "./render-to-string";
+export type { ResizeObserverCallback } from "./resize-observer";
+export { default as ResizeObserver, ResizeObserverEntry } from "./resize-observer";
+export type { ScrollState } from "./scroll";
+export { calculateScroll, getScrollHeight, getScrollLeft, getScrollTop, getScrollWidth } from "./scroll";

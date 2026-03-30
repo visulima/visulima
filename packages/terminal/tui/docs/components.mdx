@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, Spacer, Static, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, OrderedList, Spacer, Static, StatusMessage, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -643,3 +643,110 @@ You can also pass a custom `BorderStyle` object from `@visulima/tabular` for ful
 ```
 
 > **Note:** Unlike the original `ink-table`, this component uses function-based formatters (`formatCell`, `formatHeader`) instead of custom React component props (`header`, `cell`, `skeleton`), because the table is rendered as a single string via `@visulima/tabular`.
+
+## `Badge`
+
+Uppercase colored label badge for status indicators. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { Badge } from "@visulima/tui/ink";
+
+<Badge>new</Badge>
+<Badge color="red">error</Badge>
+<Badge color="green">success</Badge>
+```
+
+| Prop       | Type        | Default     | Description                                |
+| ---------- | ----------- | ----------- | ------------------------------------------ |
+| `children` | `ReactNode` | _(required)_ | Label content; strings are auto-uppercased |
+| `color`    | `string`    | `"magenta"` | Background color for the badge             |
+
+## `StatusMessage`
+
+Status notification with a colored variant icon. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { StatusMessage } from "@visulima/tui/ink";
+
+<StatusMessage variant="success">Build completed</StatusMessage>
+<StatusMessage variant="error">Connection failed</StatusMessage>
+<StatusMessage variant="warning">Disk space low</StatusMessage>
+<StatusMessage variant="info">3 updates available</StatusMessage>
+```
+
+| Prop       | Type                                          | Default      | Description          |
+| ---------- | --------------------------------------------- | ------------ | -------------------- |
+| `children` | `ReactNode`                                   | _(required)_ | Message text         |
+| `variant`  | `"success"` \| `"error"` \| `"warning"` \| `"info"` | _(required)_ | Determines icon and color |
+
+Icons: ✔ (success/green), ✖ (error/red), ⚠ (warning/yellow), ℹ (info/blue).
+
+## `Alert`
+
+Bordered alert box with a variant-specific icon and optional title. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { Alert } from "@visulima/tui/ink";
+
+<Alert variant="info">Check the docs for details.</Alert>
+<Alert variant="warning" title="Deprecation Notice">
+    This API will be removed in v3.
+</Alert>
+```
+
+| Prop       | Type                                          | Default      | Description                |
+| ---------- | --------------------------------------------- | ------------ | -------------------------- |
+| `children` | `ReactNode`                                   | _(required)_ | Alert message              |
+| `variant`  | `"info"` \| `"success"` \| `"error"` \| `"warning"` | _(required)_ | Border color and icon      |
+| `title`    | `string`                                      | —            | Bold heading above message |
+
+## `UnorderedList`
+
+Bullet list with nesting support and customizable markers. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { UnorderedList } from "@visulima/tui/ink";
+
+<UnorderedList
+    items={[
+        { label: "TypeScript" },
+        { label: "JavaScript" },
+        { label: "Python", children: [
+            { label: "Django" },
+            { label: "Flask" },
+        ]},
+    ]}
+/>
+```
+
+| Prop     | Type                        | Default             | Description                                |
+| -------- | --------------------------- | ------------------- | ------------------------------------------ |
+| `items`  | `UnorderedListEntry[]`      | _(required)_        | List entries with `label` and optional `children` |
+| `marker` | `string` \| `string[]`      | `["─", "◦", "▪"]` | Bullet symbol(s); arrays cycle by depth    |
+
+Each entry has `label: ReactNode` and optional `children: UnorderedListEntry[]` for nesting.
+
+## `OrderedList`
+
+Numbered list with hierarchical nesting and auto-padded markers. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { OrderedList } from "@visulima/tui/ink";
+
+<OrderedList
+    items={[
+        { label: "Install dependencies" },
+        { label: "Configure", children: [
+            { label: "Create config file" },
+            { label: "Set environment variables" },
+        ]},
+        { label: "Deploy" },
+    ]}
+/>
+```
+
+| Prop    | Type                   | Default      | Description                         |
+| ------- | ---------------------- | ------------ | ----------------------------------- |
+| `items` | `OrderedListEntry[]`   | _(required)_ | List entries with `label` and optional `children` |
+
+Numbers are right-padded for alignment (e.g., ` 1.`, ` 2.`, `10.`). Nested lists produce hierarchical markers (`1.`, `1.1.`, `1.2.`).
