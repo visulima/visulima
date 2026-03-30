@@ -1886,7 +1886,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 25.0.0(1edd632541452362a24da68c6f6ca4db)
+        version: 25.0.0(2e24b7819bed73845577a6c12cdd8d25)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -6149,6 +6149,8 @@ importers:
         specifier: catalog:test
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.5.0)(@vitest/ui@4.1.2)(happy-dom@20.8.9)(jsdom@29.0.1(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.5.0)(typescript@6.0.2))(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))
 
+  packages/filesystem/fs/__bench__/fixtures/a/b: {}
+
   packages/filesystem/fs/__fixtures__/find-up: {}
 
   packages/filesystem/fs/__fixtures__/package/cjs:
@@ -6826,6 +6828,15 @@ importers:
       vue-tsc:
         specifier: catalog:lint
         version: 3.2.6(typescript@6.0.2)
+
+  packages/storage/storage/dist/adapter/nuxt:
+    dependencies:
+      '@nuxt/kit':
+        specifier: '>=4.0.0'
+        version: 4.4.2(magicast@0.5.2)
+      nuxt:
+        specifier: '>=4.0.0'
+        version: 4.4.2(@azure/storage-blob@12.31.0)(@babel/core@7.29.0)(@babel/plugin-proposal-decorators@7.28.0(@babel/core@7.29.0))(@babel/plugin-syntax-jsx@7.27.1(@babel/core@7.29.0))(@electric-sql/pglite@0.4.1)(@netlify/blobs@10.7.4)(@parcel/watcher@2.5.1)(@types/node@25.5.0)(@vercel/blob@2.3.2)(@vue/compiler-sfc@3.5.31)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.4.1)(mysql2@3.15.3))(eslint@10.1.0(jiti@2.6.1))(ioredis@5.9.2)(less@4.4.2)(lightningcss@1.32.0)(magicast@0.5.2)(meow@13.2.0)(mysql2@3.15.3)(optionator@0.9.4)(rolldown@1.0.0-rc.12)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.0-rc.12)(rollup@4.60.0))(rollup@4.60.0)(terser@5.46.0)(tsx@4.21.0)(typescript@6.0.2)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))(vue-tsc@3.2.6(typescript@6.0.2))(yaml@2.8.3)
 
   packages/storage/storage/examples/bun:
     dependencies:
@@ -8267,6 +8278,9 @@ importers:
       '@visulima/string':
         specifier: workspace:*
         version: link:../../data-manipulation/string
+      cfonts:
+        specifier: 3.3.1
+        version: 3.3.1
       code-excerpt:
         specifier: catalog:prod
         version: 4.0.0
@@ -8309,7 +8323,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 25.0.0(2e24b7819bed73845577a6c12cdd8d25)
+        version: 25.0.0(1edd632541452362a24da68c6f6ca4db)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -11150,7 +11164,7 @@ packages:
     resolution: {integrity: sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -15845,7 +15859,7 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3
       vite: '>=7.1.11'
     peerDependenciesMeta:
@@ -15858,7 +15872,7 @@ packages:
     resolution: {integrity: sha512-ILXmxC7HAsnkK2eslgPetrqqW1BKSL7LktsFgqzNj83MaivMGZzluWq32m25j2mDOjmSKX7GGWahePhuEs7P/g==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       vite: ^8.0.0-beta.7 || ^8.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
@@ -19228,6 +19242,11 @@ packages:
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
 
+  cfonts@3.3.1:
+    resolution: {integrity: sha512-ZGEmN3W9mViWEDjsuPo4nK4h39sfh6YtoneFYp9WLPI/rw8BaSSrfQC6jkrGW3JMvV3ZnExJB/AEqXc/nHYxkw==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   chai@5.2.0:
     resolution: {integrity: sha512-mCuXncKXk5iCLhfhwTc0izo0gtEmpz5CtG2y8GiOINBlMVS6v8TMRc5TaLWKS6692m9+dVVfzgeVxR5UxWHTYw==}
     engines: {node: '>=12'}
@@ -20240,6 +20259,10 @@ packages:
   define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
     engines: {node: '>= 0.4'}
+
+  define-property@1.0.0:
+    resolution: {integrity: sha512-cZTYKFWspt9jZsMscWo8sc/5lbPC9Q0N5nBLgb+Yd915iL3udB1uFgS3B8YCx66UVHq018DAVFoee7x+gxggeA==}
+    engines: {node: '>=0.10.0'}
 
   define-property@2.0.2:
     resolution: {integrity: sha512-jwK2UV4cnPpbcG7+VRARKTZPUWowwXA8bzH5NP6ud0oeAxyYPuGZUAC7hMugpCdz4BeSZl2Dl9k66CHJ/46ZYQ==}
@@ -23209,6 +23232,10 @@ packages:
     resolution: {integrity: sha512-lZhclumE1G6VYD8VHe35wFaIif+CTy5SJIi5+3y4psDgWu4wPDoBhF8NxUOinEc7pHgiTsT6MaBb92rKhhD+Xw==}
     engines: {node: '>= 0.4'}
 
+  is-number@3.0.0:
+    resolution: {integrity: sha512-4cboCqIpliH+mAvFNegjZQ4kgKc3ZUhQVr3HvWbSh5q3WH2v82ct+T2Y1hdU5Gdtorx/cLifQjqCbL7bpznLTg==}
+    engines: {node: '>=0.10.0'}
+
   is-number@7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
@@ -23834,6 +23861,10 @@ packages:
 
   keyv@5.5.1:
     resolution: {integrity: sha512-eF3cHZ40bVsjdlRi/RvKAuB0+B61Q1xWvohnrJrnaQslM3h1n79IV+mc9EGag4nrA9ZOlNyr3TUzW5c8uy8vNA==}
+
+  kind-of@3.2.2:
+    resolution: {integrity: sha512-NOW9QQXMoZGg/oqnVNoNTTIFEIid1627WCffUBJEdMxYApq7mNE7CpzucIPc+ZQg25Phej7IJSmX3hO+oblOtQ==}
+    engines: {node: '>=0.10.0'}
 
   kind-of@6.0.3:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
@@ -25359,7 +25390,7 @@ packages:
     resolution: {integrity: sha512-bvLRJAfK6NHVLVwJm+HRCxrU3UQbXLuuj1qcLg1sJK40lRzHmGtVGHLxFWj3LnEoH8UZFTwV0Be0jTg4zHckkw==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -28724,7 +28755,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.6.0:
@@ -30667,6 +30698,11 @@ packages:
   widest-line@5.0.0:
     resolution: {integrity: sha512-c9bZp7b5YtRj2wOe6dlj32MK+Bx/M/d+9VB2SHM1OtsUHR0aV0tdP6DWh/iMt0kWi1t5g1Iudu6hQRNd1A4PVA==}
     engines: {node: '>=18'}
+
+  window-size@1.1.1:
+    resolution: {integrity: sha512-5D/9vujkmVQ7pSmc0SCBmHXbkv6eaHwXEx65MywhmUMsI8sGqJ972APq1lotfcwMKPFLuCFfL8xGHLIp7jaBmA==}
+    engines: {node: '>= 0.10.0'}
+    hasBin: true
 
   winston-transport@4.9.0:
     resolution: {integrity: sha512-8drMJ4rkgaPo1Me4zD/3WLfI/zPdA9o2IipKODunnGDcuqbHwjsbB79ylv04LCGGzU0xQ6vTznOMpQGaLhhm6A==}
@@ -43263,6 +43299,11 @@ snapshots:
 
   ccount@2.0.1: {}
 
+  cfonts@3.3.1:
+    dependencies:
+      supports-color: 8.1.1
+      window-size: 1.1.1
+
   chai@5.2.0:
     dependencies:
       assertion-error: 2.0.1
@@ -44255,6 +44296,10 @@ snapshots:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
+
+  define-property@1.0.0:
+    dependencies:
+      is-descriptor: 1.0.3
 
   define-property@2.0.2:
     dependencies:
@@ -48045,6 +48090,10 @@ snapshots:
       call-bound: 1.0.4
       has-tostringtag: 1.0.2
 
+  is-number@3.0.0:
+    dependencies:
+      kind-of: 3.2.2
+
   is-number@7.0.0: {}
 
   is-obj@2.0.0: {}
@@ -48878,6 +48927,10 @@ snapshots:
   keyv@5.5.1:
     dependencies:
       '@keyv/serialize': 1.1.1
+
+  kind-of@3.2.2:
+    dependencies:
+      is-buffer: 1.1.6
 
   kind-of@6.0.3: {}
 
@@ -57837,6 +57890,11 @@ snapshots:
   widest-line@5.0.0:
     dependencies:
       string-width: 7.2.0
+
+  window-size@1.1.1:
+    dependencies:
+      define-property: 1.0.0
+      is-number: 3.0.0
 
   winston-transport@4.9.0:
     dependencies:
