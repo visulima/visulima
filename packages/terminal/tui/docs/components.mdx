@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Link, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar, Table"
+description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Link, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar, SelectInput, Table"
 ---
 
 # Components
@@ -9,7 +9,7 @@ description: "Reference for all React components in @visulima/tui: Box, Text, Bi
 
 ```tsx
 import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui/ink";
-import { BigText, Gradient, ProgressBar, Spinner, Table } from "@visulima/tui/ink";
+import { BigText, Gradient, ProgressBar, SelectInput, Spinner, Table } from "@visulima/tui/ink";
 ```
 
 ## `Box`
@@ -292,6 +292,187 @@ Example with labels:
     <Text> 60%</Text>
 </Box>
 ```
+
+## `SelectInput`
+
+Interactive select input for choosing from a list of options. Ported from [`ink-select-input`](https://github.com/vadimdemedes/ink-select-input).
+
+```tsx
+import { SelectInput } from "@visulima/tui/ink";
+
+const items = [
+    { label: "TypeScript", value: "ts" },
+    { label: "JavaScript", value: "js" },
+    { label: "Python", value: "py" },
+];
+
+<SelectInput items={items} onSelect={(item) => console.log(item.value)} />
+```
+
+Navigate with arrow keys or `j`/`k`, select with Enter, or jump to an item by pressing a number key (1–9).
+
+### Props
+
+| Prop                 | Type                              | Default              | Description                                                 |
+| -------------------- | --------------------------------- | -------------------- | ----------------------------------------------------------- |
+| `items`              | `Item<V>[]`                       | `[]`                 | Choices to display                                          |
+| `isFocused`          | `boolean`                         | `true`               | Whether the component captures keyboard input               |
+| `initialIndex`       | `number`                          | —                    | Initially-selected item index; omit for no initial selection |
+| `index`              | `number`                          | —                    | Controlled selected index (see below)                       |
+| `limit`              | `number`                          | —                    | Max visible items; enables scroll windowing                 |
+| `accentColor`        | `string`                          | `"blue"`             | Color for the selected item and indicator                   |
+| `defaultColor`       | `string`                          | —                    | Color for unselected items                                  |
+| `indicatorComponent` | `FC<IndicatorProps>`              | `SelectInputIndicator` | Custom indicator component                               |
+| `itemComponent`      | `FC<ItemProps>`                   | `SelectInputItem`    | Custom item component                                       |
+| `onSelect`           | `(item: Item<V>) => void`        | —                    | Called on Enter or number key press                         |
+| `onHighlight`        | `(item: Item<V>, index: number) => void` | —           | Called when selection moves; second arg is the new index     |
+| `resetOnItemsChange` | `boolean`                         | `true`               | Reset selection when item values change                     |
+
+Each item in the `items` array must have a `label` (display text) and a `value` (returned on select). An optional `key` provides a stable React key. An optional `action` function is called automatically when the item is selected.
+
+### Item actions
+
+Instead of switching on `value` in the `onSelect` handler, you can define per-item behavior inline:
+
+```tsx
+const items = [
+    { label: "Build", value: "build", action: () => runBuild() },
+    { label: "Test", value: "test", action: () => runTests() },
+    { label: "Deploy", value: "deploy", action: () => deploy() },
+];
+
+<SelectInput items={items} initialIndex={0} />
+```
+
+When an item is selected (Enter or number key), `onSelect` fires first (if provided), then `item.action()` is called. Both are optional — you can use either or both.
+
+### Separators
+
+Add non-focusable separator lines between groups of items. Separators are skipped during keyboard navigation and cannot be selected:
+
+```tsx
+const items = [
+    { label: "Cut", value: "cut" },
+    { label: "Copy", value: "copy" },
+    { label: "Paste", value: "paste" },
+    { isSeparator: true },
+    { label: "Select All", value: "selectAll" },
+];
+
+<SelectInput items={items} initialIndex={0} />
+```
+
+A separator renders as `───` by default. Pass a custom `label` to change the text:
+
+```tsx
+{ isSeparator: true, label: "── Advanced ──" }
+```
+
+The `SeparatorItem` type is exported for use in typed item arrays:
+
+```tsx
+import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui/ink";
+
+const items: SelectInputEntry<string>[] = [
+    { label: "Option A", value: "a" },
+    { isSeparator: true },
+    { label: "Option B", value: "b" },
+];
+```
+
+Note: the reset check compares item **values** only — changing labels or other properties while keeping the same values will not trigger a reset. Set `resetOnItemsChange={false}` to preserve the selection across all item changes.
+
+### No initial selection
+
+When `initialIndex` is omitted, no item is highlighted until the user presses a navigation key. This is useful for rendering a list without a pre-selected value, similar to an empty radio group:
+
+```tsx
+<SelectInput items={items} onHighlight={(item) => console.log("Browsing:", item.label)} />
+```
+
+The first down arrow or `j` press highlights the first item; the first up arrow or `k` press highlights the last. Enter is a no-op until an item is highlighted. Number keys (1–9) still work for direct selection.
+
+To start with the first item already highlighted, pass `initialIndex={0}`.
+
+### Controlled mode
+
+Pass `index` to control the selection externally. When `index` is set, `initialIndex` is ignored. Update `index` from your `onHighlight` callback to track the selection:
+
+```tsx
+const [selectedIndex, setSelectedIndex] = useState(0);
+
+<SelectInput
+    items={items}
+    index={selectedIndex}
+    onHighlight={(item, idx) => setSelectedIndex(idx)}
+    onSelect={(item) => console.log("Selected:", item.value)}
+/>
+```
+
+### Scroll windowing
+
+When no `limit` is specified and the list has more items than the terminal has rows, the component automatically caps the visible items to the terminal height. This prevents overflow without any manual measurement.
+
+You can also set `limit` explicitly to control the window size:
+
+```tsx
+<SelectInput items={longList} limit={5} />
+```
+
+The list wraps around when navigating past the first or last visible item.
+
+### Custom colors
+
+Override the default blue highlight with `accentColor` and `defaultColor`:
+
+```tsx
+<SelectInput items={items} accentColor="green" defaultColor="gray" />
+```
+
+These colors are passed through to the indicator and item components.
+
+### Focus dimming
+
+When multiple `SelectInput` components are on screen, the unfocused ones automatically dim their selected item using `dimColor`. This makes it easy to tell which list has focus:
+
+```tsx
+<Box>
+    <SelectInput items={leftItems} initialIndex={0} isFocused={leftActive} />
+    <SelectInput items={rightItems} initialIndex={0} isFocused={!leftActive} />
+</Box>
+```
+
+The `isFocused` prop is passed through to both `indicatorComponent` and `itemComponent`, so custom components can implement their own unfocused styling.
+
+### Custom components
+
+Replace the default indicator or item rendering:
+
+```tsx
+import { Box, Text } from "@visulima/tui/ink";
+
+const CustomIndicator = ({ isSelected, isFocused, accentColor }) => (
+    <Box marginRight={1}>
+        <Text color={isSelected ? accentColor : undefined} dimColor={!isFocused}>
+            {isSelected ? "→" : " "}
+        </Text>
+    </Box>
+);
+
+const CustomItem = ({ label, isSelected, isFocused, accentColor, defaultColor }) => (
+    <Text bold={isSelected} color={isSelected ? accentColor : defaultColor} dimColor={isSelected && !isFocused}>
+        {label}
+    </Text>
+);
+
+<SelectInput
+    items={items}
+    indicatorComponent={CustomIndicator}
+    itemComponent={CustomItem}
+/>
+```
+
+Custom components receive `isSelected`, `isFocused`, `accentColor`, and (for items) `defaultColor` plus the item's own `label`/`value`/`key` fields.
 
 ## `Table`
 
