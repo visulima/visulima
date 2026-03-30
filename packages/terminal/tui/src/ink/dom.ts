@@ -391,3 +391,48 @@ export const emitLayoutListeners = (rootNode: DOMElement): void => {
         listener();
     }
 };
+
+/**
+ * Get the path from the root to this node (inclusive).
+ * Returns an array starting with the root and ending with the node.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export const getPathToRoot = (node: DOMNode): DOMNode[] => {
+    const path: DOMNode[] = [];
+    let current: DOMNode | undefined = node;
+
+    while (current) {
+        path.unshift(current);
+        current = current.parentNode;
+    }
+
+    return path;
+};
+
+/**
+ * Check if a node is selectable by walking up the tree checking `userSelect` style.
+ * Returns true by default unless an ancestor has `userSelect: 'none'`.
+ *
+ * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
+ */
+export const isNodeSelectable = (node: DOMElement): boolean => {
+    let current: DOMElement | undefined = node;
+
+    while (current) {
+        const { userSelect } = current.style;
+
+        if (userSelect === "none") {
+            return false;
+        }
+
+        if (userSelect === "text" || userSelect === "all") {
+            return true;
+        }
+
+        current = current.parentNode;
+    }
+
+    // Default: selectable
+    return true;
+};
