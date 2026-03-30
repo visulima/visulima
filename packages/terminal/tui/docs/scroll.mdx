@@ -1,0 +1,224 @@
+---
+title: Scroll Components
+description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building scrollable terminal UIs"
+---
+
+# Scroll Components
+
+`@visulima/tui/ink` re-exports scroll primitives from the ByteLand ecosystem for building scrollable terminal interfaces.
+
+```tsx
+import {
+    ControlledScrollView,
+    ScrollBar,
+    ScrollBarBox,
+    ScrollList,
+    ScrollView,
+} from "@visulima/tui/ink";
+```
+
+## `ScrollView`
+
+A scrollable viewport that manages its own scroll state. Control it imperatively via a ref.
+
+```tsx
+import { useRef } from "react";
+import { Box, ScrollView, Text, useInput } from "@visulima/tui/ink";
+import type { ScrollViewRef } from "@visulima/tui/ink";
+
+const Demo = () => {
+    const scrollRef = useRef<ScrollViewRef>(null);
+
+    useInput((input, key) => {
+        if (key.downArrow) scrollRef.current?.scrollBy(1);
+        if (key.upArrow) scrollRef.current?.scrollBy(-1);
+    });
+
+    return (
+        <Box height={10} borderStyle="single">
+            <ScrollView ref={scrollRef}>
+                {items.map((item) => (
+                    <Text key={item.id}>{item.label}</Text>
+                ))}
+            </ScrollView>
+        </Box>
+    );
+};
+```
+
+### Props
+
+Extends `BoxProps` from Ink.
+
+| Prop                    | Type       | Description                              |
+| ----------------------- | ---------- | ---------------------------------------- |
+| `onScroll`              | `function` | Callback with current scroll offset      |
+| `onViewportSizeChange`  | `function` | Fires when viewport dimensions change    |
+| `onContentHeightChange` | `function` | Fires when total content height changes  |
+| `onItemHeightChange`    | `function` | Fires when an individual item resizes    |
+| `debug`                 | `boolean`  | Disables overflow hidden for debugging   |
+
+### Ref Methods
+
+| Method              | Description                              |
+| ------------------- | ---------------------------------------- |
+| `scrollTo(offset)`  | Scroll to absolute position              |
+| `scrollBy(delta)`   | Scroll by relative amount                |
+| `scrollToTop()`     | Scroll to top                            |
+| `scrollToBottom()`  | Scroll to bottom                         |
+| `getScrollOffset()` | Current scroll position                  |
+| `getContentHeight()`| Total content height                     |
+| `getViewportHeight()`| Visible viewport height                 |
+| `getBottomOffset()` | Max scroll offset                        |
+| `getItemHeight(i)`  | Height of item at index                  |
+| `getItemPosition(i)`| Position and height of item at index     |
+| `remeasure()`       | Re-measure viewport dimensions           |
+| `remeasureItem(i)`  | Re-measure a specific child              |
+
+## `ControlledScrollView`
+
+Lower-level variant where the parent owns the `scrollOffset` state.
+
+```tsx
+import { useState } from "react";
+import { Box, ControlledScrollView, Text, useInput } from "@visulima/tui/ink";
+
+const Demo = () => {
+    const [offset, setOffset] = useState(0);
+
+    useInput((input, key) => {
+        if (key.downArrow) setOffset((o) => o + 1);
+        if (key.upArrow) setOffset((o) => Math.max(0, o - 1));
+    });
+
+    return (
+        <Box height={10} borderStyle="single">
+            <ControlledScrollView scrollOffset={offset}>
+                {items.map((item) => (
+                    <Text key={item.id}>{item.label}</Text>
+                ))}
+            </ControlledScrollView>
+        </Box>
+    );
+};
+```
+
+## `ScrollBar`
+
+A visual scroll position indicator. Works in two placement modes:
+
+- **Border mode** (`placement="left"` or `"right"`): Integrates with a container's border.
+- **Inset mode** (`placement="inset"`): Placed inside the content area.
+
+```tsx
+import { Box, ScrollBar, Text } from "@visulima/tui/ink";
+
+<Box flexDirection="row">
+    <Box borderStyle="single" borderRight={false} height={10}>
+        <Text>Content here</Text>
+    </Box>
+    <ScrollBar
+        placement="right"
+        style="single"
+        contentHeight={100}
+        viewportHeight={10}
+        scrollOffset={scrollOffset}
+    />
+</Box>
+```
+
+### Props
+
+| Prop             | Type                 | Default     | Description                         |
+| ---------------- | -------------------- | ----------- | ----------------------------------- |
+| `contentHeight`  | `number`             | required    | Total content height                |
+| `viewportHeight` | `number`             | required    | Visible viewport height             |
+| `scrollOffset`   | `number`             | required    | Current scroll position             |
+| `placement`      | `ScrollBarPlacement` | `'right'`   | `'left'`, `'right'`, or `'inset'`   |
+| `style`          | `ScrollBarStyle`     | varies      | Visual style                        |
+| `thumbChar`      | `string`             | —           | Custom thumb character (inset only) |
+| `trackChar`      | `string`             | —           | Custom track character (inset only) |
+| `autoHide`       | `boolean`            | `false`     | Hide when content fits (inset only) |
+| `color`          | `string`             | —           | Scroll bar color                    |
+| `dimColor`       | `boolean`            | `false`     | Dimmed styling                      |
+
+## `ScrollBarBox`
+
+A `Box` with a built-in scroll bar on one border.
+
+```tsx
+import { ScrollBarBox, Text } from "@visulima/tui/ink";
+
+<ScrollBarBox
+    height={12}
+    borderStyle="single"
+    contentHeight={50}
+    viewportHeight={10}
+    scrollOffset={scrollOffset}
+>
+    {visibleItems.map((item) => (
+        <Text key={item.id}>{item.label}</Text>
+    ))}
+</ScrollBarBox>
+```
+
+### Props
+
+Extends `BoxProps`.
+
+| Prop                 | Type                  | Default   | Description                      |
+| -------------------- | --------------------- | --------- | -------------------------------- |
+| `contentHeight`      | `number`              | required  | Total content height             |
+| `viewportHeight`     | `number`              | required  | Visible viewport height          |
+| `scrollOffset`       | `number`              | required  | Current scroll position          |
+| `scrollBarPosition`  | `'left' \| 'right'`  | `'right'` | Which side to show the bar       |
+| `scrollBarAutoHide`  | `boolean`             | `false`   | Hide thumb when content fits     |
+| `thumbChar`          | `string`              | —         | Custom thumb character            |
+
+## `ScrollList`
+
+A `ScrollView` with externally controlled selection and automatic scroll-into-view.
+
+```tsx
+import { useRef, useState } from "react";
+import { Box, ScrollList, Text, useInput } from "@visulima/tui/ink";
+
+const Demo = () => {
+    const [selected, setSelected] = useState(0);
+    const items = ["Apple", "Banana", "Cherry", "Date", "Elderberry"];
+
+    useInput((input, key) => {
+        if (key.downArrow) setSelected((i) => Math.min(i + 1, items.length - 1));
+        if (key.upArrow) setSelected((i) => Math.max(i - 1, 0));
+    });
+
+    return (
+        <ScrollList height={5} selectedIndex={selected}>
+            {items.map((item, i) => (
+                <Box key={i}>
+                    <Text color={i === selected ? "blue" : "white"}>
+                        {i === selected ? "> " : "  "}
+                        {item}
+                    </Text>
+                </Box>
+            ))}
+        </ScrollList>
+    );
+};
+```
+
+### Props
+
+Extends `ScrollViewProps`.
+
+| Prop              | Type              | Default  | Description                                  |
+| ----------------- | ----------------- | -------- | -------------------------------------------- |
+| `selectedIndex`   | `number`          | —        | Currently selected item (controlled)         |
+| `scrollAlignment` | `ScrollAlignment` | `'auto'` | How to position the selected item in view    |
+
+Alignment modes:
+
+- `'auto'` — Minimal scrolling to bring item into view
+- `'top'` — Align item to top of viewport
+- `'bottom'` — Align item to bottom of viewport
+- `'center'` — Center item in viewport
