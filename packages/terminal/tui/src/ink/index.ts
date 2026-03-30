@@ -3,12 +3,16 @@ export type { Align as BigTextAlign, BackgroundColor as BigTextBackgroundColor, 
 export { default as BigText } from "./components/BigText";
 export type { Props as BoxProps } from "./components/Box";
 export { default as Box } from "./components/Box";
+export type { Props as ConfirmInputProps } from "./components/ConfirmInput";
+export { default as ConfirmInput } from "./components/ConfirmInput";
 export type { Props as CursorProps } from "./components/Cursor";
 export { default as Cursor } from "./components/Cursor";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
 export { default as Gradient } from "./components/Gradient";
 export type { Props as LinkProps } from "./components/Link";
 export { default as Link } from "./components/Link";
+export type { MultiSelectOption, Props as MultiSelectProps } from "./components/MultiSelect";
+export { default as MultiSelect } from "./components/MultiSelect";
 export type { Props as NewlineProps } from "./components/Newline";
 export { default as Newline } from "./components/Newline";
 export type { Props as ProgressBarProps } from "./components/ProgressBar";
@@ -45,6 +49,8 @@ export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as 
 export { default as Table } from "./components/Table";
 export type { Props as TextProps } from "./components/Text";
 export { default as Text } from "./components/Text";
+export type { Props as TextInputProps } from "./components/TextInput";
+export { default as TextInput } from "./components/TextInput";
 export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
 export type { DOMElement } from "./dom";

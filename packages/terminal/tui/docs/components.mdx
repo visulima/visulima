@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Box, Text, BigText, Gradient, Link, Cursor, Newline, Spacer, Static, Transform, Spinner, ProgressBar, SelectInput, Table"
+description: "Reference for all React components in @visulima/tui: Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, Spacer, Static, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table"
 ---
 
 # Components
@@ -9,7 +9,7 @@ description: "Reference for all React components in @visulima/tui: Box, Text, Bi
 
 ```tsx
 import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui/ink";
-import { BigText, Gradient, ProgressBar, SelectInput, Spinner, Table } from "@visulima/tui/ink";
+import { BigText, ConfirmInput, Gradient, MultiSelect, ProgressBar, SelectInput, Spinner, Table, TextInput } from "@visulima/tui/ink";
 ```
 
 ## `Box`
@@ -292,6 +292,102 @@ Example with labels:
     <Text> 60%</Text>
 </Box>
 ```
+
+## `ConfirmInput`
+
+A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { ConfirmInput, Text } from "@visulima/tui/ink";
+
+<Text>Do you want to continue? </Text>
+<ConfirmInput
+    onConfirm={() => console.log("Confirmed!")}
+    onCancel={() => console.log("Cancelled.")}
+/>
+```
+
+| Prop            | Type                        | Default     | Description                               |
+| --------------- | --------------------------- | ----------- | ----------------------------------------- |
+| `defaultChoice` | `"confirm"` \| `"cancel"`   | `"confirm"` | Default action when Enter is pressed      |
+| `isDisabled`    | `boolean`                   | `false`     | Ignores all input when true               |
+| `submitOnEnter` | `boolean`                   | `true`      | Whether Enter submits the default choice  |
+| `onConfirm`     | `() => void`                | _(required)_ | Called when user presses Y                |
+| `onCancel`      | `() => void`                | _(required)_ | Called when user presses N                |
+
+Shows `Y/n` when default is confirm, `y/N` when default is cancel. Press `Y`/`y` to confirm, `N`/`n` to cancel, Enter to submit the default.
+
+## `MultiSelect`
+
+Multi-choice selection component with checkboxes and keyboard navigation. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { MultiSelect } from "@visulima/tui/ink";
+
+const options = [
+    { label: "TypeScript", value: "ts" },
+    { label: "JavaScript", value: "js" },
+    { label: "Python", value: "py" },
+];
+
+<MultiSelect
+    options={options}
+    onSubmit={(values) => console.log("Selected:", values)}
+/>
+```
+
+| Prop           | Type                          | Default  | Description                                 |
+| -------------- | ----------------------------- | -------- | ------------------------------------------- |
+| `options`      | `MultiSelectOption[]`         | _(required)_ | Available choices                       |
+| `defaultValue` | `string[]`                    | `[]`     | Initially selected values                   |
+| `isDisabled`   | `boolean`                     | `false`  | Ignores all input when true                 |
+| `isFocused`    | `boolean`                     | `true`   | Whether the component captures input        |
+| `limit`        | `number`                      | —        | Max visible options; auto-limits to terminal height |
+| `accentColor`  | `string`                      | `"blue"` | Color for the focused indicator             |
+| `defaultColor` | `string`                      | —        | Color for unfocused, unselected labels      |
+| `onChange`      | `(values: string[]) => void`  | —        | Called when selection changes (space)        |
+| `onSubmit`     | `(values: string[]) => void`  | —        | Called when Enter is pressed                |
+
+Keyboard: arrow keys or `j`/`k` to navigate, Space to toggle, `a` to select/deselect all, Enter to submit.
+
+## `TextInput`
+
+Single-line text input with cursor navigation, autocomplete suggestions, and optional password masking. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+```tsx
+import { TextInput } from "@visulima/tui/ink";
+
+<TextInput
+    placeholder="Enter your name..."
+    onSubmit={(value) => console.log("Name:", value)}
+/>
+```
+
+| Prop          | Type                    | Default | Description                                           |
+| ------------- | ----------------------- | ------- | ----------------------------------------------------- |
+| `defaultValue`| `string`                | `""`    | Starting value                                        |
+| `isDisabled`  | `boolean`               | `false` | Ignores all input when true                           |
+| `mask`        | `boolean`               | `false` | Renders asterisks instead of characters               |
+| `placeholder` | `string`                | —       | Greyed-out text when input is empty                   |
+| `suggestions` | `string[]`              | —       | Autocomplete candidates (case-sensitive prefix match) |
+| `onChange`    | `(value: string) => void` | —     | Called on every keystroke                              |
+| `onSubmit`    | `(value: string) => void` | —     | Called when Enter is pressed                          |
+
+Keyboard: left/right arrows for cursor, Home/End or Ctrl+A/E for start/end, Ctrl+U/K/W for line editing, Backspace/Delete, right arrow to accept suggestion, Enter to submit (accepts suggestion if pending).
+
+### Password mode
+
+```tsx
+<TextInput mask onSubmit={(password) => authenticate(password)} />
+```
+
+### Autocomplete
+
+```tsx
+<TextInput suggestions={["react", "react-dom", "react-native"]} onSubmit={install} />
+```
+
+The first matching suggestion is shown dimmed after the cursor. Press right arrow or Enter to accept it.
 
 ## `SelectInput`
 
