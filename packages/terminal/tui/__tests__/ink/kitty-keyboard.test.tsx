@@ -185,12 +185,12 @@ describe("kitty-keyboard", () => {
         expect(result.eventType).toBe("press");
     });
 
-    it("kitty protocol - delete key", () => {
+    it("kitty protocol - backspace key (codepoint 127)", () => {
         expect.assertions(2);
 
         const result = parseKeypress(kittyKey(127));
 
-        expect(result.name).toBe("delete");
+        expect(result.name).toBe("backspace");
         expect(result.eventType).toBe("press");
     });
 

@@ -203,10 +203,10 @@ describe("hooks-use-input", () => {
         expect(ps.output).toContain("exited");
     });
 
-    it.skipIf(!ptyAvailable)("useInput - handle delete", async () => {
+    it.skipIf(!ptyAvailable)("useInput - handle backspace (0x7F)", async () => {
         expect.assertions(1);
 
-        const ps = term("use-input", ["delete"]);
+        const ps = term("use-input", ["backspace"]);
 
         ps.write("\u007F");
         await ps.waitForExit();

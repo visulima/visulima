@@ -179,7 +179,7 @@ const kittyCodepointNames: Record<number, string> = {
     // in parseKittyKeypress so they can be marked as printable.
     9: "tab",
     27: "escape",
-    127: "delete",
+    127: "backspace",
     57_358: "capslock",
     57_359: "scrolllock",
     57_360: "numlock",
@@ -497,9 +497,9 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
         }
         case "\u001B\u007F":
         case "\u007F": {
-            // TODO(vadimdemedes): `enquirer` detects delete key as backspace, but I had to split them up to avoid breaking changes in Ink. Merge them back together in the next major version.
-            // delete
-            key.name = "delete";
+            // Modern terminals send 0x7F for Backspace (⌫ on Mac).
+            // Forward-delete (fn+⌫ on Mac / Delete on PC) sends \x1b[3~, handled separately.
+            key.name = "backspace";
             key.meta = s.charAt(0) === "\u001B";
 
             break;
