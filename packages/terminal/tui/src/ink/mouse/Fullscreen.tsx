@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/filename-case */
+
 /**
  * Ported from `\@zenobius/ink-mouse` (https://github.com/zenobi-us/ink-mouse)
  * Copyright Zeno Jiricek, licensed under Apache-2.0
@@ -19,4 +21,4 @@ const Fullscreen = ({ children }: PropsWithChildren): React.JSX.Element => {
     );
 };
 
-export { Fullscreen };
+export default Fullscreen;

@@ -7,7 +7,7 @@
 
 export type { SgrMouseEvent } from "./ansi-parser";
 export { parseSgrMouse } from "./ansi-parser";
-export { Fullscreen } from "./Fullscreen";
+export { default as Fullscreen } from "./Fullscreen";
 export { default as isIntersecting } from "./is-intersecting";
 export type {
     MouseAction,
@@ -19,7 +19,7 @@ export type {
     MousePosition,
     MouseScrollAction,
 } from "./mouse-context";
-export { MouseProvider } from "./MouseProvider";
+export { default as MouseProvider } from "./MouseProvider";
 export { useElementDimensions, useElementPosition } from "./use-element-position";
 export { default as useMouseContext } from "./use-mouse";
 export { default as useMouseAction } from "./use-mouse-action";

@@ -3,7 +3,7 @@
  * IME (Input Method Editor) composition input — CJK ideographs, Hangul,
  * Thai, Vietnamese diacritics, etc.
  */
-export const isIMEInput = (data: string): boolean => {
+const isIMEInput = (data: string): boolean => {
     if (data.length === 0) {
         return false;
     }
@@ -11,7 +11,7 @@ export const isIMEInput = (data: string): boolean => {
     // Check each code point — if any is above the basic Latin + Latin-1
     // supplement range and is NOT a control/escape sequence, treat it as IME.
     for (const character of data) {
-        const codePoint = character.codePointAt(0)!;
+        const codePoint = character.codePointAt(0) ?? 0;
 
         // Skip ASCII (including control characters and escape sequences)
         if (codePoint <= 0x7f) {
@@ -39,7 +39,7 @@ type IMECompositionBufferOptions = {
  * Buffers rapid multi-byte character input from IME and flushes the
  * accumulated text after a configurable timeout.
  */
-export class IMECompositionBuffer {
+class IMECompositionBuffer {
     private buffer = "";
 
     private timer: ReturnType<typeof setTimeout> | undefined;
@@ -48,12 +48,12 @@ export class IMECompositionBuffer {
 
     private readonly timeout: number;
 
-    constructor({ onFlush, timeout }: IMECompositionBufferOptions) {
+    public constructor({ onFlush, timeout }: IMECompositionBufferOptions) {
         this.onFlush = onFlush;
         this.timeout = timeout;
     }
 
-    add(text: string): void {
+    public add(text: string): void {
         this.buffer += text;
 
         if (this.timer !== undefined) {
@@ -65,7 +65,7 @@ export class IMECompositionBuffer {
         }, this.timeout);
     }
 
-    flush(): void {
+    public flush(): void {
         if (this.timer !== undefined) {
             clearTimeout(this.timer);
             this.timer = undefined;
@@ -79,7 +79,7 @@ export class IMECompositionBuffer {
         }
     }
 
-    destroy(): void {
+    public destroy(): void {
         if (this.timer !== undefined) {
             clearTimeout(this.timer);
             this.timer = undefined;
@@ -88,3 +88,5 @@ export class IMECompositionBuffer {
         this.buffer = "";
     }
 }
+
+export { IMECompositionBuffer, isIMEInput };

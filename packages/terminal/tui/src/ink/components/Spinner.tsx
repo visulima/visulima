@@ -1,3 +1,5 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
+
 /**
  * Spinner component for Ink.
  *
@@ -5,7 +7,7 @@
  * @see https://github.com/vadimdemedes/ink-spinner
  *
  * MIT License
- * Copyright (c) Vadym Demedes &lt;vadimdemedes@hey.com> (github.com/vadimdemedes)
+ * Copyright (c) Vadym Demedes (github.com/vadimdemedes)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in the
@@ -24,7 +26,6 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* eslint-disable react/function-component-definition */
 import type { SpinnerName } from "cli-spinners";
 import spinners from "cli-spinners";
 import type { ReactElement } from "react";

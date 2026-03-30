@@ -16,7 +16,7 @@ type GradientStop = Parameters<typeof multilineGradient>[0][number];
 /**
  * Built-in gradient presets.
  */
-export type GradientName
+type GradientName
     = | "atlas"
         | "cristal"
         | "fruit"
@@ -34,7 +34,7 @@ export type GradientName
 /**
  * Custom gradient colors — an array of color stops accepted by `@visulima/colorize`'s gradient API.
  */
-export type GradientColors = GradientStop[];
+type GradientColors = GradientStop[];
 
 const presets: Record<GradientName, { colors: GradientStop[]; options?: { hsvSpin?: "long" | "short"; interpolation?: "hsv" | "rgb" } }> = {
     atlas: { colors: ["#feac5e", "#c779d0", "#4bc0c8"] },
@@ -98,7 +98,8 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
     }
 
     const gradientFunction = useMemo(
-        () => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors!)),
+        // eslint-disable-next-line no-confusing-arrow
+        () => name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors ?? []),
         [name, colors],
     );
     const applyGradient = (text: string) => gradientFunction(strip(text));
@@ -107,6 +108,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
         let hasBox = false;
 
         const search = (value: ReactNode) => {
+            // eslint-disable-next-line react-x/no-children-for-each
             Children.forEach(value, (child) => {
                 if (hasBox) {
                     return;
@@ -138,6 +140,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
     const hasChildrenProp = (properties: Record<string, unknown>) => Object.hasOwn(properties, "children");
     const isPlainTextNode = (node: ReactNode): node is number | string => typeof node === "string" || typeof node === "number";
     const isNonRenderableChild = (node: ReactNode) => node === null || node === undefined || typeof node === "boolean";
+    // eslint-disable-next-line react-x/no-children-count
     const childrenCount = Children.count(children);
 
     if (isPlainTextNode(children)) {
@@ -153,7 +156,13 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
         let bufferedText = "";
         let nodeIndex = 0;
 
-        const createKey = () => `gradient-node-${nodeIndex++}`;
+        const createKey = () => {
+            const key = `gradient-node-${String(nodeIndex)}`;
+
+            nodeIndex += 1;
+
+            return key;
+        };
 
         const pushTransformed = (node: ReactNode, key: Key) => {
             nodes.push(
@@ -174,6 +183,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
             pushTransformed(<Text>{text}</Text>, createKey());
         };
 
+        // eslint-disable-next-line react-x/no-children-for-each
         Children.forEach(nodeChildren, (child) => {
             if (isNonRenderableChild(child)) {
                 return;
@@ -201,11 +211,13 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
                     if (hasChildrenProp(childProps)) {
                         const childChildren = childProps["children"] as ReactNode;
 
+                        // eslint-disable-next-line react-x/no-clone-element
                         nodes.push(cloneElement(child, { key: childKey }, applyGradientToChildren(childChildren)));
 
                         return;
                     }
 
+                    // eslint-disable-next-line react-x/no-clone-element
                     nodes.push(cloneElement(child, { key: childKey }));
 
                     return;
@@ -220,6 +232,7 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
                         return;
                     }
 
+                    // eslint-disable-next-line react-x/no-clone-element
                     nodes.push(cloneElement(child, { key: childKey }, applyGradientToChildren(childChildren)));
 
                     return;
@@ -240,3 +253,5 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
 
     return <>{applyGradientToChildren(children)}</>;
 }
+
+export type { GradientColors, GradientName };

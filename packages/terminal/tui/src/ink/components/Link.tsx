@@ -1,3 +1,5 @@
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
+
 /**
  * Clickable terminal link component for Ink.
  *
@@ -5,16 +7,16 @@
  * @see https://github.com/sindresorhus/ink-link
  *
  * MIT License
- * Copyright (c) Sindre Sorhus &lt;sindresorhus@gmail.com> (https://sindresorhus.com)
+ * Copyright (c) Sindre Sorhus (https://sindresorhus.com)
  */
-/* eslint-disable react/function-component-definition */
 import { hyperlink } from "@visulima/ansi";
 import type { ReactElement, ReactNode } from "react";
+import { useCallback } from "react";
 
 import Text from "./Text";
 import Transform from "./Transform";
 
-export type Props = {
+type Props = {
     readonly children: ReactNode;
 
     /**
@@ -34,54 +36,12 @@ export type Props = {
 };
 
 /**
- * An Ink component that creates clickable links in the terminal using OSC 8 hyperlink sequences.
- *
- * [Supported terminals.](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)
- *
- * For unsupported terminals, the link will be printed after the text: `My website https://example.com`.
- *
- * ```tsx
- * import { Link, Text } from "@visulima/tui/ink";
- *
- * &lt;Link url="https://example.com">
- *     &lt;Text color="cyan">My Website&lt;/Text>
- * &lt;/Link>
- * ```
- */
-export default function Link({ children, fallback = true, url }: Props): ReactElement {
-    return (
-        <Transform
-            transform={(text) => {
-                // Check if the terminal supports hyperlinks via OSC 8.
-                // If FORCE_HYPERLINK is set, always use the hyperlink sequence.
-                // Otherwise, check common terminal environment indicators.
-                if (supportsHyperlinks()) {
-                    return hyperlink(text, url);
-                }
-
-                if (fallback === false) {
-                    return text;
-                }
-
-                if (typeof fallback === "function") {
-                    return fallback(text, url);
-                }
-
-                return `${text} ${url}`;
-            }}
-        >
-            <Text>{children}</Text>
-        </Transform>
-    );
-}
-
-/**
  * Lightweight check for OSC 8 hyperlink support.
  *
  * Covers the most common terminals. For exhaustive detection,
  * use the `supports-hyperlinks` package externally.
  */
-function supportsHyperlinks(): boolean {
+const supportsHyperlinks = (): boolean => {
     // Explicit override
     if (process.env["FORCE_HYPERLINK"]) {
         return process.env["FORCE_HYPERLINK"] !== "0";
@@ -129,4 +89,51 @@ function supportsHyperlinks(): boolean {
     }
 
     return false;
+};
+
+/**
+ * An Ink component that creates clickable links in the terminal using OSC 8 hyperlink sequences.
+ *
+ * [Supported terminals.](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)
+ *
+ * For unsupported terminals, the link will be printed after the text: `My website https://example.com`.
+ *
+ * ```tsx
+ * import { Link, Text } from "@visulima/tui/ink";
+ *
+ * &lt;Link url="https://example.com"&gt;
+ *     &lt;Text color="cyan"&gt;My Website&lt;/Text&gt;
+ * &lt;/Link&gt;
+ * ```
+ */
+export default function Link({ children, fallback = true, url }: Props): ReactElement {
+    const transform = useCallback(
+        (text: string) => {
+            // Check if the terminal supports hyperlinks via OSC 8.
+            // If FORCE_HYPERLINK is set, always use the hyperlink sequence.
+            // Otherwise, check common terminal environment indicators.
+            if (supportsHyperlinks()) {
+                return hyperlink(text, url);
+            }
+
+            if (fallback === false) {
+                return text;
+            }
+
+            if (typeof fallback === "function") {
+                return fallback(text, url);
+            }
+
+            return `${text} ${url}`;
+        },
+        [fallback, url],
+    );
+
+    return (
+        <Transform transform={transform}>
+            <Text>{children}</Text>
+        </Transform>
+    );
 }
+
+export type { Props };
