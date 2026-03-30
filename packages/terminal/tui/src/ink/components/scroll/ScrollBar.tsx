@@ -48,12 +48,12 @@ const CORNER_CHARS: Record<string, { bottomLeft: string; bottomRight: string; to
     singleDouble: { bottomLeft: "╙", bottomRight: "╜", topLeft: "╓", topRight: "╖" },
 };
 
-const getStyleChars = (style: ScrollBarStyle | undefined) => {
+const getStyleChars = (style: ScrollBarStyle | undefined): { lowerThumb?: string; thumb: string; track: string; upperThumb?: string } => {
     const key = typeof style === "string" ? style : "single";
     return STYLE_CHARS[key] ?? STYLE_CHARS.single!;
 };
 
-const getCornerChars = (style: ScrollBarStyle | undefined) => {
+const getCornerChars = (style: ScrollBarStyle | undefined): { bottomLeft: string; bottomRight: string; topLeft: string; topRight: string } => {
     const key = typeof style === "string" ? style : "single";
     return CORNER_CHARS[key] ?? CORNER_CHARS.single!;
 };

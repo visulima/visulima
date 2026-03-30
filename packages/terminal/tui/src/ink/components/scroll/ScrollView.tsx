@@ -1,15 +1,15 @@
 /* eslint-disable react/function-component-definition, unicorn/filename-case */
-import React, {
-  useState,
+import type { ForwardRefExoticComponent, ReactNode, RefAttributes } from "react";
+import {
   useRef,
   forwardRef,
   useImperativeHandle,
   useCallback,
-  ReactNode,
 } from "react";
 import type { Props as BoxProps } from "../Box";
 import { ControlledScrollView } from "./ControlledScrollView";
 import type { ControlledScrollViewRef } from "./ControlledScrollView";
+import { useStateRef } from "./use-state-ref";
 
 export interface ScrollViewProps extends BoxProps {
   onScroll?: (scrollOffset: number) => void;
@@ -42,25 +42,7 @@ export interface ScrollViewRef {
   remeasureItem: (index: number) => void;
 }
 
-function useStateRef<T>(initialValue: T) {
-  const [state, setStateInternal] = useState<T>(initialValue);
-  const ref = useRef<T>(initialValue);
-
-  const setState = useCallback((update: React.SetStateAction<T>) => {
-    const nextValue =
-      typeof update === "function"
-        ? (update as (prev: T) => T)(ref.current)
-        : update;
-    ref.current = nextValue;
-    setStateInternal(nextValue);
-  }, []);
-
-  const getState = useCallback(() => ref.current, []);
-
-  return [state, setState, getState] as const;
-}
-
-export const ScrollView = forwardRef<ScrollViewRef, ScrollViewProps>(
+export const ScrollView: ForwardRefExoticComponent<ScrollViewProps & RefAttributes<ScrollViewRef>> = forwardRef<ScrollViewRef, ScrollViewProps>(
   (
     {
       onScroll,

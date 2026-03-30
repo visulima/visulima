@@ -2,7 +2,7 @@
 import { strip } from "@visulima/ansi";
 import { multilineGradient } from "@visulima/colorize/gradient";
 import type { Key, ReactElement, ReactNode } from "react";
-import { Children, cloneElement, isValidElement } from "react";
+import { Children, cloneElement, isValidElement, useMemo } from "react";
 
 import Box from "./Box";
 import Text from "./Text";
@@ -98,7 +98,8 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
         throw new Error("Either `name` or `colors` prop must be provided");
     }
 
-    const gradientFn = name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors!);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const gradientFn = useMemo(() => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors!)), [name, colors]);
     const applyGradient = (text: string) => gradientFn(strip(text));
 
     const containsBoxDescendant = (nodeChildren: ReactNode): boolean => {

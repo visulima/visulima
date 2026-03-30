@@ -1,0 +1,22 @@
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
+
+/**
+ * Hook to manage state with immediate ref synchronization.
+ * Useful for values that need to be read synchronously in imperative methods
+ * but also trigger re-renders when changed.
+ */
+export function useStateRef<T>(initialValue: T) {
+    const [state, setStateInternal] = useState<T>(initialValue);
+    const ref = useRef<T>(initialValue);
+
+    const setState = useCallback((update: React.SetStateAction<T>) => {
+        const nextValue = typeof update === "function" ? (update as (prev: T) => T)(ref.current) : update;
+        ref.current = nextValue;
+        setStateInternal(nextValue);
+    }, []);
+
+    const getState = useCallback(() => ref.current, []);
+
+    return [state, setState, getState] as const;
+}
