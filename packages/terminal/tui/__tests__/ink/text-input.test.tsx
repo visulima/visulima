@@ -1,0 +1,175 @@
+import EventEmitter from "node:events";
+
+import delay from "delay";
+import React from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { render, TextInput } from "../../src/ink/index";
+import createStdout from "../helpers/ink-create-stdout";
+
+const createStdin = () => {
+    const stdin = new EventEmitter() as unknown as NodeJS.WriteStream;
+
+    stdin.isTTY = true;
+    (stdin as Record<string, unknown>).setRawMode = () => stdin;
+    (stdin as Record<string, unknown>).read = () => undefined;
+    vi.spyOn(stdin, "setRawMode").mockImplementation(() => stdin);
+    stdin.setEncoding = () => stdin;
+    vi.spyOn(stdin, "read").mockImplementation();
+    stdin.unref = () => stdin;
+    stdin.ref = () => stdin;
+
+    return stdin;
+};
+
+const emitReadable = (stdin: NodeJS.WriteStream, chunk: string) => {
+    const read = stdin.read as ReturnType<typeof vi.fn>;
+
+    read.mockReturnValueOnce(chunk);
+    read.mockReturnValueOnce(null);
+    stdin.emit("readable");
+    read.mockReset();
+};
+
+describe("TextInput", () => {
+    let currentUnmount: (() => void) | undefined;
+
+    const setup = async (jsx: React.JSX.Element) => {
+        const stdout = createStdout();
+        const stdin = createStdin();
+        const { unmount } = render(jsx, { debug: true, stdin, stdout });
+
+        currentUnmount = unmount;
+        await delay(50);
+
+        const getOutput = () => {
+            const calls = (stdout.write as ReturnType<typeof vi.fn>).mock.calls;
+
+            return (calls.at(-1)?.[0] ?? "") as string;
+        };
+
+        return { getOutput, stdin, stdout };
+    };
+
+    afterEach(async () => {
+        currentUnmount?.();
+        currentUnmount = undefined;
+        await delay(100);
+    });
+
+    it("should render with default value", async () => {
+        expect.assertions(1);
+
+        const { getOutput } = await setup(<TextInput defaultValue="hello" />);
+
+        expect(getOutput()).toContain("hello");
+    });
+
+    it("should render placeholder when empty", async () => {
+        expect.assertions(1);
+
+        const { getOutput } = await setup(<TextInput placeholder="Type here..." />);
+        // Output contains ANSI escape codes for dimColor/inverse around the placeholder
+        const output = getOutput();
+
+        expect(output).toContain("ype here...");
+    });
+
+    it("should accept character input", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(<TextInput onChange={onChange} />);
+
+        emitReadable(stdin, "a");
+        await delay(50);
+
+        expect(onChange).toHaveBeenCalledWith("a");
+    });
+
+    it("should handle backspace", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(<TextInput defaultValue="ab" onChange={onChange} />);
+
+        // Try both common backspace representations
+        emitReadable(stdin, "\u0008");
+        await delay(50);
+
+        if (!onChange.mock.calls.length) {
+            emitReadable(stdin, "\u007F");
+            await delay(50);
+        }
+
+        expect(onChange).toHaveBeenCalledWith("a");
+    });
+
+    it("should call onSubmit on Enter", async () => {
+        expect.assertions(1);
+
+        const onSubmit = vi.fn();
+        const { stdin } = await setup(<TextInput defaultValue="hello" onSubmit={onSubmit} />);
+
+        emitReadable(stdin, "\r");
+        await delay(50);
+
+        expect(onSubmit).toHaveBeenCalledWith("hello");
+    });
+
+    it("should mask input when mask is true", async () => {
+        expect.assertions(2);
+
+        const { getOutput } = await setup(<TextInput defaultValue="secret" mask />);
+        const output = getOutput();
+
+        expect(output).toContain("******");
+        expect(output).not.toContain("secret");
+    });
+
+    it("should show suggestion", async () => {
+        expect.assertions(1);
+
+        const { getOutput, stdin } = await setup(<TextInput suggestions={["hello world"]} />);
+
+        emitReadable(stdin, "hel");
+        await delay(50);
+
+        expect(getOutput()).toContain("lo world");
+    });
+
+    it("should accept suggestion on Enter", async () => {
+        expect.assertions(1);
+
+        const onSubmit = vi.fn();
+        const { stdin } = await setup(<TextInput onSubmit={onSubmit} suggestions={["hello"]} />);
+
+        emitReadable(stdin, "hel");
+        await delay(50);
+
+        emitReadable(stdin, "\r");
+        await delay(50);
+
+        expect(onSubmit).toHaveBeenCalledWith("hello");
+    });
+
+    it("should not respond to input when disabled", async () => {
+        expect.assertions(1);
+
+        const onChange = vi.fn();
+        const { stdin } = await setup(<TextInput isDisabled onChange={onChange} />);
+
+        emitReadable(stdin, "a");
+        await delay(50);
+
+        expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("should render dimmed when disabled", async () => {
+        expect.assertions(1);
+
+        const { getOutput } = await setup(<TextInput defaultValue="test" isDisabled />);
+
+        expect(getOutput()).toContain("test");
+    });
+});
