@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, ConsoleOverlay, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -482,6 +482,30 @@ import { Slider } from "@visulima/tui/ink";
 const [value, setValue] = useState(50);
 <Slider value={value} onChange={setValue} />
 ```
+
+## `ConsoleOverlay`
+
+A dockable panel that captures `console.log`/`warn`/`error`/`debug` output and displays it within the TUI. Similar to browser devtools console.
+
+```tsx
+import { Box, ConsoleOverlay } from "@visulima/tui/ink";
+
+<Box flexDirection="column" height="100%">
+    <Box flexGrow={1}>{/* main app content */}</Box>
+    <ConsoleOverlay dock="bottom" height={6} />
+</Box>
+```
+
+| Prop            | Type                    | Default      | Description                    |
+| --------------- | ----------------------- | ------------ | ------------------------------ |
+| `dock`          | `"top"` \| `"bottom"`  | `"bottom"`   | Panel position                 |
+| `height`        | `number`               | `8`          | Visible rows                   |
+| `maxEntries`    | `number`               | `200`        | Buffer size                    |
+| `showTimestamp` | `boolean`              | `true`       | Show `[HH:MM:SS]` prefix      |
+| `showLevel`     | `boolean`              | `true`       | Show level label (LOG/WRN/ERR) |
+| `filter`        | `ConsoleLevel[]`       | all levels   | Which levels to capture        |
+
+Entries are color-coded: gray (debug), white (log), blue (info), yellow (warn), red (error). Auto-scrolls to show the latest entry.
 
 ## `ConfirmInput`
 
