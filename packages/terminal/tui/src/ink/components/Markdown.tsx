@@ -6,6 +6,7 @@
  * Parses Markdown with `marked` and maps tokens to Ink React elements.
  * Code blocks are rendered with syntax highlighting via the Code component.
  */
+import type { Token, Tokens } from "marked";
 import { Lexer } from "marked";
 import type { ReactElement, ReactNode } from "react";
 import React, { useMemo } from "react";
@@ -59,13 +60,12 @@ const HEADING_COLORS: Record<number, string> = {
     6: "gray",
 };
 
-type MarkedToken = ReturnType<typeof Lexer.lex>[number];
-type MarkedInlineToken = { raw: string; text: string; tokens?: MarkedInlineToken[]; type: string; [key: string]: unknown };
+type InlineToken = Tokens.Strong | Tokens.Em | Tokens.Del | Tokens.Codespan | Tokens.Link | Tokens.Br | Tokens.Image | Tokens.Escape | Tokens.Text;
 
 /**
  * Render inline tokens (text, bold, italic, code, links, etc.)
  */
-function renderInlineTokens(tokens: MarkedInlineToken[] | undefined): ReactNode {
+function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactNode {
     if (!tokens || tokens.length === 0) {
         return null;
     }
@@ -97,9 +97,11 @@ function renderInlineTokens(tokens: MarkedInlineToken[] | undefined): ReactNode 
             }
 
             case "link": {
+                const link = token as Tokens.Link;
+
                 return (
-                    <Link key={index} url={token.href as string}>
-                        {renderInlineTokens(token.tokens) ?? token.text}
+                    <Link key={index} url={link.href}>
+                        {renderInlineTokens(link.tokens) ?? link.text}
                     </Link>
                 );
             }
@@ -109,9 +111,11 @@ function renderInlineTokens(tokens: MarkedInlineToken[] | undefined): ReactNode 
             }
 
             case "image": {
+                const img = token as Tokens.Image;
+
                 return (
                     <Text dimColor key={index}>
-                        [image: {(token.text as string) || (token.href as string)}]
+                        [image: {img.text || img.href}]
                     </Text>
                 );
             }
@@ -122,7 +126,9 @@ function renderInlineTokens(tokens: MarkedInlineToken[] | undefined): ReactNode 
 
             default: {
                 // Unknown inline token — render raw text
-                return <React.Fragment key={index}>{token.raw ?? token.text ?? ""}</React.Fragment>;
+                const rawText = "raw" in token ? (token as { raw: string }).raw : "";
+
+                return <React.Fragment key={index}>{rawText}</React.Fragment>;
             }
         }
     });
@@ -131,20 +137,18 @@ function renderInlineTokens(tokens: MarkedInlineToken[] | undefined): ReactNode 
 /**
  * Map marked list items to OrderedListEntry or UnorderedListEntry.
  */
-function mapListItems(items: MarkedToken[]): (OrderedListEntry | UnorderedListEntry)[] {
-    return items.map((item: MarkedToken) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const listItem = item as any;
+function mapListItems(items: Token[]): (OrderedListEntry | UnorderedListEntry)[] {
+    return items.map((item: Token) => {
+        const listItem = item as Tokens.ListItem;
+        const listItemTokens = listItem.tokens ?? [];
 
         // marked list_item has block-level tokens; the inline content is inside the first "text" token
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const textToken = listItem.tokens?.find((t: any) => t.type === "text");
-        const label = renderInlineTokens(textToken?.tokens ?? listItem.tokens);
+        const textToken = listItemTokens.find((t) => t.type === "text") as Tokens.Text | undefined;
+        const label = renderInlineTokens(textToken?.tokens ?? listItemTokens);
 
         // Check for nested lists within the item's tokens
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const nestedList = listItem.tokens?.find((t: any) => t.type === "list");
-        const children = nestedList ? mapListItems(nestedList.items) : undefined;
+        const nestedList = listItemTokens.find((t) => t.type === "list") as Tokens.List | undefined;
+        const children = nestedList ? mapListItems(nestedList.items as Token[]) : undefined;
 
         return { children, label } as OrderedListEntry | UnorderedListEntry;
     });
@@ -153,24 +157,24 @@ function mapListItems(items: MarkedToken[]): (OrderedListEntry | UnorderedListEn
 /**
  * Render block-level tokens recursively.
  */
-function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: number): ReactNode[] {
+function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number): ReactNode[] {
     const elements: ReactNode[] = [];
 
     for (let index = 0; index < tokens.length; index++) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const token = tokens[index] as any;
+        const token = tokens[index]!;
         const marginTop = index > 0 ? 1 : 0;
 
         switch (token.type) {
             case "heading": {
-                const color = HEADING_COLORS[token.depth as number] ?? "white";
-                const prefix = "#".repeat(token.depth as number) + " ";
+                const heading = token as Tokens.Heading;
+                const color = HEADING_COLORS[heading.depth] ?? "white";
+                const prefix = "#".repeat(heading.depth) + " ";
 
                 elements.push(
                     <Box key={index} marginTop={marginTop}>
                         <Text bold color={color}>
                             {prefix}
-                            {renderInlineTokens(token.tokens)}
+                            {renderInlineTokens(heading.tokens)}
                         </Text>
                     </Box>,
                 );
@@ -178,28 +182,34 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
             }
 
             case "paragraph": {
+                const para = token as Tokens.Paragraph;
+
                 elements.push(
                     <Box key={index} marginTop={marginTop}>
-                        <Text wrap="wrap">{renderInlineTokens(token.tokens)}</Text>
+                        <Text wrap="wrap">{renderInlineTokens(para.tokens)}</Text>
                     </Box>,
                 );
                 break;
             }
 
             case "code": {
+                const code = token as Tokens.Code;
+
                 elements.push(
                     <Box key={index} marginTop={marginTop}>
-                        <Code code={token.text as string} language={token.lang as string | undefined} theme={codeTheme} />
+                        <Code code={code.text} language={code.lang} theme={codeTheme} />
                     </Box>,
                 );
                 break;
             }
 
             case "blockquote": {
+                const bq = token as Tokens.Blockquote;
+
                 elements.push(
                     <Box borderLeft borderLeftColor="gray" key={index} marginTop={marginTop} paddingLeft={1}>
                         <Box flexDirection="column">
-                            {renderBlockTokens(token.tokens ?? [], codeTheme, maxWidth - 3)}
+                            {renderBlockTokens(bq.tokens, codeTheme, maxWidth - 3)}
                         </Box>
                     </Box>,
                 );
@@ -207,9 +217,10 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
             }
 
             case "list": {
-                const items = mapListItems(token.items);
+                const list = token as Tokens.List;
+                const items = mapListItems(list.items as Token[]);
 
-                if (token.ordered) {
+                if (list.ordered) {
                     elements.push(
                         <Box key={index} marginTop={marginTop}>
                             <OrderedList items={items as OrderedListEntry[]} />
@@ -235,8 +246,9 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
             }
 
             case "table": {
-                const headers: string[] = (token.header ?? []).map((cell: { text: string }) => cell.text);
-                const rows: string[][] = (token.rows ?? []).map((row: { text: string }[]) => row.map((cell) => cell.text));
+                const table = token as Tokens.Table;
+                const headers: string[] = (table.header ?? []).map((cell) => cell.text);
+                const rows: string[][] = (table.rows ?? []).map((row) => row.map((cell) => cell.text));
                 const data = rows.map((row: string[]) => {
                     const record: Record<string, string> = {};
 
@@ -256,8 +268,9 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
             }
 
             case "html": {
+                const html = token as Tokens.HTML;
                 // Strip HTML tags and render as plain text
-                const stripped = (token.text as string).replaceAll(/<[^>]*>/g, "");
+                const stripped = html.text.replaceAll(/<[^>]*>/g, "");
 
                 if (stripped.trim()) {
                     elements.push(
@@ -276,10 +289,13 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
 
             default: {
                 // Unknown block token — render raw text
-                if (token.text || token.raw) {
+                const raw = "raw" in token ? (token as { raw: string }).raw : "";
+                const text = "text" in token ? (token as { text: string }).text : raw;
+
+                if (text) {
                     elements.push(
                         <Box key={index} marginTop={marginTop}>
-                            <Text>{token.text ?? token.raw}</Text>
+                            <Text>{text}</Text>
                         </Box>,
                     );
                 }
@@ -292,18 +308,10 @@ function renderBlockTokens(tokens: MarkedToken[], codeTheme: string, maxWidth: n
 }
 
 /**
- * Render Markdown content as Ink terminal UI elements.
- *
- * ```tsx
- * <Markdown>{"# Hello\n\nThis is **bold** and *italic*."}</Markdown>
- * <Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
- * ```
- */
-/**
  * Detect if markdown ends with an incomplete block (unclosed code fence, etc.)
  * and append the trailing text as a paragraph so it renders during streaming.
  */
-function lexWithStreamingFallback(source: string, streaming: boolean): MarkedToken[] {
+function lexWithStreamingFallback(source: string, streaming: boolean): Token[] {
     const tokens = Lexer.lex(source);
 
     if (!streaming || source.length === 0) {
@@ -315,8 +323,7 @@ function lexWithStreamingFallback(source: string, streaming: boolean): MarkedTok
     let consumedLength = 0;
 
     for (const token of tokens) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        consumedLength += ((token as any).raw as string)?.length ?? 0;
+        consumedLength += token.raw?.length ?? 0;
     }
 
     if (consumedLength < source.length) {

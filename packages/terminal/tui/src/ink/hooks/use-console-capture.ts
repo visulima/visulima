@@ -125,7 +125,7 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
         setEntries([]);
     }, []);
 
-    return { clear, entries };
+    return useMemo(() => ({ clear, entries }), [clear, entries]);
 };
 
 export default useConsoleCapture;

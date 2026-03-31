@@ -13,6 +13,7 @@ import type { ThemedToken } from "shiki";
 
 import getHighlighter, { getCachedTokens, isLanguageSupported, resolveLanguage } from "../highlighter";
 import useWindowSize from "../hooks/use-window-size";
+import { renderTokenLine } from "../token-to-elements";
 import Box from "./Box";
 import Text from "./Text";
 
@@ -99,12 +100,6 @@ type DiffLine = {
     type: "add" | "context" | "del";
 };
 
-// FontStyle bitmask values from @shikijs/vscode-textmate
-const FONT_STYLE_ITALIC = 1;
-const FONT_STYLE_BOLD = 2;
-const FONT_STYLE_UNDERLINE = 4;
-const FONT_STYLE_STRIKETHROUGH = 8;
-
 /**
  * Render a line's content using Shiki syntax tokens if available,
  * falling back to plain text with the given color.
@@ -125,26 +120,7 @@ const renderHighlightedContent = (
         return fallbackColor ? <Text color={fallbackColor}>{content}</Text> : <Text dimColor>{content}</Text>;
     }
 
-    return (
-        <>
-            {tokens.map((token, index) => {
-                const fontStyle = token.fontStyle ?? 0;
-
-                return (
-                    <Text
-                        bold={(fontStyle & FONT_STYLE_BOLD) !== 0}
-                        color={token.color}
-                        italic={(fontStyle & FONT_STYLE_ITALIC) !== 0}
-                        key={index}
-                        strikethrough={(fontStyle & FONT_STYLE_STRIKETHROUGH) !== 0}
-                        underline={(fontStyle & FONT_STYLE_UNDERLINE) !== 0}
-                    >
-                        {token.content}
-                    </Text>
-                );
-            })}
-        </>
-    );
+    return renderTokenLine(tokens);
 };
 
 /**
