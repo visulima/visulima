@@ -36,9 +36,13 @@ import { detectPm } from "./pm-runner";
 import { emitSecurityWarnings } from "./security";
 import { enforceScriptSecurity, runApprovedScripts } from "./script-security";
 import { showTip } from "./tips";
+import { startUpgradeCheck } from "./upgrade-check";
 
 // Inject VIS_VERSION for child processes before any commands run
 injectVersion();
+
+// Start background upgrade check immediately (non-blocking)
+const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");
 
 /**
  * Attempts to load and enable V8 compile cache for better performance.
@@ -200,15 +204,21 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 
-// Tips plugin: show contextual tips after command execution
+// Post-command plugin: upgrade notice (first) then tips
 cli.addPlugin({
     afterCommand: async () => {
         const args = process.argv.slice(2);
         const command = args[0] ?? "";
 
+        // Upgrade notice first (per RFC: "notice first, then tip")
+        if (upgradeCheckCallback) {
+            upgradeCheckCallback();
+        }
+
+        // Then contextual tips
         showTip({ args, command, success: process.exitCode === undefined || process.exitCode === 0 });
     },
-    name: "cli-tips",
+    name: "post-command",
 });
 
 await cli.run();

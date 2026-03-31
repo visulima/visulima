@@ -259,10 +259,20 @@ describe("syncAllowBuildsToNativeConfig", () => {
             expect(content).toContain("enableScripts: false");
         });
 
-        it("should not duplicate enableScripts if already configured", () => {
+        it("should change enableScripts from true to false", () => {
             expect.assertions(1);
 
             writeFileSync(join(tmpDir, ".yarnrc.yml"), "enableScripts: true\n");
+
+            const actions = syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
+
+            expect(actions[0]).toContain("Changed enableScripts to false");
+        });
+
+        it("should not duplicate enableScripts if already false", () => {
+            expect.assertions(1);
+
+            writeFileSync(join(tmpDir, ".yarnrc.yml"), "enableScripts: false\n");
 
             const actions = syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
 
