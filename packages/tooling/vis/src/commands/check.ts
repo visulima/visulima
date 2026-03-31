@@ -6,7 +6,7 @@ import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
 import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummary, loadNpmrc, readCatalogs, toFilterArray } from "../catalog";
 import { info, success } from "../output";
 import { detectPm } from "../pm-runner";
-import { printSecurityReport, syncToPnpmConfig } from "../security";
+import { printSecurityReport, previewPnpmSync } from "../security";
 
 const check: Command = {
     alias: "c",
@@ -40,7 +40,7 @@ const check: Command = {
             printSecurityReport(visConfig ?? {}, pm.name);
 
             if (options.sync && pm.name === "pnpm") {
-                const synced = syncToPnpmConfig(workspaceRoot, visConfig ?? {});
+                const synced = previewPnpmSync(workspaceRoot, visConfig ?? {});
 
                 if (synced.length > 0) {
                     info("\nSettings that would sync to pnpm-workspace.yaml:");

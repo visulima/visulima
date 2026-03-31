@@ -244,20 +244,11 @@ describe("syncAllowBuildsToNativeConfig", () => {
         });
     });
 
-    describe("yarn", () => {
-        it("should create .yarnrc.yml with enableScripts: false", () => {
-            expect.assertions(1);
-
-            syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
-
-            const content = readFileSync(join(tmpDir, ".yarnrc.yml"), "utf8");
-
-            expect(content).toContain("enableScripts: false");
-        });
-
-        it("should append to existing .yarnrc.yml", () => {
+    describe("yarn berry", () => {
+        it("should write enableScripts to existing .yarnrc.yml", () => {
             expect.assertions(2);
 
+            // .yarnrc.yml must exist for berry detection
             writeFileSync(join(tmpDir, ".yarnrc.yml"), "nodeLinker: node-modules\n");
 
             syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
@@ -276,6 +267,19 @@ describe("syncAllowBuildsToNativeConfig", () => {
             const actions = syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
 
             expect(actions[0]).toContain("already has enableScripts");
+        });
+    });
+
+    describe("yarn classic", () => {
+        it("should fall back to .npmrc when no .yarnrc.yml", () => {
+            expect.assertions(1);
+
+            // No .yarnrc.yml = classic yarn -> writes to .npmrc
+            syncAllowBuildsToNativeConfig("yarn", tmpDir, { esbuild: true });
+
+            const content = readFileSync(join(tmpDir, ".npmrc"), "utf8");
+
+            expect(content).toContain("ignore-scripts=true");
         });
     });
 

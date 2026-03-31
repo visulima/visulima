@@ -1,11 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
 import { detectPm, runWhy } from "../pm-runner";
-
-const toStringArray = (value: unknown): string[] => {
-    if (!value) return [];
-    return Array.isArray(value) ? value as string[] : [value as string];
-};
+import { toStringArray } from "../utils";
 
 const why: Command = {
     alias: "explain",

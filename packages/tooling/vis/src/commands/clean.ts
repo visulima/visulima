@@ -4,7 +4,8 @@ import { join } from "node:path";
 import type { Command } from "@visulima/cerebro";
 
 import { loadNativeBindings } from "../native-binding";
-import { success, failure, info, warn } from "../output";
+import { failure, info, success } from "../output";
+import { errorMessage } from "../utils";
 
 /**
  * Pure TypeScript fallback for clean when native bindings are unavailable.
@@ -139,7 +140,7 @@ const clean: Command = {
                 success(`Removed ${dir}`);
                 removedCount++;
             } catch (error: unknown) {
-                failure(`${dir}: ${(error as Error).message}`);
+                failure(`${dir}: ${errorMessage(error)}`);
             }
         }
 

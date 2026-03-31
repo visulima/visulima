@@ -14,7 +14,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { execSync, spawnSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 
 import { info, note, success, warn, error as errorOutput } from "./output";
@@ -23,26 +23,16 @@ import type { VisConfig } from "./workspace";
 type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
 
 /**
- * Detects the yarn version. Returns "1.x" for classic, "2.x"+ for berry.
- * Falls back to "1.0.0" if detection fails.
+ * Detects yarn berry vs classic.
+ * Uses .yarnrc.yml presence as the primary signal (fast, no shell).
+ * Returns "4.0.0" for berry, "1.22.0" for classic.
  */
 const detectYarnVersion = (cwd: string): string => {
-    // Check .yarnrc.yml - its presence indicates berry (v2+)
+    // .yarnrc.yml presence is the definitive signal for berry (v2+)
     if (existsSync(join(cwd, ".yarnrc.yml"))) {
-        try {
-            const result = spawnSync("yarn", ["--version"], { cwd, encoding: "utf8", timeout: 5000 });
-
-            if (result.status === 0) {
-                return result.stdout.trim();
-            }
-        } catch {
-            // Assume berry since .yarnrc.yml exists
-        }
-
-        return "4.0.0"; // Default berry version
+        return "4.0.0";
     }
 
-    // No .yarnrc.yml = likely classic
     return "1.22.0";
 };
 
@@ -246,7 +236,7 @@ const syncAllowBuildsToNativeConfig = (
                     writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
                     actions.push(`Updated package.json trustedDependencies with ${approved.length} packages`);
                 } catch (error: unknown) {
-                    actions.push(`Failed to update package.json: ${(error as Error).message}`);
+                    actions.push(`Failed to update package.json: ${error instanceof Error ? error.message : String(error)}`);
                 }
             }
 

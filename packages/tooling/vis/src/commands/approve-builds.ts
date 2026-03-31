@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -21,16 +21,13 @@ const approveBuilds: Command = {
         if (pm.name === "pnpm" && !options.scan) {
             info("Delegating to pnpm approve-builds...");
 
-            try {
-                const args = options.all ? "--all" : "";
+            const pnpmArgs = ["approve-builds"];
 
-                execSync(`pnpm approve-builds ${args}`.trim(), {
-                    cwd,
-                    stdio: "inherit",
-                });
-            } catch {
-                // pnpm approve-builds exits non-zero when there are unapproved builds
+            if (options.all) {
+                pnpmArgs.push("--all");
             }
+
+            spawnSync("pnpm", pnpmArgs, { cwd, stdio: "inherit" });
 
             return;
         }

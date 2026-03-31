@@ -101,7 +101,7 @@ const implode: Command = {
             rmSync(VIS_HOME, { force: true, recursive: true });
             logger.info(`\n\u2713 Removed ${VIS_HOME}`);
         } catch (error: unknown) {
-            throw new Error(`Failed to remove ${VIS_HOME}: ${(error as Error).message}`);
+            throw new Error(`Failed to remove ${VIS_HOME}: ${error instanceof Error ? error.message : String(error)}`);
         }
 
         logger.info("\u2713 vis has been uninstalled.");

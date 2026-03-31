@@ -158,41 +158,40 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
 };
 
 /**
- * Syncs vis security config to pnpm-workspace.yaml if the PM is pnpm.
- * This ensures pnpm native enforcement matches vis config.
+ * Reports which vis security settings would map to pnpm-workspace.yaml.
+ * Does not write to pnpm-workspace.yaml (that requires YAML manipulation).
+ * Use `vis approve-builds --sync-native` for actual native PM config writes.
  */
-const syncToPnpmConfig = (workspaceRoot: string, config: VisConfig): string[] => {
+const previewPnpmSync = (config: VisConfig): string[] => {
     const security = config.security;
 
     if (!security) {
         return [];
     }
 
-    const synced: string[] = [];
+    const entries: string[] = [];
 
-    // For pnpm, we could write these settings to pnpm-workspace.yaml
-    // to get native pnpm enforcement. For now, just report what would sync.
     if (security.minimumReleaseAge !== undefined) {
-        synced.push(`minimumReleaseAge: ${security.minimumReleaseAge}`);
+        entries.push(`minimumReleaseAge: ${security.minimumReleaseAge}`);
     }
 
     if (security.trustPolicy && security.trustPolicy !== "off") {
-        synced.push(`trustPolicy: ${security.trustPolicy}`);
+        entries.push(`trustPolicy: ${security.trustPolicy}`);
     }
 
     if (security.blockExoticSubdeps) {
-        synced.push("blockExoticSubdeps: true");
+        entries.push("blockExoticSubdeps: true");
     }
 
     if (security.allowBuilds) {
-        synced.push(`allowBuilds: ${Object.keys(security.allowBuilds).length} entries`);
+        entries.push(`allowBuilds: ${Object.keys(security.allowBuilds).length} entries`);
     }
 
     if (security.strictDepBuilds) {
-        synced.push("strictDepBuilds: true");
+        entries.push("strictDepBuilds: true");
     }
 
-    return synced;
+    return entries;
 };
 
 /**
@@ -282,4 +281,4 @@ const scanUnapprovedBuildScripts = (
 };
 
 export type { SecurityCheckResult };
-export { checkSecurityConfig, emitSecurityWarnings, printSecurityReport, scanUnapprovedBuildScripts, syncToPnpmConfig };
+export { checkSecurityConfig, emitSecurityWarnings, printSecurityReport, scanUnapprovedBuildScripts, previewPnpmSync };

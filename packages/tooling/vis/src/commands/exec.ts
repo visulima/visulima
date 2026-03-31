@@ -1,11 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
 import { detectPm, runExec } from "../pm-runner";
-
-const toStringArray = (value: unknown): string[] => {
-    if (!value) return [];
-    return Array.isArray(value) ? value as string[] : [value as string];
-};
+import { toStringArray } from "../utils";
 
 const exec: Command = {
     argument: {

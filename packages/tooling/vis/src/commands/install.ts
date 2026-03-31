@@ -1,6 +1,7 @@
 import type { Command } from "@visulima/cerebro";
 
 import { detectPm, runInstall } from "../pm-runner";
+import { toStringArray } from "../utils";
 
 const install: Command = {
     alias: "i",
@@ -15,7 +16,7 @@ const install: Command = {
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
-        const filters = options.filter ? (Array.isArray(options.filter) ? options.filter as string[] : [options.filter as string]) : [];
+        const filters = toStringArray(options.filter);
 
         const code = runInstall(pm, {
             dev: (options.dev as boolean) || false,

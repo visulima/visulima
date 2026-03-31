@@ -1,4 +1,4 @@
-import { execSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -166,7 +166,7 @@ const env: Command = {
                         logger.info(`  ${entry.version} (${entry.lts})`);
                     }
                 } catch (error: unknown) {
-                    throw new Error(`Failed to fetch versions: ${(error as Error).message}`);
+                    throw new Error(`Failed to fetch versions: ${error instanceof Error ? error.message : String(error)}`);
                 }
 
                 break;
