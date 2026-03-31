@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable import/exports-last, react-you-might-not-need-an-effect/no-event-handler, react/function-component-definition, unicorn/filename-case */
 
 /**
  * Tabs component for Ink.

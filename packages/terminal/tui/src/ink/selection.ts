@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, max-classes-per-file, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+
 /**
  * DOM-like Selection and Range API for terminal text selection.
  *

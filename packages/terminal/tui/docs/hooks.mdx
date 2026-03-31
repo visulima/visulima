@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useScrollAcceleration, useTerminalPalette, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -67,6 +67,206 @@ usePaste(handler, { isActive: false });
 | Option     | Type      | Default |
 | ---------- | --------- | ------- |
 | `isActive` | `boolean` | `true`  |
+
+## `useClipboard`
+
+Copy text to the system clipboard via OSC 52 terminal escape sequences. Works in terminals that support OSC 52 (Alacritty, Ghostty, Kitty, WezTerm, iTerm2, xterm, foot, Windows Terminal, etc.).
+
+```tsx
+import { useClipboard } from "@visulima/tui/ink";
+
+const { copy, isSupported } = useClipboard();
+copy("Hello, clipboard!");
+```
+
+### Options
+
+```tsx
+const { copy } = useClipboard({ target: "p" }); // primary selection (X11)
+```
+
+| Option   | Type                | Default | Description                                            |
+| -------- | ------------------- | ------- | ------------------------------------------------------ |
+| `target` | `"c" \| "p" \| "s"` | `"c"`   | Clipboard target (c=clipboard, p=primary, s=secondary) |
+
+### Return Value
+
+| Field         | Type                     | Description                                  |
+| ------------- | ------------------------ | -------------------------------------------- |
+| `copy`        | `(text: string) => void` | Copy text; no-op if terminal is unsupported  |
+| `isSupported` | `boolean`                | Whether the current terminal supports OSC 52 |
+
+### Low-level utilities
+
+For use outside React components:
+
+```tsx
+import { writeOsc52, clearOsc52, isOsc52Supported } from "@visulima/tui/ink";
+
+if (isOsc52Supported()) {
+    writeOsc52(process.stdout, "text to copy", "c");
+}
+```
+
+## `useTextBuffer`
+
+Manages a multi-line text buffer with cursor, selection, undo/redo. This is the data model behind the `<Textarea>` component, exposed for custom editor implementations.
+
+```tsx
+import { useTextBuffer } from "@visulima/tui/ink";
+
+const buffer = useTextBuffer("initial\ntext");
+
+buffer.insert("hello");
+buffer.newline();
+buffer.moveCursor("up");
+buffer.undo();
+```
+
+### Return Value
+
+| Field               | Type                                    | Description                         |
+| ------------------- | --------------------------------------- | ----------------------------------- |
+| `lines`             | `ReadonlyArray<string>`                 | Current lines of text               |
+| `cursor`            | `{ line: number, col: number }`         | Current cursor position             |
+| `anchor`            | `{ line: number, col: number } \| null` | Selection anchor (null if none)     |
+| `value`             | `string`                                | Joined text (lines joined by `\n`)  |
+| `insert`            | `(text: string) => void`                | Insert text at cursor               |
+| `newline`           | `() => void`                            | Insert a newline                    |
+| `deleteBack`        | `() => void`                            | Backspace                           |
+| `deleteForward`     | `() => void`                            | Delete key                          |
+| `deleteLine`        | `() => void`                            | Delete entire current line          |
+| `deleteToLineEnd`   | `() => void`                            | Ctrl+K                              |
+| `deleteToLineStart` | `() => void`                            | Ctrl+U                              |
+| `deleteWord`        | `() => void`                            | Ctrl+W                              |
+| `moveCursor`        | `(dir, selecting?) => void`             | Move cursor (up/down/left/right)    |
+| `moveToLineStart`   | `(selecting?) => void`                  | Home                                |
+| `moveToLineEnd`     | `(selecting?) => void`                  | End                                 |
+| `moveToStart`       | `(selecting?) => void`                  | Start of buffer                     |
+| `moveToEnd`         | `(selecting?) => void`                  | End of buffer                       |
+| `selectAll`         | `() => void`                            | Select all text                     |
+| `clearSelection`    | `() => void`                            | Clear the selection                 |
+| `getSelectedText`   | `() => string`                          | Get selected text                   |
+| `hasSelection`      | `() => boolean`                         | Whether text is selected            |
+| `deleteSelection`   | `() => void`                            | Delete selected text                |
+| `replaceSelection`  | `(text: string) => void`                | Replace selection with text         |
+| `undo`              | `() => void`                            | Undo last edit                      |
+| `redo`              | `() => void`                            | Redo last undo                      |
+| `setValue`          | `(value: string) => void`               | Replace entire buffer (clears undo) |
+
+Undo coalesces rapid keystrokes within 300ms into a single entry. The undo stack holds up to 100 snapshots.
+
+## `useTextSelection`
+
+Manages text selection on a DOM element using the existing `Selection`/`Range` API, with optional auto-copy to clipboard.
+
+```tsx
+import { useTextSelection } from "@visulima/tui/ink";
+
+const ref = useRef(null);
+const { selectedText, selectAll, clearSelection } = useTextSelection(ref, {
+    copyOnSelect: true,
+    onSelectionChange: (text) => console.log("Selected:", text),
+});
+
+return (
+    <Box ref={ref}>
+        <Text>Selectable content</Text>
+    </Box>
+);
+```
+
+### Options
+
+| Option              | Type                     | Default | Description                         |
+| ------------------- | ------------------------ | ------- | ----------------------------------- |
+| `isActive`          | `boolean`                | `true`  | Enable/disable text selection       |
+| `copyOnSelect`      | `boolean`                | `false` | Auto-copy to clipboard on selection |
+| `onSelectionChange` | `(text: string) => void` | —       | Called when selected text changes   |
+
+### Return Value
+
+| Field            | Type         | Description                       |
+| ---------------- | ------------ | --------------------------------- |
+| `selection`      | `Selection`  | The underlying Selection instance |
+| `selectedText`   | `string`     | Currently selected text           |
+| `selectAll`      | `() => void` | Select all content in the element |
+| `clearSelection` | `() => void` | Clear the current selection       |
+
+## `useColorBlindness`
+
+Simulate or compensate for color vision deficiency. Returns a `transformColor` function that maps hex colors through a color blindness matrix.
+
+```tsx
+import { useColorBlindness } from "@visulima/tui/ink";
+
+const { transformColor } = useColorBlindness({ mode: "deuteranopia" });
+<Text color={transformColor("#ff0000")}>This text</Text>;
+```
+
+| Option       | Type                                                                                  | Default  |
+| ------------ | ------------------------------------------------------------------------------------- | -------- |
+| `mode`       | `"protanopia"` \| `"deuteranopia"` \| `"tritanopia"` \| `"achromatopsia"` \| `"none"` | `"none"` |
+| `compensate` | `boolean`                                                                             | `false`  |
+
+Simulation mode shows how colors appear to affected users. Compensation mode shifts colors to a distinguishable range. Low-level utilities (`applyColorMatrix`, `COLOR_BLINDNESS_SIMULATION`, `COLOR_BLINDNESS_COMPENSATION`) are also exported for direct use.
+
+## `useConsoleCapture`
+
+Capture `console.log`/`warn`/`error`/`info`/`debug` output into a React state buffer. Used by the `<ConsoleOverlay>` component.
+
+```tsx
+import { useConsoleCapture } from "@visulima/tui/ink";
+
+const { entries, clear } = useConsoleCapture({ maxEntries: 100 });
+```
+
+| Option       | Type             | Default                                     |
+| ------------ | ---------------- | ------------------------------------------- |
+| `maxEntries` | `number`         | `200`                                       |
+| `filter`     | `ConsoleLevel[]` | `["log", "info", "warn", "error", "debug"]` |
+| `isActive`   | `boolean`        | `true`                                      |
+
+Each entry has `id`, `level`, `message`, and `timestamp`.
+
+> **Note:** Only one active `useConsoleCapture` instance should exist at a time. The `<ConsoleOverlay>` component uses this hook internally — do not use both simultaneously unless the hook has `isActive: false`.
+
+## `useScrollAcceleration`
+
+macOS-style scroll physics with momentum. Tracks scroll event velocity and applies exponential acceleration when events arrive rapidly.
+
+```tsx
+import { useScrollAcceleration } from "@visulima/tui/ink";
+
+const { handleScroll } = useScrollAcceleration({
+    onScroll: (delta) => scrollViewRef.current?.scrollBy(delta),
+});
+```
+
+| Option         | Type                      | Default |
+| -------------- | ------------------------- | ------- |
+| `acceleration` | `number`                  | `1.5`   |
+| `decayRate`    | `number` (0-1)            | `0.92`  |
+| `maxVelocity`  | `number`                  | `20`    |
+| `isActive`     | `boolean`                 | `true`  |
+| `onScroll`     | `(delta: number) => void` | —       |
+
+Returns `handleScroll(direction)`, `velocity`, and `isCoasting`.
+
+## `useTerminalPalette`
+
+Query the terminal emulator for its current color palette using OSC escape sequences.
+
+```tsx
+import { useTerminalPalette } from "@visulima/tui/ink";
+
+const { palette, isLoading, isSupported } = useTerminalPalette();
+if (palette?.background) {
+    console.log("Terminal background:", palette.background);
+}
+```
+
+Returns `palette` (with `foreground`, `background`, `cursor`, and `colors` array of 16 ANSI colors as hex strings), `isLoading`, and `isSupported`. Low-level `queryTerminalPalette()` and `isTerminalPaletteQuerySupported()` are also exported.
 
 ## `useMouse` (Ratatat-only)
 
@@ -243,14 +443,14 @@ Additional measurement utilities are available for advanced use cases:
 
 ```tsx
 import {
-    getBoundingBox,       // scroll-aware absolute position
-    getInnerWidth,        // width excluding borders
-    getInnerHeight,       // height excluding borders
-    getScrollHeight,      // total scrollable content height
-    getScrollWidth,       // total scrollable content width
-    getScrollTop,         // current vertical scroll position
-    getScrollLeft,        // current horizontal scroll position
-    ResizeObserver,       // observe element size changes
+    getBoundingBox, // scroll-aware absolute position
+    getInnerWidth, // width excluding borders
+    getInnerHeight, // height excluding borders
+    getScrollHeight, // total scrollable content height
+    getScrollWidth, // total scrollable content width
+    getScrollTop, // current vertical scroll position
+    getScrollLeft, // current horizontal scroll position
+    ResizeObserver, // observe element size changes
 } from "@visulima/tui/ink";
 
 // ResizeObserver example

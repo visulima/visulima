@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable @stylistic/no-extra-parens, react/function-component-definition, unicorn/filename-case */
 import { strip } from "@visulima/ansi";
 import { multilineGradient } from "@visulima/colorize/gradient";
 import type { Key, ReactElement, ReactNode } from "react";
@@ -16,20 +16,7 @@ type GradientStop = Parameters<typeof multilineGradient>[0][number];
 /**
  * Built-in gradient presets.
  */
-type GradientName
-    = | "atlas"
-        | "cristal"
-        | "fruit"
-        | "instagram"
-        | "mind"
-        | "morning"
-        | "pastel"
-        | "passion"
-        | "rainbow"
-        | "retro"
-        | "summer"
-        | "teen"
-        | "vice";
+type GradientName = "atlas" | "cristal" | "fruit" | "instagram" | "mind" | "morning" | "pastel" | "passion" | "rainbow" | "retro" | "summer" | "teen" | "vice";
 
 /**
  * Custom gradient colors — an array of color stops accepted by `@visulima/colorize`'s gradient API.
@@ -98,8 +85,8 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
     }
 
     const gradientFunction = useMemo(
-        // eslint-disable-next-line no-confusing-arrow
-        () => name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors ?? []),
+
+        () => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors ?? [])),
         [name, colors],
     );
     const applyGradient = (text: string) => gradientFunction(strip(text));

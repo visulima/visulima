@@ -1,4 +1,14 @@
-<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER --><!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="tui" />
+
+</a>
+
+<h3 align="center">React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 
@@ -43,17 +53,52 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 
 ![Stress test (700 FPS)](docs/media/ratatat-stress-test-700fps.png)
 
-### React vs Ink benchmark
+### Render pipeline (internal reconciler + layout + buffer paint)
 
-Measured on Apple M1 Max, 80×24 terminal.
+Measured with `vitest bench` on an 80×24 virtual terminal.
 
-| Metric                  | Unit              | @visulima/tui |   Ink | Speedup |
-| ----------------------- | ----------------- | ------------: | ----: | ------: |
-| Initial mount (simple)  | ops/sec           |        67,630 | 8,215 |    8.2× |
-| Initial mount (complex) | ops/sec           |        41,253 | 1,421 |     29× |
-| Rerender (simple)       | ops/sec           |        95,175 | 8,095 |   11.8× |
-| Rerender (complex)      | ops/sec           |        49,852 | 1,384 |     36× |
-| p99 latency (complex)   | µs (lower better) |            23 | 1,586 |     68× |
+| Metric                  | ops/sec |
+| ----------------------- | ------: |
+| Mount + render (simple) | 150,002 |
+| Mount + render (complex)|  52,821 |
+| Rerender (simple)       | 101,588 |
+| Rerender (complex)      |  30,525 |
+
+### renderToString — @visulima/tui vs Ink
+
+End-to-end comparison using each library's `renderToString` API (80 columns).
+
+| Scenario                       | @visulima/tui (ops/s) | Ink (ops/s) | Speedup |
+| ------------------------------ | --------------------: | ----------: | ------: |
+| Simple component               |                 8,041 |       7,314 |   1.10× |
+| Styled (text + colors)         |                 3,184 |       2,907 |   1.10× |
+| Dashboard (borders + panels)   |                 3,851 |       1,664 |   2.31× |
+
+### Diff engine (native Rust NAPI binding)
+
+| Scenario                       |       ops/sec |
+| ------------------------------ | ------------: |
+| No changes (hot path)          |  17,410,306   |
+| All cells dirty (first frame)  |  17,528,554   |
+| 5% cells dirty (typical frame) |  17,218,929   |
+
+### Additional module benchmarks
+
+| Module              | Benchmark                          |     ops/sec |
+| ------------------- | ---------------------------------- | ----------: |
+| Color matrix        | Single RGB transform               | 20,320,658  |
+| Color matrix        | 256 colors through protanopia      |    201,553  |
+| Text buffer         | Split small (1 line)               | 17,135,714  |
+| Text buffer         | Insert char (100-line doc)         |    731,095  |
+| Text buffer         | Delete line (100-line doc)         |    689,601  |
+| Shiki highlighting  | Warm cache get                     |  2,047,498  |
+| Shiki highlighting  | Cold init                          |      4,463  |
+| Markdown lexer      | Small (~50 chars)                  |    234,492  |
+| Markdown lexer      | Large (~4000 chars)                |      4,799  |
+| Diff computation    | createPatch (small)                |    419,554  |
+| Diff computation    | diffChars (small)                  |    223,987  |
+
+> Run benchmarks yourself: `pnpm --filter @visulima/tui run test:bench`
 
 ### Kitchen sink demo
 

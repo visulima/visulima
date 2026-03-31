@@ -276,7 +276,7 @@ const LayoutSection = () => (
                     alignItems
                 </Text>
                 {(["flex-start", "center", "flex-end"] as const).map((a) => (
-                    <Box alignItems={a} borderColor="gray" borderStyle="single" height={3} key={a} width={16}>
+                    <Box alignItems={a} borderColor="gray" borderStyle="single" height={5} key={a} width={16}>
                         <Text color="magenta">▪▪▪</Text>
                     </Box>
                 ))}
@@ -1162,7 +1162,7 @@ const TabBar = ({ current, onSelect }: { current: number; onSelect: (i: number) 
                 );
             })}
             <Spacer />
-            <Text dim>navigate ◀ ▶ or click | Q quit </Text>
+            <Text dim>navigate ◀ ▶ or click | PgUp/PgDn scroll | Q quit </Text>
         </Box>
     );
 };
@@ -1441,16 +1441,54 @@ function useAnimationLoop(active: boolean, onTick: (frame: number) => void) {
 const KitchenSink = () => {
     const { exit } = useApp();
     const [sectionIndex, setSectionIndex] = useState(0);
+    const { rows } = useWindowSize();
 
-    useInput((input, key) => {
-        if (input === "q" || input === "Q") exit();
+    // Viewport height: total rows minus tab bar (3 rows) minus DevTools HUD (3 rows)
+    const TAB_BAR_HEIGHT = 3;
+    const HUD_HEIGHT = 3;
+    const viewportHeight = Math.max(4, rows - TAB_BAR_HEIGHT - HUD_HEIGHT);
 
-        if (key.rightArrow) setSectionIndex((i) => Math.min(i + 1, SECTIONS.length - 1));
-
-        if (key.leftArrow) setSectionIndex((i) => Math.max(i - 1, 0));
-    });
+    // Estimate content height per section (generous — content can exceed viewport)
+    const CONTENT_HEIGHTS: Record<SectionName, number> = {
+        Focus: 30,
+        Graph: 40,
+        Incremental: 50,
+        Layout: 30,
+        Live: 20,
+        Mouse: 40,
+        Static: 30,
+        UI: 80,
+    };
 
     const currentSection = SECTIONS[sectionIndex];
+    const contentHeight = CONTENT_HEIGHTS[currentSection] ?? 40;
+    const scroll = useScrollable({ contentHeight, viewportHeight });
+
+    useInput((input, key) => {
+        // Mouse section has a text input — don't capture letter keys when it's active
+        const hasTextInput = currentSection === "Mouse";
+
+        if (!hasTextInput && (input === "q" || input === "Q")) exit();
+
+        // Ctrl+C always quits regardless of section
+        if (key.ctrl && input === "c") exit();
+
+        if (key.rightArrow && !hasTextInput) {
+            setSectionIndex((i) => Math.min(i + 1, SECTIONS.length - 1));
+            scroll.scrollToTop();
+        }
+
+        if (key.leftArrow && !hasTextInput) {
+            setSectionIndex((i) => Math.max(i - 1, 0));
+            scroll.scrollToTop();
+        }
+
+        // Page Up/Down scrolls the viewport
+        if (key.pageDown) scroll.scrollBy(Math.floor(viewportHeight / 2));
+
+        if (key.pageUp) scroll.scrollBy(-Math.floor(viewportHeight / 2));
+    });
+
     const isGraphActive = currentSection === "Graph";
     const isIncActive = currentSection === "Incremental";
     const isUiActive = currentSection === "UI";
@@ -1462,8 +1500,8 @@ const KitchenSink = () => {
             {/* Tab bar at top */}
             <TabBar current={sectionIndex} onSelect={setSectionIndex} />
 
-            {/* Section content fills remaining space */}
-            <Box flexDirection="column" flexGrow={1} paddingTop={1} paddingX={2}>
+            {/* Section content — scrollable viewport */}
+            <Box flexDirection="column" flexGrow={1} overflow="scroll" paddingTop={1} paddingX={2} scrollTop={scroll.offset}>
                 {currentSection === "Layout" && <LayoutSection />}
                 {currentSection === "Focus" && <FocusSection />}
                 {currentSection === "Graph" && <GraphSection active={isGraphActive} />}

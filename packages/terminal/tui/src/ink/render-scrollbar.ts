@@ -1,3 +1,5 @@
+/* eslint-disable import/exports-last, no-plusplus, sonarjs/cognitive-complexity */
+
 /**
  * Scrollbar rendering for elements with `overflow: 'scroll'`.
  *

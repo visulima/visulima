@@ -22,7 +22,9 @@ exports[`ink compatibility - borders > should match snapshot 1`] = `
 
 exports[`ink compatibility - box-backgrounds > should match snapshot 1`] = `
 "Box Background Examples:
+
 Hello
+
 
 
 ╭──────────╮
@@ -30,10 +32,13 @@ Hello
 │          │
 ╰──────────╯
 
+
  Padding
 
 
+
     Centered
+
 
 
 Inherited Override Back to inherited"

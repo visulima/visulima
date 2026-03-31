@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-use-before-define, func-style, import/exports-last, import/prefer-default-export, no-bitwise, no-console, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-plus-operands, func-style, import/exports-last, import/no-extraneous-dependencies, import/prefer-default-export, jsdoc/check-indentation, no-bitwise, no-console, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, no-underscore-dangle, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/no-array-callback-reference */
 import cliBoxes from "cli-boxes";
 
 import type { LayoutNode } from "./layout";
@@ -18,6 +18,18 @@ const SCROLLBAR_FULL = 0x25_88; // █
 const SCROLLBAR_UPPER = 0x25_80; // ▀
 const SCROLLBAR_LOWER = 0x25_84; // ▄
 
+/** Compute effective border widths accounting for per-side boolean overrides. */
+function getEffectiveBorderWidths(nodeStyle: Record<string, unknown> | undefined): { bottom: number; left: number; right: number; top: number } {
+    const base = nodeStyle?.borderStyle ? 1 : 0;
+
+    return {
+        bottom: nodeStyle?.borderBottom === false ? 0 : base,
+        left: nodeStyle?.borderLeft === false ? 0 : base,
+        right: nodeStyle?.borderRight === false ? 0 : base,
+        top: nodeStyle?.borderTop === false ? 0 : base,
+    };
+}
+
 function getScrollContentHeight(node: LayoutNode): number {
     let maxBottom = 0;
 
@@ -30,7 +42,13 @@ function getScrollContentHeight(node: LayoutNode): number {
         }
     }
 
-    return maxBottom;
+    // Account for bottom padding — Yoga child positions are relative to
+    // the content box (after border+padding), but the visual scroll range
+    // must include any trailing padding so the last child isn't clipped.
+    const style = node._style;
+    const paddingBottom = style?.paddingBottom ?? style?.paddingY ?? style?.padding ?? 0;
+
+    return maxBottom + paddingBottom;
 }
 
 function paintScrollbar(
@@ -47,8 +65,8 @@ function paintScrollbar(
     clip: Clip,
     nodeStyle: Record<string, unknown>,
 ): void {
-    const borderWidth = nodeStyle.borderStyle ? 1 : 0;
-    const innerHeight = h - borderWidth * 2;
+    const borders = getEffectiveBorderWidths(nodeStyle);
+    const innerHeight = h - borders.top - borders.bottom;
     const scrollTop = (nodeStyle.scrollTop as number) ?? 0;
     const scrollHeight = getScrollContentHeight(node);
     const clientHeight = innerHeight;
@@ -66,7 +84,7 @@ function paintScrollbar(
 
     const thumbColor = typeof nodeStyle.scrollbarThumbColor === "string" ? resolveColor(nodeStyle.scrollbarThumbColor) : fg;
 
-    const scrollbarX = absX + w - 1 - borderWidth;
+    const scrollbarX = absX + w - 1 - borders.right;
     const attributeCode = (parentStyles << 16) | (255 << 8) | thumbColor;
 
     for (let index = 0; index < innerHeight; index++) {
@@ -87,7 +105,7 @@ function paintScrollbar(
             charCode = SCROLLBAR_LOWER;
         }
 
-        writeCell(buffer, cols, rows, scrollbarX, absY + borderWidth + index, charCode, attributeCode, clip);
+        writeCell(buffer, cols, rows, scrollbarX, absY + borders.top + index, charCode, attributeCode, clip);
     }
 }
 
@@ -117,9 +135,9 @@ function paintStickyHeaders(
     clip: Clip,
     nodeStyle: Record<string, unknown>,
 ): void {
-    const borderWidth = nodeStyle.borderStyle ? 1 : 0;
+    const borders = getEffectiveBorderWidths(nodeStyle);
     const scrollTop = (nodeStyle.scrollTop as number) ?? 0;
-    const contentY = absY + borderWidth;
+    const contentY = absY + borders.top;
 
     for (const child of node.children) {
         if (!child._style?.sticky) {
@@ -194,9 +212,11 @@ export function renderTreeToBuffer(root: LayoutNode, buffer: Uint32Array, cols: 
 
 function writeCell(buffer: Uint32Array, cols: number, rows: number, sx: number, sy: number, charCode: number, attributeCode: number, clip: Clip) {
     // Clip to parent bounds first, then terminal bounds
-    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1) return;
+    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1)
+        return;
 
-    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) return;
+    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows)
+        return;
 
     const index = (sy * cols + sx) * 2;
 
@@ -218,7 +238,11 @@ function paintBorder(
     styles: number,
     clip: Clip,
 ) {
-    if (!node._style?.borderStyle) return;
+    if (!node._style?.borderStyle)
+        return;
+
+    if (w <= 0 || h <= 0)
+        return;
 
     const box = (cliBoxes as any)[node._style.borderStyle];
     const borderFg = node._style.borderColor === undefined ? fg : resolveColor(node._style.borderColor);
@@ -229,37 +253,80 @@ function paintBorder(
     const showLeft = node._style.borderLeft !== false;
     const showRight = node._style.borderRight !== false;
 
+    // When h=1, top and bottom share the same row — top takes priority.
+    // When h>=2, they occupy distinct rows and both are painted.
+    const canShowBottom = showBottom && (h > 1 || !showTop);
+
     if (showTop) {
         for (let x = 0; x < w; x++) {
-            const ch = x === 0 && showLeft ? box.topLeft : x === w - 1 && showRight ? box.topRight : box.top;
+            let ch: string;
+
+            if (w === 1) {
+                // Single-column degenerate case: pick the best corner/vertical
+                ch = showLeft && showRight ? box.left : showLeft ? box.topLeft : showRight ? box.topRight : box.top;
+            } else if (x === 0 && showLeft) {
+                ch = box.topLeft;
+            } else if (x === w - 1 && showRight) {
+                ch = box.topRight;
+            } else {
+                ch = box.top;
+            }
 
             writeCell(buffer, cols, rows, absX + x, absY, ch.codePointAt(0)!, borderAttribute, clip);
         }
     }
 
-    if (showBottom) {
+    if (canShowBottom) {
         for (let x = 0; x < w; x++) {
-            const ch = x === 0 && showLeft ? box.bottomLeft : x === w - 1 && showRight ? box.bottomRight : box.bottom;
+            let ch: string;
+
+            if (w === 1) {
+                ch = showLeft && showRight ? box.left : showLeft ? box.bottomLeft : showRight ? box.bottomRight : box.bottom;
+            } else if (x === 0 && showLeft) {
+                ch = box.bottomLeft;
+            } else if (x === w - 1 && showRight) {
+                ch = box.bottomRight;
+            } else {
+                ch = box.bottom;
+            }
 
             writeCell(buffer, cols, rows, absX + x, absY + h - 1, ch.codePointAt(0)!, borderAttribute, clip);
         }
     }
 
     const yStart = showTop ? 1 : 0;
-    const yEnd = showBottom ? h - 1 : h;
+    const yEnd = canShowBottom ? h - 1 : h;
 
     for (let y = yStart; y < yEnd; y++) {
-        if (showLeft) writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        if (showLeft)
+            writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
 
-        if (showRight) writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        if (showRight)
+            writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
     }
 }
 
-/** Recursively collect all text content from a node's descendants. */
+/**
+ * Recursively collect all text content from a node's descendants.
+ *  Applies nested transforms so that an outer Transform sees the
+ *  correctly transformed output of inner Transforms.
+ */
 function collectText(node: LayoutNode): string {
-    if (node.text !== undefined) return node.text;
+    if (node._hidden)
+        return "";
 
-    return node.children.map(collectText).join("");
+    if (node.text !== undefined)
+        return node.text;
+
+    const raw = node.children.map(collectText).join("");
+
+    // Apply this node's transform (if any) so parent transforms see
+    // the post-transform text, not raw children text.
+    if (typeof node.transform === "function") {
+        return node.transform(raw, 0);
+    }
+
+    return raw;
 }
 
 /** Paint a plain string at (absX, absY) into the buffer, wrapping at width w. */
@@ -275,7 +342,8 @@ function paintText(
     attributeCode: number,
     clip: Clip,
 ) {
-    if (w <= 0 || h <= 0) return;
+    if (w <= 0 || h <= 0)
+        return;
 
     let cursorX = 0;
     let cursorY = 0;
@@ -289,14 +357,24 @@ function paintText(
         }
 
         const charCode = char.codePointAt(0) ?? 32;
-        const charWidth = Math.min(getCodePointWidth(char), w);
+        const charWidth = getCodePointWidth(char);
 
+        // Wide character that can't fit in the remaining space on this line — wrap.
         if (cursorX + charWidth > w) {
             cursorX = 0;
             cursorY++;
         }
 
-        if (cursorY >= h) break;
+        if (cursorY >= h)
+            break;
+
+        // Wide character that can't fit even on an empty line — replace with space
+        // to avoid writing a half-glyph without its continuation cell.
+        if (charWidth > w) {
+            writeCell(buffer, cols, rows, absX + cursorX, absY + cursorY, 32, attributeCode, clip);
+            cursorX += 1;
+            continue;
+        }
 
         writeCell(buffer, cols, rows, absX + cursorX, absY + cursorY, charCode, attributeCode, clip);
 
@@ -334,7 +412,8 @@ function paintNode(
     clip: Clip,
 ) {
     // Suspense hides nodes by setting _hidden — skip the entire subtree
-    if (node._hidden) return;
+    if (node._hidden)
+        return;
 
     const layout = node.getLayout();
 
@@ -357,7 +436,8 @@ function paintNode(
     };
 
     // If the node is entirely outside the clip, skip it and its children
-    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1) return;
+    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1)
+        return;
 
     // <Transform> node: collect all descendant text, apply transform fn, paint result
     if (typeof node.transform === "function") {
@@ -370,7 +450,24 @@ function paintNode(
         return;
     }
 
-    if (node.text) {
+    if (node.text === undefined) {
+        // Fill background — skip when bg is terminal default and no text styles,
+        // since the buffer was already cleared to spaces with default attributes.
+        if (bg !== 255 || styles !== 0) {
+            const attributeCode = (styles << 16) | (bg << 8) | fg;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    writeCell(buffer, cols, rows, absX + x, absY + y, 32, attributeCode, nodeClip);
+                }
+            }
+        }
+
+        // Queue border repaint for pass 2 (so children can't erase it)
+        if (node._style?.borderStyle) {
+            borderJobs.push({ absX, absY, bg, clip: nodeClip, fg, h, node, styles, w });
+        }
+    } else {
         // Text node: optionally fill background then paint characters
         const attributeCode = (styles << 16) | (bg << 8) | fg;
 
@@ -383,20 +480,6 @@ function paintNode(
         }
 
         paintText(node.text, buffer, cols, rows, absX, absY, w, h, attributeCode, nodeClip);
-    } else {
-        // Fill background
-        const attributeCode = (styles << 16) | (bg << 8) | fg;
-
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                writeCell(buffer, cols, rows, absX + x, absY + y, 32, attributeCode, nodeClip);
-            }
-        }
-
-        // Queue border repaint for pass 2 (so children can't erase it)
-        if (node._style?.borderStyle) {
-            borderJobs.push({ absX, absY, bg, clip: nodeClip, fg, h, node, styles, w });
-        }
     }
 
     // Determine overflow and scroll state
@@ -408,22 +491,20 @@ function paintNode(
     const clipH = overflowX === "hidden" || overflowX === "scroll";
     const clipV = overflowY === "hidden" || overflowY === "scroll";
 
-    // Tighten clip to content area (inside borders) for overflow: hidden/scroll
+    // Children are always clipped to this node's bounds. For overflow: hidden/scroll,
+    // the clip is further tightened to the content area (inside borders) below.
     let childClip = nodeClip;
     let scrollOffsetX = 0;
     let scrollOffsetY = 0;
 
     if (clipH || clipV) {
-        const borderTop = nodeStyle?.borderStyle ? 1 : 0;
-        const borderLeft = nodeStyle?.borderStyle ? 1 : 0;
-        const borderRight = nodeStyle?.borderStyle ? 1 : 0;
-        const borderBottom = nodeStyle?.borderStyle ? 1 : 0;
+        const borders = getEffectiveBorderWidths(nodeStyle);
 
         childClip = {
-            x0: clipH ? Math.max(nodeClip.x0, absX + borderLeft) : nodeClip.x0,
-            x1: clipH ? Math.min(nodeClip.x1, absX + w - borderRight) : nodeClip.x1,
-            y0: clipV ? Math.max(nodeClip.y0, absY + borderTop) : nodeClip.y0,
-            y1: clipV ? Math.min(nodeClip.y1, absY + h - borderBottom) : nodeClip.y1,
+            x0: clipH ? Math.max(nodeClip.x0, absX + borders.left) : nodeClip.x0,
+            x1: clipH ? Math.min(nodeClip.x1, absX + w - borders.right) : nodeClip.x1,
+            y0: clipV ? Math.max(nodeClip.y0, absY + borders.top) : nodeClip.y0,
+            y1: clipV ? Math.min(nodeClip.y1, absY + h - borders.bottom) : nodeClip.y1,
         };
 
         // Apply scroll offsets

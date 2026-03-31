@@ -34,12 +34,19 @@ export default createConfig(
             parserOptions: {
                 projectService: {
                     allowDefaultProject: ["*.js", "*.d.ts", "*.ts", "eslint.config.js"],
+                    defaultProject: "tsconfig.eslint.json",
                 },
                 tsconfigRootDir: __dirname,
             },
         },
         rules: {
             "vitest/unbound-method": "off",
+        },
+    },
+    {
+        files: ["**/*.tsx"],
+        rules: {
+            "unicorn/no-null": "off",
         },
     },
     {

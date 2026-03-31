@@ -1,5 +1,5 @@
-/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
-import Yoga from "yoga-layout-prebuilt";
+/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+import Yoga from "yoga-layout";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;
 
@@ -60,6 +60,17 @@ export function resolveColor(color: number | string | undefined): number {
     if (ansiMatch)
         return Number(ansiMatch[1]);
 
+    // #RGB shorthand → expand to #RRGGBB
+    const hex3Match = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(color);
+
+    if (hex3Match) {
+        return rgbToAnsi256(
+            Number.parseInt(hex3Match[1]! + hex3Match[1]!, 16),
+            Number.parseInt(hex3Match[2]! + hex3Match[2]!, 16),
+            Number.parseInt(hex3Match[3]! + hex3Match[3]!, 16),
+        );
+    }
+
     // #RRGGBB hex
     const hexMatch = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
 
@@ -113,8 +124,10 @@ export type Styles = {
     flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
     gap?: number;
     height?: number | string;
-    inverse?: boolean;
+    /** Internal flag for sticky header alternate nodes */
+    internalStickyAlternate?: boolean;
 
+    inverse?: boolean;
     italic?: boolean;
     justifyContent?: "flex-start" | "flex-end" | "space-between" | "space-around" | "space-evenly" | "center";
     left?: number | string;
@@ -132,6 +145,9 @@ export type Styles = {
     minHeight?: number | string;
 
     minWidth?: number | string;
+    overflow?: "hidden" | "scroll" | "visible";
+    overflowX?: "hidden" | "scroll" | "visible";
+    overflowY?: "hidden" | "scroll" | "visible";
     padding?: number;
     paddingBottom?: number;
     paddingLeft?: number;
@@ -144,6 +160,11 @@ export type Styles = {
     position?: "absolute" | "relative" | "static";
     right?: number | string;
     rowGap?: number;
+    scrollbar?: boolean;
+    scrollbarThumbColor?: string;
+    scrollLeft?: number;
+    scrollTop?: number;
+    sticky?: boolean;
     strikethrough?: boolean;
     styles?: number;
 
@@ -193,10 +214,10 @@ const applyMarginStyles = (node: YogaNode, style: Styles): void => {
         node.setMargin(Yoga.EDGE_VERTICAL, style.marginY ?? 0);
 
     if ("marginLeft" in style)
-        node.setMargin(Yoga.EDGE_START, style.marginLeft ?? 0);
+        node.setMargin(Yoga.EDGE_LEFT, style.marginLeft ?? 0);
 
     if ("marginRight" in style)
-        node.setMargin(Yoga.EDGE_END, style.marginRight ?? 0);
+        node.setMargin(Yoga.EDGE_RIGHT, style.marginRight ?? 0);
 
     if ("marginTop" in style)
         node.setMargin(Yoga.EDGE_TOP, style.marginTop ?? 0);
@@ -355,7 +376,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("aspectRatio" in style)
-        node.setAspectRatio(style.aspectRatio!);
+        node.setAspectRatio(style.aspectRatio);
 };
 
 const applyDisplayStyles = (node: YogaNode, style: Styles): void => {
@@ -379,19 +400,13 @@ const applyBorderStyles = (node: YogaNode, style: Styles, currentStyle: Styles):
 };
 
 const applyGapStyles = (node: YogaNode, style: Styles): void => {
-    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
-    if ("gap" in style && node.setGap)
-        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
+    if ("gap" in style)
         node.setGap(Yoga.GUTTER_ALL, style.gap ?? 0);
 
-    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
-    if ("columnGap" in style && node.setGap)
-        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
+    if ("columnGap" in style)
         node.setGap(Yoga.GUTTER_COLUMN, style.columnGap ?? 0);
 
-    // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
-    if ("rowGap" in style && node.setGap)
-        // @ts-expect-error setGap/GUTTER_* exist at runtime but not in @types/yoga-layout
+    if ("rowGap" in style)
         node.setGap(Yoga.GUTTER_ROW, style.rowGap ?? 0);
 };
 

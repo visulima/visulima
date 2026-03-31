@@ -1,0 +1,153 @@
+import { PassThrough } from "node:stream";
+
+import { describe, expect, it } from "vitest";
+
+import { clearOsc52, isOsc52Supported, writeOsc52 } from "../../src/ink/clipboard";
+
+describe("clipboard utilities", () => {
+    describe("writeOsc52", () => {
+        it("should write correct OSC 52 sequence for clipboard target", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            writeOsc52(stream, "hello", "c");
+
+            const output = Buffer.concat(chunks).toString();
+            const expectedBase64 = Buffer.from("hello", "utf8").toString("base64");
+
+            expect(output).toBe(`\x1B]52;c;${expectedBase64}\x07`);
+        });
+
+        it("should write correct sequence for primary selection", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            writeOsc52(stream, "test", "p");
+
+            const output = Buffer.concat(chunks).toString();
+
+            expect(output).toContain(";p;");
+        });
+
+        it("should handle empty text", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            writeOsc52(stream, "", "c");
+
+            const output = Buffer.concat(chunks).toString();
+
+            expect(output).toBe(`\x1B]52;c;${Buffer.from("").toString("base64")}\x07`);
+        });
+
+        it("should handle Unicode text", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            writeOsc52(stream, "日本語", "c");
+
+            const output = Buffer.concat(chunks).toString();
+            const expectedBase64 = Buffer.from("日本語", "utf8").toString("base64");
+
+            expect(output).toContain(expectedBase64);
+        });
+
+        it("should reject invalid targets at runtime", () => {
+            const stream = new PassThrough();
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            expect(() => writeOsc52(stream, "test", "x" as any)).toThrow("Invalid clipboard target");
+        });
+    });
+
+    describe("clearOsc52", () => {
+        it("should write empty payload for clipboard", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            clearOsc52(stream, "c");
+
+            const output = Buffer.concat(chunks).toString();
+
+            expect(output).toBe("\x1B]52;c;\x07");
+        });
+
+        it("should support secondary selection", () => {
+            const stream = new PassThrough();
+            const chunks: Buffer[] = [];
+
+            stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+
+            clearOsc52(stream, "s");
+
+            const output = Buffer.concat(chunks).toString();
+
+            expect(output).toContain(";s;");
+        });
+    });
+
+    describe("isOsc52Supported", () => {
+        it("should detect known terminals", () => {
+            const original = process.env["TERM_PROGRAM"];
+
+            process.env["TERM_PROGRAM"] = "kitty";
+            expect(isOsc52Supported()).toBe(true);
+
+            process.env["TERM_PROGRAM"] = "Alacritty";
+            expect(isOsc52Supported()).toBe(true);
+
+            process.env["TERM_PROGRAM"] = "WezTerm";
+            expect(isOsc52Supported()).toBe(true);
+
+            if (original === undefined) {
+                delete process.env["TERM_PROGRAM"];
+            } else {
+                process.env["TERM_PROGRAM"] = original;
+            }
+        });
+
+        it("should detect xterm via TERM", () => {
+            const originalProgram = process.env["TERM_PROGRAM"];
+            const originalTerm = process.env["TERM"];
+
+            process.env["TERM_PROGRAM"] = "";
+            process.env["TERM"] = "xterm-256color";
+            expect(isOsc52Supported()).toBe(true);
+
+            if (originalProgram === undefined) {
+                delete process.env["TERM_PROGRAM"];
+            } else {
+                process.env["TERM_PROGRAM"] = originalProgram;
+            }
+
+            if (originalTerm === undefined) {
+                delete process.env["TERM"];
+            } else {
+                process.env["TERM"] = originalTerm;
+            }
+        });
+
+        it("should return boolean for unknown terminals", () => {
+            const original = process.env["TERM_PROGRAM"];
+
+            process.env["TERM_PROGRAM"] = "totally-unknown";
+            expect(typeof isOsc52Supported()).toBe("boolean");
+
+            if (original === undefined) {
+                delete process.env["TERM_PROGRAM"];
+            } else {
+                process.env["TERM_PROGRAM"] = original;
+            }
+        });
+    });
+});

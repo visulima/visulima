@@ -18,10 +18,7 @@ const App = () => (
             items={[
                 { label: "Red" },
                 {
-                    children: [
-                        { label: "Light" },
-                        { label: "Dark" },
-                    ],
+                    children: [{ label: "Light" }, { label: "Dark" }],
                     label: "Green",
                 },
                 { label: "Blue" },
@@ -29,10 +26,7 @@ const App = () => (
                     children: [
                         { label: "Sky" },
                         {
-                            children: [
-                                { label: "Neon" },
-                                { label: "Pastel" },
-                            ],
+                            children: [{ label: "Neon" }, { label: "Pastel" }],
                             label: "Bright",
                         },
                     ],

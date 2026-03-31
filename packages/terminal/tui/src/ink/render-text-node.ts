@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity */
+
 /**
  * StyledChar-based text node rendering.
  *
@@ -147,8 +149,8 @@ export const handleTextNode = (
     const { width: currentWidth } = measureStyledChars(styledChars);
     const maxWidth = getMaxWidth(node.yogaNode!);
 
-    let lines: StyledChar[][] =
-        currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
+    let lines: StyledChar[][]
+        = currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
 
     lines = applyPaddingToStyledChars(node, lines);
 

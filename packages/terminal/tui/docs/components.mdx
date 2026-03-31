@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, OrderedList, Spacer, Static, StatusMessage, Tab, Tabs, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, ConsoleOverlay, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -49,13 +49,13 @@ Layout primitive backed by Yoga.
 
 ```tsx
 <Box
-    overflow="scroll"       // visible | hidden | scroll
-    overflowX="hidden"      // per-axis overflow control
-    overflowY="scroll"      // per-axis overflow control
-    scrollTop={0}           // vertical scroll position (rows)
-    scrollLeft={0}          // horizontal scroll position (columns)
+    overflow="scroll" // visible | hidden | scroll
+    overflowX="hidden" // per-axis overflow control
+    overflowY="scroll" // per-axis overflow control
+    scrollTop={0} // vertical scroll position (rows)
+    scrollLeft={0} // horizontal scroll position (columns)
     scrollbarThumbColor="gray" // scrollbar thumb color
-    scrollbar={true}        // show/hide scrollbar (default: true)
+    scrollbar={true} // show/hide scrollbar (default: true)
     height={10}
     width={40}
 >
@@ -81,11 +81,11 @@ Elements within a scrollable `Box` can be pinned to the top or bottom of the vie
 </Box>
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `sticky` | `boolean \| 'top' \| 'bottom'` | Pin this element during scroll. `true` and `'top'` pin to the top; `'bottom'` pins to the bottom. |
-| `opaque` | `boolean` | Marks this element as opaque for rendering optimization (not yet active). |
-| `scrollbar` | `boolean` | Show/hide the scrollbar for scrollable elements. Defaults to `true`. |
+| Prop        | Type                           | Description                                                                                       |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `sticky`    | `boolean \| 'top' \| 'bottom'` | Pin this element during scroll. `true` and `'top'` pin to the top; `'bottom'` pins to the bottom. |
+| `opaque`    | `boolean`                      | Marks this element as opaque for rendering optimization (not yet active).                         |
+| `scrollbar` | `boolean`                      | Show/hide the scrollbar for scrollable elements. Defaults to `true`.                              |
 
 Notes:
 
@@ -101,7 +101,7 @@ Renders styled text.
 
 ```tsx
 <Text
-    color="cyan" // named, #rrggbb, rgb(r,g,b), or ANSI index 0-255
+    color="cyan" // named, #rgb, #rrggbb, rgb(r,g,b), or ANSI index 0-255
     backgroundColor="blue"
     bold
     italic
@@ -168,6 +168,66 @@ Notes:
 - If multiple `<Cursor>` components are rendered, the last one controls the terminal cursor.
 - If `anchorRef` is set but unresolved, the cursor is hidden for that frame.
 - See also [`useCursor()`](./hooks.mdx#usecursor) for imperative cursor control (e.g. IME support).
+
+## `Code`
+
+Syntax-highlighted code display using [Shiki](https://shiki.style/). Supports 25+ languages with lazy loading and VS Code-quality tokenization.
+
+```tsx
+import { Code } from "@visulima/tui/ink";
+
+<Code code='const x = "hello";' language="javascript" />
+<Code code={source} language="python" showLineNumbers startLine={10} />
+```
+
+| Prop              | Type                  | Default                 | Description                                |
+| ----------------- | --------------------- | ----------------------- | ------------------------------------------ |
+| `code`            | `string`              | _(required)_            | Source code to highlight                   |
+| `language`        | `string`              | —                       | Programming language (e.g. `"typescript"`) |
+| `theme`           | `string`              | `"github-dark-default"` | Shiki theme name                           |
+| `showLineNumbers` | `boolean`             | `false`                 | Show line number gutter                    |
+| `startLine`       | `number`              | `1`                     | Starting line number (for excerpts)        |
+| `highlightLines`  | `ReadonlySet<number>` | —                       | Line numbers to visually emphasize         |
+
+Supported languages: `javascript`, `typescript`, `jsx`, `tsx`, `json`, `html`, `css`, `python`, `ruby`, `rust`, `go`, `java`, `bash`, `shell`, `sql`, `markdown`, `yaml`, `toml`, `xml`, `svelte`, `vue`, and more. Unknown languages fall back to plain text.
+
+The highlighter loads asynchronously — the first render shows plain text, then re-renders with colors once Shiki is ready.
+
+## `DiffView`
+
+Display file differences with colored additions/deletions. Supports unified and split (side-by-side) views with optional inline character-level diff highlighting.
+
+```tsx
+import { DiffView } from "@visulima/tui/ink";
+
+<DiffView oldText={original} newText={modified} />
+<DiffView diff={unifiedDiffString} mode="split" />
+<DiffView oldText={a} newText={b} oldLabel="v1.0" newLabel="v2.0" inlineDiff />
+```
+
+| Prop              | Type                     | Default                 | Description                                           |
+| ----------------- | ------------------------ | ----------------------- | ----------------------------------------------------- |
+| `oldText`         | `string`                 | `""`                    | Original text (left / old)                            |
+| `newText`         | `string`                 | `""`                    | Modified text (right / new)                           |
+| `diff`            | `string`                 | —                       | Pre-computed unified diff (overrides oldText/newText) |
+| `mode`            | `"unified"` \| `"split"` | `"unified"`             | Display mode                                          |
+| `showLineNumbers` | `boolean`                | `true`                  | Show line numbers                                     |
+| `context`         | `number`                 | `3`                     | Unchanged context lines around changes                |
+| `inlineDiff`      | `boolean`                | `true`                  | Character-level highlighting within changed lines     |
+| `oldLabel`        | `string`                 | `"old"`                 | Label for the old version                             |
+| `newLabel`        | `string`                 | `"new"`                 | Label for the new version                             |
+| `language`        | `string`                 | —                       | Programming language for syntax highlighting          |
+| `theme`           | `string`                 | `"github-dark-default"` | Shiki theme for syntax highlighting                   |
+
+### Syntax highlighting in diffs
+
+When `language` is provided, diff content is highlighted with Shiki (same engine as the `Code` component). Syntax colors are preserved for context lines, and overlaid with diff colors (red/green) for changed lines.
+
+```tsx
+<DiffView oldText={oldCode} newText={newCode} language="typescript" />
+```
+
+Colors: additions in green (`+`), deletions in red (`-`), context lines dimmed. Inline diff highlights changed characters with inverted background.
 
 ## `BigText`
 
@@ -245,6 +305,48 @@ import { Link, Text } from "@visulima/tui/ink";
 When `fallback` is `true`, unsupported terminals show: `My Website https://example.com`. When `false`, only the text is shown. A function receives `(text, url)` for custom formatting.
 
 [Supported terminals.](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)
+
+## `Markdown`
+
+Render Markdown content as terminal UI elements. Parses with [marked](https://marked.js.org/) and maps tokens to Ink components. Code blocks are syntax-highlighted via the `Code` component.
+
+````tsx
+import { Markdown } from "@visulima/tui/ink";
+
+<Markdown>{"# Hello World\n\nThis is **bold** and *italic*."}</Markdown>
+<Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
+````
+
+| Prop        | Type      | Default                 | Description                          |
+| ----------- | --------- | ----------------------- | ------------------------------------ |
+| `children`  | `string`  | _(required)_            | Markdown source string               |
+| `codeTheme` | `string`  | `"github-dark-default"` | Shiki theme for code blocks          |
+| `maxWidth`  | `number`  | terminal width          | Maximum text wrap width              |
+| `streaming` | `boolean` | `false`                 | Progressive rendering for LLM output |
+
+### Streaming mode
+
+Enable `streaming` when rendering Markdown that arrives incrementally (e.g., token-by-token from an AI model). The component handles incomplete Markdown gracefully — unclosed code fences and partial blocks render as text until they close.
+
+```tsx
+const [text, setText] = useState("");
+// ... text grows as tokens arrive ...
+<Markdown streaming>{text}</Markdown>;
+```
+
+### Supported Markdown features
+
+- **Headings** (H1-H6) — bold, color-coded by depth
+- **Paragraphs** — with word wrapping
+- **Code blocks** — syntax highlighted via `<Code>` component
+- **Inline code** — rendered with inverse styling
+- **Bold**, **italic**, **strikethrough**
+- **Links** — rendered via the existing `<Link>` component (OSC 8)
+- **Ordered and unordered lists** — via existing `<OrderedList>` / `<UnorderedList>`
+- **Blockquotes** — with left border
+- **Horizontal rules**
+- **Tables** — via existing `<Table>` component
+- **Images** — displayed as `[image: alt text]` (terminals cannot render images)
 
 ## `Newline`
 
@@ -337,6 +439,74 @@ Example with labels:
 </Box>
 ```
 
+## `Slider`
+
+A keyboard-driven range input for selecting numeric values. Supports horizontal and vertical orientations.
+
+```tsx
+import { Slider } from "@visulima/tui/ink";
+
+<Slider defaultValue={50} onChange={(v) => console.log(v)} />
+<Slider defaultValue={22} min={10} max={40} step={1} accentColor="red" width={30} />
+<Slider defaultValue={60} orientation="vertical" width={8} />
+```
+
+| Prop              | Type                           | Default        | Description                                  |
+| ----------------- | ------------------------------ | -------------- | -------------------------------------------- |
+| `value`           | `number`                       | —              | Controlled value                             |
+| `defaultValue`    | `number`                       | `0`            | Initial value (uncontrolled)                 |
+| `min`             | `number`                       | `0`            | Minimum value                                |
+| `max`             | `number`                       | `100`          | Maximum value                                |
+| `step`            | `number`                       | `1`            | Increment per arrow key press                |
+| `orientation`     | `"horizontal"` \| `"vertical"` | `"horizontal"` | Layout direction                             |
+| `width`           | `number`                       | `20`           | Track width in columns (or rows if vertical) |
+| `isFocused`       | `boolean`                      | `true`         | Whether the component responds to input      |
+| `isDisabled`      | `boolean`                      | `false`        | Ignores all input and dims the slider        |
+| `filledCharacter` | `string`                       | `"█"`          | Character for the filled portion             |
+| `emptyCharacter`  | `string`                       | `"░"`          | Character for the empty portion              |
+| `thumbCharacter`  | `string`                       | `"●"`          | Character marking the current position       |
+| `accentColor`     | `string`                       | `"green"`      | Color for filled portion and thumb           |
+| `defaultColor`    | `string`                       | `"gray"`       | Color for empty portion                      |
+| `onChange`        | `(value: number) => void`      | —              | Called when value changes                    |
+
+### Keyboard
+
+- **Left/Right arrows** (horizontal) or **Up/Down** (vertical): move by `step`
+- **Home/End**: jump to min/max
+- **Page Up/Down**: move by 10 × step
+- **0–9**: jump to 0%, 10%, … 90% of the range
+
+### Controlled mode
+
+```tsx
+const [value, setValue] = useState(50);
+<Slider value={value} onChange={setValue} />;
+```
+
+## `ConsoleOverlay`
+
+A dockable panel that captures `console.log`/`warn`/`error`/`debug` output and displays it within the TUI. Similar to browser devtools console.
+
+```tsx
+import { Box, ConsoleOverlay } from "@visulima/tui/ink";
+
+<Box flexDirection="column" height="100%">
+    <Box flexGrow={1}>{/* main app content */}</Box>
+    <ConsoleOverlay dock="bottom" height={6} />
+</Box>;
+```
+
+| Prop            | Type                  | Default    | Description                    |
+| --------------- | --------------------- | ---------- | ------------------------------ |
+| `dock`          | `"top"` \| `"bottom"` | `"bottom"` | Panel position                 |
+| `height`        | `number`              | `8`        | Visible rows                   |
+| `maxEntries`    | `number`              | `200`      | Buffer size                    |
+| `showTimestamp` | `boolean`             | `true`     | Show `[HH:MM:SS]` prefix       |
+| `showLevel`     | `boolean`             | `true`     | Show level label (LOG/WRN/ERR) |
+| `filter`        | `ConsoleLevel[]`      | all levels | Which levels to capture        |
+
+Entries are color-coded: gray (debug), white (log), blue (info), yellow (warn), red (error). Auto-scrolls to show the latest entry.
+
 ## `ConfirmInput`
 
 A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
@@ -353,13 +523,13 @@ import { ConfirmInput, Text } from "@visulima/tui/ink";
 />
 ```
 
-| Prop            | Type                        | Default     | Description                               |
-| --------------- | --------------------------- | ----------- | ----------------------------------------- |
-| `defaultChoice` | `"confirm"` \| `"cancel"`   | `"confirm"` | Default action when Enter is pressed      |
-| `isDisabled`    | `boolean`                   | `false`     | Ignores all input when true               |
-| `submitOnEnter` | `boolean`                   | `true`      | Whether Enter submits the default choice  |
-| `onConfirm`     | `() => void`                | _(required)_ | Called when user presses Y                |
-| `onCancel`      | `() => void`                | _(required)_ | Called when user presses N                |
+| Prop            | Type                      | Default      | Description                              |
+| --------------- | ------------------------- | ------------ | ---------------------------------------- |
+| `defaultChoice` | `"confirm"` \| `"cancel"` | `"confirm"`  | Default action when Enter is pressed     |
+| `isDisabled`    | `boolean`                 | `false`      | Ignores all input when true              |
+| `submitOnEnter` | `boolean`                 | `true`       | Whether Enter submits the default choice |
+| `onConfirm`     | `() => void`              | _(required)_ | Called when user presses Y               |
+| `onCancel`      | `() => void`              | _(required)_ | Called when user presses N               |
 
 Shows `Y/n` when default is confirm, `y/N` when default is cancel. Press `Y`/`y` to confirm, `N`/`n` to cancel, Enter to submit the default.
 
@@ -378,23 +548,20 @@ const options = [
     { label: "Python", value: "py" },
 ];
 
-<MultiSelect
-    options={options}
-    onSubmit={(values) => console.log("Selected:", values)}
-/>
+<MultiSelect options={options} onSubmit={(values) => console.log("Selected:", values)} />;
 ```
 
-| Prop           | Type                          | Default  | Description                                 |
-| -------------- | ----------------------------- | -------- | ------------------------------------------- |
-| `options`      | `MultiSelectOption[]`         | _(required)_ | Available choices                       |
-| `defaultValue` | `string[]`                    | `[]`     | Initially selected values                   |
-| `isDisabled`   | `boolean`                     | `false`  | Ignores all input when true                 |
-| `isFocused`    | `boolean`                     | `true`   | Whether the component captures input        |
-| `limit`        | `number`                      | —        | Max visible options; auto-limits to terminal height |
-| `accentColor`  | `string`                      | `"blue"` | Color for the focused indicator             |
-| `defaultColor` | `string`                      | —        | Color for unfocused, unselected labels      |
-| `onChange`      | `(values: string[]) => void`  | —        | Called when selection changes (space)        |
-| `onSubmit`     | `(values: string[]) => void`  | —        | Called when Enter is pressed                |
+| Prop           | Type                         | Default      | Description                                         |
+| -------------- | ---------------------------- | ------------ | --------------------------------------------------- |
+| `options`      | `MultiSelectOption[]`        | _(required)_ | Available choices                                   |
+| `defaultValue` | `string[]`                   | `[]`         | Initially selected values                           |
+| `isDisabled`   | `boolean`                    | `false`      | Ignores all input when true                         |
+| `isFocused`    | `boolean`                    | `true`       | Whether the component captures input                |
+| `limit`        | `number`                     | —            | Max visible options; auto-limits to terminal height |
+| `accentColor`  | `string`                     | `"blue"`     | Color for the focused indicator                     |
+| `defaultColor` | `string`                     | —            | Color for unfocused, unselected labels              |
+| `onChange`     | `(values: string[]) => void` | —            | Called when selection changes (space)               |
+| `onSubmit`     | `(values: string[]) => void` | —            | Called when Enter is pressed                        |
 
 Keyboard: arrow keys or `j`/`k` to navigate, Space to toggle, `a` to select/deselect all, Enter to submit.
 
@@ -407,21 +574,18 @@ Single-line text input with cursor navigation, autocomplete suggestions, and opt
 ```tsx
 import { TextInput } from "@visulima/tui/ink";
 
-<TextInput
-    placeholder="Enter your name..."
-    onSubmit={(value) => console.log("Name:", value)}
-/>
+<TextInput placeholder="Enter your name..." onSubmit={(value) => console.log("Name:", value)} />;
 ```
 
-| Prop          | Type                    | Default | Description                                           |
-| ------------- | ----------------------- | ------- | ----------------------------------------------------- |
-| `defaultValue`| `string`                | `""`    | Starting value                                        |
-| `isDisabled`  | `boolean`               | `false` | Ignores all input when true                           |
-| `mask`        | `boolean`               | `false` | Renders asterisks instead of characters               |
-| `placeholder` | `string`                | —       | Greyed-out text when input is empty                   |
-| `suggestions` | `string[]`              | —       | Autocomplete candidates (case-sensitive prefix match) |
-| `onChange`    | `(value: string) => void` | —     | Called on every keystroke                              |
-| `onSubmit`    | `(value: string) => void` | —     | Called when Enter is pressed                          |
+| Prop           | Type                      | Default | Description                                           |
+| -------------- | ------------------------- | ------- | ----------------------------------------------------- |
+| `defaultValue` | `string`                  | `""`    | Starting value                                        |
+| `isDisabled`   | `boolean`                 | `false` | Ignores all input when true                           |
+| `mask`         | `boolean`                 | `false` | Renders asterisks instead of characters               |
+| `placeholder`  | `string`                  | —       | Greyed-out text when input is empty                   |
+| `suggestions`  | `string[]`                | —       | Autocomplete candidates (case-sensitive prefix match) |
+| `onChange`     | `(value: string) => void` | —       | Called on every keystroke                             |
+| `onSubmit`     | `(value: string) => void` | —       | Called when Enter is pressed                          |
 
 Keyboard: left/right arrows for cursor, Home/End or Ctrl+A/E for start/end, Ctrl+U/K/W for line editing, Backspace/Delete, right arrow to accept suggestion, Enter to submit (accepts suggestion if pending).
 
@@ -439,6 +603,71 @@ Keyboard: left/right arrows for cursor, Home/End or Ctrl+A/E for start/end, Ctrl
 
 The first matching suggestion is shown dimmed after the cursor. Press right arrow or Enter to accept it.
 
+## `Textarea`
+
+Multi-line text input with cursor navigation, selection, clipboard copy (OSC 52), undo/redo, paste support, and viewport scrolling.
+
+```tsx
+import { Textarea } from "@visulima/tui/ink";
+
+<Textarea
+    placeholder="Write something..."
+    rows={8}
+    showLineNumbers
+    onChange={(value) => console.log(value)}
+    onSubmit={(value) => console.log("Submitted:", value)}
+/>;
+```
+
+| Prop              | Type                      | Default | Description                                  |
+| ----------------- | ------------------------- | ------- | -------------------------------------------- |
+| `defaultValue`    | `string`                  | `""`    | Starting content                             |
+| `placeholder`     | `string`                  | —       | Greyed-out text shown when empty             |
+| `rows`            | `number`                  | `5`     | Visible rows (viewport height)               |
+| `maxRows`         | `number`                  | —       | Auto-grow up to this height before scrolling |
+| `isDisabled`      | `boolean`                 | `false` | Ignores all input and dims the text          |
+| `isFocused`       | `boolean`                 | `true`  | Whether the component responds to input      |
+| `showLineNumbers` | `boolean`                 | `false` | Show line numbers in the left gutter         |
+| `tabSize`         | `number`                  | `2`     | Number of spaces inserted for Tab            |
+| `onChange`        | `(value: string) => void` | —       | Called on every edit                         |
+| `onSubmit`        | `(value: string) => void` | —       | Called on Meta+Enter or Ctrl+Enter           |
+
+### Keyboard
+
+| Key                     | Action                     |
+| ----------------------- | -------------------------- |
+| Arrow keys              | Move cursor                |
+| Shift+Arrows            | Extend selection           |
+| Home / Ctrl+A           | Start of line              |
+| End / Ctrl+E            | End of line                |
+| Ctrl+Home               | Start of buffer            |
+| Ctrl+End                | End of buffer              |
+| Enter                   | Insert newline             |
+| Meta+Enter / Ctrl+Enter | Submit (`onSubmit`)        |
+| Backspace / Delete      | Delete character           |
+| Ctrl+U                  | Kill to line start         |
+| Ctrl+K                  | Kill to line end           |
+| Ctrl+W                  | Kill word backward         |
+| Tab                     | Insert spaces (`tabSize`)  |
+| Ctrl+Z                  | Undo                       |
+| Ctrl+Y                  | Redo                       |
+| Ctrl+Shift+A            | Select all                 |
+| Ctrl+C (with selection) | Copy to clipboard (OSC 52) |
+| Escape                  | Clear selection            |
+| Paste (bracketed)       | Insert pasted text         |
+
+### Auto-growing height
+
+```tsx
+<Textarea rows={3} maxRows={15} placeholder="Grows from 3 to 15 rows..." />
+```
+
+### With line numbers
+
+```tsx
+<Textarea showLineNumbers defaultValue={"function hello() {\n  return 'world';\n}"} rows={5} />
+```
+
 ## `SelectInput`
 
 Interactive select input for choosing from a list of options. Ported from [`ink-select-input`](https://github.com/vadimdemedes/ink-select-input).
@@ -454,27 +683,27 @@ const items = [
     { label: "Python", value: "py" },
 ];
 
-<SelectInput items={items} onSelect={(item) => console.log(item.value)} />
+<SelectInput items={items} onSelect={(item) => console.log(item.value)} />;
 ```
 
 Navigate with arrow keys or `j`/`k`, select with Enter, or jump to an item by pressing a number key (1–9).
 
 ### Props
 
-| Prop                 | Type                              | Default              | Description                                                 |
-| -------------------- | --------------------------------- | -------------------- | ----------------------------------------------------------- |
-| `items`              | `Item<V>[]`                       | `[]`                 | Choices to display                                          |
-| `isFocused`          | `boolean`                         | `true`               | Whether the component captures keyboard input               |
-| `initialIndex`       | `number`                          | —                    | Initially-selected item index; omit for no initial selection |
-| `index`              | `number`                          | —                    | Controlled selected index (see below)                       |
-| `limit`              | `number`                          | —                    | Max visible items; enables scroll windowing                 |
-| `accentColor`        | `string`                          | `"blue"`             | Color for the selected item and indicator                   |
-| `defaultColor`       | `string`                          | —                    | Color for unselected items                                  |
-| `indicatorComponent` | `FC<IndicatorProps>`              | `SelectInputIndicator` | Custom indicator component                               |
-| `itemComponent`      | `FC<ItemProps>`                   | `SelectInputItem`    | Custom item component                                       |
-| `onSelect`           | `(item: Item<V>) => void`        | —                    | Called on Enter or number key press                         |
-| `onHighlight`        | `(item: Item<V>, index: number) => void` | —           | Called when selection moves; second arg is the new index     |
-| `resetOnItemsChange` | `boolean`                         | `true`               | Reset selection when item values change                     |
+| Prop                 | Type                                     | Default                | Description                                                  |
+| -------------------- | ---------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `items`              | `Item<V>[]`                              | `[]`                   | Choices to display                                           |
+| `isFocused`          | `boolean`                                | `true`                 | Whether the component captures keyboard input                |
+| `initialIndex`       | `number`                                 | —                      | Initially-selected item index; omit for no initial selection |
+| `index`              | `number`                                 | —                      | Controlled selected index (see below)                        |
+| `limit`              | `number`                                 | —                      | Max visible items; enables scroll windowing                  |
+| `accentColor`        | `string`                                 | `"blue"`               | Color for the selected item and indicator                    |
+| `defaultColor`       | `string`                                 | —                      | Color for unselected items                                   |
+| `indicatorComponent` | `FC<IndicatorProps>`                     | `SelectInputIndicator` | Custom indicator component                                   |
+| `itemComponent`      | `FC<ItemProps>`                          | `SelectInputItem`      | Custom item component                                        |
+| `onSelect`           | `(item: Item<V>) => void`                | —                      | Called on Enter or number key press                          |
+| `onHighlight`        | `(item: Item<V>, index: number) => void` | —                      | Called when selection moves; second arg is the new index     |
+| `resetOnItemsChange` | `boolean`                                | `true`                 | Reset selection when item values change                      |
 
 Each item in the `items` array must have a `label` (display text) and a `value` (returned on select). An optional `key` provides a stable React key. An optional `action` function is called automatically when the item is selected.
 
@@ -489,7 +718,7 @@ const items = [
     { label: "Deploy", value: "deploy", action: () => deploy() },
 ];
 
-<SelectInput items={items} initialIndex={0} />
+<SelectInput items={items} initialIndex={0} />;
 ```
 
 When an item is selected (Enter or number key), `onSelect` fires first (if provided), then `item.action()` is called. Both are optional — you can use either or both.
@@ -507,7 +736,7 @@ const items = [
     { label: "Select All", value: "selectAll" },
 ];
 
-<SelectInput items={items} initialIndex={0} />
+<SelectInput items={items} initialIndex={0} />;
 ```
 
 A separator renders as `───` by default. Pass a custom `label` to change the text:
@@ -521,11 +750,7 @@ The `SeparatorItem` type is exported for use in typed item arrays:
 ```tsx
 import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui/ink";
 
-const items: SelectInputEntry<string>[] = [
-    { label: "Option A", value: "a" },
-    { isSeparator: true },
-    { label: "Option B", value: "b" },
-];
+const items: SelectInputEntry<string>[] = [{ label: "Option A", value: "a" }, { isSeparator: true }, { label: "Option B", value: "b" }];
 ```
 
 Note: the reset check compares item **values** only — changing labels or other properties while keeping the same values will not trigger a reset. Set `resetOnItemsChange={false}` to preserve the selection across all item changes.
@@ -554,7 +779,7 @@ const [selectedIndex, setSelectedIndex] = useState(0);
     index={selectedIndex}
     onHighlight={(item, idx) => setSelectedIndex(idx)}
     onSelect={(item) => console.log("Selected:", item.value)}
-/>
+/>;
 ```
 
 ### Scroll windowing
@@ -613,11 +838,7 @@ const CustomItem = ({ label, isSelected, isFocused, accentColor, defaultColor })
     </Text>
 );
 
-<SelectInput
-    items={items}
-    indicatorComponent={CustomIndicator}
-    itemComponent={CustomItem}
-/>
+<SelectInput items={items} indicatorComponent={CustomIndicator} itemComponent={CustomItem} />;
 ```
 
 Custom components receive `isSelected`, `isFocused`, `accentColor`, and (for items) `defaultColor` plus the item's own `label`/`value`/`key` fields.
@@ -633,29 +854,29 @@ import { Tab, Tabs } from "@visulima/tui/ink";
     <Tab name="files">Files</Tab>
     <Tab name="search">Search</Tab>
     <Tab name="settings">Settings</Tab>
-</Tabs>
+</Tabs>;
 ```
 
 ### `Tabs` Props
 
-| Prop             | Type                                              | Default     | Description                                                |
-| ---------------- | ------------------------------------------------- | ----------- | ---------------------------------------------------------- |
-| `children`       | `ReactNode`                                       | _(required)_ | `<Tab>` elements                                          |
-| `onChange`        | `(name: string, tab: ReactElement) => void`       | _(required)_ | Called when the active tab changes                         |
-| `defaultValue`   | `string`                                          | —           | Name of the initially active tab                           |
-| `flexDirection`  | `"row"` \| `"column"` \| `"row-reverse"` \| `"column-reverse"` | `"row"` | Layout direction                              |
-| `isFocused`      | `boolean \| null`                                 | `undefined` | Focus state; `false` disables input, `null` = unmanaged    |
-| `showIndex`      | `boolean`                                         | `true`      | Show 1-based index numbers before tab names                |
-| `width`          | `number \| string`                                | —           | Container width (also separator width in column layouts)   |
-| `keyMap`         | `KeyMap`                                          | —           | Custom keyboard bindings                                   |
-| `colors`         | `TabColors`                                       | —           | Active tab color customization                             |
+| Prop            | Type                                                           | Default      | Description                                              |
+| --------------- | -------------------------------------------------------------- | ------------ | -------------------------------------------------------- |
+| `children`      | `ReactNode`                                                    | _(required)_ | `<Tab>` elements                                         |
+| `onChange`      | `(name: string, tab: ReactElement) => void`                    | _(required)_ | Called when the active tab changes                       |
+| `defaultValue`  | `string`                                                       | —            | Name of the initially active tab                         |
+| `flexDirection` | `"row"` \| `"column"` \| `"row-reverse"` \| `"column-reverse"` | `"row"`      | Layout direction                                         |
+| `isFocused`     | `boolean \| null`                                              | `undefined`  | Focus state; `false` disables input, `null` = unmanaged  |
+| `showIndex`     | `boolean`                                                      | `true`       | Show 1-based index numbers before tab names              |
+| `width`         | `number \| string`                                             | —            | Container width (also separator width in column layouts) |
+| `keyMap`        | `KeyMap`                                                       | —            | Custom keyboard bindings                                 |
+| `colors`        | `TabColors`                                                    | —            | Active tab color customization                           |
 
 ### `Tab` Props
 
-| Prop       | Type        | Default      | Description                        |
-| ---------- | ----------- | ------------ | ---------------------------------- |
-| `name`     | `string`    | _(required)_ | Unique identifier for this tab     |
-| `children` | `ReactNode` | _(required)_ | Content rendered inside the tab    |
+| Prop       | Type        | Default      | Description                     |
+| ---------- | ----------- | ------------ | ------------------------------- |
+| `name`     | `string`    | _(required)_ | Unique identifier for this tab  |
+| `children` | `ReactNode` | _(required)_ | Content rendered inside the tab |
 
 ### Keyboard
 
@@ -769,10 +990,10 @@ import { Badge } from "@visulima/tui/ink";
 <Badge color="green">success</Badge>
 ```
 
-| Prop       | Type        | Default     | Description                                |
-| ---------- | ----------- | ----------- | ------------------------------------------ |
+| Prop       | Type        | Default      | Description                                |
+| ---------- | ----------- | ------------ | ------------------------------------------ |
 | `children` | `ReactNode` | _(required)_ | Label content; strings are auto-uppercased |
-| `color`    | `string`    | `"magenta"` | Background color for the badge             |
+| `color`    | `string`    | `"magenta"`  | Background color for the badge             |
 
 ## `StatusMessage`
 
@@ -789,9 +1010,9 @@ import { StatusMessage } from "@visulima/tui/ink";
 <StatusMessage variant="info">3 updates available</StatusMessage>
 ```
 
-| Prop       | Type                                          | Default      | Description          |
-| ---------- | --------------------------------------------- | ------------ | -------------------- |
-| `children` | `ReactNode`                                   | _(required)_ | Message text         |
+| Prop       | Type                                                | Default      | Description               |
+| ---------- | --------------------------------------------------- | ------------ | ------------------------- |
+| `children` | `ReactNode`                                         | _(required)_ | Message text              |
 | `variant`  | `"success"` \| `"error"` \| `"warning"` \| `"info"` | _(required)_ | Determines icon and color |
 
 Icons: ✔ (success/green), ✖ (error/red), ⚠ (warning/yellow), ℹ (info/blue).
@@ -811,11 +1032,11 @@ import { Alert } from "@visulima/tui/ink";
 </Alert>
 ```
 
-| Prop       | Type                                          | Default      | Description                |
-| ---------- | --------------------------------------------- | ------------ | -------------------------- |
-| `children` | `ReactNode`                                   | _(required)_ | Alert message              |
+| Prop       | Type                                                | Default      | Description                |
+| ---------- | --------------------------------------------------- | ------------ | -------------------------- |
+| `children` | `ReactNode`                                         | _(required)_ | Alert message              |
 | `variant`  | `"info"` \| `"success"` \| `"error"` \| `"warning"` | _(required)_ | Border color and icon      |
-| `title`    | `string`                                      | —            | Bold heading above message |
+| `title`    | `string`                                            | —            | Bold heading above message |
 
 ## `UnorderedList`
 
@@ -826,22 +1047,13 @@ Bullet list with nesting support and customizable markers. Inspired by [ink-ui](
 ```tsx
 import { UnorderedList } from "@visulima/tui/ink";
 
-<UnorderedList
-    items={[
-        { label: "TypeScript" },
-        { label: "JavaScript" },
-        { label: "Python", children: [
-            { label: "Django" },
-            { label: "Flask" },
-        ]},
-    ]}
-/>
+<UnorderedList items={[{ label: "TypeScript" }, { label: "JavaScript" }, { label: "Python", children: [{ label: "Django" }, { label: "Flask" }] }]} />;
 ```
 
-| Prop     | Type                        | Default             | Description                                |
-| -------- | --------------------------- | ------------------- | ------------------------------------------ |
-| `items`  | `UnorderedListEntry[]`      | _(required)_        | List entries with `label` and optional `children` |
-| `marker` | `string` \| `string[]`      | `["─", "◦", "▪"]` | Bullet symbol(s); arrays cycle by depth    |
+| Prop     | Type                   | Default           | Description                                       |
+| -------- | ---------------------- | ----------------- | ------------------------------------------------- |
+| `items`  | `UnorderedListEntry[]` | _(required)_      | List entries with `label` and optional `children` |
+| `marker` | `string` \| `string[]` | `["─", "◦", "▪"]` | Bullet symbol(s); arrays cycle by depth           |
 
 Each entry has `label: ReactNode` and optional `children: UnorderedListEntry[]` for nesting.
 
@@ -857,17 +1069,14 @@ import { OrderedList } from "@visulima/tui/ink";
 <OrderedList
     items={[
         { label: "Install dependencies" },
-        { label: "Configure", children: [
-            { label: "Create config file" },
-            { label: "Set environment variables" },
-        ]},
+        { label: "Configure", children: [{ label: "Create config file" }, { label: "Set environment variables" }] },
         { label: "Deploy" },
     ]}
-/>
+/>;
 ```
 
-| Prop    | Type                   | Default      | Description                         |
-| ------- | ---------------------- | ------------ | ----------------------------------- |
-| `items` | `OrderedListEntry[]`   | _(required)_ | List entries with `label` and optional `children` |
+| Prop    | Type                 | Default      | Description                                       |
+| ------- | -------------------- | ------------ | ------------------------------------------------- |
+| `items` | `OrderedListEntry[]` | _(required)_ | List entries with `label` and optional `children` |
 
 Numbers are right-padded for alignment (e.g., ` 1.`, ` 2.`, `10.`). Nested lists produce hierarchical markers (`1.`, `1.1.`, `1.2.`).

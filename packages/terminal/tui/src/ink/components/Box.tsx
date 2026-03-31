@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, react-x/no-forward-ref, react-x/no-use-context, unicorn/filename-case */
+/* eslint-disable import/exports-last, react-perf/jsx-no-new-object-as-prop, react-x/no-context-provider, react-x/no-forward-ref, react-x/no-leaked-conditional-rendering, react-x/no-use-context, unicorn/filename-case */
 import type { ForwardRefExoticComponent, PropsWithChildren, ReactNode, RefAttributes } from "react";
 import { forwardRef, useContext } from "react";
 import type { Except } from "type-fest";

@@ -118,12 +118,17 @@ const hostConfig: ReactReconciler.HostConfig<
 
     commitTextUpdate(textInstance, oldText, newText) {
         textInstance.text = newText;
-        textInstance.yogaNode.setWidth(getStringWidth(newText));
+        // The text setter installs a measure function that handles wrapping.
+        // Do NOT call setWidth() here — it overrides the measure function and
+        // prevents Yoga from re-measuring text that needs to wrap.
+        textInstance.yogaNode.markDirty();
     },
 
     commitUpdate(instance, type, previousProps, nextProps, internalHandle) {
         // Re-apply Yoga styles on update (React 19 signature: instance, type, oldProps, newProps, fiber)
-        applyStyles(instance.yogaNode, nextProps as Styles, previousProps as Styles);
+        // Pass nextProps as currentStyle so applyBorderStyles computes border
+        // width from the NEW state, not the previous one.
+        applyStyles(instance.yogaNode, nextProps as Styles);
 
         // Re-resolve color/style props
         const { bg, fg, styles } = resolveNodeColors(nextProps);
@@ -214,7 +219,9 @@ const hostConfig: ReactReconciler.HostConfig<
     hideInstance(instance: LayoutNode) {
         instance._hidden = true;
     },
-    hideTextInstance(_instance: any) {},
+    hideTextInstance(instance: LayoutNode) {
+        instance._hidden = true;
+    },
     HostTransitionContext: createContext(null) as any,
 
     insertBefore(parentInstance, child, beforeChild) {
@@ -300,7 +307,9 @@ const hostConfig: ReactReconciler.HostConfig<
     unhideInstance(instance: LayoutNode, _props: any) {
         instance._hidden = false;
     },
-    unhideTextInstance(_instance: any, _text: string) {},
+    unhideTextInstance(instance: LayoutNode, _text: string) {
+        instance._hidden = false;
+    },
     waitForCommitToBeReady: () => null,
     warnsIfNotActing: true,
 } as any;
