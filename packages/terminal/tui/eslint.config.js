@@ -34,6 +34,7 @@ export default createConfig(
             parserOptions: {
                 projectService: {
                     allowDefaultProject: ["*.js", "*.d.ts", "*.ts", "eslint.config.js"],
+                    defaultProject: "tsconfig.eslint.json",
                 },
                 tsconfigRootDir: __dirname,
             },
