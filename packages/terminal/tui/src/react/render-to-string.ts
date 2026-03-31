@@ -79,8 +79,12 @@ export function renderToString(element: React.ReactElement, options?: RenderToSt
 
         for (let col = 0; col < cols; col++) {
             const ch = buffer[(row * cols + col) * 2];
+            const charStr = Cell.getChar(ch);
 
-            line += Cell.getChar(ch);
+            // Continuation cells (trailing half of wide glyphs) return "".
+            // Emit a space so the string width matches the terminal cell count,
+            // keeping snapshot text aligned in editors.
+            line += charStr === "" ? " " : charStr;
         }
 
         lines.push(line.trimEnd());
