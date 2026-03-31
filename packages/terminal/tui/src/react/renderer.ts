@@ -23,10 +23,10 @@ function getEffectiveBorderWidths(nodeStyle: Record<string, unknown> | undefined
     const base = nodeStyle?.borderStyle ? 1 : 0;
 
     return {
-        bottom: (nodeStyle?.borderBottom === false ? 0 : base),
-        left: (nodeStyle?.borderLeft === false ? 0 : base),
-        right: (nodeStyle?.borderRight === false ? 0 : base),
-        top: (nodeStyle?.borderTop === false ? 0 : base),
+        bottom: nodeStyle?.borderBottom === false ? 0 : base,
+        left: nodeStyle?.borderLeft === false ? 0 : base,
+        right: nodeStyle?.borderRight === false ? 0 : base,
+        top: nodeStyle?.borderTop === false ? 0 : base,
     };
 }
 
@@ -212,9 +212,11 @@ export function renderTreeToBuffer(root: LayoutNode, buffer: Uint32Array, cols: 
 
 function writeCell(buffer: Uint32Array, cols: number, rows: number, sx: number, sy: number, charCode: number, attributeCode: number, clip: Clip) {
     // Clip to parent bounds first, then terminal bounds
-    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1) return;
+    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1)
+        return;
 
-    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) return;
+    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows)
+        return;
 
     const index = (sy * cols + sx) * 2;
 
@@ -236,8 +238,11 @@ function paintBorder(
     styles: number,
     clip: Clip,
 ) {
-    if (!node._style?.borderStyle) return;
-    if (w <= 0 || h <= 0) return;
+    if (!node._style?.borderStyle)
+        return;
+
+    if (w <= 0 || h <= 0)
+        return;
 
     const box = (cliBoxes as any)[node._style.borderStyle];
     const borderFg = node._style.borderColor === undefined ? fg : resolveColor(node._style.borderColor);
@@ -293,19 +298,25 @@ function paintBorder(
     const yEnd = canShowBottom ? h - 1 : h;
 
     for (let y = yStart; y < yEnd; y++) {
-        if (showLeft) writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
+        if (showLeft)
+            writeCell(buffer, cols, rows, absX, absY + y, box.left.codePointAt(0)!, borderAttribute, clip);
 
-        if (showRight) writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
+        if (showRight)
+            writeCell(buffer, cols, rows, absX + w - 1, absY + y, box.right.codePointAt(0)!, borderAttribute, clip);
     }
 }
 
-/** Recursively collect all text content from a node's descendants.
+/**
+ * Recursively collect all text content from a node's descendants.
  *  Applies nested transforms so that an outer Transform sees the
- *  correctly transformed output of inner Transforms. */
+ *  correctly transformed output of inner Transforms.
+ */
 function collectText(node: LayoutNode): string {
-    if (node._hidden) return "";
+    if (node._hidden)
+        return "";
 
-    if (node.text !== undefined) return node.text;
+    if (node.text !== undefined)
+        return node.text;
 
     const raw = node.children.map(collectText).join("");
 
@@ -331,7 +342,8 @@ function paintText(
     attributeCode: number,
     clip: Clip,
 ) {
-    if (w <= 0 || h <= 0) return;
+    if (w <= 0 || h <= 0)
+        return;
 
     let cursorX = 0;
     let cursorY = 0;
@@ -353,7 +365,8 @@ function paintText(
             cursorY++;
         }
 
-        if (cursorY >= h) break;
+        if (cursorY >= h)
+            break;
 
         // Wide character that can't fit even on an empty line — replace with space
         // to avoid writing a half-glyph without its continuation cell.
@@ -399,7 +412,8 @@ function paintNode(
     clip: Clip,
 ) {
     // Suspense hides nodes by setting _hidden — skip the entire subtree
-    if (node._hidden) return;
+    if (node._hidden)
+        return;
 
     const layout = node.getLayout();
 
@@ -422,7 +436,8 @@ function paintNode(
     };
 
     // If the node is entirely outside the clip, skip it and its children
-    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1) return;
+    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1)
+        return;
 
     // <Transform> node: collect all descendant text, apply transform fn, paint result
     if (typeof node.transform === "function") {
@@ -435,20 +450,7 @@ function paintNode(
         return;
     }
 
-    if (node.text !== undefined) {
-        // Text node: optionally fill background then paint characters
-        const attributeCode = (styles << 16) | (bg << 8) | fg;
-
-        if (node.bg !== 255) {
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    writeCell(buffer, cols, rows, absX + x, absY + y, 32, attributeCode, nodeClip);
-                }
-            }
-        }
-
-        paintText(node.text, buffer, cols, rows, absX, absY, w, h, attributeCode, nodeClip);
-    } else {
+    if (node.text === undefined) {
         // Fill background — skip when bg is terminal default and no text styles,
         // since the buffer was already cleared to spaces with default attributes.
         if (bg !== 255 || styles !== 0) {
@@ -465,6 +467,19 @@ function paintNode(
         if (node._style?.borderStyle) {
             borderJobs.push({ absX, absY, bg, clip: nodeClip, fg, h, node, styles, w });
         }
+    } else {
+        // Text node: optionally fill background then paint characters
+        const attributeCode = (styles << 16) | (bg << 8) | fg;
+
+        if (node.bg !== 255) {
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    writeCell(buffer, cols, rows, absX + x, absY + y, 32, attributeCode, nodeClip);
+                }
+            }
+        }
+
+        paintText(node.text, buffer, cols, rows, absX, absY, w, h, attributeCode, nodeClip);
     }
 
     // Determine overflow and scroll state

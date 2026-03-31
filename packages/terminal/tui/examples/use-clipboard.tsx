@@ -84,11 +84,7 @@ const App = () => {
                 )}
             </Box>
 
-            {lastCopied && (
-                <Text dimColor>
-                    Try pasting (Ctrl+V / Cmd+V) in another application to verify!
-                </Text>
-            )}
+            {lastCopied && <Text dimColor>Try pasting (Ctrl+V / Cmd+V) in another application to verify!</Text>}
         </Box>
     );
 };

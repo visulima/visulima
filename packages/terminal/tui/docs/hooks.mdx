@@ -85,16 +85,16 @@ copy("Hello, clipboard!");
 const { copy } = useClipboard({ target: "p" }); // primary selection (X11)
 ```
 
-| Option   | Type                  | Default | Description                    |
-| -------- | --------------------- | ------- | ------------------------------ |
+| Option   | Type                | Default | Description                                            |
+| -------- | ------------------- | ------- | ------------------------------------------------------ |
 | `target` | `"c" \| "p" \| "s"` | `"c"`   | Clipboard target (c=clipboard, p=primary, s=secondary) |
 
 ### Return Value
 
-| Field         | Type                      | Description                                   |
-| ------------- | ------------------------- | --------------------------------------------- |
-| `copy`        | `(text: string) => void`  | Copy text; no-op if terminal is unsupported   |
-| `isSupported` | `boolean`                 | Whether the current terminal supports OSC 52  |
+| Field         | Type                     | Description                                  |
+| ------------- | ------------------------ | -------------------------------------------- |
+| `copy`        | `(text: string) => void` | Copy text; no-op if terminal is unsupported  |
+| `isSupported` | `boolean`                | Whether the current terminal supports OSC 52 |
 
 ### Low-level utilities
 
@@ -125,34 +125,34 @@ buffer.undo();
 
 ### Return Value
 
-| Field              | Type                                    | Description                           |
-| ------------------ | --------------------------------------- | ------------------------------------- |
-| `lines`            | `ReadonlyArray<string>`                 | Current lines of text                 |
-| `cursor`           | `{ line: number, col: number }`         | Current cursor position               |
-| `anchor`           | `{ line: number, col: number } \| null` | Selection anchor (null if none)       |
-| `value`            | `string`                                | Joined text (lines joined by `\n`)    |
-| `insert`           | `(text: string) => void`               | Insert text at cursor                 |
-| `newline`          | `() => void`                            | Insert a newline                      |
-| `deleteBack`       | `() => void`                            | Backspace                             |
-| `deleteForward`    | `() => void`                            | Delete key                            |
-| `deleteLine`       | `() => void`                            | Delete entire current line            |
-| `deleteToLineEnd`  | `() => void`                            | Ctrl+K                                |
-| `deleteToLineStart`| `() => void`                            | Ctrl+U                                |
-| `deleteWord`       | `() => void`                            | Ctrl+W                                |
-| `moveCursor`       | `(dir, selecting?) => void`             | Move cursor (up/down/left/right)      |
-| `moveToLineStart`  | `(selecting?) => void`                  | Home                                  |
-| `moveToLineEnd`    | `(selecting?) => void`                  | End                                   |
-| `moveToStart`      | `(selecting?) => void`                  | Start of buffer                       |
-| `moveToEnd`        | `(selecting?) => void`                  | End of buffer                         |
-| `selectAll`        | `() => void`                            | Select all text                       |
-| `clearSelection`   | `() => void`                            | Clear the selection                   |
-| `getSelectedText`  | `() => string`                          | Get selected text                     |
-| `hasSelection`     | `() => boolean`                         | Whether text is selected              |
-| `deleteSelection`  | `() => void`                            | Delete selected text                  |
-| `replaceSelection` | `(text: string) => void`               | Replace selection with text           |
-| `undo`             | `() => void`                            | Undo last edit                        |
-| `redo`             | `() => void`                            | Redo last undo                        |
-| `setValue`         | `(value: string) => void`               | Replace entire buffer (clears undo)   |
+| Field               | Type                                    | Description                         |
+| ------------------- | --------------------------------------- | ----------------------------------- |
+| `lines`             | `ReadonlyArray<string>`                 | Current lines of text               |
+| `cursor`            | `{ line: number, col: number }`         | Current cursor position             |
+| `anchor`            | `{ line: number, col: number } \| null` | Selection anchor (null if none)     |
+| `value`             | `string`                                | Joined text (lines joined by `\n`)  |
+| `insert`            | `(text: string) => void`                | Insert text at cursor               |
+| `newline`           | `() => void`                            | Insert a newline                    |
+| `deleteBack`        | `() => void`                            | Backspace                           |
+| `deleteForward`     | `() => void`                            | Delete key                          |
+| `deleteLine`        | `() => void`                            | Delete entire current line          |
+| `deleteToLineEnd`   | `() => void`                            | Ctrl+K                              |
+| `deleteToLineStart` | `() => void`                            | Ctrl+U                              |
+| `deleteWord`        | `() => void`                            | Ctrl+W                              |
+| `moveCursor`        | `(dir, selecting?) => void`             | Move cursor (up/down/left/right)    |
+| `moveToLineStart`   | `(selecting?) => void`                  | Home                                |
+| `moveToLineEnd`     | `(selecting?) => void`                  | End                                 |
+| `moveToStart`       | `(selecting?) => void`                  | Start of buffer                     |
+| `moveToEnd`         | `(selecting?) => void`                  | End of buffer                       |
+| `selectAll`         | `() => void`                            | Select all text                     |
+| `clearSelection`    | `() => void`                            | Clear the selection                 |
+| `getSelectedText`   | `() => string`                          | Get selected text                   |
+| `hasSelection`      | `() => boolean`                         | Whether text is selected            |
+| `deleteSelection`   | `() => void`                            | Delete selected text                |
+| `replaceSelection`  | `(text: string) => void`                | Replace selection with text         |
+| `undo`              | `() => void`                            | Undo last edit                      |
+| `redo`              | `() => void`                            | Redo last undo                      |
+| `setValue`          | `(value: string) => void`               | Replace entire buffer (clears undo) |
 
 Undo coalesces rapid keystrokes within 300ms into a single entry. The undo stack holds up to 100 snapshots.
 
@@ -169,25 +169,29 @@ const { selectedText, selectAll, clearSelection } = useTextSelection(ref, {
     onSelectionChange: (text) => console.log("Selected:", text),
 });
 
-return <Box ref={ref}><Text>Selectable content</Text></Box>;
+return (
+    <Box ref={ref}>
+        <Text>Selectable content</Text>
+    </Box>
+);
 ```
 
 ### Options
 
-| Option              | Type                            | Default | Description                            |
-| ------------------- | ------------------------------- | ------- | -------------------------------------- |
-| `isActive`          | `boolean`                       | `true`  | Enable/disable text selection          |
-| `copyOnSelect`      | `boolean`                       | `false` | Auto-copy to clipboard on selection    |
-| `onSelectionChange` | `(text: string) => void`        | —       | Called when selected text changes       |
+| Option              | Type                     | Default | Description                         |
+| ------------------- | ------------------------ | ------- | ----------------------------------- |
+| `isActive`          | `boolean`                | `true`  | Enable/disable text selection       |
+| `copyOnSelect`      | `boolean`                | `false` | Auto-copy to clipboard on selection |
+| `onSelectionChange` | `(text: string) => void` | —       | Called when selected text changes   |
 
 ### Return Value
 
-| Field            | Type           | Description                        |
-| ---------------- | -------------- | ---------------------------------- |
-| `selection`      | `Selection`    | The underlying Selection instance  |
-| `selectedText`   | `string`       | Currently selected text            |
-| `selectAll`      | `() => void`   | Select all content in the element  |
-| `clearSelection` | `() => void`   | Clear the current selection        |
+| Field            | Type         | Description                       |
+| ---------------- | ------------ | --------------------------------- |
+| `selection`      | `Selection`  | The underlying Selection instance |
+| `selectedText`   | `string`     | Currently selected text           |
+| `selectAll`      | `() => void` | Select all content in the element |
+| `clearSelection` | `() => void` | Clear the current selection       |
 
 ## `useColorBlindness`
 
@@ -197,13 +201,13 @@ Simulate or compensate for color vision deficiency. Returns a `transformColor` f
 import { useColorBlindness } from "@visulima/tui/ink";
 
 const { transformColor } = useColorBlindness({ mode: "deuteranopia" });
-<Text color={transformColor("#ff0000")}>This text</Text>
+<Text color={transformColor("#ff0000")}>This text</Text>;
 ```
 
-| Option       | Type                                                       | Default  |
-| ------------ | ---------------------------------------------------------- | -------- |
+| Option       | Type                                                                                  | Default  |
+| ------------ | ------------------------------------------------------------------------------------- | -------- |
 | `mode`       | `"protanopia"` \| `"deuteranopia"` \| `"tritanopia"` \| `"achromatopsia"` \| `"none"` | `"none"` |
-| `compensate` | `boolean`                                                  | `false`  |
+| `compensate` | `boolean`                                                                             | `false`  |
 
 Simulation mode shows how colors appear to affected users. Compensation mode shifts colors to a distinguishable range. Low-level utilities (`applyColorMatrix`, `COLOR_BLINDNESS_SIMULATION`, `COLOR_BLINDNESS_COMPENSATION`) are also exported for direct use.
 
@@ -217,11 +221,11 @@ import { useConsoleCapture } from "@visulima/tui/ink";
 const { entries, clear } = useConsoleCapture({ maxEntries: 100 });
 ```
 
-| Option       | Type               | Default                                    |
-| ------------ | ------------------ | ------------------------------------------ |
-| `maxEntries` | `number`           | `200`                                      |
-| `filter`     | `ConsoleLevel[]`   | `["log", "info", "warn", "error", "debug"]` |
-| `isActive`   | `boolean`          | `true`                                     |
+| Option       | Type             | Default                                     |
+| ------------ | ---------------- | ------------------------------------------- |
+| `maxEntries` | `number`         | `200`                                       |
+| `filter`     | `ConsoleLevel[]` | `["log", "info", "warn", "error", "debug"]` |
+| `isActive`   | `boolean`        | `true`                                      |
 
 Each entry has `id`, `level`, `message`, and `timestamp`.
 
@@ -239,13 +243,13 @@ const { handleScroll } = useScrollAcceleration({
 });
 ```
 
-| Option         | Type                          | Default |
-| -------------- | ----------------------------- | ------- |
-| `acceleration` | `number`                      | `1.5`   |
-| `decayRate`    | `number` (0-1)                | `0.92`  |
-| `maxVelocity`  | `number`                      | `20`    |
-| `isActive`     | `boolean`                     | `true`  |
-| `onScroll`     | `(delta: number) => void`     | —       |
+| Option         | Type                      | Default |
+| -------------- | ------------------------- | ------- |
+| `acceleration` | `number`                  | `1.5`   |
+| `decayRate`    | `number` (0-1)            | `0.92`  |
+| `maxVelocity`  | `number`                  | `20`    |
+| `isActive`     | `boolean`                 | `true`  |
+| `onScroll`     | `(delta: number) => void` | —       |
 
 Returns `handleScroll(direction)`, `velocity`, and `isCoasting`.
 
@@ -439,14 +443,14 @@ Additional measurement utilities are available for advanced use cases:
 
 ```tsx
 import {
-    getBoundingBox,       // scroll-aware absolute position
-    getInnerWidth,        // width excluding borders
-    getInnerHeight,       // height excluding borders
-    getScrollHeight,      // total scrollable content height
-    getScrollWidth,       // total scrollable content width
-    getScrollTop,         // current vertical scroll position
-    getScrollLeft,        // current horizontal scroll position
-    ResizeObserver,       // observe element size changes
+    getBoundingBox, // scroll-aware absolute position
+    getInnerWidth, // width excluding borders
+    getInnerHeight, // height excluding borders
+    getScrollHeight, // total scrollable content height
+    getScrollWidth, // total scrollable content width
+    getScrollTop, // current vertical scroll position
+    getScrollLeft, // current horizontal scroll position
+    ResizeObserver, // observe element size changes
 } from "@visulima/tui/ink";
 
 // ResizeObserver example

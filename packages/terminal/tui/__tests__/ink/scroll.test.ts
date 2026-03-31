@@ -50,9 +50,7 @@ describe("scroll", () => {
             calculateScroll(node);
 
             // scrollTop should be clamped to scrollHeight - clientHeight
-            expect(node.internal_scrollState!.scrollTop).toBeLessThanOrEqual(
-                node.internal_scrollState!.scrollHeight - node.internal_scrollState!.clientHeight,
-            );
+            expect(node.internal_scrollState!.scrollTop).toBeLessThanOrEqual(node.internal_scrollState!.scrollHeight - node.internal_scrollState!.clientHeight);
 
             child.free();
         });

@@ -48,13 +48,7 @@ const App = () => {
                             {activeIndex === 0 ? "▸ " : "  "}Volume
                         </Text>
                     </Box>
-                    <Slider
-                        accentColor="green"
-                        defaultValue={volume}
-                        isFocused={activeIndex === 0}
-                        onChange={setVolume}
-                        width={30}
-                    />
+                    <Slider accentColor="green" defaultValue={volume} isFocused={activeIndex === 0} onChange={setVolume} width={30} />
                     <Text color="green">{String(volume).padStart(3)}%</Text>
                 </Box>
 
@@ -64,13 +58,7 @@ const App = () => {
                             {activeIndex === 1 ? "▸ " : "  "}Brightness
                         </Text>
                     </Box>
-                    <Slider
-                        accentColor="yellow"
-                        defaultValue={brightness}
-                        isFocused={activeIndex === 1}
-                        onChange={setBrightness}
-                        width={30}
-                    />
+                    <Slider accentColor="yellow" defaultValue={brightness} isFocused={activeIndex === 1} onChange={setBrightness} width={30} />
                     <Text color="yellow">{String(brightness).padStart(3)}%</Text>
                 </Box>
 
@@ -100,20 +88,8 @@ const App = () => {
             <Box borderColor="gray" borderStyle="round" flexDirection="column" paddingX={2} paddingY={1}>
                 <Text bold>Vertical Slider</Text>
                 <Box gap={2} height={8}>
-                    <Slider
-                        accentColor="cyan"
-                        defaultValue={60}
-                        isFocused={false}
-                        orientation="vertical"
-                        width={8}
-                    />
-                    <Slider
-                        accentColor="magenta"
-                        defaultValue={30}
-                        isFocused={false}
-                        orientation="vertical"
-                        width={8}
-                    />
+                    <Slider accentColor="cyan" defaultValue={60} isFocused={false} orientation="vertical" width={8} />
+                    <Slider accentColor="magenta" defaultValue={30} isFocused={false} orientation="vertical" width={8} />
                 </Box>
             </Box>
         </Box>

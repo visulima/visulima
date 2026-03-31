@@ -37,7 +37,9 @@ const LayoutSection = () => (
         <Box flexDirection="row" gap={3}>
             {/* justify-content */}
             <Box flexDirection="column" gap={1}>
-                <Text bold dim>justifyContent</Text>
+                <Text bold dim>
+                    justifyContent
+                </Text>
                 {(["flex-start", "center", "flex-end", "space-between", "space-around"] as const).map((j) => (
                     <Box borderColor="gray" borderStyle="single" justifyContent={j} key={j} width={26}>
                         <Text color="yellow">▪</Text>
@@ -48,7 +50,9 @@ const LayoutSection = () => (
             </Box>
             {/* align-items */}
             <Box flexDirection="column" gap={1}>
-                <Text bold dim>alignItems</Text>
+                <Text bold dim>
+                    alignItems
+                </Text>
                 {(["flex-start", "center", "flex-end"] as const).map((a) => (
                     <Box alignItems={a} borderColor="gray" borderStyle="single" height={5} key={a} width={16}>
                         <Text color="magenta">▪▪▪</Text>
@@ -57,7 +61,9 @@ const LayoutSection = () => (
             </Box>
             {/* Spacer + nesting */}
             <Box flexDirection="column" gap={1}>
-                <Text bold dim>Spacer / nesting</Text>
+                <Text bold dim>
+                    Spacer / nesting
+                </Text>
                 <Box borderColor="gray" borderStyle="single" width={24}>
                     <Text color="green">◀ left</Text>
                     <Spacer />
@@ -96,37 +102,31 @@ describe("kitchen-sink Layout (Flexbox) snapshots", () => {
     // ─── justifyContent ──────────────────────────────────────────────────
 
     describe("justifyContent", () => {
-        it.each(["flex-start", "center", "flex-end", "space-between", "space-around"] as const)(
-            "should render justifyContent=%s correctly",
-            (mode) => {
-                const output = renderToString(
-                    <Box borderStyle="single" justifyContent={mode} width={26}>
-                        <Text>▪</Text>
-                        <Text>▪</Text>
-                        <Text>▪</Text>
-                    </Box>,
-                    { columns: 30, rows: 5 },
-                );
-                expect(output).toMatchSnapshot();
-            },
-        );
+        it.each(["flex-start", "center", "flex-end", "space-between", "space-around"] as const)("should render justifyContent=%s correctly", (mode) => {
+            const output = renderToString(
+                <Box borderStyle="single" justifyContent={mode} width={26}>
+                    <Text>▪</Text>
+                    <Text>▪</Text>
+                    <Text>▪</Text>
+                </Box>,
+                { columns: 30, rows: 5 },
+            );
+            expect(output).toMatchSnapshot();
+        });
     });
 
     // ─── alignItems ──────────────────────────────────────────────────────
 
     describe("alignItems", () => {
-        it.each(["flex-start", "center", "flex-end"] as const)(
-            "should render alignItems=%s with height=5",
-            (mode) => {
-                const output = renderToString(
-                    <Box alignItems={mode} borderStyle="single" height={5} width={16}>
-                        <Text>▪▪▪</Text>
-                    </Box>,
-                    { columns: 20, rows: 7 },
-                );
-                expect(output).toMatchSnapshot();
-            },
-        );
+        it.each(["flex-start", "center", "flex-end"] as const)("should render alignItems=%s with height=5", (mode) => {
+            const output = renderToString(
+                <Box alignItems={mode} borderStyle="single" height={5} width={16}>
+                    <Text>▪▪▪</Text>
+                </Box>,
+                { columns: 20, rows: 7 },
+            );
+            expect(output).toMatchSnapshot();
+        });
     });
 
     // ─── Spacer ──────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable @stylistic/operator-linebreak, @typescript-eslint/no-explicit-any, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-argument, @typescript-eslint/prefer-nullish-coalescing, e18e/prefer-static-regex, func-style, import/exports-last, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
 import Yoga from "yoga-layout";
 
 type YogaNode = ReturnType<typeof Yoga.Node.create>;
@@ -124,10 +124,10 @@ export type Styles = {
     flexWrap?: "nowrap" | "wrap" | "wrap-reverse";
     gap?: number;
     height?: number | string;
-    inverse?: boolean;
-
     /** Internal flag for sticky header alternate nodes */
     internalStickyAlternate?: boolean;
+
+    inverse?: boolean;
     italic?: boolean;
     justifyContent?: "flex-start" | "flex-end" | "space-between" | "space-around" | "space-evenly" | "center";
     left?: number | string;
@@ -376,7 +376,7 @@ const applyDimensionStyles = (node: YogaNode, style: Styles): void => {
     }
 
     if ("aspectRatio" in style)
-        node.setAspectRatio(style.aspectRatio!);
+        node.setAspectRatio(style.aspectRatio);
 };
 
 const applyDisplayStyles = (node: YogaNode, style: Styles): void => {

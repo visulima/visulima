@@ -18,18 +18,12 @@ const App = () => (
             items={[
                 { label: "Install dependencies" },
                 {
-                    children: [
-                        { label: "Create config file" },
-                        { label: "Set environment variables" },
-                    ],
+                    children: [{ label: "Create config file" }, { label: "Set environment variables" }],
                     label: "Configure",
                 },
                 { label: "Build" },
                 {
-                    children: [
-                        { label: "Unit tests" },
-                        { label: "Integration tests" },
-                    ],
+                    children: [{ label: "Unit tests" }, { label: "Integration tests" }],
                     label: "Test",
                 },
                 { label: "Deploy" },

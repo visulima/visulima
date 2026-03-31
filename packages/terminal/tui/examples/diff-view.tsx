@@ -60,23 +60,20 @@ const App = () => {
             <Text bold color="cyan">
                 DiffView component demo
             </Text>
-            <Text dimColor>
-                s toggle split/unified · i toggle inline diff · q quit
-            </Text>
+            <Text dimColor>s toggle split/unified · i toggle inline diff · q quit</Text>
             <Text>
-                Mode: <Text bold color="yellow">{mode}</Text>
+                Mode:{" "}
+                <Text bold color="yellow">
+                    {mode}
+                </Text>
                 {" · "}
-                Inline diff: <Text bold color={inlineDiff ? "green" : "red"}>{inlineDiff ? "on" : "off"}</Text>
+                Inline diff:{" "}
+                <Text bold color={inlineDiff ? "green" : "red"}>
+                    {inlineDiff ? "on" : "off"}
+                </Text>
             </Text>
 
-            <DiffView
-                inlineDiff={inlineDiff}
-                mode={mode}
-                newLabel="greet.js (after)"
-                newText={newCode}
-                oldLabel="greet.js (before)"
-                oldText={oldCode}
-            />
+            <DiffView inlineDiff={inlineDiff} mode={mode} newLabel="greet.js (after)" newText={newCode} oldLabel="greet.js (before)" oldText={oldCode} />
         </Box>
     );
 };

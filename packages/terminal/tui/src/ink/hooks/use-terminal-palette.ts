@@ -35,6 +35,7 @@ const useTerminalPalette = (): UseTerminalPaletteResult => {
     useEffect(() => {
         if (!isSupported || !stdin || !stdout) {
             setIsLoading(false);
+
             return;
         }
 

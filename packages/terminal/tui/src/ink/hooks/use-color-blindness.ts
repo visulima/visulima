@@ -39,7 +39,7 @@ export type UseColorBlindnessResult = {
  *
  * ```tsx
  * const { transformColor } = useColorBlindness({ mode: "deuteranopia" });
- * <Text color={transformColor("#ff0000")}>This text</Text>
+ * &lt;Text color={transformColor("#ff0000")}>This text&lt;/Text>
  * ```
  */
 const useColorBlindness = (options: UseColorBlindnessOptions = {}): UseColorBlindnessResult => {
@@ -70,7 +70,7 @@ const useColorBlindness = (options: UseColorBlindnessOptions = {}): UseColorBlin
         [isActive, matrix],
     );
 
-    return useMemo(() => ({ isActive, matrix, transformColor }), [isActive, matrix, transformColor]);
+    return useMemo(() => { return { isActive, matrix, transformColor }; }, [isActive, matrix, transformColor]);
 };
 
 export default useColorBlindness;

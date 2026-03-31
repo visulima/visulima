@@ -33,10 +33,7 @@ const App = () => {
             {!choice && (
                 <Box gap={1}>
                     <Text bold>Do you agree with terms of service?</Text>
-                    <ConfirmInput
-                        onCancel={() => setChoice("disagreed")}
-                        onConfirm={() => setChoice("agreed")}
-                    />
+                    <ConfirmInput onCancel={() => setChoice("disagreed")} onConfirm={() => setChoice("agreed")} />
                 </Box>
             )}
 

@@ -1501,14 +1501,7 @@ const KitchenSink = () => {
             <TabBar current={sectionIndex} onSelect={setSectionIndex} />
 
             {/* Section content — scrollable viewport */}
-            <Box
-                flexDirection="column"
-                flexGrow={1}
-                overflow="scroll"
-                paddingTop={1}
-                paddingX={2}
-                scrollTop={scroll.offset}
-            >
+            <Box flexDirection="column" flexGrow={1} overflow="scroll" paddingTop={1} paddingX={2} scrollTop={scroll.offset}>
                 {currentSection === "Layout" && <LayoutSection />}
                 {currentSection === "Focus" && <FocusSection />}
                 {currentSection === "Graph" && <GraphSection active={isGraphActive} />}

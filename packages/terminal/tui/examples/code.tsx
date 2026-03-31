@@ -64,12 +64,7 @@ const App = () => {
 
             <Box flexDirection="column" gap={1}>
                 <Text bold>Python (with highlighted lines):</Text>
-                <Code
-                    code={pyCode}
-                    highlightLines={new Set([1, 6, 9])}
-                    language="python"
-                    showLineNumbers
-                />
+                <Code code={pyCode} highlightLines={new Set([1, 6, 9])} language="python" showLineNumbers />
             </Box>
 
             <Box flexDirection="column" gap={1}>

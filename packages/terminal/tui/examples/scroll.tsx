@@ -60,15 +60,7 @@ function ScrollDemo() {
     return (
         <Box flexDirection="column" height={20}>
             <Text bold> Scroll Demo (↑↓ to scroll, PgUp/PgDn for pages)</Text>
-            <Box
-                ref={ref}
-                borderStyle="round"
-                flexDirection="column"
-                flexGrow={1}
-                overflowY="scroll"
-                scrollTop={scrollTop}
-                scrollbarThumbColor="cyan"
-            >
+            <Box ref={ref} borderStyle="round" flexDirection="column" flexGrow={1} overflowY="scroll" scrollTop={scrollTop} scrollbarThumbColor="cyan">
                 {items.map((item) => (
                     <Box key={item.id} flexDirection="column" marginBottom={1}>
                         <Box sticky>
