@@ -150,6 +150,7 @@
         "eslint-plugin-react-refresh": "catalog:lint",
         "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
         "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+        "ink": "6.8.0",
         "is-in-ci": "catalog:prod",
         "node-pty": "catalog:dev",
         "prettier": "catalog:lint",
