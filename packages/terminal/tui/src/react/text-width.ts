@@ -1,14 +1,18 @@
 /* eslint-disable func-style, no-for-of-array/no-for-of-array, no-plusplus */
 import { getStringWidth as visulimaGetStringWidth } from "@visulima/string";
 
+// Terminal convention: ambiguous-width and text-emoji characters (e.g. ▪ ● ◆ ◀ ▶)
+// are 1 cell wide. True graphical emoji (👋 🐭) are still 2 cells.
+const WIDTH_OPTIONS = { ambiguousIsNarrow: true, emojiWidth: 1 } as const;
+
 /** Display width of a single Unicode code point (at least 1 cell). */
 export function getCodePointWidth(char: string): number {
-    return Math.max(1, visulimaGetStringWidth(char));
+    return Math.max(1, visulimaGetStringWidth(char, WIDTH_OPTIONS));
 }
 
 /** Display width of a full string (sums grapheme widths). */
 export function getStringWidth(text: string): number {
-    return visulimaGetStringWidth(text);
+    return visulimaGetStringWidth(text, WIDTH_OPTIONS);
 }
 
 /**

@@ -283,6 +283,10 @@ export function render(element: React.ReactElement, options?: RenderOptions): In
 
     const cleanup = () => {
         clearInterval(renderLoop);
+        // Unmount the React tree so effects/subscriptions are cleaned up,
+        // then free the root Yoga node to avoid native memory leaks.
+        RatatatReconciler.updateContainer(null as any, container, null, () => {});
+        rootNode.destroy();
         app.stop();
         input.stop();
         process.off("SIGWINCH", onSigwinch);

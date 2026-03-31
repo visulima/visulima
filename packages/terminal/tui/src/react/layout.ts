@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/member-ordering, @typescript-eslint/no-explicit-any, import/prefer-default-export, no-for-of-array/no-for-of-array, no-param-reassign, no-underscore-dangle, unicorn/no-null, unicorn/prefer-dom-node-remove */
-import Yoga from "yoga-layout-prebuilt";
+import Yoga from "yoga-layout";
 
 import { measureTextBlock } from "./text-width";
 
@@ -112,6 +112,12 @@ export class LayoutNode {
         child.parent = this;
         this.children.splice(safeIndex, 0, child);
         yogaOwner.set(child.yogaNode, this);
+    }
+
+    remove(): void {
+        if (this.parent) {
+            this.parent.removeChild(this);
+        }
     }
 
     removeChild(child: LayoutNode): void {
