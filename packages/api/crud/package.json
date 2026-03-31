@@ -58,6 +58,16 @@
     "main": "dist/index.cjs",
     "module": "dist/index.mjs",
     "types": "dist/index.d.cts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "next": [
+                "./dist/next/index.d.ts"
+            ]
+        }
+    },
     "files": [
         "dist/**",
         "README.md",
@@ -97,8 +107,8 @@
         "@testing-library/react": "catalog:test",
         "@types/http-errors": "catalog:types",
         "@types/json-schema": "catalog:types",
-        "json-schema": "catalog:dev",
         "@types/node": "catalog:types",
+        "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -113,6 +123,7 @@
         "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
         "eslint-plugin-testing-library": "catalog:lint",
         "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+        "json-schema": "catalog:dev",
         "next": "catalog:dev",
         "next-test-api-route-handler": "catalog:test",
         "node-mocks-http": "catalog:dev",
@@ -123,9 +134,17 @@
         "react-dom": "catalog:frontend",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
-        "@visulima/packem": "catalog:dev",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@prisma/client": "^3.0.0 || ^4.0.0",
+        "next": ">=12.0 || >=13.0 || >=14.0 || >=15.0"
+    },
+    "peerDependenciesMeta": {
+        "next": {
+            "optional": true
+        }
     },
     "engines": {
         "node": ">=22.13 <=25.x"
@@ -138,24 +157,5 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "peerDependencies": {
-        "next": ">=12.0 || >=13.0 || >=14.0 || >=15.0",
-        "@prisma/client": "^3.0.0 || ^4.0.0"
-    },
-    "peerDependenciesMeta": {
-        "next": {
-            "optional": true
-        }
-    },
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index.d.ts"
-            ],
-            "next": [
-                "./dist/next/index.d.ts"
-            ]
-        }
     }
 }
