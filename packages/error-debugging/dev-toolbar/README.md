@@ -1,4 +1,14 @@
-<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER --><!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="dev-toolbar" />
+
+</a>
+
+<h3 align="center">Devtools is a set of tools for building advanced devtools for your application</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
 <br />
 

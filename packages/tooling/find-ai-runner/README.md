@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Detect and invoke AI CLI tools installed on the system</h3>
+<h3 align="center">Detect and invoke AI CLI tools (Claude, Gemini, Codex, Copilot, Cursor, Crush, Amp, Kimi, Qwen, OpenCode, Droid) installed on the system</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 

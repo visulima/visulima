@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">A CLI task runner for monorepo workspaces</h3>
+<h3 align="center">A CLI task runner for monorepo workspaces, powered by @visulima/task-runner</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
