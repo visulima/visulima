@@ -1,4 +1,4 @@
-import { readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, rmSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
@@ -9,7 +9,8 @@ import { errorMessage } from "../utils";
 
 /**
  * Pure TypeScript fallback for clean when native bindings are unavailable.
- * Finds and removes all node_modules directories in the workspace.
+ * Finds all node_modules directories in the workspace using lstatSync
+ * to avoid following symlinks during traversal.
  */
 const findNodeModulesDirs = (root: string): string[] => {
     const results: string[] = [];
@@ -29,7 +30,10 @@ const findNodeModulesDirs = (root: string): string[] => {
             const fullPath = join(dir, entry);
 
             try {
-                if (!statSync(fullPath).isDirectory()) {
+                const stat = lstatSync(fullPath);
+
+                // Skip symlinks to avoid traversing outside workspace
+                if (stat.isSymbolicLink() || !stat.isDirectory()) {
                     continue;
                 }
             } catch {
@@ -38,7 +42,6 @@ const findNodeModulesDirs = (root: string): string[] => {
 
             if (entry === "node_modules") {
                 results.push(fullPath);
-                // Don't recurse into node_modules
             } else if (entry !== ".git" && entry !== ".hg") {
                 stack.push(fullPath);
             }
@@ -57,6 +60,37 @@ const LOCKFILE_NAMES = [
     "bun.lockb",
 ];
 
+/** Removes lockfiles from cwd, returns count of removed and whether any failed. */
+const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadError: boolean; removed: number } => {
+    let removed = 0;
+    let hadError = false;
+
+    for (const name of LOCKFILE_NAMES) {
+        const lockfile = join(cwd, name);
+
+        if (!existsSync(lockfile)) {
+            continue;
+        }
+
+        if (dryRun) {
+            logger.info(`  ${lockfile}`);
+            removed++;
+            continue;
+        }
+
+        try {
+            unlinkSync(lockfile);
+            success(`Removed ${lockfile}`);
+            removed++;
+        } catch (error: unknown) {
+            failure(`${lockfile}: ${errorMessage(error)}`);
+            hadError = true;
+        }
+    }
+
+    return { hadError, removed };
+};
+
 const clean: Command = {
     description: "Remove node_modules from all workspace projects",
     examples: [
@@ -64,16 +98,17 @@ const clean: Command = {
         ["vis clean --lockfile", "Also remove lockfiles"],
         ["vis clean --dry-run", "Preview what would be removed"],
     ],
+    /** Removes node_modules directories (and optionally lockfiles) across the workspace. */
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
-        const removeLockfile = (options.lockfile as boolean) || false;
+        const shouldRemoveLockfile = (options.lockfile as boolean) || false;
         const dryRun = (options["dry-run"] as boolean) || false;
 
         // Try native (Rust) implementation first for performance
         const native = loadNativeBindings();
 
         if (native && !dryRun) {
-            const result = native.cleanWorkspace(cwd, removeLockfile);
+            const result = native.cleanWorkspace(cwd, shouldRemoveLockfile);
 
             for (const dir of result.removed) {
                 success(`Removed ${dir}`);
@@ -102,63 +137,58 @@ const clean: Command = {
 
         // TypeScript fallback
         const dirs = findNodeModulesDirs(cwd);
+        let hadError = false;
+
+        if (dryRun) {
+            if (dirs.length > 0) {
+                info("Would remove:");
+
+                for (const dir of dirs) {
+                    logger.info(`  ${dir}`);
+                }
+            } else {
+                info("No node_modules directories found.");
+            }
+
+            // Still show lockfiles in dry-run even when no node_modules
+            if (shouldRemoveLockfile) {
+                removeLockfiles(cwd, true, logger);
+            }
+
+            return;
+        }
 
         if (dirs.length === 0) {
             info("No node_modules directories found.");
-
-            return;
-        }
-
-        if (dryRun) {
-            info("Would remove:");
+        } else {
+            let removedCount = 0;
 
             for (const dir of dirs) {
-                logger.info(`  ${dir}`);
-            }
-
-            if (removeLockfile) {
-                for (const name of LOCKFILE_NAMES) {
-                    const lockfile = join(cwd, name);
-
-                    try {
-                        statSync(lockfile);
-                        logger.info(`  ${lockfile}`);
-                    } catch {
-                        // Not found
-                    }
-                }
-            }
-
-            return;
-        }
-
-        let removedCount = 0;
-
-        for (const dir of dirs) {
-            try {
-                rmSync(dir, { force: true, recursive: true });
-                success(`Removed ${dir}`);
-                removedCount++;
-            } catch (error: unknown) {
-                failure(`${dir}: ${errorMessage(error)}`);
-            }
-        }
-
-        if (removeLockfile) {
-            for (const name of LOCKFILE_NAMES) {
-                const lockfile = join(cwd, name);
-
                 try {
-                    statSync(lockfile);
-                    unlinkSync(lockfile);
-                    success(`Removed ${lockfile}`);
-                } catch {
-                    // Not found, skip
+                    rmSync(dir, { force: true, recursive: true });
+                    success(`Removed ${dir}`);
+                    removedCount++;
+                } catch (error: unknown) {
+                    failure(`${dir}: ${errorMessage(error)}`);
+                    hadError = true;
                 }
+            }
+
+            info(`Cleaned ${removedCount} node_modules director${removedCount === 1 ? "y" : "ies"}`);
+        }
+
+        // Always handle lockfiles even when no node_modules found
+        if (shouldRemoveLockfile) {
+            const lockResult = removeLockfiles(cwd, false, logger);
+
+            if (lockResult.hadError) {
+                hadError = true;
             }
         }
 
-        info(`Cleaned ${removedCount} node_modules director${removedCount === 1 ? "y" : "ies"}`);
+        if (hadError) {
+            process.exitCode = 1;
+        }
     },
     name: "clean",
     options: [

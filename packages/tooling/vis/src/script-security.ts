@@ -97,7 +97,7 @@ const enforceScriptSecurity = (
                         if (hasAllowList) {
                             result.warnings.push(
                                 "vis security.allowBuilds is configured but package.json trustedDependencies is empty. " +
-                                "Run 'vis approve-builds --sync-bun' to sync allowBuilds to trustedDependencies.",
+                                "Run 'vis approve-builds --sync-native' to sync allowBuilds to trustedDependencies.",
                             );
                         }
                     }
@@ -325,31 +325,85 @@ const syncAllowBuildsToNativeConfig = (
 };
 
 /**
+ * Expands glob patterns (e.g., "@scope/*") against installed node_modules
+ * to get concrete package names.
+ */
+const expandPatterns = (workspaceRoot: string, patterns: string[]): string[] => {
+    const { readdirSync, statSync } = require("node:fs") as typeof import("node:fs");
+    const nodeModulesPath = join(workspaceRoot, "node_modules");
+    const resolved: string[] = [];
+
+    for (const pattern of patterns) {
+        if (pattern.endsWith("*")) {
+            // Glob: expand @scope/* or prefix*
+            const prefix = pattern.slice(0, -1);
+
+            if (prefix.startsWith("@") && prefix.endsWith("/")) {
+                // Scoped: @scope/* -> list @scope/ directory
+                const scopeDir = join(nodeModulesPath, prefix.slice(0, -1));
+
+                try {
+                    for (const entry of readdirSync(scopeDir)) {
+                        if (!entry.startsWith(".") && statSync(join(scopeDir, entry)).isDirectory()) {
+                            resolved.push(`${prefix.slice(0, -1)}/${entry}`);
+                        }
+                    }
+                } catch {
+                    // Scope dir doesn't exist
+                }
+            } else {
+                // Non-scoped prefix: foo* -> match foo-bar, foobar, etc.
+                try {
+                    for (const entry of readdirSync(nodeModulesPath)) {
+                        if (entry.startsWith(prefix) && statSync(join(nodeModulesPath, entry)).isDirectory()) {
+                            resolved.push(entry);
+                        }
+                    }
+                } catch {
+                    // node_modules doesn't exist
+                }
+            }
+        } else {
+            // Literal package name
+            resolved.push(pattern);
+        }
+    }
+
+    return resolved;
+};
+
+/**
  * Runs postinstall scripts for approved packages after an --ignore-scripts install.
  * Only needed for npm (and potentially yarn classic).
+ * Expands glob patterns, validates paths, and propagates failures.
  */
 const runApprovedScripts = (
     workspaceRoot: string,
-    packages: string[],
+    patterns: string[],
 ): void => {
+    if (patterns.length === 0) {
+        return;
+    }
+
+    // Expand any glob patterns to concrete package names
+    const packages = expandPatterns(workspaceRoot, patterns);
+
     if (packages.length === 0) {
         return;
     }
 
-    // Resolve the node_modules directory once for path validation
     const nodeModulesPath = join(workspaceRoot, "node_modules");
+    let hadFailure = false;
 
     for (const pkg of packages) {
         // Validate package name to prevent path traversal
-        // Allow valid npm package names: alphanumeric, hyphens, underscores, dots, slashes (for scoped packages)
-        // Reject any path traversal attempts (.., absolute paths)
         if (pkg.includes("..") || pkg.startsWith("/") || pkg.startsWith("\\")) {
             warn(`Skipping invalid package name: ${pkg}`);
             continue;
         }
 
-        // For scoped packages (@scope/name), ensure only one slash and proper format
         const slashCount = (pkg.match(/\//g) || []).length;
+
         if (slashCount > 1 || (slashCount === 1 && !pkg.startsWith("@"))) {
             warn(`Skipping invalid package name: ${pkg}`);
             continue;
@@ -378,12 +432,17 @@ const runApprovedScripts = (
                         });
                     } catch {
                         errorOutput(`${hook} script failed for ${pkg}`);
+                        hadFailure = true;
                     }
                 }
             }
         } catch {
             // Skip unreadable packages
         }
+    }
+
+    if (hadFailure) {
+        process.exitCode = 1;
     }
 };
 

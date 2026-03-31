@@ -75,8 +75,13 @@ const env: Command = {
         const action = args?.[0];
         const cwd = process.cwd();
 
-        ensureDir(VIS_HOME);
-        ensureDir(NODE_DIR);
+        // Only create dirs for mutating commands (not doctor/list/which)
+        const mutatingActions = new Set(["install", "uninstall", "pin", "setup"]);
+
+        if (mutatingActions.has(action ?? "")) {
+            ensureDir(VIS_HOME);
+            ensureDir(NODE_DIR);
+        }
 
         switch (action) {
             case "doctor": {
@@ -157,6 +162,11 @@ const env: Command = {
 
                 try {
                     const response = await fetch(NODE_INDEX_URL);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                    }
+
                     const data = (await response.json()) as Array<{ lts: false | string; version: string }>;
                     const ltsVersions = data.filter((entry) => entry.lts !== false).slice(0, 20);
 
@@ -192,26 +202,56 @@ const env: Command = {
                     return;
                 }
 
+                // Validate platform/arch before any filesystem operations
                 const { platform, arch } = process;
-                const os = platform === "darwin" ? "darwin" : platform === "win32" ? "win" : "linux";
-                const cpu = arch === "arm64" ? "arm64" : "x64";
+                let os: string;
+                let cpu: string;
+
+                switch (platform) {
+                    case "darwin": { os = "darwin"; break; }
+                    case "linux": { os = "linux"; break; }
+                    case "win32": {
+                        throw new Error("Automated Node.js installation is not yet supported on Windows. Download manually from https://nodejs.org/");
+                    }
+
+                    default: {
+                        throw new Error(`Unsupported platform: ${platform}. Supported: darwin, linux.`);
+                    }
+                }
+
+                switch (arch) {
+                    case "arm64": { cpu = "arm64"; break; }
+                    case "x64": { cpu = "x64"; break; }
+                    default: {
+                        throw new Error(`Unsupported architecture: ${arch}. Supported: x64, arm64.`);
+                    }
+                }
+
                 const url = `https://nodejs.org/dist/v${version}/node-v${version}-${os}-${cpu}.tar.gz`;
 
                 logger.info(`Downloading Node.js ${version} for ${os}-${cpu}...`);
                 ensureDir(targetDir);
 
-                if (platform === "win32") {
-                    throw new Error("Automated Node.js installation is not yet supported on Windows. Download manually from https://nodejs.org/");
+                // Safe two-step download: curl then tar (no shell pipeline)
+                const curlResult = spawnSync("curl", ["-fsSL", url], { encoding: "buffer" });
+
+                if (curlResult.error || curlResult.status !== 0) {
+                    throw new Error(
+                        `Failed to download Node.js ${version}: ${curlResult.error?.message ?? `curl exited with code ${curlResult.status}`}`,
+                    );
                 }
 
-                try {
-                    spawnSync("sh", ["-c", `curl -fsSL '${url}' | tar -xz --strip-components=1 -C '${targetDir}'`], {
-                        stdio: "inherit",
-                    });
-                    logger.info(`\u2713 Installed Node.js ${version} to ${targetDir}`);
-                } catch {
-                    throw new Error(`Failed to download Node.js ${version}. Verify the version exists.`);
+                const tarResult = spawnSync("tar", ["-xz", "--strip-components=1", "-C", targetDir], {
+                    input: curlResult.stdout,
+                });
+
+                if (tarResult.error || tarResult.status !== 0) {
+                    throw new Error(
+                        `Failed to extract Node.js ${version}: ${tarResult.error?.message ?? `tar exited with code ${tarResult.status}`}`,
+                    );
                 }
+
+                logger.info(`\u2713 Installed Node.js ${version} to ${targetDir}`);
 
                 break;
             }

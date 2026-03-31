@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import type { Command } from "@visulima/cerebro";
 
 import { detectPm } from "../pm-runner";
-import { info, note, success, warn } from "../output";
+import { error as errorOutput, info, note, success, warn } from "../output";
 import { scanUnapprovedBuildScripts } from "../security";
 import { syncAllowBuildsToNativeConfig } from "../script-security";
 
@@ -11,13 +11,14 @@ const approveBuilds: Command = {
     description: "Review and approve dependencies with build scripts",
     examples: [
         ["vis approve-builds", "Scan and list unapproved build scripts"],
-        ["vis approve-builds --all", "Approve all pending builds"],
+        ["vis approve-builds --all", "Approve all pending builds (pnpm)"],
+        ["vis approve-builds --sync-native", "Sync allowBuilds to native PM config"],
     ],
     execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        // For pnpm, delegate to pnpm approve-builds
+        // For pnpm, delegate to pnpm approve-builds (unless --scan forces vis scanning)
         if (pm.name === "pnpm" && !options.scan) {
             info("Delegating to pnpm approve-builds...");
 
@@ -27,45 +28,55 @@ const approveBuilds: Command = {
                 pnpmArgs.push("--all");
             }
 
-            spawnSync("pnpm", pnpmArgs, { cwd, stdio: "inherit" });
+            const result = spawnSync("pnpm", pnpmArgs, { cwd, stdio: "inherit" });
 
-            return;
-        }
+            if (result.error) {
+                throw new Error(`Failed to run pnpm approve-builds: ${result.error.message}`);
+            }
 
-        // For other PMs (or --scan flag), do our own scanning
-        const allowBuilds = visConfig?.security?.allowBuilds ?? {};
-        const unapproved = scanUnapprovedBuildScripts(cwd, allowBuilds);
+            if (result.status !== 0 && result.status !== null) {
+                errorOutput(`pnpm approve-builds exited with code ${result.status}`);
+                process.exitCode = result.status;
+            }
 
-        if (unapproved.length === 0) {
-            success("No unapproved build scripts found.");
+            // Fall through to sync-native if requested (don't return early)
+            if (!options["sync-native"]) {
+                return;
+            }
+        } else {
+            // For other PMs (or --scan flag), do our own scanning
+            const allowBuilds = visConfig?.security?.allowBuilds ?? {};
+            const unapproved = scanUnapprovedBuildScripts(cwd, allowBuilds);
 
-            return;
-        }
+            if (unapproved.length === 0) {
+                success("No unapproved build scripts found.");
+            } else {
+                warn(`Found ${unapproved.length} package${unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
 
-        warn(`Found ${unapproved.length} package${unapproved.length === 1 ? "" : "s"} with unapproved build scripts:\n`);
+                for (const pkg of unapproved) {
+                    info(`  ${pkg}`);
+                }
 
-        for (const pkg of unapproved) {
-            info(`  ${pkg}`);
-        }
+                note("");
+                note("To approve these packages, add them to vis.config.ts:");
+                note("");
+                note("  security: {");
+                note("    allowBuilds: {");
 
-        note("");
-        note("To approve these packages, add them to vis.config.ts:");
-        note("");
-        note("  security: {");
-        note("    allowBuilds: {");
+                for (const pkg of unapproved) {
+                    const name = pkg.split(" (")[0];
 
-        for (const pkg of unapproved) {
-            const name = pkg.split(" (")[0];
+                    note(`      "${name}": true,`);
+                }
 
-            note(`      "${name}": true,`);
-        }
+                note("    },");
+                note("  },");
 
-        note("    },");
-        note("  },");
-
-        if (pm.name === "pnpm") {
-            note("");
-            note("Or run 'pnpm approve-builds' to update pnpm-workspace.yaml directly.");
+                if (pm.name === "pnpm") {
+                    note("");
+                    note("Or run 'pnpm approve-builds' to update pnpm-workspace.yaml directly.");
+                }
+            }
         }
 
         // Sync to native PM config if requested
@@ -91,7 +102,7 @@ const approveBuilds: Command = {
     },
     name: "approve-builds",
     options: [
-        { defaultValue: false, description: "Approve all pending builds without prompting", name: "all", type: Boolean },
+        { defaultValue: false, description: "Approve all pending builds without prompting (pnpm only)", name: "all", type: Boolean },
         { defaultValue: false, description: "Force vis scanning even for pnpm (instead of delegating)", name: "scan", type: Boolean },
         { defaultValue: false, description: "Sync allowBuilds to native PM config (bun: trustedDependencies, npm: .npmrc, yarn: .yarnrc.yml)", name: "sync-native", type: Boolean },
     ],

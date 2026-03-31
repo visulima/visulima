@@ -24,8 +24,8 @@ const remove: Command = {
             throw new Error("No packages specified. Usage: vis remove <packages...>");
         }
 
-        const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        const cwd = process.cwd();
+        const pm = detectPm(wsRoot ?? cwd);
 
         const code = runRemove(pm, {
             filter: toStringArray(options.filter),

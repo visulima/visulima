@@ -24,8 +24,9 @@ const add: Command = {
             throw new Error("No packages specified. Usage: vis add <packages...>");
         }
 
-        const cwd = wsRoot ?? process.cwd();
-        const pm = detectPm(cwd);
+        // Default to current directory; workspace root used only for PM detection
+        const cwd = process.cwd();
+        const pm = detectPm(wsRoot ?? cwd);
 
         const code = runAdd(pm, {
             exact: (options.exact as boolean) || false,
