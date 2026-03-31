@@ -17,6 +17,7 @@ import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
 import implodeCommand from "./commands/implode";
+import initCommand from "./commands/init";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
@@ -29,7 +30,7 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
-import { loadVisConfig } from "./config";
+import { findVisConfigFile, loadVisConfig } from "./config";
 import { injectVersion } from "./output";
 import { detectPm } from "./pm-runner";
 import { emitSecurityWarnings } from "./security";
@@ -67,6 +68,45 @@ cli.addPlugin({
 
             toolbox.workspaceRoot = workspaceRoot;
             toolbox.visConfig = await loadVisConfig(workspaceRoot);
+
+            // First-run detection: prompt to run vis init when no config exists
+            const command = process.argv[2] ?? "";
+            const skipFirstRunHint = new Set(["init", "help", "--help", "-h", "--version", "-V", "implode", "create"]);
+
+            if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI && process.stdin.isTTY) {
+                toolbox.logger.warn("No vis.config.ts found.");
+
+                const { createInterface } = await import("node:readline");
+                const rl = createInterface({ input: process.stdin, output: process.stderr });
+                const answer = await new Promise<string>((resolve) => {
+                    rl.question("  Create one with best-practice security defaults? [Y/n] ", resolve);
+                });
+
+                rl.close();
+
+                if (!answer || answer.trim().toLowerCase() !== "n") {
+                    // Run vis init inline
+                    const { writeFileSync } = await import("node:fs");
+                    const { join } = await import("node:path");
+                    const { detectPm } = await import("./pm-runner");
+
+                    const pm = detectPm(workspaceRoot);
+                    const { default: initCommand } = await import("./commands/init");
+
+                    // Delegate to init command's execute
+                    const configPath = join(workspaceRoot, "vis.config.ts");
+                    const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    security: {\n        minimumReleaseAge: 1440,\n        trustPolicy: "no-downgrade",\n        blockExoticSubdeps: true,\n        allowBuilds: {},\n    },\n    update: {\n        security: true,\n        target: "minor",\n    },\n});\n`;
+
+                    writeFileSync(configPath, content);
+                    toolbox.logger.info(`\u2713 Created ${configPath}\n`);
+                    toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                }
+            } else if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI) {
+                // Non-interactive: just warn
+                toolbox.logger.warn(
+                    "No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.",
+                );
+            }
         } catch (error: unknown) {
             // findMonorepoRootSync failing is expected (e.g., running --help outside a workspace)
             if (error instanceof Error && !error.message.includes("monorepo root")) {
@@ -149,6 +189,7 @@ cli.addCommand(execCommand);
 cli.addCommand(pmCommand);
 
 // Project & environment commands
+cli.addCommand(initCommand);
 cli.addCommand(cleanCommand);
 cli.addCommand(createCommand);
 cli.addCommand(envCommand);

@@ -14,13 +14,37 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { join } from "node:path";
 
 import { info, note, success, warn, error as errorOutput } from "./output";
 import type { VisConfig } from "./workspace";
 
 type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
+
+/**
+ * Detects the yarn version. Returns "1.x" for classic, "2.x"+ for berry.
+ * Falls back to "1.0.0" if detection fails.
+ */
+const detectYarnVersion = (cwd: string): string => {
+    // Check .yarnrc.yml - its presence indicates berry (v2+)
+    if (existsSync(join(cwd, ".yarnrc.yml"))) {
+        try {
+            const result = spawnSync("yarn", ["--version"], { cwd, encoding: "utf8", timeout: 5000 });
+
+            if (result.status === 0) {
+                return result.stdout.trim();
+            }
+        } catch {
+            // Assume berry since .yarnrc.yml exists
+        }
+
+        return "4.0.0"; // Default berry version
+    }
+
+    // No .yarnrc.yml = likely classic
+    return "1.22.0";
+};
 
 interface EnforcementResult {
     /** Extra args to inject into the PM command (e.g., --ignore-scripts) */
@@ -137,36 +161,52 @@ const enforceScriptSecurity = (
         }
 
         case "yarn": {
-            // Yarn berry: check enableScripts in .yarnrc.yml
             result.scriptsBlockedByDefault = false;
 
-            const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
+            const yarnVersion = detectYarnVersion(workspaceRoot);
+            const isBerry = !yarnVersion.startsWith("1.");
 
-            if (existsSync(yarnrcPath)) {
-                const content = readFileSync(yarnrcPath, "utf8");
-                const hasEnableScriptsFalse = /^\s*enableScripts\s*:\s*false\s*$/m.test(content);
+            if (isBerry) {
+                // Yarn berry (v2+): supports enableScripts in .yarnrc.yml
+                const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
 
-                if (hasEnableScriptsFalse) {
-                    result.scriptsBlockedByDefault = true;
-                } else {
-                    result.warnings.push(
-                        "yarn does not block lifecycle scripts by default. " +
-                        "Add 'enableScripts: false' to .yarnrc.yml for supply chain security.",
-                    );
+                if (existsSync(yarnrcPath)) {
+                    const content = readFileSync(yarnrcPath, "utf8");
+                    const hasEnableScriptsFalse = /^\s*enableScripts\s*:\s*false\s*$/m.test(content);
 
-                    if (hasAllowList) {
+                    if (hasEnableScriptsFalse) {
+                        result.scriptsBlockedByDefault = true;
+                    } else {
                         result.warnings.push(
-                            "vis has security.allowBuilds configured but yarn will still run all scripts. " +
-                            "Set enableScripts: false in .yarnrc.yml first.",
+                            `yarn berry (v${yarnVersion}) supports enableScripts. ` +
+                            "Add 'enableScripts: false' to .yarnrc.yml for supply chain security.",
                         );
+
+                        if (hasAllowList) {
+                            result.warnings.push(
+                                "vis has security.allowBuilds configured but yarn will still run all scripts. " +
+                                "Set enableScripts: false in .yarnrc.yml first.",
+                            );
+                        }
                     }
                 }
             } else {
-                // yarn v1 - no .yarnrc.yml
+                // Yarn classic (v1): no enableScripts, no native script blocking
                 result.warnings.push(
-                    "yarn classic does not support blocking lifecycle scripts. " +
-                    "Consider upgrading to yarn berry or using --ignore-scripts flag.",
+                    "yarn classic (v1) does not support blocking lifecycle scripts natively. " +
+                    "Consider upgrading to yarn berry (v4+) or using --ignore-scripts flag.",
                 );
+
+                // For yarn classic, inject --ignore-scripts like npm
+                if (hasAllowList) {
+                    result.extraArgs.push("--ignore-scripts");
+
+                    for (const [pattern, allowed] of Object.entries(allowBuilds)) {
+                        if (allowed) {
+                            result.postInstallPackages.push(pattern);
+                        }
+                    }
+                }
             }
 
             break;
@@ -233,21 +273,43 @@ const syncAllowBuildsToNativeConfig = (
         }
 
         case "yarn": {
-            const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
+            const yarnVersion = detectYarnVersion(workspaceRoot);
+            const isBerry = !yarnVersion.startsWith("1.");
 
-            if (existsSync(yarnrcPath)) {
-                let content = readFileSync(yarnrcPath, "utf8");
+            if (isBerry) {
+                // Yarn berry: supports enableScripts in .yarnrc.yml
+                const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
 
-                if (!/^\s*enableScripts\s*:/m.test(content)) {
-                    content = content.trimEnd() + "\nenableScripts: false\n";
-                    writeFileSync(yarnrcPath, content);
-                    actions.push("Added enableScripts: false to .yarnrc.yml");
+                if (existsSync(yarnrcPath)) {
+                    let content = readFileSync(yarnrcPath, "utf8");
+
+                    if (!/^\s*enableScripts\s*:/m.test(content)) {
+                        content = content.trimEnd() + "\nenableScripts: false\n";
+                        writeFileSync(yarnrcPath, content);
+                        actions.push("Added enableScripts: false to .yarnrc.yml");
+                    } else {
+                        actions.push(".yarnrc.yml already has enableScripts configured");
+                    }
                 } else {
-                    actions.push(".yarnrc.yml already has enableScripts configured");
+                    writeFileSync(yarnrcPath, "enableScripts: false\n");
+                    actions.push("Created .yarnrc.yml with enableScripts: false");
                 }
             } else {
-                writeFileSync(yarnrcPath, "enableScripts: false\n");
-                actions.push("Created .yarnrc.yml with enableScripts: false");
+                // Yarn classic: no enableScripts support, fall back to .npmrc
+                const npmrcPath = join(workspaceRoot, ".npmrc");
+                let content = "";
+
+                if (existsSync(npmrcPath)) {
+                    content = readFileSync(npmrcPath, "utf8");
+                }
+
+                if (!/^\s*ignore-scripts\s*=\s*true\s*$/m.test(content)) {
+                    content = content.trimEnd() + "\nignore-scripts=true\n";
+                    writeFileSync(npmrcPath, content);
+                    actions.push("Added ignore-scripts=true to .npmrc (yarn classic lacks enableScripts)");
+                } else {
+                    actions.push(".npmrc already has ignore-scripts=true");
+                }
             }
 
             break;
