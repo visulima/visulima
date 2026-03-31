@@ -1,19 +1,19 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, no-await-in-loop */
 /**
  * Terminal palette auto-detection via OSC escape sequences.
  *
  * Queries the terminal for its current 16-color palette, foreground,
  * background, and cursor colors using OSC 4/10/11/12 sequences.
- *
  * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
  */
 import type { Writable } from "node:stream";
 
-const BEL = "\x07";
-const OSC = "\x1B]";
+const BEL = "\u0007";
+const OSC = "\u001B]";
 
 export type TerminalPalette = {
     readonly background: string;
-    readonly colors: readonly string[];
+    readonly colors: ReadonlyArray<string>;
     readonly cursor: string;
     readonly foreground: string;
 };
@@ -45,10 +45,7 @@ const parseOscColorResponse = (response: string): string | null => {
  */
 export const isTerminalPaletteQuerySupported = (): boolean => {
     const termProgram = process.env["TERM_PROGRAM"] ?? "";
-    const supported = new Set([
-        "Alacritty", "Ghostty", "iTerm.app", "iTerm2",
-        "kitty", "foot", "WezTerm", "rio", "contour",
-    ]);
+    const supported = new Set(["Alacritty", "contour", "foot", "Ghostty", "iTerm2", "iTerm.app", "kitty", "rio", "WezTerm"]);
 
     if (supported.has(termProgram)) {
         return true;
@@ -64,12 +61,7 @@ export const isTerminalPaletteQuerySupported = (): boolean => {
  */
 const MAX_RESPONSE_BYTES = 256;
 
-const queryOsc = (
-    stdin: NodeJS.ReadableStream,
-    stdout: Writable,
-    sequence: string,
-    timeout = 500,
-): Promise<string | null> =>
+const queryOsc = (stdin: NodeJS.ReadableStream, stdout: Writable, sequence: string, timeout = 500): Promise<string | null> =>
     new Promise((resolve) => {
         let buffer = "";
         let timer: ReturnType<typeof setTimeout> | undefined;
@@ -89,10 +81,11 @@ const queryOsc = (
             if (buffer.length > MAX_RESPONSE_BYTES) {
                 cleanup();
                 resolve(null);
+
                 return;
             }
 
-            if (buffer.includes(BEL) || buffer.includes("\x1B\\")) {
+            if (buffer.includes(BEL) || buffer.includes("\u001B\\")) {
                 cleanup();
                 resolve(buffer);
             }
@@ -109,16 +102,11 @@ const queryOsc = (
 
 /**
  * Query the terminal for its current color palette.
- *
- * @param stdin - Readable stream (typically process.stdin in raw mode)
- * @param stdout - Writable stream (typically process.stdout)
- * @param timeout - Per-query timeout in milliseconds (default: 500)
+ * @param stdin Readable stream (typically process.stdin in raw mode)
+ * @param stdout Writable stream (typically process.stdout)
+ * @param timeout Per-query timeout in milliseconds (default: 500)
  */
-export const queryTerminalPalette = async (
-    stdin: NodeJS.ReadableStream,
-    stdout: Writable,
-    timeout = 500,
-): Promise<Partial<TerminalPalette>> => {
+export const queryTerminalPalette = async (stdin: NodeJS.ReadableStream, stdout: Writable, timeout = 500): Promise<Partial<TerminalPalette>> => {
     const result: Partial<{ background: string; colors: string[]; cursor: string; foreground: string }> = {};
 
     const fgResponse = await queryOsc(stdin, stdout, `${OSC}10;?${BEL}`, timeout);

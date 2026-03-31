@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last, sonarjs/no-nested-conditional */
 
 /**
  * Console overlay component for Ink.
@@ -83,27 +83,17 @@ const formatTimestamp = (ts: number): string => {
  * A dockable console overlay that captures and displays console output.
  *
  * ```tsx
- * <Box flexDirection="column" height="100%">
- *     <Box flexGrow={1}>{mainContent}</Box>
- *     <ConsoleOverlay dock="bottom" height={6} />
- * </Box>
+ * &lt;Box flexDirection="column" height="100%">
+ *     &lt;Box flexGrow={1}>{mainContent}&lt;/Box>
+ *     &lt;ConsoleOverlay dock="bottom" height={6} />
+ * &lt;/Box>
  * ```
  */
-export default function ConsoleOverlay({
-    dock = "bottom",
-    filter,
-    height = 8,
-    maxEntries = 200,
-    showLevel = true,
-    showTimestamp = true,
-}: Props): ReactElement {
+export default function ConsoleOverlay({ dock = "bottom", filter, height = 8, maxEntries = 200, showLevel = true, showTimestamp = true }: Props): ReactElement {
     const { entries } = useConsoleCapture({ filter, maxEntries });
 
     // Show the last `height` entries (auto-scroll to bottom)
-    const visibleEntries = useMemo(
-        () => entries.slice(-height),
-        [entries, height],
-    );
+    const visibleEntries = useMemo(() => entries.slice(-height), [entries, height]);
 
     return (
         <Box
@@ -114,25 +104,33 @@ export default function ConsoleOverlay({
             flexDirection="column"
             height={height + 1}
         >
-            {visibleEntries.length === 0 ? (
-                <Text dimColor>Console output will appear here...</Text>
-            ) : (
-                visibleEntries.map((entry) => (
+            {visibleEntries.length === 0
+                ? (
+                    <Text dimColor>Console output will appear here...</Text>
+                )
+                : visibleEntries.map((entry) => (
                     <Box key={entry.id}>
-                        {showTimestamp ? (
-                            <Text dimColor>[{formatTimestamp(entry.timestamp)}] </Text>
-                        ) : undefined}
-                        {showLevel ? (
-                            <Text color={LEVEL_COLORS[entry.level]}>
-                                {LEVEL_LABELS[entry.level]}{" "}
-                            </Text>
-                        ) : undefined}
-                        <Text color={entry.level === "error" ? "red" : entry.level === "warn" ? "yellow" : undefined}>
-                            {entry.message}
-                        </Text>
+                        {showTimestamp
+                            ? (
+                                <Text dimColor>
+                                    [
+                                    {formatTimestamp(entry.timestamp)}
+                                    ]
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
+                        {showLevel
+                            ? (
+                                <Text color={LEVEL_COLORS[entry.level]}>
+                                    {LEVEL_LABELS[entry.level]}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
+                        <Text color={entry.level === "error" ? "red" : entry.level === "warn" ? "yellow" : undefined}>{entry.message}</Text>
                     </Box>
-                ))
-            )}
+                ))}
         </Box>
     );
 }

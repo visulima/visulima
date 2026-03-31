@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /**
  * React hook for capturing console output into a buffer.
  *
@@ -61,8 +62,8 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
     const idRef = useRef(0);
 
     // Stabilize filter reference to prevent effect churn from inline arrays
-    const filterKey = (Array.isArray(filter) ? [...filter].sort().join(",") : "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const filterKey = Array.isArray(filter) ? filter.toSorted().join(",") : "";
+
     const stableFilter = useMemo(() => filter, [filterKey]);
 
     useEffect(() => {
@@ -84,19 +85,21 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
                 // Call original so output still goes to Ink's patched console
                 originals[level]?.apply(console, args);
 
-                const message = args.map((a) => {
-                    if (typeof a === "string") {
-                        return a;
-                    }
+                const message = args
+                    .map((a) => {
+                        if (typeof a === "string") {
+                            return a;
+                        }
 
-                    try {
-                        return JSON.stringify(a);
-                    } catch {
-                        return String(a);
-                    }
-                }).join(" ");
+                        try {
+                            return JSON.stringify(a);
+                        } catch {
+                            return String(a);
+                        }
+                    })
+                    .join(" ");
 
-                setEntries((prev) => {
+                setEntries((previous) => {
                     const entry: ConsoleEntry = {
                         id: ++idRef.current,
                         level,
@@ -104,7 +107,7 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
                         timestamp: Date.now(),
                     };
 
-                    const next = [...prev, entry];
+                    const next = [...previous, entry];
 
                     return next.length > maxEntries ? next.slice(-maxEntries) : next;
                 });
@@ -125,7 +128,7 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
         setEntries([]);
     }, []);
 
-    return useMemo(() => ({ clear, entries }), [clear, entries]);
+    return useMemo(() => { return { clear, entries }; }, [clear, entries]);
 };
 
 export default useConsoleCapture;

@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key, @typescript-eslint/no-unnecessary-condition, func-style */
 
 /**
  * Markdown rendering component for Ink.
@@ -16,12 +16,12 @@ import Box from "./Box";
 import Code from "./Code";
 import Link from "./Link";
 import Newline from "./Newline";
-import OrderedList from "./OrderedList";
 import type { OrderedListEntry } from "./OrderedList";
+import OrderedList from "./OrderedList";
 import Table from "./Table";
 import Text from "./Text";
-import UnorderedList from "./UnorderedList";
 import type { UnorderedListEntry } from "./UnorderedList";
+import UnorderedList from "./UnorderedList";
 
 export type Props = {
     /**
@@ -72,26 +72,49 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
 
     return tokens.map((token, index) => {
         switch (token.type) {
-            case "text": {
-                return <React.Fragment key={index}>{token.text}</React.Fragment>;
-            }
-
-            case "strong": {
-                return <Text bold key={index}>{renderInlineTokens(token.tokens)}</Text>;
-            }
-
-            case "em": {
-                return <Text italic key={index}>{renderInlineTokens(token.tokens)}</Text>;
-            }
-
-            case "del": {
-                return <Text key={index} strikethrough>{renderInlineTokens(token.tokens)}</Text>;
+            case "br": {
+                return <Newline key={index} />;
             }
 
             case "codespan": {
                 return (
                     <Text inverse key={index}>
-                        {" "}{token.text}{" "}
+                        {" "}
+                        {token.text}
+                        {" "}
+                    </Text>
+                );
+            }
+
+            case "del": {
+                return (
+                    <Text key={index} strikethrough>
+                        {renderInlineTokens(token.tokens)}
+                    </Text>
+                );
+            }
+
+            case "em": {
+                return (
+                    <Text italic key={index}>
+                        {renderInlineTokens(token.tokens)}
+                    </Text>
+                );
+            }
+
+            case "escape": {
+                return <React.Fragment key={index}>{token.text}</React.Fragment>;
+            }
+
+            case "image": {
+                const img = token as Tokens.Image;
+
+                return (
+                    <Text dimColor key={index}>
+                        [image:
+                        {" "}
+                        {img.text || img.href}
+                        ]
                     </Text>
                 );
             }
@@ -106,21 +129,15 @@ function renderInlineTokens(tokens: InlineToken[] | Token[] | undefined): ReactN
                 );
             }
 
-            case "br": {
-                return <Newline key={index} />;
-            }
-
-            case "image": {
-                const img = token as Tokens.Image;
-
+            case "strong": {
                 return (
-                    <Text dimColor key={index}>
-                        [image: {img.text || img.href}]
+                    <Text bold key={index}>
+                        {renderInlineTokens(token.tokens)}
                     </Text>
                 );
             }
 
-            case "escape": {
+            case "text": {
                 return <React.Fragment key={index}>{token.text}</React.Fragment>;
             }
 
@@ -160,33 +177,17 @@ function mapListItems(items: Token[]): (OrderedListEntry | UnorderedListEntry)[]
 function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number): ReactNode[] {
     const elements: ReactNode[] = [];
 
-    for (let index = 0; index < tokens.length; index++) {
-        const token = tokens[index]!;
+    for (const [index, token_] of tokens.entries()) {
+        const token = token_;
         const marginTop = index > 0 ? 1 : 0;
 
         switch (token.type) {
-            case "heading": {
-                const heading = token as Tokens.Heading;
-                const color = HEADING_COLORS[heading.depth] ?? "white";
-                const prefix = "#".repeat(heading.depth) + " ";
+            case "blockquote": {
+                const bq = token as Tokens.Blockquote;
 
                 elements.push(
-                    <Box key={index} marginTop={marginTop}>
-                        <Text bold color={color}>
-                            {prefix}
-                            {renderInlineTokens(heading.tokens)}
-                        </Text>
-                    </Box>,
-                );
-                break;
-            }
-
-            case "paragraph": {
-                const para = token as Tokens.Paragraph;
-
-                elements.push(
-                    <Box key={index} marginTop={marginTop}>
-                        <Text wrap="wrap">{renderInlineTokens(para.tokens)}</Text>
+                    <Box borderLeft borderLeftColor="gray" key={index} marginTop={marginTop} paddingLeft={1}>
+                        <Box flexDirection="column">{renderBlockTokens(bq.tokens, codeTheme, maxWidth - 3)}</Box>
                     </Box>,
                 );
                 break;
@@ -203,16 +204,44 @@ function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number)
                 break;
             }
 
-            case "blockquote": {
-                const bq = token as Tokens.Blockquote;
+            case "heading": {
+                const heading = token as Tokens.Heading;
+                const color = HEADING_COLORS[heading.depth] ?? "white";
+                const prefix = `${"#".repeat(heading.depth)} `;
 
                 elements.push(
-                    <Box borderLeft borderLeftColor="gray" key={index} marginTop={marginTop} paddingLeft={1}>
-                        <Box flexDirection="column">
-                            {renderBlockTokens(bq.tokens, codeTheme, maxWidth - 3)}
-                        </Box>
+                    <Box key={index} marginTop={marginTop}>
+                        <Text bold color={color}>
+                            {prefix}
+                            {renderInlineTokens(heading.tokens)}
+                        </Text>
                     </Box>,
                 );
+                break;
+            }
+
+            case "hr": {
+                elements.push(
+                    <Box key={index} marginTop={marginTop}>
+                        <Text dimColor>{"─".repeat(Math.min(maxWidth, 40))}</Text>
+                    </Box>,
+                );
+                break;
+            }
+
+            case "html": {
+                const html = token as Tokens.HTML;
+                // Strip HTML tags and render as plain text
+                const stripped = html.text.replaceAll(/<[^>]*>/g, "");
+
+                if (stripped.trim()) {
+                    elements.push(
+                        <Box key={index} marginTop={marginTop}>
+                            <Text dimColor>{stripped}</Text>
+                        </Box>,
+                    );
+                }
+
                 break;
             }
 
@@ -233,15 +262,23 @@ function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number)
                         </Box>,
                     );
                 }
+
                 break;
             }
 
-            case "hr": {
+            case "paragraph": {
+                const para = token as Tokens.Paragraph;
+
                 elements.push(
                     <Box key={index} marginTop={marginTop}>
-                        <Text dimColor>{"─".repeat(Math.min(maxWidth, 40))}</Text>
+                        <Text wrap="wrap">{renderInlineTokens(para.tokens)}</Text>
                     </Box>,
                 );
+                break;
+            }
+
+            case "space": {
+                elements.push(<Newline key={index} />);
                 break;
             }
 
@@ -267,26 +304,6 @@ function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number)
                 break;
             }
 
-            case "html": {
-                const html = token as Tokens.HTML;
-                // Strip HTML tags and render as plain text
-                const stripped = html.text.replaceAll(/<[^>]*>/g, "");
-
-                if (stripped.trim()) {
-                    elements.push(
-                        <Box key={index} marginTop={marginTop}>
-                            <Text dimColor>{stripped}</Text>
-                        </Box>,
-                    );
-                }
-                break;
-            }
-
-            case "space": {
-                elements.push(<Newline key={index} />);
-                break;
-            }
-
             default: {
                 // Unknown block token — render raw text
                 const raw = "raw" in token ? (token as { raw: string }).raw : "";
@@ -299,6 +316,7 @@ function renderBlockTokens(tokens: Token[], codeTheme: string, maxWidth: number)
                         </Box>,
                     );
                 }
+
                 break;
             }
         }
@@ -343,26 +361,17 @@ function lexWithStreamingFallback(source: string, streaming: boolean): Token[] {
  * Render Markdown content as Ink terminal UI elements.
  *
  * ```tsx
- * <Markdown>{"# Hello\n\nThis is **bold** and *italic*."}</Markdown>
- * <Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
- * <Markdown streaming>{"# Streaming\n\nText arriving..."}</Markdown>
+ * &lt;Markdown>{"# Hello\n\nThis is **bold** and *italic*."}&lt;/Markdown>
+ * &lt;Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}&lt;/Markdown>
+ * &lt;Markdown streaming>{"# Streaming\n\nText arriving..."}&lt;/Markdown>
  * ```
  */
-export default function Markdown({
-    children,
-    codeTheme = "github-dark-default",
-    maxWidth: maxWidthProp,
-    streaming = false,
-}: Props): ReactElement {
+export default function Markdown({ children, codeTheme = "github-dark-default", maxWidth: maxWidthProp, streaming = false }: Props): ReactElement {
     const { columns } = useWindowSize();
     const maxWidth = maxWidthProp ?? columns ?? 80;
 
     const tokens = useMemo(() => lexWithStreamingFallback(children, streaming), [children, streaming]);
     const elements = useMemo(() => renderBlockTokens(tokens, codeTheme, maxWidth), [tokens, codeTheme, maxWidth]);
 
-    return (
-        <Box flexDirection="column">
-            {elements}
-        </Box>
-    );
+    return <Box flexDirection="column">{elements}</Box>;
 }

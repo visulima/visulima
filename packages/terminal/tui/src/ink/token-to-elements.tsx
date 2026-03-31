@@ -1,8 +1,9 @@
+/* eslint-disable react-x/no-array-index-key, no-bitwise */
+
 /**
  * Convert Shiki ThemedToken[][] to Ink React elements for terminal rendering.
  */
 import type { ReactElement } from "react";
-/* eslint-disable react-x/no-array-index-key */
 import type { ThemedToken } from "shiki";
 
 import Box from "./components/Box";
@@ -21,7 +22,7 @@ export type TokenRenderOptions = {
 };
 
 /**
- * Render a single ThemedToken as a styled <Text> element.
+ * Render a single ThemedToken as a styled &lt;Text> element.
  */
 export const renderToken = (token: ThemedToken, key: number): ReactElement => {
     const fontStyle = token.fontStyle ?? 0;
@@ -44,34 +45,31 @@ export const renderToken = (token: ThemedToken, key: number): ReactElement => {
 /**
  * Render a single line of tokens as inline React elements (no Box wrapper).
  */
-export const renderTokenLine = (tokens: ThemedToken[]): ReactElement => (
-    <>{tokens.map((token, index) => renderToken(token, index))}</>
-);
+export const renderTokenLine = (tokens: ThemedToken[]): ReactElement => <>{tokens.map((token, index) => renderToken(token, index))}</>;
 
 /**
  * Convert Shiki token lines to Ink React elements with optional line numbers.
  */
-export const tokenLinesToElements = (
-    lines: ThemedToken[][],
-    options: TokenRenderOptions = {},
-): ReactElement => {
+export const tokenLinesToElements = (lines: ThemedToken[][], options: TokenRenderOptions = {}): ReactElement => {
     const { highlightLines, showLineNumbers = false, startLine = 1 } = options;
     const gutterWidth = showLineNumbers ? String(startLine + lines.length - 1).length : 0;
 
     return (
         <Box flexDirection="column">
             {lines.map((line, lineIndex) => {
-                const lineNum = startLine + lineIndex;
-                const isHighlighted = highlightLines?.has(lineNum) ?? false;
+                const lineNumber = startLine + lineIndex;
+                const isHighlighted = highlightLines?.has(lineNumber) ?? false;
 
                 return (
                     <Box key={lineIndex}>
-                        {showLineNumbers ? (
-                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                {String(lineNum).padStart(gutterWidth)}
-                                {" "}
-                            </Text>
-                        ) : undefined}
+                        {showLineNumbers
+                            ? (
+                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                    {String(lineNumber).padStart(gutterWidth)}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
                         <Text backgroundColor={isHighlighted ? "#3a3a00" : undefined}>
                             {line.length > 0 ? line.map((token, tokenIndex) => renderToken(token, tokenIndex)) : ""}
                         </Text>

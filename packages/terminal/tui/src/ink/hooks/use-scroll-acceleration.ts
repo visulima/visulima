@@ -62,13 +62,7 @@ const MIN_VELOCITY = 0.5;
  * ```
  */
 const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseScrollAccelerationResult => {
-    const {
-        acceleration = 1.5,
-        decayRate = 0.92,
-        isActive = true,
-        maxVelocity = 20,
-        onScroll,
-    } = options;
+    const { acceleration = 1.5, decayRate = 0.92, isActive = true, maxVelocity = 20, onScroll } = options;
 
     const [velocity, setVelocity] = useState(0);
     const [isCoasting, setIsCoasting] = useState(false);
@@ -93,6 +87,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
             // Skip the first tick after handleScroll to avoid double-emission
             if (skipNextTickRef.current) {
                 skipNextTickRef.current = false;
+
                 return;
             }
 
@@ -102,6 +97,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
                 velocityRef.current = 0;
                 setVelocity(0);
                 setIsCoasting(false);
+
                 return;
             }
 
@@ -132,6 +128,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
             if (!isActive) {
                 // No acceleration — just emit a single line scroll
                 onScrollRef.current?.(direction === "down" ? 1 : -1);
+
                 return;
             }
 
@@ -143,10 +140,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
 
             if (elapsed < RAPID_THRESHOLD_MS && Math.sign(velocityRef.current) === sign) {
                 // Rapid scroll in same direction — accelerate
-                velocityRef.current = Math.min(
-                    Math.abs(velocityRef.current * acceleration),
-                    maxVelocity,
-                ) * sign;
+                velocityRef.current = Math.min(Math.abs(velocityRef.current * acceleration), maxVelocity) * sign;
             } else {
                 // New scroll or direction change — reset velocity
                 velocityRef.current = sign;
@@ -162,7 +156,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
         [isActive, acceleration, maxVelocity],
     );
 
-    return useMemo(() => ({ handleScroll, isCoasting, velocity }), [handleScroll, isCoasting, velocity]);
+    return useMemo(() => { return { handleScroll, isCoasting, velocity }; }, [handleScroll, isCoasting, velocity]);
 };
 
 export default useScrollAcceleration;

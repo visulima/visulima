@@ -43,6 +43,12 @@ export default createConfig(
         },
     },
     {
+        files: ["**/*.tsx"],
+        rules: {
+            "unicorn/no-null": "off",
+        },
+    },
+    {
         files: ["__tests__/ink/fixtures/**/*.tsx"],
         rules: {
             // Fixtures are standalone React components run as child processes, not test files
