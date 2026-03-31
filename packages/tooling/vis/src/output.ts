@@ -38,14 +38,14 @@ const colorEnabled = supportsColor();
 const ansi = (open: string, close: string) => (s: string): string =>
     colorEnabled ? `\x1B[${open}m${s}\x1B[${close}m` : s;
 
-const bold = ansi("1", "22");
-const dim = ansi("2", "22");
-const red = ansi("31", "39");
-const green = ansi("32", "39");
-const yellow = ansi("33", "39");
-const blue = ansi("34", "39");
-const cyan = ansi("36", "39");
-const gray = ansi("90", "39");
+const bold: (s: string) => string = ansi("1", "22");
+const dim: (s: string) => string = ansi("2", "22");
+const red: (s: string) => string = ansi("31", "39");
+const green: (s: string) => string = ansi("32", "39");
+const yellow: (s: string) => string = ansi("33", "39");
+const blue: (s: string) => string = ansi("34", "39");
+const cyan: (s: string) => string = ansi("36", "39");
+const gray: (s: string) => string = ansi("90", "39");
 
 // ── Symbols (with Unicode detection from tui/symbols.ts pattern) ─────
 
@@ -59,13 +59,19 @@ const isUnicodeSupported = (): boolean => {
 
 const unicode = isUnicodeSupported();
 
-const SYMBOLS = {
+const SYMBOLS: {
+    readonly arrow: string;
+    readonly dash: string;
+    readonly failure: string;
+    readonly success: string;
+    readonly warning: string;
+} = {
     arrow: unicode ? "\u2192" : "->",    // → transitions
     dash: unicode ? "\u2014" : "-",       // — separators
     failure: unicode ? "\u2717" : "x",    // ✗ failure (red)
     success: unicode ? "\u2713" : "v",    // ✓ success (green)
     warning: unicode ? "\u26A0" : "!",    // ⚠ warning (yellow)
-} as const;
+};
 
 // ── Prefixed output functions ────────────────────────────────────────
 

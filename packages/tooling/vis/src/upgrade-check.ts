@@ -31,7 +31,7 @@ interface UpgradeCheckCache {
 }
 
 /** Commands that should NOT trigger upgrade checks. */
-const EXCLUDED_COMMANDS = new Set([
+const EXCLUDED_COMMANDS: Set<string> = new Set([
     "upgrade",
     "implode",
     "--version",
