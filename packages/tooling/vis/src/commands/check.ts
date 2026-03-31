@@ -78,7 +78,6 @@ const check: Command = {
         // Security config mode
         ["vis check --security-config", "Audit supply chain security settings"],
     ],
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");

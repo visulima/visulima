@@ -69,7 +69,6 @@ const env: Command = {
         ["vis env which node", "Show resolved binary path"],
         ["vis env setup", "Set up shims and PATH configuration"],
     ],
-    // eslint-disable-next-line sonarjs/cognitive-complexity -- env command has many subcommands
     execute: async ({ argument, logger, options }) => {
         const args = argument as string[];
         const action = args?.[0];
