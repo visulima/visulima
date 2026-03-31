@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key, import/exports-last, sonarjs/cognitive-complexity, no-for-of-array/no-for-of-array, @typescript-eslint/restrict-template-expressions, no-plusplus, func-style */
 
 /**
  * Diff viewer component for Ink.
@@ -8,7 +8,7 @@
  */
 import { createPatch, diffChars, diffWords, parsePatch } from "diff";
 import type { ReactElement, ReactNode } from "react";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ThemedToken } from "shiki";
 
 import getHighlighter, { getCachedTokens, isLanguageSupported, resolveLanguage } from "../highlighter";
@@ -107,14 +107,14 @@ type DiffLine = {
 const renderHighlightedContent = (
     content: string,
     highlightedLines: ThemedToken[][] | null,
-    lineNum: number | undefined,
+    lineNumber: number | undefined,
     fallbackColor?: string,
 ): ReactNode => {
-    if (!highlightedLines || lineNum === undefined || lineNum < 1 || lineNum > highlightedLines.length) {
+    if (!highlightedLines || lineNumber === undefined || lineNumber < 1 || lineNumber > highlightedLines.length) {
         return fallbackColor ? <Text color={fallbackColor}>{content}</Text> : <Text dimColor>{content}</Text>;
     }
 
-    const tokens = highlightedLines[lineNum - 1];
+    const tokens = highlightedLines[lineNumber - 1];
 
     if (!tokens || tokens.length === 0) {
         return fallbackColor ? <Text color={fallbackColor}>{content}</Text> : <Text dimColor>{content}</Text>;
@@ -135,14 +135,16 @@ const useHighlightedLines = (text: string, language: string | undefined, theme: 
         cancelledRef.current = false;
 
         if (!language) {
-            setTokens(null);
+            setTokens(null); // eslint-disable-line react-x/set-state-in-effect
+
             return;
         }
 
         const lang = resolveLanguage(language);
 
         if (!isLanguageSupported(lang)) {
-            setTokens(null);
+            setTokens(null); // eslint-disable-line react-x/set-state-in-effect
+
             return;
         }
 
@@ -202,14 +204,14 @@ const parseDiffLines = (diffString: string, enableInlineDiff: boolean, inlineDif
             if (enableInlineDiff) {
                 const pairs = findInlinePairs(lines);
 
-                for (const [delIdx, addIdx] of pairs) {
-                    if (lines[delIdx]!.type === "del" && lines[addIdx]!.type === "add") {
-                        const computed = computeInlineDiff(lines[delIdx]!.content, lines[addIdx]!.content, inlineDiffMode);
+                for (const [delIndex, addIndex] of pairs) {
+                    if (lines[delIndex]!.type === "del" && lines[addIndex]!.type === "add") {
+                        const computed = computeInlineDiff(lines[delIndex]!.content, lines[addIndex]!.content, inlineDiffMode);
 
-                        lines[delIdx]!.inlineDiff = computed ?? undefined;
-                        lines[delIdx]!.pairedIndex = addIdx;
-                        lines[addIdx]!.inlineDiff = computed ?? undefined;
-                        lines[addIdx]!.pairedIndex = delIdx;
+                        lines[delIndex]!.inlineDiff = computed ?? undefined;
+                        lines[delIndex]!.pairedIndex = addIndex;
+                        lines[addIndex]!.inlineDiff = computed ?? undefined;
+                        lines[addIndex]!.pairedIndex = delIndex;
                     }
                 }
             }
@@ -263,19 +265,23 @@ const computeInlineDiff = (oldContent: string, newContent: string, mode: InlineD
 /**
  * Render precomputed inline diff parts.
  */
-const renderInlineParts = (parts: InlineDiffPart[], color: string, bgColor: string): ReactNode => {
-    return (
-        <>
-            {parts.map((part, index) =>
-                part.highlight ? (
-                    <Text backgroundColor={bgColor} color="white" key={index}>{part.value}</Text>
-                ) : (
-                    <Text color={color} key={index}>{part.value}</Text>
-                ),
-            )}
-        </>
-    );
-};
+const renderInlineParts = (parts: InlineDiffPart[], color: string, bgColor: string): ReactNode => (
+    <>
+        {parts.map((part, index) =>
+            (part.highlight
+? (
+                    <Text backgroundColor={bgColor} color="white" key={index}>
+                        {part.value}
+                    </Text>
+            )
+: (
+                    <Text color={color} key={index}>
+                        {part.value}
+                    </Text>
+            )),
+        )}
+    </>
+);
 
 /**
  * Find paired del/add line blocks for inline diff.
@@ -340,65 +346,68 @@ function UnifiedView({
     return (
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => (
-                    <Box flexDirection="column" key={hunkIndex}>
-                        {hunkIndex > 0 ? (
+                <Box flexDirection="column" key={hunkIndex}>
+                    {hunkIndex > 0
+                        ? (
                             <Box marginBottom={0} marginTop={0}>
-                                <Text dimColor>{"···"}</Text>
+                                <Text dimColor>···</Text>
                             </Box>
-                        ) : undefined}
-                        <Text color="cyan" dimColor>
-                            {hunk.header}
-                        </Text>
-                        {hunk.lines.map((line, lineIndex) => {
-                            let lineContent: ReactNode;
-                            let prefix: string;
-                            let color: string | undefined;
+                        )
+                        : undefined}
+                    <Text color="cyan" dimColor>
+                        {hunk.header}
+                    </Text>
+                    {hunk.lines.map((line, lineIndex) => {
+                        let lineContent: ReactNode;
+                        let prefix: string;
+                        let color: string | undefined;
 
-                            switch (line.type) {
-                                case "add": {
-                                    prefix = "+";
-                                    color = "green";
-                                    lineContent = line.inlineDiff
-                                        ? renderInlineParts(line.inlineDiff.addParts, "green", "green")
-                                        : renderHighlightedContent(line.content, newHighlighted, line.newLineNum, "green");
-                                    break;
-                                }
-
-                                case "del": {
-                                    prefix = "-";
-                                    color = "red";
-                                    lineContent = line.inlineDiff
-                                        ? renderInlineParts(line.inlineDiff.delParts, "red", "red")
-                                        : renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red");
-                                    break;
-                                }
-
-                                default: {
-                                    prefix = " ";
-                                    color = undefined;
-                                    lineContent = renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum);
-                                    break;
-                                }
+                        switch (line.type) {
+                            case "add": {
+                                prefix = "+";
+                                color = "green";
+                                lineContent = line.inlineDiff
+                                    ? renderInlineParts(line.inlineDiff.addParts, "green", "green")
+                                    : renderHighlightedContent(line.content, newHighlighted, line.newLineNum, "green");
+                                break;
                             }
 
-                            return (
-                                <Box key={lineIndex}>
-                                    {showLineNumbers ? (
+                            case "del": {
+                                prefix = "-";
+                                color = "red";
+                                lineContent = line.inlineDiff
+                                    ? renderInlineParts(line.inlineDiff.delParts, "red", "red")
+                                    : renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red");
+                                break;
+                            }
+
+                            default: {
+                                prefix = " ";
+                                color = undefined;
+                                lineContent = renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum);
+                                break;
+                            }
+                        }
+
+                        return (
+                            <Box key={lineIndex}>
+                                {showLineNumbers
+                                    ? (
                                         <Text color={color} dimColor={line.type === "context"}>
                                             {String(line.oldLineNum ?? "").padStart(4)}
                                             {" "}
                                             {String(line.newLineNum ?? "").padStart(4)}
                                             {" "}
                                         </Text>
-                                    ) : undefined}
-                                    <Text color={color}>{prefix}</Text>
-                                    {lineContent}
-                                </Box>
-                            );
-                        })}
-                    </Box>
-                ))
-            }
+                                    )
+                                    : undefined}
+                                <Text color={color}>{prefix}</Text>
+                                {lineContent}
+                            </Box>
+                        );
+                    })}
+                </Box>
+            ))}
         </Box>
     );
 }
@@ -424,11 +433,14 @@ function SplitView({
     return (
         <Box flexDirection="column">
             {hunks.map((hunk, hunkIndex) => {
-                const separator = hunkIndex > 0 ? (
-                    <Box marginBottom={0} marginTop={0}>
-                        <Text dimColor>{"···"}</Text>
-                    </Box>
-                ) : undefined;
+                const separator
+                    = hunkIndex > 0
+                        ? (
+                            <Box marginBottom={0} marginTop={0}>
+                                <Text dimColor>···</Text>
+                            </Box>
+                        )
+                        : undefined;
 
                 // Build left (old) and right (new) lines using precomputed inline diffs
                 const leftLines: { content: ReactNode; lineNum?: number }[] = [];
@@ -437,35 +449,52 @@ function SplitView({
                 for (let lineIndex = 0; lineIndex < hunk.lines.length; lineIndex++) {
                     const line = hunk.lines[lineIndex]!;
 
-                    if (line.type === "context") {
-                        leftLines.push({ content: renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum), lineNum: line.oldLineNum });
-                        rightLines.push({ content: renderHighlightedContent(line.content, newHighlighted, line.newLineNum), lineNum: line.newLineNum });
-                    } else if (line.type === "del") {
-                        if (line.pairedIndex !== undefined) {
-                            const pairedLine = hunk.lines[line.pairedIndex]!;
-
-                            leftLines.push({
-                                content: line.inlineDiff
-                                    ? renderInlineParts(line.inlineDiff.delParts, "red", "red")
-                                    : renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red"),
-                                lineNum: line.oldLineNum,
-                            });
-                            rightLines.push({
-                                content: pairedLine.inlineDiff
-                                    ? renderInlineParts(pairedLine.inlineDiff.addParts, "green", "green")
-                                    : renderHighlightedContent(pairedLine.content, newHighlighted, pairedLine.newLineNum, "green"),
-                                lineNum: pairedLine.newLineNum,
-                            });
-                        } else {
-                            leftLines.push({ content: renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red"), lineNum: line.oldLineNum });
-                            rightLines.push({ content: <Text dimColor>{""}</Text> });
-                        }
-                    } else if (line.type === "add") {
+                    switch (line.type) {
+                        case "add": {
                         // Only reach here for unpaired adds (paired adds handled by their del)
-                        if (line.pairedIndex === undefined) {
-                            leftLines.push({ content: <Text dimColor>{""}</Text> });
-                            rightLines.push({ content: renderHighlightedContent(line.content, newHighlighted, line.newLineNum, "green"), lineNum: line.newLineNum });
+                            if (line.pairedIndex === undefined) {
+                                leftLines.push({ content: <Text dimColor /> });
+                                rightLines.push({
+                                    content: renderHighlightedContent(line.content, newHighlighted, line.newLineNum, "green"),
+                                    lineNum: line.newLineNum,
+                                });
+                            }
+
+                            break;
                         }
+                        case "context": {
+                            leftLines.push({ content: renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum), lineNum: line.oldLineNum });
+                            rightLines.push({ content: renderHighlightedContent(line.content, newHighlighted, line.newLineNum), lineNum: line.newLineNum });
+
+                            break;
+                        }
+                        case "del": {
+                            if (line.pairedIndex === undefined) {
+                                leftLines.push({
+                                    content: renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red"),
+                                    lineNum: line.oldLineNum,
+                                });
+                                rightLines.push({ content: <Text dimColor /> });
+                            } else {
+                                const pairedLine = hunk.lines[line.pairedIndex]!;
+
+                                leftLines.push({
+                                    content: line.inlineDiff
+                                        ? renderInlineParts(line.inlineDiff.delParts, "red", "red")
+                                        : renderHighlightedContent(line.content, oldHighlighted, line.oldLineNum, "red"),
+                                    lineNum: line.oldLineNum,
+                                });
+                                rightLines.push({
+                                    content: pairedLine.inlineDiff
+                                        ? renderInlineParts(pairedLine.inlineDiff.addParts, "green", "green")
+                                        : renderHighlightedContent(pairedLine.content, newHighlighted, pairedLine.newLineNum, "green"),
+                                    lineNum: pairedLine.newLineNum,
+                                });
+                            }
+
+                            break;
+                        }
+                    // No default
                     }
                 }
 
@@ -484,16 +513,26 @@ function SplitView({
                             return (
                                 <Box flexDirection="row" key={rowIndex}>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? (
-                                            <Text dimColor>{String(left?.lineNum ?? "").padStart(4)} </Text>
-                                        ) : undefined}
+                                        {showLineNumbers
+                                            ? (
+                                                <Text dimColor>
+                                                    {String(left?.lineNum ?? "").padStart(4)}
+                                                    {" "}
+                                                </Text>
+                                            )
+                                            : undefined}
                                         {left?.content}
                                     </Box>
                                     <Text dimColor>│</Text>
                                     <Box width={halfWidth}>
-                                        {showLineNumbers ? (
-                                            <Text dimColor>{String(right?.lineNum ?? "").padStart(4)} </Text>
-                                        ) : undefined}
+                                        {showLineNumbers
+                                            ? (
+                                                <Text dimColor>
+                                                    {String(right?.lineNum ?? "").padStart(4)}
+                                                    {" "}
+                                                </Text>
+                                            )
+                                            : undefined}
                                         {right?.content}
                                     </Box>
                                 </Box>
@@ -510,8 +549,8 @@ function SplitView({
  * Display file differences with colored additions/deletions.
  *
  * ```tsx
- * <DiffView oldText="hello" newText="hello world" />
- * <DiffView diff={unifiedDiffString} mode="split" />
+ * &lt;DiffView oldText="hello" newText="hello world" />
+ * &lt;DiffView diff={unifiedDiffString} mode="split" />
  * ```
  */
 export default function DiffView({
@@ -544,7 +583,7 @@ export default function DiffView({
 
     const hunks = useMemo(() => parseDiffLines(diffString, inlineDiff, inlineDiffMode), [diffString, inlineDiff, inlineDiffMode]);
 
-    if (hunks.length === 0 || hunks.every((h) => h.lines.length === 0)) {
+    if (hunks.every((h) => h.lines.length === 0)) {
         return (
             <Box>
                 <Text dimColor>No differences found.</Text>
@@ -555,8 +594,16 @@ export default function DiffView({
     // File labels
     const labels = (
         <Box flexDirection="column">
-            <Text color="red" dimColor>--- {oldLabel}</Text>
-            <Text color="green" dimColor>+++ {newLabel}</Text>
+            <Text color="red" dimColor>
+                ---
+                {" "}
+                {oldLabel}
+            </Text>
+            <Text color="green" dimColor>
+                +++
+                {" "}
+                {newLabel}
+            </Text>
         </Box>
     );
 
@@ -564,7 +611,13 @@ export default function DiffView({
         return (
             <Box flexDirection="column">
                 {labels}
-                <SplitView hunks={hunks} newHighlighted={newHighlighted} oldHighlighted={oldHighlighted} showLineNumbers={showLineNumbers} width={columns ?? 80} />
+                <SplitView
+                    hunks={hunks}
+                    newHighlighted={newHighlighted}
+                    oldHighlighted={oldHighlighted}
+                    showLineNumbers={showLineNumbers}
+                    width={columns ?? 80}
+                />
             </Box>
         );
     }

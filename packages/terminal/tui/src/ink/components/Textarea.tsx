@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, no-plusplus, react-x/no-array-index-key */
 
 /**
  * Multi-line text input component for Ink.
@@ -81,10 +81,7 @@ type SelectionRange = {
     startLine: number;
 };
 
-const getOrderedSelection = (
-    cursor: { col: number; line: number },
-    anchor: { col: number; line: number },
-): SelectionRange => {
+const getOrderedSelection = (cursor: { col: number; line: number }, anchor: { col: number; line: number }): SelectionRange => {
     if (anchor.line < cursor.line || (anchor.line === cursor.line && anchor.col < cursor.col)) {
         return { endCol: cursor.col, endLine: cursor.line, startCol: anchor.col, startLine: anchor.line };
     }
@@ -97,7 +94,7 @@ const getOrderedSelection = (
  * paste support, and viewport scrolling.
  *
  * ```tsx
- * <Textarea defaultValue="Hello\nWorld" rows={10} onChange={setValue} onSubmit={handleSubmit} />
+ * &lt;Textarea defaultValue="Hello\nWorld" rows={10} onChange={setValue} onSubmit={handleSubmit} />
  * ```
  */
 export default function Textarea({
@@ -134,11 +131,11 @@ export default function Textarea({
     });
 
     // Fire onChange on value changes
-    const prevValueRef = useRef(defaultValue);
+    const previousValueRef = useRef(defaultValue);
 
     useEffect(() => {
-        if (buffer.value !== prevValueRef.current) {
-            prevValueRef.current = buffer.value;
+        if (buffer.value !== previousValueRef.current) {
+            previousValueRef.current = buffer.value;
             onChangeRef.current?.(buffer.value);
         }
     }, [buffer.value]);
@@ -192,68 +189,80 @@ export default function Textarea({
             // Submit: Meta+Enter or Ctrl+Enter
             if (key.return && (key.meta || key.ctrl)) {
                 onSubmitRef.current?.(b.value);
+
                 return;
             }
 
             // Enter: insert newline
             if (key.return) {
                 b.newline();
+
                 return;
             }
 
             if (key.escape) {
                 b.clearSelection();
+
                 return;
             }
 
             // Tab: insert spaces
             if (key.tab) {
                 b.insert(" ".repeat(tabSize));
+
                 return;
             }
 
             // Undo: Ctrl+Z
             if (key.ctrl && input === "z") {
                 b.undo();
+
                 return;
             }
 
             // Redo: Ctrl+Y or Ctrl+Shift+Z
             if (key.ctrl && (input === "y" || (key.shift && input === "Z"))) {
                 b.redo();
+
                 return;
             }
 
             // Copy: Ctrl+C (with selection)
             if (key.ctrl && input === "c" && b.hasSelection()) {
                 copy(b.getSelectedText());
+
                 return;
             }
 
             // Select all: Ctrl+Shift+A (Shift produces uppercase "A")
             if (key.ctrl && (input === "A" || (input === "a" && key.shift))) {
                 b.selectAll();
+
                 return;
             }
 
             // Navigation
             if (key.upArrow) {
                 b.moveCursor("up", key.shift);
+
                 return;
             }
 
             if (key.downArrow) {
                 b.moveCursor("down", key.shift);
+
                 return;
             }
 
             if (key.leftArrow) {
                 b.moveCursor("left", key.shift);
+
                 return;
             }
 
             if (key.rightArrow) {
                 b.moveCursor("right", key.shift);
+
                 return;
             }
 
@@ -263,6 +272,7 @@ export default function Textarea({
                 } else {
                     b.moveToLineStart(key.shift);
                 }
+
                 return;
             }
 
@@ -272,44 +282,52 @@ export default function Textarea({
                 } else {
                     b.moveToLineEnd(key.shift);
                 }
+
                 return;
             }
 
             // Ctrl+A (no shift): home
             if (key.ctrl && input === "a") {
                 b.moveToLineStart(key.shift);
+
                 return;
             }
 
             // Ctrl+E: end
             if (key.ctrl && input === "e") {
                 b.moveToLineEnd(key.shift);
+
                 return;
             }
 
             // Editing
             if (key.backspace) {
                 b.deleteBack();
+
                 return;
             }
 
             if (key.delete) {
                 b.deleteForward();
+
                 return;
             }
 
             if (key.ctrl && input === "u") {
                 b.deleteToLineStart();
+
                 return;
             }
 
             if (key.ctrl && input === "k") {
                 b.deleteToLineEnd();
+
                 return;
             }
 
             if (key.ctrl && input === "w") {
                 b.deleteWord();
+
                 return;
             }
 
@@ -328,18 +346,15 @@ export default function Textarea({
     useInput(inputHandler, { isActive: isFocused && !isDisabled });
 
     // Paste handler
-    const pasteHandler = useCallback(
-        (text: string) => {
-            const b = bufferRef.current;
+    const pasteHandler = useCallback((text: string) => {
+        const b = bufferRef.current;
 
-            if (b.hasSelection()) {
-                b.replaceSelection(text);
-            } else {
-                b.insert(text);
-            }
-        },
-        [],
-    );
+        if (b.hasSelection()) {
+            b.replaceSelection(text);
+        } else {
+            b.insert(text);
+        }
+    }, []);
 
     usePaste(pasteHandler, { isActive: isFocused && !isDisabled });
 
@@ -354,15 +369,20 @@ export default function Textarea({
         return (
             <Box flexDirection="column">
                 {visibleLines.map((line, index) => {
-                    const lineNum = scrollOffset + index;
+                    const lineNumber = scrollOffset + index;
 
                     return (
-                        <Box key={lineNum}>
-                            {showLineNumbers ? (
-                                <Text dimColor>{String(lineNum + 1).padStart(lineNumberWidth)} </Text>
-                            ) : undefined}
-                            {/* eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional */}
-                            <Text dimColor>{line || (lineNum === 0 && placeholder ? placeholder : "")}</Text>
+                        <Box key={lineNumber}>
+                            {showLineNumbers
+                                ? (
+                                    <Text dimColor>
+                                        {String(lineNumber + 1).padStart(lineNumberWidth)}
+                                        {" "}
+                                    </Text>
+                                )
+                                : undefined}
+                            { }
+                            <Text dimColor>{line || (lineNumber === 0 && placeholder ? placeholder : "")}</Text>
                         </Box>
                     );
                 })}
@@ -378,19 +398,26 @@ export default function Textarea({
             <Box flexDirection="column">
                 {placeholderLines.map((pLine, index) => (
                     <Box key={index}>
-                        {showLineNumbers ? (
-                            <Text dimColor>{String(index + 1).padStart(lineNumberWidth)} </Text>
-                        ) : undefined}
-                        {index === 0 ? (
-                            <Text>
-                                <Text dimColor inverse>
-                                    {pLine[0] ?? " "}
+                        {showLineNumbers
+                            ? (
+                                <Text dimColor>
+                                    {String(index + 1).padStart(lineNumberWidth)}
+                                    {" "}
                                 </Text>
-                                <Text dimColor>{pLine.slice(1)}</Text>
-                            </Text>
-                        ) : (
-                            <Text dimColor>{pLine}</Text>
-                        )}
+                            )
+                            : undefined}
+                        {index === 0
+                            ? (
+                                <Text>
+                                    <Text dimColor inverse>
+                                        {pLine[0] ?? " "}
+                                    </Text>
+                                    <Text dimColor>{pLine.slice(1)}</Text>
+                                </Text>
+                            )
+                            : (
+                                <Text dimColor>{pLine}</Text>
+                            )}
                     </Box>
                 ))}
             </Box>
@@ -400,17 +427,20 @@ export default function Textarea({
     return (
         <Box flexDirection="column">
             {visibleLines.map((line, index) => {
-                const lineNum = scrollOffset + index;
-                const isCursorLine = lineNum === buffer.cursor.line;
+                const lineNumber = scrollOffset + index;
+                const isCursorLine = lineNumber === buffer.cursor.line;
 
                 return (
-                    <Box key={lineNum}>
-                        {showLineNumbers ? (
-                            <Text dimColor={!isCursorLine}>{String(lineNum + 1).padStart(lineNumberWidth)} </Text>
-                        ) : undefined}
-                        <Text>
-                            {renderLine(line, lineNum, buffer.cursor, sel)}
-                        </Text>
+                    <Box key={lineNumber}>
+                        {showLineNumbers
+                            ? (
+                                <Text dimColor={!isCursorLine}>
+                                    {String(lineNumber + 1).padStart(lineNumberWidth)}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
+                        <Text>{renderLine(line, lineNumber, buffer.cursor, sel)}</Text>
                     </Box>
                 );
             })}
@@ -421,17 +451,12 @@ export default function Textarea({
 /**
  * Render a single line with cursor and selection highlighting.
  */
-function renderLine(
-    line: string,
-    lineNum: number,
-    cursor: { col: number; line: number },
-    sel: SelectionRange | null,
-): ReactElement {
-    const isCursorLine = lineNum === cursor.line;
+function renderLine(line: string, lineNumber: number, cursor: { col: number; line: number }, sel: SelectionRange | null): ReactElement {
+    const isCursorLine = lineNumber === cursor.line;
     const cursorCol = isCursorLine ? cursor.col : -1;
 
     // Determine if this line has any selection
-    const lineSelected = sel && lineNum >= sel.startLine && lineNum <= sel.endLine;
+    const lineSelected = sel && lineNumber >= sel.startLine && lineNumber <= sel.endLine;
 
     if (!lineSelected && !isCursorLine) {
         // No cursor, no selection — plain text
@@ -454,8 +479,8 @@ function renderLine(
     }
 
     // Selection on this line
-    const selStart = lineNum === sel.startLine ? sel.startCol : 0;
-    const selEnd = lineNum === sel.endLine ? sel.endCol : line.length;
+    const selStart = lineNumber === sel.startLine ? sel.startCol : 0;
+    const selEnd = lineNumber === sel.endLine ? sel.endCol : line.length;
 
     const beforeSel = line.slice(0, selStart);
     const selected = line.slice(selStart, selEnd);
@@ -468,15 +493,31 @@ function renderLine(
 
         if (cursorCol < selStart) {
             parts.push(<Text key={key++}>{line.slice(0, cursorCol)}</Text>);
-            parts.push(<Text inverse key={key++}>{line[cursorCol] ?? " "}</Text>);
+            parts.push(
+                <Text inverse key={key++}>
+                    {line[cursorCol] ?? " "}
+                </Text>,
+            );
             parts.push(<Text key={key++}>{line.slice(cursorCol + 1, selStart)}</Text>);
-            parts.push(<Text inverse key={key++}>{selected}</Text>);
+            parts.push(
+                <Text inverse key={key++}>
+                    {selected}
+                </Text>,
+            );
             parts.push(<Text key={key++}>{afterSel}</Text>);
         } else {
             parts.push(<Text key={key++}>{beforeSel}</Text>);
-            parts.push(<Text inverse key={key++}>{selected}</Text>);
+            parts.push(
+                <Text inverse key={key++}>
+                    {selected}
+                </Text>,
+            );
             parts.push(<Text key={key++}>{line.slice(selEnd, cursorCol)}</Text>);
-            parts.push(<Text inverse key={key++}>{line[cursorCol] ?? " "}</Text>);
+            parts.push(
+                <Text inverse key={key++}>
+                    {line[cursorCol] ?? " "}
+                </Text>,
+            );
             parts.push(<Text key={key++}>{line.slice(cursorCol + 1)}</Text>);
         }
 

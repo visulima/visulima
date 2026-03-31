@@ -1,3 +1,5 @@
+/* eslint-disable import/exports-last, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/restrict-template-expressions */
+
 /**
  * Singleton Shiki highlighter for terminal syntax highlighting.
  *
@@ -68,21 +70,21 @@ const LANGUAGE_IMPORT_MAP: Record<string, () => Promise<LanguageInput>> = {
 const LANGUAGE_ALIASES: Record<string, string> = {
     "c#": "csharp",
     "c++": "cpp",
-    "docker": "dockerfile",
-    "gql": "graphql",
-    "hs": "haskell",
-    "js": "javascript",
-    "kt": "kotlin",
-    "md": "markdown",
+    docker: "dockerfile",
+    gql: "graphql",
+    hs: "haskell",
+    js: "javascript",
+    kt: "kotlin",
+    md: "markdown",
     "objective-c": "objc",
-    "ps1": "powershell",
-    "py": "python",
-    "rb": "ruby",
-    "rs": "rust",
-    "sh": "bash",
-    "ts": "typescript",
-    "yml": "yaml",
-    "zsh": "bash",
+    ps1: "powershell",
+    py: "python",
+    rb: "ruby",
+    rs: "rust",
+    sh: "bash",
+    ts: "typescript",
+    yml: "yaml",
+    zsh: "bash",
 };
 
 /**
@@ -94,7 +96,7 @@ const THEME_IMPORT_MAP: Record<string, () => Promise<unknown>> = {
     "catppuccin-macchiato": () => import("@shikijs/themes/catppuccin-macchiato"),
     "catppuccin-mocha": () => import("@shikijs/themes/catppuccin-mocha"),
     "dark-plus": () => import("@shikijs/themes/dark-plus"),
-    "dracula": () => import("@shikijs/themes/dracula"),
+    dracula: () => import("@shikijs/themes/dracula"),
     "github-dark": () => import("@shikijs/themes/github-dark"),
     "github-dark-default": () => import("@shikijs/themes/github-dark-default"),
     "github-dark-dimmed": () => import("@shikijs/themes/github-dark-dimmed"),
@@ -103,11 +105,11 @@ const THEME_IMPORT_MAP: Record<string, () => Promise<unknown>> = {
     "light-plus": () => import("@shikijs/themes/light-plus"),
     "min-dark": () => import("@shikijs/themes/min-dark"),
     "min-light": () => import("@shikijs/themes/min-light"),
-    "monokai": () => import("@shikijs/themes/monokai"),
-    "nord": () => import("@shikijs/themes/nord"),
+    monokai: () => import("@shikijs/themes/monokai"),
+    nord: () => import("@shikijs/themes/nord"),
     "one-dark-pro": () => import("@shikijs/themes/one-dark-pro"),
     "one-light": () => import("@shikijs/themes/one-light"),
-    "poimandres": () => import("@shikijs/themes/poimandres"),
+    poimandres: () => import("@shikijs/themes/poimandres"),
     "rose-pine": () => import("@shikijs/themes/rose-pine"),
     "rose-pine-dawn": () => import("@shikijs/themes/rose-pine-dawn"),
     "rose-pine-moon": () => import("@shikijs/themes/rose-pine-moon"),
@@ -131,8 +133,7 @@ const themeLoadPromises = new Map<string, Promise<void>>();
 const TOKEN_CACHE_MAX = 50;
 const tokenCache = new Map<string, TokensResult>();
 
-const makeTokenCacheKey = (code: string, lang: string, theme: string): string =>
-    `${code.length}:${code}\0${lang}\0${theme}`;
+const makeTokenCacheKey = (code: string, lang: string, theme: string): string => `${code.length}:${code}\0${lang}\0${theme}`;
 
 /**
  * Get cached tokens or compute and cache them.
@@ -168,11 +169,11 @@ export const getCachedTokens = (highlighter: Highlighter, code: string, lang: st
 };
 
 const createSingletonHighlighter = async (): Promise<Highlighter> => {
-    const [coreMod, engineMod] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
+    const [coreModule, engineModule] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { createHighlighterCore } = coreMod as any;
+    const { createHighlighterCore } = coreModule as any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { createJavaScriptRegexEngine } = engineMod as any;
+    const { createJavaScriptRegexEngine } = engineModule as any;
 
     const highlighter: Highlighter = await createHighlighterCore({
         engine: createJavaScriptRegexEngine(),
@@ -261,7 +262,7 @@ const ensureThemeLoaded = async (highlighter: Highlighter, themeName: string): P
         const promise = (async () => {
             try {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await highlighter.loadTheme(await importer() as any);
+                await highlighter.loadTheme((await importer()) as any);
             } catch (error) {
                 themeLoadPromises.delete(themeName);
                 throw error;
@@ -304,16 +305,18 @@ export const disposeHighlighter = (): void => {
     tokenCache.clear();
 
     if (highlighterPromise) {
-        highlighterPromise.then((h) => {
-            try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (h as any).dispose?.();
-            } catch {
+        highlighterPromise
+            .then((h) => {
+                try {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (h as any).dispose?.();
+                } catch {
+                    // ignore
+                }
+            })
+            .catch(() => {
                 // ignore
-            }
-        }).catch(() => {
-            // ignore
-        });
+            });
         highlighterPromise = undefined;
     }
 };

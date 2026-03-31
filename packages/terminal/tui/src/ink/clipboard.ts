@@ -1,9 +1,10 @@
+/* eslint-disable import/exports-last */
+
 /**
  * OSC 52 clipboard protocol utilities.
  *
  * OSC 52 allows terminal applications to read/write the system clipboard
- * via escape sequences. Format: ESC ] 52 ; <target> ; <base64-data> BEL
- *
+ * via escape sequences. Format: ESC ] 52 ; &lt;target> ; &lt;base64-data> BEL
  * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
  */
 import type { Writable } from "node:stream";
@@ -16,24 +17,13 @@ import type { Writable } from "node:stream";
  */
 export type ClipboardTarget = "c" | "p" | "s";
 
-// eslint-disable-next-line no-control-regex
-const BEL = "\x07";
-const OSC = "\x1B]";
+const BEL = "\u0007";
+const OSC = "\u001B]";
 
 /**
  * Terminals known to support OSC 52 clipboard operations.
  */
-const SUPPORTED_TERMINALS = new Set([
-    "Alacritty",
-    "Ghostty",
-    "iTerm.app",
-    "iTerm2",
-    "kitty",
-    "foot",
-    "WezTerm",
-    "rio",
-    "contour",
-]);
+const SUPPORTED_TERMINALS = new Set(["Alacritty", "contour", "foot", "Ghostty", "iTerm2", "iTerm.app", "kitty", "rio", "WezTerm"]);
 
 /**
  * Check whether the current terminal likely supports OSC 52.
@@ -75,16 +65,15 @@ export const isOsc52Supported = (): boolean => {
 
 /**
  * Write text to the system clipboard via OSC 52 escape sequence.
- *
- * @param stream - The writable stream (typically stdout) to write the escape sequence to.
- * @param text - The text to copy to the clipboard.
- * @param target - The clipboard target. Defaults to `"c"` (system clipboard).
+ * @param stream The writable stream (typically stdout) to write the escape sequence to.
+ * @param text The text to copy to the clipboard.
+ * @param target The clipboard target. Defaults to `"c"` (system clipboard).
  */
 const VALID_TARGETS = new Set<string>(["c", "p", "s"]);
 
 export const writeOsc52 = (stream: Writable, text: string, target: ClipboardTarget = "c"): void => {
     if (!VALID_TARGETS.has(target)) {
-        throw new Error(`Invalid clipboard target: ${String(target)}`);
+        throw new Error(`Invalid clipboard target: ${target}`);
     }
 
     const encoded = Buffer.from(text, "utf8").toString("base64");
@@ -94,9 +83,8 @@ export const writeOsc52 = (stream: Writable, text: string, target: ClipboardTarg
 
 /**
  * Clear the clipboard via OSC 52.
- *
- * @param stream - The writable stream to write the escape sequence to.
- * @param target - The clipboard target. Defaults to `"c"`.
+ * @param stream The writable stream to write the escape sequence to.
+ * @param target The clipboard target. Defaults to `"c"`.
  */
 export const clearOsc52 = (stream: Writable, target: ClipboardTarget = "c"): void => {
     stream.write(`${OSC}52;${target};${BEL}`);

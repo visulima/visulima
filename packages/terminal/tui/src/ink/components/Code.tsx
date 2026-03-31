@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key */
 
 /**
  * Syntax-highlighted code display component for Ink.
@@ -56,18 +56,11 @@ export type Props = {
  * Render source code with syntax highlighting.
  *
  * ```tsx
- * <Code code="const x = 42;" language="typescript" />
- * <Code code={source} language="python" showLineNumbers />
+ * &lt;Code code="const x = 42;" language="typescript" />
+ * &lt;Code code={source} language="python" showLineNumbers />
  * ```
  */
-export default function Code({
-    code,
-    highlightLines,
-    language,
-    showLineNumbers = false,
-    startLine = 1,
-    theme = "github-dark-default",
-}: Props): ReactElement {
+export default function Code({ code, highlightLines, language, showLineNumbers = false, startLine = 1, theme = "github-dark-default" }: Props): ReactElement {
     const [tokens, setTokens] = useState<ThemedToken[][] | null>(null);
     const cancelledRef = useRef(false);
 
@@ -78,13 +71,14 @@ export default function Code({
 
         if (lang !== "text" && !isLanguageSupported(lang)) {
             // Unknown language — stay with plain rendering
-            setTokens(null);
+            setTokens(null); // eslint-disable-line react-x/set-state-in-effect
+
             return;
         }
 
         void (async () => {
             try {
-                const highlighter = await getHighlighter(lang !== "text" ? [lang] : [], theme);
+                const highlighter = await getHighlighter(lang === "text" ? [] : [lang], theme);
                 const result = getCachedTokens(highlighter, code, lang, theme);
 
                 if (!cancelledRef.current) {
@@ -117,16 +111,19 @@ export default function Code({
     return (
         <Box flexDirection="column">
             {lines.map((line, index) => {
-                const lineNum = startLine + index;
-                const isHighlighted = highlightLines?.has(lineNum) ?? false;
+                const lineNumber = startLine + index;
+                const isHighlighted = highlightLines?.has(lineNumber) ?? false;
 
                 return (
                     <Box key={index}>
-                        {showLineNumbers ? (
-                            <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
-                                {String(lineNum).padStart(gutterWidth)}{" "}
-                            </Text>
-                        ) : undefined}
+                        {showLineNumbers
+                            ? (
+                                <Text color={isHighlighted ? "yellow" : undefined} dimColor={!isHighlighted}>
+                                    {String(lineNumber).padStart(gutterWidth)}
+                                    {" "}
+                                </Text>
+                            )
+                            : undefined}
                         <Text>{line}</Text>
                     </Box>
                 );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus, unicorn/no-null, default-case */
 /**
  * React hook for managing a multi-line text buffer with cursor, selection, and undo/redo.
  */
@@ -46,7 +47,7 @@ export type UseTextBufferResult = {
 type Snapshot = {
     readonly anchor: CursorPosition | null;
     readonly cursor: CursorPosition;
-    readonly lines: readonly string[];
+    readonly lines: ReadonlyArray<string>;
 };
 
 const UNDO_COALESCE_MS = 300;
@@ -66,11 +67,13 @@ const joinLines = (lines: ReadonlyArray<string>): string => lines.join("\n");
 /**
  * Create a snapshot from a state object (safe to call inside setState updater).
  */
-const snapOf = (s: TextBufferState): Snapshot => ({
-    anchor: s.anchor,
-    cursor: { ...s.cursor },
-    lines: [...s.lines],
-});
+const snapOf = (s: TextBufferState): Snapshot => {
+    return {
+        anchor: s.anchor,
+        cursor: { ...s.cursor },
+        lines: [...s.lines],
+    };
+};
 
 /**
  * Apply cursor movement with optional selection extension.
@@ -84,7 +87,7 @@ const withSelection = (s: TextBufferState, newCursor: CursorPosition, selecting:
 };
 
 /**
- * Get the ordered selection range (start <= end).
+ * Get the ordered selection range (start &lt;= end).
  */
 const getSelectionRange = (cursor: CursorPosition, anchor: CursorPosition): { end: CursorPosition; start: CursorPosition } => {
     if (anchor.line < cursor.line || (anchor.line === cursor.line && anchor.col < cursor.col)) {
@@ -130,14 +133,14 @@ const insertIntoState = (s: TextBufferState, text: string): TextBufferState => {
     }
 
     const firstLine = before + inserted[0]!;
-    const lastLine = inserted[inserted.length - 1]! + after;
+    const lastLine = inserted.at(-1)! + after;
     const middle = inserted.slice(1, -1);
 
     lines.splice(line, 1, firstLine, ...middle, lastLine);
 
     return {
         anchor: null,
-        cursor: { col: inserted[inserted.length - 1]!.length, line: line + inserted.length - 1 },
+        cursor: { col: inserted.at(-1)!.length, line: line + inserted.length - 1 },
         lines,
     };
 };
@@ -151,7 +154,7 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
         return {
             anchor: null,
-            cursor: { col: lines[lines.length - 1]!.length, line: lines.length - 1 },
+            cursor: { col: lines.at(-1)!.length, line: lines.length - 1 },
             lines,
         };
     });
@@ -264,10 +267,10 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
             const lines = [...s.lines];
 
             if (col === 0) {
-                const prevLine = lines[line - 1]!;
-                const newCol = prevLine.length;
+                const previousLine = lines[line - 1]!;
+                const newCol = previousLine.length;
 
-                lines[line - 1] = prevLine + lines[line]!;
+                lines[line - 1] = previousLine + lines[line]!;
                 lines.splice(line, 1);
 
                 return { anchor: null, cursor: { col: newCol, line: line - 1 }, lines };
@@ -370,90 +373,79 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
         });
     }, [pushUndo]);
 
-    const moveCursor = useCallback(
-        (direction: "down" | "left" | "right" | "up", selecting = false) => {
-            setState((s) => {
-                const { col, line } = s.cursor;
-                let newLine = line;
-                let newCol = col;
+    const moveCursor = useCallback((direction: "down" | "left" | "right" | "up", selecting = false) => {
+        setState((s) => {
+            const { col, line } = s.cursor;
+            let newLine = line;
+            let newCol = col;
 
-                switch (direction) {
-                    case "left": {
-                        if (col > 0) {
-                            newCol = col - 1;
-                        } else if (line > 0) {
-                            newLine = line - 1;
-                            newCol = s.lines[newLine]!.length;
-                        }
-                        break;
+            switch (direction) {
+                case "down": {
+                    if (line < s.lines.length - 1) {
+                        newLine = line + 1;
+                        newCol = Math.min(desiredCol.current, s.lines[newLine]!.length);
                     }
 
-                    case "right": {
-                        const lineLen = s.lines[line]!.length;
-
-                        if (col < lineLen) {
-                            newCol = col + 1;
-                        } else if (line < s.lines.length - 1) {
-                            newLine = line + 1;
-                            newCol = 0;
-                        }
-                        break;
-                    }
-
-                    case "up": {
-                        if (line > 0) {
-                            newLine = line - 1;
-                            newCol = Math.min(desiredCol.current, s.lines[newLine]!.length);
-                        }
-                        break;
-                    }
-
-                    case "down": {
-                        if (line < s.lines.length - 1) {
-                            newLine = line + 1;
-                            newCol = Math.min(desiredCol.current, s.lines[newLine]!.length);
-                        }
-                        break;
-                    }
+                    break;
                 }
 
-                return withSelection(s, { col: newCol, line: newLine }, selecting);
-            });
-        },
-        [],
-    );
+                case "left": {
+                    if (col > 0) {
+                        newCol = col - 1;
+                    } else if (line > 0) {
+                        newLine = line - 1;
+                        newCol = s.lines[newLine]!.length;
+                    }
 
-    const moveToLineStart = useCallback(
-        (selecting = false) => {
-            setState((s) => withSelection(s, { col: 0, line: s.cursor.line }, selecting));
-        },
-        [],
-    );
+                    break;
+                }
 
-    const moveToLineEnd = useCallback(
-        (selecting = false) => {
-            setState((s) => withSelection(s, { col: s.lines[s.cursor.line]!.length, line: s.cursor.line }, selecting));
-        },
-        [],
-    );
+                case "right": {
+                    const lineLength = s.lines[line]!.length;
 
-    const moveToStart = useCallback(
-        (selecting = false) => {
-            setState((s) => withSelection(s, { col: 0, line: 0 }, selecting));
-        },
-        [],
-    );
+                    if (col < lineLength) {
+                        newCol = col + 1;
+                    } else if (line < s.lines.length - 1) {
+                        newLine = line + 1;
+                        newCol = 0;
+                    }
 
-    const moveToEnd = useCallback(
-        (selecting = false) => {
-            setState((s) => {
-                const lastLine = s.lines.length - 1;
+                    break;
+                }
 
-                return withSelection(s, { col: s.lines[lastLine]!.length, line: lastLine }, selecting);
-            });
-        },
-        [],
-    );
+                case "up": {
+                    if (line > 0) {
+                        newLine = line - 1;
+                        newCol = Math.min(desiredCol.current, s.lines[newLine]!.length);
+                    }
+
+                    break;
+                }
+            }
+
+            return withSelection(s, { col: newCol, line: newLine }, selecting);
+        });
+    }, []);
+
+    const moveToLineStart = useCallback((selecting = false) => {
+        setState((s) => withSelection(s, { col: 0, line: s.cursor.line }, selecting));
+    }, []);
+
+    const moveToLineEnd = useCallback((selecting = false) => {
+        setState((s) => withSelection(s, { col: s.lines[s.cursor.line]!.length, line: s.cursor.line }, selecting));
+    }, []);
+
+    const moveToStart = useCallback((selecting = false) => {
+        setState((s) => withSelection(s, { col: 0, line: 0 }, selecting));
+    }, []);
+
+    const moveToEnd = useCallback((selecting = false) => {
+        setState((s) => {
+            const lastLine = s.lines.length - 1;
+
+            return withSelection(s, { col: s.lines[lastLine]!.length, line: lastLine }, selecting);
+        });
+    }, []);
 
     const selectAll = useCallback(() => {
         setState((s) => {
@@ -507,7 +499,7 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
         setState({
             anchor: null,
-            cursor: { col: lines[lines.length - 1]!.length, line: lines.length - 1 },
+            cursor: { col: lines.at(-1)!.length, line: lines.length - 1 },
             lines,
         });
         undoStack.current = [];
@@ -515,15 +507,15 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
     }, []);
 
     const undo = useCallback(() => {
-        const prev = undoStack.current.pop();
+        const previous = undoStack.current.pop();
 
-        if (!prev) {
+        if (!previous) {
             return;
         }
 
         // Push current state to redo via stateRef (safe — we read then immediately setState)
         redoStack.current.push(snapOf(stateRef.current));
-        setState(prev);
+        setState(previous);
     }, []);
 
     const redo = useCallback(() => {
@@ -540,10 +532,42 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
     const value = useMemo(() => joinLines(state.lines), [state.lines]);
 
     return useMemo(
-        () => ({
-            anchor: state.anchor,
+        () => {
+            return {
+                anchor: state.anchor,
+                clearSelection,
+                cursor: state.cursor,
+                deleteBack,
+                deleteForward,
+                deleteLine,
+                deleteSelection,
+                deleteToLineEnd,
+                deleteToLineStart,
+                deleteWord,
+                getSelectedText,
+                hasSelection,
+                insert,
+                lines: state.lines,
+                moveCursor,
+                moveToEnd,
+                moveToLineEnd,
+                moveToLineStart,
+                moveToStart,
+                newline,
+                redo,
+                replaceSelection,
+                selectAll,
+                setValue,
+                undo,
+                value,
+            };
+        },
+        [
+            state.anchor,
+            state.cursor,
+            state.lines,
+            value,
             clearSelection,
-            cursor: state.cursor,
             deleteBack,
             deleteForward,
             deleteLine,
@@ -554,7 +578,6 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
             getSelectedText,
             hasSelection,
             insert,
-            lines: state.lines,
             moveCursor,
             moveToEnd,
             moveToLineEnd,
@@ -566,15 +589,6 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
             selectAll,
             setValue,
             undo,
-            value,
-        }),
-        [
-            state.anchor, state.cursor, state.lines, value,
-            clearSelection, deleteBack, deleteForward, deleteLine,
-            deleteSelection, deleteToLineEnd, deleteToLineStart, deleteWord,
-            getSelectedText, hasSelection, insert, moveCursor,
-            moveToEnd, moveToLineEnd, moveToLineStart, moveToStart,
-            newline, redo, replaceSelection, selectAll, setValue, undo,
         ],
     );
 };

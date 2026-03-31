@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable react/function-component-definition, unicorn/filename-case, no-plusplus */
 
 /**
  * Slider component for Ink.
@@ -6,11 +6,10 @@
  * A keyboard-driven range input for terminal UIs, supporting
  * horizontal and vertical orientations.
  */
+import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
-
-import type { AnsiColors } from "@visulima/colorize";
 
 import useInput from "../hooks/use-input";
 import Box from "./Box";
@@ -112,7 +111,7 @@ const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.m
  * A keyboard-driven slider / range input.
  *
  * ```tsx
- * <Slider defaultValue={50} min={0} max={100} onChange={setValue} />
+ * &lt;Slider defaultValue={50} min={0} max={100} onChange={setValue} />
  * ```
  */
 export default function Slider({
@@ -168,37 +167,55 @@ export default function Slider({
     const range = safeMax - safeMin;
 
     const inputHandler = useCallback(
-        (input: string, key: { downArrow: boolean; end: boolean; home: boolean; leftArrow: boolean; pageDown: boolean; pageUp: boolean; rightArrow: boolean; upArrow: boolean }) => {
+        (
+            input: string,
+            key: {
+                downArrow: boolean;
+                end: boolean;
+                home: boolean;
+                leftArrow: boolean;
+                pageDown: boolean;
+                pageUp: boolean;
+                rightArrow: boolean;
+                upArrow: boolean;
+            },
+        ) => {
             const isForward = orientation === "horizontal" ? key.rightArrow : key.upArrow;
             const isBackward = orientation === "horizontal" ? key.leftArrow : key.downArrow;
 
             if (isForward) {
                 setValue(currentRef.current + step);
+
                 return;
             }
 
             if (isBackward) {
                 setValue(currentRef.current - step);
+
                 return;
             }
 
             if (key.pageUp) {
                 setValue(currentRef.current + largeStep);
+
                 return;
             }
 
             if (key.pageDown) {
                 setValue(currentRef.current - largeStep);
+
                 return;
             }
 
             if (key.home) {
                 setValue(safeMin);
+
                 return;
             }
 
             if (key.end) {
                 setValue(safeMax);
+
                 return;
             }
 
