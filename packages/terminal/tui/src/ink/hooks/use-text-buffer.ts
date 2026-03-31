@@ -73,6 +73,17 @@ const snapOf = (s: TextBufferState): Snapshot => ({
 });
 
 /**
+ * Apply cursor movement with optional selection extension.
+ */
+const withSelection = (s: TextBufferState, newCursor: CursorPosition, selecting: boolean): TextBufferState => {
+    if (selecting) {
+        return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
+    }
+
+    return { ...s, anchor: null, cursor: newCursor };
+};
+
+/**
  * Get the ordered selection range (start <= end).
  */
 const getSelectionRange = (cursor: CursorPosition, anchor: CursorPosition): { end: CursorPosition; start: CursorPosition } => {
@@ -406,13 +417,7 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
                     }
                 }
 
-                const newCursor = { col: newCol, line: newLine };
-
-                if (selecting) {
-                    return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
-                }
-
-                return { ...s, anchor: null, cursor: newCursor };
+                return withSelection(s, { col: newCol, line: newLine }, selecting);
             });
         },
         [],
@@ -420,45 +425,21 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
     const moveToLineStart = useCallback(
         (selecting = false) => {
-            setState((s) => {
-                const newCursor = { col: 0, line: s.cursor.line };
-
-                if (selecting) {
-                    return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
-                }
-
-                return { ...s, anchor: null, cursor: newCursor };
-            });
+            setState((s) => withSelection(s, { col: 0, line: s.cursor.line }, selecting));
         },
         [],
     );
 
     const moveToLineEnd = useCallback(
         (selecting = false) => {
-            setState((s) => {
-                const newCursor = { col: s.lines[s.cursor.line]!.length, line: s.cursor.line };
-
-                if (selecting) {
-                    return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
-                }
-
-                return { ...s, anchor: null, cursor: newCursor };
-            });
+            setState((s) => withSelection(s, { col: s.lines[s.cursor.line]!.length, line: s.cursor.line }, selecting));
         },
         [],
     );
 
     const moveToStart = useCallback(
         (selecting = false) => {
-            setState((s) => {
-                const newCursor = { col: 0, line: 0 };
-
-                if (selecting) {
-                    return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
-                }
-
-                return { ...s, anchor: null, cursor: newCursor };
-            });
+            setState((s) => withSelection(s, { col: 0, line: 0 }, selecting));
         },
         [],
     );
@@ -467,13 +448,8 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
         (selecting = false) => {
             setState((s) => {
                 const lastLine = s.lines.length - 1;
-                const newCursor = { col: s.lines[lastLine]!.length, line: lastLine };
 
-                if (selecting) {
-                    return { ...s, anchor: s.anchor ?? s.cursor, cursor: newCursor };
-                }
-
-                return { ...s, anchor: null, cursor: newCursor };
+                return withSelection(s, { col: s.lines[lastLine]!.length, line: lastLine }, selecting);
             });
         },
         [],

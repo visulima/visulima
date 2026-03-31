@@ -4,7 +4,7 @@
  * Tracks scroll event velocity and applies exponential acceleration
  * when events arrive rapidly, with smooth deceleration (coasting).
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type UseScrollAccelerationOptions = {
     /**
@@ -162,7 +162,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
         [isActive, acceleration, maxVelocity],
     );
 
-    return { handleScroll, isCoasting, velocity };
+    return useMemo(() => ({ handleScroll, isCoasting, velocity }), [handleScroll, isCoasting, velocity]);
 };
 
 export default useScrollAcceleration;

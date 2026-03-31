@@ -23,7 +23,7 @@ export type TokenRenderOptions = {
 /**
  * Render a single ThemedToken as a styled <Text> element.
  */
-const renderToken = (token: ThemedToken, key: number): ReactElement => {
+export const renderToken = (token: ThemedToken, key: number): ReactElement => {
     const fontStyle = token.fontStyle ?? 0;
 
     return (
@@ -40,6 +40,13 @@ const renderToken = (token: ThemedToken, key: number): ReactElement => {
         </Text>
     );
 };
+
+/**
+ * Render a single line of tokens as inline React elements (no Box wrapper).
+ */
+export const renderTokenLine = (tokens: ThemedToken[]): ReactElement => (
+    <>{tokens.map((token, index) => renderToken(token, index))}</>
+);
 
 /**
  * Convert Shiki token lines to Ink React elements with optional line numbers.
