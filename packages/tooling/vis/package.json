@@ -81,6 +81,7 @@
         "@visulima/cerebro": "3.0.0-alpha.9",
         "@visulima/colorize": "2.0.0-alpha.7",
         "@visulima/find-ai-runner": "1.0.0-alpha.2",
+        "@visulima/find-cache-dir": "3.0.0-alpha.6",
         "@visulima/fs": "5.0.0-alpha.6",
         "@visulima/humanizer": "3.0.0-alpha.8",
         "@visulima/package": "5.0.0-alpha.6",
