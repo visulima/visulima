@@ -113,7 +113,7 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
         // Show a single summary warning, not the full list
         warn(
             `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. ` +
-            "Run 'vis security-check' for details.",
+            "Run 'vis check --security-config' for details.",
         );
     }
 };

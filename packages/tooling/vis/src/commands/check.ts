@@ -4,6 +4,9 @@ import { findPackageManagerSync } from "@visulima/package";
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
 import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummary, loadNpmrc, readCatalogs, toFilterArray } from "../catalog";
+import { info, success } from "../output";
+import { detectPm } from "../pm-runner";
+import { printSecurityReport, syncToPnpmConfig } from "../security";
 
 const check: Command = {
     alias: "c",
@@ -12,12 +15,15 @@ const check: Command = {
         name: "packages",
         type: String,
     },
-    description: "Check for outdated dependencies in workspace packages",
+    description: "Check for outdated dependencies, security vulnerabilities, and supply chain settings",
     examples: [
         ["vis check", "Check all catalog dependencies"],
         ["vis check react", "Check specific packages"],
         ["vis check --target minor", "Only show minor/patch updates"],
         ["vis check --exclude '@types/*'", "Exclude packages by pattern"],
+        ["vis check --security", "Include OSV.dev vulnerability scan"],
+        ["vis check --security-config", "Audit supply chain security settings"],
+        ["vis check --security-config --sync", "Sync security config to pnpm-workspace.yaml"],
     ],
     // eslint-disable-next-line sonarjs/cognitive-complexity -- command handler with multiple output formats
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
@@ -26,6 +32,37 @@ const check: Command = {
         }
 
         const workspaceRoot = wsRoot;
+
+        // ── Security config audit mode ───────────────────────────────
+        if (options["security-config"]) {
+            const pm = detectPm(workspaceRoot);
+
+            printSecurityReport(visConfig ?? {}, pm.name);
+
+            if (options.sync && pm.name === "pnpm") {
+                const synced = syncToPnpmConfig(workspaceRoot, visConfig ?? {});
+
+                if (synced.length > 0) {
+                    info("\nSettings that would sync to pnpm-workspace.yaml:");
+
+                    for (const s of synced) {
+                        success(`  ${s}`);
+                    }
+                } else {
+                    info("No security settings to sync.");
+                }
+            } else if (options.sync && pm.name !== "pnpm") {
+                info(`--sync is only available for pnpm projects. Your project uses ${pm.name}.`);
+                info("vis enforces security settings at the vis layer for non-pnpm projects.");
+            }
+
+            // If only --security-config was passed (no outdated check), return
+            if (!options.security && !argument?.length) {
+                return;
+            }
+        }
+
+        // ── Outdated dependency check ────────────────────────────────
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
         const npmrcConfig = loadNpmrc(workspaceRoot);
@@ -135,6 +172,18 @@ const check: Command = {
             defaultValue: false,
             description: "Check for known security vulnerabilities (via OSV.dev)",
             name: "security",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Audit supply chain security settings (minimumReleaseAge, trustPolicy, allowBuilds, etc.)",
+            name: "security-config",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Sync security settings to pnpm-workspace.yaml (pnpm only, requires --security-config)",
+            name: "sync",
             type: Boolean,
         },
         {

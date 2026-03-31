@@ -24,7 +24,6 @@ import outdatedCommand from "./commands/outdated";
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
-import securityCheckCommand from "./commands/security-check";
 import stagedCommand from "./commands/staged";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
@@ -129,7 +128,6 @@ cli.addCommand(upgradeCommand);
 cli.addCommand(implodeCommand);
 
 // Security commands
-cli.addCommand(securityCheckCommand);
 cli.addCommand(approveBuildsCommand);
 
 // Tips plugin: show contextual tips after command execution
