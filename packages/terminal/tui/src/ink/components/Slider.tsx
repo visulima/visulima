@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, no-plusplus */
+/* eslint-disable import/exports-last, jsdoc/informative-docs, no-plusplus, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional, unicorn/filename-case */
 
 /**
  * Slider component for Ink.

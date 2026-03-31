@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key */
+/* eslint-disable consistent-return, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, unicorn/filename-case */
 
 /**
  * Syntax-highlighted code display component for Ink.

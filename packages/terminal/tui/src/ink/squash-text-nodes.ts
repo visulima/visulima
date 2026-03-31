@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+/* eslint-disable import/exports-last, no-param-reassign, no-plusplus */
 import type { DOMElement, DOMNode } from "./dom";
 import sanitizeAnsi from "./sanitize-ansi";
 

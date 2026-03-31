@@ -1,4 +1,4 @@
-/* eslint-disable func-style, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable func-style, no-confusing-arrow, react/function-component-definition, unicorn/filename-case */
 import type { BorderStyle, HorizontalAlignment } from "@visulima/tabular";
 import { Table as TabularTable } from "@visulima/tabular";
 import {

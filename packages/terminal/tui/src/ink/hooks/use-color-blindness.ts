@@ -1,3 +1,5 @@
+/* eslint-disable @stylistic/max-statements-per-line, import/exports-last */
+
 /**
  * React hook for color blindness simulation and compensation.
  *

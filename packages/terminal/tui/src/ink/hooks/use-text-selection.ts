@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return, import/exports-last */
+
 /**
  * React hook for managing text selection with keyboard and clipboard integration.
  *

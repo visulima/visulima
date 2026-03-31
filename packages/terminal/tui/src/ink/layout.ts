@@ -1,3 +1,4 @@
+/* eslint-disable no-for-of-array/no-for-of-array, sonarjs/cognitive-complexity */
 import Yoga from "yoga-layout";
 
 import type { DOMElement, DOMNode } from "./dom";

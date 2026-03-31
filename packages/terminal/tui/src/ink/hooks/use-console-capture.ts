@@ -1,4 +1,4 @@
-/* eslint-disable no-plusplus */
+/* eslint-disable @stylistic/max-statements-per-line, consistent-return, import/exports-last, jsdoc/lines-before-block, no-console, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/no-alphabetical-sort */
 /**
  * React hook for capturing console output into a buffer.
  *

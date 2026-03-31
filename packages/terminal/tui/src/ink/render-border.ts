@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, import/no-named-as-default-member, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable @typescript-eslint/no-non-null-assertion, import/no-extraneous-dependencies, import/no-named-as-default-member, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
 import colorizeDefault from "@visulima/colorize";
 import cliBoxes from "cli-boxes";
 

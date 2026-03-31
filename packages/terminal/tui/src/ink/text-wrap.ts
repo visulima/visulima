@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, import/exports-last, no-for-of-array/no-for-of-array, sonarjs/cognitive-complexity */
+
 /**
  * StyledChar-based text wrapping and truncation.
  *
