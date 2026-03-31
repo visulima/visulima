@@ -22,3 +22,4 @@ lto = true
 codegen-units = 1
 opt-level = 3
 strip = "symbols"
+panic = "unwind"

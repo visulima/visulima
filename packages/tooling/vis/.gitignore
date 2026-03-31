@@ -1,1 +1,3 @@
-examples/sample-workspace/.task-runner-cache
+*.node
+native/target/
+index.d.ts

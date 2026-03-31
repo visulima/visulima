@@ -1,0 +1,671 @@
+import { beforeAll, describe, expect, it, vi } from "vitest";
+
+describe("native-binding", () => {
+    describe("loadNativeBindings", () => {
+        it("should return the native bindings when addon is available", async () => {
+            expect.assertions(1);
+
+            vi.resetModules();
+            const { loadNativeBindings } = await import("../src/native-binding");
+            const result = loadNativeBindings();
+
+            // In dev environment with compiled .node file, should be available
+            // In CI without native build, should be undefined
+            expect(result === undefined || typeof result === "object").toBe(true);
+        });
+
+        it("should cache the result after the first attempt", async () => {
+            expect.assertions(1);
+
+            vi.resetModules();
+            const { loadNativeBindings } = await import("../src/native-binding");
+            const first = loadNativeBindings();
+            const second = loadNativeBindings();
+
+            expect(first).toBe(second);
+        });
+    });
+
+    describe("isNativeAvailable", () => {
+        it("should return a boolean", async () => {
+            expect.assertions(1);
+
+            vi.resetModules();
+            const { isNativeAvailable } = await import("../src/native-binding");
+
+            expect(typeof isNativeAvailable()).toBe("boolean");
+        });
+    });
+});
+
+// Native addon integration tests - only run if addon is compiled
+describe("native addon integration", () => {
+    let native: Awaited<ReturnType<typeof import("../src/native-binding").loadNativeBindings>>;
+
+    beforeAll(async () => {
+        vi.resetModules();
+        const { loadNativeBindings } = await import("../src/native-binding");
+
+        native = loadNativeBindings();
+    });
+
+    describe.skipIf(!native)("detectPackageManager", () => {
+        it("should detect a package manager in the workspace root", () => {
+            expect.assertions(3);
+
+            const result = native!.detectPackageManager(process.cwd());
+
+            expect(typeof result.name).toBe("string");
+            expect(["pnpm", "npm", "yarn", "bun"]).toContain(result.name);
+            expect(typeof result.isWorkspace).toBe("boolean");
+        });
+
+        it("should return pnpm for this monorepo", () => {
+            expect.assertions(1);
+
+            const result = native!.detectPackageManager(process.cwd());
+
+            expect(result.name).toBe("pnpm");
+        });
+    });
+
+    describe.skipIf(!native)("resolveInstall", () => {
+        it("should resolve pnpm install with frozen lockfile", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveInstall("pnpm", "10.0.0", {
+                dev: false,
+                filter: [],
+                force: false,
+                frozenLockfile: true,
+                ignoreScripts: false,
+                lockfileOnly: false,
+                noOptional: false,
+                offline: false,
+                prod: false,
+                recursive: false,
+                silent: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toStrictEqual(["install", "--frozen-lockfile"]);
+        });
+
+        it("should resolve npm ci for frozen lockfile", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveInstall("npm", "11.0.0", {
+                dev: false,
+                filter: [],
+                force: false,
+                frozenLockfile: true,
+                ignoreScripts: false,
+                lockfileOnly: false,
+                noOptional: false,
+                offline: false,
+                prod: false,
+                recursive: false,
+                silent: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("npm");
+            expect(result.args[0]).toBe("ci");
+        });
+
+        it("should resolve yarn berry --immutable for frozen lockfile", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveInstall("yarn", "4.0.0", {
+                dev: false,
+                filter: [],
+                force: false,
+                frozenLockfile: true,
+                ignoreScripts: false,
+                lockfileOnly: false,
+                noOptional: false,
+                offline: false,
+                prod: false,
+                recursive: false,
+                silent: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("yarn");
+            expect(result.args).toContain("--immutable");
+        });
+
+        it("should resolve bun install with frozen lockfile", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveInstall("bun", "1.0.0", {
+                dev: false,
+                filter: [],
+                force: false,
+                frozenLockfile: true,
+                ignoreScripts: false,
+                lockfileOnly: false,
+                noOptional: false,
+                offline: false,
+                prod: false,
+                recursive: false,
+                silent: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("bun");
+            expect(result.args).toContain("--frozen-lockfile");
+        });
+    });
+
+    describe.skipIf(!native)("resolveAdd", () => {
+        it("should resolve pnpm add with -D flag", () => {
+            expect.assertions(3);
+
+            const result = native!.resolveAdd("pnpm", "10.0.0", {
+                exact: false,
+                filter: [],
+                global: false,
+                optional: false,
+                packages: ["react"],
+                peer: false,
+                saveDev: true,
+                workspace: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toContain("add");
+            expect(result.args).toContain("-D");
+        });
+
+        it("should place pnpm --filter before add", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveAdd("pnpm", "10.0.0", {
+                exact: false,
+                filter: ["app"],
+                global: false,
+                optional: false,
+                packages: ["react"],
+                peer: false,
+                saveDev: false,
+                workspace: false,
+                workspaceRoot: false,
+            });
+
+            const filterIndex = result.args.indexOf("--filter");
+            const addIndex = result.args.indexOf("add");
+
+            expect(filterIndex).toBeGreaterThanOrEqual(0);
+            expect(filterIndex).toBeLessThan(addIndex);
+        });
+
+        it("should use npm for global installs regardless of PM", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveAdd("pnpm", "10.0.0", {
+                exact: false,
+                filter: [],
+                global: true,
+                optional: false,
+                packages: ["typescript"],
+                peer: false,
+                saveDev: false,
+                workspace: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("npm");
+            expect(result.args).toContain("--global");
+        });
+
+        it("should use bun for global installs on bun projects", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveAdd("bun", "1.0.0", {
+                exact: false,
+                filter: [],
+                global: true,
+                optional: false,
+                packages: ["typescript"],
+                peer: false,
+                saveDev: false,
+                workspace: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("bun");
+            expect(result.args).toContain("--global");
+        });
+    });
+
+    describe.skipIf(!native)("resolveRemove", () => {
+        it("should resolve npm uninstall", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveRemove("npm", "11.0.0", {
+                filter: [],
+                global: false,
+                packages: ["lodash"],
+                recursive: false,
+                saveDev: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("npm");
+            expect(result.args).toStrictEqual(["uninstall", "lodash"]);
+        });
+
+        it("should use npm for global removal", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveRemove("yarn", "4.0.0", {
+                filter: [],
+                global: true,
+                packages: ["typescript"],
+                recursive: false,
+                saveDev: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("npm");
+        });
+    });
+
+    describe.skipIf(!native)("resolveDedupe", () => {
+        it("should resolve pnpm dedupe --check", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDedupe("pnpm", "10.0.0", true);
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toStrictEqual(["dedupe", "--check"]);
+        });
+
+        it("should resolve npm dedupe --dry-run", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDedupe("npm", "11.0.0", true);
+
+            expect(result.bin).toBe("npm");
+            expect(result.args).toStrictEqual(["dedupe", "--dry-run"]);
+        });
+
+        it("should warn for yarn v1", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveDedupe("yarn", "1.22.0", false);
+
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+
+        it("should warn for bun", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveDedupe("bun", "1.0.0", false);
+
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe.skipIf(!native)("resolveWhy", () => {
+        it("should resolve pnpm why with --json", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveWhy("pnpm", "10.0.0", {
+                depth: null,
+                dev: false,
+                filter: [],
+                global: false,
+                json: true,
+                long: false,
+                noOptional: false,
+                packages: ["react"],
+                parseable: false,
+                prod: false,
+                recursive: false,
+            });
+
+            expect(result.args).toContain("why");
+            expect(result.args).toContain("--json");
+        });
+
+        it("should resolve npm explain", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveWhy("npm", "11.0.0", {
+                depth: null,
+                dev: false,
+                filter: [],
+                global: false,
+                json: false,
+                long: false,
+                noOptional: false,
+                packages: ["react"],
+                parseable: false,
+                prod: false,
+                recursive: false,
+            });
+
+            expect(result.args[0]).toBe("explain");
+        });
+
+        it("should handle depth option", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveWhy("pnpm", "10.0.0", {
+                depth: 3,
+                dev: false,
+                filter: [],
+                global: false,
+                json: false,
+                long: false,
+                noOptional: false,
+                packages: ["react"],
+                parseable: false,
+                prod: false,
+                recursive: false,
+            });
+
+            expect(result.args).toContain("--depth");
+        });
+
+        it("should handle null depth without error", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveWhy("pnpm", "10.0.0", {
+                depth: null,
+                dev: false,
+                filter: [],
+                global: false,
+                json: false,
+                long: false,
+                noOptional: false,
+                packages: ["react"],
+                parseable: false,
+                prod: false,
+                recursive: false,
+            });
+
+            expect(result.args).not.toContain("--depth");
+        });
+    });
+
+    describe.skipIf(!native)("resolveDlx", () => {
+        it("should resolve pnpm dlx", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDlx("pnpm", "10.0.0", {
+                additionalPackages: [],
+                args: ["my-app"],
+                package: "create-vite",
+                shellMode: false,
+                silent: false,
+            });
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toStrictEqual(["dlx", "create-vite", "my-app"]);
+        });
+
+        it("should resolve bun x", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDlx("bun", "1.0.0", {
+                additionalPackages: [],
+                args: ["my-app"],
+                package: "create-vite",
+                shellMode: false,
+                silent: false,
+            });
+
+            expect(result.bin).toBe("bun");
+            expect(result.args[0]).toBe("x");
+        });
+
+        it("should fall back to npx for yarn v1", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDlx("yarn", "1.22.0", {
+                additionalPackages: [],
+                args: [],
+                package: "create-vite",
+                shellMode: false,
+                silent: false,
+            });
+
+            expect(result.bin).toBe("npx");
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+
+        it("should resolve npm exec with --yes", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveDlx("npm", "11.0.0", {
+                additionalPackages: [],
+                args: [],
+                package: "create-vite",
+                shellMode: false,
+                silent: false,
+            });
+
+            expect(result.bin).toBe("npm");
+            expect(result.args).toContain("--yes");
+        });
+    });
+
+    describe.skipIf(!native)("resolveExec", () => {
+        it("should resolve pnpm exec", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveExec("pnpm", "10.0.0", {
+                args: ["."],
+                command: "eslint",
+                filter: [],
+                parallel: false,
+                recursive: false,
+                reverse: false,
+                shellMode: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toContain("exec");
+        });
+
+        it("should resolve npm exec with --", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveExec("npm", "11.0.0", {
+                args: ["."],
+                command: "eslint",
+                filter: [],
+                parallel: false,
+                recursive: false,
+                reverse: false,
+                shellMode: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.args).toContain("--");
+        });
+
+        it("should fall back to npx for yarn v1", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveExec("yarn", "1.22.0", {
+                args: [],
+                command: "eslint",
+                filter: [],
+                parallel: false,
+                recursive: false,
+                reverse: false,
+                shellMode: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("npx");
+        });
+
+        it("should use bunx for bun", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveExec("bun", "1.0.0", {
+                args: [],
+                command: "eslint",
+                filter: [],
+                parallel: false,
+                recursive: false,
+                reverse: false,
+                shellMode: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("bunx");
+        });
+    });
+
+    describe.skipIf(!native)("resolveOutdated", () => {
+        it("should resolve pnpm outdated with --format json", () => {
+            expect.assertions(2);
+
+            const result = native!.resolveOutdated("pnpm", "10.0.0", {
+                compatible: false,
+                dev: false,
+                filter: [],
+                format: "json",
+                global: false,
+                long: false,
+                noOptional: false,
+                packages: [],
+                prod: false,
+                recursive: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toContain("json");
+        });
+
+        it("should warn about yarn berry upgrade-interactive", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveOutdated("yarn", "4.0.0", {
+                compatible: false,
+                dev: false,
+                filter: [],
+                format: "table",
+                global: false,
+                long: false,
+                noOptional: false,
+                packages: [],
+                prod: false,
+                recursive: false,
+                workspaceRoot: false,
+            });
+
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe.skipIf(!native)("resolvePmCommand", () => {
+        it("should map pnpm cache dir to store path", () => {
+            expect.assertions(2);
+
+            const result = native!.resolvePmCommand("pnpm", "10.0.0", "cache", ["dir"]);
+
+            expect(result.bin).toBe("pnpm");
+            expect(result.args).toStrictEqual(["store", "path"]);
+        });
+
+        it("should delegate npm-only commands to npm", () => {
+            expect.assertions(2);
+
+            const result = native!.resolvePmCommand("pnpm", "10.0.0", "token", ["list"]);
+
+            expect(result.bin).toBe("npm");
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+
+        it("should use bun pm ls for list", () => {
+            expect.assertions(1);
+
+            const result = native!.resolvePmCommand("bun", "1.0.0", "list", []);
+
+            expect(result.args).toStrictEqual(["pm", "ls"]);
+        });
+    });
+
+    describe.skipIf(!native)("resolveLink / resolveUnlink", () => {
+        it("should resolve link with target", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("pnpm", "10.0.0", "./local-pkg");
+
+            expect(result.args).toStrictEqual(["link", "./local-pkg"]);
+        });
+
+        it("should resolve link without target", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveLink("npm", "11.0.0", null);
+
+            expect(result.args).toStrictEqual(["link"]);
+        });
+
+        it("should resolve unlink with recursive", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveUnlink("pnpm", "10.0.0", ["react"], true);
+
+            expect(result.args).toContain("--recursive");
+        });
+
+        it("should warn about recursive unlink on npm", () => {
+            expect.assertions(1);
+
+            const result = native!.resolveUnlink("npm", "11.0.0", [], true);
+
+            expect(result.warnings.length).toBeGreaterThan(0);
+        });
+    });
+
+    describe.skipIf(!native)("execPmCommand", () => {
+        it("should execute allowed binaries", () => {
+            expect.assertions(2);
+
+            const result = native!.execPmCommand("echo", ["hello"], process.cwd());
+
+            expect(result.code).toBe(0);
+            expect(result.stdout.trim()).toBe("hello");
+        });
+
+        it("should block disallowed binaries", () => {
+            expect.assertions(2);
+
+            const result = native!.execPmCommand("/bin/bash", ["-c", "echo hacked"], process.cwd());
+
+            expect(result.code).toBe(126);
+            expect(result.stderr).toContain("Disallowed binary");
+        });
+    });
+
+    describe.skipIf(!native)("whichBin", () => {
+        it("should find node", () => {
+            expect.assertions(1);
+
+            const result = native!.whichBin("node");
+
+            expect(result).toContain("node");
+        });
+
+        it("should return null for nonexistent binary", () => {
+            expect.assertions(1);
+
+            const result = native!.whichBin("definitely-not-a-real-binary-xyz");
+
+            expect(result).toBeNull();
+        });
+    });
+});

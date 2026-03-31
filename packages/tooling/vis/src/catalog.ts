@@ -1,4 +1,5 @@
 import { boxen } from "@visulima/boxen";
+import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 import { createTable } from "@visulima/tabular";
@@ -27,7 +28,22 @@ const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
 const VALID_DEP_TYPES = new Set(["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]);
-const VIS_BACKUP_DIR = ".vis-backup";
+/**
+ * Returns the backup directory inside node_modules/.cache/vis/backup.
+ * Throws if the cache directory cannot be resolved (e.g., no node_modules).
+ */
+const getBackupDir = (workspaceRoot: string): string => {
+    const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
+
+    if (!cacheDir) {
+        throw new Error(
+            "Cannot resolve cache directory. Ensure node_modules exists in your workspace. " +
+            "Run your package manager's install command first.",
+        );
+    }
+
+    return join(cacheDir, "backup");
+};
 
 // --- Types ---
 
@@ -1124,7 +1140,7 @@ const getCatalogFilePath = (workspaceRoot: string, packageManager?: string): str
 };
 
 const createPackageJsonBackup = (workspaceRoot: string, updates: OutdatedEntry[]): string | undefined => {
-    const backupDirectory = join(workspaceRoot, VIS_BACKUP_DIR);
+    const backupDirectory = getBackupDir(workspaceRoot);
     const filesToBackup = new Set<string>();
 
     for (const update of updates) {
@@ -1167,7 +1183,14 @@ const createBackup = (workspaceRoot: string, packageManager?: string, updates?: 
         return undefined;
     }
 
-    const backupPath = `${filePath}.bak`;
+    // Store backup inside node_modules/.cache/vis/backup/ instead of workspace root
+    const backupDir = getBackupDir(workspaceRoot);
+    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
+    const backupPath = join(backupDir, fileName);
+
+    ensureDirSync(backupDir);
+
+    // Always overwrite existing backup with latest state
     const content = readFileSync(filePath);
 
     writeFileSync(backupPath, content);
@@ -1176,7 +1199,7 @@ const createBackup = (workspaceRoot: string, packageManager?: string, updates?: 
 };
 
 const restorePackageJsonBackup = (workspaceRoot: string): boolean => {
-    const backupDirectory = join(workspaceRoot, VIS_BACKUP_DIR);
+    const backupDirectory = getBackupDir(workspaceRoot);
 
     if (!isAccessibleSync(backupDirectory)) {
         return false;
@@ -1200,7 +1223,9 @@ const restoreFromBackup = (workspaceRoot: string, packageManager?: string): bool
     }
 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-    const backupPath = `${filePath}.bak`;
+    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
+    const backupDir = getBackupDir(workspaceRoot);
+    const backupPath = join(backupDir, fileName);
 
     if (!isAccessibleSync(backupPath)) {
         return false;
@@ -1214,13 +1239,16 @@ const restoreFromBackup = (workspaceRoot: string, packageManager?: string): bool
 };
 
 const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
+    const backupDir = getBackupDir(workspaceRoot);
+
     if (packageManager === "npm" || packageManager === "yarn") {
-        return isAccessibleSync(join(workspaceRoot, VIS_BACKUP_DIR));
+        return isAccessibleSync(backupDir);
     }
 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
+    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
 
-    return isAccessibleSync(`${filePath}.bak`);
+    return isAccessibleSync(join(backupDir, fileName));
 };
 
 // --- Output formatting ---

@@ -12,7 +12,7 @@ pub struct NativeTaskGraph {
 }
 
 /// Result of cycle detection.
-#[napi(object)]
+#[napi(object, object_from_js = false)]
 pub struct CycleResult {
     /// Whether a cycle was found.
     pub has_cycle: bool,
@@ -21,7 +21,7 @@ pub struct CycleResult {
 }
 
 /// Finds a single cycle in the task graph using DFS.
-#[napi]
+#[napi(catch_unwind)]
 pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
     let adjacency = build_adjacency(&graph);
     let mut visited = HashSet::new();
@@ -84,7 +84,7 @@ pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
 }
 
 /// Finds all cycles in the task graph.
-#[napi]
+#[napi(catch_unwind)]
 pub fn find_all_cycles(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
     let mut cycles: Vec<Vec<String>> = Vec::new();
@@ -133,7 +133,7 @@ pub fn find_all_cycles(graph: NativeTaskGraph) -> Vec<Vec<String>> {
 
 /// Performs a topological sort of the task graph.
 /// Returns task IDs in topological order (dependencies first).
-#[napi]
+#[napi(catch_unwind)]
 pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
     let adjacency = build_adjacency(&graph);
     let mut in_degree: HashMap<String, usize> = HashMap::new();
@@ -184,7 +184,7 @@ pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
 
 /// Makes the graph acyclic by removing back edges.
 /// Returns the edges that were removed.
-#[napi]
+#[napi(catch_unwind)]
 pub fn find_back_edges(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
     let mut visited = HashSet::new();
@@ -224,7 +224,7 @@ pub fn find_back_edges(graph: NativeTaskGraph) -> Vec<Vec<String>> {
 }
 
 /// Gets all transitive dependencies of a task.
-#[napi]
+#[napi(catch_unwind)]
 pub fn get_transitive_deps(graph: NativeTaskGraph, task_id: String) -> Vec<String> {
     let adjacency = build_adjacency(&graph);
     let mut result: Vec<String> = Vec::new();
@@ -255,7 +255,7 @@ pub fn get_transitive_deps(graph: NativeTaskGraph, task_id: String) -> Vec<Strin
 }
 
 /// Gets all tasks that depend on the given task (reverse transitive dependencies).
-#[napi]
+#[napi(catch_unwind)]
 pub fn get_dependent_tasks(graph: NativeTaskGraph, task_id: String) -> Vec<String> {
     // Build reverse adjacency
     let mut reverse_adj: HashMap<String, Vec<String>> = HashMap::new();

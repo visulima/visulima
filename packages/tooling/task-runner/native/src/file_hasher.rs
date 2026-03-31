@@ -14,7 +14,7 @@ const IGNORED_DIRS: &[&str] = &["node_modules", ".git", "dist", "coverage", ".ca
 ///
 /// Uses xxHash xxh3 (same as Nx) for maximum hashing throughput.
 /// xxh3 is ~5-10x faster than SHA-256 on modern CPUs with SIMD.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_file(file_path: String) -> Result<String> {
     let content = fs::read(&file_path)
         .map_err(|e| Error::new(Status::GenericFailure, format!("Failed to read file {}: {}", file_path, e)))?;
@@ -24,7 +24,7 @@ pub fn hash_file(file_path: String) -> Result<String> {
 
 /// Collects all files in a directory recursively, ignoring common non-source directories.
 /// Returns a list of absolute file paths.
-#[napi]
+#[napi(catch_unwind)]
 pub fn collect_files(dir: String) -> Result<Vec<String>> {
     let path = Path::new(&dir);
 
@@ -51,7 +51,7 @@ pub fn collect_files(dir: String) -> Result<Vec<String>> {
 }
 
 /// A single file hash result.
-#[napi(object)]
+#[napi(object, object_from_js = false)]
 pub struct FileHash {
     pub path: String,
     pub hash: String,
@@ -61,7 +61,7 @@ pub struct FileHash {
 /// using parallel processing via rayon for maximum throughput.
 ///
 /// Returns a list of { path, hash } objects where path is relative to workspace_root.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Vec<FileHash>> {
     let dir_path = Path::new(&dir);
 
@@ -111,7 +111,7 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
 
 /// Computes xxh3-128 hashes for multiple files in parallel.
 /// Takes absolute file paths, returns relative_path + hash pairs.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Result<Vec<FileHash>> {
     let results: Vec<FileHash> = file_paths
         .par_iter()
@@ -152,14 +152,14 @@ fn hash_bytes(data: &[u8]) -> String {
 
 /// Computes an xxh3-128 hash from a string.
 /// Useful for hashing command strings, JSON, etc.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_string(input: String) -> String {
     hash_bytes(input.as_bytes())
 }
 
 /// Computes a combined xxh3-128 hash from multiple strings.
 /// Strings are concatenated and hashed, producing a single deterministic hash.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_strings(inputs: Vec<String>) -> String {
     let mut combined = Vec::new();
     for input in &inputs {

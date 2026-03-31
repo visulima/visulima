@@ -19,7 +19,7 @@ pub struct NativeTaskHashDetails {
 
 /// Computes the command hash for a task using xxh3-128.
 /// Takes project name, target name, optional configuration, and sorted overrides JSON.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_command(
     project: String,
     target: String,
@@ -42,7 +42,7 @@ pub fn hash_command(
 
 /// Computes the final combined hash from task hash details using xxh3-128.
 /// This produces the cache key used for lookup.
-#[napi]
+#[napi(catch_unwind)]
 pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
     let mut data = Vec::new();
 
@@ -98,7 +98,7 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 }
 
 /// Hashes an environment variable name + value pair using xxh3-128.
-#[napi]
+#[napi(catch_unwind)]
 pub fn hash_env_var(name: String, value: String) -> String {
     let mut data = Vec::new();
     data.extend_from_slice(name.as_bytes());
