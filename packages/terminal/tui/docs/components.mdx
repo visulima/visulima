@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Text, BigText, ConfirmInput, Gradient, Link, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -101,7 +101,7 @@ Renders styled text.
 
 ```tsx
 <Text
-    color="cyan" // named, #rrggbb, rgb(r,g,b), or ANSI index 0-255
+    color="cyan" // named, #rgb, #rrggbb, rgb(r,g,b), or ANSI index 0-255
     backgroundColor="blue"
     bold
     italic
@@ -168,6 +168,66 @@ Notes:
 - If multiple `<Cursor>` components are rendered, the last one controls the terminal cursor.
 - If `anchorRef` is set but unresolved, the cursor is hidden for that frame.
 - See also [`useCursor()`](./hooks.mdx#usecursor) for imperative cursor control (e.g. IME support).
+
+## `Code`
+
+Syntax-highlighted code display using [Shiki](https://shiki.style/). Supports 25+ languages with lazy loading and VS Code-quality tokenization.
+
+```tsx
+import { Code } from "@visulima/tui/ink";
+
+<Code code='const x = "hello";' language="javascript" />
+<Code code={source} language="python" showLineNumbers startLine={10} />
+```
+
+| Prop             | Type               | Default                | Description                                   |
+| ---------------- | ------------------ | ---------------------- | --------------------------------------------- |
+| `code`           | `string`           | _(required)_           | Source code to highlight                      |
+| `language`       | `string`           | —                      | Programming language (e.g. `"typescript"`)     |
+| `theme`          | `string`           | `"github-dark-default"` | Shiki theme name                             |
+| `showLineNumbers`| `boolean`          | `false`                | Show line number gutter                       |
+| `startLine`      | `number`           | `1`                    | Starting line number (for excerpts)           |
+| `highlightLines` | `ReadonlySet<number>` | —                   | Line numbers to visually emphasize            |
+
+Supported languages: `javascript`, `typescript`, `jsx`, `tsx`, `json`, `html`, `css`, `python`, `ruby`, `rust`, `go`, `java`, `bash`, `shell`, `sql`, `markdown`, `yaml`, `toml`, `xml`, `svelte`, `vue`, and more. Unknown languages fall back to plain text.
+
+The highlighter loads asynchronously — the first render shows plain text, then re-renders with colors once Shiki is ready.
+
+## `DiffView`
+
+Display file differences with colored additions/deletions. Supports unified and split (side-by-side) views with optional inline character-level diff highlighting.
+
+```tsx
+import { DiffView } from "@visulima/tui/ink";
+
+<DiffView oldText={original} newText={modified} />
+<DiffView diff={unifiedDiffString} mode="split" />
+<DiffView oldText={a} newText={b} oldLabel="v1.0" newLabel="v2.0" inlineDiff />
+```
+
+| Prop              | Type                       | Default      | Description                                    |
+| ----------------- | -------------------------- | ------------ | ---------------------------------------------- |
+| `oldText`         | `string`                   | `""`         | Original text (left / old)                     |
+| `newText`         | `string`                   | `""`         | Modified text (right / new)                    |
+| `diff`            | `string`                   | —            | Pre-computed unified diff (overrides oldText/newText) |
+| `mode`            | `"unified"` \| `"split"`  | `"unified"`  | Display mode                                   |
+| `showLineNumbers` | `boolean`                  | `true`       | Show line numbers                              |
+| `context`         | `number`                   | `3`          | Unchanged context lines around changes         |
+| `inlineDiff`      | `boolean`                  | `true`       | Character-level highlighting within changed lines |
+| `oldLabel`        | `string`                   | `"old"`      | Label for the old version                      |
+| `newLabel`        | `string`                   | `"new"`      | Label for the new version                      |
+| `language`        | `string`                   | —            | Programming language for syntax highlighting   |
+| `theme`           | `string`                   | `"github-dark-default"` | Shiki theme for syntax highlighting |
+
+### Syntax highlighting in diffs
+
+When `language` is provided, diff content is highlighted with Shiki (same engine as the `Code` component). Syntax colors are preserved for context lines, and overlaid with diff colors (red/green) for changed lines.
+
+```tsx
+<DiffView oldText={oldCode} newText={newCode} language="typescript" />
+```
+
+Colors: additions in green (`+`), deletions in red (`-`), context lines dimmed. Inline diff highlights changed characters with inverted background.
 
 ## `BigText`
 
@@ -245,6 +305,48 @@ import { Link, Text } from "@visulima/tui/ink";
 When `fallback` is `true`, unsupported terminals show: `My Website https://example.com`. When `false`, only the text is shown. A function receives `(text, url)` for custom formatting.
 
 [Supported terminals.](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)
+
+## `Markdown`
+
+Render Markdown content as terminal UI elements. Parses with [marked](https://marked.js.org/) and maps tokens to Ink components. Code blocks are syntax-highlighted via the `Code` component.
+
+```tsx
+import { Markdown } from "@visulima/tui/ink";
+
+<Markdown>{"# Hello World\n\nThis is **bold** and *italic*."}</Markdown>
+<Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
+```
+
+| Prop        | Type     | Default                | Description                          |
+| ----------- | -------- | ---------------------- | ------------------------------------ |
+| `children`  | `string` | _(required)_           | Markdown source string               |
+| `codeTheme` | `string` | `"github-dark-default"` | Shiki theme for code blocks         |
+| `maxWidth`  | `number` | terminal width         | Maximum text wrap width              |
+| `streaming` | `boolean` | `false`               | Progressive rendering for LLM output |
+
+### Streaming mode
+
+Enable `streaming` when rendering Markdown that arrives incrementally (e.g., token-by-token from an AI model). The component handles incomplete Markdown gracefully — unclosed code fences and partial blocks render as text until they close.
+
+```tsx
+const [text, setText] = useState("");
+// ... text grows as tokens arrive ...
+<Markdown streaming>{text}</Markdown>
+```
+
+### Supported Markdown features
+
+- **Headings** (H1-H6) — bold, color-coded by depth
+- **Paragraphs** — with word wrapping
+- **Code blocks** — syntax highlighted via `<Code>` component
+- **Inline code** — rendered with inverse styling
+- **Bold**, **italic**, **strikethrough**
+- **Links** — rendered via the existing `<Link>` component (OSC 8)
+- **Ordered and unordered lists** — via existing `<OrderedList>` / `<UnorderedList>`
+- **Blockquotes** — with left border
+- **Horizontal rules**
+- **Tables** — via existing `<Table>` component
+- **Images** — displayed as `[image: alt text]` (terminals cannot render images)
 
 ## `Newline`
 

@@ -495,6 +495,7 @@ catalogs:
     debug: ^4.4.3
     deep-copy: ^1.4.2
     diary: 0.4.5
+    diff: ^7.0.0
     dotenv: ^17.3.1
     empathic: 2.0.0
     es-toolkit: ^1.45.1
@@ -639,6 +640,7 @@ catalogs:
     '@types/command-line-args': ^5.2.3
     '@types/cors': ^2.8.19
     '@types/debug': 4.1.13
+    '@types/diff': ^7.0.0
     '@types/etag': ^1.8.4
     '@types/express': ^5.0.6
     '@types/express-serve-static-core': 5.1.1
