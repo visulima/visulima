@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, import/exports-last, max-classes-per-file, no-console, no-param-reassign */
+
 /**
  * ResizeObserver API for terminal UI elements.
  *

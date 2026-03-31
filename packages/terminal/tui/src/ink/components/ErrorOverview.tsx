@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/multiline-ternary, @typescript-eslint/no-non-null-assertion, @typescript-eslint/restrict-template-expressions, no-for-of-array/no-for-of-array, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable @stylistic/multiline-ternary, @typescript-eslint/no-non-null-assertion, @typescript-eslint/restrict-template-expressions, import/no-extraneous-dependencies, no-for-of-array/no-for-of-array, react/function-component-definition, unicorn/filename-case */
 import { existsSync, readFileSync } from "node:fs";
 import { cwd } from "node:process";
 

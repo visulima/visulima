@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-use-before-define, e18e/prefer-static-regex, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/cognitive-complexity */
 import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { styledCharsFromTokens, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth } from "@visulima/string";

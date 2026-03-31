@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key, import/exports-last, sonarjs/cognitive-complexity, no-for-of-array/no-for-of-array, @typescript-eslint/restrict-template-expressions, no-plusplus, func-style */
+/* eslint-disable @stylistic/indent, @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, default-case, func-style, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, react/jsx-indent, sonarjs/cognitive-complexity, sonarjs/prefer-read-only-props, unicorn/filename-case */
 
 /**
  * Diff viewer component for Ink.

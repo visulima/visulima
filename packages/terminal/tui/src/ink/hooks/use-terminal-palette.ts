@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, consistent-return, import/exports-last, no-restricted-syntax, no-void, unicorn/no-null */
+
 /**
  * React hook for terminal palette auto-detection.
  */

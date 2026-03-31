@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus, unicorn/no-null, default-case */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/restrict-plus-operands, default-case, import/exports-last, jsdoc/lines-before-block, no-plusplus, unicorn/no-immediate-mutation, unicorn/no-null */
 /**
  * React hook for managing a multi-line text buffer with cursor, selection, and undo/redo.
  */

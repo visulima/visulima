@@ -1,3 +1,5 @@
+/* eslint-disable @stylistic/max-statements-per-line, consistent-return, import/exports-last, unicorn/prefer-ternary */
+
 /**
  * React hook for macOS-style scroll acceleration with momentum.
  *

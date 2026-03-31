@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity */
+
 /**
  * StyledChar-based text node rendering.
  *

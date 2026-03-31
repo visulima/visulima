@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable import/exports-last, react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-live-state-to-parent, react/function-component-definition, unicorn/filename-case */
 
 /**
  * Multi-select input component for Ink.

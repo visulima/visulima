@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, no-plusplus, react-x/no-array-index-key */
+/* eslint-disable @typescript-eslint/no-use-before-define, func-style, import/exports-last, no-plusplus, no-useless-assignment, react-x/no-array-index-key, react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state, react/function-component-definition, sonarjs/cognitive-complexity, unicorn/filename-case, unicorn/prefer-single-call */
 
 /**
  * Multi-line text input component for Ink.

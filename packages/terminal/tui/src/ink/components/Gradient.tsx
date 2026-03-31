@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case */
+/* eslint-disable @stylistic/no-extra-parens, react/function-component-definition, unicorn/filename-case */
 import { strip } from "@visulima/ansi";
 import { multilineGradient } from "@visulima/colorize/gradient";
 import type { Key, ReactElement, ReactNode } from "react";

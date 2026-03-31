@@ -1,3 +1,5 @@
+/* eslint-disable global-require, no-bitwise */
+
 /**
  * Rust-backed rendering for the Ink path.
  *

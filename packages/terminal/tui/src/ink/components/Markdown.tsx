@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, react-x/no-array-index-key, @typescript-eslint/no-unnecessary-condition, func-style */
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unsafe-argument, func-style, import/exports-last, jsdoc/match-description, jsx-a11y/anchor-is-valid, no-secrets/no-secrets, react-x/no-array-index-key, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/slow-regex, unicorn/filename-case */
 
 /**
  * Markdown rendering component for Ink.

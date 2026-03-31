@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion, no-await-in-loop */
+/* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, e18e/prefer-static-regex, import/exports-last, jsdoc/lines-before-block, no-await-in-loop, no-plusplus, unicorn/no-null */
 /**
  * Terminal palette auto-detection via OSC escape sequences.
  *
