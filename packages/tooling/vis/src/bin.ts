@@ -12,7 +12,6 @@ import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
 import dlxCommand from "./commands/dlx";
-import envCommand from "./commands/env";
 import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
@@ -201,7 +200,6 @@ cli.addCommand(pmCommand);
 cli.addCommand(initCommand);
 cli.addCommand(cleanCommand);
 cli.addCommand(createCommand);
-cli.addCommand(envCommand);
 cli.addCommand(upgradeCommand);
 cli.addCommand(implodeCommand);
 
