@@ -6,7 +6,7 @@
  *
  * @see https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands
  */
-import type { Readable, Writable } from "node:stream";
+import type { Writable } from "node:stream";
 
 const BEL = "\x07";
 const OSC = "\x1B]";
@@ -65,7 +65,7 @@ export const isTerminalPaletteQuerySupported = (): boolean => {
 const MAX_RESPONSE_BYTES = 256;
 
 const queryOsc = (
-    stdin: Readable,
+    stdin: NodeJS.ReadableStream,
     stdout: Writable,
     sequence: string,
     timeout = 500,
@@ -115,7 +115,7 @@ const queryOsc = (
  * @param timeout - Per-query timeout in milliseconds (default: 500)
  */
 export const queryTerminalPalette = async (
-    stdin: Readable,
+    stdin: NodeJS.ReadableStream,
     stdout: Writable,
     timeout = 500,
 ): Promise<Partial<TerminalPalette>> => {

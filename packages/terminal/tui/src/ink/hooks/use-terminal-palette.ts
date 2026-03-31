@@ -42,7 +42,7 @@ const useTerminalPalette = (): UseTerminalPaletteResult => {
 
         void (async () => {
             try {
-                const result = await queryTerminalPalette(stdin as any, stdout, 200);
+                const result = await queryTerminalPalette(stdin as NodeJS.ReadableStream, stdout, 200);
 
                 if (!cancelled) {
                     setPalette(result);

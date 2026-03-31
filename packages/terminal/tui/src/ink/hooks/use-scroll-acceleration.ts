@@ -75,6 +75,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
 
     const velocityRef = useRef(0);
     const lastScrollTimeRef = useRef(0);
+    const skipNextTickRef = useRef(false);
     const tickTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
     const onScrollRef = useRef(onScroll);
 
@@ -89,6 +90,12 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
         }
 
         const tick = () => {
+            // Skip the first tick after handleScroll to avoid double-emission
+            if (skipNextTickRef.current) {
+                skipNextTickRef.current = false;
+                return;
+            }
+
             const v = velocityRef.current;
 
             if (Math.abs(v) < MIN_VELOCITY) {
@@ -147,6 +154,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
 
             setVelocity(velocityRef.current);
             setIsCoasting(true);
+            skipNextTickRef.current = true;
 
             // Immediate feedback
             onScrollRef.current?.(sign);

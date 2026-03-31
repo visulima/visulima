@@ -230,8 +230,8 @@ export default function Textarea({
                 return;
             }
 
-            // Select all: Ctrl+A (when shift held to avoid conflict with Home)
-            if (key.ctrl && input === "a" && key.shift) {
+            // Select all: Ctrl+Shift+A (Shift produces uppercase "A")
+            if (key.ctrl && (input === "A" || (input === "a" && key.shift))) {
                 b.selectAll();
                 return;
             }

@@ -141,9 +141,14 @@ export default function Slider({
     const current = isControlled ? clamp(controlledValue, safeMin, safeMax) : internalValue;
 
     const onChangeRef = useRef(onChange);
+    const currentRef = useRef(current);
 
     useEffect(() => {
         onChangeRef.current = onChange;
+    });
+
+    useEffect(() => {
+        currentRef.current = current;
     });
 
     const setValue = useCallback(
@@ -168,22 +173,22 @@ export default function Slider({
             const isBackward = orientation === "horizontal" ? key.leftArrow : key.downArrow;
 
             if (isForward) {
-                setValue(current + step);
+                setValue(currentRef.current + step);
                 return;
             }
 
             if (isBackward) {
-                setValue(current - step);
+                setValue(currentRef.current - step);
                 return;
             }
 
             if (key.pageUp) {
-                setValue(current + largeStep);
+                setValue(currentRef.current + largeStep);
                 return;
             }
 
             if (key.pageDown) {
-                setValue(current - largeStep);
+                setValue(currentRef.current - largeStep);
                 return;
             }
 
@@ -204,7 +209,7 @@ export default function Slider({
                 setValue(safeMin + range * percent);
             }
         },
-        [current, step, largeStep, safeMin, safeMax, range, orientation, setValue],
+        [step, largeStep, safeMin, safeMax, range, orientation, setValue],
     );
 
     useInput(inputHandler, { isActive: isFocused && !isDisabled });
