@@ -102,54 +102,51 @@ export const ScrollList = (props: ScrollListProps & { ref?: Ref<ScrollListRef> }
         [getSelectionVisibleBounds],
     );
 
-    const getConstrainedScrollOffset = useCallback(
-        (index: number, currentOffset: number, mode: ScrollAlignment, viewportHeightOverride?: number): number => {
-            const position = scrollViewRef.current?.getItemPosition(index);
+    const getConstrainedScrollOffset = useCallback((index: number, currentOffset: number, mode: ScrollAlignment, viewportHeightOverride?: number): number => {
+        const position = scrollViewRef.current?.getItemPosition(index);
 
-            if (!position) {
-                return currentOffset;
+        if (!position) {
+            return currentOffset;
+        }
+
+        const viewportHeight = viewportHeightOverride ?? scrollViewRef.current?.getViewportHeight() ?? 0;
+        const contentHeight = scrollViewRef.current?.getContentHeight() ?? 0;
+        let target = currentOffset;
+
+        switch (mode) {
+            case "bottom": {
+                target = position.top + position.height - viewportHeight;
+
+                break;
             }
+            case "center": {
+                target = position.top + position.height / 2 - viewportHeight / 2;
 
-            const viewportHeight = viewportHeightOverride ?? scrollViewRef.current?.getViewportHeight() ?? 0;
-            const contentHeight = scrollViewRef.current?.getContentHeight() ?? 0;
-            let target = currentOffset;
+                break;
+            }
+            case "top": {
+                target = position.top;
 
-            switch (mode) {
-                case "bottom": {
-                    target = position.top + position.height - viewportHeight;
+                break;
+            }
+            default: {
+                const itemBottom = position.top + position.height;
+                const isFillingViewport = position.top <= currentOffset && itemBottom >= currentOffset + viewportHeight;
 
-                    break;
-                }
-                case "center": {
-                    target = position.top + position.height / 2 - viewportHeight / 2;
-
-                    break;
-                }
-                case "top": {
+                if (isFillingViewport) {
+                    target = currentOffset;
+                } else if (position.top < currentOffset) {
                     target = position.top;
-
-                    break;
-                }
-                default: {
-                    const itemBottom = position.top + position.height;
-                    const isFillingViewport = position.top <= currentOffset && itemBottom >= currentOffset + viewportHeight;
-
-                    if (isFillingViewport) {
-                        target = currentOffset;
-                    } else if (position.top < currentOffset) {
-                        target = position.top;
-                    } else if (itemBottom > currentOffset + viewportHeight) {
-                        target = itemBottom - viewportHeight;
-                    }
+                } else if (itemBottom > currentOffset + viewportHeight) {
+                    target = itemBottom - viewportHeight;
                 }
             }
+        }
 
-            const maxScroll = Math.max(0, contentHeight - viewportHeight);
+        const maxScroll = Math.max(0, contentHeight - viewportHeight);
 
-            return Math.max(0, Math.min(target, maxScroll));
-        },
-        [],
-    );
+        return Math.max(0, Math.min(target, maxScroll));
+    }, []);
 
     let renderScrollOffset = scrollOffset;
 

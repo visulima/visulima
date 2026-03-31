@@ -42,10 +42,7 @@ describe("useTextBuffer core logic", () => {
     });
 
     describe("selection range ordering", () => {
-        const getSelectionRange = (
-            cursor: { col: number; line: number },
-            anchor: { col: number; line: number },
-        ) => {
+        const getSelectionRange = (cursor: { col: number; line: number }, anchor: { col: number; line: number }) => {
             if (anchor.line < cursor.line || (anchor.line === cursor.line && anchor.col < cursor.col)) {
                 return { end: cursor, start: anchor };
             }

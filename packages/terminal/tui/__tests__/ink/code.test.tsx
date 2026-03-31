@@ -71,10 +71,7 @@ describe("Code", () => {
         expect.assertions(1);
 
         // Wait longer for Shiki to load
-        const { getOutput } = await setup(
-            <Code code='const x = "hello";' language="javascript" />,
-            2000,
-        );
+        const { getOutput } = await setup(<Code code='const x = "hello";' language="javascript" />, 2000);
         const output = getOutput();
 
         // Should contain the code text regardless of highlighting

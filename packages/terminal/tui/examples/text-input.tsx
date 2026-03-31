@@ -31,17 +31,17 @@ const App = () => {
             </Text>
 
             <Box flexDirection="column" gap={1}>
-                <TextInput
-                    onChange={setValue}
-                    onSubmit={(v) => setSubmitted(v)}
-                    placeholder="Start typing..."
-                />
+                <TextInput onChange={setValue} onSubmit={(v) => setSubmitted(v)} placeholder="Start typing..." />
                 <Text>
                     Input value: "<Text color="green">{value}</Text>"
                 </Text>
                 {submitted !== undefined && (
                     <Text>
-                        Submitted: "<Text bold color="yellow">{submitted}</Text>"
+                        Submitted: "
+                        <Text bold color="yellow">
+                            {submitted}
+                        </Text>
+                        "
                     </Text>
                 )}
             </Box>

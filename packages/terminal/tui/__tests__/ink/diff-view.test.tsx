@@ -43,9 +43,7 @@ describe("DiffView", () => {
     it("should render unified diff from oldText/newText", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(
-            <DiffView newText={"hello\nworld\nchanged"} oldText={"hello\nworld\noriginal"} />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"hello\nworld\nchanged"} oldText={"hello\nworld\noriginal"} />);
         const output = getOutput();
 
         expect(output).toContain("@@");
@@ -55,9 +53,7 @@ describe("DiffView", () => {
     it("should show no differences message for identical text", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText="same" oldText="same" />,
-        );
+        const { getOutput } = await setup(<DiffView newText="same" oldText="same" />);
 
         expect(getOutput()).toContain("No differences");
     });
@@ -65,9 +61,7 @@ describe("DiffView", () => {
     it("should render with line numbers", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText={"a\nb\nc"} oldText={"a\nB\nc"} showLineNumbers />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"a\nb\nc"} oldText={"a\nB\nc"} showLineNumbers />);
         const output = getOutput();
 
         // Line numbers should be present
@@ -77,9 +71,7 @@ describe("DiffView", () => {
     it("should render without line numbers when disabled", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText={"a\nb"} oldText={"a\nB"} showLineNumbers={false} />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"a\nb"} oldText={"a\nB"} showLineNumbers={false} />);
         const output = getOutput();
 
         expect(output).toBeDefined();
@@ -88,16 +80,7 @@ describe("DiffView", () => {
     it("should accept a pre-computed unified diff", async () => {
         expect.assertions(2);
 
-        const diff = [
-            "--- old",
-            "+++ new",
-            "@@ -1,3 +1,3 @@",
-            " hello",
-            "-old line",
-            "+new line",
-            " world",
-            "",
-        ].join("\n");
+        const diff = ["--- old", "+++ new", "@@ -1,3 +1,3 @@", " hello", "-old line", "+new line", " world", ""].join("\n");
         const { getOutput } = await setup(<DiffView diff={diff} />);
         const output = getOutput();
 
@@ -109,9 +92,7 @@ describe("DiffView", () => {
     it("should show file labels", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(
-            <DiffView newLabel="b.txt" newText="new" oldLabel="a.txt" oldText="old" />,
-        );
+        const { getOutput } = await setup(<DiffView newLabel="b.txt" newText="new" oldLabel="a.txt" oldText="old" />);
         const output = getOutput();
 
         expect(output).toContain("a.txt");
@@ -121,9 +102,7 @@ describe("DiffView", () => {
     it("should render hunk headers", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText={"changed"} oldText={"original"} />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"changed"} oldText={"original"} />);
 
         expect(getOutput()).toContain("@@");
     });
@@ -131,9 +110,7 @@ describe("DiffView", () => {
     it("should render split mode", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(
-            <DiffView mode="split" newText={"a\nnew"} oldText={"a\nold"} />,
-        );
+        const { getOutput } = await setup(<DiffView mode="split" newText={"a\nnew"} oldText={"a\nold"} />);
         const output = getOutput();
 
         expect(output).toContain("old");
@@ -143,9 +120,7 @@ describe("DiffView", () => {
     it("should handle additions only", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText={"line1\nline2\nline3"} oldText="" />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"line1\nline2\nline3"} oldText="" />);
         const output = getOutput();
 
         expect(output).toContain("line1");
@@ -154,9 +129,7 @@ describe("DiffView", () => {
     it("should handle deletions only", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView newText="" oldText={"line1\nline2\nline3"} />,
-        );
+        const { getOutput } = await setup(<DiffView newText="" oldText={"line1\nline2\nline3"} />);
         const output = getOutput();
 
         expect(output).toContain("line1");
@@ -165,9 +138,7 @@ describe("DiffView", () => {
     it("should render with inline diff disabled", async () => {
         expect.assertions(1);
 
-        const { getOutput } = await setup(
-            <DiffView inlineDiff={false} newText="hello world" oldText="hello" />,
-        );
+        const { getOutput } = await setup(<DiffView inlineDiff={false} newText="hello world" oldText="hello" />);
 
         expect(getOutput()).toBeDefined();
     });
@@ -178,10 +149,7 @@ describe("DiffView", () => {
         // Wait longer for Shiki to load
         const stdout = createStdout();
         const stdin = createStdin();
-        const { unmount } = render(
-            <DiffView language="javascript" newText='const x = "new";' oldText='const x = "old";' />,
-            { debug: true, stdin, stdout },
-        );
+        const { unmount } = render(<DiffView language="javascript" newText='const x = "new";' oldText='const x = "old";' />, { debug: true, stdin, stdout });
 
         await delay(2000); // wait for Shiki async load
 
@@ -207,12 +175,7 @@ describe("DiffView", () => {
     it("should handle multi-line change blocks with inline diff", async () => {
         expect.assertions(2);
 
-        const { getOutput } = await setup(
-            <DiffView
-                newText={"line A modified\nline B modified\nline C"}
-                oldText={"line A\nline B\nline C"}
-            />,
-        );
+        const { getOutput } = await setup(<DiffView newText={"line A modified\nline B modified\nline C"} oldText={"line A\nline B\nline C"} />);
         const output = getOutput();
 
         expect(output).toContain("@@");

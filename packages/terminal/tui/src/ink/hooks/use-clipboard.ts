@@ -53,7 +53,7 @@ const useClipboard = (options: UseClipboardOptions = {}): UseClipboardResult => 
         [isSupported, stdout, target],
     );
 
-    return useMemo(() => ({ copy, isSupported }), [copy, isSupported]);
+    return useMemo(() => { return { copy, isSupported }; }, [copy, isSupported]);
 };
 
 export default useClipboard;

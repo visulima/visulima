@@ -277,6 +277,19 @@ export type Styles = {
     readonly overflow?: "visible" | "hidden" | "scroll";
 
     /**
+     * If true, content that is scrolled out of the top of the box (when overflowY is 'scroll')
+     * will be added to the terminal's scrollback history.
+     *
+     * Results are undefined if more than one scrollable region in the app has
+     * overflowToBackbuffer enabled.
+     *
+     * Note: Scroll height tracking is implemented but actual backbuffer writes
+     * require worker-based rendering (not yet ported).
+     * @default false
+     */
+    readonly overflowToBackbuffer?: boolean;
+
+    /**
      * Behavior for an element's overflow in the horizontal direction.
      * @default 'visible'
      */
@@ -331,6 +344,16 @@ export type Styles = {
     readonly position?: "absolute" | "relative" | "static";
 
     /**
+     * Right offset for positioned elements.
+     */
+    readonly right?: number | string;
+
+    /**
+     * Size of the gap between an element's rows.
+     */
+    readonly rowGap?: number;
+
+    /**
      * Color of the scrollbar thumb when overflow is set to 'scroll'.
      */
     readonly scrollbarThumbColor?: LiteralUnion<AnsiColors, string>;
@@ -346,40 +369,15 @@ export type Styles = {
     readonly scrollTop?: number;
 
     /**
-     * If true, content that is scrolled out of the top of the box (when overflowY is 'scroll')
-     * will be added to the terminal's scrollback history.
-     *
-     * Results are undefined if more than one scrollable region in the app has
-     * overflowToBackbuffer enabled.
-     *
-     * Note: Scroll height tracking is implemented but actual backbuffer writes
-     * require worker-based rendering (not yet ported).
-     *
-     * @default false
-     */
-    readonly overflowToBackbuffer?: boolean;
-
-    /**
      * If true, and `overflowToBackbuffer` is also enabled, the `scrollHeight` of the box
      * will never decrease as long as the existing history remains valid.
      * This prevents the terminal's scrollback from being corrupted when content shrinks.
      *
      * Note: Scroll height tracking is implemented but actual backbuffer writes
      * require worker-based rendering (not yet ported).
-     *
      * @default false
      */
     readonly stableScrollback?: boolean;
-
-    /**
-     * Right offset for positioned elements.
-     */
-    readonly right?: number | string;
-
-    /**
-     * Size of the gap between an element's rows.
-     */
-    readonly rowGap?: number;
 
     /**
      * Controls how text wraps when it exceeds the container width.
@@ -392,7 +390,17 @@ export type Styles = {
      * - `truncate-start` — Truncate at the start with an ellipsis.
      * - `truncate-middle` — Truncate in the middle with an ellipsis.
      */
-    readonly textWrap?: "wrap" | "wrap-anywhere" | "wrap-preserve-words" | "wrap-strict" | "end" | "middle" | "truncate-end" | "truncate" | "truncate-middle" | "truncate-start";
+    readonly textWrap?:
+        | "wrap"
+        | "wrap-anywhere"
+        | "wrap-preserve-words"
+        | "wrap-strict"
+        | "end"
+        | "middle"
+        | "truncate-end"
+        | "truncate"
+        | "truncate-middle"
+        | "truncate-start";
 
     /**
      * Top offset for positioned elements.

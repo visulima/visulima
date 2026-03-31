@@ -58,10 +58,7 @@ describe("renderer edge cases", () => {
         });
 
         it("should render a box with width=1 and all borders", () => {
-            const output = renderToString(
-                <Box borderStyle="single" width={1} height={3} />,
-                { columns: 5, rows: 5 },
-            );
+            const output = renderToString(<Box borderStyle="single" width={1} height={3} />, { columns: 5, rows: 5 });
 
             const lines = output.split("\n");
             // Width=1: all border chars at the same column
@@ -92,15 +89,7 @@ describe("renderer edge cases", () => {
                 const right = Boolean(i & 1);
 
                 const output = renderToString(
-                    <Box
-                        borderBottom={bottom}
-                        borderLeft={left}
-                        borderRight={right}
-                        borderStyle="single"
-                        borderTop={top}
-                        minWidth={8}
-                        paddingX={1}
-                    >
+                    <Box borderBottom={bottom} borderLeft={left} borderRight={right} borderStyle="single" borderTop={top} minWidth={8} paddingX={1}>
                         <Text>ok</Text>
                     </Box>,
                     { columns: 15, rows: 5 },
@@ -116,16 +105,7 @@ describe("renderer edge cases", () => {
     describe("partial borders with overflow clipping", () => {
         it("should clip content inside borders when overflow is hidden and borderTop is disabled", () => {
             const output = renderToString(
-                <Box
-                    borderBottom={true}
-                    borderLeft={true}
-                    borderRight={true}
-                    borderStyle="single"
-                    borderTop={false}
-                    height={4}
-                    overflow="hidden"
-                    width={12}
-                >
+                <Box borderBottom={true} borderLeft={true} borderRight={true} borderStyle="single" borderTop={false} height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
                 </Box>,
                 { columns: 15, rows: 6 },
@@ -141,16 +121,7 @@ describe("renderer edge cases", () => {
 
         it("should clip content when overflow is hidden and no left border", () => {
             const output = renderToString(
-                <Box
-                    borderBottom={true}
-                    borderLeft={false}
-                    borderRight={true}
-                    borderStyle="single"
-                    borderTop={true}
-                    height={4}
-                    overflow="hidden"
-                    width={12}
-                >
+                <Box borderBottom={true} borderLeft={false} borderRight={true} borderStyle="single" borderTop={true} height={4} overflow="hidden" width={12}>
                     <Text>ABCDEFGHIJ</Text>
                 </Box>,
                 { columns: 15, rows: 6 },
@@ -370,9 +341,15 @@ describe("renderer edge cases", () => {
         it("should clip children that exceed container height with overflow hidden", () => {
             const output = renderToString(
                 <Box width={20} height={2} flexDirection="column" overflow="hidden">
-                    <Box flexShrink={0}><Text>line1</Text></Box>
-                    <Box flexShrink={0}><Text>line2</Text></Box>
-                    <Box flexShrink={0}><Text>line3</Text></Box>
+                    <Box flexShrink={0}>
+                        <Text>line1</Text>
+                    </Box>
+                    <Box flexShrink={0}>
+                        <Text>line2</Text>
+                    </Box>
+                    <Box flexShrink={0}>
+                        <Text>line3</Text>
+                    </Box>
                 </Box>,
                 { columns: 25, rows: 5 },
             );
@@ -473,10 +450,7 @@ describe("renderer edge cases", () => {
 
     describe("paintBorder h=1 and w=1 degenerate cases", () => {
         it("h=1 with top+bottom: top border should take priority", () => {
-            const output = renderToString(
-                <Box borderStyle="single" width={6} height={1} />,
-                { columns: 10, rows: 3 },
-            );
+            const output = renderToString(<Box borderStyle="single" width={6} height={1} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
             // Top border should be painted (not bottom overwriting it)
@@ -488,10 +462,7 @@ describe("renderer edge cases", () => {
         });
 
         it("h=1 with bottom-only border: bottom should render", () => {
-            const output = renderToString(
-                <Box borderStyle="single" borderTop={false} width={6} height={1} />,
-                { columns: 10, rows: 3 },
-            );
+            const output = renderToString(<Box borderStyle="single" borderTop={false} width={6} height={1} />, { columns: 10, rows: 3 });
 
             const line = output.split("\n")[0] || "";
             expect(line).toContain("└");
@@ -499,10 +470,7 @@ describe("renderer edge cases", () => {
         });
 
         it("w=1 with all borders: should render vertical line character", () => {
-            const output = renderToString(
-                <Box borderStyle="single" width={1} height={4} />,
-                { columns: 5, rows: 6 },
-            );
+            const output = renderToString(<Box borderStyle="single" width={1} height={4} />, { columns: 5, rows: 6 });
 
             const lines = output.split("\n");
             // Top row should be topLeft (corners merge to vertical line for w=1 with both L+R)
@@ -540,13 +508,7 @@ describe("renderer edge cases", () => {
         it("should correctly clip when borderTop is disabled", () => {
             // With borderTop=false, the clip region top should start at absY (no border offset)
             const output = renderToString(
-                <Box
-                    borderStyle="single"
-                    borderTop={false}
-                    height={5}
-                    overflow="hidden"
-                    width={20}
-                >
+                <Box borderStyle="single" borderTop={false} height={5} overflow="hidden" width={20}>
                     <Box flexDirection="column" flexShrink={0}>
                         <Text>visible1</Text>
                         <Text>visible2</Text>
@@ -564,13 +526,7 @@ describe("renderer edge cases", () => {
 
         it("should correctly clip when borderBottom is disabled", () => {
             const output = renderToString(
-                <Box
-                    borderStyle="single"
-                    borderBottom={false}
-                    height={5}
-                    overflow="hidden"
-                    width={20}
-                >
+                <Box borderStyle="single" borderBottom={false} height={5} overflow="hidden" width={20}>
                     <Box flexDirection="column" flexShrink={0}>
                         <Text>visible1</Text>
                         <Text>visible2</Text>

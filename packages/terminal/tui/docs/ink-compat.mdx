@@ -35,14 +35,14 @@ description: "Ink API parity matrix, render option differences, and Ratatat-only
 | `Link`                       | ✅     | Ported from `ink-link`, OSC 8 clickable hyperlinks            |
 | `ProgressBar`                | ✅     | Ported from `ink-progress-bar`, percent-based fill            |
 | `SelectInput`                | ✅     | Ported from `ink-select-input`, interactive list selection    |
-| `TextInput`                  | ✅     | Inspired by `ink-ui`, single-line text entry with cursor     |
-| `ConfirmInput`               | ✅     | Inspired by `ink-ui`, Y/N confirmation prompt                |
-| `MultiSelect`                | ✅     | Inspired by `ink-ui`, multi-choice selection with checkboxes |
-| `Badge`                      | ✅     | Inspired by `ink-ui`, uppercase colored label                |
-| `StatusMessage`              | ✅     | Inspired by `ink-ui`, status icon + message                  |
-| `Alert`                      | ✅     | Inspired by `ink-ui`, bordered variant alert box             |
-| `UnorderedList`              | ✅     | Inspired by `ink-ui`, bullet list with nesting               |
-| `OrderedList`                | ✅     | Inspired by `ink-ui`, numbered list with nesting             |
+| `TextInput`                  | ✅     | Inspired by `ink-ui`, single-line text entry with cursor      |
+| `ConfirmInput`               | ✅     | Inspired by `ink-ui`, Y/N confirmation prompt                 |
+| `MultiSelect`                | ✅     | Inspired by `ink-ui`, multi-choice selection with checkboxes  |
+| `Badge`                      | ✅     | Inspired by `ink-ui`, uppercase colored label                 |
+| `StatusMessage`              | ✅     | Inspired by `ink-ui`, status icon + message                   |
+| `Alert`                      | ✅     | Inspired by `ink-ui`, bordered variant alert box              |
+| `UnorderedList`              | ✅     | Inspired by `ink-ui`, bullet list with nesting                |
+| `OrderedList`                | ✅     | Inspired by `ink-ui`, numbered list with nesting              |
 | `useIsScreenReaderEnabled()` | ✅     | Enabled via `render()` option or `INK_SCREEN_READER` env var  |
 
 ## Render Option Differences
@@ -95,21 +95,21 @@ See the [Scroll Components](./scroll) page for full documentation.
 
 Ported from [jacob314/ink](https://github.com/jacob314/ink) (Google's Gemini CLI fork). These extend Ink's `Box` with CSS-level overflow scrolling, sticky headers, and advanced measurement.
 
-| Export | Description |
-| --- | --- |
-| `Box` `overflow="scroll"` | CSS-level overflow scrolling with integrated scrollbar rendering |
-| `Box` `sticky` | Sticky headers that pin to viewport edges during scroll |
-| `Box` `scrollbar` | Show/hide scrollbar on scrollable containers |
-| `ResizeObserver` | Browser-like API for observing element size changes |
-| `getBoundingBox()` | Scroll-aware absolute position and dimensions |
-| `getInnerWidth()` / `getInnerHeight()` | Inner dimensions excluding borders |
-| `getScrollHeight()` / `getScrollWidth()` | Total scroll content dimensions |
-| `getScrollTop()` / `getScrollLeft()` | Current scroll position |
-| `calculateScroll()` | Compute scroll state for a scrollable element |
-| `getVerticalScrollbarBoundingBox()` | Scrollbar thumb position for hit testing |
-| `getHorizontalScrollbarBoundingBox()` | Horizontal scrollbar position |
-| `setStringWidthFunction()` | Replace the string width function for custom terminals |
-| `getRelativeTop()` / `getRelativeLeft()` | Position relative to an ancestor element |
+| Export                                   | Description                                                      |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `Box` `overflow="scroll"`                | CSS-level overflow scrolling with integrated scrollbar rendering |
+| `Box` `sticky`                           | Sticky headers that pin to viewport edges during scroll          |
+| `Box` `scrollbar`                        | Show/hide scrollbar on scrollable containers                     |
+| `ResizeObserver`                         | Browser-like API for observing element size changes              |
+| `getBoundingBox()`                       | Scroll-aware absolute position and dimensions                    |
+| `getInnerWidth()` / `getInnerHeight()`   | Inner dimensions excluding borders                               |
+| `getScrollHeight()` / `getScrollWidth()` | Total scroll content dimensions                                  |
+| `getScrollTop()` / `getScrollLeft()`     | Current scroll position                                          |
+| `calculateScroll()`                      | Compute scroll state for a scrollable element                    |
+| `getVerticalScrollbarBoundingBox()`      | Scrollbar thumb position for hit testing                         |
+| `getHorizontalScrollbarBoundingBox()`    | Horizontal scrollbar position                                    |
+| `setStringWidthFunction()`               | Replace the string width function for custom terminals           |
+| `getRelativeTop()` / `getRelativeLeft()` | Position relative to an ancestor element                         |
 
 ## Ratatat-only API (No Ink Equivalent)
 

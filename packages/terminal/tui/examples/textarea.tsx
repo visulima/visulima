@@ -38,9 +38,7 @@ const App = () => {
             <Text bold color="cyan">
                 Textarea demo
             </Text>
-            <Text dimColor>
-                Type to edit · Enter for newline · Meta+Enter to submit · Ctrl+Z/Y undo/redo · Ctrl+Q quit
-            </Text>
+            <Text dimColor>Type to edit · Enter for newline · Meta+Enter to submit · Ctrl+Z/Y undo/redo · Ctrl+Q quit</Text>
 
             <Box borderColor="green" borderStyle="round" flexDirection="column" paddingX={1}>
                 <Textarea
@@ -62,7 +60,9 @@ const App = () => {
 
             {submitted !== undefined && (
                 <Box borderColor="yellow" borderStyle="round" flexDirection="column" paddingX={1}>
-                    <Text bold color="yellow">Submitted:</Text>
+                    <Text bold color="yellow">
+                        Submitted:
+                    </Text>
                     <Text>{submitted}</Text>
                 </Box>
             )}
@@ -72,11 +72,7 @@ const App = () => {
                     With max rows (auto-grow)
                 </Text>
                 <Box borderColor="blue" borderStyle="round" paddingX={1}>
-                    <Textarea
-                        maxRows={10}
-                        placeholder="This textarea grows from 3 to 10 rows..."
-                        rows={3}
-                    />
+                    <Textarea maxRows={10} placeholder="This textarea grows from 3 to 10 rows..." rows={3} />
                 </Box>
             </Box>
 
@@ -85,11 +81,7 @@ const App = () => {
                     Disabled textarea
                 </Text>
                 <Box borderColor="gray" borderStyle="round" paddingX={1}>
-                    <Textarea
-                        defaultValue={"This content\nis read-only\nand dimmed."}
-                        isDisabled
-                        rows={3}
-                    />
+                    <Textarea defaultValue={"This content\nis read-only\nand dimmed."} isDisabled rows={3} />
                 </Box>
             </Box>
         </Box>

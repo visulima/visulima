@@ -1,3 +1,15 @@
+export type { ClipboardTarget } from "./clipboard";
+export { clearOsc52, isOsc52Supported, writeOsc52 } from "./clipboard";
+export type { ColorBlindnessType, ColorMatrix } from "./color-matrix";
+export {
+    applyColorMatrix,
+    COLOR_BLINDNESS_COMPENSATION,
+    COLOR_BLINDNESS_SIMULATION,
+    hexToRgb,
+    IDENTITY_MATRIX,
+    rgbToHex,
+    transformHexColor,
+} from "./color-matrix";
 export type { Props as AlertProps, AlertVariant } from "./components/Alert";
 export { default as Alert } from "./components/Alert";
 export type { Props as AppProps } from "./components/AppContext";
@@ -15,7 +27,7 @@ export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./compone
 export { default as ConsoleOverlay } from "./components/ConsoleOverlay";
 export type { Props as CursorProps } from "./components/Cursor";
 export { default as Cursor } from "./components/Cursor";
-export type { DiffViewMode, InlineDiffMode, Props as DiffViewProps } from "./components/DiffView";
+export type { DiffViewMode, Props as DiffViewProps, InlineDiffMode } from "./components/DiffView";
 export { default as DiffView } from "./components/DiffView";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
 export { default as Gradient } from "./components/Gradient";
@@ -65,10 +77,10 @@ export type { PublicProps as StdinProps } from "./components/StdinContext";
 export type { Props as StdoutProps } from "./components/StdoutContext";
 export type { Props as TabProps } from "./components/Tab";
 export { default as Tab } from "./components/Tab";
-export type { KeyMap as TabsKeyMap, Props as TabsProps, TabColors } from "./components/Tabs";
-export { default as Tabs } from "./components/Tabs";
 export type { ColumnConfig as TableColumnConfig, Props as TableProps, Scalar as TableScalar, ScalarDict as TableScalarDict } from "./components/Table";
 export { default as Table } from "./components/Table";
+export type { TabColors, KeyMap as TabsKeyMap, Props as TabsProps } from "./components/Tabs";
+export { default as Tabs } from "./components/Tabs";
 export type { Props as TextProps } from "./components/Text";
 export { default as Text } from "./components/Text";
 export type { Props as TextareaProps } from "./components/Textarea";
@@ -79,10 +91,6 @@ export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
 export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
 export { default as UnorderedList } from "./components/UnorderedList";
-export type { ClipboardTarget } from "./clipboard";
-export { clearOsc52, isOsc52Supported, writeOsc52 } from "./clipboard";
-export type { ColorBlindnessType, ColorMatrix } from "./color-matrix";
-export { applyColorMatrix, COLOR_BLINDNESS_COMPENSATION, COLOR_BLINDNESS_SIMULATION, hexToRgb, IDENTITY_MATRIX, rgbToHex, transformHexColor } from "./color-matrix";
 export type { DOMElement, StickyHeader } from "./dom";
 export { getPathToRoot, isNodeSelectable } from "./dom";
 export { default as useApp } from "./hooks/use-app";
@@ -106,14 +114,12 @@ export { default as useScrollAcceleration } from "./hooks/use-scroll-acceleratio
 export { default as useStderr } from "./hooks/use-stderr";
 export { default as useStdin } from "./hooks/use-stdin";
 export { default as useStdout } from "./hooks/use-stdout";
+export type { UseTerminalPaletteResult } from "./hooks/use-terminal-palette";
+export { default as useTerminalPalette } from "./hooks/use-terminal-palette";
 export type { CursorPosition as TextBufferCursorPosition, TextBufferState, UseTextBufferResult } from "./hooks/use-text-buffer";
 export { default as useTextBuffer } from "./hooks/use-text-buffer";
 export type { UseTextSelectionOptions, UseTextSelectionResult } from "./hooks/use-text-selection";
 export { default as useTextSelection } from "./hooks/use-text-selection";
-export type { UseTerminalPaletteResult } from "./hooks/use-terminal-palette";
-export { default as useTerminalPalette } from "./hooks/use-terminal-palette";
-export type { TerminalPalette } from "./terminal-palette";
-export { isTerminalPaletteQuerySupported, queryTerminalPalette } from "./terminal-palette";
 export type { WindowSize } from "./hooks/use-window-size";
 export { default as useWindowSize } from "./hooks/use-window-size";
 export { IMECompositionBuffer, isIMEInput } from "./ime-utils";
@@ -130,12 +136,12 @@ export {
     collectSortedFragments,
     getAddedScrollHeight,
     getBoundingBox,
-    getText,
     getHorizontalScrollbarBoundingBox,
     getInnerHeight,
     getInnerWidth,
     getRelativeLeft,
     getRelativeTop,
+    getText,
     getVerticalScrollbarBoundingBox,
 } from "./measure-element";
 export type { StringWidthFunction } from "./measure-text";
@@ -151,15 +157,6 @@ export {
     styledCharsWidth,
     toStyledCharacters,
 } from "./measure-text";
-export { applySelectionStyle, applySelectionToStyledChars, comparePoints, Range, Selection } from "./selection";
-export type { CharOffsetMap, CharOffsetRange } from "./squash-text-nodes";
-export { squashTextNodesWithMap } from "./squash-text-nodes";
-export {
-    sliceStyledChars,
-    truncateStyledChars,
-    wrapOrTruncateStyledChars,
-    wrapStyledChars,
-} from "./text-wrap";
 export type {
     MouseAction,
     MouseButton,
@@ -194,3 +191,9 @@ export type { ResizeObserverCallback } from "./resize-observer";
 export { default as ResizeObserver, ResizeObserverEntry } from "./resize-observer";
 export type { ScrollState } from "./scroll";
 export { calculateScroll, getScrollHeight, getScrollLeft, getScrollTop, getScrollWidth } from "./scroll";
+export { applySelectionStyle, applySelectionToStyledChars, comparePoints, Range, Selection } from "./selection";
+export type { CharOffsetMap, CharOffsetRange } from "./squash-text-nodes";
+export { squashTextNodesWithMap } from "./squash-text-nodes";
+export type { TerminalPalette } from "./terminal-palette";
+export { isTerminalPaletteQuerySupported, queryTerminalPalette } from "./terminal-palette";
+export { sliceStyledChars, truncateStyledChars, wrapOrTruncateStyledChars, wrapStyledChars } from "./text-wrap";

@@ -61,9 +61,9 @@ const isDigitByte = (byte: number): boolean => byte >= zeroByte && byte <= nineB
 
 const matchKittyQueryResponse = (buffer: number[], startIndex: number): KittyQueryResponseMatch | undefined => {
     if (
-        buffer[startIndex] !== kittyQueryEscapeByte ||
-        buffer[startIndex + 1] !== kittyQueryOpenBracketByte ||
-        buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
+        buffer[startIndex] !== kittyQueryEscapeByte
+        || buffer[startIndex + 1] !== kittyQueryOpenBracketByte
+        || buffer[startIndex + 2] !== kittyQueryQuestionMarkByte
     ) {
         return undefined;
     }
@@ -151,13 +151,13 @@ const shouldClearTerminalForFrame = ({
 
     return (
         // Overflowing frames still need full clear fallback.
-        wasOverflowing ||
-        (isOverflowing && hadPreviousFrame) ||
+        wasOverflowing
+        || (isOverflowing && hadPreviousFrame)
         // Clear when shrinking from fullscreen to non-fullscreen output.
-        isLeavingFullscreen ||
+        || isLeavingFullscreen
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
-        shouldClearOnUnmount
+        || shouldClearOnUnmount
     );
 };
 
@@ -378,18 +378,18 @@ export default class Ink {
         const baseOnRender = unthrottled
             ? this.onRender
             : (() => {
-                  const throttled = throttle(this.onRender, renderThrottleMs, {
-                      leading: true,
-                      trailing: true,
-                  });
+                const throttled = throttle(this.onRender, renderThrottleMs, {
+                    leading: true,
+                    trailing: true,
+                });
 
-                  this.throttledOnRender = throttled;
+                this.throttledOnRender = throttled;
 
-                  return () => {
-                      this.hasPendingThrottledRender = true;
-                      throttled();
-                  };
-              })();
+                return () => {
+                    this.hasPendingThrottledRender = true;
+                    throttled();
+                };
+            })();
 
         if (unthrottled) {
             this.throttledOnRender = undefined;
@@ -443,26 +443,26 @@ export default class Ink {
         this.throttledLog = unthrottled
             ? this.log
             : throttle(
-                  (output: string) => {
-                      const shouldWrite = this.log.willRender(output);
-                      const sync = this.shouldSync();
+                (output: string) => {
+                    const shouldWrite = this.log.willRender(output);
+                    const sync = this.shouldSync();
 
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(bsu);
-                      }
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(bsu);
+                    }
 
-                      this.log(output);
+                    this.log(output);
 
-                      if (sync && shouldWrite) {
-                          this.options.stdout.write(esu);
-                      }
-                  },
-                  undefined,
-                  {
-                      leading: true,
-                      trailing: true,
-                  },
-              );
+                    if (sync && shouldWrite) {
+                        this.options.stdout.write(esu);
+                    }
+                },
+                undefined,
+                {
+                    leading: true,
+                    trailing: true,
+                },
+            );
 
         // Ignore last render after unmounting a tree to prevent empty output before exit
         this.isUnmounted = false;

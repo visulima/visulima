@@ -17,7 +17,11 @@ describe("color-matrix", () => {
         });
 
         it("should clamp values to 0-255", () => {
-            const matrix = [[2, 0, 0], [0, 2, 0], [0, 0, 2]] as const;
+            const matrix = [
+                [2, 0, 0],
+                [0, 2, 0],
+                [0, 0, 2],
+            ] as const;
             const [r, g, b] = applyColorMatrix(200, 200, 200, matrix);
 
             expect(r).toBeLessThanOrEqual(255);

@@ -33,10 +33,10 @@ export type UseTextSelectionOptions = {
 export type UseTextSelectionResult = {
     /** Clear the current selection. */
     readonly clearSelection: () => void;
-    /** The currently selected text. */
-    readonly selectedText: string;
     /** Select all content within the referenced element. */
     readonly selectAll: () => void;
+    /** The currently selected text. */
+    readonly selectedText: string;
     /** The underlying Selection instance. */
     readonly selection: Selection;
 };
@@ -103,12 +103,14 @@ const useTextSelection = (ref: RefObject<DOMElement | null>, options: UseTextSel
     }, [selection]);
 
     return useMemo(
-        () => ({
-            clearSelection,
-            selectedText,
-            selectAll,
-            selection,
-        }),
+        () => {
+            return {
+                clearSelection,
+                selectAll,
+                selectedText,
+                selection,
+            };
+        },
         [clearSelection, selectedText, selectAll, selection],
     );
 };

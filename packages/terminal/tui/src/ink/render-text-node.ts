@@ -147,8 +147,8 @@ export const handleTextNode = (
     const { width: currentWidth } = measureStyledChars(styledChars);
     const maxWidth = getMaxWidth(node.yogaNode!);
 
-    let lines: StyledChar[][] =
-        currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
+    let lines: StyledChar[][]
+        = currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
 
     lines = applyPaddingToStyledChars(node, lines);
 
