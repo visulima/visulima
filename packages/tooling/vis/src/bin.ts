@@ -2,17 +2,45 @@ import { createCerebro } from "@visulima/cerebro";
 import { findMonorepoRootSync } from "@visulima/package";
 
 import pkg from "../package.json";
+import addCommand from "./commands/add";
 import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
+import approveBuildsCommand from "./commands/approve-builds";
 import checkCommand from "./commands/check";
+import cleanCommand from "./commands/clean";
+import createCommand from "./commands/create";
+import dedupeCommand from "./commands/dedupe";
+import dlxCommand from "./commands/dlx";
+import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
+import implodeCommand from "./commands/implode";
+import initCommand from "./commands/init";
+import installCommand from "./commands/install";
+import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
+import outdatedCommand from "./commands/outdated";
+import pmCommand from "./commands/pm";
+import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
 import stagedCommand from "./commands/staged";
+import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
-import { loadVisConfig } from "./config";
+import upgradeCommand from "./commands/upgrade";
+import whyCommand from "./commands/why";
+import { findVisConfigFile, loadVisConfig } from "./config";
+import { injectVersion } from "./output";
+import { detectPm } from "./pm-runner";
+import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "./security";
+import { showTip } from "./tips";
+import { startUpgradeCheck } from "./upgrade-check";
+
+// Inject VIS_VERSION for child processes before any commands run
+injectVersion();
+
+// Start background upgrade check immediately (non-blocking)
+const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");
 
 /**
  * Attempts to load and enable V8 compile cache for better performance.
@@ -42,6 +70,46 @@ cli.addPlugin({
 
             toolbox.workspaceRoot = workspaceRoot;
             toolbox.visConfig = await loadVisConfig(workspaceRoot);
+
+            // First-run detection: prompt to run vis init when no config exists
+            const command = process.argv[2] ?? "";
+            const skipFirstRunHint = new Set(["init", "help", "--help", "-h", "--version", "-V", "implode", "create"]);
+
+            if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI) {
+                if (process.stdin.isTTY) {
+                    // Interactive: styled confirm prompt
+                    const { createInterface } = await import("node:readline");
+                    const rl = createInterface({ input: process.stdin, output: process.stderr });
+                    const answer = await new Promise<string>((resolve) => {
+                        rl.question(
+                            `\x1B[36;1m?\x1B[0m \x1B[1mNo vis.config.ts found. Create one with best-practice security defaults?\x1B[0m \x1B[90m(\x1B[92mY\x1B[90m/n)\x1B[0m `,
+                            resolve,
+                        );
+                        rl.on("SIGINT", () => { rl.close(); resolve("n"); });
+                    });
+
+                    rl.close();
+
+                    const shouldInit = !answer.trim() || answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes";
+
+                    if (shouldInit) {
+                        const { writeFileSync } = await import("node:fs");
+                        const { join } = await import("node:path");
+
+                        const configPath = join(workspaceRoot, "vis.config.ts");
+                        const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    security: {\n        minimumReleaseAge: 1440,\n        trustPolicy: "no-downgrade",\n        blockExoticSubdeps: true,\n        allowBuilds: {},\n    },\n    update: {\n        security: true,\n        target: "minor",\n    },\n});\n`;
+
+                        writeFileSync(configPath, content);
+                        toolbox.logger.info(`\u2713 Created ${configPath}\n`);
+                        toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                    }
+                } else {
+                    // Non-interactive: just warn
+                    toolbox.logger.warn(
+                        "No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.",
+                    );
+                }
+            }
         } catch (error: unknown) {
             // findMonorepoRootSync failing is expected (e.g., running --help outside a workspace)
             if (error instanceof Error && !error.message.includes("monorepo root")) {
@@ -55,6 +123,54 @@ cli.addPlugin({
     name: "config-loader",
 });
 
+// Security plugin: warn about missing settings + enforce script blocking for npm/yarn
+const INSTALL_COMMANDS = new Set(["install", "add", "update"]);
+const PM_COMMANDS = new Set(["install", "add", "update", "remove", "dedupe"]);
+
+cli.addPlugin({
+    /* eslint-disable no-param-reassign -- cerebro plugin pattern */
+    beforeCommand: async (toolbox) => {
+        const command = process.argv[2] ?? "";
+
+        if (PM_COMMANDS.has(command) && toolbox.visConfig && toolbox.workspaceRoot) {
+            const pm = detectPm(toolbox.workspaceRoot);
+
+            emitSecurityWarnings(toolbox.visConfig, pm.name);
+
+            // For install/add: enforce script blocking on npm/yarn
+            if (INSTALL_COMMANDS.has(command)) {
+                const enforcement = enforceScriptSecurity(
+                    pm.name as "bun" | "npm" | "pnpm" | "yarn",
+                    toolbox.workspaceRoot,
+                    toolbox.visConfig,
+                );
+
+                for (const w of enforcement.warnings) {
+                    toolbox.logger.warn(`security: ${w}`);
+                }
+
+                // Store enforcement result for afterCommand
+                toolbox.scriptEnforcement = enforcement;
+            }
+        }
+    },
+    afterCommand: async (toolbox) => {
+        // Run approved scripts only if the install/update command succeeded
+        if (process.exitCode && process.exitCode !== 0) {
+            return;
+        }
+
+        const enforcement = toolbox.scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
+
+        if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
+            runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);
+        }
+    },
+    /* eslint-enable no-param-reassign */
+    name: "security-enforcement",
+});
+
+// Existing commands
 cli.addCommand(runCommand);
 cli.addCommand(graphCommand);
 cli.addCommand(affectedCommand);
@@ -65,5 +181,45 @@ cli.addCommand(aiCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(migrateCommand);
 cli.addCommand(stagedCommand);
+
+// Package management commands (native Rust-backed)
+cli.addCommand(installCommand);
+cli.addCommand(addCommand);
+cli.addCommand(removeCommand);
+cli.addCommand(dedupeCommand);
+cli.addCommand(whyCommand);
+cli.addCommand(outdatedCommand);
+cli.addCommand(linkCommand);
+cli.addCommand(unlinkCommand);
+cli.addCommand(dlxCommand);
+cli.addCommand(execCommand);
+cli.addCommand(pmCommand);
+
+// Project & environment commands
+cli.addCommand(initCommand);
+cli.addCommand(cleanCommand);
+cli.addCommand(createCommand);
+cli.addCommand(upgradeCommand);
+cli.addCommand(implodeCommand);
+
+// Security commands
+cli.addCommand(approveBuildsCommand);
+
+// Post-command plugin: upgrade notice (first) then tips
+cli.addPlugin({
+    afterCommand: async () => {
+        const args = process.argv.slice(2);
+        const command = args[0] ?? "";
+
+        // Upgrade notice first (per RFC: "notice first, then tip")
+        if (upgradeCheckCallback) {
+            upgradeCheckCallback();
+        }
+
+        // Then contextual tips
+        showTip({ args, command, success: process.exitCode === undefined || process.exitCode === 0 });
+    },
+    name: "post-command",
+});
 
 await cli.run();
