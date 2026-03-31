@@ -33,6 +33,7 @@ import { loadVisConfig } from "./config";
 import { injectVersion } from "./output";
 import { detectPm } from "./pm-runner";
 import { emitSecurityWarnings } from "./security";
+import { enforceScriptSecurity, runApprovedScripts } from "./script-security";
 import { showTip } from "./tips";
 
 // Inject VIS_VERSION for child processes before any commands run
@@ -79,10 +80,12 @@ cli.addPlugin({
     name: "config-loader",
 });
 
-// Security warnings plugin: show security recommendations for PM commands
+// Security plugin: warn about missing settings + enforce script blocking for npm/yarn
+const INSTALL_COMMANDS = new Set(["install", "add"]);
 const PM_COMMANDS = new Set(["install", "add", "update", "remove", "dedupe"]);
 
 cli.addPlugin({
+    /* eslint-disable no-param-reassign -- cerebro plugin pattern */
     beforeCommand: async (toolbox) => {
         const command = process.argv[2] ?? "";
 
@@ -90,9 +93,34 @@ cli.addPlugin({
             const pm = detectPm(toolbox.workspaceRoot);
 
             emitSecurityWarnings(toolbox.visConfig, pm.name);
+
+            // For install/add: enforce script blocking on npm/yarn
+            if (INSTALL_COMMANDS.has(command)) {
+                const enforcement = enforceScriptSecurity(
+                    pm.name as "bun" | "npm" | "pnpm" | "yarn",
+                    toolbox.workspaceRoot,
+                    toolbox.visConfig,
+                );
+
+                for (const w of enforcement.warnings) {
+                    toolbox.logger.warn(`security: ${w}`);
+                }
+
+                // Store enforcement result for afterCommand
+                toolbox.scriptEnforcement = enforcement;
+            }
         }
     },
-    name: "security-warnings",
+    afterCommand: async (toolbox) => {
+        // Run approved scripts after --ignore-scripts install (npm/yarn)
+        const enforcement = toolbox.scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
+
+        if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
+            runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);
+        }
+    },
+    /* eslint-enable no-param-reassign */
+    name: "security-enforcement",
 });
 
 // Existing commands
