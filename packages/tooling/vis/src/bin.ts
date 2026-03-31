@@ -73,39 +73,40 @@ cli.addPlugin({
             const command = process.argv[2] ?? "";
             const skipFirstRunHint = new Set(["init", "help", "--help", "-h", "--version", "-V", "implode", "create"]);
 
-            if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI && process.stdin.isTTY) {
-                toolbox.logger.warn("No vis.config.ts found.");
+            if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI) {
+                if (process.stdin.isTTY) {
+                    // Interactive: styled confirm prompt
+                    const { createInterface } = await import("node:readline");
+                    const rl = createInterface({ input: process.stdin, output: process.stderr });
+                    const answer = await new Promise<string>((resolve) => {
+                        rl.question(
+                            `\x1B[36;1m?\x1B[0m \x1B[1mNo vis.config.ts found. Create one with best-practice security defaults?\x1B[0m \x1B[90m(\x1B[92mY\x1B[90m/n)\x1B[0m `,
+                            resolve,
+                        );
+                        rl.on("SIGINT", () => { rl.close(); resolve("n"); });
+                    });
 
-                const { createInterface } = await import("node:readline");
-                const rl = createInterface({ input: process.stdin, output: process.stderr });
-                const answer = await new Promise<string>((resolve) => {
-                    rl.question("  Create one with best-practice security defaults? [Y/n] ", resolve);
-                });
+                    rl.close();
 
-                rl.close();
+                    const shouldInit = !answer.trim() || answer.trim().toLowerCase() === "y" || answer.trim().toLowerCase() === "yes";
 
-                if (!answer || answer.trim().toLowerCase() !== "n") {
-                    // Run vis init inline
-                    const { writeFileSync } = await import("node:fs");
-                    const { join } = await import("node:path");
-                    const { detectPm } = await import("./pm-runner");
+                    if (shouldInit) {
+                        const { writeFileSync } = await import("node:fs");
+                        const { join } = await import("node:path");
 
-                    const pm = detectPm(workspaceRoot);
-                    const { default: initCommand } = await import("./commands/init");
+                        const configPath = join(workspaceRoot, "vis.config.ts");
+                        const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    security: {\n        minimumReleaseAge: 1440,\n        trustPolicy: "no-downgrade",\n        blockExoticSubdeps: true,\n        allowBuilds: {},\n    },\n    update: {\n        security: true,\n        target: "minor",\n    },\n});\n`;
 
-                    // Delegate to init command's execute
-                    const configPath = join(workspaceRoot, "vis.config.ts");
-                    const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    security: {\n        minimumReleaseAge: 1440,\n        trustPolicy: "no-downgrade",\n        blockExoticSubdeps: true,\n        allowBuilds: {},\n    },\n    update: {\n        security: true,\n        target: "minor",\n    },\n});\n`;
-
-                    writeFileSync(configPath, content);
-                    toolbox.logger.info(`\u2713 Created ${configPath}\n`);
-                    toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                        writeFileSync(configPath, content);
+                        toolbox.logger.info(`\u2713 Created ${configPath}\n`);
+                        toolbox.visConfig = await loadVisConfig(workspaceRoot);
+                    }
+                } else {
+                    // Non-interactive: just warn
+                    toolbox.logger.warn(
+                        "No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.",
+                    );
                 }
-            } else if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI) {
-                // Non-interactive: just warn
-                toolbox.logger.warn(
-                    "No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.",
-                );
             }
         } catch (error: unknown) {
             // findMonorepoRootSync failing is expected (e.g., running --help outside a workspace)
