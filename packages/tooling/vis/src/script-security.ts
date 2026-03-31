@@ -133,18 +133,20 @@ const enforceScriptSecurity = (
                     "vis will add --ignore-scripts to install commands automatically.",
                 );
                 result.extraArgs.push("--ignore-scripts");
-
-                // Collect packages that are allowed to run scripts
-                for (const [pattern, allowed] of Object.entries(allowBuilds)) {
-                    if (allowed) {
-                        result.postInstallPackages.push(pattern);
-                    }
-                }
             } else if (!hasIgnoreScripts && !hasAllowList) {
                 result.warnings.push(
                     "npm does not block lifecycle scripts by default. Any package can run arbitrary code on install. " +
                     "Add 'ignore-scripts=true' to .npmrc and configure security.allowBuilds in vis.config.ts.",
                 );
+            }
+
+            // Collect packages that are allowed to run scripts (regardless of hasIgnoreScripts)
+            if (hasAllowList) {
+                for (const [pattern, allowed] of Object.entries(allowBuilds)) {
+                    if (allowed) {
+                        result.postInstallPackages.push(pattern);
+                    }
+                }
             }
 
             break;
@@ -272,13 +274,20 @@ const syncAllowBuildsToNativeConfig = (
 
                 if (existsSync(yarnrcPath)) {
                     let content = readFileSync(yarnrcPath, "utf8");
+                    const hasEnableScriptsKey = /^\s*enableScripts\s*:/m.test(content);
+                    const hasEnableScriptsFalse = /^\s*enableScripts\s*:\s*false\s*$/m.test(content);
 
-                    if (!/^\s*enableScripts\s*:/m.test(content)) {
+                    if (!hasEnableScriptsKey) {
                         content = content.trimEnd() + "\nenableScripts: false\n";
                         writeFileSync(yarnrcPath, content);
                         actions.push("Added enableScripts: false to .yarnrc.yml");
+                    } else if (!hasEnableScriptsFalse) {
+                        // enableScripts exists but is not false (e.g., true or yes)
+                        content = content.replace(/^\s*enableScripts\s*:.+$/m, "enableScripts: false");
+                        writeFileSync(yarnrcPath, content);
+                        actions.push("Changed enableScripts to false in .yarnrc.yml");
                     } else {
-                        actions.push(".yarnrc.yml already has enableScripts configured");
+                        actions.push(".yarnrc.yml already has enableScripts: false");
                     }
                 } else {
                     writeFileSync(yarnrcPath, "enableScripts: false\n");
@@ -327,8 +336,26 @@ const runApprovedScripts = (
         return;
     }
 
+    // Resolve the node_modules directory once for path validation
+    const nodeModulesPath = join(workspaceRoot, "node_modules");
+
     for (const pkg of packages) {
-        const pkgDir = join(workspaceRoot, "node_modules", pkg);
+        // Validate package name to prevent path traversal
+        // Allow valid npm package names: alphanumeric, hyphens, underscores, dots, slashes (for scoped packages)
+        // Reject any path traversal attempts (.., absolute paths)
+        if (pkg.includes("..") || pkg.startsWith("/") || pkg.startsWith("\\")) {
+            warn(`Skipping invalid package name: ${pkg}`);
+            continue;
+        }
+
+        // For scoped packages (@scope/name), ensure only one slash and proper format
+        const slashCount = (pkg.match(/\//g) || []).length;
+        if (slashCount > 1 || (slashCount === 1 && !pkg.startsWith("@"))) {
+            warn(`Skipping invalid package name: ${pkg}`);
+            continue;
+        }
+
+        const pkgDir = join(nodeModulesPath, pkg);
         const pkgJsonPath = join(pkgDir, "package.json");
 
         if (!existsSync(pkgJsonPath)) {
