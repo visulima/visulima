@@ -113,6 +113,27 @@
     "module": "dist/index-server.mjs",
     "browser": "dist/index-browser.mjs",
     "types": "dist/index-server.d.cts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index-browser.d.ts",
+                "./dist/index-server.d.ts"
+            ],
+            "next": [
+                "./dist/framework/next/index-browser.d.ts",
+                "./dist/framework/next/index-server.d.ts"
+            ],
+            "next/pages/swagger": [
+                "./dist/framework/next/routes/pages/swagger/index.d.ts"
+            ],
+            "next/pages/redoc": [
+                "./dist/framework/next/routes/pages/redoc/index.d.ts"
+            ],
+            "cli": [
+                "./dist/framework/cli/index.d.ts"
+            ]
+        }
+    },
     "bin": {
         "api-platform": "./bin/index.js"
     },
@@ -153,8 +174,8 @@
         "lodash.merge": "catalog:prod",
         "schema-dts": "catalog:prod",
         "ts-japi": "catalog:prod",
-        "yaml": "catalog:prod",
         "type-fest": "catalog:dev",
+        "yaml": "catalog:prod",
         "zod-to-ts": "^1.2.0"
     },
     "devDependencies": {
@@ -185,6 +206,7 @@
         "@types/swagger-ui-react": "^4.18.3",
         "@types/webpack": "catalog:types",
         "@visulima/crud": "3.0.0-alpha.8",
+        "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "chalk": "catalog:dev",
@@ -223,7 +245,6 @@
         "styled-components": "catalog:dev",
         "swagger-ui-dist": "^4.19.1",
         "swagger-ui-react": "^4.19.1",
-        "@visulima/packem": "catalog:dev",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
         "webpack": "catalog:build",
@@ -305,6 +326,7 @@
             "optional": true
         }
     },
+    "optionalDependencies": {},
     "engines": {
         "node": ">=22.13 <=25.x"
     },
@@ -326,27 +348,5 @@
         "src/framework/next/index-server.ts",
         "src/framework/next/routes/pages/swagger/index.tsx",
         "src/framework/next/routes/pages/redoc/index.tsx"
-    ],
-    "optionalDependencies": {},
-    "typesVersions": {
-        ">=5.0": {
-            ".": [
-                "./dist/index-browser.d.ts",
-                "./dist/index-server.d.ts"
-            ],
-            "next": [
-                "./dist/framework/next/index-browser.d.ts",
-                "./dist/framework/next/index-server.d.ts"
-            ],
-            "next/pages/swagger": [
-                "./dist/framework/next/routes/pages/swagger/index.d.ts"
-            ],
-            "next/pages/redoc": [
-                "./dist/framework/next/routes/pages/redoc/index.d.ts"
-            ],
-            "cli": [
-                "./dist/framework/cli/index.d.ts"
-            ]
-        }
-    }
+    ]
 }
