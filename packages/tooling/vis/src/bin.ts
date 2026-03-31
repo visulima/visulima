@@ -126,7 +126,7 @@ cli.addPlugin({
 });
 
 // Security plugin: warn about missing settings + enforce script blocking for npm/yarn
-const INSTALL_COMMANDS = new Set(["install", "add"]);
+const INSTALL_COMMANDS = new Set(["install", "add", "update"]);
 const PM_COMMANDS = new Set(["install", "add", "update", "remove", "dedupe"]);
 
 cli.addPlugin({
@@ -157,7 +157,11 @@ cli.addPlugin({
         }
     },
     afterCommand: async (toolbox) => {
-        // Run approved scripts after --ignore-scripts install (npm/yarn)
+        // Run approved scripts only if the install/update command succeeded
+        if (process.exitCode && process.exitCode !== 0) {
+            return;
+        }
+
         const enforcement = toolbox.scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
 
         if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {

@@ -30,13 +30,19 @@ const JSON_INDENT_REGEX = /\n(\s+)/;
 const VALID_DEP_TYPES = new Set(["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]);
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
- * Falls back to node_modules/.cache/vis/backup relative to workspaceRoot
- * if findCacheDirSync cannot determine the path.
+ * Throws if the cache directory cannot be resolved (e.g., no node_modules).
  */
 const getBackupDir = (workspaceRoot: string): string => {
     const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
 
-    return join(cacheDir ?? join(workspaceRoot, "node_modules", ".cache", "vis"), "backup");
+    if (!cacheDir) {
+        throw new Error(
+            "Cannot resolve cache directory. Ensure node_modules exists in your workspace. " +
+            "Run your package manager's install command first.",
+        );
+    }
+
+    return join(cacheDir, "backup");
 };
 
 // --- Types ---
