@@ -6,6 +6,7 @@ import addCommand from "./commands/add";
 import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
+import approveBuildsCommand from "./commands/approve-builds";
 import checkCommand from "./commands/check";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
@@ -23,6 +24,7 @@ import outdatedCommand from "./commands/outdated";
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
+import securityCheckCommand from "./commands/security-check";
 import stagedCommand from "./commands/staged";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
@@ -30,6 +32,8 @@ import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
 import { loadVisConfig } from "./config";
 import { injectVersion } from "./output";
+import { detectPm } from "./pm-runner";
+import { emitSecurityWarnings } from "./security";
 import { showTip } from "./tips";
 
 // Inject VIS_VERSION for child processes before any commands run
@@ -76,6 +80,22 @@ cli.addPlugin({
     name: "config-loader",
 });
 
+// Security warnings plugin: show security recommendations for PM commands
+const PM_COMMANDS = new Set(["install", "add", "update", "remove", "dedupe"]);
+
+cli.addPlugin({
+    beforeCommand: async (toolbox) => {
+        const command = process.argv[2] ?? "";
+
+        if (PM_COMMANDS.has(command) && toolbox.visConfig && toolbox.workspaceRoot) {
+            const pm = detectPm(toolbox.workspaceRoot);
+
+            emitSecurityWarnings(toolbox.visConfig, pm.name);
+        }
+    },
+    name: "security-warnings",
+});
+
 // Existing commands
 cli.addCommand(runCommand);
 cli.addCommand(graphCommand);
@@ -107,6 +127,10 @@ cli.addCommand(createCommand);
 cli.addCommand(envCommand);
 cli.addCommand(upgradeCommand);
 cli.addCommand(implodeCommand);
+
+// Security commands
+cli.addCommand(securityCheckCommand);
+cli.addCommand(approveBuildsCommand);
 
 // Tips plugin: show contextual tips after command execution
 cli.addPlugin({
