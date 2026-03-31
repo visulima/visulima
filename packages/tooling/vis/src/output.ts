@@ -46,7 +46,6 @@ const yellow = ansi("33", "39");
 const blue = ansi("34", "39");
 const cyan = ansi("36", "39");
 const gray = ansi("90", "39");
-const inverse = ansi("7", "27");
 
 // ── Symbols (with Unicode detection from tui/symbols.ts pattern) ─────
 
@@ -102,7 +101,7 @@ const failure = (message: string): void => {
 
 // ── Branding ─────────────────────────────────────────────────────────
 
-/** The VIS version, injectable via VIS_VERSION environment variable */
+/** Resolves the VIS version from env var or package.json. */
 const getVersion = (): string => {
     if (process.env.VIS_VERSION) {
         return process.env.VIS_VERSION;
@@ -116,97 +115,24 @@ const getVersion = (): string => {
     }
 };
 
-/** Renders the VIS badge: ` VIS ` in inverse styling */
-const badge = (): string => inverse(bold(cyan(` VIS `)));
-
-/**
- * Prints a branded banner line before spawning a sub-tool.
- *
- * Example output:
- *   VIS  v1.0.0 — build
- *
- * Only printed to TTY stderr (skipped in CI pipes).
- */
-const printBanner = (command: string): void => {
-    if (!process.stderr.isTTY) {
-        return;
-    }
-
-    const version = getVersion();
-
-    process.stderr.write(`${badge()}  ${dim(`v${version}`)} ${dim(SYMBOLS.dash)} ${command}\n`);
-};
-
-/**
- * Prints the startup banner with version info.
- *
- * Example output:
- *   VIS  v1.0.0  ready
- */
-const printStartup = (): void => {
-    if (!process.stderr.isTTY) {
-        return;
-    }
-
-    const version = getVersion();
-
-    process.stderr.write(`\n${badge()}  ${bold(`v${version}`)}  ${green("ready")}\n\n`);
-};
-
 /**
  * Sets the VIS_VERSION environment variable for child processes.
- * This allows sub-tools to read and display the vis version.
  */
 const injectVersion = (): void => {
     process.env.VIS_VERSION = getVersion();
 };
 
-/**
- * Returns a full-width separator line using the dash character.
- */
-const separator = (): string => {
-    const width = process.stdout.columns || 80;
-
-    return dim(SYMBOLS.dash.repeat(width));
-};
-
-/**
- * Formats a pass result line (for check-style commands).
- * Example: pass: All 989 files are correctly formatted (423ms, 16 threads)
- */
-const pass = (message: string): void => {
-    process.stderr.write(`${bold(green("pass:"))} ${message}\n`);
-};
-
-/**
- * Formats a fail result line (for check-style commands).
- * Example: fail: 3 files have formatting issues
- */
-const fail = (message: string): void => {
-    process.stderr.write(`${bold(red("fail:"))} ${message}\n`);
-};
-
 export {
-    badge,
-    blue,
     bold,
     cyan,
     dim,
     error,
-    fail,
     failure,
-    getVersion,
-    gray,
     green,
     info,
     injectVersion,
-    inverse,
     note,
-    pass,
-    printBanner,
-    printStartup,
     red,
-    separator,
     success,
     SYMBOLS,
     warn,

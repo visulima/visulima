@@ -4,8 +4,7 @@ import type { Command } from "@visulima/cerebro";
 
 import { detectPm } from "../pm-runner";
 import { error as errorOutput, info, note, success, warn } from "../output";
-import { scanUnapprovedBuildScripts } from "../security";
-import { syncAllowBuildsToNativeConfig } from "../script-security";
+import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
 
 const approveBuilds: Command = {
     description: "Review and approve dependencies with build scripts",

@@ -199,7 +199,6 @@ export {
     runOutdated,
     runPmSubcommand,
     runRemove,
-    runResolved,
     runUnlink,
     runWhy,
 };

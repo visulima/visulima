@@ -1,16 +1,27 @@
 /**
- * Supply chain security checks for package management commands.
+ * Supply chain security for package management commands.
  *
  * Ports pnpm's security features (minimumReleaseAge, trustPolicy,
  * allowBuilds, blockExoticSubdeps, strictDepBuilds) to work universally
  * across all package managers.
  *
- * For pnpm: these settings are also written to pnpm-workspace.yaml.
- * For npm/yarn/bun: vis enforces these at the vis layer.
+ * Support matrix for build script enforcement:
+ * - pnpm v10+: Native `allowBuilds` in pnpm-workspace.yaml (vis validates config)
+ * - bun: Native `trustedDependencies` in package.json (vis validates config)
+ * - npm: NO native allowlist. vis adds --ignore-scripts and runs approved scripts manually
+ * - yarn: NO native allowlist. vis checks enableScripts in .yarnrc.yml
  */
 
-import { warn, info, note, error as errorOutput } from "./output";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { join } from "node:path";
+
+import { error as errorOutput, info, note, warn } from "./output";
 import type { VisConfig } from "./workspace";
+
+type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
+
+// ── Config checking ──────────────────────────────────────────────────
 
 interface SecurityCheckResult {
     errors: string[];
@@ -18,10 +29,7 @@ interface SecurityCheckResult {
 }
 
 /**
- * Checks the vis config for recommended security settings and emits
- * warnings when they are missing or disabled.
- *
- * Called before install/add/update commands.
+ * Checks the vis config for recommended security settings.
  */
 const checkSecurityConfig = (config: VisConfig, packageManager: string): SecurityCheckResult => {
     const result: SecurityCheckResult = { errors: [], warnings: [] };
@@ -38,7 +46,6 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
         return result;
     }
 
-    // minimumReleaseAge
     if (security.minimumReleaseAge === undefined || security.minimumReleaseAge === 0) {
         result.warnings.push(
             "security.minimumReleaseAge is not set. New packages can be installed immediately after publishing. " +
@@ -46,42 +53,29 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
         );
     }
 
-    // allowBuilds
     if (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0) {
-        if (packageManager === "pnpm") {
-            result.warnings.push(
-                "security.allowBuilds is not configured. pnpm blocks build scripts by default since v10. " +
-                "Run 'vis approve-builds' to review and approve dependencies that need build scripts.",
-            );
-        } else {
-            result.warnings.push(
-                "security.allowBuilds is not configured. Consider listing which packages are allowed " +
-                "to run install/postinstall scripts to prevent supply chain attacks.",
-            );
-        }
+        result.warnings.push(
+            packageManager === "pnpm"
+                ? "security.allowBuilds is not configured. pnpm blocks build scripts by default since v10. Run 'vis approve-builds' to review."
+                : "security.allowBuilds is not configured. Consider listing which packages are allowed to run install/postinstall scripts.",
+        );
     }
 
-    // trustPolicy
     if (!security.trustPolicy || security.trustPolicy === "off") {
         result.warnings.push(
-            "security.trustPolicy is 'off'. Set to 'no-downgrade' to prevent installing packages " +
-            "whose trust level has decreased (e.g., lost trusted publisher status).",
+            "security.trustPolicy is 'off'. Set to 'no-downgrade' to prevent installing packages whose trust level has decreased.",
         );
     }
 
-    // blockExoticSubdeps
     if (!security.blockExoticSubdeps) {
         result.warnings.push(
-            "security.blockExoticSubdeps is not enabled. Transitive dependencies can pull code from " +
-            "git repos or tarball URLs. Set to true to restrict to registry-only sources.",
+            "security.blockExoticSubdeps is not enabled. Transitive dependencies can pull code from git repos or tarball URLs.",
         );
     }
 
-    // strictDepBuilds
     if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. " +
-            "All dependencies with build scripts will be blocked. Run 'vis approve-builds' first.",
+            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked.",
         );
     }
 
@@ -89,28 +83,21 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
 };
 
 /**
- * Emits security warnings to stderr. Called by install/add/update commands.
- * Uses dimmed output to be informative without being noisy.
- *
- * Only shows the summary warning on first run. Detailed warnings shown
- * with --security-details flag or VIS_SECURITY_DETAILS=1 env var.
+ * Emits a single-line security summary warning before PM commands.
+ * Skipped in CI unless VIS_SECURITY_WARNINGS=1.
  */
 const emitSecurityWarnings = (config: VisConfig, packageManager: string): void => {
-    // Skip in CI unless explicitly enabled
     if (process.env.CI && !process.env.VIS_SECURITY_WARNINGS) {
         return;
     }
 
     const result = checkSecurityConfig(config, packageManager);
 
-    if (result.errors.length > 0) {
-        for (const err of result.errors) {
-            errorOutput(err);
-        }
+    for (const err of result.errors) {
+        errorOutput(err);
     }
 
     if (result.warnings.length > 0) {
-        // Show a single summary warning, not the full list
         warn(
             `${result.warnings.length} security recommendation${result.warnings.length === 1 ? "" : "s"} found. ` +
             "Run 'vis check --security-config' for details.",
@@ -119,7 +106,7 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
 };
 
 /**
- * Prints the full security audit report. Used by 'vis security-check' command.
+ * Prints the full security audit report.
  */
 const printSecurityReport = (config: VisConfig, packageManager: string): void => {
     const result = checkSecurityConfig(config, packageManager);
@@ -130,14 +117,12 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         return;
     }
 
-    if (result.errors.length > 0) {
-        for (const err of result.errors) {
-            errorOutput(err);
-        }
+    for (const err of result.errors) {
+        errorOutput(err);
     }
 
-    for (const warning of result.warnings) {
-        warn(warning);
+    for (const w of result.warnings) {
+        warn(w);
     }
 
     note("Configure these in vis.config.ts under the 'security' section:");
@@ -159,8 +144,6 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
 
 /**
  * Reports which vis security settings would map to pnpm-workspace.yaml.
- * Does not write to pnpm-workspace.yaml (that requires YAML manipulation).
- * Use `vis approve-builds --sync-native` for actual native PM config writes.
  */
 const previewPnpmSync = (config: VisConfig): string[] => {
     const security = config.security;
@@ -195,17 +178,12 @@ const previewPnpmSync = (config: VisConfig): string[] => {
 };
 
 /**
- * Scans node_modules for packages with install scripts that aren't
- * approved in the allowBuilds config. Zero external dependencies.
+ * Scans node_modules for packages with install scripts that aren't approved.
  */
 const scanUnapprovedBuildScripts = (
     cwd: string,
     allowBuilds: Record<string, boolean>,
 ): string[] => {
-    // Inline imports to avoid pulling in @visulima/package chain
-    const { existsSync, readdirSync, readFileSync, statSync } = require("node:fs") as typeof import("node:fs");
-    const { join } = require("node:path") as typeof import("node:path");
-
     const nodeModulesPath = join(cwd, "node_modules");
 
     if (!existsSync(nodeModulesPath)) {
@@ -218,7 +196,7 @@ const scanUnapprovedBuildScripts = (
         let entries: string[];
 
         try {
-            entries = readdirSync(dir);
+            entries = require("node:fs").readdirSync(dir) as string[];
         } catch {
             return;
         }
@@ -239,15 +217,14 @@ const scanUnapprovedBuildScripts = (
             const pkgJsonPath = join(fullPath, "package.json");
 
             try {
-                if (!statSync(fullPath).isDirectory() || !existsSync(pkgJsonPath)) {
+                if (!require("node:fs").statSync(fullPath).isDirectory() || !existsSync(pkgJsonPath)) {
                     continue;
                 }
 
                 const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
                 const scripts = pkg.scripts ?? {};
-                const hasBuildScripts = scripts.preinstall || scripts.install || scripts.postinstall || scripts.prepare;
 
-                if (!hasBuildScripts) {
+                if (!scripts.preinstall && !scripts.install && !scripts.postinstall && !scripts.prepare) {
                     continue;
                 }
 
@@ -260,12 +237,7 @@ const scanUnapprovedBuildScripts = (
                 });
 
                 if (!isApproved) {
-                    const types = [];
-
-                    if (scripts.preinstall) types.push("preinstall");
-                    if (scripts.install) types.push("install");
-                    if (scripts.postinstall) types.push("postinstall");
-                    if (scripts.prepare) types.push("prepare");
+                    const types = ["preinstall", "install", "postinstall", "prepare"].filter((h) => scripts[h]);
 
                     unapproved.push(`${pkgName} (${types.join(", ")})`);
                 }
@@ -280,5 +252,306 @@ const scanUnapprovedBuildScripts = (
     return unapproved;
 };
 
-export type { SecurityCheckResult };
-export { checkSecurityConfig, emitSecurityWarnings, printSecurityReport, scanUnapprovedBuildScripts, previewPnpmSync };
+// ── Build script enforcement ─────────────────────────────────────────
+
+/** Detects yarn berry vs classic via .yarnrc.yml presence. */
+const isYarnBerry = (cwd: string): boolean => existsSync(join(cwd, ".yarnrc.yml"));
+
+interface EnforcementResult {
+    extraArgs: string[];
+    postInstallPackages: string[];
+    scriptsBlockedByDefault: boolean;
+    warnings: string[];
+}
+
+/**
+ * Determines enforcement actions needed before install/add/update.
+ */
+const enforceScriptSecurity = (
+    pm: PackageManagerName,
+    workspaceRoot: string,
+    config: VisConfig,
+): EnforcementResult => {
+    const result: EnforcementResult = {
+        extraArgs: [],
+        postInstallPackages: [],
+        scriptsBlockedByDefault: false,
+        warnings: [],
+    };
+
+    const allowBuilds = config.security?.allowBuilds ?? {};
+    const hasAllowList = Object.keys(allowBuilds).length > 0;
+
+    switch (pm) {
+        case "pnpm": {
+            result.scriptsBlockedByDefault = true;
+
+            if (!hasAllowList) {
+                result.warnings.push("pnpm blocks build scripts by default. Run 'vis approve-builds' to review packages that need scripts.");
+            }
+
+            break;
+        }
+
+        case "bun": {
+            result.scriptsBlockedByDefault = true;
+
+            if (hasAllowList) {
+                const pkgPath = join(workspaceRoot, "package.json");
+
+                try {
+                    const pkg = existsSync(pkgPath) ? JSON.parse(readFileSync(pkgPath, "utf8")) : {};
+
+                    if (!pkg.trustedDependencies?.length) {
+                        result.warnings.push("vis security.allowBuilds is configured but trustedDependencies is empty. Run 'vis approve-builds --sync-native'.");
+                    }
+                } catch { /* skip */ }
+            }
+
+            break;
+        }
+
+        case "npm": {
+            result.scriptsBlockedByDefault = false;
+            const npmrcPath = join(workspaceRoot, ".npmrc");
+            const hasIgnoreScripts = existsSync(npmrcPath) && /^\s*ignore-scripts\s*=\s*true\s*$/m.test(readFileSync(npmrcPath, "utf8"));
+
+            if (!hasIgnoreScripts && hasAllowList) {
+                result.warnings.push("npm does not block lifecycle scripts. vis will add --ignore-scripts automatically.");
+                result.extraArgs.push("--ignore-scripts");
+            } else if (!hasIgnoreScripts && !hasAllowList) {
+                result.warnings.push("npm does not block lifecycle scripts. Add 'ignore-scripts=true' to .npmrc and configure security.allowBuilds.");
+            }
+
+            if (hasAllowList) {
+                for (const [pattern, allowed] of Object.entries(allowBuilds)) {
+                    if (allowed) result.postInstallPackages.push(pattern);
+                }
+            }
+
+            break;
+        }
+
+        case "yarn": {
+            result.scriptsBlockedByDefault = false;
+
+            if (isYarnBerry(workspaceRoot)) {
+                const content = readFileSync(join(workspaceRoot, ".yarnrc.yml"), "utf8");
+
+                if (/^\s*enableScripts\s*:\s*false\s*$/m.test(content)) {
+                    result.scriptsBlockedByDefault = true;
+                } else {
+                    result.warnings.push("yarn berry supports enableScripts. Add 'enableScripts: false' to .yarnrc.yml.");
+                }
+            } else {
+                result.warnings.push("yarn classic does not support blocking lifecycle scripts. Consider upgrading to yarn berry.");
+
+                if (hasAllowList) {
+                    result.extraArgs.push("--ignore-scripts");
+
+                    for (const [pattern, allowed] of Object.entries(allowBuilds)) {
+                        if (allowed) result.postInstallPackages.push(pattern);
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+
+    return result;
+};
+
+// ── Native config sync ───────────────────────────────────────────────
+
+/**
+ * Syncs vis security.allowBuilds to native PM config format.
+ */
+const syncAllowBuildsToNativeConfig = (
+    pm: PackageManagerName,
+    workspaceRoot: string,
+    allowBuilds: Record<string, boolean>,
+): string[] => {
+    const actions: string[] = [];
+    const approved = Object.entries(allowBuilds).filter(([, v]) => v).map(([k]) => k);
+
+    switch (pm) {
+        case "bun": {
+            const pkgPath = join(workspaceRoot, "package.json");
+
+            if (existsSync(pkgPath)) {
+                try {
+                    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+
+                    pkg.trustedDependencies = approved;
+                    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
+                    actions.push(`Updated package.json trustedDependencies with ${approved.length} packages`);
+                } catch (error: unknown) {
+                    actions.push(`Failed to update package.json: ${error instanceof Error ? error.message : String(error)}`);
+                }
+            }
+
+            break;
+        }
+
+        case "npm": {
+            const npmrcPath = join(workspaceRoot, ".npmrc");
+            let content = existsSync(npmrcPath) ? readFileSync(npmrcPath, "utf8") : "";
+
+            if (!/^\s*ignore-scripts\s*=\s*true\s*$/m.test(content)) {
+                content = content.trimEnd() + "\nignore-scripts=true\n";
+                writeFileSync(npmrcPath, content);
+                actions.push("Added ignore-scripts=true to .npmrc");
+            } else {
+                actions.push(".npmrc already has ignore-scripts=true");
+            }
+
+            break;
+        }
+
+        case "yarn": {
+            if (isYarnBerry(workspaceRoot)) {
+                const yarnrcPath = join(workspaceRoot, ".yarnrc.yml");
+                let content = readFileSync(yarnrcPath, "utf8");
+                const hasKey = /^\s*enableScripts\s*:/m.test(content);
+                const hasFalse = /^\s*enableScripts\s*:\s*false\s*$/m.test(content);
+
+                if (!hasKey) {
+                    content = content.trimEnd() + "\nenableScripts: false\n";
+                    writeFileSync(yarnrcPath, content);
+                    actions.push("Added enableScripts: false to .yarnrc.yml");
+                } else if (!hasFalse) {
+                    content = content.replace(/^\s*enableScripts\s*:.+$/m, "enableScripts: false");
+                    writeFileSync(yarnrcPath, content);
+                    actions.push("Changed enableScripts to false in .yarnrc.yml");
+                } else {
+                    actions.push(".yarnrc.yml already has enableScripts: false");
+                }
+            } else {
+                const npmrcPath = join(workspaceRoot, ".npmrc");
+                let content = existsSync(npmrcPath) ? readFileSync(npmrcPath, "utf8") : "";
+
+                if (!/^\s*ignore-scripts\s*=\s*true\s*$/m.test(content)) {
+                    content = content.trimEnd() + "\nignore-scripts=true\n";
+                    writeFileSync(npmrcPath, content);
+                    actions.push("Added ignore-scripts=true to .npmrc (yarn classic lacks enableScripts)");
+                } else {
+                    actions.push(".npmrc already has ignore-scripts=true");
+                }
+            }
+
+            break;
+        }
+
+        case "pnpm": {
+            actions.push(`pnpm manages allowBuilds natively in pnpm-workspace.yaml (${approved.length} packages approved)`);
+            break;
+        }
+    }
+
+    return actions;
+};
+
+// ── Approved script runner ───────────────────────────────────────────
+
+/** Expands glob patterns against installed node_modules. */
+const expandPatterns = (workspaceRoot: string, patterns: string[]): string[] => {
+    const { readdirSync, statSync } = require("node:fs") as typeof import("node:fs");
+    const nodeModulesPath = join(workspaceRoot, "node_modules");
+    const resolved: string[] = [];
+
+    for (const pattern of patterns) {
+        if (!pattern.endsWith("*")) {
+            resolved.push(pattern);
+            continue;
+        }
+
+        const prefix = pattern.slice(0, -1);
+
+        try {
+            if (prefix.startsWith("@") && prefix.endsWith("/")) {
+                const scopeDir = join(nodeModulesPath, prefix.slice(0, -1));
+
+                for (const entry of readdirSync(scopeDir)) {
+                    if (!entry.startsWith(".") && statSync(join(scopeDir, entry)).isDirectory()) {
+                        resolved.push(`${prefix.slice(0, -1)}/${entry}`);
+                    }
+                }
+            } else {
+                for (const entry of readdirSync(nodeModulesPath)) {
+                    if (entry.startsWith(prefix) && statSync(join(nodeModulesPath, entry)).isDirectory()) {
+                        resolved.push(entry);
+                    }
+                }
+            }
+        } catch { /* dir doesn't exist */ }
+    }
+
+    return resolved;
+};
+
+/**
+ * Runs postinstall scripts for approved packages after --ignore-scripts install.
+ */
+const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => {
+    if (patterns.length === 0) return;
+
+    const packages = expandPatterns(workspaceRoot, patterns);
+
+    if (packages.length === 0) return;
+
+    const nodeModulesPath = join(workspaceRoot, "node_modules");
+    let hadFailure = false;
+
+    for (const pkg of packages) {
+        if (pkg.includes("..") || pkg.startsWith("/") || pkg.startsWith("\\")) {
+            warn(`Skipping invalid package name: ${pkg}`);
+            continue;
+        }
+
+        const slashCount = (pkg.match(/\//g) || []).length;
+
+        if (slashCount > 1 || (slashCount === 1 && !pkg.startsWith("@"))) {
+            warn(`Skipping invalid package name: ${pkg}`);
+            continue;
+        }
+
+        const pkgDir = join(nodeModulesPath, pkg);
+        const pkgJsonPath = join(pkgDir, "package.json");
+
+        if (!existsSync(pkgJsonPath)) continue;
+
+        try {
+            const scripts = JSON.parse(readFileSync(pkgJsonPath, "utf8")).scripts ?? {};
+
+            for (const hook of ["preinstall", "install", "postinstall"] as const) {
+                if (scripts[hook]) {
+                    info(`Running ${hook} for ${pkg}...`);
+
+                    try {
+                        execSync(scripts[hook], { cwd: pkgDir, env: { ...process.env }, stdio: "inherit" });
+                    } catch {
+                        errorOutput(`${hook} script failed for ${pkg}`);
+                        hadFailure = true;
+                    }
+                }
+            }
+        } catch { /* skip unreadable */ }
+    }
+
+    if (hadFailure) {
+        process.exitCode = 1;
+    }
+};
+
+export type { EnforcementResult, PackageManagerName, SecurityCheckResult };
+export {
+    checkSecurityConfig,
+    emitSecurityWarnings,
+    enforceScriptSecurity,
+    previewPnpmSync,
+    printSecurityReport,
+    runApprovedScripts,
+    scanUnapprovedBuildScripts,
+    syncAllowBuildsToNativeConfig,
+};

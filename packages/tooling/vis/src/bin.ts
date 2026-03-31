@@ -32,8 +32,7 @@ import whyCommand from "./commands/why";
 import { findVisConfigFile, loadVisConfig } from "./config";
 import { injectVersion } from "./output";
 import { detectPm } from "./pm-runner";
-import { emitSecurityWarnings } from "./security";
-import { enforceScriptSecurity, runApprovedScripts } from "./script-security";
+import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "./security";
 import { showTip } from "./tips";
 import { startUpgradeCheck } from "./upgrade-check";
 

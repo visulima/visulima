@@ -6,7 +6,7 @@ import type { Command } from "@visulima/cerebro";
 import { findVisConfigFile } from "../config";
 import { info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
-import { syncAllowBuildsToNativeConfig } from "../script-security";
+import { syncAllowBuildsToNativeConfig } from "../security";
 
 /**
  * Best-practice default configuration template.

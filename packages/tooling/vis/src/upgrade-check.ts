@@ -231,5 +231,4 @@ const startUpgradeCheck = (
     };
 };
 
-export { EXCLUDED_COMMANDS, fetchLatestVersion, isNewerVersion, readCache, shouldCheck, showUpgradeNotice, startUpgradeCheck, writeCache };
-export type { UpgradeCheckCache };
+export { EXCLUDED_COMMANDS, isNewerVersion, shouldCheck, startUpgradeCheck };
