@@ -159,7 +159,7 @@ const loadNativeBindings = (): NativeBindings | undefined => {
 
     try {
         // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        nativeBindings = require("../binding.cjs") as NativeBindings;
+        nativeBindings = require("../index.js") as NativeBindings;
     } catch {
         nativeBindings = undefined;
     }

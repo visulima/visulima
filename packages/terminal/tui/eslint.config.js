@@ -22,7 +22,6 @@ export default createConfig(
             ".prettierrc.cjs",
             "**/*.js",
             "**/*.d.ts",
-            "binding.js",
             "docs/**",
         ],
         typescript: {

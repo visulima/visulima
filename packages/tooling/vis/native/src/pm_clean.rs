@@ -50,20 +50,10 @@ fn find_node_modules(root: &Path) -> Vec<PathBuf> {
 
 /// Finds lockfiles in the workspace root.
 fn find_lockfiles(root: &Path) -> Vec<PathBuf> {
-    let lockfile_names = [
-        "pnpm-lock.yaml",
-        "package-lock.json",
-        "npm-shrinkwrap.json",
-        "yarn.lock",
-        "bun.lock",
-        "bun.lockb",
-    ];
+    let lockfile_names =
+        ["pnpm-lock.yaml", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "bun.lock", "bun.lockb"];
 
-    lockfile_names
-        .iter()
-        .map(|name| root.join(name))
-        .filter(|path| path.exists())
-        .collect()
+    lockfile_names.iter().map(|name| root.join(name)).filter(|path| path.exists()).collect()
 }
 
 /// Safely removes all node_modules directories in a workspace.
@@ -77,18 +67,11 @@ pub fn clean_workspace(root: String, remove_lockfile: bool) -> napi::Result<Clea
     let root_path = PathBuf::from(&root);
 
     if !root_path.exists() {
-        return Err(Error::new(
-            Status::InvalidArg,
-            format!("Directory does not exist: {root}"),
-        ));
+        return Err(Error::new(Status::InvalidArg, format!("Directory does not exist: {root}")));
     }
 
     let node_modules_dirs = find_node_modules(&root_path);
-    let mut result = CleanResult {
-        removed: Vec::new(),
-        errors: Vec::new(),
-        lockfiles_removed: Vec::new(),
-    };
+    let mut result = CleanResult { removed: Vec::new(), errors: Vec::new(), lockfiles_removed: Vec::new() };
 
     for dir in &node_modules_dirs {
         let dir_str = dir.to_string_lossy().to_string();

@@ -21,6 +21,13 @@ yaml_lintable:
     - "**/*.yaml"
     - "pnpm-lock.yaml"
 
+rust_lintable:
+    - "**/native/src/**/*.rs"
+    - "**/native/Cargo.toml"
+    - "**/native/Cargo.lock"
+    - "rustfmt.toml"
+    - "rust-toolchain.toml"
+
 packages: &packages
     - "**/tsconfig*.json"
     - "pnpm-lock.yaml"

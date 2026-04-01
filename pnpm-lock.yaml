@@ -8840,7 +8840,7 @@ importers:
         specifier: catalog:dev
         version: 0.18.2
       '@napi-rs/cli':
-        specifier: ^3.5.1
+        specifier: catalog:dev
         version: 3.6.0(@emnapi/runtime@1.7.1)(@types/node@25.5.0)(node-addon-api@8.5.0)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
@@ -9065,18 +9065,9 @@ importers:
 
   packages/tooling/vis:
     dependencies:
-      '@visulima/ansi':
-        specifier: 4.0.0-alpha.7
-        version: link:../../terminal/ansi
-      '@visulima/boxen':
-        specifier: 3.0.0-alpha.8
-        version: link:../../terminal/boxen
       '@visulima/cerebro':
         specifier: 3.0.0-alpha.9
         version: link:../../terminal/cerebro
-      '@visulima/colorize':
-        specifier: 2.0.0-alpha.7
-        version: link:../../terminal/colorize
       '@visulima/find-ai-runner':
         specifier: 1.0.0-alpha.2
         version: link:../find-ai-runner
@@ -9092,24 +9083,24 @@ importers:
       '@visulima/package':
         specifier: 5.0.0-alpha.6
         version: link:../package
-      '@visulima/pail':
-        specifier: 4.0.0-alpha.9
-        version: link:../../error-debugging/pail
       '@visulima/path':
         specifier: 3.0.0-alpha.7
         version: link:../../filesystem/path
-      '@visulima/tabular':
-        specifier: 4.0.0-alpha.8
-        version: link:../../terminal/tabular
       '@visulima/task-runner':
         specifier: 1.0.0-alpha.3
         version: link:../task-runner
+      '@visulima/tui':
+        specifier: workspace:*
+        version: link:../../terminal/tui
       jiti:
         specifier: catalog:dev
         version: 2.6.1
       lint-staged:
         specifier: '>=15.0.0'
         version: 16.4.0
+      react:
+        specifier: catalog:frontend
+        version: 19.2.4
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -9126,6 +9117,9 @@ importers:
       '@arethetypeswrong/cli':
         specifier: catalog:dev
         version: 0.18.2
+      '@napi-rs/cli':
+        specifier: catalog:dev
+        version: 3.6.0(@emnapi/runtime@1.7.1)(@types/node@25.5.0)(node-addon-api@8.5.0)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 11.4.0
@@ -9138,6 +9132,12 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 25.5.0
+      '@types/react':
+        specifier: catalog:types
+        version: 19.2.14
+      '@visulima/colorize':
+        specifier: 2.0.0-alpha.7
+        version: link:../../terminal/colorize
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.61(b782c601bed2325e186e48aba2719e34)

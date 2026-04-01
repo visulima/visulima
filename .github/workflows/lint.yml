@@ -33,6 +33,7 @@ jobs:
             markdown_lintable: "${{ steps.changes.outputs.markdown_lintable }}"
             yaml_lintable: "${{ steps.changes.outputs.yaml_lintable }}"
             package_json_lintable: "${{ steps.changes.outputs.package_json_lintable }}"
+            rust_lintable: "${{ steps.changes.outputs.rust_lintable }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
@@ -309,6 +310,37 @@ jobs:
                   bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
                   # The -ignore flag is used to ignore a specific error for a working solution in test.yml
                   ./actionlint -color -shellcheck=""
+
+    rust-fmt:
+        if: "needs.files-changed.outputs.rust_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (rustfmt)"
+        runs-on: "ubuntu-latest"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2" # v2.13.2
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  persist-credentials: false
+
+            - name: "Install Rust toolchain"
+              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
+              with:
+                  components: "rustfmt"
+                  restore-cache: false
+
+            - name: "Check formatting (task-runner)"
+              run: "cargo fmt --check --manifest-path packages/tooling/task-runner/native/Cargo.toml"
+
+            - name: "Check formatting (tui)"
+              run: "cargo fmt --check --manifest-path packages/terminal/tui/native/Cargo.toml"
+
+            - name: "Check formatting (vis)"
+              run: "cargo fmt --check --manifest-path packages/tooling/vis/native/Cargo.toml"
 
     markdown-lint:
         if: "needs.files-changed.outputs.markdown_lintable == 'true'"

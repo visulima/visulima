@@ -39,13 +39,13 @@
     "sideEffects": [
         "./dist/ink/**",
         "./dist/react/**",
-        "./binding.js"
+        "./index.js"
     ],
     "type": "module",
     "exports": {
         ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
+            "types": "./dist/ink/index.d.ts",
+            "default": "./dist/ink/index.js"
         },
         "./core": {
             "types": "./dist/core/index.d.ts",
@@ -55,23 +55,19 @@
             "types": "./dist/react/index.d.ts",
             "default": "./dist/react/index.js"
         },
-        "./ink": {
-            "types": "./dist/ink/index.d.ts",
-            "default": "./dist/ink/index.js"
-        },
         "./package.json": "./package.json"
     },
     "files": [
         "dist/**",
-        "binding.js",
+        "index.js",
         "README.md",
         "CHANGELOG.md",
         "LICENSE.md"
     ],
     "scripts": {
         "build": "packem build --development",
-        "build:native": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir .",
-        "build:native:debug": "napi build --platform --manifest-path native/Cargo.toml --output-dir .",
+        "build:native": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native:debug": "napi build --platform --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:prod": "packem build --production",
         "clean": "rimraf node_modules dist .eslintcache *.node",
         "dev": "pnpm run build --watch",

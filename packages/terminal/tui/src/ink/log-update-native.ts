@@ -29,7 +29,7 @@ export const createNative = (stream: NodeJS.WriteStream): NativeLogUpdate | unde
     try {
         // Dynamic import to avoid hard dependency on native binding
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const binding = require("../../binding.js") as { Renderer: RendererConstructor };
+        const binding = require("../../index.js") as { Renderer: RendererConstructor };
 
         RendererClass = binding.Renderer;
     } catch {

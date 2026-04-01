@@ -66,7 +66,7 @@ let loadAttempted = false;
  * The result is cached after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
- * `task-runner-native.&lt;platform>.node`. The napi-generated binding.js
+ * `task-runner-native.&lt;platform>.node`. The napi-generated index.js
  * handles platform detection automatically.
  */
 const loadNativeBindings = (): NativeBindings | undefined => {
@@ -80,7 +80,7 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         // Load via the napi-generated binding loader which handles
         // platform detection and loads the correct .node binary
         // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        nativeBindings = require("../binding.js") as NativeBindings;
+        nativeBindings = require("../index.js") as NativeBindings;
     } catch {
         // Native addon not available - will use TypeScript fallbacks
         nativeBindings = undefined;

@@ -9,8 +9,8 @@ crate-type = [ "cdylib" ]
 
 [dependencies]
 crossterm = "0.29.0"
-napi = "3.0.0"
-napi-derive = "3.0.0"
+napi = "3"
+napi-derive = "3"
 unicode-width = "0.2.0"
 
 [build-dependencies]
