@@ -38,31 +38,8 @@ const c0ControlUpperBound = 0x1f;
 const deleteCodePoint = 0x7f;
 const c1ControlStart = 0x80;
 const c1ControlEnd = 0x9f;
-const nonAsciiProbeLength = 16;
-
-const hasNonAsciiInProbe = (text: string): boolean => {
-    let index = 0;
-
-    for (const character of text) {
-        if (character > "\u007F") {
-            return true;
-        }
-
-        index++;
-
-        if (index >= nonAsciiProbeLength) {
-            break;
-        }
-    }
-
-    return false;
-};
 
 const mightExceedWidth = (text: string, maxWidth: number): boolean => {
-    if (!hasNonAsciiInProbe(text)) {
-        return true;
-    }
-
     if (!Number.isFinite(maxWidth)) {
         return false;
     }

@@ -391,14 +391,6 @@ export default class Output {
     }
 
     get(): { height: number; output: string } {
-        if (!this.lineMemoizationEnabled) {
-            if (this.memoizationProbeCountdown > 0) {
-                this.memoizationProbeCountdown--;
-            } else {
-                this.lineMemoizationEnabled = true;
-            }
-        }
-
         const output = this.getOutputGrid();
 
         const clips: Clip[] = [];
@@ -431,6 +423,21 @@ export default class Output {
             }
         }
 
+        // Line memoization: reuse previously rendered lines for unchanged rows.
+        // On the first render (no previous state), skip memoization entirely to
+        // avoid the overhead of row comparison and snapshot copying.
+        if (!this.lineMemoizationEnabled) {
+            if (this.memoizationProbeCountdown > 0) {
+                this.memoizationProbeCountdown--;
+            } else {
+                this.lineMemoizationEnabled = true;
+            }
+        }
+
+        const canUseMemoization = this.lineMemoizationEnabled;
+        const hasPrevious = this.previousLineCells.length > 0;
+        const canReuseRows = canUseMemoization && hasPrevious && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
+
         if (this.previousLineCells.length > output.length) {
             this.previousLineCells.length = output.length;
         }
@@ -439,16 +446,13 @@ export default class Output {
             this.previousRenderedLines.length = output.length;
         }
 
-        const canUseMemoization = this.lineMemoizationEnabled;
-        const canReuseRows = canUseMemoization && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
-
-        const generatedLines = Array.from({ length: output.length }).fill("");
+        const generatedLines = new Array<string>(output.length);
         let changedRows = 0;
 
-        for (const [rowIndex, row] of output.entries()) {
-            const previousRow = canReuseRows ? this.previousLineCells[rowIndex] : undefined;
+        for (let rowIndex = 0; rowIndex < output.length; rowIndex++) {
+            const row = output[rowIndex]!;
 
-            if (canReuseRows && this.isSameRow(row, previousRow)) {
+            if (canReuseRows && this.isSameRow(row, this.previousLineCells[rowIndex])) {
                 generatedLines[rowIndex] = this.previousRenderedLines[rowIndex] ?? "";
                 continue;
             }
@@ -848,22 +852,44 @@ export default class Output {
     }
 
     private renderUnstyledRow(row: StyledChar[]): string {
-        let line = "";
+        // Find the last non-space cell to avoid trailing spaces
+        let end = row.length;
 
-        for (const cell of row) {
-            if (cell) {
-                line += cell.value;
-            }
+        while (end > 0 && (!row[end - 1] || row[end - 1]!.value === " " || row[end - 1]!.value === "")) {
+            end--;
         }
 
-        return line.trimEnd();
+        if (end === 0) {
+            return "";
+        }
+
+        const parts = new Array<string>(end);
+
+        for (let i = 0; i < end; i++) {
+            parts[i] = row[i] ? row[i]!.value : " ";
+        }
+
+        return parts.join("");
     }
 
     private renderStyledRow(row: StyledChar[]): string {
-        let line = "";
+        // Find the last non-blank cell to trim trailing whitespace
+        let end = row.length;
+
+        while (end > 0 && (!row[end - 1] || (row[end - 1]!.value === " " && row[end - 1]!.styles.length === 0))) {
+            end--;
+        }
+
+        if (end === 0) {
+            return "";
+        }
+
+        const parts: string[] = [];
         let previousStyles: StyledChar["styles"] | undefined;
 
-        for (const cell of row) {
+        for (let i = 0; i < end; i++) {
+            const cell = row[i];
+
             if (!cell) {
                 continue;
             }
@@ -871,20 +897,20 @@ export default class Output {
             const { styles, value } = cell;
 
             if (previousStyles === undefined) {
-                line += this.getStylePrefix(styles);
+                parts.push(this.getStylePrefix(styles));
             } else if (previousStyles !== styles) {
-                line += this.getStyleTransition(previousStyles, styles);
+                parts.push(this.getStyleTransition(previousStyles, styles));
             }
 
-            line += value;
+            parts.push(value);
             previousStyles = styles;
         }
 
         if (previousStyles !== undefined && previousStyles.length > 0) {
-            line += this.getStyleTransition(previousStyles, noStyles);
+            parts.push(this.getStyleTransition(previousStyles, noStyles));
         }
 
-        return line.trimEnd();
+        return parts.join("");
     }
 
     private getStylePrefix(styles: StyledChar["styles"]): string {

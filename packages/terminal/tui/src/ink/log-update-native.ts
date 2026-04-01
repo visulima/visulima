@@ -17,23 +17,46 @@ export type NativeLogUpdate = {
     resize: (width: number, height: number) => void;
 };
 
-/**
- * Create a native (Rust-backed) renderer for Ink's output.
- *
- * The native binding is loaded lazily — if it's not available (e.g., unsupported
- * platform), `createNative` returns `undefined`.
- */
-export const createNative = (stream: NodeJS.WriteStream): NativeLogUpdate | undefined => {
-    let RendererClass: RendererConstructor;
+// Cache the native binding at module level so it's only loaded once,
+// not on every render() mount.
+let cachedRendererClass: RendererConstructor | false | undefined;
+
+const getRendererClass = (): RendererConstructor | undefined => {
+    if (cachedRendererClass === false) {
+        return undefined;
+    }
+
+    if (cachedRendererClass !== undefined) {
+        return cachedRendererClass;
+    }
 
     try {
         // Dynamic import to avoid hard dependency on native binding
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const binding = require("../../index.js") as { Renderer: RendererConstructor };
 
-        RendererClass = binding.Renderer;
+        cachedRendererClass = binding.Renderer;
+
+        return cachedRendererClass;
     } catch {
-        // Native binding not available on this platform
+        // Native binding not available on this platform — cache the miss
+        cachedRendererClass = false;
+
+        return undefined;
+    }
+};
+
+/**
+ * Create a native (Rust-backed) renderer for Ink's output.
+ *
+ * The native binding is loaded lazily — if it's not available (e.g., unsupported
+ * platform), `createNative` returns `undefined`. The binding lookup is cached
+ * at the module level so subsequent calls avoid the try-catch + require overhead.
+ */
+export const createNative = (stream: NodeJS.WriteStream): NativeLogUpdate | undefined => {
+    const RendererClass = getRendererClass();
+
+    if (!RendererClass) {
         return undefined;
     }
 
