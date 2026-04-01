@@ -42,6 +42,14 @@ export interface Cli<T extends Console> {
     addCommand: <OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>) => this;
 
     /**
+     * Add a global option available to all commands.
+     * Global options are parsed alongside command options and shown in help output.
+     * @param option The option definition
+     * @returns self
+     */
+    addGlobalOption: <V = unknown>(option: OptionDefinition<V>) => this;
+
+    /**
      * Add a plugin to extend the CLI functionality
      * @param plugin The plugin to add.
      * @returns self
@@ -59,6 +67,11 @@ export interface Cli<T extends Console> {
     getCommands: () => Map<string, ICommand<OptionDefinition<unknown>, T>>;
 
     getCommandSection: () => CommandSection;
+
+    /**
+     * Gets all global options (built-in + custom).
+     */
+    getGlobalOptions: () => OptionDefinition<unknown>[];
 
     getCwd: () => string;
 
