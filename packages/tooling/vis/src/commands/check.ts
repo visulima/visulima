@@ -1,4 +1,6 @@
+import React from "react";
 import type { Command } from "@visulima/cerebro";
+import { render, renderToString, Text } from "@visulima/tui";
 import { findPackageManagerSync } from "@visulima/package";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
@@ -7,6 +9,8 @@ import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummar
 import { info, success } from "../output";
 import { detectPm } from "../pm-runner";
 import { previewPnpmSync, printSecurityReport } from "../security";
+import { UpdateStore } from "../tui/components/update/UpdateStore";
+import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 
 const check: Command = {
     alias: "c",
@@ -115,7 +119,54 @@ const check: Command = {
         const analysisType = validateAnalysisType((options["ai-type"] as string | undefined) ?? "impact");
         const aiResult = options.ai ? await runAiAnalysis(outdated, logger, visConfig?.ai, analysisType) : undefined;
 
-        if (format === "json") {
+        const isTTY = Boolean(process.stdout.isTTY) && !process.env["CI"];
+
+        // Interactive TUI mode: TTY + table format
+        if (isTTY && format === "table") {
+            const store = new UpdateStore(outdated, aiResult ?? null);
+
+            const instance = render(
+                React.createElement(VisUpdateApp, {
+                    isDryRun: true,
+                    store,
+                }),
+                {
+                    alternateScreen: true,
+                    exitOnCtrlC: false,
+                    interactive: true,
+                    patchConsole: true,
+                },
+            );
+
+            await instance.waitUntilExit();
+
+            // Print post-exit summary
+            const columns = process.stdout.columns || 80;
+
+            process.stdout.write("\n");
+
+            for (const entry of outdated) {
+                const icon = entry.vulnerabilities?.length ? "\u26A0" : "\u2713";
+                const iconColor = entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+
+                process.stdout.write(
+                    renderToString(
+                        React.createElement(
+                            Text,
+                            null,
+                            "   ",
+                            React.createElement(Text, { color: iconColor }, icon),
+                            `  ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}`,
+                            React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
+                        ),
+                        { columns },
+                    ) + "\n",
+                );
+            }
+
+            process.stdout.write("\n");
+            logger.info(formatSummary(outdated));
+        } else if (format === "json") {
             const output: Record<string, unknown> = { failed, outdated };
 
             if (aiResult) {
