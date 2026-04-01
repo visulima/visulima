@@ -209,11 +209,9 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
     if (config.include) {
         config.include = config.include.map((element) => normalize(element));
+    }
 
-        if (config.files) {
-            delete config.files;
-        }
-    } else if (config.files) {
+    if (config.files) {
         config.files = config.files.map((file) => {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             if (file.startsWith(configDirectoryPlaceholder)) {
@@ -435,6 +433,64 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
     }
 
+    // TypeScript 6.0+ emits fewer implicit defaults in --showConfig
+    if (String(options?.tscCompatible) === "6.0") {
+        // moduleDetection + moduleResolution for node16/nodenext
+        if (
+            config.compilerOptions.moduleDetection === undefined
+            && config.compilerOptions.module
+            && ["node16", "nodenext"].includes(config.compilerOptions.module)
+        ) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.moduleDetection = "force";
+        }
+
+        if (config.compilerOptions.moduleResolution === undefined && config.compilerOptions.module) {
+            const mod = config.compilerOptions.module.toLocaleLowerCase();
+
+            if (mod === "node16") {
+                // eslint-disable-next-line no-param-reassign
+                config.compilerOptions.moduleResolution = "node16";
+            } else if (mod === "nodenext") {
+                // eslint-disable-next-line no-param-reassign
+                config.compilerOptions.moduleResolution = "nodenext";
+            }
+        }
+
+        // preserveConstEnums when isolatedModules is set
+        if (config.compilerOptions.isolatedModules && config.compilerOptions.preserveConstEnums === undefined) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.preserveConstEnums = true;
+        }
+
+        // resolveJsonModule defaults to false when explicit moduleResolution is set and is not bundler
+        if (config.compilerOptions.resolveJsonModule === undefined && config.compilerOptions.moduleResolution) {
+            const resolution = config.compilerOptions.moduleResolution.toLocaleLowerCase();
+
+            if (resolution !== "bundler") {
+                // eslint-disable-next-line no-param-reassign
+                config.compilerOptions.resolveJsonModule = false;
+            }
+        }
+
+        // resolvePackageJsonExports/Imports: false for non-bundler/node16/nodenext resolutions
+        if (config.compilerOptions.moduleResolution) {
+            const resolution = config.compilerOptions.moduleResolution.toLocaleLowerCase();
+
+            if (!["bundler", "node16", "nodenext"].includes(resolution)) {
+                if (config.compilerOptions.resolvePackageJsonExports === undefined) {
+                    // eslint-disable-next-line no-param-reassign
+                    config.compilerOptions.resolvePackageJsonExports = false;
+                }
+
+                if (config.compilerOptions.resolvePackageJsonImports === undefined) {
+                    // eslint-disable-next-line no-param-reassign
+                    config.compilerOptions.resolvePackageJsonImports = false;
+                }
+            }
+        }
+    }
+
     if (config.compileOnSave === false) {
         // eslint-disable-next-line no-param-reassign
         delete config.compileOnSave;
@@ -450,7 +506,7 @@ export type Options = {
      * When `true`, it will make the configuration compatible with the latest TypeScript version.
      * @default undefined
      */
-    tscCompatible?: "5.3" | "5.4" | "5.5" | "5.6" | true;
+    tscCompatible?: "5.3" | "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
 };
 
 // eslint-disable-next-line no-template-curly-in-string
