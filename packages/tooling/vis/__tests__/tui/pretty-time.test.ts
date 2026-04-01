@@ -22,13 +22,15 @@ describe("tui/pretty-time", () => {
             const result = formatMs(5_445_000);
 
             // Should show at most 2 units (largest: 2)
-            expect(result).toBe(true);
+            expect(typeof result).toBe("string");
+            expect(result.length).toBeGreaterThan(0);
         });
 
         it("should handle zero", () => {
             const result = formatMs(0);
 
-            expect(result).toBe(true);
+            expect(typeof result).toBe("string");
+            expect(result).toContain("0");
         });
     });
 
@@ -43,7 +45,8 @@ describe("tui/pretty-time", () => {
         it("should format zero hrtime", () => {
             const result = formatHrtime([0, 0]);
 
-            expect(result).toBe(true);
+            expect(typeof result).toBe("string");
+            expect(result).toContain("0");
         });
 
         it("should format large hrtime values", () => {

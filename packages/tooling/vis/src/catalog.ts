@@ -1183,12 +1183,7 @@ const createBackup = (workspaceRoot: string, packageManager?: string, updates?: 
         return undefined;
     }
 
-    // Store backup inside node_modules/.cache/vis/backup/ instead of workspace root
-    const backupDir = getBackupDir(workspaceRoot);
-    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
-    const backupPath = join(backupDir, fileName);
-
-    ensureDirSync(backupDir);
+    const backupPath = `${filePath}.bak`;
 
     // Always overwrite existing backup with latest state
     const content = readFileSync(filePath);
@@ -1223,9 +1218,7 @@ const restoreFromBackup = (workspaceRoot: string, packageManager?: string): bool
     }
 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
-    const backupDir = getBackupDir(workspaceRoot);
-    const backupPath = join(backupDir, fileName);
+    const backupPath = `${filePath}.bak`;
 
     if (!isAccessibleSync(backupPath)) {
         return false;
@@ -1239,16 +1232,19 @@ const restoreFromBackup = (workspaceRoot: string, packageManager?: string): bool
 };
 
 const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
-    const backupDir = getBackupDir(workspaceRoot);
-
     if (packageManager === "npm" || packageManager === "yarn") {
-        return isAccessibleSync(backupDir);
+        try {
+            const backupDir = getBackupDir(workspaceRoot);
+
+            return isAccessibleSync(backupDir);
+        } catch {
+            return false;
+        }
     }
 
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
-    const fileName = filePath.endsWith("package.json") ? "package.json" : "pnpm-workspace.yaml";
 
-    return isAccessibleSync(join(backupDir, fileName));
+    return isAccessibleSync(`${filePath}.bak`);
 };
 
 // --- Output formatting ---

@@ -19,18 +19,26 @@ const detectPm = (cwd: string): PmInfo => {
     const native = loadNativeBindings();
 
     if (native) {
-        const detected = native.detectPackageManager(cwd);
+        try {
+            const detected = native.detectPackageManager(cwd);
 
-        return { name: detected.name as PmInfo["name"], version: detected.version || "latest" };
+            return { name: detected.name as PmInfo["name"], version: detected.version || "latest" };
+        } catch {
+            // Fall through to JS fallback
+        }
     }
 
     // Fallback to @visulima/package
-    const { packageManager } = findPackageManagerSync(cwd);
+    try {
+        const { packageManager } = findPackageManagerSync(cwd);
 
-    return {
-        name: packageManager as PmInfo["name"],
-        version: getPackageManagerVersion(cwd, packageManager) ?? "latest",
-    };
+        return {
+            name: packageManager as PmInfo["name"],
+            version: getPackageManagerVersion(packageManager) ?? "latest",
+        };
+    } catch {
+        return { name: "npm", version: "latest" };
+    }
 };
 
 const runResolved = (resolved: ResolvedCommand, cwd: string, logger: Console): number => {
