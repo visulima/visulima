@@ -31,11 +31,7 @@ pub fn detect_package_manager(cwd: String) -> napi::Result<DetectedPackageManage
     // Priority 1: packageManager field in package.json
     if let Some(info) = detect_from_package_json(&path) {
         let is_workspace = detect_workspace(&path, info.name, info.pkg_json.as_ref());
-        return Ok(DetectedPackageManager {
-            name: info.name.to_string(),
-            version: info.version,
-            is_workspace,
-        });
+        return Ok(DetectedPackageManager { name: info.name.to_string(), version: info.version, is_workspace });
     }
 
     // Priority 2: Walk up to find lockfiles
@@ -43,11 +39,7 @@ pub fn detect_package_manager(cwd: String) -> napi::Result<DetectedPackageManage
     loop {
         if let Some(info) = detect_from_lockfiles(&current) {
             let is_workspace = detect_workspace(&current, info.name, None);
-            return Ok(DetectedPackageManager {
-                name: info.name.to_string(),
-                version: None,
-                is_workspace,
-            });
+            return Ok(DetectedPackageManager { name: info.name.to_string(), version: None, is_workspace });
         }
 
         if !current.pop() {
@@ -60,11 +52,7 @@ pub fn detect_package_manager(cwd: String) -> napi::Result<DetectedPackageManage
     loop {
         if let Some(info) = detect_from_config_files(&current) {
             let is_workspace = detect_workspace(&current, info.name, None);
-            return Ok(DetectedPackageManager {
-                name: info.name.to_string(),
-                version: None,
-                is_workspace,
-            });
+            return Ok(DetectedPackageManager { name: info.name.to_string(), version: None, is_workspace });
         }
 
         if !current.pop() {
@@ -74,11 +62,7 @@ pub fn detect_package_manager(cwd: String) -> napi::Result<DetectedPackageManage
 
     // Default: pnpm
     let is_workspace = detect_workspace(&path, "pnpm", None);
-    Ok(DetectedPackageManager {
-        name: "pnpm".to_string(),
-        version: None,
-        is_workspace,
-    })
+    Ok(DetectedPackageManager { name: "pnpm".to_string(), version: None, is_workspace })
 }
 
 fn detect_from_package_json(dir: &Path) -> Option<PmInfo> {
@@ -129,12 +113,8 @@ fn detect_from_lockfiles(dir: &Path) -> Option<PmInfo> {
 }
 
 fn detect_from_config_files(dir: &Path) -> Option<PmInfo> {
-    let checks: &[(&str, &'static str)] = &[
-        (".pnpmfile.cjs", "pnpm"),
-        ("pnpmfile.cjs", "pnpm"),
-        ("bunfig.toml", "bun"),
-        ("yarn.config.cjs", "yarn"),
-    ];
+    let checks: &[(&str, &'static str)] =
+        &[(".pnpmfile.cjs", "pnpm"), ("pnpmfile.cjs", "pnpm"), ("bunfig.toml", "bun"), ("yarn.config.cjs", "yarn")];
 
     for (file, pm) in checks {
         if dir.join(file).exists() {

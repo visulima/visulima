@@ -56,10 +56,7 @@ pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
                     cycle.push(dep.clone());
                     cycle.reverse();
 
-                    return CycleResult {
-                        has_cycle: true,
-                        cycle,
-                    };
+                    return CycleResult { has_cycle: true, cycle };
                 }
 
                 if !visited.contains(dep.as_str()) {
@@ -77,10 +74,7 @@ pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
         }
     }
 
-    CycleResult {
-        has_cycle: false,
-        cycle: Vec::new(),
-    }
+    CycleResult { has_cycle: false, cycle: Vec::new() }
 }
 
 /// Finds all cycles in the task graph.
@@ -173,10 +167,7 @@ pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
     }
 
     if result.len() != graph.task_ids.len() {
-        return Err(Error::new(
-            Status::GenericFailure,
-            "Graph contains cycles - topological sort is not possible",
-        ));
+        return Err(Error::new(Status::GenericFailure, "Graph contains cycles - topological sort is not possible"));
     }
 
     Ok(result)

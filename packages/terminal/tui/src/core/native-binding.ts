@@ -4,8 +4,8 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 
-// Load the native binding through the platform-detecting binding.js
-const native = require("../../binding.js");
+// Load the native binding through the NAPI-RS generated platform-detecting loader
+const native = require("../../index.js");
 
 export interface TerminalSize {
     cols: number;

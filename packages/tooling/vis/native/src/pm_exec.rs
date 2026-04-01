@@ -4,16 +4,10 @@ use std::process::Command;
 
 /// Allowed binaries that can be executed via NAPI.
 /// Intentionally excludes `sh`/`bash` to prevent arbitrary command execution.
-const ALLOWED_BINS: &[&str] = &[
-    "pnpm", "npm", "npx", "yarn", "bun", "bunx",
-    "node", "echo", "where", "which",
-];
+const ALLOWED_BINS: &[&str] = &["pnpm", "npm", "npx", "yarn", "bun", "bunx", "node", "echo", "where", "which"];
 
 fn validate_bin(bin: &str) -> napi::Result<()> {
-    let name = std::path::Path::new(bin)
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or(bin);
+    let name = std::path::Path::new(bin).file_name().and_then(|n| n.to_str()).unwrap_or(bin);
 
     if ALLOWED_BINS.contains(&name) {
         Ok(())
@@ -81,7 +75,5 @@ pub fn which_bin(name: String) -> Option<String> {
         return None;
     }
 
-    which::which(&name)
-        .ok()
-        .map(|p| p.to_string_lossy().into_owned())
+    which::which(&name).ok().map(|p| p.to_string_lossy().into_owned())
 }

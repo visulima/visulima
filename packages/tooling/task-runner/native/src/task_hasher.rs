@@ -1,6 +1,6 @@
 use napi_derive::napi;
-use xxhash_rust::xxh3::xxh3_128;
 use std::collections::BTreeMap;
+use xxhash_rust::xxh3::xxh3_128;
 
 use crate::file_hasher::hex;
 
@@ -20,12 +20,7 @@ pub struct NativeTaskHashDetails {
 /// Computes the command hash for a task using xxh3-128.
 /// Takes project name, target name, optional configuration, and sorted overrides JSON.
 #[napi(catch_unwind)]
-pub fn hash_command(
-    project: String,
-    target: String,
-    configuration: Option<String>,
-    overrides_json: String,
-) -> String {
+pub fn hash_command(project: String, target: String, configuration: Option<String>, overrides_json: String) -> String {
     let mut data = Vec::new();
     data.extend_from_slice(project.as_bytes());
     data.extend_from_slice(target.as_bytes());
@@ -50,12 +45,8 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
     data.extend_from_slice(details.command.as_bytes());
 
     // Sort and hash nodes for deterministic output
-    let sorted_nodes: BTreeMap<&str, &str> = details
-        .nodes
-        .iter()
-        .filter(|pair| pair.len() == 2)
-        .map(|pair| (pair[0].as_str(), pair[1].as_str()))
-        .collect();
+    let sorted_nodes: BTreeMap<&str, &str> =
+        details.nodes.iter().filter(|pair| pair.len() == 2).map(|pair| (pair[0].as_str(), pair[1].as_str())).collect();
 
     for (key, value) in &sorted_nodes {
         data.extend_from_slice(key.as_bytes());
@@ -80,11 +71,8 @@ pub fn compute_task_hash(details: NativeTaskHashDetails) -> String {
 
     // Sort and hash runtime
     if let Some(runtime) = &details.runtime {
-        let sorted: BTreeMap<&str, &str> = runtime
-            .iter()
-            .filter(|pair| pair.len() == 2)
-            .map(|pair| (pair[0].as_str(), pair[1].as_str()))
-            .collect();
+        let sorted: BTreeMap<&str, &str> =
+            runtime.iter().filter(|pair| pair.len() == 2).map(|pair| (pair[0].as_str(), pair[1].as_str())).collect();
 
         for (key, value) in &sorted {
             data.extend_from_slice(key.as_bytes());

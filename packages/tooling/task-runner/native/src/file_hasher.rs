@@ -1,10 +1,10 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rayon::prelude::*;
-use xxhash_rust::xxh3::xxh3_128;
 use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+use xxhash_rust::xxh3::xxh3_128;
 
 /// Ignored directory names during file collection.
 const IGNORED_DIRS: &[&str] = &["node_modules", ".git", "dist", "coverage", ".cache"];
@@ -76,10 +76,7 @@ pub fn hash_files_in_directory(dir: String, workspace_root: String) -> Result<Ve
         let hash = hash_bytes(&content);
         let rel = make_relative(&dir, &workspace_root);
 
-        return Ok(vec![FileHash {
-            path: rel,
-            hash,
-        }]);
+        return Ok(vec![FileHash { path: rel, hash }]);
     }
 
     let files: Vec<PathBuf> = WalkDir::new(dir_path)
@@ -130,11 +127,8 @@ pub fn hash_files_batch(file_paths: Vec<String>, workspace_root: String) -> Resu
 
 /// Makes a path relative to the workspace root.
 fn make_relative(path: &str, workspace_root: &str) -> String {
-    let normalized_root = if workspace_root.ends_with('/') {
-        workspace_root.to_string()
-    } else {
-        format!("{}/", workspace_root)
-    };
+    let normalized_root =
+        if workspace_root.ends_with('/') { workspace_root.to_string() } else { format!("{}/", workspace_root) };
 
     if path.starts_with(&normalized_root) {
         path[normalized_root.len()..].to_string()

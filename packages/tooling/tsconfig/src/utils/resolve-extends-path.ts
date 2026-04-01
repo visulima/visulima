@@ -132,7 +132,7 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     }
 
     const packagePath = findUpSync(
-        (directory) => {
+        (directory: string) => {
             const path = join(resolve(directory), "node_modules", packageName);
 
             if (isAccessibleSync(path)) {

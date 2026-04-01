@@ -31,6 +31,7 @@ jobs:
         outputs:
             task-runner: "${{ steps.changes.outputs.task-runner }}"
             tui: "${{ steps.changes.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
@@ -51,13 +52,18 @@ jobs:
                         - 'packages/tooling/task-runner/native/**'
                         - 'packages/tooling/task-runner/npm/**'
                         - 'packages/tooling/task-runner/package.json'
-                        - 'packages/tooling/task-runner/binding.js'
+                        - 'packages/tooling/task-runner/index.js'
                         - '.github/workflows/build-native.yml'
                       tui:
                         - 'packages/terminal/tui/native/**'
                         - 'packages/terminal/tui/npm/**'
                         - 'packages/terminal/tui/package.json'
-                        - 'packages/terminal/tui/binding.js'
+                        - 'packages/terminal/tui/index.js'
+                        - '.github/workflows/build-native.yml'
+                      vis:
+                        - 'packages/tooling/vis/native/**'
+                        - 'packages/tooling/vis/package.json'
+                        - 'packages/tooling/vis/index.js'
                         - '.github/workflows/build-native.yml'
 
     build:
@@ -67,7 +73,8 @@ jobs:
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch' ||
             needs.files-changed.outputs.task-runner == 'true' ||
-            needs.files-changed.outputs.tui == 'true'
+            needs.files-changed.outputs.tui == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -78,6 +85,9 @@ jobs:
                     - name: "tui"
                       dir: "packages/terminal/tui"
                       changed: "${{ needs.files-changed.outputs.tui }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
                 settings:
                     - target: "x86_64-apple-darwin"
                       os: "macos-latest"
