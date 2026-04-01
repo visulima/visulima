@@ -50,7 +50,7 @@ describe("parse-tsconfig merges", () => {
         it("invalid json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.empty.json"), "require(\"fs\")");
+            writeFileSync(join(distribution, "tsconfig.empty.json"), 'require("fs")');
             writeJsonSync(join(distribution, "tsconfig.json"), {
                 extends: "./tsconfig.empty.json",
             });
@@ -164,6 +164,67 @@ describe("parse-tsconfig merges", () => {
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
 
+        it("preserved when child has include", async () => {
+            expect.assertions(3);
+
+            writeFileSync(join(distribution, "src", "a.ts"), "");
+            writeFileSync(join(distribution, "types", "globals.d.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.base.json"), {
+                files: ["types/globals.d.ts"],
+            });
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                extends: "./tsconfig.base.json",
+                include: ["src"],
+            });
+
+            const expectedTsconfig = await getTscTsconfig(distribution);
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(tsconfig.include).toStrictEqual(expectedTsconfig.include);
+            expect(tsconfig.files).toStrictEqual(["./types/globals.d.ts"]);
+            expect(tsconfig.compilerOptions).toStrictEqual(expectedTsconfig.compilerOptions);
+        });
+
+        it("preserved when child has files and parent has include", async () => {
+            expect.assertions(2);
+
+            writeFileSync(join(distribution, "src", "a.ts"), "");
+            writeFileSync(join(distribution, "globals.d.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.base.json"), {
+                include: ["src"],
+            });
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                extends: "./tsconfig.base.json",
+                files: ["globals.d.ts"],
+            });
+
+            const expectedTsconfig = await getTscTsconfig(distribution);
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(tsconfig.include).toStrictEqual(expectedTsconfig.include);
+            expect(tsconfig.files).toStrictEqual(["./globals.d.ts"]);
+        });
+
+        it("both inherited from parent", async () => {
+            expect.assertions(2);
+
+            writeFileSync(join(distribution, "src", "a.ts"), "");
+            writeFileSync(join(distribution, "types", "globals.d.ts"), "");
+            writeJsonSync(join(distribution, "tsconfig.base.json"), {
+                files: ["types/globals.d.ts"],
+                include: ["src"],
+            });
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                extends: "./tsconfig.base.json",
+            });
+
+            const expectedTsconfig = await getTscTsconfig(distribution);
+            const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(tsconfig.include).toStrictEqual(expectedTsconfig.include);
+            expect(tsconfig.files).toStrictEqual(["./types/globals.d.ts"]);
+        });
+
         it("gets overwritten", async () => {
             expect.assertions(1);
 
@@ -205,12 +266,7 @@ describe("parse-tsconfig merges", () => {
 
         const tsconfig = readTsConfig(join(distribution, "project", "tsconfig.json"));
 
-        expect({
-            ...tsconfig,
-            // See https://github.com/privatenumber/get-tsconfig/issues/73
-
-            include: tsconfig.include?.map((includePath) => `symlink/../${includePath}` as string),
-        }).toStrictEqual(expectedTsconfig);
+        expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
     describe("include", () => {
@@ -465,9 +521,48 @@ describe("parse-tsconfig merges", () => {
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
-    // Need to report this bug back to typescript
-    // eslint-disable-next-line vitest/no-disabled-tests
-    it.skip("inherits with relative path from subdirectory", async () => {
+    it("watchOptions.excludeFiles", async () => {
+        expect.assertions(1);
+
+        writeJsonSync(join(distribution, "tsconfig.json"), {
+            watchOptions: {
+                excludeFiles: ["file.ts"],
+            },
+        });
+
+        const expectedTsconfig = await getTscTsconfig(distribution);
+
+        delete expectedTsconfig.files;
+
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+        expect(tsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    it("watchOptions enum normalization", async () => {
+        expect.assertions(1);
+
+        writeJsonSync(join(distribution, "tsconfig.json"), {
+            watchOptions: {
+                // @ts-expect-error testing mixed case input
+                fallbackPolling: "dynamicPriority",
+                // @ts-expect-error testing mixed case input
+                watchDirectory: "useFsEvents",
+                // @ts-expect-error testing mixed case input
+                watchFile: "useFsEvents",
+            },
+        });
+
+        const expectedTsconfig = await getTscTsconfig(distribution);
+
+        delete expectedTsconfig.files;
+
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+        expect(tsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    it("inherits with relative path from subdirectory", async () => {
         expect.assertions(1);
 
         writeFileSync(join(distribution, "src-a", "a.ts"), "");
@@ -487,11 +582,27 @@ describe("parse-tsconfig merges", () => {
 
         const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
 
-        expect({
-            ...parsedTsconfig,
+        expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+    });
 
-            include: parsedTsconfig.include?.map((includePath) => `configs/../${includePath}`),
-        }).toStrictEqual(expectedTsconfig);
+    it("handles ../. without normalizing", async () => {
+        expect.assertions(1);
+
+        writeFileSync(join(distribution, "a.ts"), "");
+        writeJsonSync(join(distribution, "nested", "tsconfig.dev.json"), {
+            include: ["../."],
+        });
+        writeJsonSync(join(distribution, "tsconfig.json"), {
+            extends: "./nested/tsconfig.dev.json",
+        });
+
+        const expectedTsconfig = await getTscTsconfig(distribution);
+
+        delete expectedTsconfig.files;
+
+        const tsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+        expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
     // eslint-disable-next-line no-template-curly-in-string
@@ -527,12 +638,6 @@ describe("parse-tsconfig merges", () => {
             // @ts-expect-error Symbol is private
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
-
-            /**
-             * tsc should put the outDir in exclude but doesn't happen
-             * when it's in extended tsconfig. I think this is a bug in tsc
-             */
-            expectedTsconfig.exclude = [join(distribution, "dist"), ...(expectedTsconfig.exclude as string[])];
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
@@ -584,12 +689,6 @@ describe("parse-tsconfig merges", () => {
             // @ts-expect-error Symbol is private
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete parsedTsconfig.compilerOptions[implicitBaseUrlSymbol];
-
-            /**
-             * tsc should put the outDir in exclude but doesn't happen
-             * when it's in extended tsconfig. I think this is a bug in tsc
-             */
-            expectedTsconfig.exclude = [join(distribution, "-asdf/dist"), join(distribution, "dist/declaration"), ...(expectedTsconfig.exclude as string[])];
 
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });

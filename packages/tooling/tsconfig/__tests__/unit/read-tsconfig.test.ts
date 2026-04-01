@@ -70,7 +70,7 @@ describe("parses tsconfig", () => {
         it("json non-object", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "tsconfig.json"), "\"asdf\"");
+            writeFileSync(join(distribution, "tsconfig.json"), '"asdf"');
 
             expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("Failed to parse tsconfig at");
         });
@@ -371,7 +371,291 @@ describe("parses tsconfig", () => {
 
         delete expectedTsconfig.files;
 
+        // files: [] is preserved from the child config (tsc expands it differently)
+        if (Array.isArray(parsedTsconfig.files) && parsedTsconfig.files.length === 0) {
+            delete parsedTsconfig.files;
+        }
+
         expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+    });
+
+    describe("composite", () => {
+        it("implies declaration and incremental", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    composite: true,
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("checkJs", () => {
+        it("implies allowJs", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    checkJs: true,
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("lib", () => {
+        it("normalizes to lowercase", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    lib: ["ES2020", "DOM"],
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("nodenext", () => {
+        it("implies resolveJsonModule", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    module: "nodenext",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("useDefineForClassFields", () => {
+        it("not implied when target is below ES2022", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    module: "node16",
+                    target: "es5",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("module node18 and node20", () => {
+        it("module: node18 implications", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    module: "node18",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("module: node20 implications", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    module: "node20",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: typescriptVersion });
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+    });
+
+    describe("exclude", () => {
+        it("does not add outDir when exclude is explicit", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    outDir: "dist",
+                },
+                exclude: ["node_modules"],
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("does not add outDir when exclude is empty array", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    outDir: "dist",
+                },
+                exclude: [],
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("does not add outDir when exclude is inherited", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "base.json"), {
+                compilerOptions: {
+                    outDir: "dist",
+                },
+                exclude: ["node_modules"],
+            });
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                extends: "./base.json",
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("auto-adds outDir when exclude is not specified", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    outDir: "dist",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+
+            expect(parsedTsconfig.exclude).toStrictEqual([join(distribution, "dist")]);
+        });
+    });
+
+    describe("enum case normalization", () => {
+        it("normalizes jsx to lowercase", async () => {
+            expect.assertions(1);
+
+            writeFileSync(join(distribution, "file.tsx"), "");
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // @ts-expect-error testing mixed case input
+                    jsx: "React-JSX",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("normalizes moduleDetection to lowercase", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // @ts-expect-error testing mixed case input
+                    moduleDetection: "Force",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("normalizes importsNotUsedAsValues to lowercase", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    // @ts-expect-error testing mixed case input
+                    importsNotUsedAsValues: "Preserve",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
+
+        it("normalizes newLine to lowercase", async () => {
+            expect.assertions(1);
+
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    newLine: "CRLF",
+                },
+            });
+
+            const parsedTsconfig = readTsConfig(join(distribution, "tsconfig.json"));
+            const expectedTsconfig = await getTscTsconfig(distribution);
+
+            delete expectedTsconfig.files;
+
+            expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
+        });
     });
 
     describe("rewriteRelativeImportExtensions", () => {
