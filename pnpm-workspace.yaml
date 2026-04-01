@@ -712,6 +712,7 @@ minimumReleaseAgeExclude:
   - typescript
   - '@types/*'
   - '@tanstack/*'
+  - '@jrichman/ink'
 
 onlyBuiltDependencies:
   - '@parcel/watcher'

@@ -55,6 +55,10 @@
             "types": "./dist/react/index.d.ts",
             "default": "./dist/react/index.js"
         },
+        "./test": {
+            "types": "./dist/testing/index.d.ts",
+            "default": "./dist/testing/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -146,6 +150,7 @@
         "eslint-plugin-react-refresh": "catalog:lint",
         "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
         "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+        "@jrichman/ink": "npm:@jrichman/ink@6.6.3",
         "ink": "6.8.0",
         "is-in-ci": "catalog:prod",
         "node-pty": "catalog:dev",
