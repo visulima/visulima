@@ -1,6 +1,6 @@
 ---
 title: Hooks
-description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useScrollAcceleration, useTerminalPalette, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
 ---
 
 # Hooks
@@ -13,7 +13,9 @@ import { useApp, useCursor, useFocus, useFocusManager, useInput, useMouse, usePa
 
 ## `useInput`
 
-Subscribe to keyboard input.
+Subscribe to typed characters and key events.
+
+Bracketed paste payloads belong to [`usePaste`](#usepaste). If no `usePaste` handler is active, paste text is still forwarded to `useInput` for backward compatibility, but **that fallback is deprecated** and will be removed in the next major version.
 
 ```tsx
 useInput((input, key) => {
@@ -56,7 +58,7 @@ usePaste((text) => {
 });
 ```
 
-When at least one active `usePaste` listener exists, pasted text is routed to `usePaste` and not forwarded to `useInput`. If no paste listener is active, paste falls back to `useInput`.
+`usePaste` is the dedicated API for paste blobs. When at least one active `usePaste` listener exists, pasted text is routed to `usePaste` and not forwarded to `useInput`. If no paste listener is active, paste still falls back to `useInput`, but **that fallback is deprecated** and will be removed in the next major version.
 
 ### Options
 
@@ -73,7 +75,7 @@ usePaste(handler, { isActive: false });
 Copy text to the system clipboard via OSC 52 terminal escape sequences. Works in terminals that support OSC 52 (Alacritty, Ghostty, Kitty, WezTerm, iTerm2, xterm, foot, Windows Terminal, etc.).
 
 ```tsx
-import { useClipboard } from "@visulima/tui/ink";
+import { useClipboard } from "@visulima/tui";
 
 const { copy, isSupported } = useClipboard();
 copy("Hello, clipboard!");
@@ -101,7 +103,7 @@ const { copy } = useClipboard({ target: "p" }); // primary selection (X11)
 For use outside React components:
 
 ```tsx
-import { writeOsc52, clearOsc52, isOsc52Supported } from "@visulima/tui/ink";
+import { writeOsc52, clearOsc52, isOsc52Supported } from "@visulima/tui";
 
 if (isOsc52Supported()) {
     writeOsc52(process.stdout, "text to copy", "c");
@@ -113,7 +115,7 @@ if (isOsc52Supported()) {
 Manages a multi-line text buffer with cursor, selection, undo/redo. This is the data model behind the `<Textarea>` component, exposed for custom editor implementations.
 
 ```tsx
-import { useTextBuffer } from "@visulima/tui/ink";
+import { useTextBuffer } from "@visulima/tui";
 
 const buffer = useTextBuffer("initial\ntext");
 
@@ -161,7 +163,7 @@ Undo coalesces rapid keystrokes within 300ms into a single entry. The undo stack
 Manages text selection on a DOM element using the existing `Selection`/`Range` API, with optional auto-copy to clipboard.
 
 ```tsx
-import { useTextSelection } from "@visulima/tui/ink";
+import { useTextSelection } from "@visulima/tui";
 
 const ref = useRef(null);
 const { selectedText, selectAll, clearSelection } = useTextSelection(ref, {
@@ -198,7 +200,7 @@ return (
 Simulate or compensate for color vision deficiency. Returns a `transformColor` function that maps hex colors through a color blindness matrix.
 
 ```tsx
-import { useColorBlindness } from "@visulima/tui/ink";
+import { useColorBlindness } from "@visulima/tui";
 
 const { transformColor } = useColorBlindness({ mode: "deuteranopia" });
 <Text color={transformColor("#ff0000")}>This text</Text>;
@@ -216,7 +218,7 @@ Simulation mode shows how colors appear to affected users. Compensation mode shi
 Capture `console.log`/`warn`/`error`/`info`/`debug` output into a React state buffer. Used by the `<ConsoleOverlay>` component.
 
 ```tsx
-import { useConsoleCapture } from "@visulima/tui/ink";
+import { useConsoleCapture } from "@visulima/tui";
 
 const { entries, clear } = useConsoleCapture({ maxEntries: 100 });
 ```
@@ -236,7 +238,7 @@ Each entry has `id`, `level`, `message`, and `timestamp`.
 macOS-style scroll physics with momentum. Tracks scroll event velocity and applies exponential acceleration when events arrive rapidly.
 
 ```tsx
-import { useScrollAcceleration } from "@visulima/tui/ink";
+import { useScrollAcceleration } from "@visulima/tui";
 
 const { handleScroll } = useScrollAcceleration({
     onScroll: (delta) => scrollViewRef.current?.scrollBy(delta),
@@ -253,12 +255,55 @@ const { handleScroll } = useScrollAcceleration({
 
 Returns `handleScroll(direction)`, `velocity`, and `isCoasting`.
 
+## `useScrollInput`
+
+Wire keyboard input to scroll actions. Used internally by `ScrollView`/`ScrollList` when `keyboard` prop is enabled, but also available standalone for custom scroll containers.
+
+```tsx
+import { useScrollInput } from "@visulima/tui";
+
+const { isFocused } = useScrollInput({
+    scrollBy: (delta) => ref.current?.scrollBy(delta),
+    scrollToTop: () => ref.current?.scrollToTop(),
+    scrollToBottom: () => ref.current?.scrollToBottom(),
+    viewportHeight: 20,
+    vimBindings: true,
+});
+```
+
+| Option           | Type                    | Default |
+| ---------------- | ----------------------- | ------- |
+| `scrollBy`       | `(delta: number) => void` | required |
+| `scrollToTop`    | `() => void`            | required |
+| `scrollToBottom`  | `() => void`            | required |
+| `viewportHeight` | `number`                | required |
+| `isActive`       | `boolean`               | `true`  |
+| `vimBindings`    | `boolean`               | `false` |
+
+Returns `{ isFocused }`.
+
+## `createLinkedScrollGroup`
+
+Synchronize scroll position across multiple `ScrollView` instances.
+
+```tsx
+import { createLinkedScrollGroup } from "@visulima/tui";
+
+const group = createLinkedScrollGroup();
+
+// In each linked component:
+const { ref, onScroll } = group.useLinkedScroll();
+// Attach ref and onScroll to your ScrollView
+```
+
+Returns a `LinkedScrollGroup` with a `useLinkedScroll()` hook that provides `{ ref, onScroll }` for each consumer.
+
 ## `useTerminalPalette`
 
 Query the terminal emulator for its current color palette using OSC escape sequences.
 
 ```tsx
-import { useTerminalPalette } from "@visulima/tui/ink";
+import { useTerminalPalette } from "@visulima/tui";
 
 const { palette, isLoading, isSupported } = useTerminalPalette();
 if (palette?.background) {
@@ -291,7 +336,7 @@ useMouse((event) => {
 | `ctrl`   | `boolean` | modifier                              |
 | `meta`   | `boolean` | modifier                              |
 
-> For higher-level mouse hooks with element hover/click detection, see [Mouse Support](./mouse) (Ink layer, imported from `@visulima/tui/ink`).
+> For higher-level mouse hooks with element hover/click detection, see [Mouse Support](./mouse) (Ink layer, imported from `@visulima/tui`).
 
 ## `useTextInput` (Ratatat-only)
 
@@ -451,7 +496,7 @@ import {
     getScrollTop, // current vertical scroll position
     getScrollLeft, // current horizontal scroll position
     ResizeObserver, // observe element size changes
-} from "@visulima/tui/ink";
+} from "@visulima/tui";
 
 // ResizeObserver example
 const observer = new ResizeObserver((entries) => {
@@ -510,3 +555,52 @@ Screen reader mode is enabled by either:
 - Setting the `INK_SCREEN_READER=true` environment variable
 
 Defaults to `false`. This matches upstream Ink behavior — there is no automatic detection of screen readers.
+
+## `useTreeViewState`
+
+State management hook for the `<TreeView>` component. Use this for headless tree view implementations where you want full control over rendering.
+
+```tsx
+import { useTreeViewState } from "@visulima/tui";
+
+const state = useTreeViewState({
+    data: treeNodes,
+    selectionMode: "single",
+    defaultExpanded: "all",
+    visibleNodeCount: 20,
+    onFocusChange: (id) => console.log("focused:", id),
+    onExpandChange: (ids) => console.log("expanded:", ids),
+    onSelectChange: (ids) => console.log("selected:", ids),
+});
+```
+
+Returns a `TreeViewState<T>` object with:
+
+- **Read-only state:** `focusedId`, `expandedIds`, `selectedIds`, `viewportNodes`, `visibleCount`, `hasScrollUp`, `hasScrollDown`, `loadingIds`, `nodeMap`
+- **Actions:** `focusNext()`, `focusPrevious()`, `focusFirst()`, `focusLast()`, `expand()`, `collapse()`, `expandNode(id)`, `collapseNode(id)`, `toggleExpanded()`, `expandAll()`, `collapseAll()`, `select()`, `focusParent()`, `focusFirstChild()`, `setLoading(id, bool)`, `insertChildren(parentId, children)`
+
+## `useTreeView`
+
+Keyboard input hook for the tree view. Binds arrow keys, Enter, Space, Home, and End to the tree view state actions. Use alongside `useTreeViewState` for headless implementations.
+
+```tsx
+import { useTreeViewState, useTreeView } from "@visulima/tui";
+
+const state = useTreeViewState({ data, selectionMode: "none" });
+
+useTreeView({
+    state,
+    selectionMode: "none",
+    isDisabled: false,
+    loadChildren: async (node) => fetchChildren(node.id),
+    onLoadError: (nodeId, err) => console.error(err),
+});
+```
+
+| Prop            | Type                                             | Default   | Description                          |
+| --------------- | ------------------------------------------------ | --------- | ------------------------------------ |
+| `state`         | `TreeViewState<T>`                               | required  | State from `useTreeViewState`        |
+| `selectionMode` | `"none"` \| `"single"` \| `"multiple"`           | required  | Determines Enter/Space behavior      |
+| `isDisabled`    | `boolean`                                        | `false`   | Ignores all keyboard input           |
+| `loadChildren`  | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`  | —         | Async child loader                   |
+| `onLoadError`   | `(nodeId: string, error: Error) => void`         | —         | Error callback for async loading     |

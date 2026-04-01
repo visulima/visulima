@@ -10,31 +10,35 @@ import { syncAllowBuildsToNativeConfig } from "../security";
 
 /**
  * Best-practice default configuration template.
+ *
+ * defineConfig() applies secure defaults automatically:
+ * - minimumReleaseAge: 20160 (14-day cooldown)
+ * - trustPolicy: "no-downgrade"
+ * - trustPolicyIgnoreAfter: 43200 (30 days)
+ * - blockExoticSubdeps: true
+ * - strictDepBuilds: true
+ * - update.security: true
+ * - update.target: "minor"
  */
 const generateConfigContent = (pm: string): string => `import { defineConfig } from "@visulima/vis/config";
 
+/**
+ * Vis configuration — secure by default.
+ *
+ * defineConfig() applies npm supply chain security best practices automatically:
+ *   - minimumReleaseAge: 20160 (14-day cooldown on new package versions)
+ *   - trustPolicy: "no-downgrade" (block packages that lost trust evidence)
+ *   - trustPolicyIgnoreAfter: 43200 (skip check for packages older than 30 days)
+ *   - blockExoticSubdeps: true (block git/tarball transitive dependencies)
+ *   - strictDepBuilds: true (fail on unapproved build scripts)
+ *
+ * You only need to configure allowBuilds and any overrides.
+ * Run 'vis check --security-config' to see all active settings.
+ *
+ * @see https://github.com/lirantal/awesome-npm-security-best-practices
+ */
 export default defineConfig({
     security: {
-        /**
-         * Delay installing newly published versions by 24 hours.
-         * Most malicious packages are discovered and removed within hours.
-         * Set to 0 to disable. (minutes)
-         */
-        minimumReleaseAge: 1440,
-
-        /**
-         * Prevent installing packages whose trust level has decreased.
-         * "no-downgrade" = fail if a package lost trusted publisher status.
-         * "off" = no trust checking.
-         */
-        trustPolicy: "no-downgrade",
-
-        /**
-         * Block transitive dependencies from using git repos or tarball URLs.
-         * Only direct dependencies may use exotic sources.
-         */
-        blockExoticSubdeps: true,
-
         /**
          * Packages allowed to run install/postinstall scripts.
          * All other packages are blocked by default.${pm !== "pnpm" ? "\n         * For " + pm + ": vis enforces this since " + pm + " lacks native allowlist support." : ""}
@@ -45,6 +49,10 @@ export default defineConfig({
             // "esbuild": true,
             // "@prisma/client": true,
         },
+
+        // Override any default if needed:
+        // minimumReleaseAge: 1440,    // relax to 24 hours
+        // strictDepBuilds: false,     // warn instead of fail
     },
 
     /**
@@ -55,14 +63,6 @@ export default defineConfig({
     //     "*.ts": "eslint --fix",
     //     "*.md": "prettier --write",
     // },
-
-    /**
-     * Update command defaults.
-     */
-    update: {
-        security: true,
-        target: "minor",
-    },
 });
 `;
 
@@ -95,12 +95,14 @@ const init: Command = {
         success(`Created ${configPath}`);
 
         info("");
-        info("Best-practice security settings enabled:");
-        info("  \u2713 minimumReleaseAge: 1440 (24-hour delay on new packages)");
+        info("Secure defaults applied by defineConfig():");
+        info("  \u2713 minimumReleaseAge: 20160 (14-day cooldown on new packages)");
         info("  \u2713 trustPolicy: no-downgrade");
+        info("  \u2713 trustPolicyIgnoreAfter: 43200 (skip for packages >30 days old)");
         info("  \u2713 blockExoticSubdeps: true");
-        info("  \u2713 allowBuilds: {} (run 'vis approve-builds' to add packages)");
+        info("  \u2713 strictDepBuilds: true (unapproved build scripts = hard error)");
         info("  \u2713 update.security: true (OSV.dev vulnerability checking)");
+        info("  \u2713 allowBuilds: {} (run 'vis approve-builds' to add packages)");
 
         // Sync to native PM config if requested
         if (options["sync-native"]) {

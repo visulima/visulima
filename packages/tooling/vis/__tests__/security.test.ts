@@ -18,32 +18,23 @@ describe("checkSecurityConfig", () => {
             expect(result.warnings[0]).toContain("No security settings configured");
         });
 
-        it("should suggest recommended settings", () => {
+        it("should suggest using defineConfig", () => {
             expect.assertions(1);
 
             const result = checkSecurityConfig({}, "npm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("defineConfig"))).toBe(true);
         });
     });
 
     describe("minimumReleaseAge", () => {
-        it("should warn when not set", () => {
-            expect.assertions(1);
-
-            const config: VisConfig = { security: {} };
-            const result = checkSecurityConfig(config, "pnpm");
-
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(true);
-        });
-
-        it("should warn when set to 0", () => {
+        it("should warn when explicitly set to 0", () => {
             expect.assertions(1);
 
             const config: VisConfig = { security: { minimumReleaseAge: 0 } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("minimumReleaseAge is explicitly set to 0"))).toBe(true);
         });
 
         it("should not warn when set to a positive value", () => {
@@ -52,7 +43,16 @@ describe("checkSecurityConfig", () => {
             const config: VisConfig = { security: { minimumReleaseAge: 1440 } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("minimumReleaseAge is not set"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(false);
+        });
+
+        it("should not warn when undefined (defaults apply)", () => {
+            expect.assertions(1);
+
+            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
+            const result = checkSecurityConfig(config, "pnpm");
+
+            expect(result.warnings.some((w) => w.includes("minimumReleaseAge"))).toBe(false);
         });
     });
 
@@ -106,13 +106,13 @@ describe("checkSecurityConfig", () => {
     });
 
     describe("trustPolicy", () => {
-        it("should warn when off", () => {
+        it("should warn when explicitly set to off", () => {
             expect.assertions(1);
 
             const config: VisConfig = { security: { minimumReleaseAge: 1440, trustPolicy: "off" } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("trustPolicy"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("trustPolicy is explicitly set to 'off'"))).toBe(true);
         });
 
         it("should not warn when set to no-downgrade", () => {
@@ -127,18 +127,27 @@ describe("checkSecurityConfig", () => {
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("trustPolicy is 'off'"))).toBe(false);
+            expect(result.warnings.some((w) => w.includes("trustPolicy"))).toBe(false);
+        });
+
+        it("should not warn when undefined (defaults apply)", () => {
+            expect.assertions(1);
+
+            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
+            const result = checkSecurityConfig(config, "pnpm");
+
+            expect(result.warnings.some((w) => w.includes("trustPolicy"))).toBe(false);
         });
     });
 
     describe("blockExoticSubdeps", () => {
-        it("should warn when not enabled", () => {
+        it("should warn when explicitly disabled", () => {
             expect.assertions(1);
 
-            const config: VisConfig = { security: { minimumReleaseAge: 1440 } };
+            const config: VisConfig = { security: { blockExoticSubdeps: false } };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.some((w) => w.includes("blockExoticSubdeps"))).toBe(true);
+            expect(result.warnings.some((w) => w.includes("blockExoticSubdeps is explicitly disabled"))).toBe(true);
         });
 
         it("should not warn when enabled", () => {
@@ -152,6 +161,15 @@ describe("checkSecurityConfig", () => {
                     trustPolicy: "no-downgrade",
                 },
             };
+            const result = checkSecurityConfig(config, "pnpm");
+
+            expect(result.warnings.some((w) => w.includes("blockExoticSubdeps"))).toBe(false);
+        });
+
+        it("should not warn when undefined (defaults apply)", () => {
+            expect.assertions(1);
+
+            const config: VisConfig = { security: { allowBuilds: { esbuild: true } } };
             const result = checkSecurityConfig(config, "pnpm");
 
             expect(result.warnings.some((w) => w.includes("blockExoticSubdeps"))).toBe(false);
@@ -186,6 +204,15 @@ describe("checkSecurityConfig", () => {
             const result = checkSecurityConfig(config, "pnpm");
 
             expect(result.errors.some((e) => e.includes("strictDepBuilds"))).toBe(false);
+        });
+
+        it("should warn when explicitly disabled", () => {
+            expect.assertions(1);
+
+            const config: VisConfig = { security: { strictDepBuilds: false } };
+            const result = checkSecurityConfig(config, "pnpm");
+
+            expect(result.warnings.some((w) => w.includes("strictDepBuilds is explicitly disabled"))).toBe(true);
         });
     });
 

@@ -9,6 +9,56 @@ import type { VisConfig } from "./workspace";
 const CONFIG_FILES: string[] = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
 
 /**
+ * Secure-by-default security settings based on npm supply chain best practices.
+ *
+ * These defaults are applied automatically when using `defineConfig()` or `loadVisConfig()`.
+ * Users can override any value — their settings always take precedence.
+ *
+ * @see https://github.com/lirantal/awesome-npm-security-best-practices
+ */
+const SECURITY_DEFAULTS: Required<Pick<NonNullable<VisConfig["security"]>,
+    | "blockExoticSubdeps"
+    | "minimumReleaseAge"
+    | "strictDepBuilds"
+    | "trustPolicy"
+    | "trustPolicyIgnoreAfter"
+>> = {
+    /** Block transitive dependencies from using git repos or tarball URLs. */
+    blockExoticSubdeps: true,
+    /** 14-day cooldown (20 160 minutes). Most malicious packages are caught within hours to days. */
+    minimumReleaseAge: 20_160,
+    /** Make unapproved build scripts a hard error instead of a warning. */
+    strictDepBuilds: true,
+    /** Fail if a package's trust level has decreased compared to prior releases. */
+    trustPolicy: "no-downgrade" as const,
+    /** Skip trust policy check for packages published more than 30 days ago. */
+    trustPolicyIgnoreAfter: 43_200,
+};
+
+/**
+ * Deep-merge user security settings with secure defaults.
+ * User-provided values always win.
+ */
+const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["security"] => ({
+    ...SECURITY_DEFAULTS,
+    ...security,
+});
+
+/**
+ * Apply secure defaults to a raw config object.
+ * Merges `SECURITY_DEFAULTS` into `config.security`, preserving all user overrides.
+ */
+const applyDefaults = (config: VisConfig): VisConfig => ({
+    ...config,
+    security: mergeSecurityDefaults(config.security),
+    update: {
+        security: true,
+        target: "minor" as const,
+        ...config.update,
+    },
+});
+
+/**
  * Find the vis config file in a directory.
  * @param directory The directory to search in.
  * @returns The absolute path to the config file, or `undefined` if not found.
@@ -29,15 +79,15 @@ const findVisConfigFile = (directory: string): string | undefined => {
  * Load the vis configuration from a `vis.config.ts` (or `.js`, `.mjs`, `.cjs`, `.mts`, `.cts`) file.
  *
  * Uses jiti for runtime TypeScript support — no build step needed for config files.
- * Falls back to an empty config if no config file is found.
+ * Falls back to secure defaults if no config file is found.
  * @param workspaceRoot The workspace root directory to search for the config file.
- * @returns The loaded and resolved configuration.
+ * @returns The loaded and resolved configuration with secure defaults applied.
  */
 const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
     const configPath = findVisConfigFile(workspaceRoot);
 
     if (!configPath) {
-        return {};
+        return applyDefaults({});
     }
 
     const jiti = createJiti(workspaceRoot);
@@ -47,32 +97,48 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
         | ((...arguments_: unknown[]) => VisConfig | Promise<VisConfig>);
 
     if (typeof loaded === "function") {
-        return (await loaded()) as VisConfig;
+        return applyDefaults((await loaded()) as VisConfig);
     }
 
-    return loaded;
+    return applyDefaults(loaded);
 };
 
 /**
  * Type-safe helper for defining vis configuration.
  * Provides full TypeScript autocomplete when used in `vis.config.ts`.
+ *
+ * Secure defaults are applied automatically — you only need to specify overrides.
+ * To see the active defaults, run `vis check --security-config`.
+ *
  * @example
  * ```typescript
- * // vis.config.ts
+ * // vis.config.ts — minimal config, fully secured by defaults
  * import { defineConfig } from "@visulima/vis/config";
  *
  * export default defineConfig({
- *     update: {
- *         target: "minor",
- *         exclude: ["@types/*"],
- *         security: true,
+ *     security: {
+ *         allowBuilds: {
+ *             esbuild: true,
+ *             "@prisma/client": true,
+ *         },
  *     },
- *     ai: {
- *         provider: "claude",
+ * });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // vis.config.ts — override a default
+ * import { defineConfig } from "@visulima/vis/config";
+ *
+ * export default defineConfig({
+ *     security: {
+ *         // Relax cooldown to 24 hours instead of the default 14 days
+ *         minimumReleaseAge: 1440,
+ *         allowBuilds: { esbuild: true },
  *     },
  * });
  * ```
  */
-const defineConfig = (config: VisConfig): VisConfig => config;
+const defineConfig = (config: VisConfig): VisConfig => applyDefaults(config);
 
-export { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig };
+export { applyDefaults, CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS };

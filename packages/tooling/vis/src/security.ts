@@ -30,6 +30,10 @@ interface SecurityCheckResult {
 
 /**
  * Checks the vis config for recommended security settings.
+ *
+ * When `defineConfig()` or `loadVisConfig()` is used, secure defaults are already
+ * merged. This function validates the *final* config (defaults + user overrides)
+ * and flags remaining gaps — primarily `allowBuilds`, which must be user-supplied.
  */
 const checkSecurityConfig = (config: VisConfig, packageManager: string): SecurityCheckResult => {
     const result: SecurityCheckResult = { errors: [], warnings: [] };
@@ -37,22 +41,13 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
 
     if (!security) {
         result.warnings.push(
-            "No security settings configured. Consider adding a 'security' section to vis.config.ts for supply chain protection.",
-        );
-        result.warnings.push(
-            "Recommended: security.minimumReleaseAge, security.allowBuilds, security.trustPolicy",
+            "No security settings configured. Use defineConfig() from '@visulima/vis/config' to get secure defaults automatically.",
         );
 
         return result;
     }
 
-    if (security.minimumReleaseAge === undefined || security.minimumReleaseAge === 0) {
-        result.warnings.push(
-            "security.minimumReleaseAge is not set. New packages can be installed immediately after publishing. " +
-            "Set to 1440 (24 hours) to reduce risk of installing compromised packages.",
-        );
-    }
-
+    // allowBuilds has no default — it must be user-supplied
     if (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0) {
         result.warnings.push(
             packageManager === "pnpm"
@@ -61,21 +56,36 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
         );
     }
 
-    if (!security.trustPolicy || security.trustPolicy === "off") {
+    // Warn if user explicitly disabled defaults
+    if (security.minimumReleaseAge === 0) {
         result.warnings.push(
-            "security.trustPolicy is 'off'. Set to 'no-downgrade' to prevent installing packages whose trust level has decreased.",
+            "security.minimumReleaseAge is explicitly set to 0. New packages can be installed immediately after publishing.",
         );
     }
 
-    if (!security.blockExoticSubdeps) {
+    if (security.trustPolicy === "off") {
         result.warnings.push(
-            "security.blockExoticSubdeps is not enabled. Transitive dependencies can pull code from git repos or tarball URLs.",
+            "security.trustPolicy is explicitly set to 'off'. Packages whose trust level has decreased will not be blocked.",
         );
     }
 
+    if (security.blockExoticSubdeps === false) {
+        result.warnings.push(
+            "security.blockExoticSubdeps is explicitly disabled. Transitive dependencies can pull code from git repos or tarball URLs.",
+        );
+    }
+
+    if (security.strictDepBuilds === false) {
+        result.warnings.push(
+            "security.strictDepBuilds is explicitly disabled. Unapproved build scripts will only produce warnings, not errors.",
+        );
+    }
+
+    // Error: strictDepBuilds is on but no allowBuilds
     if (security.strictDepBuilds && (!security.allowBuilds || Object.keys(security.allowBuilds).length === 0)) {
         result.errors.push(
-            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked.",
+            "security.strictDepBuilds is enabled but security.allowBuilds is empty. All dependencies with build scripts will be blocked. " +
+            "Run 'vis approve-builds' to review and add packages.",
         );
     }
 
@@ -106,10 +116,23 @@ const emitSecurityWarnings = (config: VisConfig, packageManager: string): void =
 };
 
 /**
- * Prints the full security audit report.
+ * Prints the full security audit report, including active settings and warnings.
  */
 const printSecurityReport = (config: VisConfig, packageManager: string): void => {
     const result = checkSecurityConfig(config, packageManager);
+    const security = config.security;
+
+    // Show active security settings
+    if (security) {
+        info("Active security settings:");
+        info(`  minimumReleaseAge:      ${security.minimumReleaseAge ?? "not set"} minutes`);
+        info(`  trustPolicy:            ${security.trustPolicy ?? "not set"}`);
+        info(`  trustPolicyIgnoreAfter: ${security.trustPolicyIgnoreAfter ?? "not set"} minutes`);
+        info(`  blockExoticSubdeps:     ${security.blockExoticSubdeps ?? false}`);
+        info(`  strictDepBuilds:        ${security.strictDepBuilds ?? false}`);
+        info(`  allowBuilds:            ${security.allowBuilds ? Object.keys(security.allowBuilds).length + " entries" : "not configured"}`);
+        info("");
+    }
 
     if (result.errors.length === 0 && result.warnings.length === 0) {
         info("All recommended security settings are configured.");
@@ -125,15 +148,13 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         warn(w);
     }
 
-    note("Configure these in vis.config.ts under the 'security' section:");
+    note("");
+    note("Secure defaults are applied by defineConfig(). You only need to add allowBuilds:");
     note("");
     note("  import { defineConfig } from '@visulima/vis/config';");
     note("");
     note("  export default defineConfig({");
     note("    security: {");
-    note("      minimumReleaseAge: 1440,        // 24 hours");
-    note("      trustPolicy: 'no-downgrade',");
-    note("      blockExoticSubdeps: true,");
     note("      allowBuilds: {");
     note("        esbuild: true,");
     note("        '@prisma/client': true,");
@@ -172,6 +193,10 @@ const previewPnpmSync = (config: VisConfig): string[] => {
 
     if (security.strictDepBuilds) {
         entries.push("strictDepBuilds: true");
+    }
+
+    if (security.trustPolicyIgnoreAfter !== undefined) {
+        entries.push(`trustPolicyIgnoreAfter: ${security.trustPolicyIgnoreAfter}`);
     }
 
     return entries;

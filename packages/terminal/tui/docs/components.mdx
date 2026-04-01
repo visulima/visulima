@@ -1,6 +1,6 @@
 ---
 title: Components
-description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, ConsoleOverlay, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, ConsoleOverlay, Text, BigText, ConfirmInput, DiffView, Gradient, Link, Markdown, MultiSelect, Newline, OrderedList, Slider, Spacer, Static, StatusMessage, Tab, Tabs, Textarea, TextInput, Transform, TreeView, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
 ---
 
 # Components
@@ -8,8 +8,8 @@ description: "Reference for all React components in @visulima/tui: Alert, Badge,
 `@visulima/tui` exposes Ink-compatible core components plus Ratatat-only additions.
 
 ```tsx
-import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui/ink";
-import { BigText, ConfirmInput, Gradient, MultiSelect, ProgressBar, SelectInput, Spinner, Tab, Table, Tabs, TextInput } from "@visulima/tui/ink";
+import { Box, Cursor, Newline, Spacer, Static, Text, Transform } from "@visulima/tui";
+import { BigText, ConfirmInput, Gradient, MultiSelect, ProgressBar, SelectInput, Spinner, Tab, Table, Tabs, TextInput } from "@visulima/tui";
 ```
 
 ## `Box`
@@ -174,7 +174,7 @@ Notes:
 Syntax-highlighted code display using [Shiki](https://shiki.style/). Supports 25+ languages with lazy loading and VS Code-quality tokenization.
 
 ```tsx
-import { Code } from "@visulima/tui/ink";
+import { Code } from "@visulima/tui";
 
 <Code code='const x = "hello";' language="javascript" />
 <Code code={source} language="python" showLineNumbers startLine={10} />
@@ -198,7 +198,7 @@ The highlighter loads asynchronously — the first render shows plain text, then
 Display file differences with colored additions/deletions. Supports unified and split (side-by-side) views with optional inline character-level diff highlighting.
 
 ```tsx
-import { DiffView } from "@visulima/tui/ink";
+import { DiffView } from "@visulima/tui";
 
 <DiffView oldText={original} newText={modified} />
 <DiffView diff={unifiedDiffString} mode="split" />
@@ -234,7 +234,7 @@ Colors: additions in green (`+`), deletions in red (`-`), context lines dimmed. 
 Render large ASCII art text using [CFonts](https://github.com/dominikwilkowski/cfonts). Ported from [`ink-big-text`](https://github.com/sindresorhus/ink-big-text).
 
 ```tsx
-import { BigText } from "@visulima/tui/ink";
+import { BigText } from "@visulima/tui";
 
 <BigText text="Hello" />
 <BigText text="Cool" font="chrome" colors={["red", "blue"]} />
@@ -259,7 +259,7 @@ Available fonts: `block`, `slick`, `tiny`, `grid`, `pallet`, `shade`, `simple`, 
 Apply a terminal color gradient to child text. Ported from [`ink-gradient`](https://github.com/sindresorhus/ink-gradient), uses `@visulima/colorize` internally.
 
 ```tsx
-import { Gradient, Text } from "@visulima/tui/ink";
+import { Gradient, Text } from "@visulima/tui";
 
 <Gradient name="rainbow">
     <Text>Hello, World!</Text>
@@ -284,7 +284,7 @@ Built-in presets: `rainbow`, `cristal`, `teen`, `mind`, `morning`, `vice`, `pass
 Create clickable hyperlinks in the terminal using OSC 8 sequences. Ported from [`ink-link`](https://github.com/sindresorhus/ink-link).
 
 ```tsx
-import { Link, Text } from "@visulima/tui/ink";
+import { Link, Text } from "@visulima/tui";
 
 <Link url="https://example.com">
     <Text color="cyan">My Website</Text>
@@ -311,7 +311,7 @@ When `fallback` is `true`, unsupported terminals show: `My Website https://examp
 Render Markdown content as terminal UI elements. Parses with [marked](https://marked.js.org/) and maps tokens to Ink components. Code blocks are syntax-highlighted via the `Code` component.
 
 ````tsx
-import { Markdown } from "@visulima/tui/ink";
+import { Markdown } from "@visulima/tui";
 
 <Markdown>{"# Hello World\n\nThis is **bold** and *italic*."}</Markdown>
 <Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
@@ -411,7 +411,7 @@ Props (plus all `Text` props):
 A terminal progress bar that fills proportionally to a percentage value. Ported from [`ink-progress-bar`](https://github.com/brigand/ink-progress-bar).
 
 ```tsx
-import { ProgressBar } from "@visulima/tui/ink";
+import { ProgressBar } from "@visulima/tui";
 
 <ProgressBar percent={0.5} />
 <ProgressBar percent={0.75} color="green" left={10} right={5} />
@@ -444,7 +444,7 @@ Example with labels:
 A keyboard-driven range input for selecting numeric values. Supports horizontal and vertical orientations.
 
 ```tsx
-import { Slider } from "@visulima/tui/ink";
+import { Slider } from "@visulima/tui";
 
 <Slider defaultValue={50} onChange={(v) => console.log(v)} />
 <Slider defaultValue={22} min={10} max={40} step={1} accentColor="red" width={30} />
@@ -488,7 +488,7 @@ const [value, setValue] = useState(50);
 A dockable panel that captures `console.log`/`warn`/`error`/`debug` output and displays it within the TUI. Similar to browser devtools console.
 
 ```tsx
-import { Box, ConsoleOverlay } from "@visulima/tui/ink";
+import { Box, ConsoleOverlay } from "@visulima/tui";
 
 <Box flexDirection="column" height="100%">
     <Box flexGrow={1}>{/* main app content */}</Box>
@@ -514,7 +514,7 @@ A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/
 <img src="./media/ink-ui/confirm-input.png" width="200" alt="ConfirmInput demo" />
 
 ```tsx
-import { ConfirmInput, Text } from "@visulima/tui/ink";
+import { ConfirmInput, Text } from "@visulima/tui";
 
 <Text>Do you want to continue? </Text>
 <ConfirmInput
@@ -540,7 +540,7 @@ Multi-choice selection component with checkboxes and keyboard navigation. Inspir
 <img src="./media/ink-ui/multi-select.gif" width="400" alt="MultiSelect demo" />
 
 ```tsx
-import { MultiSelect } from "@visulima/tui/ink";
+import { MultiSelect } from "@visulima/tui";
 
 const options = [
     { label: "TypeScript", value: "ts" },
@@ -572,7 +572,7 @@ Single-line text input with cursor navigation, autocomplete suggestions, and opt
 <img src="./media/ink-ui/text-input.gif" width="400" alt="TextInput demo" />
 
 ```tsx
-import { TextInput } from "@visulima/tui/ink";
+import { TextInput } from "@visulima/tui";
 
 <TextInput placeholder="Enter your name..." onSubmit={(value) => console.log("Name:", value)} />;
 ```
@@ -608,7 +608,7 @@ The first matching suggestion is shown dimmed after the cursor. Press right arro
 Multi-line text input with cursor navigation, selection, clipboard copy (OSC 52), undo/redo, paste support, and viewport scrolling.
 
 ```tsx
-import { Textarea } from "@visulima/tui/ink";
+import { Textarea } from "@visulima/tui";
 
 <Textarea
     placeholder="Write something..."
@@ -675,7 +675,7 @@ Interactive select input for choosing from a list of options. Ported from [`ink-
 <img src="./media/ink-ui/select.gif" width="400" alt="SelectInput demo" />
 
 ```tsx
-import { SelectInput } from "@visulima/tui/ink";
+import { SelectInput } from "@visulima/tui";
 
 const items = [
     { label: "TypeScript", value: "ts" },
@@ -748,7 +748,7 @@ A separator renders as `───` by default. Pass a custom `label` to change t
 The `SeparatorItem` type is exported for use in typed item arrays:
 
 ```tsx
-import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui/ink";
+import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui";
 
 const items: SelectInputEntry<string>[] = [{ label: "Option A", value: "a" }, { isSeparator: true }, { label: "Option B", value: "b" }];
 ```
@@ -822,7 +822,7 @@ The `isFocused` prop is passed through to both `indicatorComponent` and `itemCom
 Replace the default indicator or item rendering:
 
 ```tsx
-import { Box, Text } from "@visulima/tui/ink";
+import { Box, Text } from "@visulima/tui";
 
 const CustomIndicator = ({ isSelected, isFocused, accentColor }) => (
     <Box marginRight={1}>
@@ -848,7 +848,7 @@ Custom components receive `isSelected`, `isFocused`, `accentColor`, and (for ite
 Tabbed navigation component with keyboard support. Inspired by [`ink-tab`](https://github.com/jdeniau/ink-tab).
 
 ```tsx
-import { Tab, Tabs } from "@visulima/tui/ink";
+import { Tab, Tabs } from "@visulima/tui";
 
 <Tabs onChange={(name, tab) => console.log("Active:", name)}>
     <Tab name="files">Files</Tab>
@@ -907,7 +907,7 @@ import { Tab, Tabs } from "@visulima/tui/ink";
 Render data as a formatted table in the terminal. Uses [`@visulima/tabular`](https://visulima.com/packages/tabular) as the rendering engine, supporting multiple border styles, column configuration, cell formatting, and word wrap. Ported from [`ink-table`](https://github.com/maticzav/ink-table).
 
 ```tsx
-import { Table } from "@visulima/tui/ink";
+import { Table } from "@visulima/tui";
 
 const data = [
     { name: "Alice", age: 30, city: "NYC" },
@@ -983,7 +983,7 @@ Uppercase colored label badge for status indicators. Inspired by [ink-ui](https:
 <img src="./media/ink-ui/badge.png" width="400" alt="Badge demo" />
 
 ```tsx
-import { Badge } from "@visulima/tui/ink";
+import { Badge } from "@visulima/tui";
 
 <Badge>new</Badge>
 <Badge color="red">error</Badge>
@@ -1002,7 +1002,7 @@ Status notification with a colored variant icon. Inspired by [ink-ui](https://gi
 <img src="./media/ink-ui/status-message.png" width="400" alt="StatusMessage demo" />
 
 ```tsx
-import { StatusMessage } from "@visulima/tui/ink";
+import { StatusMessage } from "@visulima/tui";
 
 <StatusMessage variant="success">Build completed</StatusMessage>
 <StatusMessage variant="error">Connection failed</StatusMessage>
@@ -1024,7 +1024,7 @@ Bordered alert box with a variant-specific icon and optional title. Inspired by 
 <img src="./media/ink-ui/alert.png" width="600" alt="Alert demo" />
 
 ```tsx
-import { Alert } from "@visulima/tui/ink";
+import { Alert } from "@visulima/tui";
 
 <Alert variant="info">Check the docs for details.</Alert>
 <Alert variant="warning" title="Deprecation Notice">
@@ -1045,7 +1045,7 @@ Bullet list with nesting support and customizable markers. Inspired by [ink-ui](
 <img src="./media/ink-ui/unordered-list.png" width="400" alt="UnorderedList demo" />
 
 ```tsx
-import { UnorderedList } from "@visulima/tui/ink";
+import { UnorderedList } from "@visulima/tui";
 
 <UnorderedList items={[{ label: "TypeScript" }, { label: "JavaScript" }, { label: "Python", children: [{ label: "Django" }, { label: "Flask" }] }]} />;
 ```
@@ -1064,7 +1064,7 @@ Numbered list with hierarchical nesting and auto-padded markers. Inspired by [in
 <img src="./media/ink-ui/ordered-list.png" width="400" alt="OrderedList demo" />
 
 ```tsx
-import { OrderedList } from "@visulima/tui/ink";
+import { OrderedList } from "@visulima/tui";
 
 <OrderedList
     items={[
@@ -1080,3 +1080,161 @@ import { OrderedList } from "@visulima/tui/ink";
 | `items` | `OrderedListEntry[]` | _(required)_ | List entries with `label` and optional `children` |
 
 Numbers are right-padded for alignment (e.g., ` 1.`, ` 2.`, `10.`). Nested lists produce hierarchical markers (`1.`, `1.1.`, `1.2.`).
+
+## `TreeView`
+
+Interactive tree view with keyboard navigation, expand/collapse, single/multi selection, async lazy-loading, and viewport virtualization. Ported from [ink-tree-view](https://github.com/costajohnt/ink-tree-view).
+
+```tsx
+import { TreeView } from "@visulima/tui";
+import type { TreeNode } from "@visulima/tui";
+
+const data: TreeNode[] = [
+    {
+        id: "src",
+        label: "src",
+        children: [
+            { id: "src/index.ts", label: "index.ts" },
+            {
+                id: "src/components",
+                label: "components",
+                children: [
+                    { id: "src/components/App.tsx", label: "App.tsx" },
+                ],
+            },
+        ],
+    },
+    { id: "package.json", label: "package.json" },
+];
+
+<TreeView data={data} defaultExpanded="all" />
+```
+
+### Keyboard controls
+
+| Key         | Action                                                   |
+| ----------- | -------------------------------------------------------- |
+| `↑` / `↓`  | Move focus                                               |
+| `→`         | Expand node, or move to first child if already expanded  |
+| `←`         | Collapse node, or move to parent if already collapsed    |
+| `Enter`     | Toggle expand (none mode) or select (single/multi mode)  |
+| `Space`     | Toggle selection (multi mode) or expand (none/single)    |
+| `Home`      | Focus first node                                         |
+| `End`       | Focus last node                                          |
+
+### Props
+
+| Prop               | Type                                                    | Default        | Description                                                                                                   |
+| ------------------ | ------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `data`             | `TreeNode<T>[]`                                         | _(required)_   | Tree data. Must be referentially stable (use `useMemo`).                                                      |
+| `selectionMode`    | `"none"` \| `"single"` \| `"multiple"`                  | `"none"`       | `"single"` shows a tick, `"multiple"` shows checkboxes.                                                       |
+| `defaultExpanded`  | `ReadonlySet<string>` \| `"all"`                        | —              | IDs of nodes expanded on mount. Pass `"all"` to expand everything.                                            |
+| `defaultSelected`  | `ReadonlySet<string>`                                   | —              | IDs of nodes selected on mount.                                                                               |
+| `visibleNodeCount` | `number`                                                | `Infinity`     | Limits visible rows (viewport virtualization). Scroll indicators appear automatically.                        |
+| `renderNode`       | `(props: TreeNodeRendererProps<T>) => ReactNode`        | —              | Custom node renderer. Receives `{ node, state }`.                                                             |
+| `loadChildren`     | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`         | —              | Async function called when expanding a node with `isParent: true` and no children.                            |
+| `onFocusChange`    | `(nodeId: string) => void`                              | —              | Called when the focused node changes.                                                                         |
+| `onExpandChange`   | `(expandedIds: ReadonlySet<string>) => void`            | —              | Called when the expanded set changes.                                                                         |
+| `onSelectChange`   | `(selectedIds: ReadonlySet<string>) => void`            | —              | Called when the selection changes.                                                                             |
+| `onLoadError`      | `(nodeId: string, error: Error) => void`                | —              | Called when `loadChildren` rejects.                                                                           |
+| `isDisabled`       | `boolean`                                               | `false`        | Ignores keyboard input when `true`.                                                                           |
+| `ariaLabel`        | `string`                                                | `"Tree view"`  | Accessible label for the tree container.                                                                      |
+
+### `TreeNode<T>` shape
+
+```ts
+type TreeNode<T = Record<string, unknown>> = {
+    id: string;                       // unique across the whole tree
+    label: string;                    // display text
+    data?: T;                         // arbitrary user data
+    children?: TreeNode<T>[];         // child nodes
+    isParent?: boolean;               // show expand indicator even with no children (for async loading)
+};
+```
+
+### Custom rendering
+
+Use `renderNode` for full control over each row:
+
+```tsx
+<TreeView
+    data={data}
+    defaultExpanded="all"
+    renderNode={({ node, state }) => (
+        <Box gap={1}>
+            <Text dimColor>{"  ".repeat(state.depth)}</Text>
+            <Text color={state.isFocused ? "blue" : undefined}>
+                {state.hasChildren ? (state.isExpanded ? "📂" : "📁") : "📄"} {node.label}
+            </Text>
+        </Box>
+    )}
+/>
+```
+
+### Async lazy-loading
+
+Mark nodes with `isParent: true` and provide a `loadChildren` callback:
+
+```tsx
+const data: TreeNode[] = [
+    { id: "root", label: "Remote Files", isParent: true },
+];
+
+<TreeView
+    data={data}
+    loadChildren={async (node) => {
+        const response = await fetch(`/api/files/${node.id}`);
+        return response.json();
+    }}
+    onLoadError={(nodeId, error) => console.error(`Failed to load ${nodeId}:`, error)}
+/>
+```
+
+A loading indicator (`⟳`) is shown while children are being fetched.
+
+### Viewport virtualization
+
+Limit the visible rows for large trees:
+
+```tsx
+<TreeView data={largeTree} defaultExpanded="all" visibleNodeCount={15} />
+```
+
+Scroll indicators (`↑ N more above` / `↓ N more below`) appear automatically.
+
+### Headless usage
+
+For full control, use the hooks directly instead of the `<TreeView>` component:
+
+```tsx
+import { useTreeViewState, useTreeView } from "@visulima/tui";
+
+function CustomTree({ data }) {
+    const state = useTreeViewState({ data, selectionMode: "single" });
+    useTreeView({ state, selectionMode: "single" });
+
+    return (
+        <Box flexDirection="column">
+            {state.viewportNodes.map(({ node, state: nodeState }) => (
+                <Text key={node.id} color={nodeState.isFocused ? "blue" : undefined}>
+                    {"  ".repeat(nodeState.depth)}
+                    {nodeState.isExpanded ? "▾" : nodeState.hasChildren ? "▸" : " "} {node.label}
+                </Text>
+            ))}
+        </Box>
+    );
+}
+```
+
+### Theming
+
+The default theme can be imported and inspected:
+
+```tsx
+import { treeViewTheme } from "@visulima/tui";
+
+// treeViewTheme.styles.label({ isFocused: true, isSelected: false })
+// => { color: "blue" }
+```
+
+For full visual customization, prefer `renderNode` over theme overrides.

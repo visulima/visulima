@@ -1,0 +1,93 @@
+import { Box, Text } from "@visulima/tui";
+import type { Task } from "@visulima/task-runner";
+
+import { formatTargetsAndProjects } from "../formatting-utils";
+import { CROSS, TICK } from "../symbols";
+import Header from "./Header";
+
+interface CommandSummaryProps {
+    cached: number;
+    failed: number;
+    failedIds: string[];
+    projectNames: string[];
+    skippedIds?: string[];
+    succeeded: number;
+    targets: string[];
+    tasks: Task[];
+    took: string;
+}
+
+/**
+ * Final summary block rendered after all tasks complete.
+ */
+const CommandSummary = ({
+    cached,
+    failed,
+    failedIds,
+    projectNames,
+    skippedIds,
+    succeeded,
+    targets,
+    tasks,
+    took,
+}: CommandSummaryProps): React.JSX.Element => {
+    const description = formatTargetsAndProjects(projectNames, targets, tasks);
+
+    if (failed === 0 && (!skippedIds || skippedIds.length === 0)) {
+        const cacheNote = cached > 0 ? ` (${cached} read from cache)` : "";
+
+        return (
+            <Header title={`Successfully ran ${description}`} variant="success">
+                <Box paddingLeft={2} flexDirection="column">
+                    <Text>
+                        <Text color="green">{TICK}</Text>
+                        {"  "}
+                        {succeeded + cached} tasks completed
+                        {cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
+                    </Text>
+                    <Text dimColor>{"    "}Took {took}</Text>
+                </Box>
+            </Header>
+        );
+    }
+
+    return (
+        <Header title={`Ran ${description}`} variant="error">
+            <Box paddingLeft={2} flexDirection="column">
+                {skippedIds && skippedIds.length > 0 && (
+                    <Box flexDirection="column">
+                        <Text dimColor>
+                            {skippedIds.length} task{skippedIds.length === 1 ? "" : "s"} skipped (dependency failed or --bail)
+                        </Text>
+                        {skippedIds.map((id) => (
+                            <Text key={id} dimColor>
+                                {"   -  "}
+                                {id}
+                            </Text>
+                        ))}
+                        <Text>{""}</Text>
+                    </Box>
+                )}
+                {failed > 0 && (
+                    <Box flexDirection="column">
+                        <Text>
+                            <Text color="red">{String(failed)}</Text> task{failed === 1 ? "" : "s"} failed:
+                        </Text>
+                        {failedIds.map((id) => (
+                            <Text key={id}>
+                                {"   "}
+                                <Text color="red">{CROSS}</Text>
+                                {"  "}
+                                {id}
+                            </Text>
+                        ))}
+                        <Text>{""}</Text>
+                    </Box>
+                )}
+                <Text dimColor>{"    "}Took {took}</Text>
+            </Box>
+        </Header>
+    );
+};
+
+export default CommandSummary;

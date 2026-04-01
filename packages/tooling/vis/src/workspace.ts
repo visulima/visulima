@@ -105,6 +105,15 @@ interface VisConfig {
          * @example ["chokidar@4.0.3", "@babel/core@7.28.5"]
          */
         trustPolicyExclude?: string[];
+        /**
+         * Ignore the trust policy check for packages published more than
+         * the specified number of minutes ago. Useful for older packages
+         * that pre-date provenance support.
+         * Equivalent to pnpm's `trustPolicyIgnoreAfter` (10.27+).
+         *
+         * @example 43200 // 30 days
+         */
+        trustPolicyIgnoreAfter?: number;
     };
     /** Staged file patterns and commands (replaces lint-staged) */
     staged?: Record<string, string | string[]>;

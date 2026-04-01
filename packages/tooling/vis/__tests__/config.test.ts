@@ -4,21 +4,45 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig } from "../src/config";
+import { CONFIG_FILES, defineConfig, findVisConfigFile, loadVisConfig, SECURITY_DEFAULTS } from "../src/config";
 
 describe("defineConfig", () => {
-    it("should return the config object as-is", () => {
-        expect.assertions(1);
+    it("should apply secure defaults to empty config", () => {
+        expect.assertions(7);
 
-        const config = defineConfig({ update: { target: "minor" } });
+        const config = defineConfig({});
 
-        expect(config).toStrictEqual({ update: { target: "minor" } });
+        expect(config.security?.minimumReleaseAge).toBe(SECURITY_DEFAULTS.minimumReleaseAge);
+        expect(config.security?.trustPolicy).toBe("no-downgrade");
+        expect(config.security?.trustPolicyIgnoreAfter).toBe(SECURITY_DEFAULTS.trustPolicyIgnoreAfter);
+        expect(config.security?.blockExoticSubdeps).toBe(true);
+        expect(config.security?.strictDepBuilds).toBe(true);
+        expect(config.update?.security).toBe(true);
+        expect(config.update?.target).toBe("minor");
     });
 
-    it("should return empty config", () => {
-        expect.assertions(1);
+    it("should preserve user overrides over defaults", () => {
+        expect.assertions(3);
 
-        expect(defineConfig({})).toStrictEqual({});
+        const config = defineConfig({
+            security: { minimumReleaseAge: 1440, strictDepBuilds: false },
+            update: { target: "patch" },
+        });
+
+        expect(config.security?.minimumReleaseAge).toBe(1440);
+        expect(config.security?.strictDepBuilds).toBe(false);
+        expect(config.update?.target).toBe("patch");
+    });
+
+    it("should merge user allowBuilds with defaults", () => {
+        expect.assertions(2);
+
+        const config = defineConfig({
+            security: { allowBuilds: { esbuild: true } },
+        });
+
+        expect(config.security?.allowBuilds).toStrictEqual({ esbuild: true });
+        expect(config.security?.trustPolicy).toBe("no-downgrade");
     });
 
     it("should support all config sections", () => {
@@ -31,6 +55,17 @@ describe("defineConfig", () => {
 
         expect(config.ai?.provider).toBe("claude");
         expect(config.update?.target).toBe("patch");
+    });
+
+    it("should allow user to explicitly disable a default", () => {
+        expect.assertions(2);
+
+        const config = defineConfig({
+            security: { blockExoticSubdeps: false, trustPolicy: "off" },
+        });
+
+        expect(config.security?.blockExoticSubdeps).toBe(false);
+        expect(config.security?.trustPolicy).toBe("off");
     });
 });
 
@@ -95,17 +130,19 @@ describe("findVisConfigFile", () => {
 });
 
 describe("loadVisConfig", () => {
-    it("should return empty config when no file exists", async () => {
-        expect.assertions(1);
+    it("should return secure defaults when no file exists", async () => {
+        expect.assertions(3);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const config = await loadVisConfig(temporaryDirectory);
 
-        expect(config).toStrictEqual({});
+        expect(config.security?.minimumReleaseAge).toBe(SECURITY_DEFAULTS.minimumReleaseAge);
+        expect(config.security?.trustPolicy).toBe("no-downgrade");
+        expect(config.security?.blockExoticSubdeps).toBe(true);
     });
 
-    it("should load a JavaScript config file", async () => {
-        expect.assertions(1);
+    it("should load a JavaScript config file and apply defaults", async () => {
+        expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
@@ -114,10 +151,11 @@ describe("loadVisConfig", () => {
         const config = await loadVisConfig(temporaryDirectory);
 
         expect(config.update?.target).toBe("minor");
+        expect(config.security?.trustPolicy).toBe("no-downgrade");
     });
 
-    it("should load a TypeScript config file", async () => {
-        expect.assertions(1);
+    it("should load a TypeScript config file and apply defaults", async () => {
+        expect.assertions(2);
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
@@ -133,6 +171,7 @@ export default config;
         const config = await loadVisConfig(temporaryDirectory);
 
         expect(config.update?.target).toBe("patch");
+        expect(config.security?.blockExoticSubdeps).toBe(true);
     });
 
     it("should support function-based config", async () => {

@@ -97,7 +97,7 @@ cli.addPlugin({
                         const { join } = await import("node:path");
 
                         const configPath = join(workspaceRoot, "vis.config.ts");
-                        const content = `import { defineConfig } from "@visulima/vis/config";\n\nexport default defineConfig({\n    security: {\n        minimumReleaseAge: 1440,\n        trustPolicy: "no-downgrade",\n        blockExoticSubdeps: true,\n        allowBuilds: {},\n    },\n    update: {\n        security: true,\n        target: "minor",\n    },\n});\n`;
+                        const content = `import { defineConfig } from "@visulima/vis/config";\n\n// Secure defaults are applied automatically by defineConfig().\n// You only need to add allowBuilds for packages with build scripts.\n// Run 'vis check --security-config' to see all active settings.\nexport default defineConfig({\n    security: {\n        allowBuilds: {\n            // "esbuild": true,\n        },\n    },\n});\n`;
 
                         writeFileSync(configPath, content);
                         toolbox.logger.info(`\u2713 Created ${configPath}\n`);

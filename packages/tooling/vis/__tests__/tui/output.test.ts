@@ -1,131 +1,86 @@
 import { strip } from "@visulima/colorize";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CLIOutput } from "../../src/tui/output";
+import { getStatusIcon, getStatusPrefix, isCacheStatus, logCommandOutputCI } from "../../src/tui/status-utils";
 
-describe("tui/CLIOutput", () => {
-    let output: CLIOutput;
-    let writeSpy: ReturnType<typeof vi.spyOn>;
-
-    beforeEach(() => {
-        output = new CLIOutput();
-        writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    });
-
-    afterEach(() => {
-        writeSpy.mockRestore();
-    });
-
-    describe("formatCommand", () => {
-        it("should format a task command string", () => {
-            const result = strip(output.formatCommand("my-app:build"));
-
-            expect(result).toContain("vis run ");
-            expect(result).toContain("my-app:build");
+describe("tui/status-utils", () => {
+    describe("isCacheStatus", () => {
+        it("should return true for cache statuses", () => {
+            expect(isCacheStatus("local-cache")).toBe(true);
+            expect(isCacheStatus("local-cache-kept-existing")).toBe(true);
+            expect(isCacheStatus("remote-cache")).toBe(true);
         });
-    });
 
-    describe("getSeparator", () => {
-        it("should return a separator string", () => {
-            const separator = strip(output.getSeparator());
-
-            expect(separator.length).toBeGreaterThan(0);
-        });
-    });
-
-    describe("applyPrefix", () => {
-        it("should wrap text with VIS prefix", () => {
-            const result = strip(output.applyPrefix((t: string) => t, "hello"));
-
-            expect(result).toContain("VIS");
-            expect(result).toContain("hello");
+        it("should return false for non-cache statuses", () => {
+            expect(isCacheStatus("success")).toBe(false);
+            expect(isCacheStatus("failure")).toBe(false);
+            expect(isCacheStatus("skipped")).toBe(false);
         });
     });
 
     describe("getStatusIcon", () => {
-        it("should return green icon for success", () => {
-            const icon = output.getStatusIcon("success");
+        it("should return a non-empty string for success", () => {
+            const icon = getStatusIcon("success");
 
             expect(typeof icon).toBe("string");
-            expect(strip(icon)).toBeTruthy();
+            expect(strip(icon).length).toBeGreaterThan(0);
         });
 
-        it("should return green icon for cache statuses", () => {
-            expect(typeof output.getStatusIcon("local-cache")).toBe("string");
-            expect(typeof output.getStatusIcon("local-cache-kept-existing")).toBe("string");
-            expect(typeof output.getStatusIcon("remote-cache")).toBe("string");
+        it("should return a string for cache statuses", () => {
+            expect(typeof getStatusIcon("local-cache")).toBe("string");
+            expect(typeof getStatusIcon("local-cache-kept-existing")).toBe("string");
+            expect(typeof getStatusIcon("remote-cache")).toBe("string");
         });
 
-        it("should return red icon for failure", () => {
-            const icon = output.getStatusIcon("failure");
+        it("should return a string for failure", () => {
+            const icon = getStatusIcon("failure");
 
             expect(typeof icon).toBe("string");
-            expect(strip(icon)).toBeTruthy();
+            expect(strip(icon).length).toBeGreaterThan(0);
         });
 
-        it("should return dim icon for skipped", () => {
-            const icon = output.getStatusIcon("skipped");
+        it("should return a string for skipped", () => {
+            const icon = getStatusIcon("skipped");
 
             expect(typeof icon).toBe("string");
-            expect(strip(icon)).toBeTruthy();
+            expect(strip(icon).length).toBeGreaterThan(0);
         });
     });
 
     describe("getStatusPrefix", () => {
         it("should include [cache] label for cache statuses", () => {
-            const prefix = strip(output.getStatusPrefix("local-cache"));
+            const prefix = strip(getStatusPrefix("local-cache"));
 
             expect(prefix).toContain("[cache]");
         });
 
         it("should include [skipped] label for skipped", () => {
-            const prefix = strip(output.getStatusPrefix("skipped"));
+            const prefix = strip(getStatusPrefix("skipped"));
 
             expect(prefix).toContain("[skipped]");
         });
 
         it("should not include extra labels for plain success", () => {
-            const prefix = strip(output.getStatusPrefix("success"));
+            const prefix = strip(getStatusPrefix("success"));
 
             expect(prefix).not.toContain("[cache]");
             expect(prefix).not.toContain("[skipped]");
         });
     });
 
-    describe("success", () => {
-        it("should return success message with VIS prefix", () => {
-            const result = strip(output.success("All good"));
+    describe("logCommandOutputCI", () => {
+        let writeSpy: ReturnType<typeof vi.spyOn>;
 
-            expect(result).toContain("VIS");
-            expect(result).toContain("All good");
+        beforeEach(() => {
+            writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
         });
 
-        it("should include body lines when provided", () => {
-            const result = strip(output.success("Title", ["line1", "line2"]));
-
-            expect(result).toContain("line1");
-            expect(result).toContain("line2");
-        });
-    });
-
-    describe("error", () => {
-        it("should return error message with VIS prefix", () => {
-            const result = strip(output.error("Something failed"));
-
-            expect(result).toContain("VIS");
-            expect(result).toContain("Something failed");
+        afterEach(() => {
+            writeSpy.mockRestore();
         });
 
-        it("should include body lines when provided", () => {
-            const result = strip(output.error("Title", ["detail1"]));
-
-            expect(result).toContain("detail1");
-        });
-    });
-
-    describe("logCommandOutput", () => {
         it("should write output to stdout", () => {
-            output.logCommandOutput("app:build", "success", "build output here");
+            logCommandOutputCI("app:build", "success", "build output here");
 
             expect(writeSpy).toHaveBeenCalled();
 
@@ -136,7 +91,7 @@ describe("tui/CLIOutput", () => {
         });
 
         it("should not write anything for empty output", () => {
-            output.logCommandOutput("app:build", "success", "   ");
+            logCommandOutputCI("app:build", "success", "   ");
 
             expect(writeSpy).not.toHaveBeenCalled();
         });
@@ -147,7 +102,7 @@ describe("tui/CLIOutput", () => {
             process.env["GITHUB_ACTIONS"] = "true";
 
             try {
-                output.logCommandOutput("app:build", "success", "output");
+                logCommandOutputCI("app:build", "success", "output");
 
                 const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 
@@ -160,26 +115,6 @@ describe("tui/CLIOutput", () => {
                     process.env["GITHUB_ACTIONS"] = originalEnv;
                 }
             }
-        });
-    });
-
-    describe("overwriteLines", () => {
-        it("should write lines to stdout", () => {
-            output.overwriteLines(0, ["line1", "line2"]);
-
-            expect(writeSpy).toHaveBeenCalled();
-
-            const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
-
-            expect(allOutput).toContain("line1");
-            expect(allOutput).toContain("line2");
-        });
-
-        it("should erase previous lines when numLines > 0", () => {
-            output.overwriteLines(3, ["new line"]);
-
-            // Should have written erase sequences + new content
-            expect(writeSpy).toHaveBeenCalled();
         });
     });
 });

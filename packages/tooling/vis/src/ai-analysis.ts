@@ -1,7 +1,7 @@
-import { boxen } from "@visulima/boxen";
+import React from "react";
 import type { AiProviderInfo, AiProviderName } from "@visulima/find-ai-runner";
 import { detectAvailableProviders, detectProvider, PROVIDER_NAMES, runProvider } from "@visulima/find-ai-runner";
-import { createTable } from "@visulima/tabular";
+import { Box, renderToString, Table, Text } from "@visulima/tui";
 
 import { buildCacheKey, getCachedAnalysis, getTtlForAnalysisType, setCachedAnalysis } from "./ai-cache";
 import type { OutdatedEntry } from "./catalog";
@@ -392,27 +392,41 @@ const ANALYSIS_TYPE_LABELS: Record<AnalysisType, string> = {
 };
 
 const formatAiAnalysis = (result: AiAnalysisResult): string => {
-    const table = createTable();
-
-    table.setHeaders(["Package", "Risk", "Action", "Effort", "Reason"]);
-
-    for (const rec of result.recommendations) {
-        table.addRow([rec.package, rec.riskLevel, rec.action, rec.effort, rec.reason]);
-
-        if (rec.breakingChanges.length > 0) {
-            table.addRow(["", { colSpan: 4, content: `Breaking: ${rec.breakingChanges.join("; ")}` }]);
-        }
-    }
-
     const typeLabel = ANALYSIS_TYPE_LABELS[result.analysisType] ?? result.analysisType;
     const header = `${typeLabel} Analysis (${result.provider})`;
-    const parts = [table.toString()];
 
-    if (result.warnings.length > 0) {
-        parts.push(result.warnings.map((warning) => `  ${warning}`).join("\n"));
-    }
+    const tableData = result.recommendations.flatMap((rec) => {
+        const rows: { action: string; effort: string; package: string; reason: string; risk: string }[] = [
+            { action: rec.action, effort: rec.effort, package: rec.package, reason: rec.reason, risk: rec.riskLevel },
+        ];
 
-    return boxen(`${result.summary}\n\n${parts.join("\n")}`, { headerText: header, padding: { left: 1, right: 1 } });
+        if (rec.breakingChanges.length > 0) {
+            rows.push({ action: "", effort: "", package: "", reason: `Breaking: ${rec.breakingChanges.join("; ")}`, risk: "" });
+        }
+
+        return rows;
+    });
+
+    const columns = process.stdout.columns || 80;
+
+    return renderToString(
+        React.createElement(
+            Box,
+            { borderStyle: "round", flexDirection: "column", paddingLeft: 1, paddingRight: 1 },
+            React.createElement(Text, { bold: true }, header),
+            React.createElement(Text, null, ""),
+            React.createElement(Text, null, result.summary),
+            React.createElement(Text, null, ""),
+            React.createElement(Table, { borderStyle: "none", data: tableData }),
+            ...(result.warnings.length > 0
+                ? [
+                      React.createElement(Text, null, ""),
+                      ...result.warnings.map((warning, i) => React.createElement(Text, { key: String(i), dimColor: true }, `  ${warning}`)),
+                  ]
+                : []),
+        ),
+        { columns },
+    );
 };
 
 const formatAiAnalysisJson = (result: AiAnalysisResult): string => JSON.stringify(result, undefined, 2);
