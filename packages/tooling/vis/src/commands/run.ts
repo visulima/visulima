@@ -150,54 +150,86 @@ const run: Command = {
         };
 
         const isTTY = process.stdout.isTTY && !process.env["CI"];
+        const autoExitConfig = config.tui?.autoExit ?? false;
         const lifecycleOptions = {
             args: { parallel: runnerOptions.parallel, targets: [target] },
+            autoExit: autoExitConfig,
             projectNames: projectsWithTarget,
             tasks: initialTasks,
         };
 
-        let lifeCycle;
-        let renderIsDone: Promise<void> | undefined;
+        const taskExecutor = createShellExecutor(workspaceRoot);
 
         if (isTTY) {
             const dynamic = createDynamicOutputRenderer(lifecycleOptions);
+            const { lifeCycle, store } = dynamic;
 
-            lifeCycle = dynamic.lifeCycle;
-            renderIsDone = dynamic.renderIsDone;
-        } else {
-            lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
-        }
+            // Run tasks in a loop — supports rerun via `r` key
+            let shouldRerun = true;
 
-        const taskExecutor = createShellExecutor(workspaceRoot);
+            while (shouldRerun) {
+                shouldRerun = false;
 
-        const results = await defaultTaskRunner(initialTasks, runnerOptions, {
-            lifeCycle,
-            projectGraph,
-            taskExecutor,
-            taskGraph,
-            workspaceRoot,
-        });
+                // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
+                await defaultTaskRunner(initialTasks, runnerOptions, {
+                    lifeCycle,
+                    projectGraph,
+                    taskExecutor,
+                    taskGraph,
+                    workspaceRoot,
+                });
 
-        if (renderIsDone) {
-            await renderIsDone;
-        }
+                // Wait for either quit (renderIsDone resolves) or rerun request
+                // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
+                shouldRerun = await new Promise<boolean>((resolve) => {
+                    // Check if already resolved (user quit before we got here)
+                    dynamic.renderIsDone.then(
+                        () => resolve(false),
+                        () => resolve(false),
+                    );
 
-        if (options.summarize) {
-            const summary = generateRunSummary(results, taskGraph, startTime);
+                    // Watch for rerun requests
+                    const unsubscribe = store.subscribe(() => {
+                        const state = store.getSnapshot();
 
-            await writeRunSummary(summary, workspaceRoot);
-        }
-
-        let hasFailure = false;
-
-        for (const [, result] of results) {
-            if (result.status === "failure") {
-                hasFailure = true;
+                        if (state.rerunRequested) {
+                            store.acknowledgeRerun();
+                            unsubscribe();
+                            resolve(true);
+                        }
+                    });
+                });
             }
-        }
 
-        if (hasFailure) {
-            throw new Error("Some tasks failed.");
+            await dynamic.renderIsDone;
+        } else {
+            const lifeCycle = new StaticOutputLifeCycle(lifecycleOptions);
+
+            const results = await defaultTaskRunner(initialTasks, runnerOptions, {
+                lifeCycle,
+                projectGraph,
+                taskExecutor,
+                taskGraph,
+                workspaceRoot,
+            });
+
+            if (options.summarize) {
+                const summary = generateRunSummary(results, taskGraph, startTime);
+
+                await writeRunSummary(summary, workspaceRoot);
+            }
+
+            let hasFailure = false;
+
+            for (const [, result] of results) {
+                if (result.status === "failure") {
+                    hasFailure = true;
+                }
+            }
+
+            if (hasFailure) {
+                throw new Error("Some tasks failed.");
+            }
         }
     },
     name: "run",

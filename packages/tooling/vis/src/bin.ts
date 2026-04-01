@@ -150,7 +150,7 @@ cli.addPlugin({
                 }
 
                 // Store enforcement result for afterCommand
-                toolbox.scriptEnforcement = enforcement;
+                (toolbox as unknown as Record<string, unknown>).scriptEnforcement = enforcement;
             }
         }
     },
@@ -160,7 +160,7 @@ cli.addPlugin({
             return;
         }
 
-        const enforcement = toolbox.scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
+        const enforcement = (toolbox as unknown as Record<string, unknown>).scriptEnforcement as ReturnType<typeof enforceScriptSecurity> | undefined;
 
         if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
             runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);

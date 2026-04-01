@@ -13,6 +13,8 @@
  * The napi v3 CLI outputs the .node file to the package root.
  */
 
+import { createRequire } from "node:module";
+
 interface NativeFileHash {
     hash: string;
     path: string;
@@ -61,13 +63,17 @@ interface NativeBindings {
 let nativeBindings: NativeBindings | undefined;
 let loadAttempted = false;
 
+const esmRequire = createRequire(import.meta.url);
+
 /**
  * Attempts to load the native addon. Returns undefined if unavailable.
  * The result is cached after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
- * `task-runner-native.&lt;platform>.node`. The napi-generated index.js
+ * `task-runner-native.<platform>.node`. The napi-generated index.js
  * handles platform detection automatically.
+ *
+ * Uses createRequire because the napi-generated index.js is CJS.
  */
 const loadNativeBindings = (): NativeBindings | undefined => {
     if (loadAttempted) {
@@ -77,10 +83,13 @@ const loadNativeBindings = (): NativeBindings | undefined => {
     loadAttempted = true;
 
     try {
-        // Load via the napi-generated binding loader which handles
-        // platform detection and loads the correct .node binary
-        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        nativeBindings = require("../index.js") as NativeBindings;
+        const loaded = esmRequire("../index.js") as NativeBindings;
+
+        // Validate that the loaded binding has the expected API surface.
+        // A stale .node binary may load successfully but be missing functions.
+        if (typeof loaded.hashCommand === "function" && typeof loaded.hashFile === "function") {
+            nativeBindings = loaded;
+        }
     } catch {
         // Native addon not available - will use TypeScript fallbacks
         nativeBindings = undefined;

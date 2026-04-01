@@ -919,14 +919,19 @@ export default class Ink {
         settleThrottle(this.throttledOnRender, canWriteToStdout);
 
         if (canWriteToStdout) {
-            // If throttling is enabled and there is already a pending render, flushing above
-            // is sufficient. Also avoid calling onRender() again when static output already
-            // exists, as that can duplicate <Static> children output on exit (see issue #397).
-            const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
+            // Skip the final render when in alternate screen mode — the alternate
+            // buffer content is disposable and will be discarded when we switch back
+            // to the primary screen. Rendering a final frame here would write content
+            // to the alternate screen that is immediately discarded, or worse, if the
+            // ALT_SCREEN_OFF write is buffered, the final frame could leak onto the
+            // primary screen buffer.
+            if (!this.alternateScreen) {
+                const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
 
-            if (shouldRenderFinalFrame) {
-                this.calculateLayout();
-                this.onRender();
+                if (shouldRenderFinalFrame) {
+                    this.calculateLayout();
+                    this.onRender();
+                }
             }
         }
 
@@ -970,12 +975,20 @@ export default class Ink {
                 // buffer switch adds fragile lifecycle-specific behavior, so Ink keeps
                 // alternate-screen teardown intentionally simple and best-effort.
                 if (this.alternateScreen) {
+                    // Clear all log-update state BEFORE switching screens to prevent
+                    // any buffered content from leaking onto the primary screen.
+                    this.log.clear();
+                    this.log.done();
+                    this.lastOutput = "";
+                    this.lastOutputToRender = "";
+                    this.lastOutputHeight = 0;
+                    this.fullStaticOutput = "";
+
+                    // Switch back to the primary screen buffer
                     this.writeBestEffort(this.options.stdout, ALT_SCREEN_OFF);
                     this.writeBestEffort(this.options.stdout, showCursorEscape);
                     this.alternateScreen = false;
-                }
-
-                if (!this.interactive) {
+                } else if (!this.interactive) {
                     // Non-interactive environments don't handle erasing ansi escapes well.
                     // In debug mode, each render already writes to stdout, so only a trailing
                     // newline is needed. In non-debug mode, write the last frame now (it was

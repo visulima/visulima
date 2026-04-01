@@ -3,6 +3,7 @@ import type React from "react";
 import type { Ref } from "react";
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 
+import useScrollInput from "../../hooks/use-scroll-input";
 import type { ControlledScrollViewRef } from "./ControlledScrollView";
 import { ControlledScrollView } from "./ControlledScrollView";
 import type { ScrollViewProps, ScrollViewRef } from "./ScrollView";
@@ -19,13 +20,17 @@ export type ScrollListRef = ScrollViewRef;
 export const ScrollList = (props: ScrollListProps & { ref?: Ref<ScrollListRef> }): React.JSX.Element => {
     const {
         children,
+        keyboard = false,
         onContentHeightChange,
         onItemHeightChange,
         onScroll,
         onViewportSizeChange,
+        overscan,
         ref,
         scrollAlignment = "auto",
         selectedIndex,
+        vimBindings = false,
+        virtualize,
         ...boxProps
     } = props;
 
@@ -207,6 +212,44 @@ export const ScrollList = (props: ScrollListProps & { ref?: Ref<ScrollListRef> }
         [onContentHeightChange, getConstrainedScrollOffset, scrollOffset, scrollAlignment, updateScroll],
     );
 
+    const viewportHeightRef = useRef(0);
+
+    const scrollByImperative = useCallback(
+        (delta: number) => {
+            const currentOffset = scrollOffsetRef.current;
+            const clampedY = clampToSelectionBounds(currentOffset + delta);
+
+            updateScroll(clampedY);
+        },
+        [clampToSelectionBounds, updateScroll],
+    );
+
+    const scrollToBottomImperative = useCallback(() => {
+        const contentHeight = scrollViewRef.current?.getContentHeight() ?? 0;
+        const viewportHeight = scrollViewRef.current?.getViewportHeight() ?? 0;
+        const maxScroll = Math.max(0, contentHeight - viewportHeight);
+        const clampedY = clampToSelectionBounds(maxScroll);
+
+        updateScroll(clampedY);
+    }, [clampToSelectionBounds, updateScroll]);
+
+    const scrollToTopImperative = useCallback(() => {
+        const clampedY = clampToSelectionBounds(0);
+
+        updateScroll(clampedY);
+    }, [clampToSelectionBounds, updateScroll]);
+
+    const getViewportHeight = useCallback(() => viewportHeightRef.current, []);
+
+    useScrollInput({
+        getViewportHeight,
+        isActive: keyboard,
+        scrollBy: scrollByImperative,
+        scrollToBottom: scrollToBottomImperative,
+        scrollToTop: scrollToTopImperative,
+        vimBindings,
+    });
+
     useImperativeHandle(ref, () => {
         return {
             getBottomOffset: () => scrollViewRef.current?.getBottomOffset() ?? 0,
@@ -217,40 +260,34 @@ export const ScrollList = (props: ScrollListProps & { ref?: Ref<ScrollListRef> }
             getViewportHeight: () => scrollViewRef.current?.getViewportHeight() ?? 0,
             remeasure: () => scrollViewRef.current?.remeasure(),
             remeasureItem: (index: number) => scrollViewRef.current?.remeasureItem(index),
-            scrollBy: (delta: number) => {
-                const currentOffset = scrollOffsetRef.current;
-                const clampedY = clampToSelectionBounds(currentOffset + delta);
-
-                updateScroll(clampedY);
-            },
+            scrollBy: scrollByImperative,
             scrollTo: (y: number) => {
                 const clampedY = clampToSelectionBounds(y);
 
                 updateScroll(clampedY);
             },
-            scrollToBottom: () => {
-                const contentHeight = scrollViewRef.current?.getContentHeight() ?? 0;
-                const viewportHeight = scrollViewRef.current?.getViewportHeight() ?? 0;
-                const maxScroll = Math.max(0, contentHeight - viewportHeight);
-                const clampedY = clampToSelectionBounds(maxScroll);
-
-                updateScroll(clampedY);
-            },
-            scrollToTop: () => {
-                const clampedY = clampToSelectionBounds(0);
-
-                updateScroll(clampedY);
-            },
+            scrollToBottom: scrollToBottomImperative,
+            scrollToTop: scrollToTopImperative,
         };
-    }, [clampToSelectionBounds, updateScroll]);
+    }, [clampToSelectionBounds, updateScroll, scrollByImperative, scrollToBottomImperative, scrollToTopImperative]);
+
+    const handleViewportSizeChangeWithTracking = useCallback(
+        (size: { height: number; width: number }, previousSize: { height: number; width: number }) => {
+            viewportHeightRef.current = size.height;
+            handleViewportSizeChange(size, previousSize);
+        },
+        [handleViewportSizeChange],
+    );
 
     return (
         <ControlledScrollView
             onContentHeightChange={handleContentHeightChange}
             onItemHeightChange={handleItemHeightChange}
-            onViewportSizeChange={handleViewportSizeChange}
+            onViewportSizeChange={handleViewportSizeChangeWithTracking}
+            overscan={overscan}
             ref={scrollViewRef}
             scrollOffset={renderScrollOffset}
+            virtualize={virtualize}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...boxProps}
         >

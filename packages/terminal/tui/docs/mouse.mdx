@@ -1,6 +1,6 @@
 ---
 title: Mouse Support
-description: "Mouse tracking, hover detection, click handling, and element hit-testing for Ink-compatible components in @visulima/tui/ink"
+description: "Mouse tracking, hover detection, click handling, and element hit-testing for Ink-compatible components in @visulima/tui"
 ---
 
 # Mouse Support
@@ -26,11 +26,11 @@ Wrap your app with `<MouseProvider>` and use the hooks inside child components.
 > **Note:** You must also use `useInput` to prevent raw escape sequences from being printed to the terminal during mouse movements.
 
 ```tsx
-import { Box, Text, render, useInput } from "@visulima/tui/ink";
-import { Fullscreen, MouseProvider, useMousePosition, useOnMouseClick, useOnMouseHover, useOnMouseState } from "@visulima/tui/ink";
+import { Box, Text, render, useInput } from "@visulima/tui";
+import { Fullscreen, MouseProvider, useMousePosition, useOnMouseClick, useOnMouseHover, useOnMouseState } from "@visulima/tui";
 import React, { useMemo, useRef, useState } from "react";
 import type { ComponentProps, RefObject } from "react";
-import type { DOMElement } from "@visulima/tui/ink";
+import type { DOMElement } from "@visulima/tui";
 
 function App() {
     return (
@@ -249,7 +249,7 @@ const { width, height } = useElementDimensions(ref);
 Hit-test utility. Returns `true` if the mouse position falls within the element bounds.
 
 ```tsx
-import { isIntersecting } from "@visulima/tui/ink";
+import { isIntersecting } from "@visulima/tui";
 
 const hit = isIntersecting({
     mouse: { x: 10, y: 5 },
@@ -271,7 +271,7 @@ import type {
     MouseContextShape,
     MouseEvents,
     SgrMouseEvent,
-} from "@visulima/tui/ink";
+} from "@visulima/tui";
 ```
 
 | Type                | Definition                                    |
@@ -320,7 +320,7 @@ This avoids competing stdin listeners and keeps mouse events in sync with keyboa
 Low-level utility to parse an SGR 1006 mouse escape sequence. Returns a discriminated union or `null`.
 
 ```tsx
-import { parseSgrMouse } from "@visulima/tui/ink";
+import { parseSgrMouse } from "@visulima/tui";
 
 const event = parseSgrMouse("\x1b[<0;10;20M");
 // { type: "click", button: "left", action: "press", x: 10, y: 20 }

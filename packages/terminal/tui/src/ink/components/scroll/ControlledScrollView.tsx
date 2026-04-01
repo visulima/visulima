@@ -74,7 +74,18 @@ export interface ControlledScrollViewProps extends BoxProps {
     onContentHeightChange?: (height: number, previousHeight: number) => void;
     onItemHeightChange?: (index: number, height: number, previousHeight: number) => void;
     onViewportSizeChange?: (size: { height: number; width: number }, previousSize: { height: number; width: number }) => void;
+    /**
+     * Number of extra items to render above/below the viewport when virtualized.
+     * @default 3
+     */
+    overscan?: number;
     scrollOffset: number;
+    /**
+     * Only render items visible in the viewport plus overscan.
+     * Items must be measured first (first render always renders all items).
+     * @default false
+     */
+    virtualize?: boolean;
 }
 
 export interface ControlledScrollViewRef {
@@ -93,10 +104,13 @@ export const ControlledScrollView = ({
     onContentHeightChange,
     onItemHeightChange,
     onViewportSizeChange,
+    overscan = 3,
     ref,
     scrollOffset,
+    virtualize = false,
     ...boxProps
 }: ControlledScrollViewProps & { ref?: Ref<ControlledScrollViewRef> }): React.JSX.Element => {
+    const hasMeasuredRef = useRef(false);
     const [viewportSize, setViewportSize, getViewportSize] = useStateRef({
         height: 0,
         width: 0,
@@ -271,15 +285,108 @@ export const ControlledScrollView = ({
 
     const childArray = toChildArray(children);
 
+    // Track when first measurement pass is complete
+    if (!hasMeasuredRef.current && contentHeight > 0) {
+        hasMeasuredRef.current = true;
+    }
+
+    // Virtualization: compute visible range
+    let firstRenderIndex = 0;
+    let lastRenderIndex = childArray.length - 1;
+    let aboveSpacerHeight = 0;
+    let belowSpacerHeight = 0;
+    // Only virtualize if all current items have been measured (height > 0).
+    // New items added dynamically will have height 0 until measured.
+    const allItemsMeasured = childArray.length > 0 && childArray.every((_: ReactNode, index: number) => {
+        const key = itemKeysRef.current[index] ?? index;
+
+        return (itemHeightsRef.current[key] ?? 0) > 0;
+    });
+    const shouldVirtualize = virtualize && hasMeasuredRef.current && allItemsMeasured;
+
+    if (shouldVirtualize) {
+        // Ensure all offsets are computed
+        const totalItems = itemKeysRef.current.length;
+
+        if (firstInvalidOffsetIndexRef.current < totalItems) {
+            let currentOffset = 0;
+            let startIndex = 0;
+
+            if (firstInvalidOffsetIndexRef.current > 0) {
+                startIndex = firstInvalidOffsetIndexRef.current;
+                const previousIndex = startIndex - 1;
+                const previousKey = itemKeysRef.current[previousIndex] ?? previousIndex;
+                const previousHeight = itemHeightsRef.current[previousKey] ?? 0;
+
+                currentOffset = (itemOffsetsRef.current[previousIndex] ?? 0) + previousHeight;
+            }
+
+            for (let i = startIndex; i < totalItems; i += 1) {
+                itemOffsetsRef.current[i] = currentOffset;
+                const key = itemKeysRef.current[i] ?? i;
+
+                currentOffset += itemHeightsRef.current[key] ?? 0;
+            }
+
+            firstInvalidOffsetIndexRef.current = totalItems;
+        }
+
+        // Find visible range
+        const viewEnd = scrollOffset + viewportSize.height;
+
+        firstRenderIndex = childArray.length;
+        lastRenderIndex = -1;
+
+        for (let i = 0; i < totalItems; i += 1) {
+            const itemTop = itemOffsetsRef.current[i] ?? 0;
+            const key = itemKeysRef.current[i] ?? i;
+            const itemHeight = itemHeightsRef.current[key] ?? 0;
+            const itemBottom = itemTop + itemHeight;
+
+            if (itemBottom > scrollOffset && itemTop < viewEnd) {
+                if (i < firstRenderIndex) {
+                    firstRenderIndex = i;
+                }
+
+                lastRenderIndex = i;
+            }
+        }
+
+        // Guard: if no items are visible, reset to safe empty range
+        if (firstRenderIndex > lastRenderIndex) {
+            firstRenderIndex = 0;
+            lastRenderIndex = -1;
+        }
+
+        // Apply overscan
+        firstRenderIndex = Math.max(0, firstRenderIndex - overscan);
+        lastRenderIndex = Math.min(childArray.length - 1, Math.max(-1, lastRenderIndex) + overscan);
+
+        // Compute spacer heights
+        aboveSpacerHeight = itemOffsetsRef.current[firstRenderIndex] ?? 0;
+
+        if (lastRenderIndex < childArray.length - 1) {
+            const lastKey = itemKeysRef.current[lastRenderIndex] ?? lastRenderIndex;
+            const lastItemBottom = (itemOffsetsRef.current[lastRenderIndex] ?? 0) + (itemHeightsRef.current[lastKey] ?? 0);
+
+            belowSpacerHeight = contentHeight - lastItemBottom;
+        }
+    }
+
     return (
         // eslint-disable-next-line react/jsx-props-no-spreading
         <Box {...boxProps}>
             <Box ref={viewportRef} width="100%">
                 <Box overflow={debug ? undefined : "hidden"} width="100%">
                     <Box flexDirection="column" marginTop={-scrollOffset} width="100%">
+                        {shouldVirtualize && aboveSpacerHeight > 0 && <Box height={aboveSpacerHeight} />}
                         {childArray.map((child: ReactNode, index: number) => {
                             if (!child)
                                 return null;
+
+                            if (shouldVirtualize && (index < firstRenderIndex || index > lastRenderIndex)) {
+                                return null;
+                            }
 
                             return (
                                 <MeasurableItem
@@ -293,6 +400,7 @@ export const ControlledScrollView = ({
                                 </MeasurableItem>
                             );
                         })}
+                        {shouldVirtualize && belowSpacerHeight > 0 && <Box height={belowSpacerHeight} />}
                     </Box>
                 </Box>
             </Box>

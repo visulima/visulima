@@ -13,6 +13,8 @@
  * Build with: napi build --platform --release --manifest-path native/Cargo.toml --output-dir .
  */
 
+import { createRequire } from "node:module";
+
 // ── Types matching Rust structs ──────────────────────────────────────
 
 interface DetectedPackageManager {
@@ -146,9 +148,13 @@ interface NativeBindings {
 let nativeBindings: NativeBindings | undefined;
 let loadAttempted = false;
 
+const esmRequire = createRequire(import.meta.url);
+
 /**
  * Attempts to load the native addon. Returns undefined if unavailable.
  * The result is cached after the first attempt.
+ *
+ * Uses createRequire because the napi-generated index.js is CJS.
  */
 const loadNativeBindings = (): NativeBindings | undefined => {
     if (loadAttempted) {
@@ -158,8 +164,12 @@ const loadNativeBindings = (): NativeBindings | undefined => {
     loadAttempted = true;
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        nativeBindings = require("../index.js") as NativeBindings;
+        const loaded = esmRequire("../index.js") as NativeBindings;
+
+        // Validate that the loaded binding has the expected API surface.
+        if (typeof loaded.detectPackageManager === "function" && typeof loaded.execPmCommand === "function") {
+            nativeBindings = loaded;
+        }
     } catch {
         nativeBindings = undefined;
     }
