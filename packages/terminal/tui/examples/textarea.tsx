@@ -17,7 +17,7 @@
  * Run: node --import @oxc-node/core/register examples/textarea.tsx
  */
 
-import { Box, render, Text, Textarea, useApp, useInput } from "@visulima/tui/ink";
+import { Box, render, Text, Textarea, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {

@@ -10,7 +10,7 @@
  * Run: node --import @oxc-node/core/register examples/tabs.tsx
  */
 
-import { Box, render, Tab, Tabs, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, render, Tab, Tabs, Text, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {

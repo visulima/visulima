@@ -8,7 +8,7 @@
  * Run: node --import @oxc-node/core/register examples/markdown.tsx
  */
 
-import { Box, Markdown, render, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, Markdown, render, Text, useApp, useInput } from "@visulima/tui";
 import React from "react";
 
 const sampleMarkdown = `# Markdown Demo

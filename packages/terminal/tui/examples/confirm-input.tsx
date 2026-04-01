@@ -11,7 +11,7 @@
  * Run: node --import @oxc-node/core/register examples/confirm-input.tsx
  */
 
-import { Box, ConfirmInput, render, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, ConfirmInput, render, Text, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {

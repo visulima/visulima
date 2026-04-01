@@ -5,7 +5,7 @@
  * Run: node --import @oxc-node/core/register examples/badge.tsx
  */
 
-import { Badge, Box, render, Text } from "@visulima/tui/ink";
+import { Badge, Box, render, Text } from "@visulima/tui";
 import React from "react";
 
 const App = () => (

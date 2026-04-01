@@ -10,7 +10,7 @@
  * Run: node --import @oxc-node/core/register examples/text-input.tsx
  */
 
-import { Box, render, Text, TextInput, useApp, useInput } from "@visulima/tui/ink";
+import { Box, render, Text, TextInput, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {
