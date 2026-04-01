@@ -16,6 +16,9 @@ import resolveExtendsPath from "./utils/resolve-extends-path";
 
 const readJsonc = (jsonPath: string) => parse(readFileSync(jsonPath, { buffer: false })) as unknown;
 
+/** Converts backslashes to forward slashes without resolving ../ segments. */
+const slash = (path: string): string => path.replaceAll("\\", "/");
+
 const normalizePath = (path: string): string => {
     const namespacedPath = toNamespacedPath(path);
 
@@ -23,6 +26,39 @@ const normalizePath = (path: string): string => {
 };
 
 const filesProperties = ["files", "include", "exclude"] as const;
+
+/**
+ * Resolves a path from extended config to canonical form relative to parent config.
+ *
+ * TypeScript normalizes these paths: nested/../. → .
+ * Used for: baseUrl, outDir, rootDir, declarationDir.
+ */
+const resolveAndRelativize = (fromDirectoryPath: string, extendsDirectoryPath: string, filePath: string): string => {
+    const absolutePath = join(extendsDirectoryPath, filePath);
+    const relativePath = relative(fromDirectoryPath, absolutePath);
+
+    return normalize(relativePath) || "./";
+};
+
+/**
+ * Prefixes a pattern with relative directory path without normalization.
+ *
+ * TypeScript literally prefixes: nested/../. stays as nested/../.
+ * Used for: files, include, exclude patterns.
+ */
+const prefixPattern = (fromDirectoryPath: string, extendsDirectoryPath: string, pattern: string): string => {
+    const relativeDirectory = relative(fromDirectoryPath, extendsDirectoryPath);
+
+    if (!relativeDirectory) {
+        return pattern;
+    }
+
+    // Remove leading ./ from pattern to avoid double prefix like ./some-dir/./file.ts
+    const cleanPattern = pattern.startsWith("./") ? pattern.slice(2) : pattern;
+
+    // Do NOT normalize — TypeScript preserves literal ../  in patterns
+    return `${relativeDirectory}/${cleanPattern}`;
+};
 
 const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, circularExtendsTracker: Set<string>, options?: Options) => {
     if (circularExtendsTracker.has(resolvedExtendsPath)) {
@@ -44,19 +80,16 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
 
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         if (baseUrl && !baseUrl.startsWith(configDirectoryPlaceholder)) {
-            compilerOptions.baseUrl = normalize(relative(fromDirectoryPath, join(extendsDirectoryPath, baseUrl))) || "./";
+            compilerOptions.baseUrl = resolveAndRelativize(fromDirectoryPath, extendsDirectoryPath, baseUrl);
         }
 
-        let { outDir } = compilerOptions;
+        const { outDir } = compilerOptions;
 
-        if (outDir) {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            if (!outDir.startsWith(configDirectoryPlaceholder)) {
-                outDir = relative(fromDirectoryPath, join(extendsDirectoryPath, outDir));
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            compilerOptions.outDir = normalizePath(outDir.replace(`${configDirectoryPlaceholder}/`, "")) || "./";
+        if (
+            outDir // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            && !outDir.startsWith(configDirectoryPlaceholder)
+        ) {
+            compilerOptions.outDir = resolveAndRelativize(fromDirectoryPath, extendsDirectoryPath, outDir);
         }
     }
 
@@ -74,7 +107,7 @@ const resolveExtends = (resolvedExtendsPath: string, fromDirectoryPath: string, 
                     return file;
                 }
 
-                return relative(fromDirectoryPath, join(extendsDirectoryPath, file));
+                return prefixPattern(fromDirectoryPath, extendsDirectoryPath, file);
             });
         }
     }
@@ -179,20 +212,23 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
 
             if (outputPath) {
                 if (!Array.isArray(config.exclude)) {
-                    config.exclude = [];
-                }
+                    config.exclude = (["outDir", "declarationDir"] as const)
+                        .map((field) => {
+                            const value = compilerOptions[field];
 
-                let excludePath = outputPath;
+                            if (!value) {
+                                return undefined;
+                            }
 
-                if (!isAbsolute(excludePath)) {
-                    excludePath = join(directoryPath, excludePath);
-                }
+                            // configDir values will be interpolated later in readTsConfig
+                            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                            if (value.startsWith(configDirectoryPlaceholder)) {
+                                return value;
+                            }
 
-                // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                excludePath = excludePath.replace(configDirectoryPlaceholder, "");
-
-                if (!config.exclude.includes(excludePath)) {
-                    config.exclude.push(excludePath);
+                            return isAbsolute(value) ? value : join(directoryPath, value);
+                        })
+                        .filter(Boolean) as string[];
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -208,7 +244,7 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     }
 
     if (config.include) {
-        config.include = config.include.map((element) => normalize(element));
+        config.include = config.include.map((element) => slash(element));
     }
 
     if (config.files) {
@@ -226,7 +262,23 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
         const { watchOptions } = config;
 
         if (watchOptions.excludeDirectories) {
-            watchOptions.excludeDirectories = watchOptions.excludeDirectories.map((excludePath) => resolve(directoryPath, excludePath));
+            watchOptions.excludeDirectories = watchOptions.excludeDirectories.map((excludePath) => normalize(resolve(directoryPath, excludePath)));
+        }
+
+        if (watchOptions.excludeFiles) {
+            watchOptions.excludeFiles = watchOptions.excludeFiles.map((excludePath) => normalize(resolve(directoryPath, excludePath)));
+        }
+
+        if (watchOptions.watchFile) {
+            watchOptions.watchFile = watchOptions.watchFile.toLowerCase() as TsConfigJson.WatchOptions["watchFile"];
+        }
+
+        if (watchOptions.watchDirectory) {
+            watchOptions.watchDirectory = watchOptions.watchDirectory.toLowerCase() as TsConfigJson.WatchOptions["watchDirectory"];
+        }
+
+        if (watchOptions.fallbackPolling) {
+            watchOptions.fallbackPolling = watchOptions.fallbackPolling.toLowerCase() as TsConfigJson.WatchOptions["fallbackPolling"];
         }
     }
 
@@ -235,11 +287,50 @@ const internalParseTsConfig = (tsconfigPath: string, options?: Options, circular
     }
 
     if (config.compilerOptions.module) {
-        config.compilerOptions.module = config.compilerOptions.module.toLowerCase() as TsConfigJson.CompilerOptions.Module;
+        let module = config.compilerOptions.module.toLowerCase() as TsConfigJson.CompilerOptions.Module;
+
+        if (module === "es2015") {
+            module = "es6" as TsConfigJson.CompilerOptions.Module;
+        }
+
+        config.compilerOptions.module = module;
     }
 
     if (config.compilerOptions.target) {
-        config.compilerOptions.target = config.compilerOptions.target.toLowerCase() as TsConfigJson.CompilerOptions.Target;
+        let target = config.compilerOptions.target.toLowerCase() as TsConfigJson.CompilerOptions.Target;
+
+        if (target === "es2015") {
+            target = "es6" as TsConfigJson.CompilerOptions.Target;
+        }
+
+        config.compilerOptions.target = target;
+    }
+
+    if (config.compilerOptions.moduleResolution) {
+        let moduleResolution = config.compilerOptions.moduleResolution.toLowerCase() as TsConfigJson.CompilerOptions.ModuleResolution;
+
+        if (moduleResolution === ("node" as TsConfigJson.CompilerOptions.ModuleResolution)) {
+            moduleResolution = "node10" as TsConfigJson.CompilerOptions.ModuleResolution;
+        }
+
+        config.compilerOptions.moduleResolution = moduleResolution;
+    }
+
+    if (config.compilerOptions.jsx) {
+        config.compilerOptions.jsx = config.compilerOptions.jsx.toLowerCase() as TsConfigJson.CompilerOptions.JSX;
+    }
+
+    if (config.compilerOptions.moduleDetection) {
+        config.compilerOptions.moduleDetection = config.compilerOptions.moduleDetection.toLowerCase() as TsConfigJson.CompilerOptions.ModuleDetection;
+    }
+
+    if (config.compilerOptions.importsNotUsedAsValues) {
+        config.compilerOptions.importsNotUsedAsValues
+            = config.compilerOptions.importsNotUsedAsValues.toLowerCase() as TsConfigJson.CompilerOptions.ImportsNotUsedAsValues;
+    }
+
+    if (config.compilerOptions.newLine) {
+        config.compilerOptions.newLine = config.compilerOptions.newLine.toLowerCase() as TsConfigJson.CompilerOptions.NewLine;
     }
 
     return config;
@@ -272,10 +363,33 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         config.compilerOptions.allowImportingTsExtensions ??= true;
     }
 
+    if (config.compilerOptions.composite) {
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.declaration ??= true;
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.incremental ??= true;
+    }
+
+    if (config.compilerOptions.checkJs) {
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.allowJs ??= true;
+    }
+
+    if (config.compilerOptions.verbatimModuleSyntax) {
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.isolatedModules ??= true;
+        // eslint-disable-next-line no-param-reassign
+        config.compilerOptions.preserveConstEnums ??= true;
+    }
+
     if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))) {
         if (
             config.compilerOptions.esModuleInterop === undefined
-            && (config.compilerOptions.module === "node16" || config.compilerOptions.module === "nodenext" || config.compilerOptions.module === "preserve")
+            && (config.compilerOptions.module === "node16"
+                || config.compilerOptions.module === "node18"
+                || config.compilerOptions.module === "node20"
+                || config.compilerOptions.module === "nodenext"
+                || config.compilerOptions.module === "preserve")
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.esModuleInterop = true;
@@ -284,7 +398,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         if (
             config?.compilerOptions.moduleDetection === undefined
             && config.compilerOptions.module
-            && ["node16", "nodenext"].includes(config.compilerOptions.module)
+            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.moduleDetection = "force";
@@ -301,7 +415,13 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
                         break;
                     }
-                    case "node16": {
+                    case "node16":
+                    case "node18": {
+                        moduleResolution = "node16";
+
+                        break;
+                    }
+                    case "node20": {
                         moduleResolution = "node16";
 
                         break;
@@ -328,7 +448,12 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
         if (config.compilerOptions.moduleResolution === "bundler") {
             // eslint-disable-next-line no-param-reassign
-            config.compilerOptions.resolveJsonModule = true;
+            config.compilerOptions.resolveJsonModule ??= true;
+        }
+
+        if (config.compilerOptions.module && ["node20", "nodenext"].includes(config.compilerOptions.module)) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.resolveJsonModule ??= true;
         }
 
         if (
@@ -360,10 +485,25 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         if (config.compilerOptions.target === undefined) {
             let target: TsConfigJson.CompilerOptions.Target = "es5";
 
-            if (config.compilerOptions.module === "node16") {
-                target = "es2022";
-            } else if (config.compilerOptions.module === "nodenext") {
-                target = "esnext";
+            // eslint-disable-next-line default-case
+            switch (config.compilerOptions.module) {
+                case "node16":
+                case "node18": {
+                    target = "es2022";
+
+                    break;
+                }
+                case "node20": {
+                    target = "es2023" as TsConfigJson.CompilerOptions.Target;
+
+                    break;
+                }
+                case "nodenext": {
+                    target = "esnext";
+
+                    break;
+                }
+            // No default
             }
 
             if (target !== "es5") {
@@ -435,26 +575,41 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
 
     // TypeScript 6.0+ emits fewer implicit defaults in --showConfig
     if (String(options?.tscCompatible) === "6.0") {
-        // moduleDetection + moduleResolution for node16/nodenext
+        // moduleDetection: force for node-style modules
         if (
             config.compilerOptions.moduleDetection === undefined
             && config.compilerOptions.module
-            && ["node16", "nodenext"].includes(config.compilerOptions.module)
+            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
         ) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.moduleDetection = "force";
         }
 
+        // moduleResolution implications
         if (config.compilerOptions.moduleResolution === undefined && config.compilerOptions.module) {
-            const mod = config.compilerOptions.module.toLocaleLowerCase();
+            const currentModule = config.compilerOptions.module.toLocaleLowerCase();
 
-            if (mod === "node16") {
+            if (currentModule === "node16" || currentModule === "node18" || currentModule === "node20") {
                 // eslint-disable-next-line no-param-reassign
                 config.compilerOptions.moduleResolution = "node16";
-            } else if (mod === "nodenext") {
+            } else if (currentModule === "nodenext") {
                 // eslint-disable-next-line no-param-reassign
                 config.compilerOptions.moduleResolution = "nodenext";
             }
+            // TS 6.0 does not show moduleResolution for "preserve" in --showConfig
+        }
+
+        // useDefineForClassFields: false when target is below ES2022 with node-style modules
+        if (
+            config.compilerOptions.useDefineForClassFields === undefined
+            && config.compilerOptions.module
+            && ["node16", "node18", "node20", "nodenext"].includes(config.compilerOptions.module)
+            && config.compilerOptions.target
+            && !config.compilerOptions.target.includes("es202")
+            && config.compilerOptions.target !== "esnext"
+        ) {
+            // eslint-disable-next-line no-param-reassign
+            config.compilerOptions.useDefineForClassFields = false;
         }
 
         // preserveConstEnums when isolatedModules is set
@@ -463,17 +618,20 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             config.compilerOptions.preserveConstEnums = true;
         }
 
-        // resolveJsonModule defaults to false when explicit moduleResolution is set and is not bundler
-        if (config.compilerOptions.resolveJsonModule === undefined && config.compilerOptions.moduleResolution) {
-            const resolution = config.compilerOptions.moduleResolution.toLocaleLowerCase();
+        // resolveJsonModule: only node20/nodenext/bundler imply true; everything else defaults to false
+        if (config.compilerOptions.resolveJsonModule === undefined) {
+            const currentModule = config.compilerOptions.module;
+            const resolution = config.compilerOptions.moduleResolution?.toLocaleLowerCase();
 
-            if (resolution !== "bundler") {
+            const impliesTrue = (currentModule && ["node20", "nodenext"].includes(currentModule)) || resolution === "bundler";
+
+            if (!impliesTrue && resolution) {
                 // eslint-disable-next-line no-param-reassign
                 config.compilerOptions.resolveJsonModule = false;
             }
         }
 
-        // resolvePackageJsonExports/Imports: false for non-bundler/node16/nodenext resolutions
+        // resolvePackageJsonExports/Imports: false for non-modern resolutions
         if (config.compilerOptions.moduleResolution) {
             const resolution = config.compilerOptions.moduleResolution.toLocaleLowerCase();
 
@@ -563,23 +721,7 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
         const value = config[property];
 
         if (value) {
-            config[property] = value.map((filePath) => {
-                const interpolate = interpolateConfigDirectory(filePath, configDirectory);
-
-                if (interpolate) {
-                    return interpolate;
-                }
-
-                if (property === "files" && isRelative(filePath)) {
-                    return filePath;
-                }
-
-                if (property === "include" && isRelative(filePath)) {
-                    return join(configDirectory, filePath);
-                }
-
-                return normalize(filePath);
-            });
+            config[property] = value.map((filePath) => interpolateConfigDirectory(filePath, configDirectory) ?? filePath);
         }
     }
 
