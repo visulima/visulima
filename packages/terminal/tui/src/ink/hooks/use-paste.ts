@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/no-tabs, @stylistic/no-trailing-spaces, consistent-return, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
+/* eslint-disable @stylistic/no-tabs, consistent-return, jsdoc/require-asterisk-prefix, sonarjs/no-tab */
 import { useEffect } from "react";
 
 import reconciler from "../reconciler";
@@ -31,18 +31,18 @@ type Options = {
  * import {useInput, usePaste} from 'ink';
  *
  * const MyInput = () => {
-	* useInput((input, key) => {
+ * useInput((input, key) => {
 		// Only receives typed characters and key events, not pasted text.
 		if (key.return) {
 			// Submit
 		}
 	});
-
+ 
 	usePaste((text) => {
 		// Receives the full pasted string, including newlines.
 		console.log('Pasted:', text);
 	});
-
+ 
 	return …
 };
 ```

@@ -16,7 +16,7 @@ const create: Command = {
         ["vis create --list", "Show available templates"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const args = argument as string[];
+        const args = argument;
 
         if (options.list) {
             logger.info("Built-in templates:");
@@ -38,13 +38,18 @@ const create: Command = {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const code = runDlx(pm, {
-            additionalPackages: [],
-            args: rest,
-            package: template as string,
-            shellMode: false,
-            silent: false,
-        }, cwd, logger);
+        const code = runDlx(
+            pm,
+            {
+                additionalPackages: [],
+                args: rest,
+                package: template as string,
+                shellMode: false,
+                silent: false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;
@@ -87,13 +92,13 @@ async function generateVscodeConfig(projectDir: string, logger: Console): Promis
         try {
             const existing = JSON.parse(readFileSync(settingsPath, "utf8"));
 
-            writeFileSync(settingsPath, JSON.stringify({ ...defaultSettings, ...existing }, null, 4) + "\n");
+            writeFileSync(settingsPath, `${JSON.stringify({ ...defaultSettings, ...existing }, null, 4)}\n`);
             logger.info("Merged .vscode/settings.json");
         } catch {
             logger.warn("Could not merge .vscode/settings.json, skipping");
         }
     } else {
-        writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 4) + "\n");
+        writeFileSync(settingsPath, `${JSON.stringify(defaultSettings, null, 4)}\n`);
         logger.info("Created .vscode/settings.json");
     }
 
@@ -104,16 +109,23 @@ async function generateVscodeConfig(projectDir: string, logger: Console): Promis
         try {
             const existing = JSON.parse(readFileSync(extensionsPath, "utf8"));
 
-            writeFileSync(extensionsPath, JSON.stringify({
-                ...existing,
-                recommendations: [...new Set([...(existing.recommendations || []), ...defaultExtensions.recommendations])],
-            }, null, 4) + "\n");
+            writeFileSync(
+                extensionsPath,
+                `${JSON.stringify(
+                    {
+                        ...existing,
+                        recommendations: [...new Set([...existing.recommendations || [], ...defaultExtensions.recommendations])],
+                    },
+                    null,
+                    4,
+                )}\n`,
+            );
             logger.info("Merged .vscode/extensions.json");
         } catch {
             logger.warn("Could not merge .vscode/extensions.json, skipping");
         }
     } else {
-        writeFileSync(extensionsPath, JSON.stringify(defaultExtensions, null, 4) + "\n");
+        writeFileSync(extensionsPath, `${JSON.stringify(defaultExtensions, null, 4)}\n`);
         logger.info("Created .vscode/extensions.json");
     }
 }

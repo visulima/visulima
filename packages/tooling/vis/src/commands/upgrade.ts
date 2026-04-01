@@ -15,7 +15,7 @@ const upgrade: Command = {
         ["vis upgrade --check", "Check for updates without installing"],
     ],
     execute: async ({ argument, logger, options }) => {
-        const targetVersion = (argument as string[])?.[0];
+        const targetVersion = argument?.[0];
 
         logger.info("info: checking for updates...");
 
@@ -47,10 +47,10 @@ const upgrade: Command = {
         }
 
         if (options.check) {
-            if (currentVersion !== latestVersion) {
-                logger.info(`info: found @visulima/vis@${latestVersion} (current: ${currentVersion})`);
-            } else {
+            if (currentVersion === latestVersion) {
                 logger.info(`\u2713 Already up to date (${currentVersion})`);
+            } else {
+                logger.info(`info: found @visulima/vis@${latestVersion} (current: ${currentVersion})`);
             }
 
             return;

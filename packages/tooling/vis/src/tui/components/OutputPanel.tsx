@@ -1,5 +1,4 @@
 import { Box, Text } from "@visulima/tui";
-import type { TaskStatus } from "@visulima/task-runner";
 
 import { getStatusInfo } from "../status-utils";
 import type { TaskRowData } from "./TaskRow";
@@ -14,7 +13,7 @@ const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: s
         return { color: "gray", icon: "\u00B7" };
     }
 
-    return getStatusInfo(status as TaskStatus);
+    return getStatusInfo(status);
 };
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -34,26 +33,28 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
     const borderStyle = focused ? "bold" : "single";
     const borderColor = focused ? statusColor : "gray";
 
-    const titleElement = taskId ? (
-        <Box>
-            <Text color={statusColor} bold={focused}>
-                {statusIcon}
-            </Text>
-            <Text bold={focused} dimColor={!focused}>
-                {` ${taskId}`}
-            </Text>
-        </Box>
-    ) : null;
+    const titleElement = taskId
+        ? (
+            <Box>
+                <Text bold={focused} color={statusColor}>
+                    {statusIcon}
+                </Text>
+                <Text bold={focused} dimColor={!focused}>
+                    {` ${taskId}`}
+                </Text>
+            </Box>
+        )
+        : null;
 
     // Empty state
     if (!taskId) {
         return (
             <Box
+                alignItems="center"
                 borderColor="gray"
                 borderStyle="single"
                 flexDirection="column"
                 flexGrow={1}
-                alignItems="center"
                 justifyContent="center"
                 paddingX={2}
                 paddingY={1}
@@ -71,16 +72,9 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
     // Waiting state
     if (!output && (statusValue === "running" || statusValue === "pending")) {
         return (
-            <Box
-                borderColor={borderColor}
-                borderStyle={borderStyle}
-                flexDirection="column"
-                flexGrow={1}
-                paddingX={2}
-                paddingY={1}
-            >
+            <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1} paddingX={2} paddingY={1}>
                 {titleElement}
-                <Box flexGrow={1} alignItems="center" justifyContent="center">
+                <Box alignItems="center" flexGrow={1} justifyContent="center">
                     <Text dimColor>Waiting for task output...</Text>
                 </Box>
             </Box>
@@ -88,17 +82,10 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
     }
 
     return (
-        <Box
-            borderColor={borderColor}
-            borderStyle={borderStyle}
-            flexDirection="column"
-            flexGrow={1}
-            paddingX={2}
-            paddingY={1}
-        >
+        <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1} paddingX={2} paddingY={1}>
             {/* Title bar */}
             {titleElement}
-            <Text>{""}</Text>
+            <Text />
 
             {/* Output content */}
             <Box flexDirection="column" flexGrow={1} overflow="hidden">
@@ -111,7 +98,11 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
             {scrollOffset > 0 && (
                 <Box justifyContent="flex-end">
                     <Text dimColor>
-                        {"\u2191"} {scrollOffset} lines above
+                        {"\u2191"}
+                        {" "}
+                        {scrollOffset}
+                        {" "}
+                        lines above
                     </Text>
                 </Box>
             )}

@@ -69,10 +69,7 @@ describe("diffChars (inline highlighting)", () => {
 
 describe("diffWords (prose highlighting)", () => {
     bench("sentence pair", () => {
-        diffWords(
-            "The quick brown fox jumps over the lazy dog",
-            "The fast brown fox leaps over the sleepy dog",
-        );
+        diffWords("The quick brown fox jumps over the lazy dog", "The fast brown fox leaps over the sleepy dog");
     });
 
     bench("paragraph pair", () => {

@@ -12,9 +12,10 @@ afterEach(() => {
     cleanup();
 });
 
-const delay = (ms: number) => new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
-});
+const delay = (ms: number) =>
+    new Promise<void>((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 const Item = ({ height = 1, label }: { height?: number; label: string }) => (
     <Box height={height}>

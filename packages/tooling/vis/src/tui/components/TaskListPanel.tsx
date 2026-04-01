@@ -1,5 +1,5 @@
-import { Box, Spinner, Text } from "@visulima/tui";
 import type { TaskStatus } from "@visulima/task-runner";
+import { Box, Spinner, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
@@ -31,7 +31,7 @@ const getCacheLabel = (status: TaskRowData["status"]): string => {
 };
 
 const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | null]): string =>
-    pinnedTaskIds[0] === taskId ? "[1]" : pinnedTaskIds[1] === taskId ? "[2]" : "";
+    (pinnedTaskIds[0] === taskId ? "[1]" : pinnedTaskIds[1] === taskId ? "[2]" : "");
 
 // ── Sub-components ──────────────────────────────────────────────────────
 
@@ -58,24 +58,34 @@ const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListR
 
     if (status === "running") {
         statusIcon = (
-            <Text color="cyan" bold>
+            <Text bold color="cyan">
                 {"  "}
                 <Spinner type="dots" />
                 {"  "}
             </Text>
         );
     } else if (status === "pending") {
-        statusIcon = <Text color="gray" bold>{"  \u00B7  "}</Text>;
+        statusIcon = (
+            <Text bold color="gray">
+                {"  \u00B7  "}
+            </Text>
+        );
     } else {
-        const { color, icon } = getStatusInfo(status as TaskStatus);
+        const { color, icon } = getStatusInfo(status);
 
-        statusIcon = <Text color={color} bold>{"  "}{icon}{"  "}</Text>;
+        statusIcon = (
+            <Text bold color={color}>
+                {"  "}
+                {icon}
+                {"  "}
+            </Text>
+        );
     }
 
     let durationText = ELLIPSIS;
 
     if (status !== "running" && status !== "pending") {
-        durationText = row.duration !== undefined ? formatMs(row.duration) : DASH;
+        durationText = row.duration === undefined ? DASH : formatMs(row.duration);
     } else if (status === "running" && row.elapsed !== undefined) {
         durationText = formatMs(row.elapsed);
     }
@@ -91,10 +101,10 @@ const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListR
                 </Text>
                 {pinLabel ? <Text dimColor>{` ${pinLabel}`}</Text> : null}
             </Box>
-            <Box width={CACHE_COLUMN_WIDTH} justifyContent="flex-end">
+            <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
                 <Text dimColor={!isCacheStatus(status as TaskStatus)}>{getCacheLabel(status)}</Text>
             </Box>
-            <Box width={DURATION_COLUMN_WIDTH} justifyContent="flex-end">
+            <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
                 <Text dimColor={status === "pending"}>{durationText}</Text>
             </Box>
         </Box>
@@ -148,8 +158,8 @@ const TaskListPanel = ({
         if (row) {
             parallelRows.push(
                 <TaskListRow
-                    key={`par-${String(i)}`}
                     isSelected={row.taskId === selectedTaskId}
+                    key={`par-${String(i)}`}
                     parallelConnector={connector}
                     pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
                     row={row}
@@ -158,12 +168,12 @@ const TaskListPanel = ({
         } else {
             parallelRows.push(
                 <Box key={`par-empty-${String(i)}`}>
-                    <Text>{" "}</Text>
+                    <Text> </Text>
                     <Box width={1}>
                         <Text color={connector ? "cyan" : undefined}>{connector ? "\u2502" : " "}</Text>
                     </Box>
                     <Box width={STATUS_ICON_WIDTH}>
-                        <Text>{" "}</Text>
+                        <Text> </Text>
                     </Box>
                     <Text dimColor>Waiting for task...</Text>
                 </Box>,
@@ -176,8 +186,8 @@ const TaskListPanel = ({
     // Completed + pending rows (merged into single loop)
     const listRows = [...completed, ...pending].map((row) => (
         <TaskListRow
-            key={row.taskId}
             isSelected={row.taskId === selectedTaskId}
+            key={row.taskId}
             parallelConnector={false}
             pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
             row={row}
@@ -186,8 +196,8 @@ const TaskListPanel = ({
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
-            <Box paddingX={1} gap={1}>
-                <Text bold inverse color={badgeColor}>
+            <Box gap={1} paddingX={1}>
+                <Text bold color={badgeColor} inverse>
                     {" VIS "}
                 </Text>
                 <Text>{title}</Text>
@@ -197,7 +207,7 @@ const TaskListPanel = ({
                 <Box flexDirection="column" paddingLeft={1}>
                     {parallelRows}
                     <Box>
-                        <Text>{" "}</Text>
+                        <Text> </Text>
                         <Box width={1}>
                             <Text color="cyan">{"\u2514"}</Text>
                         </Box>
@@ -210,10 +220,10 @@ const TaskListPanel = ({
             </Box>
 
             {filterActive && (
-                <Box paddingX={1} borderStyle="single" borderColor="yellow" borderTop borderBottom={false} borderLeft={false} borderRight={false}>
+                <Box borderBottom={false} borderColor="yellow" borderLeft={false} borderRight={false} borderStyle="single" borderTop paddingX={1}>
                     <Text color="yellow">{"/  "}</Text>
                     <Text>{filterText}</Text>
-                    <Text inverse>{" "}</Text>
+                    <Text inverse> </Text>
                 </Box>
             )}
         </Box>

@@ -18,20 +18,25 @@ const install: Command = {
         const pm = detectPm(cwd);
         const filters = toStringArray(options.filter);
 
-        const code = runInstall(pm, {
-            dev: (options.dev as boolean) || false,
-            filter: filters,
-            force: (options.force as boolean) || false,
-            frozenLockfile: (options["frozen-lockfile"] as boolean) || false,
-            ignoreScripts: (options["ignore-scripts"] as boolean) || false,
-            lockfileOnly: (options["lockfile-only"] as boolean) || false,
-            noOptional: (options["no-optional"] as boolean) || false,
-            offline: (options.offline as boolean) || false,
-            prod: (options.prod as boolean) || false,
-            recursive: (options.recursive as boolean) || false,
-            silent: (options.silent as boolean) || false,
-            workspaceRoot: (options["workspace-root"] as boolean) || false,
-        }, cwd, logger);
+        const code = runInstall(
+            pm,
+            {
+                dev: (options.dev as boolean) || false,
+                filter: filters,
+                force: (options.force as boolean) || false,
+                frozenLockfile: (options["frozen-lockfile"] as boolean) || false,
+                ignoreScripts: (options["ignore-scripts"] as boolean) || false,
+                lockfileOnly: (options["lockfile-only"] as boolean) || false,
+                noOptional: (options["no-optional"] as boolean) || false,
+                offline: (options.offline as boolean) || false,
+                prod: (options.prod as boolean) || false,
+                recursive: (options.recursive as boolean) || false,
+                silent: (options.silent as boolean) || false,
+                workspaceRoot: (options["workspace-root"] as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;

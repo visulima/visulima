@@ -41,7 +41,7 @@ export default defineConfig({
     security: {
         /**
          * Packages allowed to run install/postinstall scripts.
-         * All other packages are blocked by default.${pm !== "pnpm" ? "\n         * For " + pm + ": vis enforces this since " + pm + " lacks native allowlist support." : ""}
+         * All other packages are blocked by default.${pm === "pnpm" ? "" : `\n         * For ${pm}: vis enforces this since ${pm} lacks native allowlist support.`}
          * Run 'vis approve-builds' to scan and add packages.
          */
         allowBuilds: {
@@ -108,11 +108,7 @@ const init: Command = {
         if (options["sync-native"]) {
             info("");
             const allowBuilds = {}; // Empty for initial setup
-            const actions = syncAllowBuildsToNativeConfig(
-                pm.name as "bun" | "npm" | "pnpm" | "yarn",
-                cwd,
-                allowBuilds,
-            );
+            const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
 
             for (const action of actions) {
                 success(action);

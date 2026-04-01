@@ -146,7 +146,7 @@ describe("loadVisConfig", () => {
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default { update: { target: \"minor\" } };");
+        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), 'export default { update: { target: "minor" } };');
 
         const config = await loadVisConfig(temporaryDirectory);
 
@@ -191,7 +191,7 @@ export default config;
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), "export default async () => ({ ai: { provider: \"gemini\" } });");
+        writeFileSync(join(temporaryDirectory, "vis.config.mjs"), 'export default async () => ({ ai: { provider: "gemini" } });');
 
         const config = await loadVisConfig(temporaryDirectory);
 
@@ -203,7 +203,7 @@ export default config;
 
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
 
-        writeFileSync(join(temporaryDirectory, "vis.config.cjs"), "module.exports = { update: { format: \"json\" } };");
+        writeFileSync(join(temporaryDirectory, "vis.config.cjs"), 'module.exports = { update: { format: "json" } };');
 
         const config = await loadVisConfig(temporaryDirectory);
 

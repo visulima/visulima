@@ -17,7 +17,7 @@ const exec: Command = {
         ["vis exec -c 'echo $PATH'", "Shell mode"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const args = argument as string[];
+        const args = argument;
 
         if (!args || args.length === 0) {
             throw new Error("No command specified. Usage: vis exec <command> [args...]");
@@ -27,16 +27,21 @@ const exec: Command = {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const code = runExec(pm, {
-            args: rest,
-            command: command as string,
-            filter: toStringArray(options.filter),
-            parallel: (options.parallel as boolean) || false,
-            recursive: (options.recursive as boolean) || false,
-            reverse: (options.reverse as boolean) || false,
-            shellMode: (options["shell-mode"] as boolean) || false,
-            workspaceRoot: (options["workspace-root"] as boolean) || false,
-        }, cwd, logger);
+        const code = runExec(
+            pm,
+            {
+                args: rest,
+                command: command as string,
+                filter: toStringArray(options.filter),
+                parallel: (options.parallel as boolean) || false,
+                recursive: (options.recursive as boolean) || false,
+                reverse: (options.reverse as boolean) || false,
+                shellMode: (options["shell-mode"] as boolean) || false,
+                workspaceRoot: (options["workspace-root"] as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;

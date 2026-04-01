@@ -15,7 +15,7 @@ const dlx: Command = {
         ["vis dlx -p cowsay -p lolcatjs -c 'echo hi | cowsay | lolcatjs'", "Multiple packages with shell"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const args = argument as string[];
+        const args = argument;
 
         if (!args || args.length === 0) {
             throw new Error("No package specified. Usage: vis dlx <package[@version]> [args...]");
@@ -25,17 +25,20 @@ const dlx: Command = {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const additionalPackages = options.package
-            ? (Array.isArray(options.package) ? options.package as string[] : [options.package as string])
-            : [];
+        const additionalPackages = options.package ? Array.isArray(options.package) ? (options.package as string[]) : [options.package as string] : [];
 
-        const code = runDlx(pm, {
-            additionalPackages,
-            args: rest,
-            package: pkg as string,
-            shellMode: (options["shell-mode"] as boolean) || false,
-            silent: (options.silent as boolean) || false,
-        }, cwd, logger);
+        const code = runDlx(
+            pm,
+            {
+                additionalPackages,
+                args: rest,
+                package: pkg as string,
+                shellMode: (options["shell-mode"] as boolean) || false,
+                silent: (options.silent as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;

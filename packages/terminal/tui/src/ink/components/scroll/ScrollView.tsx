@@ -3,9 +3,9 @@ import type React from "react";
 import type { ReactNode, Ref } from "react";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
 
+import useScrollInput from "../../hooks/use-scroll-input";
 import type { Props as BoxProps } from "../Box";
 import Box from "../Box";
-import useScrollInput from "../../hooks/use-scroll-input";
 import type { ControlledScrollViewRef } from "./ControlledScrollView";
 import { ControlledScrollView } from "./ControlledScrollView";
 import { ScrollBar } from "./ScrollBar";
@@ -14,17 +14,20 @@ import useStateRef from "./use-state-ref";
 export interface ScrollViewProps extends BoxProps {
     children?: ReactNode;
     debug?: boolean;
+
     /**
      * Auto-scroll to bottom when content grows and user is at/near the bottom.
      * Pauses when user scrolls away from bottom; resumes when they return.
      * @default false
      */
     followOutput?: boolean;
+
     /**
      * Number of lines from bottom that still counts as "at bottom" for followOutput.
      * @default 3
      */
     followThreshold?: number;
+
     /**
      * Enable built-in keyboard navigation (arrows, page up/down, home/end, ctrl+u/d).
      * When enabled, the component becomes focusable.
@@ -33,11 +36,13 @@ export interface ScrollViewProps extends BoxProps {
     keyboard?: boolean;
     onContentHeightChange?: (height: number, previousHeight: number) => void;
     onItemHeightChange?: (index: number, height: number, previousHeight: number) => void;
+
     /**
      * Fires when scrolled within `reachThreshold` lines of the end.
      * Only fires once per entry into the threshold zone.
      */
     onReachEnd?: () => void;
+
     /**
      * Fires when scrolled within `reachThreshold` lines of the start.
      * Only fires once per entry into the threshold zone.
@@ -45,35 +50,41 @@ export interface ScrollViewProps extends BoxProps {
     onReachStart?: () => void;
     onScroll?: (scrollOffset: number) => void;
     onViewportSizeChange?: (size: { height: number; width: number }, previousSize: { height: number; width: number }) => void;
-    /**
-     * Show a scrollbar track when content overflows the viewport.
-     * @default false
-     */
-    scrollbar?: boolean;
-    /**
-     * Color of the scrollbar thumb and track.
-     */
-    scrollbarColor?: string;
-    /**
-     * Distance in lines from the edge to trigger onReachEnd/onReachStart.
-     * @default 5
-     */
-    reachThreshold?: number;
-    /**
-     * Enable vim-style keybindings (j/k/g/G/u/d). Requires `keyboard` to be true.
-     * @default false
-     */
-    vimBindings?: boolean;
-    /**
-     * Only render items visible in the viewport plus overscan. Requires items to be measured first.
-     * @default false
-     */
-    virtualize?: boolean;
+
     /**
      * Number of extra items to render above/below the viewport when virtualized.
      * @default 3
      */
     overscan?: number;
+
+    /**
+     * Distance in lines from the edge to trigger onReachEnd/onReachStart.
+     * @default 5
+     */
+    reachThreshold?: number;
+
+    /**
+     * Show a scrollbar track when content overflows the viewport.
+     * @default false
+     */
+    scrollbar?: boolean;
+
+    /**
+     * Color of the scrollbar thumb and track.
+     */
+    scrollbarColor?: string;
+
+    /**
+     * Enable vim-style keybindings (j/k/g/G/u/d). Requires `keyboard` to be true.
+     * @default false
+     */
+    vimBindings?: boolean;
+
+    /**
+     * Only render items visible in the viewport plus overscan. Requires items to be measured first.
+     * @default false
+     */
+    virtualize?: boolean;
 }
 
 export interface ScrollViewRef {

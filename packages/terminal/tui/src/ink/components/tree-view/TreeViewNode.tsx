@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 
 /**
  * TreeViewNode renders a single node in the tree with focus indicator,
@@ -36,15 +36,9 @@ type Props<T = Record<string, unknown>> = {
     readonly styles: Theme["styles"];
 };
 
-export function buildNodeAriaLabel(
-    label: string,
-    nodeState: TreeNodeState,
-    siblingPosition: number,
-    siblingCount: number,
-): string {
+export function buildNodeAriaLabel(label: string, nodeState: TreeNodeState, siblingPosition: number, siblingCount: number): string {
     const { depth, hasChildren, isExpanded, isLoading, isSelected } = nodeState;
-    const parts: string[] = [label];
-    parts.push(`item ${siblingPosition} of ${siblingCount}`);
+    const parts: string[] = [label, `item ${siblingPosition} of ${siblingCount}`];
 
     if (depth > 0) {
         parts.push(`depth ${depth}`);
@@ -65,10 +59,7 @@ export function buildNodeAriaLabel(
     return parts.join(", ");
 }
 
-export function buildNodeAriaState(
-    nodeState: TreeNodeState,
-    selectionMode: SelectionMode,
-): { expanded?: boolean; selected?: boolean } | undefined {
+export function buildNodeAriaState(nodeState: TreeNodeState, selectionMode: SelectionMode): { expanded?: boolean; selected?: boolean } | undefined {
     const state: { expanded?: boolean; selected?: boolean } = {};
 
     if (nodeState.hasChildren) {
@@ -82,15 +73,7 @@ export function buildNodeAriaState(
     return Object.keys(state).length > 0 ? state : undefined;
 }
 
-export function TreeViewNode<T>({
-    isScreenReaderEnabled,
-    node,
-    nodeState,
-    selectionMode,
-    siblingCount,
-    siblingPosition,
-    styles,
-}: Props<T>): ReactElement {
+export function TreeViewNode<T>({ isScreenReaderEnabled, node, nodeState, selectionMode, siblingCount, siblingPosition, styles }: Props<T>): ReactElement {
     const { depth, hasChildren, isExpanded, isFocused, isLoading, isSelected } = nodeState;
 
     // Determine expand/collapse indicator
@@ -106,9 +89,7 @@ export function TreeViewNode<T>({
 
     return (
         <Box {...styles.node({ isFocused })} aria-role="listitem" aria-state={buildNodeAriaState(nodeState, selectionMode)}>
-            {ariaLabel && (
-                <Text aria-label={ariaLabel}>{""}</Text>
-            )}
+            {ariaLabel && <Text aria-label={ariaLabel} />}
             {/* Focus indicator */}
             {isFocused && (
                 <Text {...styles.focusIndicator()} aria-hidden>

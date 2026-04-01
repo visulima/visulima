@@ -4,11 +4,12 @@
  */
 export type TreeNode<T = Record<string, unknown>> = {
     /** Child nodes. Undefined or empty array means leaf node. */
-    readonly children?: Array<TreeNode<T>>;
+    readonly children?: TreeNode<T>[];
     /** Arbitrary user data attached to this node. */
     readonly data?: T;
     /** Unique identifier for this node. Used as the key for all lookups. */
     readonly id: string;
+
     /**
      * Explicitly marks this node as a parent that can have children loaded
      * asynchronously via `loadChildren`. When true, the node shows an expand
@@ -23,7 +24,7 @@ export type TreeNode<T = Record<string, unknown>> = {
 /**
  * For async/lazy loading: a function that resolves children on demand.
  */
-export type AsyncChildrenFn<T = Record<string, unknown>> = (node: TreeNode<T>) => Promise<Array<TreeNode<T>>>;
+export type AsyncChildrenFn<T = Record<string, unknown>> = (node: TreeNode<T>) => Promise<TreeNode<T>[]>;
 
 /**
  * State passed to custom renderers and theme functions.

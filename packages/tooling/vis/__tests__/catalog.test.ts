@@ -1189,7 +1189,7 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain("\"@types/node\": ^22.0.0");
+        expect(result).toContain('"@types/node": ^22.0.0');
     });
 
     it("should update exact version without prefix", () => {
@@ -1351,8 +1351,8 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain("- \"packages/*\"");
-        expect(result).toContain("- \"apps/*\"");
+        expect(result).toContain('- "packages/*"');
+        expect(result).toContain('- "apps/*"');
         expect(result).toContain("react: ^19.0.0");
     });
 
@@ -1383,7 +1383,7 @@ catalog:
         const result = readFileSync(filePath, "utf8");
 
         // Quotes around version should be preserved (replace happens inside)
-        expect(result).toContain("^19.0.0\"");
+        expect(result).toContain('^19.0.0"');
     });
 });
 
@@ -1558,19 +1558,19 @@ describe("detectJsonIndent", () => {
     it("should detect 2-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
+        expect(detectJsonIndent('{\n  "name": "test"\n}')).toBe(2);
     });
 
     it("should detect 4-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
+        expect(detectJsonIndent('{\n    "name": "test"\n}')).toBe(4);
     });
 
     it("should default to 2 when no indentation found", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
+        expect(detectJsonIndent('{"name":"test"}')).toBe(2);
     });
 });
 
@@ -1694,7 +1694,7 @@ describe("applyCatalogUpdates with bun", () => {
         const content = readFileSync(filePath, "utf8");
 
         // Should use 4-space indent
-        expect(content).toContain("    \"workspaces\"");
+        expect(content).toContain('    "workspaces"');
     });
 
     it("should handle multiple updates in bun catalog", () => {
@@ -2082,7 +2082,7 @@ describe("createBackup", () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const filePath = join(temporaryDirectory, "package.json");
 
-        writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
+        writeFileSync(filePath, '{"workspaces":{"catalog":{"react":"^18.0.0"}}}');
 
         const backupPath = createBackup(temporaryDirectory, "bun");
 
@@ -2123,13 +2123,13 @@ describe("restoreFromBackup", () => {
         const filePath = join(temporaryDirectory, "package.json");
         const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, "{\"old\":true}");
-        writeFileSync(filePath, "{\"new\":true}");
+        writeFileSync(backupPath, '{"old":true}');
+        writeFileSync(filePath, '{"new":true}');
 
         const restored = restoreFromBackup(temporaryDirectory, "bun");
 
         expect(restored).toBe(true);
-        expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
+        expect(readFileSync(filePath, "utf8")).toContain('"old"');
     });
 
     it("should return false when no backup exists", () => {

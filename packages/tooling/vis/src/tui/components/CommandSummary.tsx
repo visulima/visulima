@@ -1,5 +1,5 @@
-import { Box, Text } from "@visulima/tui";
 import type { Task } from "@visulima/task-runner";
+import { Box, Text } from "@visulima/tui";
 
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { CROSS, TICK } from "../symbols";
@@ -20,17 +20,7 @@ interface CommandSummaryProps {
 /**
  * Final summary block rendered after all tasks complete.
  */
-const CommandSummary = ({
-    cached,
-    failed,
-    failedIds,
-    projectNames,
-    skippedIds,
-    succeeded,
-    targets,
-    tasks,
-    took,
-}: CommandSummaryProps): React.JSX.Element => {
+const CommandSummary = ({ cached, failed, failedIds, projectNames, skippedIds, succeeded, targets, tasks, took }: CommandSummaryProps): React.JSX.Element => {
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
 
     if (failed === 0 && (!skippedIds || skippedIds.length === 0)) {
@@ -38,14 +28,20 @@ const CommandSummary = ({
 
         return (
             <Header title={`Successfully ran ${description}`} variant="success">
-                <Box paddingLeft={2} flexDirection="column">
+                <Box flexDirection="column" paddingLeft={2}>
                     <Text>
                         <Text color="green">{TICK}</Text>
                         {"  "}
-                        {succeeded + cached} tasks completed
+                        {succeeded + cached}
+                        {" "}
+                        tasks completed
                         {cacheNote ? <Text dimColor>{cacheNote}</Text> : null}
                     </Text>
-                    <Text dimColor>{"    "}Took {took}</Text>
+                    <Text dimColor>
+                        {"    "}
+                        Took
+                        {took}
+                    </Text>
                 </Box>
             </Header>
         );
@@ -53,25 +49,35 @@ const CommandSummary = ({
 
     return (
         <Header title={`Ran ${description}`} variant="error">
-            <Box paddingLeft={2} flexDirection="column">
+            <Box flexDirection="column" paddingLeft={2}>
                 {skippedIds && skippedIds.length > 0 && (
                     <Box flexDirection="column">
                         <Text dimColor>
-                            {skippedIds.length} task{skippedIds.length === 1 ? "" : "s"} skipped (dependency failed or --bail)
+                            {skippedIds.length}
+                            {" "}
+                            task
+                            {skippedIds.length === 1 ? "" : "s"}
+                            {" "}
+                            skipped (dependency failed or --bail)
                         </Text>
                         {skippedIds.map((id) => (
-                            <Text key={id} dimColor>
+                            <Text dimColor key={id}>
                                 {"   -  "}
                                 {id}
                             </Text>
                         ))}
-                        <Text>{""}</Text>
+                        <Text />
                     </Box>
                 )}
                 {failed > 0 && (
                     <Box flexDirection="column">
                         <Text>
-                            <Text color="red">{String(failed)}</Text> task{failed === 1 ? "" : "s"} failed:
+                            <Text color="red">{String(failed)}</Text>
+                            {" "}
+                            task
+                            {failed === 1 ? "" : "s"}
+                            {" "}
+                            failed:
                         </Text>
                         {failedIds.map((id) => (
                             <Text key={id}>
@@ -81,10 +87,14 @@ const CommandSummary = ({
                                 {id}
                             </Text>
                         ))}
-                        <Text>{""}</Text>
+                        <Text />
                     </Box>
                 )}
-                <Text dimColor>{"    "}Took {took}</Text>
+                <Text dimColor>
+                    {"    "}
+                    Took
+                    {took}
+                </Text>
             </Box>
         </Header>
     );

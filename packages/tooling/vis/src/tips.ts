@@ -21,14 +21,14 @@ interface TipContext {
 }
 
 interface Tip {
-    /** Unique identifier for per-tip cooldown tracking */
-    id: string;
-    /** Probability of showing when matched (0.0 - 1.0). Default: 1.0 */
-    probability?: number;
     /** Per-tip cooldown in milliseconds. Default: GLOBAL_COOLDOWN_MS */
     cooldownMs?: number;
+    /** Unique identifier for per-tip cooldown tracking */
+    id: string;
     matches: (context: TipContext) => boolean;
     message: (context: TipContext) => string;
+    /** Probability of showing when matched (0.0 - 1.0). Default: 1.0 */
+    probability?: number;
 }
 
 const GLOBAL_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
@@ -71,8 +71,8 @@ const tips: Tip[] = [
     {
         cooldownMs: 30 * 60 * 1000, // 30 minutes
         id: "short-aliases",
-        matches: (ctx) => ["install", "remove", "uninstall", "update", "link"].includes(ctx.command),
-        message: (ctx) => {
+        matches: (context) => ["install", "link", "remove", "uninstall", "update"].includes(context.command),
+        message: (context) => {
             const aliases: Record<string, string> = {
                 install: "i",
                 link: "ln",
@@ -80,81 +80,75 @@ const tips: Tip[] = [
                 uninstall: "rm",
                 update: "up",
             };
-            const alias = aliases[ctx.command];
+            const alias = aliases[context.command];
 
-            return alias ? `You can use 'vis ${alias}' as a shorthand for 'vis ${ctx.command}'` : "";
+            return alias ? `You can use 'vis ${alias}' as a shorthand for 'vis ${context.command}'` : "";
         },
         probability: 0.5,
     },
     {
         id: "use-exec",
-        matches: (ctx) => ctx.command === "dlx" && ctx.success,
+        matches: (context) => context.command === "dlx" && context.success,
         message: () => "Use 'vis exec' to run locally installed binaries without downloading.",
     },
     {
         id: "security-check",
-        matches: (ctx) =>
-            (ctx.command === "check" || ctx.command === "update") &&
-            ctx.success &&
-            !ctx.args.includes("--security"),
+        matches: (context) => (context.command === "check" || context.command === "update") && context.success && !context.args.includes("--security"),
         message: () => "Add --security to check for known vulnerabilities via OSV.dev",
         probability: 0.3,
     },
     {
         cooldownMs: 60 * 60 * 1000, // 1 hour
         id: "ai-analysis",
-        matches: (ctx) =>
-            (ctx.command === "check" || ctx.command === "update") &&
-            ctx.success &&
-            !ctx.args.includes("--ai"),
+        matches: (context) => (context.command === "check" || context.command === "update") && context.success && !context.args.includes("--ai"),
         message: () => "Add --ai to run AI analysis on outdated packages before updating.",
         probability: 0.2,
     },
     {
         id: "dedupe-after-install",
-        matches: (ctx) => ctx.command === "install" && ctx.success,
+        matches: (context) => context.command === "install" && context.success,
         message: () => "Run 'vis dedupe' periodically to remove duplicate dependencies.",
         probability: 0.15,
     },
     {
         id: "why-command",
-        matches: (ctx) => ctx.command === "outdated" && ctx.success,
+        matches: (context) => context.command === "outdated" && context.success,
         message: () => "Use 'vis why <package>' to understand why a dependency is installed.",
         probability: 0.3,
     },
     {
         id: "graph-command",
-        matches: (ctx) => ctx.command === "run" && ctx.success,
+        matches: (context) => context.command === "run" && context.success,
         message: () => "Use 'vis graph' to visualize your project dependency graph.",
         probability: 0.1,
     },
     {
         id: "affected-command",
-        matches: (ctx) => ctx.command === "run" && ctx.success && !ctx.args.includes("--projects"),
+        matches: (context) => context.command === "run" && context.success && !context.args.includes("--projects"),
         message: () => "Use 'vis affected <target>' to run tasks only on changed projects.",
         probability: 0.2,
     },
     {
         id: "pm-cache",
-        matches: (ctx) => ctx.command === "install" && ctx.success,
+        matches: (context) => context.command === "install" && context.success,
         message: () => "Use 'vis pm cache dir' to find your package manager's cache location.",
         probability: 0.1,
     },
     {
         id: "create-editor",
-        matches: (ctx) => ctx.command === "create" && ctx.success,
+        matches: (context) => context.command === "create" && context.success,
         message: () => "Add --editor vscode to generate VS Code configuration during project creation.",
         probability: 0.5,
     },
     {
         id: "env-pin",
-        matches: (ctx) => ctx.command === "env" && ctx.args.includes("install") && ctx.success,
+        matches: (context) => context.command === "env" && context.args.includes("install") && context.success,
         message: () => "Use 'vis env pin <version>' to pin the Node.js version for your project.",
         probability: 0.5,
     },
     {
         id: "upgrade-check",
-        matches: (ctx) => ctx.command !== "upgrade" && ctx.success,
+        matches: (context) => context.command !== "upgrade" && context.success,
         message: () => "Run 'vis upgrade --check' periodically to see if a newer version of vis is available.",
         probability: 0.05, // Very low probability - occasional reminder
     },
@@ -202,7 +196,7 @@ const showTip = (context: TipContext): void => {
 
     // Apply probabilistic filtering
     const selected = candidates.find((tip) => {
-        const probability = tip.probability ?? 1.0;
+        const probability = tip.probability ?? 1;
 
         return Math.random() < probability;
     });
@@ -218,7 +212,7 @@ const showTip = (context: TipContext): void => {
     }
 
     // Dimmed styling
-    process.stderr.write(`\n\x1B[2mtip: ${message}\x1B[0m\n`);
+    process.stderr.write(`\n\u001B[2mtip: ${message}\u001B[0m\n`);
 
     // Update state
     state.lastGlobal = now;

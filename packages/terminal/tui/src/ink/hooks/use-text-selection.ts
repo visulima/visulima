@@ -104,17 +104,14 @@ const useTextSelection = (ref: RefObject<DOMElement | null>, options: UseTextSel
         selection.removeAllRanges();
     }, [selection]);
 
-    return useMemo(
-        () => {
-            return {
-                clearSelection,
-                selectAll,
-                selectedText,
-                selection,
-            };
-        },
-        [clearSelection, selectedText, selectAll, selection],
-    );
+    return useMemo(() => {
+        return {
+            clearSelection,
+            selectAll,
+            selectedText,
+            selection,
+        };
+    }, [clearSelection, selectedText, selectAll, selection]);
 };
 
 export default useTextSelection;

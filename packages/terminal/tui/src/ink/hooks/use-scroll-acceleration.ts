@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, consistent-return, import/exports-last, unicorn/prefer-ternary */
+/* eslint-disable consistent-return, import/exports-last, unicorn/prefer-ternary */
 
 /**
  * React hook for macOS-style scroll acceleration with momentum.
@@ -158,7 +158,9 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
         [isActive, acceleration, maxVelocity],
     );
 
-    return useMemo(() => { return { handleScroll, isCoasting, velocity }; }, [handleScroll, isCoasting, velocity]);
+    return useMemo(() => {
+        return { handleScroll, isCoasting, velocity };
+    }, [handleScroll, isCoasting, velocity]);
 };
 
 export default useScrollAcceleration;

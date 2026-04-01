@@ -12,7 +12,7 @@ import { errorMessage } from "../utils";
  * Finds all node_modules directories in the workspace using lstatSync
  * to avoid following symlinks during traversal.
  */
-const findNodeModulesDirs = (root: string): string[] => {
+const findNodeModulesDirectories = (root: string): string[] => {
     const results: string[] = [];
     const stack = [root];
 
@@ -51,14 +51,7 @@ const findNodeModulesDirs = (root: string): string[] => {
     return results;
 };
 
-const LOCKFILE_NAMES = [
-    "pnpm-lock.yaml",
-    "package-lock.json",
-    "npm-shrinkwrap.json",
-    "yarn.lock",
-    "bun.lock",
-    "bun.lockb",
-];
+const LOCKFILE_NAMES = ["pnpm-lock.yaml", "package-lock.json", "npm-shrinkwrap.json", "yarn.lock", "bun.lock", "bun.lockb"];
 
 /** Removes lockfiles from cwd, returns count of removed and whether any failed. */
 const removeLockfiles = (cwd: string, dryRun: boolean, logger: Console): { hadError: boolean; removed: number } => {
@@ -118,8 +111,8 @@ const clean: Command = {
                 success(`Removed ${file}`);
             }
 
-            for (const err of result.errors) {
-                failure(err);
+            for (const error of result.errors) {
+                failure(error);
             }
 
             if (result.removed.length === 0 && result.lockfilesRemoved.length === 0) {
@@ -136,14 +129,14 @@ const clean: Command = {
         }
 
         // TypeScript fallback
-        const dirs = findNodeModulesDirs(cwd);
+        const directories = findNodeModulesDirectories(cwd);
         let hadError = false;
 
         if (dryRun) {
-            if (dirs.length > 0) {
+            if (directories.length > 0) {
                 info("Would remove:");
 
-                for (const dir of dirs) {
+                for (const dir of directories) {
                     logger.info(`  ${dir}`);
                 }
             } else {
@@ -158,12 +151,12 @@ const clean: Command = {
             return;
         }
 
-        if (dirs.length === 0) {
+        if (directories.length === 0) {
             info("No node_modules directories found.");
         } else {
             let removedCount = 0;
 
-            for (const dir of dirs) {
+            for (const dir of directories) {
                 try {
                     rmSync(dir, { force: true, recursive: true });
                     success(`Removed ${dir}`);

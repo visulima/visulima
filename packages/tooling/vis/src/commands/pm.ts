@@ -18,7 +18,7 @@ const pm: Command = {
         ["vis pm whoami", "Show logged-in user"],
     ],
     execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
-        const args = argument as string[];
+        const args = argument;
 
         if (!args || args.length === 0) {
             throw new Error(

@@ -1,8 +1,8 @@
 import { Box, Text } from "@visulima/tui";
 
 import { ELLIPSIS } from "../symbols";
-import TaskRow from "./TaskRow";
 import type { TaskRowData } from "./TaskRow";
+import TaskRow from "./TaskRow";
 
 interface TaskTableProps {
     parallelSlots?: number;
@@ -21,10 +21,8 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
     const pending = rows.filter((r) => r.status === "pending");
 
     // Calculate padding rows to prevent layout jumping
-    const paddingCount =
-        totalCompleted !== totalRows && parallelSlots !== undefined
-            ? Math.max(0, Math.min(parallelSlots, totalRows - totalCompleted) - running.length)
-            : 0;
+    const paddingCount
+        = totalCompleted !== totalRows && parallelSlots !== undefined ? Math.max(0, Math.min(parallelSlots, totalRows - totalCompleted) - running.length) : 0;
 
     return (
         <Box flexDirection="column">
@@ -32,10 +30,10 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
             <Box>
                 <Box width={3} />
                 <Box flexGrow={1} />
-                <Box width={7} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={7}>
                     <Text bold>Cache</Text>
                 </Box>
-                <Box width={14} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={14}>
                     <Text bold>Duration</Text>
                 </Box>
             </Box>
@@ -48,7 +46,7 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
             {/* Padding rows */}
             {Array.from({ length: paddingCount }, (_, i) => (
                 <Box key={`pad-${String(i)}`}>
-                    <Text>{" "}</Text>
+                    <Text> </Text>
                 </Box>
             ))}
 
@@ -65,7 +63,11 @@ const TaskTable = ({ parallelSlots, rows, totalCompleted, totalRows }: TaskTable
                 <Box>
                     <Box width={3} />
                     <Text dimColor>
-                        {ELLIPSIS} {pending.length - 1} more
+                        {ELLIPSIS}
+                        {" "}
+                        {pending.length - 1}
+                        {" "}
+                        more
                     </Text>
                 </Box>
             )}

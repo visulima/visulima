@@ -113,9 +113,7 @@ describe("hooks-use-input", () => {
         await ps.waitForExit();
 
         expect(ps.output).toContain("exited");
-        expect(ps.output).toContain(
-            "Warning: useInput() received bracketed paste because no usePaste() handler is active.",
-        );
+        expect(ps.output).toContain("Warning: useInput() received bracketed paste because no usePaste() handler is active.");
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle escape", async () => {

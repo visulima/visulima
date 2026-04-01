@@ -1,7 +1,7 @@
-import React from "react";
 import type { AiProviderInfo, AiProviderName } from "@visulima/find-ai-runner";
 import { detectAvailableProviders, detectProvider, PROVIDER_NAMES, runProvider } from "@visulima/find-ai-runner";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
+import React from "react";
 
 import { buildCacheKey, getCachedAnalysis, getTtlForAnalysisType, setCachedAnalysis } from "./ai-cache";
 import type { OutdatedEntry } from "./catalog";
@@ -418,12 +418,12 @@ const formatAiAnalysis = (result: AiAnalysisResult): string => {
             React.createElement(Text, null, result.summary),
             React.createElement(Text, null, ""),
             React.createElement(Table, { borderStyle: "none", data: tableData }),
-            ...(result.warnings.length > 0
+            ...result.warnings.length > 0
                 ? [
-                      React.createElement(Text, null, ""),
-                      ...result.warnings.map((warning, i) => React.createElement(Text, { key: String(i), dimColor: true }, `  ${warning}`)),
-                  ]
-                : []),
+                    React.createElement(Text, null, ""),
+                    ...result.warnings.map((warning, i) => React.createElement(Text, { dimColor: true, key: String(i) }, `  ${warning}`)),
+                ]
+                : [],
         ),
         { columns },
     );

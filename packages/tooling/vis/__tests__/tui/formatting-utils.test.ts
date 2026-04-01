@@ -29,7 +29,7 @@ describe("tui/formatting-utils", () => {
         it("should format an object flag as JSON", () => {
             const result = formatFlags("", "config", { key: "val" });
 
-            expect(result).toBe("--config={\"key\":\"val\"}");
+            expect(result).toBe('--config={"key":"val"}');
         });
 
         it("should format positional arguments (underscore flag)", () => {

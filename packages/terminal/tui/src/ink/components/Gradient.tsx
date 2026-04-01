@@ -85,7 +85,6 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
     }
 
     const gradientFunction = useMemo(
-
         () => (name ? multilineGradient(presets[name].colors, presets[name].options) : multilineGradient(colors ?? [])),
         [name, colors],
     );

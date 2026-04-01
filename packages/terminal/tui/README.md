@@ -58,46 +58,46 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 
 Measured with `vitest bench` on an 80×24 virtual terminal.
 
-| Metric                  | ops/sec |
-| ----------------------- | ------: |
-| Mount + render (simple) | 150,002 |
-| Mount + render (complex)|  52,821 |
-| Rerender (simple)       | 101,588 |
-| Rerender (complex)      |  30,525 |
+| Metric                   | ops/sec |
+| ------------------------ | ------: |
+| Mount + render (simple)  | 150,002 |
+| Mount + render (complex) |  52,821 |
+| Rerender (simple)        | 101,588 |
+| Rerender (complex)       |  30,525 |
 
 ### renderToString — @visulima/tui vs Ink
 
 End-to-end comparison using each library's `renderToString` API (80 columns).
 
-| Scenario                       | @visulima/tui (ops/s) | Ink (ops/s) | Speedup |
-| ------------------------------ | --------------------: | ----------: | ------: |
-| Simple component               |                 8,041 |       7,314 |   1.10× |
-| Styled (text + colors)         |                 3,184 |       2,907 |   1.10× |
-| Dashboard (borders + panels)   |                 3,851 |       1,664 |   2.31× |
+| Scenario                     | @visulima/tui (ops/s) | Ink (ops/s) | Speedup |
+| ---------------------------- | --------------------: | ----------: | ------: |
+| Simple component             |                 8,041 |       7,314 |   1.10× |
+| Styled (text + colors)       |                 3,184 |       2,907 |   1.10× |
+| Dashboard (borders + panels) |                 3,851 |       1,664 |   2.31× |
 
 ### Diff engine (native Rust NAPI binding)
 
-| Scenario                       |       ops/sec |
-| ------------------------------ | ------------: |
-| No changes (hot path)          |  17,410,306   |
-| All cells dirty (first frame)  |  17,528,554   |
-| 5% cells dirty (typical frame) |  17,218,929   |
+| Scenario                       |    ops/sec |
+| ------------------------------ | ---------: |
+| No changes (hot path)          | 17,410,306 |
+| All cells dirty (first frame)  | 17,528,554 |
+| 5% cells dirty (typical frame) | 17,218,929 |
 
 ### Additional module benchmarks
 
-| Module              | Benchmark                          |     ops/sec |
-| ------------------- | ---------------------------------- | ----------: |
-| Color matrix        | Single RGB transform               | 20,320,658  |
-| Color matrix        | 256 colors through protanopia      |    201,553  |
-| Text buffer         | Split small (1 line)               | 17,135,714  |
-| Text buffer         | Insert char (100-line doc)         |    731,095  |
-| Text buffer         | Delete line (100-line doc)         |    689,601  |
-| Shiki highlighting  | Warm cache get                     |  2,047,498  |
-| Shiki highlighting  | Cold init                          |      4,463  |
-| Markdown lexer      | Small (~50 chars)                  |    234,492  |
-| Markdown lexer      | Large (~4000 chars)                |      4,799  |
-| Diff computation    | createPatch (small)                |    419,554  |
-| Diff computation    | diffChars (small)                  |    223,987  |
+| Module             | Benchmark                     |    ops/sec |
+| ------------------ | ----------------------------- | ---------: |
+| Color matrix       | Single RGB transform          | 20,320,658 |
+| Color matrix       | 256 colors through protanopia |    201,553 |
+| Text buffer        | Split small (1 line)          | 17,135,714 |
+| Text buffer        | Insert char (100-line doc)    |    731,095 |
+| Text buffer        | Delete line (100-line doc)    |    689,601 |
+| Shiki highlighting | Warm cache get                |  2,047,498 |
+| Shiki highlighting | Cold init                     |      4,463 |
+| Markdown lexer     | Small (~50 chars)             |    234,492 |
+| Markdown lexer     | Large (~4000 chars)           |      4,799 |
+| Diff computation   | createPatch (small)           |    419,554 |
+| Diff computation   | diffChars (small)             |    223,987 |
 
 > Run benchmarks yourself: `pnpm --filter @visulima/tui run test:bench`
 

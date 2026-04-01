@@ -7,23 +7,28 @@ export type UseScrollInputOptions = {
      * so the value is always fresh (avoids stale-closure issues with refs).
      */
     getViewportHeight: () => number;
+
     /**
      * Enable or disable scroll input handling.
      * @default true
      */
     isActive?: boolean;
+
     /**
      * Scroll by a relative delta (in lines).
      */
     scrollBy: (delta: number) => void;
+
     /**
      * Jump to the bottom of the content.
      */
     scrollToBottom: () => void;
+
     /**
      * Jump to the top of the content.
      */
     scrollToTop: () => void;
+
     /**
      * Enable vim-style keybindings (j/k/g/G/u/d).
      * @default false

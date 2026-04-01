@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, @typescript-eslint/no-unnecessary-condition, import/exports-last, no-restricted-syntax */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, import/exports-last, no-restricted-syntax */
 
 /**
  * React hook for clipboard operations via OSC 52 terminal escape sequences.
@@ -55,7 +55,9 @@ const useClipboard = (options: UseClipboardOptions = {}): UseClipboardResult => 
         [isSupported, stdout, target],
     );
 
-    return useMemo(() => { return { copy, isSupported }; }, [copy, isSupported]);
+    return useMemo(() => {
+        return { copy, isSupported };
+    }, [copy, isSupported]);
 };
 
 export default useClipboard;

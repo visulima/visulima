@@ -1,6 +1,6 @@
-import React from "react";
-import { renderToString, Text } from "@visulima/tui";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
+import { renderToString, Text } from "@visulima/tui";
+import React from "react";
 
 import CommandSummary from "./components/CommandSummary";
 import Header from "./components/Header";
@@ -46,10 +46,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
 
         const columns = process.stdout.columns || 80;
         const title = `Running ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`;
-        const header = renderToString(
-            React.createElement(Header, { title, variant: "info" }),
-            { columns },
-        );
+        const header = renderToString(React.createElement(Header, { title, variant: "info" }), { columns });
 
         process.stdout.write(header);
 
@@ -72,12 +69,9 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         const columns = process.stdout.columns || 80;
 
         for (const task of tasks) {
-            const line = renderToString(
-                React.createElement(Text, null, React.createElement(Text, { dimColor: true }, ">"), ` ${task.id}`),
-                { columns },
-            );
+            const line = renderToString(React.createElement(Text, null, React.createElement(Text, { dimColor: true }, ">"), ` ${task.id}`), { columns });
 
-            process.stdout.write(line + "\n");
+            process.stdout.write(`${line}\n`);
         }
     }
 
@@ -94,8 +88,8 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
             }
 
             const icon = getStatusIcon(result.status);
-            const elapsedStr = result.startTime && result.endTime ? ` (${formatMs(result.endTime - result.startTime)})` : "";
-            const cacheLabelStr = isCacheStatus(result.status) ? " [cache]" : "";
+            const elapsedString = result.startTime && result.endTime ? ` (${formatMs(result.endTime - result.startTime)})` : "";
+            const cacheLabelString = isCacheStatus(result.status) ? " [cache]" : "";
 
             const line = renderToString(
                 React.createElement(
@@ -103,13 +97,13 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                     null,
                     icon,
                     `  ${result.task.id}`,
-                    cacheLabelStr ? React.createElement(Text, { color: "cyan" }, cacheLabelStr) : null,
-                    elapsedStr ? React.createElement(Text, { dimColor: true }, elapsedStr) : null,
+                    cacheLabelString ? React.createElement(Text, { color: "cyan" }, cacheLabelString) : null,
+                    elapsedString ? React.createElement(Text, { dimColor: true }, elapsedString) : null,
                 ),
                 { columns },
             );
 
-            process.stdout.write(line + "\n");
+            process.stdout.write(`${line}\n`);
         }
     }
 
@@ -142,6 +136,6 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
             { columns },
         );
 
-        process.stdout.write(summary + "\n");
+        process.stdout.write(`${summary}\n`);
     }
 }

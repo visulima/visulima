@@ -17,23 +17,28 @@ const outdated: Command = {
         ["vis outdated -r", "Check across all workspaces"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const packages = (argument as string[]) || [];
+        const packages = argument || [];
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const code = runOutdated(pm, {
-            compatible: (options.compatible as boolean) || false,
-            dev: (options.dev as boolean) || false,
-            filter: toStringArray(options.filter),
-            format: (options.format as string) || "table",
-            global: (options.global as boolean) || false,
-            long: (options.long as boolean) || false,
-            noOptional: (options["no-optional"] as boolean) || false,
-            packages,
-            prod: (options.prod as boolean) || false,
-            recursive: (options.recursive as boolean) || false,
-            workspaceRoot: (options["workspace-root"] as boolean) || false,
-        }, cwd, logger);
+        const code = runOutdated(
+            pm,
+            {
+                compatible: (options.compatible as boolean) || false,
+                dev: (options.dev as boolean) || false,
+                filter: toStringArray(options.filter),
+                format: (options.format as string) || "table",
+                global: (options.global as boolean) || false,
+                long: (options.long as boolean) || false,
+                noOptional: (options["no-optional"] as boolean) || false,
+                packages,
+                prod: (options.prod as boolean) || false,
+                recursive: (options.recursive as boolean) || false,
+                workspaceRoot: (options["workspace-root"] as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0 && code !== 1) {
             process.exitCode = code;

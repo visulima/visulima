@@ -51,11 +51,7 @@ function complexTree(n: number) {
                 React.createElement("text", {}, `val: ${(n * 13) % 100}`),
             ),
         ),
-        React.createElement(
-            "box",
-            { marginTop: 1 },
-            React.createElement("text", { dim: true }, "Press Ctrl+C to exit"),
-        ),
+        React.createElement("box", { marginTop: 1 }, React.createElement("text", { dim: true }, "Press Ctrl+C to exit")),
     );
 }
 

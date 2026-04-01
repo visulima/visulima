@@ -5,7 +5,7 @@ import type { TreeNode } from "./types";
  */
 export type FlatNode<T = Record<string, unknown>> = {
     /** Ordered list of direct children IDs. */
-    readonly childrenIds: readonly string[];
+    readonly childrenIds: ReadonlyArray<string>;
     /** Depth in the tree (0 for roots). */
     readonly depth: number;
     /** Index in the flattened DFS order (across ALL nodes, not just visible). */
@@ -31,7 +31,7 @@ type StackEntry<T> = {
     readonly node: TreeNode<T>;
     readonly parentId: string | undefined;
     readonly siblingIndex: number;
-    readonly siblings: Array<TreeNode<T>>;
+    readonly siblings: TreeNode<T>[];
 };
 
 /**
@@ -48,7 +48,7 @@ export class TreeNodeMap<T = Record<string, unknown>> {
     /** Map from node ID to FlatNode. */
     private readonly map: Map<string, FlatNode<T>>;
 
-    constructor(data: Array<TreeNode<T>>) {
+    constructor(data: TreeNode<T>[]) {
         this.map = new Map();
         this.orderedIds = [];
         this.rootIds = [];
@@ -95,6 +95,7 @@ export class TreeNodeMap<T = Record<string, unknown>> {
 
         while (stack.length > 0) {
             const id = stack.pop()!;
+
             result.push(id);
 
             const flatNode = this.map.get(id);
@@ -140,7 +141,7 @@ export class TreeNodeMap<T = Record<string, unknown>> {
      * Rebuilds the full tree from the current map state (not the original
      * input data), so successive calls for different parents are safe.
      */
-    withChildren(parentId: string, children: Array<TreeNode<T>>): TreeNodeMap<T> {
+    withChildren(parentId: string, children: TreeNode<T>[]): TreeNodeMap<T> {
         const parentFlat = this.map.get(parentId);
 
         if (!parentFlat) {
@@ -168,7 +169,7 @@ export class TreeNodeMap<T = Record<string, unknown>> {
         return new TreeNodeMap(rootData);
     }
 
-    private buildFromData(data: Array<TreeNode<T>>): void {
+    private buildFromData(data: TreeNode<T>[]): void {
         const stack: StackEntry<T>[] = [];
 
         // Push root nodes in reverse order so first root is processed first

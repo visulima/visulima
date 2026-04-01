@@ -31,8 +31,10 @@ const defaultConfig: Config = {
 
 createServer(defaultConfig);`;
 
-const LARGE_CODE = Array.from({ length: 50 }, (_, i) =>
-    `function handler${i}(req: Request, res: Response): void {
+const LARGE_CODE = Array.from(
+    { length: 50 },
+    (_, i) =>
+        `function handler${i}(req: Request, res: Response): void {
     const id = req.params.id;
     const data = db.find(id);
     if (!data) {
@@ -40,16 +42,20 @@ const LARGE_CODE = Array.from({ length: 50 }, (_, i) =>
         return;
     }
     res.json({ data, timestamp: Date.now() });
-}`
+}`,
 ).join("\n\n");
 
 describe("Shiki Highlighting", () => {
     let highlighter: Awaited<ReturnType<typeof getHighlighter>>;
 
-    bench("highlighter initialization (cold start)", async () => {
-        disposeHighlighter();
-        highlighter = await getHighlighter(["typescript"]);
-    }, { warmup: 0, iterations: 5 });
+    bench(
+        "highlighter initialization (cold start)",
+        async () => {
+            disposeHighlighter();
+            highlighter = await getHighlighter(["typescript"]);
+        },
+        { warmup: 0, iterations: 5 },
+    );
 
     bench("highlighter get (warm, already loaded)", async () => {
         highlighter = await getHighlighter(["typescript"]);

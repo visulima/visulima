@@ -35,8 +35,10 @@ const colorEnabled = supportsColor();
 
 // ── ANSI helpers (zero-dep, respects NO_COLOR) ───────────────────────
 
-const ansi = (open: string, close: string) => (s: string): string =>
-    colorEnabled ? `\x1B[${open}m${s}\x1B[${close}m` : s;
+const ansi
+    = (open: string, close: string) =>
+        (s: string): string =>
+            colorEnabled ? `\u001B[${open}m${s}\u001B[${close}m` : s;
 
 const bold: (s: string) => string = ansi("1", "22");
 const dim: (s: string) => string = ansi("2", "22");
@@ -66,11 +68,11 @@ const SYMBOLS: {
     readonly success: string;
     readonly warning: string;
 } = {
-    arrow: unicode ? "\u2192" : "->",    // → transitions
-    dash: unicode ? "\u2014" : "-",       // — separators
-    failure: unicode ? "\u2717" : "x",    // ✗ failure (red)
-    success: unicode ? "\u2713" : "v",    // ✓ success (green)
-    warning: unicode ? "\u26A0" : "!",    // ⚠ warning (yellow)
+    arrow: unicode ? "\u2192" : "->", // → transitions
+    dash: unicode ? "\u2014" : "-", // — separators
+    failure: unicode ? "\u2717" : "x", // ✗ failure (red)
+    success: unicode ? "\u2713" : "v", // ✓ success (green)
+    warning: unicode ? "\u26A0" : "!", // ⚠ warning (yellow)
 };
 
 // ── Prefixed output functions ────────────────────────────────────────
@@ -128,19 +130,4 @@ const injectVersion = (): void => {
     process.env.VIS_VERSION = getVersion();
 };
 
-export {
-    bold,
-    cyan,
-    dim,
-    error,
-    failure,
-    green,
-    info,
-    injectVersion,
-    note,
-    red,
-    success,
-    SYMBOLS,
-    warn,
-    yellow,
-};
+export { bold, cyan, dim, error, failure, green, info, injectVersion, note, red, success, SYMBOLS, warn, yellow };

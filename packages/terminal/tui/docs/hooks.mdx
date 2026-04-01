@@ -271,14 +271,14 @@ const { isFocused } = useScrollInput({
 });
 ```
 
-| Option           | Type                    | Default |
-| ---------------- | ----------------------- | ------- |
+| Option           | Type                      | Default  |
+| ---------------- | ------------------------- | -------- |
 | `scrollBy`       | `(delta: number) => void` | required |
-| `scrollToTop`    | `() => void`            | required |
-| `scrollToBottom`  | `() => void`            | required |
-| `viewportHeight` | `number`                | required |
-| `isActive`       | `boolean`               | `true`  |
-| `vimBindings`    | `boolean`               | `false` |
+| `scrollToTop`    | `() => void`              | required |
+| `scrollToBottom` | `() => void`              | required |
+| `viewportHeight` | `number`                  | required |
+| `isActive`       | `boolean`                 | `true`   |
+| `vimBindings`    | `boolean`                 | `false`  |
 
 Returns `{ isFocused }`.
 
@@ -597,10 +597,10 @@ useTreeView({
 });
 ```
 
-| Prop            | Type                                             | Default   | Description                          |
-| --------------- | ------------------------------------------------ | --------- | ------------------------------------ |
-| `state`         | `TreeViewState<T>`                               | required  | State from `useTreeViewState`        |
-| `selectionMode` | `"none"` \| `"single"` \| `"multiple"`           | required  | Determines Enter/Space behavior      |
-| `isDisabled`    | `boolean`                                        | `false`   | Ignores all keyboard input           |
-| `loadChildren`  | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`  | —         | Async child loader                   |
-| `onLoadError`   | `(nodeId: string, error: Error) => void`         | —         | Error callback for async loading     |
+| Prop            | Type                                            | Default  | Description                      |
+| --------------- | ----------------------------------------------- | -------- | -------------------------------- |
+| `state`         | `TreeViewState<T>`                              | required | State from `useTreeViewState`    |
+| `selectionMode` | `"none"` \| `"single"` \| `"multiple"`          | required | Determines Enter/Space behavior  |
+| `isDisabled`    | `boolean`                                       | `false`  | Ignores all keyboard input       |
+| `loadChildren`  | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>` | —        | Async child loader               |
+| `onLoadError`   | `(nodeId: string, error: Error) => void`        | —        | Error callback for async loading |

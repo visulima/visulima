@@ -2,8 +2,8 @@ import { spawnSync } from "node:child_process";
 
 import type { Command } from "@visulima/cerebro";
 
-import { detectPm } from "../pm-runner";
 import { error as errorOutput, info, note, success, warn } from "../output";
+import { detectPm } from "../pm-runner";
 import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
 
 const approveBuilds: Command = {
@@ -85,11 +85,7 @@ const approveBuilds: Command = {
             if (Object.keys(allowBuilds).length === 0) {
                 warn("No security.allowBuilds configured in vis.config.ts. Nothing to sync.");
             } else {
-                const actions = syncAllowBuildsToNativeConfig(
-                    pm.name as "bun" | "npm" | "pnpm" | "yarn",
-                    cwd,
-                    allowBuilds,
-                );
+                const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
 
                 info("");
 
@@ -103,7 +99,12 @@ const approveBuilds: Command = {
     options: [
         { defaultValue: false, description: "Approve all pending builds without prompting (pnpm only)", name: "all", type: Boolean },
         { defaultValue: false, description: "Force vis scanning even for pnpm (instead of delegating)", name: "scan", type: Boolean },
-        { defaultValue: false, description: "Sync allowBuilds to native PM config (bun: trustedDependencies, npm: .npmrc, yarn: .yarnrc.yml)", name: "sync-native", type: Boolean },
+        {
+            defaultValue: false,
+            description: "Sync allowBuilds to native PM config (bun: trustedDependencies, npm: .npmrc, yarn: .yarnrc.yml)",
+            name: "sync-native",
+            type: Boolean,
+        },
     ],
 };
 

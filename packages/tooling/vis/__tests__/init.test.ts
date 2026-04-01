@@ -112,14 +112,7 @@ describe("first-run detection", () => {
     it("should detect missing config", () => {
         expect.assertions(1);
 
-        const configFiles = [
-            "vis.config.ts",
-            "vis.config.mts",
-            "vis.config.cts",
-            "vis.config.js",
-            "vis.config.mjs",
-            "vis.config.cjs",
-        ];
+        const configFiles = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
 
         const found = configFiles.some((f) => existsSync(join(tmpDir, f)));
 
@@ -131,14 +124,7 @@ describe("first-run detection", () => {
 
         writeFileSync(join(tmpDir, "vis.config.ts"), "export default {};");
 
-        const configFiles = [
-            "vis.config.ts",
-            "vis.config.mts",
-            "vis.config.cts",
-            "vis.config.js",
-            "vis.config.mjs",
-            "vis.config.cjs",
-        ];
+        const configFiles = ["vis.config.ts", "vis.config.mts", "vis.config.cts", "vis.config.js", "vis.config.mjs", "vis.config.cjs"];
 
         const found = configFiles.some((f) => existsSync(join(tmpDir, f)));
 

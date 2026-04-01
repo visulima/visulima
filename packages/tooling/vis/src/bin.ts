@@ -73,7 +73,7 @@ cli.addPlugin({
 
             // First-run detection: prompt to run vis init when no config exists
             const command = process.argv[2] ?? "";
-            const skipFirstRunHint = new Set(["init", "help", "--help", "-h", "--version", "-V", "implode", "create"]);
+            const skipFirstRunHint = new Set(["--help", "--version", "-h", "-V", "create", "help", "implode", "init"]);
 
             if (!skipFirstRunHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env.CI) {
                 if (process.stdin.isTTY) {
@@ -82,10 +82,13 @@ cli.addPlugin({
                     const rl = createInterface({ input: process.stdin, output: process.stderr });
                     const answer = await new Promise<string>((resolve) => {
                         rl.question(
-                            `\x1B[36;1m?\x1B[0m \x1B[1mNo vis.config.ts found. Create one with best-practice security defaults?\x1B[0m \x1B[90m(\x1B[92mY\x1B[90m/n)\x1B[0m `,
+                            `\u001B[36;1m?\u001B[0m \u001B[1mNo vis.config.ts found. Create one with best-practice security defaults?\u001B[0m \u001B[90m(\u001B[92mY\u001B[90m/n)\u001B[0m `,
                             resolve,
                         );
-                        rl.on("SIGINT", () => { rl.close(); resolve("n"); });
+                        rl.on("SIGINT", () => {
+                            rl.close();
+                            resolve("n");
+                        });
                     });
 
                     rl.close();
@@ -105,9 +108,7 @@ cli.addPlugin({
                     }
                 } else {
                     // Non-interactive: just warn
-                    toolbox.logger.warn(
-                        "No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.",
-                    );
+                    toolbox.logger.warn("No vis.config.ts found. Run 'vis init' to create one with best-practice security defaults.");
                 }
             }
         } catch (error: unknown) {
@@ -124,36 +125,11 @@ cli.addPlugin({
 });
 
 // Security plugin: warn about missing settings + enforce script blocking for npm/yarn
-const INSTALL_COMMANDS = new Set(["install", "add", "update"]);
-const PM_COMMANDS = new Set(["install", "add", "update", "remove", "dedupe"]);
+const INSTALL_COMMANDS = new Set(["add", "install", "update"]);
+const PM_COMMANDS = new Set(["add", "dedupe", "install", "remove", "update"]);
 
 cli.addPlugin({
     /* eslint-disable no-param-reassign -- cerebro plugin pattern */
-    beforeCommand: async (toolbox) => {
-        const command = process.argv[2] ?? "";
-
-        if (PM_COMMANDS.has(command) && toolbox.visConfig && toolbox.workspaceRoot) {
-            const pm = detectPm(toolbox.workspaceRoot);
-
-            emitSecurityWarnings(toolbox.visConfig, pm.name);
-
-            // For install/add: enforce script blocking on npm/yarn
-            if (INSTALL_COMMANDS.has(command)) {
-                const enforcement = enforceScriptSecurity(
-                    pm.name as "bun" | "npm" | "pnpm" | "yarn",
-                    toolbox.workspaceRoot,
-                    toolbox.visConfig,
-                );
-
-                for (const w of enforcement.warnings) {
-                    toolbox.logger.warn(`security: ${w}`);
-                }
-
-                // Store enforcement result for afterCommand
-                (toolbox as unknown as Record<string, unknown>).scriptEnforcement = enforcement;
-            }
-        }
-    },
     afterCommand: async (toolbox) => {
         // Run approved scripts only if the install/update command succeeded
         if (process.exitCode && process.exitCode !== 0) {
@@ -164,6 +140,27 @@ cli.addPlugin({
 
         if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
             runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);
+        }
+    },
+    beforeCommand: async (toolbox) => {
+        const command = process.argv[2] ?? "";
+
+        if (PM_COMMANDS.has(command) && toolbox.visConfig && toolbox.workspaceRoot) {
+            const pm = detectPm(toolbox.workspaceRoot);
+
+            emitSecurityWarnings(toolbox.visConfig, pm.name);
+
+            // For install/add: enforce script blocking on npm/yarn
+            if (INSTALL_COMMANDS.has(command)) {
+                const enforcement = enforceScriptSecurity(pm.name, toolbox.workspaceRoot, toolbox.visConfig);
+
+                for (const w of enforcement.warnings) {
+                    toolbox.logger.warn(`security: ${w}`);
+                }
+
+                // Store enforcement result for afterCommand
+                (toolbox as unknown as Record<string, unknown>).scriptEnforcement = enforcement;
+            }
         }
     },
     /* eslint-enable no-param-reassign */

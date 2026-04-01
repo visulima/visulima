@@ -12,17 +12,17 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 
 ### When to use which
 
-| Feature | Box `overflow="scroll"` | `ScrollView` component |
-|---------|------------------------|----------------------|
-| **Scrollbar** | Built-in (`scrollbar` prop, on by default) | Built-in (`scrollbar` prop) |
-| **Scroll position** | You manage via `scrollTop`/`scrollLeft` props | Managed internally, control via ref (`scrollBy`, `scrollTo`) |
-| **Keyboard navigation** | You handle via `useInput` | Built-in (`keyboard` prop, optional `vimBindings`) |
-| **Sticky headers** | Yes (`sticky` prop on children) | No |
-| **Selection tracking** | No | Yes (via `ScrollList` with `selectedIndex`) |
-| **Follow output (log tailing)** | No | Yes (`followOutput` prop) |
-| **Virtualization** | No | Yes (`virtualize` prop) |
-| **Reach callbacks** | No | Yes (`onReachEnd`/`onReachStart`) |
-| **Best for** | Simple overflow with sticky headers | Lists, dynamic content, keyboard-driven UIs |
+| Feature                         | Box `overflow="scroll"`                       | `ScrollView` component                                       |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| **Scrollbar**                   | Built-in (`scrollbar` prop, on by default)    | Built-in (`scrollbar` prop)                                  |
+| **Scroll position**             | You manage via `scrollTop`/`scrollLeft` props | Managed internally, control via ref (`scrollBy`, `scrollTo`) |
+| **Keyboard navigation**         | You handle via `useInput`                     | Built-in (`keyboard` prop, optional `vimBindings`)           |
+| **Sticky headers**              | Yes (`sticky` prop on children)               | No                                                           |
+| **Selection tracking**          | No                                            | Yes (via `ScrollList` with `selectedIndex`)                  |
+| **Follow output (log tailing)** | No                                            | Yes (`followOutput` prop)                                    |
+| **Virtualization**              | No                                            | Yes (`virtualize` prop)                                      |
+| **Reach callbacks**             | No                                            | Yes (`onReachEnd`/`onReachStart`)                            |
+| **Best for**                    | Simple overflow with sticky headers           | Lists, dynamic content, keyboard-driven UIs                  |
 
 > **Important:** These are separate scroll systems. Do not nest `ScrollView` inside a `Box` with
 > `overflow="scroll"` — the Box scrollbar will not reflect ScrollView's scroll position because
@@ -87,24 +87,24 @@ const Demo = () => {
 
 Extends `BoxProps`.
 
-| Prop                    | Type       | Description                             |
-| ----------------------- | ---------- | --------------------------------------- |
-| `onScroll`              | `function` | Callback with current scroll offset     |
-| `onViewportSizeChange`  | `function` | Fires when viewport dimensions change   |
-| `onContentHeightChange` | `function` | Fires when total content height changes |
-| `onItemHeightChange`    | `function` | Fires when an individual item resizes   |
-| `debug`                 | `boolean`  | Disables overflow hidden for debugging  |
-| `keyboard`              | `boolean`  | Enable built-in keyboard navigation (default: `false`) |
-| `vimBindings`           | `boolean`  | Enable vim-style keys j/k/g/G/u/d (requires `keyboard`, default: `false`) |
-| `followOutput`          | `boolean`  | Auto-scroll to bottom when content grows (default: `false`) |
+| Prop                    | Type       | Description                                                                 |
+| ----------------------- | ---------- | --------------------------------------------------------------------------- |
+| `onScroll`              | `function` | Callback with current scroll offset                                         |
+| `onViewportSizeChange`  | `function` | Fires when viewport dimensions change                                       |
+| `onContentHeightChange` | `function` | Fires when total content height changes                                     |
+| `onItemHeightChange`    | `function` | Fires when an individual item resizes                                       |
+| `debug`                 | `boolean`  | Disables overflow hidden for debugging                                      |
+| `keyboard`              | `boolean`  | Enable built-in keyboard navigation (default: `false`)                      |
+| `vimBindings`           | `boolean`  | Enable vim-style keys j/k/g/G/u/d (requires `keyboard`, default: `false`)   |
+| `followOutput`          | `boolean`  | Auto-scroll to bottom when content grows (default: `false`)                 |
 | `followThreshold`       | `number`   | Lines from bottom that count as "at bottom" for followOutput (default: `3`) |
-| `onReachEnd`            | `function` | Fires once when scrolled within `reachThreshold` of the end |
-| `onReachStart`          | `function` | Fires once when scrolled within `reachThreshold` of the start |
-| `reachThreshold`        | `number`   | Distance in lines to trigger reach callbacks (default: `5`) |
-| `scrollbar`             | `boolean`  | Show a scrollbar when content overflows (default: `false`) |
-| `scrollbarColor`        | `string`   | Color of the scrollbar thumb and track |
-| `virtualize`            | `boolean`  | Only render visible items + overscan (default: `false`) |
-| `overscan`              | `number`   | Extra items to render outside viewport when virtualized (default: `3`) |
+| `onReachEnd`            | `function` | Fires once when scrolled within `reachThreshold` of the end                 |
+| `onReachStart`          | `function` | Fires once when scrolled within `reachThreshold` of the start               |
+| `reachThreshold`        | `number`   | Distance in lines to trigger reach callbacks (default: `5`)                 |
+| `scrollbar`             | `boolean`  | Show a scrollbar when content overflows (default: `false`)                  |
+| `scrollbarColor`        | `string`   | Color of the scrollbar thumb and track                                      |
+| `virtualize`            | `boolean`  | Only render visible items + overscan (default: `false`)                     |
+| `overscan`              | `number`   | Extra items to render outside viewport when virtualized (default: `3`)      |
 
 ### Ref Methods
 
@@ -301,12 +301,12 @@ Enable built-in keyboard controls on any `ScrollView` or `ScrollList` with the `
 
 **Default key bindings:**
 
-| Key | Action |
-| --- | ------ |
-| Arrow Up/Down | Scroll by 1 line |
-| Page Up/Down | Scroll by viewport height |
-| Home/End | Jump to top/bottom |
-| Ctrl+U/D | Half-page scroll |
+| Key           | Action                    |
+| ------------- | ------------------------- |
+| Arrow Up/Down | Scroll by 1 line          |
+| Page Up/Down  | Scroll by viewport height |
+| Home/End      | Jump to top/bottom        |
+| Ctrl+U/D      | Half-page scroll          |
 
 **Vim bindings** (add `vimBindings` prop):
 
@@ -316,11 +316,11 @@ Enable built-in keyboard controls on any `ScrollView` or `ScrollList` with the `
 </ScrollView>
 ```
 
-| Key | Action |
-| --- | ------ |
-| `j`/`k` | Scroll down/up |
-| `G` | Jump to bottom |
-| `g` | Jump to top |
+| Key     | Action            |
+| ------- | ----------------- |
+| `j`/`k` | Scroll down/up    |
+| `G`     | Jump to bottom    |
+| `g`     | Jump to top       |
 | `u`/`d` | Half-page up/down |
 
 The `useScrollInput` hook is also available for custom scroll containers:
@@ -350,6 +350,7 @@ Keep a ScrollView pinned to the bottom as content grows — useful for log viewe
 ```
 
 When `followOutput` is enabled:
+
 - If the user is at/near the bottom, new content auto-scrolls to stay at the bottom
 - If the user scrolls up, auto-follow pauses
 - Scrolling back to the bottom resumes auto-follow
@@ -361,12 +362,7 @@ Adjust `followThreshold` (default 3) to control how many lines from the bottom s
 Detect when the user scrolls near the edges for lazy loading:
 
 ```tsx
-<ScrollView
-    height={20}
-    onReachEnd={() => loadMoreItems()}
-    onReachStart={() => loadPreviousItems()}
-    reachThreshold={5}
->
+<ScrollView height={20} onReachEnd={() => loadMoreItems()} onReachStart={() => loadPreviousItems()} reachThreshold={5}>
     {items.map((item) => (
         <Text key={item.id}>{item.label}</Text>
     ))}

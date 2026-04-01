@@ -1,15 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-    error,
-    failure,
-    info,
-    injectVersion,
-    note,
-    success,
-    SYMBOLS,
-    warn,
-} from "../src/output";
+import { error, failure, info, injectVersion, note, success, SYMBOLS, warn } from "../src/output";
 
 describe("output module", () => {
     let stderrSpy: ReturnType<typeof vi.spyOn>;
