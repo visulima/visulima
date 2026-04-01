@@ -25,10 +25,10 @@ export interface TaskState {
     outputs: Map<string, string>;
     /** Up to 2 pinned task IDs for output panes. */
     pinnedTaskIds: [string | null, string | null];
-    /** All task rows with current status. */
-    rows: TaskRowData[];
     /** Whether a rerun has been requested by the user. */
     rerunRequested: boolean;
+    /** All task rows with current status. */
+    rows: TaskRowData[];
     /** Currently highlighted task index in the list. */
     selectedIndex: number;
     /** Command start timestamp (Date.now). */
@@ -43,7 +43,9 @@ type Listener = () => void;
 
 export class TaskStore {
     #state: TaskState;
+
     #listeners = new Set<Listener>();
+
     #hrtimeStarts = new Map<string, [number, number]>();
 
     public constructor(tasks: Task[]) {
@@ -59,7 +61,7 @@ export class TaskStore {
             outputs: new Map(),
             pinnedTaskIds: [null, null],
             rerunRequested: false,
-            rows: tasks.map((t) => ({ status: "pending" as const, taskId: t.id })),
+            rows: tasks.map((t) => { return { status: "pending" as const, taskId: t.id }; }),
             selectedIndex: 0,
             startTime: Date.now(),
             succeeded: 0,
@@ -70,7 +72,7 @@ export class TaskStore {
 
     public getSnapshot = (): TaskState => this.#state;
 
-    public subscribe = (listener: Listener): (() => void) => {
+    public subscribe = (listener: Listener): () => void => {
         this.#listeners.add(listener);
 
         return () => {
@@ -238,7 +240,7 @@ export class TaskStore {
             failed: 0,
             outputs: new Map(),
             rerunRequested: true,
-            rows: this.#state.rows.map((r) => ({ status: "pending" as const, taskId: r.taskId })),
+            rows: this.#state.rows.map((r) => { return { status: "pending" as const, taskId: r.taskId }; }),
             startTime: Date.now(),
             succeeded: 0,
         });

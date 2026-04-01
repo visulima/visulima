@@ -65,7 +65,9 @@ const users: User[] = [
 That's the end of the document.
 `;
 
-const LARGE_MD = Array.from({ length: 20 }, (_, i) => `## Section ${i + 1}
+const LARGE_MD = Array.from(
+    { length: 20 },
+    (_, i) => `## Section ${i + 1}
 
 Paragraph ${i + 1} with **bold**, *italic*, and \`code\`.
 
@@ -78,7 +80,8 @@ function section${i + 1}() {
 - Item A in section ${i + 1}
 - Item B in section ${i + 1}
 
-`).join("\n");
+`,
+).join("\n");
 
 describe("Markdown Lexer.lex()", () => {
     bench("small (~50 chars)", () => {

@@ -1,4 +1,4 @@
-/* eslint-disable react/function-component-definition, unicorn/filename-case, import/exports-last */
+/* eslint-disable react/function-component-definition, unicorn/filename-case */
 
 /**
  * TreeView component for terminal UIs with keyboard navigation,
@@ -18,9 +18,9 @@ import Box from "../Box";
 import Text from "../Text";
 import { theme } from "./theme";
 import { buildNodeAriaLabel, buildNodeAriaState, TreeViewNode } from "./TreeViewNode";
-import type { AsyncChildrenFn, SelectionMode, TreeNode, TreeNodeRendererProps } from "./types";
-import { useTreeViewState } from "./use-tree-view-state";
+import type { AsyncChildrenFn as AsyncChildrenFunction, SelectionMode, TreeNode, TreeNodeRendererProps } from "./types";
 import { useTreeView } from "./use-tree-view";
+import { useTreeViewState } from "./use-tree-view-state";
 
 export type Props<T = Record<string, unknown>> = {
     /**
@@ -37,7 +37,7 @@ export type Props<T = Record<string, unknown>> = {
      * in state or wrapped in `useMemo`). Passing a new array reference on
      * every render will reset focus, expansion, and selection state.
      */
-    readonly data: Array<TreeNode<T>>;
+    readonly data: TreeNode<T>[];
 
     /**
      * Set of node IDs that are expanded by default.
@@ -59,7 +59,7 @@ export type Props<T = Record<string, unknown>> = {
     /**
      * Async function to load children on demand.
      */
-    readonly loadChildren?: AsyncChildrenFn<T>;
+    readonly loadChildren?: AsyncChildrenFunction<T>;
 
     /** Called when expanded set changes. */
     readonly onExpandChange?: (expandedIds: ReadonlySet<string>) => void;
@@ -100,7 +100,7 @@ export type Props<T = Record<string, unknown>> = {
  * Renders an interactive tree view with keyboard navigation.
  *
  * ```tsx
- * <TreeView
+ * &lt;TreeView
  *   data={[
  *     { id: "1", label: "Root", children: [
  *       { id: "1.1", label: "Child" },
@@ -144,17 +144,21 @@ export function TreeView<T = Record<string, unknown>>({
         state,
     });
 
-    const styles = theme.styles;
+    const { styles } = theme;
     const isScreenReaderEnabled = useIsScreenReaderEnabled();
 
     return (
         // Ink's aria-role enum does not include "tree"/"treeitem"/"group",
         // so we use "list"/"listitem" as the closest available semantic match.
         <Box {...styles.container()} aria-role="list">
-            {isScreenReaderEnabled && <Text aria-label={ariaLabel}>{""}</Text>}
+            {isScreenReaderEnabled && <Text aria-label={ariaLabel} />}
             {state.hasScrollUp && (
                 <Text aria-label={`${state.viewportFromIndex} more items above`} dimColor>
-                    {"  "}↑ {state.viewportFromIndex} more above
+                    {"  "}
+                    ↑
+                    {state.viewportFromIndex}
+                    {" "}
+                    more above
                 </Text>
             )}
             {state.viewportNodes.map(({ node, state: nodeState }) => {
@@ -163,13 +167,11 @@ export function TreeView<T = Record<string, unknown>>({
                 const siblingCount = flatNode ? flatNode.siblingCount : 1;
 
                 if (renderNode) {
-                    const nodeAriaLabel = isScreenReaderEnabled
-                        ? buildNodeAriaLabel(node.label, nodeState, siblingPosition, siblingCount)
-                        : undefined;
+                    const nodeAriaLabel = isScreenReaderEnabled ? buildNodeAriaLabel(node.label, nodeState, siblingPosition, siblingCount) : undefined;
 
                     return (
-                        <Box key={node.id} aria-role="listitem" aria-state={buildNodeAriaState(nodeState, selectionMode)}>
-                            {nodeAriaLabel && <Text aria-label={nodeAriaLabel}>{""}</Text>}
+                        <Box aria-role="listitem" aria-state={buildNodeAriaState(nodeState, selectionMode)} key={node.id}>
+                            {nodeAriaLabel && <Text aria-label={nodeAriaLabel} />}
                             {renderNode({ node, state: nodeState })}
                         </Box>
                     );
@@ -177,8 +179,8 @@ export function TreeView<T = Record<string, unknown>>({
 
                 return (
                     <TreeViewNode
-                        key={node.id}
                         isScreenReaderEnabled={isScreenReaderEnabled}
+                        key={node.id}
                         node={node}
                         nodeState={nodeState}
                         selectionMode={selectionMode}
@@ -190,7 +192,11 @@ export function TreeView<T = Record<string, unknown>>({
             })}
             {state.hasScrollDown && (
                 <Text aria-label={`${state.visibleCount - state.viewportToIndex} more items below`} dimColor>
-                    {"  "}↓ {state.visibleCount - state.viewportToIndex} more below
+                    {"  "}
+                    ↓
+                    {state.visibleCount - state.viewportToIndex}
+                    {" "}
+                    more below
                 </Text>
             )}
         </Box>

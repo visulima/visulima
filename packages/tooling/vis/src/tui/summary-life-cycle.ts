@@ -1,6 +1,6 @@
-import React from "react";
-import { renderToString } from "@visulima/tui";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
+import { renderToString } from "@visulima/tui";
+import React from "react";
 
 import TaskSummaryView from "./components/TaskSummaryView";
 
@@ -64,26 +64,20 @@ export class SummaryLifeCycle implements LifeCycleInterface {
         }
 
         // Sort: failures first, then skipped, then success, then cached, then unknown
-        const sorted = [...this.#entries.values()].sort(
-            (a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status),
-        );
+        const sorted = [...this.#entries.values()].sort((a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status));
 
-        const entries = sorted.map((entry) => ({
-            elapsed:
-                entry.result?.startTime && entry.result.endTime
-                    ? entry.result.endTime - entry.result.startTime
-                    : undefined,
-            status: entry.result?.status,
-            taskId: entry.taskId,
-        }));
+        const entries = sorted.map((entry) => {
+            return {
+                elapsed: entry.result?.startTime && entry.result.endTime ? entry.result.endTime - entry.result.startTime : undefined,
+                status: entry.result?.status,
+                taskId: entry.taskId,
+            };
+        });
 
         const columns = process.stdout.columns || 80;
-        const output = renderToString(
-            React.createElement(TaskSummaryView, { entries }),
-            { columns },
-        );
+        const output = renderToString(React.createElement(TaskSummaryView, { entries }), { columns });
 
-        process.stdout.write("\n" + output + "\n");
+        process.stdout.write(`\n${output}\n`);
     }
 }
 
@@ -92,16 +86,16 @@ const getStatusOrder = (status?: TaskStatus): number => {
         case "failure": {
             return 0;
         }
+        case "local-cache":
+        case "local-cache-kept-existing":
+        case "remote-cache": {
+            return 3;
+        }
         case "skipped": {
             return 1;
         }
         case "success": {
             return 2;
-        }
-        case "local-cache":
-        case "local-cache-kept-existing":
-        case "remote-cache": {
-            return 3;
         }
         default: {
             return 4;

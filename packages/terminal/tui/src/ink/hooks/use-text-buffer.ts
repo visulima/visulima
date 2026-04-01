@@ -531,43 +531,11 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
     const value = useMemo(() => joinLines(state.lines), [state.lines]);
 
-    return useMemo(
-        () => {
-            return {
-                anchor: state.anchor,
-                clearSelection,
-                cursor: state.cursor,
-                deleteBack,
-                deleteForward,
-                deleteLine,
-                deleteSelection,
-                deleteToLineEnd,
-                deleteToLineStart,
-                deleteWord,
-                getSelectedText,
-                hasSelection,
-                insert,
-                lines: state.lines,
-                moveCursor,
-                moveToEnd,
-                moveToLineEnd,
-                moveToLineStart,
-                moveToStart,
-                newline,
-                redo,
-                replaceSelection,
-                selectAll,
-                setValue,
-                undo,
-                value,
-            };
-        },
-        [
-            state.anchor,
-            state.cursor,
-            state.lines,
-            value,
+    return useMemo(() => {
+        return {
+            anchor: state.anchor,
             clearSelection,
+            cursor: state.cursor,
             deleteBack,
             deleteForward,
             deleteLine,
@@ -578,6 +546,7 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
             getSelectedText,
             hasSelection,
             insert,
+            lines: state.lines,
             moveCursor,
             moveToEnd,
             moveToLineEnd,
@@ -589,8 +558,36 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
             selectAll,
             setValue,
             undo,
-        ],
-    );
+            value,
+        };
+    }, [
+        state.anchor,
+        state.cursor,
+        state.lines,
+        value,
+        clearSelection,
+        deleteBack,
+        deleteForward,
+        deleteLine,
+        deleteSelection,
+        deleteToLineEnd,
+        deleteToLineStart,
+        deleteWord,
+        getSelectedText,
+        hasSelection,
+        insert,
+        moveCursor,
+        moveToEnd,
+        moveToLineEnd,
+        moveToLineStart,
+        moveToStart,
+        newline,
+        redo,
+        replaceSelection,
+        selectAll,
+        setValue,
+        undo,
+    ]);
 };
 
 export default useTextBuffer;

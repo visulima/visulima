@@ -20,18 +20,11 @@ describe("implode shell profile cleanup", () => {
 
         const profilePath = join(tmpDir, ".zshrc");
 
-        writeFileSync(profilePath, [
-            "# normal line",
-            'export PATH="$HOME/.vis/bin:$PATH"',
-            "# vis setup",
-            "alias ls='ls -la'",
-        ].join("\n"));
+        writeFileSync(profilePath, ["# normal line", 'export PATH="$HOME/.vis/bin:$PATH"', "# vis setup", "alias ls='ls -la'"].join("\n"));
 
         const content = readFileSync(profilePath, "utf8");
         const lines = content.split("\n");
-        const filtered = lines.filter(
-            (line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "),
-        );
+        const filtered = lines.filter((line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "));
 
         expect(filtered).toStrictEqual(["# normal line", "alias ls='ls -la'"]);
     });
@@ -46,9 +39,7 @@ describe("implode shell profile cleanup", () => {
 
         const content = readFileSync(profilePath, "utf8");
         const lines = content.split("\n");
-        const filtered = lines.filter(
-            (line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "),
-        );
+        const filtered = lines.filter((line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "));
 
         expect(filtered.join("\n")).toBe(original);
     });

@@ -1,8 +1,8 @@
-import React from "react";
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
+import React from "react";
 
 import { resolveWorkspacePatterns } from "./workspace";
 
@@ -28,6 +28,7 @@ const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
 
 const VALID_DEP_TYPES = new Set(["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]);
+
 /**
  * Returns the backup directory inside node_modules/.cache/vis/backup.
  * Throws if the cache directory cannot be resolved (e.g., no node_modules).
@@ -36,10 +37,7 @@ const getBackupDir = (workspaceRoot: string): string => {
     const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
 
     if (!cacheDir) {
-        throw new Error(
-            "Cannot resolve cache directory. Ensure node_modules exists in your workspace. " +
-            "Run your package manager's install command first.",
-        );
+        throw new Error("Cannot resolve cache directory. Ensure node_modules exists in your workspace. " + "Run your package manager's install command first.");
     }
 
     return join(cacheDir, "backup");
@@ -731,7 +729,7 @@ const fetchPackageVersions = async (
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -851,7 +849,7 @@ const fetchVulnerabilities = async (
     });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -1533,7 +1531,7 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
 
     const ask = (question: string): Promise<string> =>
         new Promise((resolve) => {
-            rl.question(question, (answer) => resolve(answer.trim()));
+            rl.question(question, (answer) => { resolve(answer.trim()); });
         });
 
     process.stdout.write("\nOutdated catalog dependencies:\n");
@@ -1596,7 +1594,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
     const results: ChangelogInfo[] = [];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
 
     try {
         const fetches = packages.map(async (entry): Promise<ChangelogInfo> => {

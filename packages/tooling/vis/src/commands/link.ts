@@ -16,7 +16,7 @@ const link: Command = {
         ["vis link ./packages/utils", "Link local directory package"],
     ],
     execute: async ({ argument, logger, workspaceRoot: wsRoot }) => {
-        const target = (argument as string[])?.[0] ?? null;
+        const target = argument?.[0] ?? null;
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 

@@ -27,7 +27,7 @@ const analyze: Command = {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
-        const positionalArguments = argument as string[];
+        const positionalArguments = argument;
         const packageName = positionalArguments[0];
 
         if (!packageName) {

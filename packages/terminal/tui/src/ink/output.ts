@@ -436,7 +436,8 @@ export default class Output {
 
         const canUseMemoization = this.lineMemoizationEnabled;
         const hasPrevious = this.previousLineCells.length > 0;
-        const canReuseRows = canUseMemoization && hasPrevious && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
+        const canReuseRows
+            = canUseMemoization && hasPrevious && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
 
         if (this.previousLineCells.length > output.length) {
             this.previousLineCells.length = output.length;
@@ -446,11 +447,11 @@ export default class Output {
             this.previousRenderedLines.length = output.length;
         }
 
-        const generatedLines = new Array<string>(output.length);
+        const generatedLines = Array.from({ length: output.length });
         let changedRows = 0;
 
-        for (let rowIndex = 0; rowIndex < output.length; rowIndex++) {
-            const row = output[rowIndex]!;
+        for (const [rowIndex, element] of output.entries()) {
+            const row = element;
 
             if (canReuseRows && this.isSameRow(row, this.previousLineCells[rowIndex])) {
                 generatedLines[rowIndex] = this.previousRenderedLines[rowIndex] ?? "";

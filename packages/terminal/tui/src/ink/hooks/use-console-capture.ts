@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, consistent-return, import/exports-last, jsdoc/lines-before-block, no-console, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/no-alphabetical-sort */
+/* eslint-disable consistent-return, import/exports-last, jsdoc/lines-before-block, no-console, no-for-of-array/no-for-of-array, no-plusplus, sonarjs/no-alphabetical-sort */
 /**
  * React hook for capturing console output into a buffer.
  *
@@ -128,7 +128,9 @@ const useConsoleCapture = (options: UseConsoleCaptureOptions = {}): UseConsoleCa
         setEntries([]);
     }, []);
 
-    return useMemo(() => { return { clear, entries }; }, [clear, entries]);
+    return useMemo(() => {
+        return { clear, entries };
+    }, [clear, entries]);
 };
 
 export default useConsoleCapture;

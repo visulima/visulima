@@ -381,7 +381,7 @@ export default function Textarea({
                                     </Text>
                                 )
                                 : undefined}
-                            { }
+                            {}
                             <Text dimColor>{line || (lineNumber === 0 && placeholder ? placeholder : "")}</Text>
                         </Box>
                     );

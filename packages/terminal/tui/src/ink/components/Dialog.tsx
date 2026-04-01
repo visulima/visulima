@@ -46,7 +46,7 @@ export type Props = {
 
     /**
      * Maximum height as a fraction of terminal rows (0-1) or absolute rows.
-     * Values <= 1 are treated as fractions; values > 1 as absolute row counts.
+     * Values &lt;= 1 are treated as fractions; values > 1 as absolute row counts.
      * @default 0.8
      */
     readonly maxHeight?: number;
@@ -101,9 +101,9 @@ export type Props = {
  * dialog blends with the user's theme.
  *
  * ```tsx
- * <Dialog title="Help" footer={<Text dimColor>Press Esc to close</Text>}>
- *   <Text>Dialog content here</Text>
- * </Dialog>
+ * &lt;Dialog title="Help" footer={&lt;Text dimColor>Press Esc to close&lt;/Text>}>
+ *   &lt;Text>Dialog content here&lt;/Text>
+ * &lt;/Dialog>
  * ```
  */
 export default function Dialog({
@@ -135,24 +135,24 @@ export default function Dialog({
     const cols = columnsProp ?? (windowSize.columns || 80);
     const termRows = rowsProp ?? (windowSize.rows || 24);
 
-    const bg = backgroundColorProp ?? (paletteLoading ? "black" : (palette?.background ?? "black"));
+    const bg = backgroundColorProp ?? (paletteLoading ? "black" : palette?.background ?? "black");
 
-    const resolvedMaxHeight = maxHeightProp <= 1
-        ? Math.floor(termRows * maxHeightProp)
-        : Math.min(maxHeightProp, termRows - 2);
+    const resolvedMaxHeight = maxHeightProp <= 1 ? Math.floor(termRows * maxHeightProp) : Math.min(maxHeightProp, termRows - 2);
 
-    const titleElement = typeof title === "string"
-        ? <Box marginBottom={1}><Text bold color={borderColor}>{title}</Text></Box>
-        : title ?? null;
+    const titleElement
+        = typeof title === "string"
+            ? (
+                <Box marginBottom={1}>
+                    <Text bold color={borderColor}>
+                        {title}
+                    </Text>
+                </Box>
+            )
+            : title ?? null
+        ;
 
     return (
-        <Box
-            alignItems="center"
-            height={termRows}
-            justifyContent="center"
-            position="absolute"
-            width={cols}
-        >
+        <Box alignItems="center" height={termRows} justifyContent="center" position="absolute" width={cols}>
             <Box
                 backgroundColor={bg}
                 borderBackgroundColor={bg}
@@ -165,20 +165,13 @@ export default function Dialog({
             >
                 {/* Title — fixed above scroll area */}
                 {titleElement && (
-                    <Box flexShrink={0} paddingX={paddingX} paddingTop={paddingY}>
+                    <Box flexShrink={0} paddingTop={paddingY} paddingX={paddingX}>
                         {titleElement}
                     </Box>
                 )}
 
                 {/* Scrollable content with built-in scrollbar */}
-                <ScrollView
-                    ref={scrollViewRef}
-                    flexGrow={1}
-                    flexShrink={1}
-                    paddingX={paddingX}
-                    scrollbar
-                    scrollbarColor={borderColor}
-                >
+                <ScrollView flexGrow={1} flexShrink={1} paddingX={paddingX} ref={scrollViewRef} scrollbar scrollbarColor={borderColor}>
                     {children}
                 </ScrollView>
 

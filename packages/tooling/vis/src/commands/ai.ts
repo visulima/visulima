@@ -1,7 +1,7 @@
-import React from "react";
 import type { Command } from "@visulima/cerebro";
 import { detectAllProviders, runProvider } from "@visulima/find-ai-runner";
 import { renderToString, Table } from "@visulima/tui";
+import React from "react";
 
 import type { AiConfig } from "../ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../ai-analysis";
@@ -69,15 +69,17 @@ const handleProviderStatus = (format: string, logger: Console, aiConfig?: AiConf
         return;
     }
 
-    const tableData = allProviders.map((provider) => ({
-        method: provider.detectionMethod ?? "-",
-        path: provider.path ?? "-",
-        priority: String(DEFAULT_PRIORITY[provider.name] ?? 0),
-        provider: provider.name,
-        selected: provider.name === selected?.name ? ">>>" : "",
-        status: provider.available ? "available" : "not found",
-        version: provider.version ?? "-",
-    }));
+    const tableData = allProviders.map((provider) => {
+        return {
+            method: provider.detectionMethod ?? "-",
+            path: provider.path ?? "-",
+            priority: String(DEFAULT_PRIORITY[provider.name] ?? 0),
+            provider: provider.name,
+            selected: provider.name === selected?.name ? ">>>" : "",
+            status: provider.available ? "available" : "not found",
+            version: provider.version ?? "-",
+        };
+    });
 
     const columns = process.stdout.columns || 80;
     const output = renderToString(React.createElement(Table, { data: tableData }), { columns });

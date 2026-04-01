@@ -1,7 +1,7 @@
 import type { Props as BoxProps } from "../Box";
 import type { Props as TextProps } from "../Text";
 
-type StyleFnProps = {
+type StyleFunctionProps = {
     readonly depth?: number;
     readonly hasChildren?: boolean;
     readonly isExpanded?: boolean;
@@ -12,19 +12,27 @@ type StyleFnProps = {
 
 const theme = {
     styles: {
-        container: (): BoxProps => ({
-            flexDirection: "column" as const,
-        }),
-        expandIndicator: (_props: StyleFnProps): TextProps => ({
-            color: "gray",
-        }),
-        focusIndicator: (): TextProps => ({
-            color: "blue",
-        }),
-        indent: ({ depth }: StyleFnProps): BoxProps => ({
-            width: (depth ?? 0) * 2,
-        }),
-        label: ({ isFocused, isSelected }: StyleFnProps): TextProps => {
+        container: (): BoxProps => {
+            return {
+                flexDirection: "column" as const,
+            };
+        },
+        expandIndicator: (_props: StyleFunctionProps): TextProps => {
+            return {
+                color: "gray",
+            };
+        },
+        focusIndicator: (): TextProps => {
+            return {
+                color: "blue",
+            };
+        },
+        indent: ({ depth }: StyleFunctionProps): BoxProps => {
+            return {
+                width: (depth ?? 0) * 2,
+            };
+        },
+        label: ({ isFocused, isSelected }: StyleFunctionProps): TextProps => {
             let color: string | undefined;
 
             if (isSelected) {
@@ -37,16 +45,22 @@ const theme = {
 
             return { color };
         },
-        loadingIndicator: (): TextProps => ({
-            color: "yellow",
-        }),
-        node: ({ isFocused }: StyleFnProps): BoxProps => ({
-            gap: 1,
-            paddingLeft: isFocused ? 0 : 2,
-        }),
-        selectedIndicator: (): TextProps => ({
-            color: "green",
-        }),
+        loadingIndicator: (): TextProps => {
+            return {
+                color: "yellow",
+            };
+        },
+        node: ({ isFocused }: StyleFunctionProps): BoxProps => {
+            return {
+                gap: 1,
+                paddingLeft: isFocused ? 0 : 2,
+            };
+        },
+        selectedIndicator: (): TextProps => {
+            return {
+                color: "green",
+            };
+        },
     },
 };
 

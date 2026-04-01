@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/indent, @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, default-case, func-style, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, react/jsx-indent, sonarjs/cognitive-complexity, sonarjs/prefer-read-only-props, unicorn/filename-case */
+/* eslint-disable @stylistic/no-extra-parens, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, @typescript-eslint/restrict-template-expressions, consistent-return, default-case, func-style, import/exports-last, no-for-of-array/no-for-of-array, no-plusplus, no-void, react-x/no-array-index-key, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react/function-component-definition, sonarjs/cognitive-complexity, sonarjs/prefer-read-only-props, unicorn/filename-case */
 
 /**
  * Diff viewer component for Ink.
@@ -269,16 +269,16 @@ const renderInlineParts = (parts: InlineDiffPart[], color: string, bgColor: stri
     <>
         {parts.map((part, index) =>
             (part.highlight
-? (
+                ? (
                     <Text backgroundColor={bgColor} color="white" key={index}>
                         {part.value}
                     </Text>
-            )
-: (
+                )
+                : (
                     <Text color={color} key={index}>
                         {part.value}
                     </Text>
-            )),
+                )),
         )}
     </>
 );
@@ -451,7 +451,7 @@ function SplitView({
 
                     switch (line.type) {
                         case "add": {
-                        // Only reach here for unpaired adds (paired adds handled by their del)
+                            // Only reach here for unpaired adds (paired adds handled by their del)
                             if (line.pairedIndex === undefined) {
                                 leftLines.push({ content: <Text dimColor /> });
                                 rightLines.push({
@@ -494,7 +494,7 @@ function SplitView({
 
                             break;
                         }
-                    // No default
+                        // No default
                     }
                 }
 

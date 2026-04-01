@@ -18,7 +18,7 @@ const remove: Command = {
         ["vis remove -g typescript", "Remove global package"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const packages = argument as string[];
+        const packages = argument;
 
         if (!packages || packages.length === 0) {
             throw new Error("No packages specified. Usage: vis remove <packages...>");
@@ -27,14 +27,19 @@ const remove: Command = {
         const cwd = process.cwd();
         const pm = detectPm(wsRoot ?? cwd);
 
-        const code = runRemove(pm, {
-            filter: toStringArray(options.filter),
-            global: (options.global as boolean) || false,
-            packages,
-            recursive: (options.recursive as boolean) || false,
-            saveDev: (options["save-dev"] as boolean) || false,
-            workspaceRoot: (options["workspace-root"] as boolean) || false,
-        }, cwd, logger);
+        const code = runRemove(
+            pm,
+            {
+                filter: toStringArray(options.filter),
+                global: (options.global as boolean) || false,
+                packages,
+                recursive: (options.recursive as boolean) || false,
+                saveDev: (options["save-dev"] as boolean) || false,
+                workspaceRoot: (options["workspace-root"] as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;

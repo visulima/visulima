@@ -4,11 +4,11 @@ import { useSyncExternalStore } from "react";
 import { formatMs } from "../pretty-time";
 import CommandSummary from "./CommandSummary";
 import type { TaskRowData } from "./TaskRow";
-import { TaskStore } from "./TaskStore";
+import type { TaskStore } from "./TaskStore";
 import TaskTable from "./TaskTable";
 
 // Re-export for backwards compatibility
-export { TaskStore, type TaskState } from "./TaskStore";
+export { type TaskState, TaskStore } from "./TaskStore";
 
 interface DynamicTaskRunnerProps {
     parallelSlots?: number;
@@ -39,14 +39,7 @@ const DynamicTaskRunner = ({ parallelSlots, projectNames, store, targets, tasks 
         );
     }
 
-    return (
-        <TaskTable
-            parallelSlots={parallelSlots}
-            rows={state.rows}
-            totalCompleted={state.completed}
-            totalRows={state.rows.length}
-        />
-    );
+    return <TaskTable parallelSlots={parallelSlots} rows={state.rows} totalCompleted={state.completed} totalRows={state.rows.length} />;
 };
 
 export default DynamicTaskRunner;

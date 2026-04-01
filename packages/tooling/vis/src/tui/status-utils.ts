@@ -1,11 +1,10 @@
-import React from "react";
-import { renderToString, Text } from "@visulima/tui";
 import type { TaskStatus } from "@visulima/task-runner";
+import { renderToString, Text } from "@visulima/tui";
+import React from "react";
 
 import { CROSS, DASH, TICK } from "./symbols";
 
-export const isCacheStatus = (status: TaskStatus): boolean =>
-    status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
+export const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
 
 export interface StatusInfo {
     color: string;
@@ -52,13 +51,7 @@ export const getStatusPrefix = (status: TaskStatus): string => {
         case "local-cache-kept-existing":
         case "remote-cache": {
             return renderToString(
-                React.createElement(
-                    Text,
-                    null,
-                    React.createElement(Text, { color }, icon),
-                    " ",
-                    React.createElement(Text, { color: "cyan" }, "[cache]"),
-                ),
+                React.createElement(Text, null, React.createElement(Text, { color }, icon), " ", React.createElement(Text, { color: "cyan" }, "[cache]")),
                 { columns: 30 },
             ).trim();
         }
@@ -100,16 +93,10 @@ export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: s
         process.stdout.write(`::endgroup::${EOL}`);
     } else {
         const width = process.stdout.columns || 80;
-        const separator = renderToString(
-            React.createElement(Text, { dimColor: true }, DASH.repeat(width)),
-            { columns: width },
-        ).trim();
+        const separator = renderToString(React.createElement(Text, { dimColor: true }, DASH.repeat(width)), { columns: width }).trim();
 
         const prefix = getStatusPrefix(status);
-        const boldTaskId = renderToString(
-            React.createElement(Text, { bold: true }, taskId),
-            { columns: width },
-        ).trim();
+        const boldTaskId = renderToString(React.createElement(Text, { bold: true }, taskId), { columns: width }).trim();
 
         process.stdout.write(`${separator}${EOL}`);
         process.stdout.write(`${prefix} ${boldTaskId}${EOL}`);

@@ -9,6 +9,7 @@ export type UseLinkedScrollReturn = {
      * Broadcasts the scroll position to all linked instances.
      */
     onScroll: (scrollOffset: number) => void;
+
     /**
      * Ref to attach to the ScrollView component.
      * Used internally to call `scrollTo()` when other instances scroll.
@@ -32,7 +33,6 @@ type Listener = {
 /**
  * Creates a linked scroll group that synchronizes scroll position
  * across multiple ScrollView instances.
- *
  * @example
  * ```tsx
  * const group = createLinkedScrollGroup();
@@ -58,7 +58,7 @@ const createLinkedScrollGroup = (): LinkedScrollGroup => {
 
         const listener: Listener = {
             ref: scrollRef,
-            setOffset: () => setTick((t) => t + 1),
+            setOffset: () => { setTick((t) => t + 1); },
         };
 
         const listenerRef = useRef(listener);
@@ -66,7 +66,7 @@ const createLinkedScrollGroup = (): LinkedScrollGroup => {
         listenerRef.current = listener;
 
         useEffect(() => {
-            const current = listenerRef.current;
+            const { current } = listenerRef;
 
             listeners.add(current);
 

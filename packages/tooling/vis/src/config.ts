@@ -13,16 +13,11 @@ const CONFIG_FILES: string[] = ["vis.config.ts", "vis.config.mts", "vis.config.c
  *
  * These defaults are applied automatically when using `defineConfig()` or `loadVisConfig()`.
  * Users can override any value — their settings always take precedence.
- *
  * @see https://github.com/lirantal/awesome-npm-security-best-practices
  */
-const SECURITY_DEFAULTS: Required<Pick<NonNullable<VisConfig["security"]>,
-    | "blockExoticSubdeps"
-    | "minimumReleaseAge"
-    | "strictDepBuilds"
-    | "trustPolicy"
-    | "trustPolicyIgnoreAfter"
->> = {
+const SECURITY_DEFAULTS: Required<
+    Pick<NonNullable<VisConfig["security"]>, "blockExoticSubdeps" | "minimumReleaseAge" | "strictDepBuilds" | "trustPolicy" | "trustPolicyIgnoreAfter">
+> = {
     /** Block transitive dependencies from using git repos or tarball URLs. */
     blockExoticSubdeps: true,
     /** 14-day cooldown (20 160 minutes). Most malicious packages are caught within hours to days. */
@@ -39,24 +34,28 @@ const SECURITY_DEFAULTS: Required<Pick<NonNullable<VisConfig["security"]>,
  * Deep-merge user security settings with secure defaults.
  * User-provided values always win.
  */
-const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["security"] => ({
-    ...SECURITY_DEFAULTS,
-    ...security,
-});
+const mergeSecurityDefaults = (security: VisConfig["security"]): VisConfig["security"] => {
+    return {
+        ...SECURITY_DEFAULTS,
+        ...security,
+    };
+};
 
 /**
  * Apply secure defaults to a raw config object.
  * Merges `SECURITY_DEFAULTS` into `config.security`, preserving all user overrides.
  */
-const applyDefaults = (config: VisConfig): VisConfig => ({
-    ...config,
-    security: mergeSecurityDefaults(config.security),
-    update: {
-        security: true,
-        target: "minor" as const,
-        ...config.update,
-    },
-});
+const applyDefaults = (config: VisConfig): VisConfig => {
+    return {
+        ...config,
+        security: mergeSecurityDefaults(config.security),
+        update: {
+            security: true,
+            target: "minor" as const,
+            ...config.update,
+        },
+    };
+};
 
 /**
  * Find the vis config file in a directory.
@@ -92,12 +91,10 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
 
     const jiti = createJiti(workspaceRoot);
 
-    const loaded = (await jiti.import(configPath, { default: true, try: true }) ?? {}) as
-        | VisConfig
-        | ((...arguments_: unknown[]) => VisConfig | Promise<VisConfig>);
+    const loaded = await jiti.import(configPath, { default: true, try: true }) ?? {};
 
     if (typeof loaded === "function") {
-        return applyDefaults(((await loaded()) ?? {}) as VisConfig);
+        return applyDefaults(await loaded() ?? {});
     }
 
     return applyDefaults(loaded);
@@ -109,7 +106,6 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
  *
  * Secure defaults are applied automatically — you only need to specify overrides.
  * To see the active defaults, run `vis check --security-config`.
- *
  * @example
  * ```typescript
  * // vis.config.ts — minimal config, fully secured by defaults
@@ -124,7 +120,6 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
  *     },
  * });
  * ```
- *
  * @example
  * ```typescript
  * // vis.config.ts — override a default

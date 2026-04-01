@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { dim, yellow, green, bold, cyan, SYMBOLS } from "./output";
+import { bold, cyan, dim, green, SYMBOLS, yellow } from "./output";
 
 const VIS_HOME = join(homedir(), ".vis");
 const CACHE_FILE = join(VIS_HOME, ".upgrade-check.json");
@@ -22,24 +22,16 @@ const NOTICE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const REGISTRY_TIMEOUT_MS = 500;
 
 interface UpgradeCheckCache {
-    /** Latest available version from registry */
-    latestVersion: string;
     /** Timestamp of last notice shown to user */
     lastNoticeAt: number;
     /** Timestamp of last registry query */
     lastQueryAt: number;
+    /** Latest available version from registry */
+    latestVersion: string;
 }
 
 /** Commands that should NOT trigger upgrade checks. */
-const EXCLUDED_COMMANDS: Set<string> = new Set([
-    "upgrade",
-    "implode",
-    "--version",
-    "-V",
-    "--help",
-    "-h",
-    "help",
-]);
+const EXCLUDED_COMMANDS = new Set<string>(["--help", "--version", "-h", "-V", "help", "implode", "upgrade"]);
 
 const readCache = (): UpgradeCheckCache | undefined => {
     try {
@@ -72,7 +64,7 @@ const writeCache = (cache: UpgradeCheckCache): void => {
 const fetchLatestVersion = async (packageName: string): Promise<string | undefined> => {
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), REGISTRY_TIMEOUT_MS);
+        const timeout = setTimeout(() => { controller.abort(); }, REGISTRY_TIMEOUT_MS);
 
         const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`, {
             headers: { accept: "application/json" },
@@ -99,8 +91,7 @@ const fetchLatestVersion = async (packageName: string): Promise<string | undefin
  * Returns true if `latest` is newer than `current`.
  */
 const isNewerVersion = (current: string, latest: string): boolean => {
-    const parseSemver = (v: string): number[] =>
-        v.replace(/^v/, "").split("-")[0]!.split(".").map(Number);
+    const parseSemver = (v: string): number[] => v.replace(/^v/, "").split("-")[0]!.split(".").map(Number);
 
     const c = parseSemver(current);
     const l = parseSemver(latest);
@@ -174,9 +165,9 @@ const shouldCheck = (command: string): boolean => {
     }
 
     // Skip for quiet/json flags
-    const args = process.argv.slice(2);
+    const args = new Set(process.argv.slice(2));
 
-    if (args.includes("--silent") || args.includes("-s") || args.includes("--json")) {
+    if (args.has("--silent") || args.has("-s") || args.has("--json")) {
         return false;
     }
 
@@ -190,10 +181,7 @@ const shouldCheck = (command: string): boolean => {
  * 2. If yes, fetch latest version asynchronously
  * 3. Return a promise that resolves with the check function to call after command
  */
-const startUpgradeCheck = (
-    currentVersion: string,
-    command: string,
-): (() => void) | undefined => {
+const startUpgradeCheck = (currentVersion: string, command: string): (() => void) | undefined => {
     if (!shouldCheck(command)) {
         return undefined;
     }
@@ -203,25 +191,27 @@ const startUpgradeCheck = (
 
     // If cache is fresh, just return the notice callback
     if (cache && now - cache.lastQueryAt < CHECK_INTERVAL_MS) {
-        return () => showUpgradeNotice(currentVersion, cache);
+        return () => { showUpgradeNotice(currentVersion, cache); };
     }
 
     // Need to query registry - fire async, don't await
     let pendingCache: UpgradeCheckCache | undefined = cache;
 
     // Fire and forget the registry query
-    fetchLatestVersion("@visulima/vis").then((latestVersion) => {
-        if (latestVersion) {
-            pendingCache = {
-                lastNoticeAt: cache?.lastNoticeAt ?? 0,
-                lastQueryAt: now,
-                latestVersion,
-            };
-            writeCache(pendingCache);
-        }
-    }).catch(() => {
-        // Silently ignore network failures
-    });
+    fetchLatestVersion("@visulima/vis")
+        .then((latestVersion) => {
+            if (latestVersion) {
+                pendingCache = {
+                    lastNoticeAt: cache?.lastNoticeAt ?? 0,
+                    lastQueryAt: now,
+                    latestVersion,
+                };
+                writeCache(pendingCache);
+            }
+        })
+        .catch(() => {
+            // Silently ignore network failures
+        });
 
     // Return callback that shows notice with whatever data we have
     return () => {

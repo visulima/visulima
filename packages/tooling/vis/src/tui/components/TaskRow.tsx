@@ -1,5 +1,5 @@
-import { Box, Spinner, Text } from "@visulima/tui";
 import type { TaskStatus } from "@visulima/task-runner";
+import { Box, Spinner, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { isCacheStatus } from "../status-utils";
@@ -32,10 +32,10 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
                 <Box flexGrow={1}>
                     <Text>{taskId}</Text>
                 </Box>
-                <Box width={7} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={7}>
                     <Text dimColor>{ELLIPSIS}</Text>
                 </Box>
-                <Box width={14} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={14}>
                     <Text>{formatMs(ms)}</Text>
                 </Box>
             </Box>
@@ -47,17 +47,18 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
             <Box>
                 <Box width={3}>
                     <Text bold color="white">
-                        {">"}{" "}
+                        {">"}
+                        {" "}
                     </Text>
                     <Text dimColor>.</Text>
                 </Box>
                 <Box flexGrow={1}>
                     <Text>{taskId}</Text>
                 </Box>
-                <Box width={7} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={7}>
                     <Text dimColor>{DASH}</Text>
                 </Box>
-                <Box width={14} justifyContent="flex-end">
+                <Box justifyContent="flex-end" width={14}>
                     <Text dimColor>{ELLIPSIS}</Text>
                 </Box>
             </Box>
@@ -67,11 +68,7 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
     // Completed states: success, failure, cache, skipped
     const icon = status === "failure" ? <Text color="red">{CROSS}</Text> : <Text color="green">{TICK}</Text>;
     const dur = row.duration === undefined ? DASH : formatMs(row.duration);
-    const cache = isCacheStatus(status as TaskStatus) ? (
-        <Text color="cyan">yes</Text>
-    ) : (
-        <Text dimColor>{DASH}</Text>
-    );
+    const cache = isCacheStatus(status) ? <Text color="cyan">yes</Text> : <Text dimColor>{DASH}</Text>;
 
     return (
         <Box>
@@ -79,10 +76,10 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
             <Box flexGrow={1}>
                 <Text>{taskId}</Text>
             </Box>
-            <Box width={7} justifyContent="flex-end">
+            <Box justifyContent="flex-end" width={7}>
                 {cache}
             </Box>
-            <Box width={14} justifyContent="flex-end">
+            <Box justifyContent="flex-end" width={14}>
                 <Text>{dur}</Text>
             </Box>
         </Box>

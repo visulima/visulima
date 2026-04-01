@@ -1,5 +1,5 @@
-import { Box, Text } from "@visulima/tui";
 import type { TaskStatus } from "@visulima/task-runner";
+import { Box, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusIcon, isCacheStatus } from "../status-utils";
@@ -28,10 +28,10 @@ const TaskSummaryView = ({ entries }: TaskSummaryViewProps): React.JSX.Element =
             <Text dimColor>{separator}</Text>
             <Text bold> Task Summary</Text>
             <Text dimColor>{separator}</Text>
-            <Text>{""}</Text>
+            <Text />
             {entries.map((entry) => {
                 const icon = entry.status ? getStatusIcon(entry.status) : "?";
-                const elapsed = entry.elapsed !== undefined ? ` ${formatMs(entry.elapsed)}` : "";
+                const elapsed = entry.elapsed === undefined ? "" : ` ${formatMs(entry.elapsed)}`;
                 const cacheLabel = entry.status && isCacheStatus(entry.status) ? " [cache]" : "";
 
                 return (
@@ -45,7 +45,7 @@ const TaskSummaryView = ({ entries }: TaskSummaryViewProps): React.JSX.Element =
                     </Text>
                 );
             })}
-            <Text>{""}</Text>
+            <Text />
         </Box>
     );
 };

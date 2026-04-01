@@ -26,5 +26,4 @@ describe("tui/symbols", () => {
 
         expect(ELLIPSIS.length).toBeGreaterThan(0);
     });
-
 });

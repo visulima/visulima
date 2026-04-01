@@ -30,9 +30,7 @@ const cleanShellProfiles = (logger: Console): string[] => {
         try {
             const content = readFileSync(profile, "utf8");
             const lines = content.split("\n");
-            const filtered = lines.filter(
-                (line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "),
-            );
+            const filtered = lines.filter((line) => !line.includes(".vis/bin") && !line.includes("VIS_HOME") && !line.includes("# vis "));
 
             if (filtered.length !== lines.length) {
                 writeFileSync(profile, filtered.join("\n"));
@@ -62,9 +60,7 @@ const implode: Command = {
         logger.info("This will remove:");
         logger.info(`  ${VIS_HOME}/`);
 
-        const shellFiles = SHELL_PROFILES.filter(
-            (p) => existsSync(p) && readFileSync(p, "utf8").includes(".vis"),
-        );
+        const shellFiles = SHELL_PROFILES.filter((p) => existsSync(p) && readFileSync(p, "utf8").includes(".vis"));
 
         for (const file of shellFiles) {
             logger.info(`  Lines in ${file}`);
@@ -77,7 +73,7 @@ const implode: Command = {
 
             const rl = createInterface({ input: process.stdin, output: process.stdout });
             const answer = await new Promise<string>((resolve) => {
-                rl.question('\nType "uninstall" to confirm: ', resolve);
+                rl.question("\nType \"uninstall\" to confirm: ", resolve);
             });
 
             rl.close();
@@ -107,9 +103,7 @@ const implode: Command = {
         logger.info("\u2713 vis has been uninstalled.");
     },
     name: "implode",
-    options: [
-        { alias: "y", defaultValue: false, description: "Skip confirmation prompt", name: "yes", type: Boolean },
-    ],
+    options: [{ alias: "y", defaultValue: false, description: "Skip confirmation prompt", name: "yes", type: Boolean }],
 };
 
 export default implode;

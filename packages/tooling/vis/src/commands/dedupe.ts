@@ -19,9 +19,7 @@ const dedupe: Command = {
         }
     },
     name: "dedupe",
-    options: [
-        { defaultValue: false, description: "Preview changes without modifying files (dry-run)", name: "check", type: Boolean },
-    ],
+    options: [{ defaultValue: false, description: "Preview changes without modifying files (dry-run)", name: "check", type: Boolean }],
 };
 
 export default dedupe;

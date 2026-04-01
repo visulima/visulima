@@ -15,7 +15,7 @@ const unlink: Command = {
         ["vis unlink -r", "Unlink in all workspace packages"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const packages = (argument as string[]) || [];
+        const packages = argument || [];
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
@@ -26,9 +26,7 @@ const unlink: Command = {
         }
     },
     name: "unlink",
-    options: [
-        { alias: "r", defaultValue: false, description: "Unlink in all workspace packages", name: "recursive", type: Boolean },
-    ],
+    options: [{ alias: "r", defaultValue: false, description: "Unlink in all workspace packages", name: "recursive", type: Boolean }],
 };
 
 export default unlink;

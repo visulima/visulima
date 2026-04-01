@@ -1,7 +1,7 @@
-import React from "react";
+import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 import type { Instance } from "@visulima/tui";
 import { render, renderToString, Text } from "@visulima/tui";
-import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
+import React from "react";
 
 import CommandSummary from "./components/CommandSummary";
 import { TaskStore } from "./components/TaskStore";
@@ -74,12 +74,24 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
             let cacheLabel = "";
 
-            if (status === "local-cache" || status === "local-cache-kept-existing") {
-                cacheLabel = " [local cache]";
-            } else if (status === "remote-cache") {
-                cacheLabel = " [remote cache]";
-            } else if (status === "skipped") {
-                cacheLabel = " [skipped]";
+            switch (status) {
+                case "local-cache":
+                case "local-cache-kept-existing": {
+                    cacheLabel = " [local cache]";
+
+                    break;
+                }
+                case "remote-cache": {
+                    cacheLabel = " [remote cache]";
+
+                    break;
+                }
+                case "skipped": {
+                    cacheLabel = " [skipped]";
+
+                    break;
+                }
+            // No default
             }
 
             const line = renderToString(
@@ -94,7 +106,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 { columns },
             );
 
-            process.stdout.write(line + "\n");
+            process.stdout.write(`${line}\n`);
         }
 
         // 2. Print summary banner
@@ -114,7 +126,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             { columns },
         );
 
-        process.stdout.write(summary + "\n");
+        process.stdout.write(`${summary}\n`);
 
         // 3. Print failed task output so the user can copy/inspect errors
         if (failedIds.length > 0) {
@@ -123,16 +135,11 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
                 if (output?.trim()) {
                     const header = renderToString(
-                        React.createElement(
-                            Text,
-                            null,
-                            "\n",
-                            React.createElement(Text, { bold: true, color: "red" }, `  ${CROSS}  vis run ${taskId}`),
-                        ),
+                        React.createElement(Text, null, "\n", React.createElement(Text, { bold: true, color: "red" }, `  ${CROSS}  vis run ${taskId}`)),
                         { columns },
                     );
 
-                    process.stdout.write(header + "\n\n");
+                    process.stdout.write(`${header}\n\n`);
                     // Indent each output line for readability
                     const indented = output
                         .trim()
@@ -140,7 +147,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                         .map((line) => `     ${line}`)
                         .join("\n");
 
-                    process.stdout.write(indented + "\n");
+                    process.stdout.write(`${indented}\n`);
                 }
             }
         }

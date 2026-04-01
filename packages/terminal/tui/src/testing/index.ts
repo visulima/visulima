@@ -12,6 +12,7 @@ class Stdout extends EventEmitter {
     readonly columns: number;
 
     private _lastFrame: string | undefined;
+
     private readonly _frames: string[] = [];
 
     constructor(columns = 100) {
@@ -19,7 +20,7 @@ class Stdout extends EventEmitter {
         this.columns = columns;
     }
 
-    get frames(): readonly string[] {
+    get frames(): ReadonlyArray<string> {
         return this._frames;
     }
 
@@ -42,6 +43,7 @@ class Stderr extends EventEmitter {
     readonly columns: number;
 
     private _lastFrame: string | undefined;
+
     private readonly _frames: string[] = [];
 
     constructor(columns = 100) {
@@ -49,7 +51,7 @@ class Stderr extends EventEmitter {
         this.columns = columns;
     }
 
-    get frames(): readonly string[] {
+    get frames(): ReadonlyArray<string> {
         return this._frames;
     }
 
@@ -83,6 +85,7 @@ class Stdin extends EventEmitter {
 
     read(): string | undefined {
         const { _data } = this;
+
         this._data = undefined;
 
         return _data;
@@ -117,11 +120,13 @@ export type TestInstanceStdout = {
     /**
      * All rendered frames captured from stdout.
      */
-    readonly frames: readonly string[];
+    readonly frames: ReadonlyArray<string>;
+
     /**
      * Returns the most recently rendered frame, or `undefined` if no frames have been written.
      */
     lastFrame: () => string | undefined;
+
     /**
      * Write data to the mock stdout stream (used internally by the renderer).
      */
@@ -132,11 +137,13 @@ export type TestInstanceStderr = {
     /**
      * All rendered frames captured from stderr.
      */
-    readonly frames: readonly string[];
+    readonly frames: ReadonlyArray<string>;
+
     /**
      * Returns the most recently rendered frame, or `undefined` if no frames have been written.
      */
     lastFrame: () => string | undefined;
+
     /**
      * Write data to the mock stderr stream (used internally by the renderer).
      */
@@ -148,6 +155,7 @@ export type TestInstanceStdin = {
      * Whether the stdin is a TTY.
      */
     readonly isTTY: boolean;
+
     /**
      * Simulate user input by writing data to stdin.
      */
@@ -159,30 +167,37 @@ export type TestInstance = {
      * Unmount the app and clean up resources.
      */
     cleanup: () => void;
+
     /**
      * All rendered frames captured from stdout (shorthand for `stdout.frames`).
      */
-    readonly frames: readonly string[];
+    readonly frames: ReadonlyArray<string>;
+
     /**
      * Returns the most recently rendered frame from stdout (shorthand for `stdout.lastFrame()`).
      */
     lastFrame: () => string | undefined;
+
     /**
      * Replace the previous root node with a new one or update props.
      */
     rerender: (node: ReactElement) => void;
+
     /**
      * Mock stderr stream with frame capture.
      */
     stderr: TestInstanceStderr;
+
     /**
      * Mock stdin stream for simulating user input.
      */
     stdin: TestInstanceStdin;
+
     /**
      * Mock stdout stream with frame capture.
      */
     stdout: TestInstanceStdout;
+
     /**
      * Manually unmount the whole app.
      */
@@ -195,6 +210,7 @@ export type TestRenderOptions = {
      * @default 100
      */
     columns?: number;
+
     /**
      * Additional render options passed through to the underlying render function.
      */
@@ -208,7 +224,6 @@ const instances: Instance[] = [];
  *
  * Returns an object with methods to inspect rendered output, simulate input,
  * and control the component lifecycle.
- *
  * @example
  * ```tsx
  * import { render } from "@visulima/tui/test";
@@ -256,7 +271,6 @@ const testRender = (node: ReactElement, testOptions: TestRenderOptions = {}): Te
  *
  * Call this in your test teardown (e.g., `afterEach`) to ensure
  * no test instances leak between tests.
- *
  * @example
  * ```ts
  * import { cleanup } from "@visulima/tui/test";

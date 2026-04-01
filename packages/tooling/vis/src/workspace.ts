@@ -30,6 +30,7 @@ interface VisConfig {
     };
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
+
     /**
      * Supply chain security settings.
      * These settings are inspired by pnpm's security features and are applied
@@ -44,7 +45,6 @@ interface VisConfig {
          * Map of package names/patterns to allow (true) or deny (false) build scripts.
          * Packages not listed are denied by default.
          * Equivalent to pnpm's `allowBuilds` setting.
-         *
          * @example
          * ```
          * allowBuilds: {
@@ -55,38 +55,39 @@ interface VisConfig {
          * ```
          */
         allowBuilds?: Record<string, boolean>;
+
         /**
          * When true, prevents transitive dependencies from using exotic sources
          * (git repositories, direct tarball URLs). Only direct dependencies may
          * use such sources. Equivalent to pnpm's `blockExoticSubdeps`.
-         *
          * @default false
          */
         blockExoticSubdeps?: boolean;
+
         /**
          * Minimum number of minutes that must pass after a version is published
          * before vis will allow installation. Reduces risk of installing
          * compromised packages that are typically discovered within hours.
          * Equivalent to pnpm's `minimumReleaseAge`.
-         *
          * @default 0
          * @example 1440 // 24 hours
          */
         minimumReleaseAge?: number;
+
         /**
          * Package names/patterns excluded from minimumReleaseAge check.
          * Equivalent to pnpm's `minimumReleaseAgeExclude`.
-         *
          * @example ["webpack", "react", "@myorg/*"]
          */
         minimumReleaseAgeExclude?: string[];
+
         /**
          * When true, installation will fail (exit non-zero) if any dependencies
          * have unreviewed build scripts. Equivalent to pnpm's `strictDepBuilds`.
-         *
          * @default false
          */
         strictDepBuilds?: boolean;
+
         /**
          * Trust level checking for package publishing.
          * - "off": No trust checking (default)
@@ -94,23 +95,22 @@ interface VisConfig {
          *   compared to previous releases (e.g., was published by trusted
          *   publisher, now only has provenance).
          * Equivalent to pnpm's `trustPolicy`.
-         *
          * @default "off"
          */
         trustPolicy?: "no-downgrade" | "off";
+
         /**
          * Package selectors excluded from trust policy checks.
          * Equivalent to pnpm's `trustPolicyExclude`.
-         *
          * @example ["chokidar@4.0.3", "@babel/core@7.28.5"]
          */
         trustPolicyExclude?: string[];
+
         /**
          * Ignore the trust policy check for packages published more than
          * the specified number of minutes ago. Useful for older packages
          * that pre-date provenance support.
          * Equivalent to pnpm's `trustPolicyIgnoreAfter` (10.27+).
-         *
          * @example 43200 // 30 days
          */
         trustPolicyIgnoreAfter?: number;

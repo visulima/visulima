@@ -1098,57 +1098,55 @@ const data: TreeNode[] = [
             {
                 id: "src/components",
                 label: "components",
-                children: [
-                    { id: "src/components/App.tsx", label: "App.tsx" },
-                ],
+                children: [{ id: "src/components/App.tsx", label: "App.tsx" }],
             },
         ],
     },
     { id: "package.json", label: "package.json" },
 ];
 
-<TreeView data={data} defaultExpanded="all" />
+<TreeView data={data} defaultExpanded="all" />;
 ```
 
 ### Keyboard controls
 
-| Key         | Action                                                   |
-| ----------- | -------------------------------------------------------- |
-| `↑` / `↓`  | Move focus                                               |
-| `→`         | Expand node, or move to first child if already expanded  |
-| `←`         | Collapse node, or move to parent if already collapsed    |
-| `Enter`     | Toggle expand (none mode) or select (single/multi mode)  |
-| `Space`     | Toggle selection (multi mode) or expand (none/single)    |
-| `Home`      | Focus first node                                         |
-| `End`       | Focus last node                                          |
+| Key       | Action                                                  |
+| --------- | ------------------------------------------------------- |
+| `↑` / `↓` | Move focus                                              |
+| `→`       | Expand node, or move to first child if already expanded |
+| `←`       | Collapse node, or move to parent if already collapsed   |
+| `Enter`   | Toggle expand (none mode) or select (single/multi mode) |
+| `Space`   | Toggle selection (multi mode) or expand (none/single)   |
+| `Home`    | Focus first node                                        |
+| `End`     | Focus last node                                         |
 
 ### Props
 
-| Prop               | Type                                                    | Default        | Description                                                                                                   |
-| ------------------ | ------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
-| `data`             | `TreeNode<T>[]`                                         | _(required)_   | Tree data. Must be referentially stable (use `useMemo`).                                                      |
-| `selectionMode`    | `"none"` \| `"single"` \| `"multiple"`                  | `"none"`       | `"single"` shows a tick, `"multiple"` shows checkboxes.                                                       |
-| `defaultExpanded`  | `ReadonlySet<string>` \| `"all"`                        | —              | IDs of nodes expanded on mount. Pass `"all"` to expand everything.                                            |
-| `defaultSelected`  | `ReadonlySet<string>`                                   | —              | IDs of nodes selected on mount.                                                                               |
-| `visibleNodeCount` | `number`                                                | `Infinity`     | Limits visible rows (viewport virtualization). Scroll indicators appear automatically.                        |
-| `renderNode`       | `(props: TreeNodeRendererProps<T>) => ReactNode`        | —              | Custom node renderer. Receives `{ node, state }`.                                                             |
-| `loadChildren`     | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`         | —              | Async function called when expanding a node with `isParent: true` and no children.                            |
-| `onFocusChange`    | `(nodeId: string) => void`                              | —              | Called when the focused node changes.                                                                         |
-| `onExpandChange`   | `(expandedIds: ReadonlySet<string>) => void`            | —              | Called when the expanded set changes.                                                                         |
-| `onSelectChange`   | `(selectedIds: ReadonlySet<string>) => void`            | —              | Called when the selection changes.                                                                             |
-| `onLoadError`      | `(nodeId: string, error: Error) => void`                | —              | Called when `loadChildren` rejects.                                                                           |
-| `isDisabled`       | `boolean`                                               | `false`        | Ignores keyboard input when `true`.                                                                           |
-| `ariaLabel`        | `string`                                                | `"Tree view"`  | Accessible label for the tree container.                                                                      |
+| Prop               | Type                                             | Default       | Description                                                                            |
+| ------------------ | ------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------- |
+| `data`             | `TreeNode<T>[]`                                  | _(required)_  | Tree data. Must be referentially stable (use `useMemo`).                               |
+| `selectionMode`    | `"none"` \| `"single"` \| `"multiple"`           | `"none"`      | `"single"` shows a tick, `"multiple"` shows checkboxes.                                |
+| `defaultExpanded`  | `ReadonlySet<string>` \| `"all"`                 | —             | IDs of nodes expanded on mount. Pass `"all"` to expand everything.                     |
+| `defaultSelected`  | `ReadonlySet<string>`                            | —             | IDs of nodes selected on mount.                                                        |
+| `visibleNodeCount` | `number`                                         | `Infinity`    | Limits visible rows (viewport virtualization). Scroll indicators appear automatically. |
+| `renderNode`       | `(props: TreeNodeRendererProps<T>) => ReactNode` | —             | Custom node renderer. Receives `{ node, state }`.                                      |
+| `loadChildren`     | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`  | —             | Async function called when expanding a node with `isParent: true` and no children.     |
+| `onFocusChange`    | `(nodeId: string) => void`                       | —             | Called when the focused node changes.                                                  |
+| `onExpandChange`   | `(expandedIds: ReadonlySet<string>) => void`     | —             | Called when the expanded set changes.                                                  |
+| `onSelectChange`   | `(selectedIds: ReadonlySet<string>) => void`     | —             | Called when the selection changes.                                                     |
+| `onLoadError`      | `(nodeId: string, error: Error) => void`         | —             | Called when `loadChildren` rejects.                                                    |
+| `isDisabled`       | `boolean`                                        | `false`       | Ignores keyboard input when `true`.                                                    |
+| `ariaLabel`        | `string`                                         | `"Tree view"` | Accessible label for the tree container.                                               |
 
 ### `TreeNode<T>` shape
 
 ```ts
 type TreeNode<T = Record<string, unknown>> = {
-    id: string;                       // unique across the whole tree
-    label: string;                    // display text
-    data?: T;                         // arbitrary user data
-    children?: TreeNode<T>[];         // child nodes
-    isParent?: boolean;               // show expand indicator even with no children (for async loading)
+    id: string; // unique across the whole tree
+    label: string; // display text
+    data?: T; // arbitrary user data
+    children?: TreeNode<T>[]; // child nodes
+    isParent?: boolean; // show expand indicator even with no children (for async loading)
 };
 ```
 
@@ -1176,9 +1174,7 @@ Use `renderNode` for full control over each row:
 Mark nodes with `isParent: true` and provide a `loadChildren` callback:
 
 ```tsx
-const data: TreeNode[] = [
-    { id: "root", label: "Remote Files", isParent: true },
-];
+const data: TreeNode[] = [{ id: "root", label: "Remote Files", isParent: true }];
 
 <TreeView
     data={data}
@@ -1187,7 +1183,7 @@ const data: TreeNode[] = [
         return response.json();
     }}
     onLoadError={(nodeId, error) => console.error(`Failed to load ${nodeId}:`, error)}
-/>
+/>;
 ```
 
 A loading indicator (`⟳`) is shown while children are being fetched.

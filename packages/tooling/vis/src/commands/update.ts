@@ -319,11 +319,11 @@ const update: Command = {
         const useCatalogMode = !options["no-catalog"] && hasCatalogs(workspaceRoot, packageManager);
 
         if (useCatalogMode) {
-            await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument as string[], logger);
+            await executeCatalogUpdate(workspaceRoot, packageManager as CatalogPackageManager, visConfig ?? {}, options, argument, logger);
         } else {
             const version = getPackageManagerVersion(packageManager);
 
-            executePmWrapper(workspaceRoot, packageManager, version, options, argument as string[], logger);
+            executePmWrapper(workspaceRoot, packageManager, version, options, argument, logger);
         }
     },
     name: "update",

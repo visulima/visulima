@@ -286,7 +286,6 @@ describe("approve-builds scanning", () => {
             }),
         );
 
-
         const unapproved = scanUnapprovedBuildScripts(tmpDir, { esbuild: true });
 
         expect(unapproved.length).toBe(0);
@@ -305,7 +304,6 @@ describe("approve-builds scanning", () => {
                 scripts: { postinstall: "prisma generate" },
             }),
         );
-
 
         // Not approved
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
@@ -328,7 +326,6 @@ describe("approve-builds scanning", () => {
             }),
         );
 
-
         const unapproved = scanUnapprovedBuildScripts(tmpDir, { "@prisma/*": true });
 
         expect(unapproved.length).toBe(0);
@@ -348,7 +345,6 @@ describe("approve-builds scanning", () => {
             }),
         );
 
-
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 
         expect(unapproved.length).toBe(0);
@@ -356,7 +352,6 @@ describe("approve-builds scanning", () => {
 
     it("should return empty for missing node_modules", () => {
         expect.assertions(1);
-
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 

@@ -1,4 +1,4 @@
-/* eslint-disable @stylistic/max-statements-per-line, import/exports-last */
+/* eslint-disable import/exports-last */
 
 /**
  * React hook for color blindness simulation and compensation.
@@ -72,7 +72,9 @@ const useColorBlindness = (options: UseColorBlindnessOptions = {}): UseColorBlin
         [isActive, matrix],
     );
 
-    return useMemo(() => { return { isActive, matrix, transformColor }; }, [isActive, matrix, transformColor]);
+    return useMemo(() => {
+        return { isActive, matrix, transformColor };
+    }, [isActive, matrix, transformColor]);
 };
 
 export default useColorBlindness;

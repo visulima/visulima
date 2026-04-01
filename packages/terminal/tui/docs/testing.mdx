@@ -51,11 +51,11 @@ const instance = render(<MyComponent />);
 
 **Parameters:**
 
-| Parameter          | Type            | Description                                           |
-| ------------------ | --------------- | ----------------------------------------------------- |
-| `node`             | `ReactElement`  | The React element to render                           |
-| `options.columns`  | `number`        | Terminal column width for mock streams (default: 100) |
-| `options.options`  | `RenderOptions` | Additional render options passed to the renderer      |
+| Parameter         | Type            | Description                                           |
+| ----------------- | --------------- | ----------------------------------------------------- |
+| `node`            | `ReactElement`  | The React element to render                           |
+| `options.columns` | `number`        | Terminal column width for mock streams (default: 100) |
+| `options.options` | `RenderOptions` | Additional render options passed to the renderer      |
 
 **Returns:** `TestInstance`
 
@@ -441,19 +441,19 @@ it("cleanup unmounts all instances", () => {
 
 When simulating special keys via `stdin.write()`, use these escape sequences:
 
-| Key           | Escape sequence | Code           |
-| ------------- | --------------- | -------------- |
-| Enter         | `\r`            | Carriage return |
-| Escape        | `\u001B`        | ESC            |
-| Up arrow      | `\u001B[A`      | ESC [ A        |
-| Down arrow    | `\u001B[B`      | ESC [ B        |
-| Right arrow   | `\u001B[C`      | ESC [ C        |
-| Left arrow    | `\u001B[D`      | ESC [ D        |
-| Tab           | `\t`            | HT             |
-| Backspace     | `\u007F`        | DEL            |
-| Delete        | `\u001B[3~`     | ESC [ 3 ~     |
-| Space         | ` `             | Space          |
-| Ctrl+C        | `\u0003`        | ETX            |
+| Key         | Escape sequence | Code            |
+| ----------- | --------------- | --------------- |
+| Enter       | `\r`            | Carriage return |
+| Escape      | `\u001B`        | ESC             |
+| Up arrow    | `\u001B[A`      | ESC [ A         |
+| Down arrow  | `\u001B[B`      | ESC [ B         |
+| Right arrow | `\u001B[C`      | ESC [ C         |
+| Left arrow  | `\u001B[D`      | ESC [ D         |
+| Tab         | `\t`            | HT              |
+| Backspace   | `\u007F`        | DEL             |
+| Delete      | `\u001B[3~`     | ESC [ 3 ~       |
+| Space       | ` `             | Space           |
+| Ctrl+C      | `\u0003`        | ETX             |
 
 ## Works With Any Test Runner
 

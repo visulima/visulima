@@ -73,10 +73,7 @@ describe("enforceScriptSecurity", () => {
         it("should not warn when trustedDependencies exists in package.json", () => {
             expect.assertions(1);
 
-            writeFileSync(
-                join(tmpDir, "package.json"),
-                JSON.stringify({ name: "test", trustedDependencies: ["esbuild"] }),
-            );
+            writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test", trustedDependencies: ["esbuild"] }));
 
             const result = enforceScriptSecurity("bun", tmpDir, {
                 security: { allowBuilds: { esbuild: true } },
@@ -122,7 +119,7 @@ describe("enforceScriptSecurity", () => {
                 security: {
                     allowBuilds: {
                         "core-js": false,
-                        "esbuild": true,
+                        esbuild: true,
                         "@prisma/client": true,
                     },
                 },
@@ -207,7 +204,7 @@ describe("syncAllowBuildsToNativeConfig", () => {
             expect.assertions(2);
 
             const actions = syncAllowBuildsToNativeConfig("bun", tmpDir, {
-                "esbuild": true,
+                esbuild: true,
                 "@prisma/client": true,
                 "core-js": false,
             });

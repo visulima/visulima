@@ -125,10 +125,7 @@ describe("tui/createDynamicOutputRenderer", () => {
 
         lifeCycle.startCommand!();
 
-        expect(render).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.objectContaining({ alternateScreen: true }),
-        );
+        expect(render).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ alternateScreen: true }));
 
         lifeCycle.endCommand!();
     });

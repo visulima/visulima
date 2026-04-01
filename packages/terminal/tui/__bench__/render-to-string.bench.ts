@@ -22,11 +22,7 @@ function TuiStyledApp() {
         React.createElement(
             "box",
             { marginTop: 1, width: 60 },
-            React.createElement(
-                "text",
-                {},
-                "Cupcake ipsum dolor sit amet candy candy. Sesame snaps cookie I love tootsie roll apple pie bonbon wafer.",
-            ),
+            React.createElement("text", {}, "Cupcake ipsum dolor sit amet candy candy. Sesame snaps cookie I love tootsie roll apple pie bonbon wafer."),
         ),
         React.createElement(
             "box",
@@ -94,11 +90,7 @@ function InkStyledApp() {
         React.createElement(
             InkBox,
             { marginTop: 1, width: 60 },
-            React.createElement(
-                InkText,
-                {},
-                "Cupcake ipsum dolor sit amet candy candy. Sesame snaps cookie I love tootsie roll apple pie bonbon wafer.",
-            ),
+            React.createElement(InkText, {}, "Cupcake ipsum dolor sit amet candy candy. Sesame snaps cookie I love tootsie roll apple pie bonbon wafer."),
         ),
         React.createElement(
             InkBox,

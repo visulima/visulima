@@ -18,7 +18,7 @@ const add: Command = {
         ["vis add lodash -w", "Add to workspace root"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const packages = argument as string[];
+        const packages = argument;
 
         if (!packages || packages.length === 0) {
             throw new Error("No packages specified. Usage: vis add <packages...>");
@@ -28,17 +28,22 @@ const add: Command = {
         const cwd = process.cwd();
         const pm = detectPm(wsRoot ?? cwd);
 
-        const code = runAdd(pm, {
-            exact: (options.exact as boolean) || false,
-            filter: toStringArray(options.filter),
-            global: (options.global as boolean) || false,
-            optional: (options["save-optional"] as boolean) || false,
-            packages,
-            peer: (options["save-peer"] as boolean) || false,
-            saveDev: (options["save-dev"] as boolean) || false,
-            workspace: (options.workspace as boolean) || false,
-            workspaceRoot: (options["workspace-root"] as boolean) || false,
-        }, cwd, logger);
+        const code = runAdd(
+            pm,
+            {
+                exact: (options.exact as boolean) || false,
+                filter: toStringArray(options.filter),
+                global: (options.global as boolean) || false,
+                optional: (options["save-optional"] as boolean) || false,
+                packages,
+                peer: (options["save-peer"] as boolean) || false,
+                saveDev: (options["save-dev"] as boolean) || false,
+                workspace: (options.workspace as boolean) || false,
+                workspaceRoot: (options["workspace-root"] as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0) {
             process.exitCode = code;

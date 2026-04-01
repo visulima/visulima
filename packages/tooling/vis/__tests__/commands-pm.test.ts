@@ -358,9 +358,7 @@ describe("dlx command argument validation", () => {
         expect.assertions(1);
 
         const options: Record<string, unknown> = { package: ["cowsay", "lolcatjs"] };
-        const additionalPackages = options.package
-            ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string])
-            : [];
+        const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
 
         expect(additionalPackages).toStrictEqual(["cowsay", "lolcatjs"]);
     });
@@ -369,9 +367,7 @@ describe("dlx command argument validation", () => {
         expect.assertions(1);
 
         const options: Record<string, unknown> = { package: "cowsay" };
-        const additionalPackages = options.package
-            ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string])
-            : [];
+        const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
 
         expect(additionalPackages).toStrictEqual(["cowsay"]);
     });

@@ -73,7 +73,7 @@ interface RemoveOptions {
 }
 
 interface WhyOptions {
-    /** Uses Option<i32> in Rust - pass undefined for no depth limit (not null!) */
+    /** Uses Option&lt;i32> in Rust - pass undefined for no depth limit (not null!) */
     depth?: number;
     dev: boolean;
     filter: string[];
@@ -131,17 +131,17 @@ interface NativeBindings {
     detectPackageManager: (cwd: string) => DetectedPackageManager;
     execPmCommand: (bin: string, args: string[], cwd: string) => ExecResult;
     execPmCommandInteractive: (bin: string, args: string[], cwd: string) => number;
-    resolveAdd: (pm: string, version: string, opts: AddOptions) => ResolvedCommand;
+    resolveAdd: (pm: string, version: string, options: AddOptions) => ResolvedCommand;
     resolveDedupe: (pm: string, version: string, check: boolean) => ResolvedCommand;
-    resolveDlx: (pm: string, version: string, opts: DlxOptions) => ResolvedCommand;
-    resolveExec: (pm: string, version: string, opts: ExecOptions) => ResolvedCommand;
-    resolveInstall: (pm: string, version: string, opts: InstallOptions) => ResolvedCommand;
+    resolveDlx: (pm: string, version: string, options: DlxOptions) => ResolvedCommand;
+    resolveExec: (pm: string, version: string, options: ExecOptions) => ResolvedCommand;
+    resolveInstall: (pm: string, version: string, options: InstallOptions) => ResolvedCommand;
     resolveLink: (pm: string, target: string | null) => ResolvedCommand;
-    resolveOutdated: (pm: string, version: string, opts: OutdatedOptions) => ResolvedCommand;
+    resolveOutdated: (pm: string, version: string, options: OutdatedOptions) => ResolvedCommand;
     resolvePmCommand: (pm: string, version: string, subcommand: string, extraArgs: string[]) => ResolvedCommand;
-    resolveRemove: (pm: string, version: string, opts: RemoveOptions) => ResolvedCommand;
+    resolveRemove: (pm: string, version: string, options: RemoveOptions) => ResolvedCommand;
     resolveUnlink: (pm: string, version: string, packages: string[], recursive: boolean) => ResolvedCommand;
-    resolveWhy: (pm: string, version: string, opts: WhyOptions) => ResolvedCommand;
+    resolveWhy: (pm: string, version: string, options: WhyOptions) => ResolvedCommand;
     whichBin: (name: string) => string | null;
 }
 

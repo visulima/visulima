@@ -184,8 +184,8 @@ const run: Command = {
                 shouldRerun = await new Promise<boolean>((resolve) => {
                     // Check if already resolved (user quit before we got here)
                     dynamic.renderIsDone.then(
-                        () => resolve(false),
-                        () => resolve(false),
+                        () => { resolve(false); },
+                        () => { resolve(false); },
                     );
 
                     // Watch for rerun requests

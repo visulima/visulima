@@ -18,7 +18,7 @@ const why: Command = {
         ["vis explain react", "Alias matching npm's command"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const packages = argument as string[];
+        const packages = argument;
 
         if (!packages || packages.length === 0) {
             throw new Error("No packages specified. Usage: vis why <package...>");
@@ -27,19 +27,24 @@ const why: Command = {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const code = runWhy(pm, {
-            depth: options.depth !== undefined ? Number(options.depth) : undefined,
-            dev: (options.dev as boolean) || false,
-            filter: toStringArray(options.filter),
-            global: (options.global as boolean) || false,
-            json: (options.json as boolean) || false,
-            long: (options.long as boolean) || false,
-            noOptional: (options["no-optional"] as boolean) || false,
-            packages,
-            parseable: (options.parseable as boolean) || false,
-            prod: (options.prod as boolean) || false,
-            recursive: (options.recursive as boolean) || false,
-        }, cwd, logger);
+        const code = runWhy(
+            pm,
+            {
+                depth: options.depth === undefined ? undefined : Number(options.depth),
+                dev: (options.dev as boolean) || false,
+                filter: toStringArray(options.filter),
+                global: (options.global as boolean) || false,
+                json: (options.json as boolean) || false,
+                long: (options.long as boolean) || false,
+                noOptional: (options["no-optional"] as boolean) || false,
+                packages,
+                parseable: (options.parseable as boolean) || false,
+                prod: (options.prod as boolean) || false,
+                recursive: (options.recursive as boolean) || false,
+            },
+            cwd,
+            logger,
+        );
 
         if (code !== 0 && code !== 1) {
             process.exitCode = code;

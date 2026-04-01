@@ -74,12 +74,14 @@ export interface ControlledScrollViewProps extends BoxProps {
     onContentHeightChange?: (height: number, previousHeight: number) => void;
     onItemHeightChange?: (index: number, height: number, previousHeight: number) => void;
     onViewportSizeChange?: (size: { height: number; width: number }, previousSize: { height: number; width: number }) => void;
+
     /**
      * Number of extra items to render above/below the viewport when virtualized.
      * @default 3
      */
     overscan?: number;
     scrollOffset: number;
+
     /**
      * Only render items visible in the viewport plus overscan.
      * Items must be measured first (first render always renders all items).
@@ -297,11 +299,13 @@ export const ControlledScrollView = ({
     let belowSpacerHeight = 0;
     // Only virtualize if all current items have been measured (height > 0).
     // New items added dynamically will have height 0 until measured.
-    const allItemsMeasured = childArray.length > 0 && childArray.every((_: ReactNode, index: number) => {
-        const key = itemKeysRef.current[index] ?? index;
+    const allItemsMeasured
+        = childArray.length > 0
+            && childArray.every((_: ReactNode, index: number) => {
+                const key = itemKeysRef.current[index] ?? index;
 
-        return (itemHeightsRef.current[key] ?? 0) > 0;
-    });
+                return (itemHeightsRef.current[key] ?? 0) > 0;
+            });
     const shouldVirtualize = virtualize && hasMeasuredRef.current && allItemsMeasured;
 
     if (shouldVirtualize) {

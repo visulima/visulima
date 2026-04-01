@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 
 import useInput from "../../hooks/use-input";
-import type { AsyncChildrenFn, SelectionMode } from "./types";
+import type { AsyncChildrenFn as AsyncChildrenFunction, SelectionMode } from "./types";
 import type { TreeViewState } from "./use-tree-view-state";
 
 export type UseTreeViewProps<T = Record<string, unknown>> = {
@@ -10,18 +10,22 @@ export type UseTreeViewProps<T = Record<string, unknown>> = {
      * @default false
      */
     readonly isDisabled?: boolean;
+
     /**
      * Async function to load children on demand.
      */
-    readonly loadChildren?: AsyncChildrenFn<T>;
+    readonly loadChildren?: AsyncChildrenFunction<T>;
+
     /**
      * Called when `loadChildren` rejects.
      */
     readonly onLoadError?: (nodeId: string, error: Error) => void;
+
     /**
      * Selection mode.
      */
     readonly selectionMode: SelectionMode;
+
     /**
      * The tree view state from `useTreeViewState`.
      */
@@ -31,12 +35,15 @@ export type UseTreeViewProps<T = Record<string, unknown>> = {
 export function useTreeView<T>({ isDisabled = false, loadChildren, onLoadError, selectionMode, state }: UseTreeViewProps<T>): void {
     const loadingReference = useRef(new Set<string>());
     const stateReference = useRef(state);
+
     stateReference.current = state;
 
     const loadChildrenReference = useRef(loadChildren);
+
     loadChildrenReference.current = loadChildren;
 
     const onLoadErrorReference = useRef(onLoadError);
+
     onLoadErrorReference.current = onLoadError;
 
     const triggerLoad = useCallback(async (nodeId: string) => {
@@ -61,10 +68,12 @@ export function useTreeView<T>({ isDisabled = false, loadChildren, onLoadError, 
 
         try {
             const children = await currentLoadChildren(flat.node);
+
             stateReference.current.insertChildren(nodeId, children);
             stateReference.current.expandNode(nodeId);
         } catch (error: unknown) {
             const normalizedError = error instanceof Error ? error : new Error(String(error));
+
             stateReference.current.setChildrenError(nodeId);
             onLoadErrorReference.current?.(nodeId, normalizedError);
         } finally {
@@ -121,10 +130,10 @@ export function useTreeView<T>({ isDisabled = false, loadChildren, onLoadError, 
             }
 
             if (key.return) {
-                if (selectionMode !== "none") {
-                    state.select();
-                } else {
+                if (selectionMode === "none") {
                     state.toggleExpanded();
+                } else {
+                    state.select();
                 }
 
                 return;

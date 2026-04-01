@@ -942,20 +942,18 @@ export default class Ink {
         // flush so the final frame is emitted; otherwise cancel to avoid delayed callbacks.
         settleThrottle(this.throttledOnRender, canWriteToStdout);
 
-        if (canWriteToStdout) {
-            // Skip the final render when in alternate screen mode — the alternate
+        if (canWriteToStdout // Skip the final render when in alternate screen mode — the alternate
             // buffer content is disposable and will be discarded when we switch back
             // to the primary screen. Rendering a final frame here would write content
             // to the alternate screen that is immediately discarded, or worse, if the
             // ALT_SCREEN_OFF write is buffered, the final frame could leak onto the
             // primary screen buffer.
-            if (!this.alternateScreen) {
-                const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
+            && !this.alternateScreen) {
+            const shouldRenderFinalFrame = !this.throttledOnRender || (!this.hasPendingThrottledRender && this.fullStaticOutput === "");
 
-                if (shouldRenderFinalFrame) {
-                    this.calculateLayout();
-                    this.onRender();
-                }
+            if (shouldRenderFinalFrame) {
+                this.calculateLayout();
+                this.onRender();
             }
         }
 

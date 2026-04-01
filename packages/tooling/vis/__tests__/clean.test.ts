@@ -34,11 +34,7 @@ describe("clean command logic", () => {
     it("should find node_modules in nested workspace packages", () => {
         expect.assertions(3);
 
-        const dirs = [
-            join(tmpDir, "packages", "a", "node_modules"),
-            join(tmpDir, "packages", "b", "node_modules"),
-            join(tmpDir, "node_modules"),
-        ];
+        const dirs = [join(tmpDir, "packages", "a", "node_modules"), join(tmpDir, "packages", "b", "node_modules"), join(tmpDir, "node_modules")];
 
         for (const dir of dirs) {
             mkdirSync(dir, { recursive: true });
@@ -205,11 +201,7 @@ describe("clean full workspace scenario", () => {
         expect.assertions(3);
 
         // Simulate clean
-        const dirs = [
-            join(tmpDir, "node_modules"),
-            join(tmpDir, "packages", "app", "node_modules"),
-            join(tmpDir, "packages", "lib", "node_modules"),
-        ];
+        const dirs = [join(tmpDir, "node_modules"), join(tmpDir, "packages", "app", "node_modules"), join(tmpDir, "packages", "lib", "node_modules")];
 
         for (const dir of dirs) {
             rmSync(dir, { force: true, recursive: true });

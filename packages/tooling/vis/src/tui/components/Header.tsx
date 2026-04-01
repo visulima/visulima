@@ -24,7 +24,7 @@ const Header = ({ children, title, variant }: HeaderProps): React.JSX.Element =>
     return (
         <Box flexDirection="column">
             <Box>
-                <Text bold inverse color={color}>
+                <Text bold color={color} inverse>
                     {" VIS "}
                 </Text>
                 <Text>{"  "}</Text>
