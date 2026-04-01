@@ -1759,7 +1759,7 @@ overrides:
   node-forge@<1.3.2: '>=1.3.2'
   node-forge@<1.4.0: '>=1.4.0'
   node-forge@<=1.3.3: '>=1.4.0'
-  path-to-regexp@<0.1.13: '>=0.1.13'
+  path-to-regexp@<0.1.13: '>=0.1.13 <0.2.0'
   path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
   picomatch@<2.3.2: '>=2.3.2'
   picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
@@ -11204,7 +11204,7 @@ packages:
     resolution: {integrity: sha512-dr8/3zEaB+p0D2n/IUrlPF1HZm586qgJNXK1a9fhg/PzdtkK7Ksd5l312tJX2yBuALqDYBlG20QEbayqPyxn+g==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
-      hono: '>=4.10.2'
+      hono: '>=4.12.4'
 
   '@hono/swagger-ui@0.6.1':
     resolution: {integrity: sha512-sJTvldu1GPeEPfyeLG7gRj+W4vEuD+JDi+JjJ3TJs/DvMUtBLs0KJO5yokGegWWdy5qrbdnQGekbhgNRmPmYKQ==}
@@ -15899,7 +15899,7 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.0.0
       '@sveltejs/vite-plugin-svelte': ^3.0.0 || ^4.0.0-next.1 || ^5.0.0 || ^6.0.0-next.0 || ^7.0.0
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: ^5.3.3
       vite: '>=7.1.11'
     peerDependenciesMeta:
@@ -15912,7 +15912,7 @@ packages:
     resolution: {integrity: sha512-ILXmxC7HAsnkK2eslgPetrqqW1BKSL7LktsFgqzNj83MaivMGZzluWq32m25j2mDOjmSKX7GGWahePhuEs7P/g==}
     engines: {node: ^20.19 || ^22.12 || >=24}
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       vite: ^8.0.0-beta.7 || ^8.0.0
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
@@ -25454,7 +25454,7 @@ packages:
     resolution: {integrity: sha512-bvLRJAfK6NHVLVwJm+HRCxrU3UQbXLuuj1qcLg1sJK40lRzHmGtVGHLxFWj3LnEoH8UZFTwV0Be0jTg4zHckkw==}
     engines: {node: ^20.18.0 || >=22.12.0}
     peerDependencies:
-      next: '>=16.0.7'
+      next: '>=16.0.9'
 
   next-themes@0.4.6:
     resolution: {integrity: sha512-pZvgD5L0IEvX5/9GWyHMf3m8BKiVQwsCMHfoFosXtXBMnaS0ZnIJ9ST4b4NqLVKDEm8QBxoNNGNaBv2JNF6XNA==}
@@ -26383,6 +26383,9 @@ packages:
 
   path-to-glob-pattern@2.0.1:
     resolution: {integrity: sha512-tmciSlVyHnX0LC86+zSr+0LURw9rDPw8ilhXcmTpVUOnI6OsKdCzXQs5fTG10Bjz26IBdnKL3XIaP+QvGsk5YQ==}
+
+  path-to-regexp@0.1.13:
+    resolution: {integrity: sha512-A/AGNMFN3c8bOlvV9RreMdrv7jsmF9XIfDeCd87+I8RNg6s78BhJxMu69NEMHBSJFxKidViTEdruRwEk/WIKqA==}
 
   path-to-regexp@3.3.0:
     resolution: {integrity: sha512-qyCH421YQPS2WFDxDjftfc1ZR5WKQzVzqsp4n9M2kQhVOo/ByahFoUNJfl58kOcEGfQ//7weFTDhm+ss8Ecxgw==}
@@ -28823,7 +28826,7 @@ packages:
     engines: {node: '>= 18.0.0'}
     hasBin: true
     peerDependencies:
-      svelte: '>=5.51.5'
+      svelte: '>=5.53.5'
       typescript: '>=5.0.0'
 
   svelte-eslint-parser@1.6.0:
@@ -45163,7 +45166,7 @@ snapshots:
       eslint: 8.57.0
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
@@ -46210,7 +46213,7 @@ snapshots:
       methods: 1.1.2
       on-finished: 2.4.1
       parseurl: 1.3.3
-      path-to-regexp: 8.4.0
+      path-to-regexp: 0.1.13
       proxy-addr: 2.0.7
       qs: 6.15.0
       range-parser: 1.2.1
@@ -52788,6 +52791,8 @@ snapshots:
 
   path-to-glob-pattern@2.0.1: {}
 
+  path-to-regexp@0.1.13: {}
+
   path-to-regexp@3.3.0: {}
 
   path-to-regexp@6.3.0: {}
@@ -55375,7 +55380,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)):
     dependencies:
       eslint: 8.57.0
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-promise@6.4.0(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint-plugin-n@15.7.0(eslint@8.57.0))(eslint-plugin-promise@6.4.0(eslint@8.57.0))(eslint@8.57.0)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@10.1.0(jiti@2.6.1)))(eslint@8.57.0)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-n: 15.7.0(eslint@8.57.0)
