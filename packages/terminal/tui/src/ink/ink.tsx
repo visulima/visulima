@@ -399,9 +399,10 @@ export default class Ink {
             // throttledOnRender already set above
         }
 
-        // When standardReactLayoutTiming is enabled, defer frame output via
-        // queueMicrotask so useLayoutEffect hooks complete before the frame
-        // is written to the terminal.
+        // When standardReactLayoutTiming is enabled, coalesce render calls
+        // via queueMicrotask so multiple React state updates in the same tick
+        // produce a single frame, and useLayoutEffect hooks complete before the
+        // frame is written to the terminal.
         if (options.standardReactLayoutTiming) {
             let isRenderScheduled = false;
             const deferredRender = () => {
@@ -502,11 +503,25 @@ export default class Ink {
         // Unmount when process exits
         this.unsubscribeExit = signalExit(this.unmount, { alwaysLast: false });
 
-        // Alternate screen, console patching, resize listeners, and Kitty
-        // keyboard detection are deferred to the first render frame via
-        // runDeferredInit(). This avoids synchronous I/O (alternate screen
-        // escape writes, stdin listeners for Kitty query, require() for
-        // native binding) on the mount hot-path, improving mount latency.
+        this.setAlternateScreen(Boolean(options.alternateScreen));
+
+        if (options.patchConsole) {
+            this.patchConsole();
+        }
+
+        if (this.interactive) {
+            options.stdout.on("resize", this.resized);
+
+            this.unsubscribeResize = () => {
+                options.stdout.off("resize", this.resized);
+            };
+        }
+
+        // Kitty "enabled" mode runs immediately (just a stdout.write).
+        // "auto" mode detection is deferred to the first render frame via
+        // runDeferredInit() because the CSI ? u query sets up a stdin
+        // listener with a 200ms timeout.
+        this.initImmediateKittyKeyboard();
 
         if (process.env["DEV"] === "true") {
             // @ts-expect-error outdated types
@@ -524,8 +539,10 @@ export default class Ink {
     }
 
     /**
-     * Perform deferred initialization that was too expensive for the constructor.
-     * Called once on the first render frame.
+     * Perform deferred initialization on the first render frame.
+     * Kitty keyboard auto-detection is deferred here because the CSI ? u
+     * query sets up a synchronous stdin listener with a 200ms timeout.
+     * "enabled" mode runs immediately in the constructor (it's just a write).
      */
     private runDeferredInit(): void {
         if (this.deferredInitDone) {
@@ -534,21 +551,7 @@ export default class Ink {
 
         this.deferredInitDone = true;
 
-        this.setAlternateScreen(Boolean(this.options.alternateScreen));
-
-        if (this.options.patchConsole) {
-            this.patchConsole();
-        }
-
-        if (this.interactive) {
-            this.options.stdout.on("resize", this.resized);
-
-            this.unsubscribeResize = () => {
-                this.options.stdout.off("resize", this.resized);
-            };
-        }
-
-        this.initKittyKeyboard();
+        this.initDeferredKittyKeyboard();
     }
 
     resized = (): void => {
@@ -1305,8 +1308,11 @@ export default class Ink {
         this.lastOutputHeight = outputHeight;
     }
 
-    private initKittyKeyboard(): void {
-        // Protocol is opt-in: if kittyKeyboard is not specified, do nothing
+    /**
+     * Handle kitty keyboard "enabled" mode immediately (just a stdout.write).
+     * Called from the constructor.
+     */
+    private initImmediateKittyKeyboard(): void {
         if (!this.options.kittyKeyboard) {
             return;
         }
@@ -1314,7 +1320,7 @@ export default class Ink {
         const options = this.options.kittyKeyboard;
         const mode = options.mode ?? "auto";
 
-        if (mode === "disabled") {
+        if (mode !== "enabled") {
             return;
         }
 
@@ -1322,13 +1328,28 @@ export default class Ink {
 
         // 'enabled' force-enables the protocol as long as both streams are TTYs,
         // regardless of the interactive setting (e.g. even in CI).
-        if (mode === "enabled") {
-            if (this.options.stdin.isTTY && this.options.stdout.isTTY) {
-                this.enableKittyProtocol(flags);
-            }
+        if (this.options.stdin.isTTY && this.options.stdout.isTTY) {
+            this.enableKittyProtocol(flags);
+        }
+    }
 
+    /**
+     * Handle kitty keyboard "auto" mode detection. Deferred to first render
+     * because the CSI ? u query sets up a stdin listener with a 200ms timeout.
+     */
+    private initDeferredKittyKeyboard(): void {
+        if (!this.options.kittyKeyboard) {
             return;
         }
+
+        const options = this.options.kittyKeyboard;
+        const mode = options.mode ?? "auto";
+
+        if (mode !== "auto") {
+            return;
+        }
+
+        const flags: KittyFlagName[] = options.flags ?? ["disambiguateEscapeCodes"];
 
         // Auto mode: require interactive + TTY
         if (!this.interactive || !this.options.stdin.isTTY || !this.options.stdout.isTTY) {
@@ -1338,7 +1359,6 @@ export default class Ink {
         // Auto mode: query the terminal for kitty keyboard protocol support.
         // The CSI ? u query is safe to send to any terminal — unsupporting
         // terminals simply won't respond, and the 200ms timeout handles that.
-        // This avoids maintaining a hardcoded whitelist of terminal names.
         this.confirmKittySupport(flags);
     }
 
