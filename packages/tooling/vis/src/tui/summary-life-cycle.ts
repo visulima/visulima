@@ -1,8 +1,8 @@
-import { bold, cyan, dim } from "@visulima/colorize";
+import React from "react";
+import { renderToString } from "@visulima/tui";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
-import { cliOutput } from "./output";
-import { formatMs } from "./pretty-time";
+import TaskSummaryView from "./components/TaskSummaryView";
 
 interface TaskSummaryEntry {
     output: string;
@@ -63,26 +63,27 @@ export class SummaryLifeCycle implements LifeCycleInterface {
             return;
         }
 
-        process.stdout.write("\n");
-        process.stdout.write(`${cliOutput.getSeparator()}\n`);
-        process.stdout.write(`${bold(" Task Summary")}\n`);
-        process.stdout.write(`${cliOutput.getSeparator()}\n`);
-        process.stdout.write("\n");
+        // Sort: failures first, then skipped, then success, then cached, then unknown
+        const sorted = [...this.#entries.values()].sort(
+            (a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status),
+        );
 
-        // Sort: failures first, then cached, then success, then skipped
-        const sorted = [...this.#entries.values()].sort((a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status));
+        const entries = sorted.map((entry) => ({
+            elapsed:
+                entry.result?.startTime && entry.result.endTime
+                    ? entry.result.endTime - entry.result.startTime
+                    : undefined,
+            status: entry.result?.status,
+            taskId: entry.taskId,
+        }));
 
-        for (const entry of sorted) {
-            const status = entry.result?.status;
-            const icon = status ? cliOutput.getStatusIcon(status) : dim("?");
-            const elapsed = entry.result?.startTime && entry.result.endTime ? dim(` ${formatMs(entry.result.endTime - entry.result.startTime)}`) : "";
+        const columns = process.stdout.columns || 80;
+        const output = renderToString(
+            React.createElement(TaskSummaryView, { entries }),
+            { columns },
+        );
 
-            const cacheLabel = status && isCacheStatus(status) ? cyan(" [cache]") : "";
-
-            process.stdout.write(`  ${icon}  ${entry.taskId}${cacheLabel}${elapsed}\n`);
-        }
-
-        process.stdout.write("\n");
+        process.stdout.write("\n" + output + "\n");
     }
 }
 
@@ -91,21 +92,19 @@ const getStatusOrder = (status?: TaskStatus): number => {
         case "failure": {
             return 0;
         }
-        case "local-cache":
-        case "local-cache-kept-existing":
-        case "remote-cache": {
-            return 3;
-        }
         case "skipped": {
             return 1;
         }
         case "success": {
             return 2;
         }
+        case "local-cache":
+        case "local-cache-kept-existing":
+        case "remote-cache": {
+            return 3;
+        }
         default: {
             return 4;
         }
     }
 };
-
-const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";

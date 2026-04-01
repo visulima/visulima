@@ -40,6 +40,8 @@ packages:
   - "packages/data-manipulation/redact/__fixtures__/package/mjs"
   - "packages/tooling/tsconfig/__fixtures__/package/cjs"
   - "packages/tooling/tsconfig/__fixtures__/package/mjs"
+blockExoticSubdeps: true
+
 auditConfig:
   ignoreCves:
     - GHSA-45h5-66jx-r2wf
@@ -702,6 +704,8 @@ injectWorkspacePackages: false
 
 linkWorkspacePackages: true
 
+minimumReleaseAge: 1440
+
 minimumReleaseAgeExclude:
   - vitest
   - '@vitest/*'
@@ -851,3 +855,7 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: true
 
 sharedWorkspaceLockfile: true
+
+strictDepBuilds: true
+
+trustPolicy: accept

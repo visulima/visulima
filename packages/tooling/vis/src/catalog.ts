@@ -1,8 +1,8 @@
-import { boxen } from "@visulima/boxen";
+import React from "react";
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync, walkSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join } from "@visulima/path";
-import { createTable } from "@visulima/tabular";
+import { Box, renderToString, Table, Text } from "@visulima/tui";
 
 import { resolveWorkspacePatterns } from "./workspace";
 
@@ -1296,28 +1296,30 @@ const formatCatalogDisplayName = (catalogName: string): string => {
 
 const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void => {
     const byCatalog = groupByCatalog(outdated);
+    const columns = process.stdout.columns || 80;
 
     for (const [catalogName, entries] of byCatalog) {
-        const table = createTable();
-
-        table.setHeaders(["Package", "Current", "Target", "Type"]);
-
-        for (const entry of entries) {
+        const tableData = entries.flatMap((entry) => {
             const hasSec = entry.vulnerabilities && entry.vulnerabilities.length > 0;
             const displayName = hasSec ? `[SEC] ${entry.packageName}` : entry.packageName;
 
-            table.addRow([displayName, entry.currentRange, entry.newRange, entry.updateType]);
+            const rows: { current: string; package: string; target: string; type: string }[] = [
+                { current: entry.currentRange, package: displayName, target: entry.newRange, type: entry.updateType },
+            ];
 
             if (entry.vulnerabilities) {
                 for (const vuln of entry.vulnerabilities) {
-                    table.addRow([`  ${vuln.severity} ${vuln.id}`, { colSpan: 3, content: vuln.summary }]);
+                    rows.push({ current: vuln.summary, package: `  ${vuln.severity} ${vuln.id}`, target: "", type: "" });
                 }
             }
-        }
+
+            return rows;
+        });
 
         const displayName = formatCatalogDisplayName(catalogName);
+        const output = renderToString(React.createElement(Table, { data: tableData }), { columns });
 
-        logger.info(`${displayName}\n${table.toString()}\n`);
+        logger.info(`${displayName}\n${output}\n`);
     }
 };
 
@@ -1345,8 +1347,18 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     }
 
     const summary = `Found ${String(outdated.length)} outdated (${parts.join(", ")})`;
+    const columns = process.stdout.columns || 80;
 
-    return boxen(summary, { headerText: "Summary", padding: { left: 1, right: 1 } });
+    return renderToString(
+        React.createElement(
+            Box,
+            { borderStyle: "round", flexDirection: "column", paddingLeft: 1, paddingRight: 1 },
+            React.createElement(Text, { bold: true }, "Summary"),
+            React.createElement(Text, null, ""),
+            React.createElement(Text, null, summary),
+        ),
+        { columns },
+    );
 };
 
 // --- Apply updates ---

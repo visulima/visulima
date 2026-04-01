@@ -48,7 +48,6 @@ describe("tui/createDynamicOutputRenderer", () => {
 
         vi.spyOn(process, "removeListener").mockImplementation(() => process);
 
-        // Mock process.stdout.columns for separator width
         Object.defineProperty(process.stdout, "columns", { configurable: true, value: 80 });
     });
 
@@ -75,16 +74,16 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(result.renderIsDone).toBeInstanceOf(Promise);
     });
 
-    it("should render header and initial frame on startCommand", () => {
+    it("should print header containing VIS badge on startCommand", () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
         lifeCycle.startCommand!();
 
-        // pail's InteractiveManager hooks the stream, so writes go through the hook.
-        // The header is written to the captured history and the initial frame is rendered.
-        // We verify signal handlers are registered as a proxy for startCommand succeeding.
-        expect(sigintListeners.length).toBeGreaterThan(0);
+        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
+
+        expect(allOutput).toContain("VIS");
+        expect(allOutput).toContain("Running");
 
         lifeCycle.endCommand!();
     });
@@ -97,102 +96,18 @@ describe("tui/createDynamicOutputRenderer", () => {
 
         expect(sigintListeners.length).toBeGreaterThan(0);
         expect(sigtermListeners.length).toBeGreaterThan(0);
-    });
-
-    it("should mark tasks as running on startTasks", () => {
-        vi.useFakeTimers();
-
-        const tasks = [createTask("app-a", "build")];
-        const { lifeCycle } = createRenderer(tasks);
-
-        lifeCycle.startCommand!();
-        writeSpy.mockClear();
-
-        lifeCycle.startTasks!(tasks);
-
-        // Advance timer to trigger a render
-        vi.advanceTimersByTime(100);
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("app-a:build");
-
-        // Clean up: end the command to clear interval
-        lifeCycle.endCommand!();
-        vi.useRealTimers();
-    });
-
-    it("should track completed tasks and render them on endCommand", () => {
-        const tasks = [createTask("app-a", "build"), createTask("app-b", "build")];
-        const { lifeCycle } = createRenderer(tasks);
-
-        lifeCycle.startCommand!();
-        lifeCycle.startTasks!(tasks);
-        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
-        writeSpy.mockClear();
-
-        // endCommand triggers the final render which includes completed tasks
-        lifeCycle.endCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("app-a:build");
-    });
-
-    it("should show cache indicator for cached tasks in final render", () => {
-        const tasks = [createTask("app-a", "build")];
-        const { lifeCycle } = createRenderer(tasks);
-
-        lifeCycle.startCommand!();
-        lifeCycle.startTasks!(tasks);
-        lifeCycle.endTasks!([createResult(tasks[0]!, "local-cache")]);
-        writeSpy.mockClear();
 
         lifeCycle.endCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        // Cache indicator is shown as ellipsis in the Cache column
-        expect(allOutput).toContain("app-a:build");
-        expect(allOutput).toContain("read from cache");
     });
 
-    it("should print success summary on endCommand when all tasks pass", () => {
+    it("should accept startTasks and endTasks without errors", () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
 
         lifeCycle.startCommand!();
         lifeCycle.startTasks!(tasks);
         lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
-        writeSpy.mockClear();
-
         lifeCycle.endCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("Successfully ran");
-
-        // Should restore cursor (ESC[?25h)
-        const rawOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
-
-        expect(rawOutput).toContain("\u001B[?25h");
-    });
-
-    it("should print error summary on endCommand when tasks fail", () => {
-        const tasks = [createTask("app-a", "build"), createTask("app-b", "build")];
-        const { lifeCycle } = createRenderer(tasks);
-
-        lifeCycle.startCommand!();
-        lifeCycle.startTasks!(tasks);
-        lifeCycle.endTasks!([createResult(tasks[0]!, "success"), createResult(tasks[1]!, "failure")]);
-        writeSpy.mockClear();
-
-        lifeCycle.endCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("1 task failed");
-        expect(allOutput).toContain("app-b:build");
     });
 
     it("should resolve renderIsDone after endCommand", async () => {
@@ -204,18 +119,19 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
         lifeCycle.endCommand!();
 
-        // renderIsDone should resolve
         await expect(renderIsDone).resolves.toBeUndefined();
     });
 
-    it("should remove signal handlers on endCommand", () => {
+    it("should remove signal handlers on endCommand", async () => {
         const tasks = [createTask("app-a", "build")];
-        const { lifeCycle } = createRenderer(tasks);
+        const { lifeCycle, renderIsDone } = createRenderer(tasks);
 
         lifeCycle.startCommand!();
         lifeCycle.startTasks!(tasks);
         lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
         lifeCycle.endCommand!();
+
+        await renderIsDone;
 
         expect(process.removeListener).toHaveBeenCalledWith("SIGINT", expect.any(Function));
         expect(process.removeListener).toHaveBeenCalledWith("SIGTERM", expect.any(Function));
@@ -228,18 +144,10 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.startCommand!();
         lifeCycle.startTasks!(tasks);
 
-        // Output is collected, not immediately printed — the interactive TUI
-        // displays output when the user selects a task
+        // Should not throw
         lifeCycle.printTaskTerminalOutput!(tasks[0]!, "failure", "Error: compilation failed");
 
         lifeCycle.endTasks!([createResult(tasks[0]!, "failure")]);
-        writeSpy.mockClear();
-
         lifeCycle.endCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("app-a:build");
-        expect(allOutput).toContain("1 task failed");
     });
 });

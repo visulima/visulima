@@ -1,6 +1,7 @@
+import React from "react";
 import type { Command } from "@visulima/cerebro";
 import { detectAllProviders, runProvider } from "@visulima/find-ai-runner";
-import { createTable } from "@visulima/tabular";
+import { renderToString, Table } from "@visulima/tui";
 
 import type { AiConfig } from "../ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../ai-analysis";
@@ -68,23 +69,20 @@ const handleProviderStatus = (format: string, logger: Console, aiConfig?: AiConf
         return;
     }
 
-    const table = createTable();
+    const tableData = allProviders.map((provider) => ({
+        method: provider.detectionMethod ?? "-",
+        path: provider.path ?? "-",
+        priority: String(DEFAULT_PRIORITY[provider.name] ?? 0),
+        provider: provider.name,
+        selected: provider.name === selected?.name ? ">>>" : "",
+        status: provider.available ? "available" : "not found",
+        version: provider.version ?? "-",
+    }));
 
-    table.setHeaders(["Provider", "Status", "Version", "Method", "Path", "Priority", "Selected"]);
+    const columns = process.stdout.columns || 80;
+    const output = renderToString(React.createElement(Table, { data: tableData }), { columns });
 
-    for (const provider of allProviders) {
-        table.addRow([
-            provider.name,
-            provider.available ? "available" : "not found",
-            provider.version ?? "-",
-            provider.detectionMethod ?? "-",
-            provider.path ?? "-",
-            String(DEFAULT_PRIORITY[provider.name] ?? 0),
-            provider.name === selected?.name ? ">>>" : "",
-        ]);
-    }
-
-    logger.info(table.toString());
+    logger.info(output);
 
     if (selected) {
         logger.info(`\nSelected provider: ${selected.name} (priority ${String(DEFAULT_PRIORITY[selected.name] ?? 0)})`);

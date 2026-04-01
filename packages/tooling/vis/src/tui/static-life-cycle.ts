@@ -1,10 +1,12 @@
-import { cyan, dim, green, red } from "@visulima/colorize";
+import React from "react";
+import { renderToString, Text } from "@visulima/tui";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
+import CommandSummary from "./components/CommandSummary";
+import Header from "./components/Header";
 import { formatFlags, formatTargetsAndProjects } from "./formatting-utils";
-import { cliOutput } from "./output";
 import { formatMs } from "./pretty-time";
-import { CROSS, TICK } from "./symbols";
+import { getStatusIcon, isCacheStatus, logCommandOutputCI } from "./status-utils";
 
 interface StaticOutputOptions {
     args: {
@@ -42,7 +44,12 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     public startCommand(): void {
         this.#commandStartTime = Date.now();
 
-        const header = cliOutput.applyPrefix(cyan, `Running ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`);
+        const columns = process.stdout.columns || 80;
+        const title = `Running ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`;
+        const header = renderToString(
+            React.createElement(Header, { title, variant: "info" }),
+            { columns },
+        );
 
         process.stdout.write(header);
 
@@ -62,12 +69,21 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     }
 
     public startTasks(tasks: Task[]): void {
+        const columns = process.stdout.columns || 80;
+
         for (const task of tasks) {
-            process.stdout.write(`${dim(">")} ${task.id}\n`);
+            const line = renderToString(
+                React.createElement(Text, null, React.createElement(Text, { dimColor: true }, ">"), ` ${task.id}`),
+                { columns },
+            );
+
+            process.stdout.write(line + "\n");
         }
     }
 
     public endTasks(taskResults: TaskResult[]): void {
+        const columns = process.stdout.columns || 80;
+
         for (const result of taskResults) {
             this.#allCompletedTasks.set(result.task.id, result);
 
@@ -77,66 +93,55 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
                 this.#cachedTasks.push(result);
             }
 
-            const elapsed = result.startTime && result.endTime ? dim(` (${formatMs(result.endTime - result.startTime)})`) : "";
+            const icon = getStatusIcon(result.status);
+            const elapsedStr = result.startTime && result.endTime ? ` (${formatMs(result.endTime - result.startTime)})` : "";
+            const cacheLabelStr = isCacheStatus(result.status) ? " [cache]" : "";
 
-            const icon = cliOutput.getStatusIcon(result.status);
-            const cacheLabel = isCacheStatus(result.status) ? cyan(" [cache]") : "";
+            const line = renderToString(
+                React.createElement(
+                    Text,
+                    null,
+                    icon,
+                    `  ${result.task.id}`,
+                    cacheLabelStr ? React.createElement(Text, { color: "cyan" }, cacheLabelStr) : null,
+                    elapsedStr ? React.createElement(Text, { dimColor: true }, elapsedStr) : null,
+                ),
+                { columns },
+            );
 
-            process.stdout.write(`${icon}  ${result.task.id}${cacheLabel}${elapsed}\n`);
+            process.stdout.write(line + "\n");
         }
     }
 
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
-        cliOutput.logCommandOutput(task.id, status, terminalOutput);
+        logCommandOutputCI(task.id, status, terminalOutput);
     }
 
     public endCommand(): void {
         const totalTime = formatMs(Date.now() - this.#commandStartTime);
-        const totalTasks = this.#allCompletedTasks.size;
 
         // Detect skipped tasks (tasks that never completed due to dependency failures or bail)
-        const skippedTasks = this.#tasks.filter((t) => !this.#allCompletedTasks.has(t.id));
+        const skippedIds = this.#tasks.filter((t) => !this.#allCompletedTasks.has(t.id)).map((t) => t.id);
 
         // Empty line between task output and summary
         process.stdout.write("\n");
 
-        if (this.#failedTasks.length === 0 && skippedTasks.length === 0) {
-            const cacheNote = this.#cachedTasks.length > 0 ? dim(` (${this.#cachedTasks.length} read from cache)`) : "";
+        const columns = process.stdout.columns || 80;
+        const summary = renderToString(
+            React.createElement(CommandSummary, {
+                cached: this.#cachedTasks.length,
+                failed: this.#failedTasks.length,
+                failedIds: this.#failedTasks.map((r) => r.task.id),
+                projectNames: this.#projectNames,
+                skippedIds: skippedIds.length > 0 ? skippedIds : undefined,
+                succeeded: this.#allCompletedTasks.size - this.#failedTasks.length - this.#cachedTasks.length,
+                targets: this.#targets,
+                tasks: this.#tasks,
+                took: totalTime,
+            }),
+            { columns },
+        );
 
-            process.stdout.write(
-                cliOutput.success(`Successfully ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`, [
-                    ` ${green(TICK)}  ${totalTasks} tasks completed${cacheNote}`,
-                    `    ${dim(`Took ${totalTime}`)}`,
-                ]),
-            );
-        } else {
-            const bodyLines: string[] = [];
-
-            if (skippedTasks.length > 0) {
-                bodyLines.push(` ${dim(`${skippedTasks.length} task${skippedTasks.length === 1 ? "" : "s"} skipped`)} (dependency failed or --bail)`);
-
-                for (const task of skippedTasks) {
-                    bodyLines.push(`   ${dim("-")}  ${dim(task.id)}`);
-                }
-
-                bodyLines.push("");
-            }
-
-            if (this.#failedTasks.length > 0) {
-                bodyLines.push(` ${red(String(this.#failedTasks.length))} task${this.#failedTasks.length === 1 ? "" : "s"} failed:`);
-
-                for (const result of this.#failedTasks) {
-                    bodyLines.push(`   ${red(CROSS)}  ${result.task.id}`);
-                }
-
-                bodyLines.push("");
-            }
-
-            bodyLines.push(`    ${dim(`Took ${totalTime}`)}`);
-
-            process.stdout.write(cliOutput.error(`Ran ${formatTargetsAndProjects(this.#projectNames, this.#targets, this.#tasks)}`, bodyLines));
-        }
+        process.stdout.write(summary + "\n");
     }
 }
-
-const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";

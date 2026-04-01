@@ -1,0 +1,53 @@
+import { Box, Text } from "@visulima/tui";
+import type { TaskStatus } from "@visulima/task-runner";
+
+import { formatMs } from "../pretty-time";
+import { getStatusIcon, isCacheStatus } from "../status-utils";
+import { DASH } from "../symbols";
+
+interface TaskSummaryEntry {
+    elapsed?: number;
+    status?: TaskStatus;
+    taskId: string;
+}
+
+interface TaskSummaryViewProps {
+    entries: TaskSummaryEntry[];
+}
+
+/**
+ * Renders the task summary table at the end of execution.
+ * Entries should already be sorted by status order.
+ */
+const TaskSummaryView = ({ entries }: TaskSummaryViewProps): React.JSX.Element => {
+    const width = process.stdout.columns || 80;
+    const separator = DASH.repeat(width);
+
+    return (
+        <Box flexDirection="column">
+            <Text dimColor>{separator}</Text>
+            <Text bold> Task Summary</Text>
+            <Text dimColor>{separator}</Text>
+            <Text>{""}</Text>
+            {entries.map((entry) => {
+                const icon = entry.status ? getStatusIcon(entry.status) : "?";
+                const elapsed = entry.elapsed !== undefined ? ` ${formatMs(entry.elapsed)}` : "";
+                const cacheLabel = entry.status && isCacheStatus(entry.status) ? " [cache]" : "";
+
+                return (
+                    <Text key={entry.taskId}>
+                        {"  "}
+                        {icon}
+                        {"  "}
+                        {entry.taskId}
+                        {cacheLabel ? <Text color="cyan">{cacheLabel}</Text> : null}
+                        {elapsed ? <Text dimColor>{elapsed}</Text> : null}
+                    </Text>
+                );
+            })}
+            <Text>{""}</Text>
+        </Box>
+    );
+};
+
+export default TaskSummaryView;

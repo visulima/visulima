@@ -27,6 +27,8 @@ export type { ConsoleOverlayDock, Props as ConsoleOverlayProps } from "./compone
 export { default as ConsoleOverlay } from "./components/ConsoleOverlay";
 export type { Props as CursorProps } from "./components/Cursor";
 export { default as Cursor } from "./components/Cursor";
+export type { Props as DialogProps } from "./components/Dialog";
+export { default as Dialog } from "./components/Dialog";
 export type { DiffViewMode, Props as DiffViewProps, InlineDiffMode } from "./components/DiffView";
 export { default as DiffView } from "./components/DiffView";
 export type { GradientColors, GradientName, Props as GradientProps } from "./components/Gradient";
@@ -89,6 +91,20 @@ export type { Props as TextInputProps } from "./components/TextInput";
 export { default as TextInput } from "./components/TextInput";
 export type { Props as TransformProps } from "./components/Transform";
 export { default as Transform } from "./components/Transform";
+export type {
+    AsyncChildrenFn,
+    FlatNode,
+    SelectionMode,
+    TreeNode,
+    TreeNodeRendererProps,
+    TreeNodeState,
+    TreeViewProps,
+    TreeViewState,
+    TreeViewTheme,
+    UseTreeViewProps,
+    UseTreeViewStateProps,
+} from "./components/tree-view";
+export { TreeNodeMap, TreeView, treeViewTheme, useTreeView, useTreeViewState } from "./components/tree-view";
 export type { UnorderedListEntry, Props as UnorderedListProps } from "./components/UnorderedList";
 export { default as UnorderedList } from "./components/UnorderedList";
 export type { DOMElement, StickyHeader } from "./dom";
@@ -109,8 +125,12 @@ export type { Key } from "./hooks/use-input";
 export { default as useInput } from "./hooks/use-input";
 export { default as useIsScreenReaderEnabled } from "./hooks/use-is-screen-reader-enabled";
 export { default as usePaste } from "./hooks/use-paste";
+export type { LinkedScrollGroup, UseLinkedScrollReturn } from "./hooks/use-linked-scroll";
+export { default as createLinkedScrollGroup } from "./hooks/use-linked-scroll";
 export type { UseScrollAccelerationOptions, UseScrollAccelerationResult } from "./hooks/use-scroll-acceleration";
 export { default as useScrollAcceleration } from "./hooks/use-scroll-acceleration";
+export type { UseScrollInputOptions, UseScrollInputReturn } from "./hooks/use-scroll-input";
+export { default as useScrollInput } from "./hooks/use-scroll-input";
 export { default as useStderr } from "./hooks/use-stderr";
 export { default as useStdin } from "./hooks/use-stdin";
 export { default as useStdout } from "./hooks/use-stdout";
