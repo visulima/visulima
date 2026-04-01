@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
@@ -73,7 +73,7 @@ const init: Command = {
         ["vis init --force", "Overwrite existing config"],
         ["vis init --sync-native", "Also sync settings to native PM config files"],
     ],
-    execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 

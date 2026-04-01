@@ -1,0 +1,489 @@
+---
+title: Testing
+description: "Test @visulima/tui components with mock streams, frame capture, and input simulation — no real terminal required"
+---
+
+# Testing
+
+`@visulima/tui/test` provides a framework-agnostic testing utility for TUI components. It renders components into mock stdout/stderr/stdin streams so you can assert on output without a real terminal.
+
+Inspired by [ink-testing-library](https://github.com/vadimdemedes/ink-testing-library).
+
+## Install
+
+The testing utilities are included in the main package — no extra install needed:
+
+```bash npm2yarn
+npm install @visulima/tui react
+```
+
+## Quick Start
+
+```tsx
+import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+describe("my component", () => {
+    it("renders greeting", () => {
+        const { lastFrame } = render(<Text>Hello World</Text>);
+
+        expect(lastFrame()).toBe("Hello World");
+    });
+});
+```
+
+## API
+
+### `render(node, options?)`
+
+Renders a React element for testing with mock streams. The component renders synchronously into an in-memory buffer — no real terminal is involved.
+
+```tsx
+import { render } from "@visulima/tui/test";
+
+const instance = render(<MyComponent />);
+```
+
+**Parameters:**
+
+| Parameter          | Type            | Description                                           |
+| ------------------ | --------------- | ----------------------------------------------------- |
+| `node`             | `ReactElement`  | The React element to render                           |
+| `options.columns`  | `number`        | Terminal column width for mock streams (default: 100) |
+| `options.options`  | `RenderOptions` | Additional render options passed to the renderer      |
+
+**Returns:** `TestInstance`
+
+| Property    | Type                           | Description                                         |
+| ----------- | ------------------------------ | --------------------------------------------------- |
+| `lastFrame` | `() => string \| undefined`    | Most recently rendered stdout frame                 |
+| `frames`    | `readonly string[]`            | All captured stdout frames                          |
+| `rerender`  | `(node: ReactElement) => void` | Replace the rendered component                      |
+| `unmount`   | `() => void`                   | Unmount the component                               |
+| `cleanup`   | `() => void`                   | Unmount and clean up resources                      |
+| `stdout`    | `TestInstanceStdout`           | Mock stdout with `lastFrame()`, `frames`, `write()` |
+| `stderr`    | `TestInstanceStderr`           | Mock stderr with `lastFrame()`, `frames`, `write()` |
+| `stdin`     | `TestInstanceStdin`            | Mock stdin with `write()` for simulating input      |
+
+### `cleanup()`
+
+Unmounts and cleans up all rendered test instances. Call this in your test teardown to prevent leaks between tests.
+
+```tsx
+import { cleanup } from "@visulima/tui/test";
+
+afterEach(() => {
+    cleanup();
+});
+```
+
+## Examples
+
+### Rendering a component
+
+The simplest use case — render a component and check its output:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Box, Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("renders a greeting", () => {
+    const { lastFrame } = render(<Text>Hello World</Text>);
+
+    expect(lastFrame()).toBe("Hello World");
+});
+
+it("renders nested layout", () => {
+    const { lastFrame } = render(
+        <Box flexDirection="column">
+            <Text>Line 1</Text>
+            <Text>Line 2</Text>
+        </Box>,
+    );
+
+    expect(lastFrame()).toContain("Line 1");
+    expect(lastFrame()).toContain("Line 2");
+});
+```
+
+### Rerendering with new props
+
+Use `rerender()` to update the component with new props and verify the output changes:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+const Counter = ({ count }: { count: number }) => <Text>Count: {count}</Text>;
+
+it("updates on rerender", () => {
+    const { lastFrame, rerender } = render(<Counter count={0} />);
+
+    expect(lastFrame()).toBe("Count: 0");
+
+    rerender(<Counter count={1} />);
+
+    expect(lastFrame()).toBe("Count: 1");
+
+    rerender(<Counter count={42} />);
+
+    expect(lastFrame()).toBe("Count: 42");
+});
+```
+
+### Inspecting render history with frames
+
+Every render produces a frame. Use `frames` to inspect the full render history:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("tracks all rendered frames", () => {
+    const { frames, rerender } = render(<Text>Frame 1</Text>);
+
+    rerender(<Text>Frame 2</Text>);
+    rerender(<Text>Frame 3</Text>);
+
+    expect(frames[0]).toBe("Frame 1");
+    expect(frames.at(-1)).toBe("Frame 3");
+    expect(frames.length).toBeGreaterThanOrEqual(3);
+});
+```
+
+### Simulating keyboard input
+
+Use `stdin.write()` to simulate user input. This works with components that use `useInput`:
+
+```tsx
+import React, { useState } from "react";
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text, useInput } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+const InputEcho = () => {
+    const [text, setText] = useState("");
+
+    useInput((input) => {
+        setText((prev) => prev + input);
+    });
+
+    return <Text>{text || "Type something..."}</Text>;
+};
+
+it("receives keyboard input", () => {
+    const { stdin, lastFrame } = render(<InputEcho />);
+
+    expect(lastFrame()).toBe("Type something...");
+
+    stdin.write("h");
+    stdin.write("i");
+
+    expect(lastFrame()).toBe("hi");
+});
+```
+
+### Simulating special keys
+
+For special keys (arrows, enter, escape), write the corresponding ANSI escape sequences:
+
+```tsx
+import React, { useState } from "react";
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text, useInput } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+const Menu = () => {
+    const [selected, setSelected] = useState(0);
+    const items = ["Apple", "Banana", "Cherry"];
+
+    useInput((_input, key) => {
+        if (key.downArrow) {
+            setSelected((prev) => Math.min(prev + 1, items.length - 1));
+        }
+        if (key.upArrow) {
+            setSelected((prev) => Math.max(prev - 1, 0));
+        }
+    });
+
+    return <Text>{items[selected]}</Text>;
+};
+
+it("navigates with arrow keys", () => {
+    const { stdin, lastFrame } = render(<Menu />);
+
+    expect(lastFrame()).toBe("Apple");
+
+    // Down arrow: ESC [ B
+    stdin.write("\u001B[B");
+
+    expect(lastFrame()).toBe("Banana");
+
+    // Down arrow again
+    stdin.write("\u001B[B");
+
+    expect(lastFrame()).toBe("Cherry");
+
+    // Up arrow: ESC [ A
+    stdin.write("\u001B[A");
+
+    expect(lastFrame()).toBe("Banana");
+});
+```
+
+### Testing components that exit
+
+Components that call `useApp().exit()` can be tested by awaiting `waitUntilExit` on the underlying instance:
+
+```tsx
+import React, { useEffect } from "react";
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text, useApp } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+const AutoExit = ({ message }: { message: string }) => {
+    const { exit } = useApp();
+
+    useEffect(() => {
+        exit();
+    }, [exit]);
+
+    return <Text>{message}</Text>;
+};
+
+it("renders and exits", () => {
+    const { lastFrame } = render(<AutoExit message="Done!" />);
+
+    expect(lastFrame()).toContain("Done!");
+});
+```
+
+### Capturing stderr output
+
+Components that write to stderr (via `useStderr`) have their output captured in a separate stream:
+
+```tsx
+import React, { useEffect } from "react";
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text, useStderr } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+const Logger = () => {
+    const { write } = useStderr();
+
+    useEffect(() => {
+        write("Warning: something happened");
+    }, [write]);
+
+    return <Text>All good</Text>;
+};
+
+it("captures stderr separately", () => {
+    const { lastFrame, stderr } = render(<Logger />);
+
+    expect(lastFrame()).toBe("All good");
+    expect(stderr.lastFrame()).toBe("Warning: something happened");
+});
+```
+
+### Stripping ANSI codes for assertions
+
+When components use colors or styles, the output contains ANSI escape sequences. Use `@visulima/ansi` (or any ANSI strip utility) for clean assertions:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { strip } from "@visulima/ansi";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("renders colored text", () => {
+    const { lastFrame } = render(<Text color="green">Success</Text>);
+
+    // Raw output contains ANSI codes
+    expect(lastFrame()).toContain("Success");
+
+    // Strip ANSI for exact matching
+    expect(strip(lastFrame()!)).toBe("Success");
+});
+```
+
+### Custom terminal width
+
+Pass `columns` to control the virtual terminal width. This affects text wrapping and layout:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Box, Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("wraps text in narrow terminal", () => {
+    const { lastFrame } = render(
+        <Box width={20}>
+            <Text>This is a long line that should wrap</Text>
+        </Box>,
+        { columns: 20 },
+    );
+
+    const output = lastFrame()!;
+    const lines = output.split("\n");
+
+    expect(lines.length).toBeGreaterThan(1);
+});
+```
+
+### Testing multiple independent instances
+
+Each `render()` call creates an isolated instance with its own streams:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("renders multiple isolated instances", () => {
+    const a = render(<Text>Instance A</Text>);
+    const b = render(<Text>Instance B</Text>);
+
+    expect(a.lastFrame()).toBe("Instance A");
+    expect(b.lastFrame()).toBe("Instance B");
+
+    // Rerendering one doesn't affect the other
+    a.rerender(<Text>Updated A</Text>);
+
+    expect(a.lastFrame()).toBe("Updated A");
+    expect(b.lastFrame()).toBe("Instance B");
+});
+```
+
+### Unmounting and lifecycle
+
+Use `unmount()` for a single instance or `cleanup()` for all instances:
+
+```tsx
+import { afterEach, expect, it } from "vitest";
+import { cleanup, render } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("unmounts a single instance", () => {
+    const { lastFrame, unmount } = render(<Text>Hello</Text>);
+
+    expect(lastFrame()).toBe("Hello");
+
+    unmount();
+
+    // After unmount, the renderer writes a final empty frame
+    expect(lastFrame()).toBe("\n");
+});
+
+it("cleanup unmounts all instances", () => {
+    render(<Text>One</Text>);
+    render(<Text>Two</Text>);
+    render(<Text>Three</Text>);
+
+    // cleanup() unmounts all three at once
+    cleanup();
+});
+```
+
+## Common ANSI Escape Sequences for stdin
+
+When simulating special keys via `stdin.write()`, use these escape sequences:
+
+| Key           | Escape sequence | Code           |
+| ------------- | --------------- | -------------- |
+| Enter         | `\r`            | Carriage return |
+| Escape        | `\u001B`        | ESC            |
+| Up arrow      | `\u001B[A`      | ESC [ A        |
+| Down arrow    | `\u001B[B`      | ESC [ B        |
+| Right arrow   | `\u001B[C`      | ESC [ C        |
+| Left arrow    | `\u001B[D`      | ESC [ D        |
+| Tab           | `\t`            | HT             |
+| Backspace     | `\u007F`        | DEL            |
+| Delete        | `\u001B[3~`     | ESC [ 3 ~     |
+| Space         | ` `             | Space          |
+| Ctrl+C        | `\u0003`        | ETX            |
+
+## Works With Any Test Runner
+
+The testing utilities use plain `EventEmitter`-based mock streams with no test framework dependencies. They work with Vitest, Jest, Node.js built-in test runner, or any other framework:
+
+```ts
+// Vitest
+import { afterEach } from "vitest";
+import { cleanup } from "@visulima/tui/test";
+afterEach(() => cleanup());
+
+// Jest
+afterEach(() => {
+    const { cleanup } = require("@visulima/tui/test");
+    cleanup();
+});
+
+// Node.js test runner
+import { afterEach } from "node:test";
+import { cleanup } from "@visulima/tui/test";
+afterEach(() => cleanup());
+```
+
+## Tips
+
+- Always call `cleanup()` in `afterEach` to avoid state leaks between tests
+- Use `lastFrame()` for simple assertions on the current output
+- Use `frames` to verify render history or animation sequences
+- The `stdout` and `stderr` objects expose the same `lastFrame()` and `frames` API independently
+- `stdin.write()` emits both `readable` and `data` events on the mock stream
+- Use ANSI stripping (e.g., `@visulima/ansi`) when asserting on styled output
+- The default terminal width is 100 columns — pass `{ columns }` to test responsive layouts
+- `render()` uses `debug: true` internally, so each render produces a separate frame instead of overwriting

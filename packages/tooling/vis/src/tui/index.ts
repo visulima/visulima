@@ -5,3 +5,5 @@ export { getStatusIcon, getStatusPrefix, isCacheStatus, logCommandOutputCI } fro
 export { StaticOutputLifeCycle } from "./static-life-cycle";
 export { SummaryLifeCycle } from "./summary-life-cycle";
 export { CROSS, DASH, TICK } from "./symbols";
+export { TaskStore } from "./components/TaskStore";
+export type { TaskState } from "./components/TaskStore";

@@ -1,17 +1,22 @@
 import React from "react";
 import type { Instance } from "@visulima/tui";
-import { render, renderToString } from "@visulima/tui";
+import { render, renderToString, Text } from "@visulima/tui";
 import type { LifeCycleInterface, Task, TaskResult, TaskStatus } from "@visulima/task-runner";
 
-import DynamicTaskRunner, { TaskStore } from "./components/DynamicTaskRunner";
-import Header from "./components/Header";
-import { formatTargetsAndProjects } from "./formatting-utils";
+import CommandSummary from "./components/CommandSummary";
+import { TaskStore } from "./components/TaskStore";
+import VisTaskRunnerApp from "./components/VisTaskRunnerApp";
+import { formatMs } from "./pretty-time";
+import { getStatusInfo } from "./status-utils";
+import { CROSS } from "./symbols";
 
 interface DynamicOutputOptions {
     args: {
         parallel?: boolean | number;
         targets: string[];
     };
+    /** Auto-exit config: false = stay open, true = 3s countdown, number = custom seconds */
+    autoExit?: boolean | number;
     projectNames: string[];
     tasks: Task[];
 }
@@ -19,13 +24,15 @@ interface DynamicOutputOptions {
 interface DynamicOutputResult {
     lifeCycle: LifeCycleInterface;
     renderIsDone: Promise<void>;
+    store: TaskStore;
 }
 
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
-    const { args, projectNames, tasks } = options;
+    const { args, autoExit = false, projectNames, tasks } = options;
 
     const store = new TaskStore(tasks);
-    const parallelSlots = typeof args.parallel === "number" ? args.parallel : undefined;
+    const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
+    const autoExitSeconds = autoExit === true ? 3 : typeof autoExit === "number" ? autoExit : 0;
 
     let instance: Instance | undefined;
     let resolveDone: () => void;
@@ -36,33 +43,113 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
     // Tick interval for updating elapsed times on running tasks
     let tickTimer: ReturnType<typeof setInterval> | undefined;
 
-    const onSignal = (): void => {
+    const cleanup = (): void => {
         if (tickTimer) {
             clearInterval(tickTimer);
             tickTimer = undefined;
         }
+    };
 
-        instance?.unmount();
+    const onSignal = (): void => {
+        cleanup();
+
+        // Force restore terminal: leave alternate screen, show cursor
+        process.stdout.write("\u001B[?1049l\u001B[?25h");
+        instance?.cleanup();
         process.exit(1);
+    };
+
+    const printExitSummary = (): void => {
+        const state = store.getSnapshot();
+        const took = formatMs(Date.now() - state.startTime);
+        const failedIds = state.rows.filter((r) => r.status === "failure").map((r) => r.taskId);
+        const columns = process.stdout.columns || 80;
+
+        // 1. Print full task list with status icons (like Nx exit output)
+        process.stdout.write("\n");
+
+        for (const row of state.rows) {
+            const { status, taskId } = row;
+            const info = getStatusInfo(status as import("@visulima/task-runner").TaskStatus);
+
+            let cacheLabel = "";
+
+            if (status === "local-cache" || status === "local-cache-kept-existing") {
+                cacheLabel = " [local cache]";
+            } else if (status === "remote-cache") {
+                cacheLabel = " [remote cache]";
+            } else if (status === "skipped") {
+                cacheLabel = " [skipped]";
+            }
+
+            const line = renderToString(
+                React.createElement(
+                    Text,
+                    null,
+                    "   ",
+                    React.createElement(Text, { color: info.color }, info.icon),
+                    `  vis run ${taskId}`,
+                    cacheLabel ? React.createElement(Text, { dimColor: true }, `  ${cacheLabel}`) : null,
+                ),
+                { columns },
+            );
+
+            process.stdout.write(line + "\n");
+        }
+
+        // 2. Print summary banner
+        process.stdout.write("\n");
+
+        const summary = renderToString(
+            React.createElement(CommandSummary, {
+                cached: state.cached,
+                failed: state.failed,
+                failedIds,
+                projectNames,
+                succeeded: state.succeeded,
+                targets: args.targets,
+                tasks,
+                took,
+            }),
+            { columns },
+        );
+
+        process.stdout.write(summary + "\n");
+
+        // 3. Print failed task output so the user can copy/inspect errors
+        if (failedIds.length > 0) {
+            for (const taskId of failedIds) {
+                const output = state.outputs.get(taskId);
+
+                if (output?.trim()) {
+                    const header = renderToString(
+                        React.createElement(
+                            Text,
+                            null,
+                            "\n",
+                            React.createElement(Text, { bold: true, color: "red" }, `  ${CROSS}  vis run ${taskId}`),
+                        ),
+                        { columns },
+                    );
+
+                    process.stdout.write(header + "\n\n");
+                    // Indent each output line for readability
+                    const indented = output
+                        .trim()
+                        .split("\n")
+                        .map((line) => `     ${line}`)
+                        .join("\n");
+
+                    process.stdout.write(indented + "\n");
+                }
+            }
+        }
     };
 
     const lifeCycle: LifeCycleInterface = {
         endCommand(): void {
-            if (tickTimer) {
-                clearInterval(tickTimer);
-                tickTimer = undefined;
-            }
-
-            // Mark done — triggers the summary render
+            cleanup();
             store.markDone();
-
-            // Give React one frame to render the summary, then unmount
-            setTimeout(() => {
-                instance?.unmount();
-                process.removeListener("SIGINT", onSignal);
-                process.removeListener("SIGTERM", onSignal);
-                resolveDone();
-            }, 50);
         },
 
         endTasks(results: TaskResult[]): void {
@@ -77,18 +164,10 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             process.on("SIGINT", onSignal);
             process.on("SIGTERM", onSignal);
 
-            // Print header before the live render region
-            const title = `Running ${formatTargetsAndProjects(projectNames, args.targets, tasks)}`;
-            const headerOutput = renderToString(
-                React.createElement(Header, { title, variant: "info" }),
-                { columns: process.stdout.columns || 80 },
-            );
-
-            process.stdout.write(headerOutput + "\n");
-
-            // Start the live React render
+            // Start the full-screen interactive TUI
             instance = render(
-                React.createElement(DynamicTaskRunner, {
+                React.createElement(VisTaskRunnerApp, {
+                    autoExitSeconds,
                     parallelSlots,
                     projectNames,
                     store,
@@ -96,7 +175,23 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     tasks,
                 }),
                 {
+                    alternateScreen: true,
+                    exitOnCtrlC: false,
+                    interactive: true,
                     patchConsole: true,
+                },
+            );
+
+            instance.waitUntilExit().then(
+                () => {
+                    process.removeListener("SIGINT", onSignal);
+                    process.removeListener("SIGTERM", onSignal);
+
+                    printExitSummary();
+                    resolveDone();
+                },
+                () => {
+                    resolveDone();
                 },
             );
         },
@@ -104,7 +199,6 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         startTasks(started: Task[]): void {
             store.startTasks(started);
 
-            // Start ticking elapsed times for running tasks
             if (!tickTimer) {
                 tickTimer = setInterval(() => {
                     store.tick();
@@ -113,5 +207,5 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         },
     };
 
-    return { lifeCycle, renderIsDone };
+    return { lifeCycle, renderIsDone, store };
 };

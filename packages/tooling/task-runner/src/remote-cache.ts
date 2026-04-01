@@ -126,8 +126,7 @@ class RemoteCache {
 
             const fileStream = createWriteStream(archivePath);
 
-            // @ts-expect-error - ReadableStream to Writable pipe works in Node.js
-            await pipeline(body, fileStream);
+            await pipeline(body as unknown as NodeJS.ReadableStream, fileStream);
 
             // Extract the archive to the cache entry directory
             await mkdir(entryDirectory, { recursive: true });

@@ -97,7 +97,7 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
         | ((...arguments_: unknown[]) => VisConfig | Promise<VisConfig>);
 
     if (typeof loaded === "function") {
-        return applyDefaults((await loaded()) as VisConfig);
+        return applyDefaults(((await loaded()) ?? {}) as VisConfig);
     }
 
     return applyDefaults(loaded);

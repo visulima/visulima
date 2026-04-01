@@ -121,6 +121,16 @@ interface VisConfig {
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
     taskRunnerOptions?: Record<string, unknown>;
+    /** Terminal UI configuration */
+    tui?: {
+        /**
+         * Auto-exit the TUI after tasks complete.
+         * - `false`: Stay open until the user presses `q` (default)
+         * - `true`: Show quit dialog with 3-second countdown after completion
+         * - `number`: Show quit dialog with custom countdown in seconds
+         */
+        autoExit?: boolean | number;
+    };
     /** Update command defaults */
     update?: {
         exclude?: string[];

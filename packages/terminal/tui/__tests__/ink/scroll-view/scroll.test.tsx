@@ -100,11 +100,10 @@ describe("ScrollOffset", () => {
         await delay(50);
         expect(scrollView.getScrollOffset()).toBe(0);
 
-        // Too large
+        // Too large — clamps to contentHeight - viewportHeight (bottom of content visible)
         scrollView.scrollTo(100);
         await delay(50);
-        // Current implementation clamps to contentHeight (10)
-        expect(scrollView.getScrollOffset()).toBe(10);
+        expect(scrollView.getScrollOffset()).toBe(5);
 
         unmount();
     });
@@ -143,27 +142,28 @@ describe("ScrollOffset", () => {
 
         const scrollView = scrollViewRef!;
 
-        // Scroll to end (10)
+        // Scroll to end — clamps to contentHeight(10) - viewportHeight(5) = 5
         scrollView.scrollTo(10);
         await delay(50);
-        expect(scrollView.getScrollOffset()).toBe(10);
+        expect(scrollView.getScrollOffset()).toBe(5);
 
         // Reduce items to 5
         setItemsFn([0, 1, 2, 3, 4]);
         await delay(100);
 
-        // ContentHeight is now 5.
-        // ScrollOffset was 10. Should clamp to 5.
+        // ContentHeight is now 5, viewportHeight is 5 — all content visible, no scroll needed.
+        // ScrollOffset should clamp to max(0, 5-5) = 0.
         expect(scrollView.getContentHeight()).toBe(5);
-        expect(scrollView.getScrollOffset()).toBe(5);
+        expect(scrollView.getScrollOffset()).toBe(0);
 
         // Reduce items to 2
         setItemsFn([0, 1]);
         await delay(100);
 
-        // ContentHeight is 2. ScrollOffset should be 2.
+        // ContentHeight is 2, viewportHeight is 5 — all content visible.
+        // ScrollOffset should be max(0, 2-5) = 0.
         expect(scrollView.getContentHeight()).toBe(2);
-        expect(scrollView.getScrollOffset()).toBe(2);
+        expect(scrollView.getScrollOffset()).toBe(0);
 
         unmount();
     });

@@ -104,8 +104,8 @@ describe("hooks-use-input", () => {
         expect(ps.output).toContain("exited");
     });
 
-    it.skipIf(!ptyAvailable)("useInput - receives bracketed paste when no usePaste handler is active", async () => {
-        expect.assertions(1);
+    it.skipIf(!ptyAvailable)("useInput - receives bracketed paste with deprecation warning when no usePaste handler is active", async () => {
+        expect.assertions(2);
 
         const ps = term("use-input", ["bracketedPaste"]);
 
@@ -113,6 +113,9 @@ describe("hooks-use-input", () => {
         await ps.waitForExit();
 
         expect(ps.output).toContain("exited");
+        expect(ps.output).toContain(
+            "Warning: useInput() received bracketed paste because no usePaste() handler is active.",
+        );
     });
 
     it.skipIf(!ptyAvailable)("useInput - handle escape", async () => {

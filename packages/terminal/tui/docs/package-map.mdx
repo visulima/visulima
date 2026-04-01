@@ -15,7 +15,7 @@ Use this page to decide which entry to import and where each API lives.
 | ----------------------------------------------------- | --------------------- | ---------------------------------------------------------------- |
 | Build a React TUI with components and hooks           | `@visulima/tui/react` | Includes the React renderer and Ink-compatible API               |
 | Paint terminal cells directly from a `Uint32Array`    | `@visulima/tui/core`  | Lowest-level runtime, direct control over render loop and buffer |
-| Run or study the `ink-fast` fork and perf experiments | `@visulima/tui/ink`   | Standalone Ink fork + benchmark harnesses                        |
+| Test TUI components in isolation                      | `@visulima/tui/test`  | Framework-agnostic render + mock streams for testing             |
 
 ## `@visulima/tui/core`
 
@@ -61,19 +61,17 @@ npm install @visulima/tui react
 import { render, Box, Text, useInput } from "@visulima/tui/react";
 ```
 
-## `@visulima/tui/ink`
+## `@visulima/tui/test`
 
-Research/experimental entry: the `ink-fast` fork.
+Framework-agnostic testing utilities for TUI components. Inspired by [ink-testing-library](https://github.com/vadimdemedes/ink-testing-library).
 
-Contains:
+Primary exports:
 
-- forked Ink implementation
-- benchmark suites
-- profiling harnesses
-- research notes and snapshots
+- `render` — render a component with mock streams, returns test instance
+- `cleanup` — unmount all test instances (use in `afterEach`)
 
 ```typescript
-import { render } from "@visulima/tui/ink";
+import { render, cleanup } from "@visulima/tui/test";
 ```
 
 ## Next Steps

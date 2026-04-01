@@ -7,12 +7,12 @@ import { CROSS, DASH, TICK } from "./symbols";
 export const isCacheStatus = (status: TaskStatus): boolean =>
     status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
 
-interface StatusInfo {
+export interface StatusInfo {
     color: string;
     icon: string;
 }
 
-const getStatusInfo = (status: TaskStatus): StatusInfo => {
+export const getStatusInfo = (status: TaskStatus): StatusInfo => {
     switch (status) {
         case "failure": {
             return { color: "red", icon: CROSS };

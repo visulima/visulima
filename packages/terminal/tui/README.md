@@ -41,11 +41,12 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 ## Features
 
 - **~30x faster** complex rerenders vs Ink (native Rust diff engine via NAPI)
-- **Drop-in Ink-compatible** React API (`@visulima/tui/ink`)
+- **Drop-in Ink-compatible** React API (`@visulima/tui`)
 - **Framework-agnostic** core runtime (`@visulima/tui/core`)
 - **React hooks** for input, focus, clipboard, mouse, and window size
 - **Cross-platform** native bindings for macOS, Linux (glibc/musl), and Windows (x64/arm64)
 - **Server-side rendering** via `renderToString`
+- **Testing utilities** — Framework-agnostic `render()` + mock streams via `@visulima/tui/test`
 
 ## Performance
 
@@ -131,7 +132,7 @@ pnpm add @visulima/tui
 The easiest way to get started, especially if you're familiar with [Ink](https://github.com/vadimdemedes/ink):
 
 ```tsx
-import { render, Box, Text } from "@visulima/tui/ink";
+import { render, Box, Text } from "@visulima/tui";
 
 const App = () => (
     <Box flexDirection="column" padding={1}>
@@ -176,6 +177,25 @@ The core module provides low-level access to the native terminal engine:
 
 ```ts
 import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
+```
+
+### Testing
+
+Test your TUI components without a real terminal using mock streams and frame capture:
+
+```tsx
+import { render, cleanup } from "@visulima/tui/test";
+import { Text } from "@visulima/tui";
+import { afterEach, expect, it } from "vitest";
+
+afterEach(() => {
+    cleanup();
+});
+
+it("renders greeting", () => {
+    const { lastFrame } = render(<Text>Hello World</Text>);
+    expect(lastFrame()).toBe("Hello World");
+});
 ```
 
 ## Related

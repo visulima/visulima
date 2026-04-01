@@ -64,7 +64,7 @@ const runResolved = (resolved: ResolvedCommand, cwd: string, logger: Console): n
 // ── High-level resolve+run helpers (native with TS fallback) ─────────
 
 const resolveAndRun = (
-    resolverName: string,
+    _resolverName: string,
     nativeCall: (native: NonNullable<ReturnType<typeof loadNativeBindings>>) => ResolvedCommand,
     fallbackBin: string,
     fallbackArgs: string[],

@@ -12,6 +12,7 @@ description: "Install @visulima/tui and choose the right rendering mode for your
 | React mode      | `render(<App />)`                   | `@visulima/tui/react`                        | Component-driven TUIs with hooks and Yoga layout |
 | Raw-buffer mode | `Renderer` + `renderer.render`      | `@visulima/tui/core`                         | Direct per-cell rendering and custom loops       |
 | Inline mode     | `renderInline` / `createInlineLoop` | `@visulima/tui/react` / `@visulima/tui/core` | Fixed-height UI below the cursor                 |
+| Testing         | `render` / `cleanup`                | `@visulima/tui/test`                         | Test components with mock streams, no real terminal |
 
 ## Install
 
@@ -70,5 +71,8 @@ Most app-level API usage maps directly. See [Ink Compatibility](/ink-compat) for
     </Card>
     <Card title="Quickstart: Raw Buffer" href="/quickstart-raw-buffer">
         Drive the Rust renderer directly without React
+    </Card>
+    <Card title="Testing" href="/testing">
+        Test components with mock streams and frame capture
     </Card>
 </Cards>

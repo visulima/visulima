@@ -1,7 +1,40 @@
-import { strip } from "@visulima/colorize";
 import type { Task, TaskResult } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Mock @visulima/tui render to avoid actual terminal rendering
+let mockUnmount: () => void;
+let mockWaitUntilExit: () => Promise<void>;
+let exitResolve: () => void;
+
+vi.mock("@visulima/tui", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@visulima/tui")>();
+
+    return {
+        ...actual,
+        render: vi.fn(() => {
+            const waitPromise = new Promise<void>((resolve) => {
+                exitResolve = resolve;
+            });
+
+            mockUnmount = () => {
+                exitResolve?.();
+            };
+            mockWaitUntilExit = () => waitPromise;
+
+            return {
+                cleanup: vi.fn(),
+                clear: vi.fn(),
+                rerender: vi.fn(),
+                rootNode: {},
+                unmount: vi.fn(() => mockUnmount()),
+                waitUntilExit: vi.fn(() => mockWaitUntilExit()),
+                waitUntilRenderFlush: vi.fn(() => Promise.resolve()),
+            };
+        }),
+    };
+});
+
+import { render } from "@visulima/tui";
 import { createDynamicOutputRenderer } from "../../src/tui/dynamic-life-cycle";
 
 const createTask = (project: string, target: string): Task => {
@@ -13,7 +46,7 @@ const createTask = (project: string, target: string): Task => {
     };
 };
 
-const createResult = (task: Task, status: "success" | "failure" | "local-cache" = "success"): TaskResult => {
+const createResult = (task: Task, status: "failure" | "local-cache" | "success" = "success"): TaskResult => {
     return {
         code: status === "failure" ? 1 : 0,
         endTime: 2000,
@@ -74,20 +107,6 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(result.renderIsDone).toBeInstanceOf(Promise);
     });
 
-    it("should print header containing VIS badge on startCommand", () => {
-        const tasks = [createTask("app-a", "build")];
-        const { lifeCycle } = createRenderer(tasks);
-
-        lifeCycle.startCommand!();
-
-        const allOutput = writeSpy.mock.calls.map((c) => strip(String(c[0]))).join("");
-
-        expect(allOutput).toContain("VIS");
-        expect(allOutput).toContain("Running");
-
-        lifeCycle.endCommand!();
-    });
-
     it("should register signal handlers on startCommand", () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle } = createRenderer(tasks);
@@ -96,6 +115,20 @@ describe("tui/createDynamicOutputRenderer", () => {
 
         expect(sigintListeners.length).toBeGreaterThan(0);
         expect(sigtermListeners.length).toBeGreaterThan(0);
+
+        lifeCycle.endCommand!();
+    });
+
+    it("should call render with alternateScreen on startCommand", () => {
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle } = createRenderer(tasks);
+
+        lifeCycle.startCommand!();
+
+        expect(render).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ alternateScreen: true }),
+        );
 
         lifeCycle.endCommand!();
     });
@@ -110,7 +143,7 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.endCommand!();
     });
 
-    it("should resolve renderIsDone after endCommand", async () => {
+    it("should resolve renderIsDone after app unmounts", async () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle, renderIsDone } = createRenderer(tasks);
 
@@ -118,11 +151,14 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.startTasks!(tasks);
         lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
         lifeCycle.endCommand!();
+
+        // Simulate the app exiting (unmount resolves waitUntilExit)
+        mockUnmount();
 
         await expect(renderIsDone).resolves.toBeUndefined();
     });
 
-    it("should remove signal handlers on endCommand", async () => {
+    it("should print summary after app exits", async () => {
         const tasks = [createTask("app-a", "build")];
         const { lifeCycle, renderIsDone } = createRenderer(tasks);
 
@@ -131,10 +167,13 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
         lifeCycle.endCommand!();
 
+        writeSpy.mockClear();
+        mockUnmount();
+
         await renderIsDone;
 
-        expect(process.removeListener).toHaveBeenCalledWith("SIGINT", expect.any(Function));
-        expect(process.removeListener).toHaveBeenCalledWith("SIGTERM", expect.any(Function));
+        // Summary should be printed to stdout after alternate screen restores
+        expect(writeSpy).toHaveBeenCalled();
     });
 
     it("should collect task output via printTaskTerminalOutput", () => {
@@ -144,7 +183,6 @@ describe("tui/createDynamicOutputRenderer", () => {
         lifeCycle.startCommand!();
         lifeCycle.startTasks!(tasks);
 
-        // Should not throw
         lifeCycle.printTaskTerminalOutput!(tasks[0]!, "failure", "Error: compilation failed");
 
         lifeCycle.endTasks!([createResult(tasks[0]!, "failure")]);
