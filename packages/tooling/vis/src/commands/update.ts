@@ -1,6 +1,8 @@
 import { execSync } from "node:child_process";
 
+import React from "react";
 import type { Command } from "@visulima/cerebro";
+import { render, renderToString, Text } from "@visulima/tui";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 
 import type { AiAnalysisResult } from "../ai-analysis";
@@ -24,6 +26,8 @@ import {
 } from "../catalog";
 import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
+import { UpdateStore } from "../tui/components/update/UpdateStore";
+import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -167,7 +171,71 @@ const executeCatalogUpdate = async (
         aiResult = await runAiAnalysis(outdated, logger, visConfig.ai, analysisType);
     }
 
-    if (options["dry-run"]) {
+    const isDryRun = Boolean(options["dry-run"]);
+    const isTTY = Boolean(process.stdout.isTTY) && !process.env["CI"];
+
+    // Interactive TUI mode: TTY + table format
+    if (isTTY && format === "table") {
+        const store = new UpdateStore(outdated, aiResult ?? null);
+
+        const instance = render(
+            React.createElement(VisUpdateApp, {
+                isDryRun,
+                store,
+            }),
+            {
+                alternateScreen: true,
+                exitOnCtrlC: false,
+                interactive: true,
+                patchConsole: true,
+            },
+        );
+
+        const exitResult = await instance.waitUntilExit();
+
+        // Print post-exit summary
+        const columns = process.stdout.columns || 80;
+
+        process.stdout.write("\n");
+
+        for (const entry of outdated) {
+            const icon = entry.vulnerabilities?.length ? "\u26A0" : "\u2713";
+            const iconColor = entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+
+            process.stdout.write(
+                renderToString(
+                    React.createElement(
+                        Text,
+                        null,
+                        "   ",
+                        React.createElement(Text, { color: iconColor }, icon),
+                        `  ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}`,
+                        React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
+                    ),
+                    { columns },
+                ) + "\n",
+            );
+        }
+
+        process.stdout.write("\n");
+        logger.info(formatSummary(outdated));
+
+        // If user selected entries to apply (exitResult is the checked entries array)
+        const toApply = Array.isArray(exitResult) ? (exitResult as OutdatedEntry[]) : [];
+
+        if (toApply.length > 0 && !isDryRun) {
+            logger.info(`\nApplying ${String(toApply.length)} updates...\n`);
+
+            const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
+
+            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger);
+        }
+
+        return;
+    }
+
+    // Static output mode (non-TTY, CI, json, minimal)
+    if (isDryRun) {
         if (format === "json") {
             const output: Record<string, unknown> = { failed, outdated };
 
