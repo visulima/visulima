@@ -276,6 +276,15 @@ const blankCell: StyledChar = {
     value: " ",
 };
 
+// Shared continuation cell for full-width characters — avoids allocating
+// a new object on every full-width character write.
+const continuationBlankCell: StyledChar = {
+    fullWidth: false,
+    styles: [],
+    type: "char",
+    value: "",
+};
+
 const noStyles: StyledChar["styles"] = [];
 const asciiPrintableRegex = /^[\u0020-\u007E]*$/;
 const ansiControlMarkerCodePoints = new Set<number>([27, 144, 152, 155, 157, 158, 159]);
@@ -390,9 +399,10 @@ export default class Output {
         return this.activeClipStack.at(-1);
     }
 
-    get(): { height: number; output: string } {
-        const output = this.getOutputGrid();
-
+    /**
+     * Replay queued operations onto the output grid.
+     */
+    private replayOperations(output: StyledChar[][]): void {
         const clips: Clip[] = [];
 
         for (const operation of this.operations) {
@@ -403,9 +413,7 @@ export default class Output {
                 }
 
                 case "styledWrite": {
-                    const clip = clips.at(-1);
-
-                    this.processStyledWriteOperation(operation, output, clip);
+                    this.processStyledWriteOperation(operation, output, clips.at(-1));
                     break;
                 }
 
@@ -415,13 +423,17 @@ export default class Output {
                 }
 
                 case "write": {
-                    const clip = clips.at(-1);
-
-                    this.processWriteOperation(operation, output, clip);
+                    this.processWriteOperation(operation, output, clips.at(-1));
                     break;
                 }
             }
         }
+    }
+
+    get(): { height: number; output: string } {
+        const output = this.getOutputGrid();
+
+        this.replayOperations(output);
 
         // Line memoization: reuse previously rendered lines for unchanged rows.
         // On the first render (no previous state), skip memoization entirely to
@@ -495,35 +507,7 @@ export default class Output {
     getBuffer(): { buffer: Uint32Array; height: number } {
         const output = this.getOutputGrid();
 
-        const clips: Clip[] = [];
-
-        for (const operation of this.operations) {
-            switch (operation.type) {
-                case "clip": {
-                    clips.push(operation.clip);
-                    break;
-                }
-
-                case "styledWrite": {
-                    const clip = clips.at(-1);
-
-                    this.processStyledWriteOperation(operation, output, clip);
-                    break;
-                }
-
-                case "unclip": {
-                    clips.pop();
-                    break;
-                }
-
-                case "write": {
-                    const clip = clips.at(-1);
-
-                    this.processWriteOperation(operation, output, clip);
-                    break;
-                }
-            }
-        }
+        this.replayOperations(output);
 
         const rows = output.length;
         const buffer = new Uint32Array(this.width * rows * 2);
@@ -579,11 +563,10 @@ export default class Output {
 
         // Ensure the output grid has enough rows
         while (output.length <= y) {
-            output.push(
-                Array.from({ length: this.width }).map(() => {
-                    return { fullWidth: false, styles: [], type: "char" as const, value: " " };
-                }),
-            );
+            const newRow = new Array<StyledChar>(this.width);
+
+            newRow.fill(blankCell);
+            output.push(newRow);
         }
 
         const row = output[y];
@@ -629,7 +612,7 @@ export default class Output {
 
             // Handle full-width characters
             if (char.fullWidth && col < this.width) {
-                row[col] = { fullWidth: false, styles: [], type: "char", value: "" };
+                row[col] = continuationBlankCell;
                 col++;
             }
         }
@@ -784,20 +767,20 @@ export default class Output {
     }
 
     private getOutputGrid(): StyledChar[][] {
-        if (this.outputGrid.length > this.height) {
-            this.outputGrid.length = this.height;
+        const { height, width } = this;
+
+        // Truncate excess rows
+        if (this.outputGrid.length > height) {
+            this.outputGrid.length = height;
         }
 
-        for (let y = 0; y < this.height; y++) {
-            const existing = this.outputGrid[y];
-            const row = existing ?? [];
+        // Grow/initialize rows as needed, then fill all with blanks
+        for (let y = 0; y < height; y++) {
+            let row = this.outputGrid[y];
 
-            if (!existing) {
+            if (!row || row.length !== width) {
+                row = new Array<StyledChar>(width);
                 this.outputGrid[y] = row;
-            }
-
-            if (row.length !== this.width) {
-                row.length = this.width;
             }
 
             row.fill(blankCell);
