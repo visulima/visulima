@@ -70,7 +70,7 @@ export class SummaryLifeCycle implements LifeCycleInterface {
         process.stdout.write("\n");
 
         // Sort: failures first, then cached, then success, then skipped
-        const sorted = this.#entries.values().toSorted((a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status));
+        const sorted = [...this.#entries.values()].sort((a, b) => getStatusOrder(a.result?.status) - getStatusOrder(b.result?.status));
 
         for (const entry of sorted) {
             const status = entry.result?.status;

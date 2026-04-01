@@ -46,25 +46,28 @@ describe("tui/CLIOutput", () => {
         it("should return green icon for success", () => {
             const icon = output.getStatusIcon("success");
 
-            expect(icon).toBe(true);
+            expect(typeof icon).toBe("string");
+            expect(strip(icon)).toBeTruthy();
         });
 
         it("should return green icon for cache statuses", () => {
-            expect(output.getStatusIcon("local-cache")).toBe(true);
-            expect(output.getStatusIcon("local-cache-kept-existing")).toBe(true);
-            expect(output.getStatusIcon("remote-cache")).toBe(true);
+            expect(typeof output.getStatusIcon("local-cache")).toBe("string");
+            expect(typeof output.getStatusIcon("local-cache-kept-existing")).toBe("string");
+            expect(typeof output.getStatusIcon("remote-cache")).toBe("string");
         });
 
         it("should return red icon for failure", () => {
             const icon = output.getStatusIcon("failure");
 
-            expect(icon).toBe(true);
+            expect(typeof icon).toBe("string");
+            expect(strip(icon)).toBeTruthy();
         });
 
         it("should return dim icon for skipped", () => {
             const icon = output.getStatusIcon("skipped");
 
-            expect(icon).toBe(true);
+            expect(typeof icon).toBe("string");
+            expect(strip(icon)).toBeTruthy();
         });
     });
 
@@ -124,7 +127,7 @@ describe("tui/CLIOutput", () => {
         it("should write output to stdout", () => {
             output.logCommandOutput("app:build", "success", "build output here");
 
-            expect(writeSpy).toHaveBeenCalledWith();
+            expect(writeSpy).toHaveBeenCalled();
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 
@@ -164,7 +167,7 @@ describe("tui/CLIOutput", () => {
         it("should write lines to stdout", () => {
             output.overwriteLines(0, ["line1", "line2"]);
 
-            expect(writeSpy).toHaveBeenCalledWith();
+            expect(writeSpy).toHaveBeenCalled();
 
             const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
 
@@ -176,7 +179,7 @@ describe("tui/CLIOutput", () => {
             output.overwriteLines(3, ["new line"]);
 
             // Should have written erase sequences + new content
-            expect(writeSpy).toHaveBeenCalledWith();
+            expect(writeSpy).toHaveBeenCalled();
         });
     });
 });
