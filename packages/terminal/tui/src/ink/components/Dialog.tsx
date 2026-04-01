@@ -94,8 +94,8 @@ export type Props = {
 };
 
 /**
- * A centered overlay dialog with automatic scrolling when content
- * exceeds the available terminal height.
+ * A centered overlay dialog with automatic scrolling and scrollbar when
+ * content exceeds the available terminal height.
  *
  * Uses the terminal's detected background color by default so the
  * dialog blends with the user's theme.
@@ -170,21 +170,17 @@ export default function Dialog({
                     </Box>
                 )}
 
-                {/* Scrollable content with native scrollbar */}
-                <Box
+                {/* Scrollable content with built-in scrollbar */}
+                <ScrollView
+                    ref={scrollViewRef}
                     flexGrow={1}
                     flexShrink={1}
-                    overflow="scroll"
                     paddingX={paddingX}
                     scrollbar
+                    scrollbarColor={borderColor}
                 >
-                    <ScrollView
-                        ref={scrollViewRef}
-                        flexGrow={1}
-                    >
-                        {children}
-                    </ScrollView>
-                </Box>
+                    {children}
+                </ScrollView>
 
                 {/* Footer — fixed below scroll area */}
                 {footer && (

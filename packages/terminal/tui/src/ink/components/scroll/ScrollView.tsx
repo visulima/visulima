@@ -1,12 +1,14 @@
 /* eslint-disable unicorn/filename-case */
 import type React from "react";
 import type { ReactNode, Ref } from "react";
-import { useCallback, useImperativeHandle, useRef } from "react";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 
 import type { Props as BoxProps } from "../Box";
+import Box from "../Box";
 import useScrollInput from "../../hooks/use-scroll-input";
 import type { ControlledScrollViewRef } from "./ControlledScrollView";
 import { ControlledScrollView } from "./ControlledScrollView";
+import { ScrollBar } from "./ScrollBar";
 import useStateRef from "./use-state-ref";
 
 export interface ScrollViewProps extends BoxProps {
@@ -43,6 +45,15 @@ export interface ScrollViewProps extends BoxProps {
     onReachStart?: () => void;
     onScroll?: (scrollOffset: number) => void;
     onViewportSizeChange?: (size: { height: number; width: number }, previousSize: { height: number; width: number }) => void;
+    /**
+     * Show a scrollbar track when content overflows the viewport.
+     * @default false
+     */
+    scrollbar?: boolean;
+    /**
+     * Color of the scrollbar thumb and track.
+     */
+    scrollbarColor?: string;
     /**
      * Distance in lines from the edge to trigger onReachEnd/onReachStart.
      * @default 5
@@ -95,6 +106,8 @@ export const ScrollView = ({
     overscan,
     reachThreshold = 5,
     ref,
+    scrollbar = false,
+    scrollbarColor,
     vimBindings = false,
     virtualize,
     ...boxProps
@@ -103,6 +116,8 @@ export const ScrollView = ({
     const innerRef = useRef<ControlledScrollViewRef>(null);
     const contentHeightRef = useRef(0);
     const viewportHeightRef = useRef(0);
+    const [scrollbarContentHeight, setScrollbarContentHeight] = useState(0);
+    const [scrollbarViewportHeight, setScrollbarViewportHeight] = useState(0);
 
     // Reach callback debounce guards
     const reachEndFiredRef = useRef(false);
@@ -147,6 +162,7 @@ export const ScrollView = ({
             const wasAtBottom = getScrollOffset() >= getBottomOffset() - followThreshold;
 
             contentHeightRef.current = height;
+            setScrollbarContentHeight(height);
             onContentHeightChange?.(height, previousHeight);
 
             if (followOutput && wasAtBottom && height > previousHeight) {
@@ -168,6 +184,7 @@ export const ScrollView = ({
     const handleViewportSizeChange = useCallback(
         (size: { height: number; width: number }, previousSize: { height: number; width: number }) => {
             viewportHeightRef.current = size.height;
+            setScrollbarViewportHeight(size.height);
             onViewportSizeChange?.(size, previousSize);
         },
         [onViewportSizeChange],
@@ -240,6 +257,38 @@ export const ScrollView = ({
             scrollToTop: scrollToTopImperative,
         };
     }, [onScroll, getBottomOffset, getScrollOffset, scrollByImperative, scrollToImperative, scrollToBottomImperative, scrollToTopImperative]);
+
+    const showScrollbar = scrollbar && scrollbarContentHeight > scrollbarViewportHeight && scrollbarViewportHeight > 0;
+
+    if (showScrollbar) {
+        // Wrap in a row to place scrollbar beside content
+        return (
+            <Box flexDirection="row" flexGrow={boxProps.flexGrow} flexShrink={boxProps.flexShrink} overflow="hidden">
+                <ControlledScrollView
+                    children={children}
+                    debug={debug}
+                    onContentHeightChange={handleContentHeightChange}
+                    onItemHeightChange={onItemHeightChange}
+                    onViewportSizeChange={handleViewportSizeChange}
+                    overscan={overscan}
+                    ref={innerRef}
+                    scrollOffset={scrollOffset}
+                    virtualize={virtualize}
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...boxProps}
+                    flexGrow={1}
+                />
+                <ScrollBar
+                    color={scrollbarColor}
+                    contentHeight={scrollbarContentHeight}
+                    placement="inset"
+                    scrollOffset={scrollOffset}
+                    style="line"
+                    viewportHeight={scrollbarViewportHeight}
+                />
+            </Box>
+        );
+    }
 
     return (
         <ControlledScrollView

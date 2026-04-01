@@ -343,7 +343,7 @@ export default class Ink {
 
     private restoreConsole?: () => void;
 
-    private readonly unsubscribeResize?: () => void;
+    private unsubscribeResize?: () => void;
 
     private readonly throttledOnRender?: DebouncedFunc<() => void>;
 
@@ -354,6 +354,8 @@ export default class Ink {
     private cancelKittyDetection?: () => void;
 
     private nextRenderCommit?: { promise: Promise<void>; resolve: () => void };
+
+    private deferredInitDone = false;
 
     constructor(options: Options) {
         autoBind(this);
@@ -500,26 +502,16 @@ export default class Ink {
         // Unmount when process exits
         this.unsubscribeExit = signalExit(this.unmount, { alwaysLast: false });
 
-        this.setAlternateScreen(Boolean(options.alternateScreen));
+        // Alternate screen, console patching, resize listeners, and Kitty
+        // keyboard detection are deferred to the first render frame via
+        // runDeferredInit(). This avoids synchronous I/O (alternate screen
+        // escape writes, stdin listeners for Kitty query, require() for
+        // native binding) on the mount hot-path, improving mount latency.
 
         if (process.env["DEV"] === "true") {
             // @ts-expect-error outdated types
             reconciler.injectIntoDevTools();
         }
-
-        if (options.patchConsole) {
-            this.patchConsole();
-        }
-
-        if (this.interactive) {
-            options.stdout.on("resize", this.resized);
-
-            this.unsubscribeResize = () => {
-                options.stdout.off("resize", this.resized);
-            };
-        }
-
-        this.initKittyKeyboard();
 
         this.exitPromise = new Promise((resolve, reject) => {
             this.resolveExitPromise = resolve;
@@ -529,6 +521,34 @@ export default class Ink {
         // error but consumers never call waitUntilExit().
 
         void this.exitPromise.catch(noop);
+    }
+
+    /**
+     * Perform deferred initialization that was too expensive for the constructor.
+     * Called once on the first render frame.
+     */
+    private runDeferredInit(): void {
+        if (this.deferredInitDone) {
+            return;
+        }
+
+        this.deferredInitDone = true;
+
+        this.setAlternateScreen(Boolean(this.options.alternateScreen));
+
+        if (this.options.patchConsole) {
+            this.patchConsole();
+        }
+
+        if (this.interactive) {
+            this.options.stdout.on("resize", this.resized);
+
+            this.unsubscribeResize = () => {
+                this.options.stdout.off("resize", this.resized);
+            };
+        }
+
+        this.initKittyKeyboard();
     }
 
     resized = (): void => {
@@ -678,6 +698,10 @@ export default class Ink {
         if (this.isUnmounted) {
             return;
         }
+
+        // Run deferred initialization (alternate screen, console patching,
+        // resize listeners, Kitty keyboard) on the first render frame.
+        this.runDeferredInit();
 
         if (this.nextRenderCommit) {
             this.nextRenderCommit.resolve();

@@ -10,7 +10,23 @@ description: "ScrollView, ScrollBar, ScrollBarBox, and ScrollList for building s
 1. **CSS-level scrolling** via `Box` props (`overflow="scroll"`, `scrollTop`, `sticky`) — integrated into the layout engine with native scrollbar rendering and sticky header support. See the [Box component docs](./components#overflow-and-css-level-scrolling).
 2. **Component-based scrolling** via `ScrollView`, `ScrollList`, etc. — higher-level React components with imperative APIs, selection management, and alignment modes.
 
-Both can be used independently or together. CSS-level scroll is best for simple overflow clipping with scrollbars; component-based scroll is best for lists with selection, dynamic content measurement, and keyboard-driven navigation.
+### When to use which
+
+| Feature | Box `overflow="scroll"` | `ScrollView` component |
+|---------|------------------------|----------------------|
+| **Scrollbar** | Built-in (`scrollbar` prop, on by default) | Built-in (`scrollbar` prop) |
+| **Scroll position** | You manage via `scrollTop`/`scrollLeft` props | Managed internally, control via ref (`scrollBy`, `scrollTo`) |
+| **Keyboard navigation** | You handle via `useInput` | Built-in (`keyboard` prop, optional `vimBindings`) |
+| **Sticky headers** | Yes (`sticky` prop on children) | No |
+| **Selection tracking** | No | Yes (via `ScrollList` with `selectedIndex`) |
+| **Follow output (log tailing)** | No | Yes (`followOutput` prop) |
+| **Virtualization** | No | Yes (`virtualize` prop) |
+| **Reach callbacks** | No | Yes (`onReachEnd`/`onReachStart`) |
+| **Best for** | Simple overflow with sticky headers | Lists, dynamic content, keyboard-driven UIs |
+
+> **Important:** These are separate scroll systems. Do not nest `ScrollView` inside a `Box` with
+> `overflow="scroll"` — the Box scrollbar will not reflect ScrollView's scroll position because
+> they track scroll state independently. Use one or the other, not both.
 
 ## Component-Based Scroll
 
@@ -85,6 +101,8 @@ Extends `BoxProps`.
 | `onReachEnd`            | `function` | Fires once when scrolled within `reachThreshold` of the end |
 | `onReachStart`          | `function` | Fires once when scrolled within `reachThreshold` of the start |
 | `reachThreshold`        | `number`   | Distance in lines to trigger reach callbacks (default: `5`) |
+| `scrollbar`             | `boolean`  | Show a scrollbar when content overflows (default: `false`) |
+| `scrollbarColor`        | `string`   | Color of the scrollbar thumb and track |
 | `virtualize`            | `boolean`  | Only render visible items + overscan (default: `false`) |
 | `overscan`              | `number`   | Extra items to render outside viewport when virtualized (default: `3`) |
 
