@@ -5,7 +5,7 @@
  * Run: node --import @oxc-node/core/register examples/alert.tsx
  */
 
-import { Alert, Box, render, Text } from "@visulima/tui/ink";
+import { Alert, Box, render, Text } from "@visulima/tui";
 import React from "react";
 
 const App = () => (

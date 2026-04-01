@@ -5,7 +5,7 @@
  * Run: node --import @oxc-node/core/register examples/unordered-list.tsx
  */
 
-import { Box, render, Text, UnorderedList } from "@visulima/tui/ink";
+import { Box, render, Text, UnorderedList } from "@visulima/tui";
 import React from "react";
 
 const App = () => (

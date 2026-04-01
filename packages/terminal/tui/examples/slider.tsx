@@ -12,7 +12,7 @@
  * Run: node --import @oxc-node/core/register examples/slider.tsx
  */
 
-import { Box, render, Slider, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, render, Slider, Text, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const SLIDERS = ["Volume", "Brightness", "Temperature"] as const;

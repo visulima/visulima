@@ -10,7 +10,7 @@
  * Run: node --import @oxc-node/core/register examples/diff-view.tsx
  */
 
-import { Box, DiffView, render, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, DiffView, render, Text, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const oldCode = `function greet(name) {

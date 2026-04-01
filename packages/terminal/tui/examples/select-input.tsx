@@ -11,7 +11,7 @@
  * Run: node --import @oxc-node/core/register examples/select-input.tsx
  */
 
-import { Box, render, SelectInput, Text, useApp, useInput } from "@visulima/tui/ink";
+import { Box, render, SelectInput, Text, useApp, useInput } from "@visulima/tui";
 import React, { useState } from "react";
 
 const App = () => {
