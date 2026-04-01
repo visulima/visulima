@@ -85,6 +85,8 @@ export class Cli<T extends Console = Console> implements ICli<T> {
 
     #cachedAllCommandPaths?: string[];
 
+    readonly #customGlobalOptions: OptionDefinition<unknown>[] = [];
+
     /**
      * Gets all command path keys (cached for performance).
      * @returns Array of command path keys
@@ -119,6 +121,17 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         }
 
         return this.#cachedAllCommandPaths;
+    }
+
+    /**
+     * Gets all global options (built-in + custom).
+     */
+    #getAllGlobalOptions(): OptionDefinition<unknown>[] {
+        if (this.#customGlobalOptions.length === 0) {
+            return defaultOptions as OptionDefinition<unknown>[];
+        }
+
+        return [...(defaultOptions as OptionDefinition<unknown>[]), ...this.#customGlobalOptions];
     }
 
     /**
@@ -210,7 +223,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, defaultOptions as OptionDefinition<unknown>[]);
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, this.#getAllGlobalOptions());
 
         const hasBooleanValues = Object.keys(booleanValues).length > 0;
 
@@ -524,6 +537,67 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         }
 
         return this;
+    }
+
+    /**
+     * Adds a global option available to all commands.
+     *
+     * Global options are parsed alongside command-specific options and displayed
+     * in the help output under the "Global Options" section.
+     * @param option The option definition
+     * @returns The CLI instance for method chaining
+     * @example
+     * ```typescript
+     * cli.addGlobalOption({
+     *   name: 'cwd',
+     *   type: String,
+     *   description: 'Override working directory',
+     * });
+     * ```
+     */
+    public addGlobalOption<V = unknown>(option: OptionDefinition<V>): this {
+        const optionDef = option as OptionDefinition<unknown>;
+
+        // Check for conflicts with built-in global options
+        const builtInNames = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.name));
+        const builtInAliases = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.alias).filter(Boolean));
+
+        if (builtInNames.has(optionDef.name)) {
+            throw new CerebroError(`Cannot add global option "--${optionDef.name}": it conflicts with a built-in global option`, "DUPLICATE_OPTION", {
+                optionName: optionDef.name,
+            });
+        }
+
+        if (optionDef.alias && builtInAliases.has(optionDef.alias as string)) {
+            throw new CerebroError(
+                `Cannot add global option with alias "-${String(optionDef.alias)}": it conflicts with a built-in global option alias`,
+                "DUPLICATE_OPTION",
+                { alias: optionDef.alias, optionName: optionDef.name },
+            );
+        }
+
+        // Check for conflicts with previously added custom global options
+        const existingNames = new Set(this.#customGlobalOptions.map((o) => o.name));
+
+        if (existingNames.has(optionDef.name)) {
+            throw new CerebroError(`Global option "--${optionDef.name}" has already been added`, "DUPLICATE_OPTION", { optionName: optionDef.name });
+        }
+
+        optionDef.group = "global";
+
+        mapOptionTypeLabel(optionDef);
+
+        this.#customGlobalOptions.push(optionDef);
+
+        return this;
+    }
+
+    /**
+     * Gets all global options (built-in + custom).
+     * @returns Array of all global option definitions
+     */
+    public getGlobalOptions(): OptionDefinition<unknown>[] {
+        return this.#getAllGlobalOptions();
     }
 
     /**

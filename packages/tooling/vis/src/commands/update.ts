@@ -178,8 +178,28 @@ const executeCatalogUpdate = async (
     if (isTTY && format === "table") {
         const store = new UpdateStore(outdated, aiResult ?? null);
 
+        // Fetch changelog URLs if requested
+        let changelogUrls: Map<string, string> | undefined;
+
+        if (options.changelog) {
+            logger.info("Fetching changelogs...");
+
+            const changelogs = await fetchChangelogInfo(outdated);
+
+            changelogUrls = new Map<string, string>();
+
+            for (const info of changelogs) {
+                const url = info.releaseUrl ?? info.repoUrl ?? info.npmUrl;
+
+                if (url) {
+                    changelogUrls.set(info.packageName, url);
+                }
+            }
+        }
+
         const instance = render(
             React.createElement(VisUpdateApp, {
+                changelogUrls,
                 isDryRun,
                 store,
             }),

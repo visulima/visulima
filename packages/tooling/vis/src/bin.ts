@@ -61,12 +61,21 @@ const cli = createCerebro("vis", {
     packageVersion: pkg.version,
 });
 
+// Global --cwd option available to all commands
+cli.addGlobalOption({
+    description: "Override workspace root directory",
+    name: "cwd",
+    type: String,
+});
+
 // Load config once and inject into every command's toolbox
 cli.addPlugin({
     /* eslint-disable no-param-reassign -- cerebro plugin pattern requires mutating toolbox */
     beforeCommand: async (toolbox) => {
         try {
-            const workspaceRoot = findMonorepoRootSync(process.cwd()).path;
+            const cwdOption = toolbox.options?.cwd as string | undefined;
+            const baseCwd = cwdOption ? (await import("node:path")).resolve(process.cwd(), cwdOption) : process.cwd();
+            const workspaceRoot = findMonorepoRootSync(baseCwd).path;
 
             toolbox.workspaceRoot = workspaceRoot;
             toolbox.visConfig = await loadVisConfig(workspaceRoot);

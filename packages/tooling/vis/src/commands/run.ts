@@ -1,5 +1,4 @@
 import { spawn } from "node:child_process";
-import { resolve } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
@@ -79,16 +78,12 @@ const run: Command = {
             throw new Error("Missing target. Usage: vis run <target>");
         }
 
-        // Allow --cwd to override auto-detected workspace root
-        const cwdOption = options.cwd as string | undefined;
-        const workspaceRoot = cwdOption ? resolve(process.cwd(), cwdOption) : wsRoot;
-
-        if (!workspaceRoot) {
+        if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
-        // When --cwd overrides the workspace root, use a fresh config instead of the auto-detected one
-        const { config, workspace } = discoverWorkspace(workspaceRoot, cwdOption ? {} : visConfig);
+        const workspaceRoot = wsRoot;
+        const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
         let projectNames = Object.keys(workspace.projects);
@@ -234,11 +229,6 @@ const run: Command = {
     },
     name: "run",
     options: [
-        {
-            description: "Override workspace root directory",
-            name: "cwd",
-            type: String,
-        },
         {
             alias: "p",
             description: "Comma-separated list of projects to run",

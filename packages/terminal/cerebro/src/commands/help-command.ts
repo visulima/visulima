@@ -1,7 +1,6 @@
 import { cyan, green, inverse, yellow } from "@visulima/colorize";
 
 import defaultEnv from "../default-env";
-import defaultOptions from "../default-options";
 import type { Cli as ICli } from "../types/cli";
 import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
@@ -80,11 +79,11 @@ const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map
                 }),
                 commands.has("help")
                     ? {
-                        header: inverse.yellow(" Command Options "),
-                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
-                    }
+                          header: inverse.yellow(" Command Options "),
+                          optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                      }
                     : undefined,
-                { header: inverse.yellow(" Global Options "), optionList: defaultOptions },
+                { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
                 {
                     content: defaultEnv.filter((envVariable) => !envVariable.hidden).map((envVariable) => [envVariable.name, envVariable.description ?? ""]),
                     header: inverse.magenta(" Environment Variables "),
@@ -156,7 +155,7 @@ const printCommandHelp = <OD extends OptionDefinition<any>>(
         });
     }
 
-    usageGroups.push({ header: inverse.yellow(" Global Options "), optionList: defaultOptions });
+    usageGroups.push({ header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() });
 
     if (Array.isArray(command.env) && command.env.length > 0) {
         const visibleEnvVariables = command.env.filter((envVariable) => !envVariable.hidden);
