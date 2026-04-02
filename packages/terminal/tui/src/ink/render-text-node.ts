@@ -12,12 +12,13 @@ import type { StyledChar } from "@alcalzone/ansi-tokenize";
 
 import type { DOMElement, DOMNode } from "./dom";
 import getMaxWidth from "./get-max-width";
-import { measureStyledChars, splitStyledCharsByNewline, toStyledCharacters } from "./measure-text";
+import { measureStyledChars, measureStyledLine, splitStyledCharsByNewline, splitStyledLineByNewline, toStyledCharacters, toStyledLine } from "./measure-text";
 import type Output from "./output";
 import type { OutputTransformer } from "./render-node-to-output";
 import { applySelectionToStyledChars } from "./selection";
+import type { StyledLine } from "./styled-line";
 import squashTextNodes from "./squash-text-nodes";
-import { wrapOrTruncateStyledChars } from "./text-wrap";
+import { wrapOrTruncateStyledChars, wrapOrTruncateStyledLine } from "./text-wrap";
 
 /**
  * Apply padding to StyledChar lines based on the first child node's computed position.
@@ -115,10 +116,38 @@ export const calculateWrappedCursorPosition = (
 };
 
 /**
- * Render an ink-text node to output using the StyledChar pipeline.
+ * Apply padding to StyledLine array based on the first child node's computed position.
+ */
+const applyPaddingToStyledLines = (node: DOMElement, lines: StyledLine[]): StyledLine[] => {
+    const yogaNode = node.childNodes[0]?.yogaNode;
+
+    if (yogaNode) {
+        const offsetX = yogaNode.getComputedLeft();
+        const offsetY = yogaNode.getComputedTop();
+
+        if (offsetX > 0) {
+            const { StyledLine: SL } = require("./styled-line") as typeof import("./styled-line");
+            const padding = SL.empty(offsetX);
+
+            lines = lines.map((line) => padding.combine(line));
+        }
+
+        if (offsetY > 0) {
+            const { StyledLine: SL } = require("./styled-line") as typeof import("./styled-line");
+            const paddingTop: StyledLine[] = Array.from({ length: offsetY }, () => new SL());
+
+            lines.unshift(...paddingTop);
+        }
+    }
+
+    return lines;
+};
+
+/**
+ * Render an ink-text node to output.
  *
- * This handles text squashing, styled character tokenization, wrapping/truncation,
- * padding, selection highlighting, and cursor positioning.
+ * Uses the StyledLine fast path when no selection is active (common case).
+ * Falls back to StyledChar path when selection highlighting is needed.
  */
 export const handleTextNode = (
     node: DOMElement,
@@ -133,29 +162,52 @@ export const handleTextNode = (
 ): void => {
     const { selectionMap, selectionStyle, transformers, x, y } = options;
     const text = squashTextNodes(node);
-    let styledChars = toStyledCharacters(text);
 
-    // Apply selection highlighting if this node is in the selection map
+    // Check if selection is active for this node
     const selectionRange = selectionMap?.get(node);
 
     if (selectionRange) {
-        styledChars = applySelectionToStyledChars(styledChars, { currentOffset: 0, range: selectionRange }, selectionStyle);
-    }
+        // Selection path: use StyledChar pipeline (supports per-char style mutation)
+        let styledChars = toStyledCharacters(text);
 
-    if (styledChars.length === 0) {
+        styledChars = applySelectionToStyledChars(styledChars, { currentOffset: 0, range: selectionRange }, selectionStyle);
+
+        if (styledChars.length === 0) {
+            return;
+        }
+
+        const { width: currentWidth } = measureStyledChars(styledChars);
+        const maxWidth = getMaxWidth(node.yogaNode!);
+
+        let lines: StyledChar[][]
+            = currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
+
+        lines = applyPaddingToStyledChars(node, lines);
+
+        for (const [index, line] of lines.entries()) {
+            output.writeStyledChars(x, y + index, line, { transformers });
+        }
+
         return;
     }
 
-    const { width: currentWidth } = measureStyledChars(styledChars);
+    // Fast path: StyledLine pipeline (no selection, no per-char StyledChar objects)
+    const styledLine = toStyledLine(text);
+
+    if (styledLine.length === 0) {
+        return;
+    }
+
+    const { width: currentWidth } = measureStyledLine(styledLine);
     const maxWidth = getMaxWidth(node.yogaNode!);
 
-    let lines: StyledChar[][]
-        = currentWidth > maxWidth ? wrapOrTruncateStyledChars(styledChars, maxWidth, node.style.textWrap ?? "wrap") : splitStyledCharsByNewline(styledChars);
+    let lines: StyledLine[]
+        = currentWidth > maxWidth ? wrapOrTruncateStyledLine(styledLine, maxWidth, node.style.textWrap ?? "wrap") : splitStyledLineByNewline(styledLine);
 
-    lines = applyPaddingToStyledChars(node, lines);
+    lines = applyPaddingToStyledLines(node, lines);
 
-    // Write each line to the output using the StyledChar path
-    for (const [index, line] of lines.entries()) {
-        output.writeStyledChars(x, y + index, line, { transformers });
+    // Write each line directly as StyledLine (skips bridge conversion)
+    for (let index = 0; index < lines.length; index++) {
+        output.writeStyledLine(x, y + index, lines[index]!);
     }
 };
