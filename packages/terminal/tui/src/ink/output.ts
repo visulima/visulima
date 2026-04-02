@@ -476,6 +476,13 @@ export default class Output {
      * Get the current clip bounds (from the active region's absolute position).
      * Used by render-node-to-output for visibility culling.
      */
+    /**
+     * Get the root region's lines (for creating cached Regions).
+     */
+    getRootLines(): readonly StyledLine[] {
+        return this.rootRegion.lines;
+    }
+
     getCurrentClip(): Clip | undefined {
         if (this.regionStack.length <= 1) {
             return undefined;

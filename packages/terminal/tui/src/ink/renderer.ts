@@ -214,6 +214,22 @@ const renderer = (
         useNativeRenderer?: boolean;
     },
 ): Result => {
+    // Walk the tree and call internalOnBeforeRender for each node.
+    // This allows StaticRender to lazily populate cachedRender.
+    const callBeforeRender = (n: DOMElement): void => {
+        if (typeof n.internalOnBeforeRender === "function") {
+            n.internalOnBeforeRender(n);
+        }
+
+        for (const child of n.childNodes) {
+            if ("childNodes" in child) {
+                callBeforeRender(child as DOMElement);
+            }
+        }
+    };
+
+    callBeforeRender(node);
+
     if (node.yogaNode) {
         if (isScreenReaderEnabled) {
             const output = renderNodeToScreenReaderOutput(node, {

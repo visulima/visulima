@@ -527,3 +527,51 @@ const renderNodeToOutput = (
 };
 
 export default renderNodeToOutput;
+
+/**
+ * Render a DOM subtree into a cached Region.
+ * Used by StaticRender to pre-render content once and cache it.
+ */
+export const renderToStatic = (node: DOMElement): void => {
+    if (!node.yogaNode) {
+        return;
+    }
+
+    const width = node.yogaNode.getComputedWidth();
+    const height = node.yogaNode.getComputedHeight();
+
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    const { setCachedRender } = require("./dom") as typeof import("./dom");
+
+    const staticOutput = new Output({
+        height,
+        width,
+    });
+
+    for (const childNode of node.childNodes) {
+        renderNodeToOutput(childNode as DOMElement, staticOutput, {
+            skipStaticElements: false,
+        });
+    }
+
+    // Create a Region from the rendered output for caching
+    const region: import("./region").Region = {
+        children: [],
+        cursorPosition: undefined,
+        height,
+        id: (node as any).internalId ?? "static",
+        isScrollable: false,
+        lines: [...staticOutput.getRootLines()],
+        selectableSpans: [],
+        stickyHeaders: [],
+        styledOutput: [...staticOutput.getRootLines()],
+        width,
+        x: 0,
+        y: 0,
+    };
+
+    setCachedRender(node, region);
+};

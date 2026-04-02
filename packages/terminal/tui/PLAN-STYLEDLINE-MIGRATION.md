@@ -7,8 +7,8 @@
 - **Phase 3**: DONE — Output grid migration (StyledChar[][] → StyledLine[])
 - **Phase 4**: DONE — Text pipeline fast path (toStyledLine, writeStyledLine, native wrapStyledLine)
 - **Phase 5**: DONE — Bridge retained for StyledChar tokenization (complex char combining); hot path fully on StyledLine
-- **Phase 6**: IN PROGRESS — Region type, setCachedRender, render-cached scaffolding added. Full Output rewrite pending.
-- **Phase 7**: BLOCKED on Phase 6 — Render caching infrastructure ready (cachedRender on DOMElement, cleanupNodeTree clears it)
+- **Phase 6**: DONE — Region-based Output with startChildRegion/endChildRegion, addRegionTree, cachedRender activation
+- **Phase 7**: IN PROGRESS — StaticRender component and internalOnBeforeRender hook needed
 
 ### TODOs resolved:
 - ~~styled-line-bridge.ts "TEMPORARY"~~ → Bridge retained, comment updated to explain why

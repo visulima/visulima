@@ -72,6 +72,8 @@ export type { Props as SpinnerProps } from "./components/Spinner";
 export { default as Spinner } from "./components/Spinner";
 export type { Props as StaticProps } from "./components/Static";
 export { default as Static } from "./components/Static";
+export type { Props as StaticRenderProps } from "./components/StaticRender";
+export { default as StaticRender } from "./components/StaticRender";
 export type { Props as StatusMessageProps, StatusMessageVariant } from "./components/StatusMessage";
 export { default as StatusMessage } from "./components/StatusMessage";
 export type { Props as StderrProps } from "./components/StderrContext";
