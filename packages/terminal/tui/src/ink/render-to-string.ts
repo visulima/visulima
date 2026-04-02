@@ -7,6 +7,7 @@ import type { DOMElement } from "./dom";
 import { createNode } from "./dom";
 import reconciler from "./reconciler";
 import renderer from "./renderer";
+import { calculateScroll } from "./scroll";
 
 export type RenderToStringOptions = {
     /**
@@ -60,6 +61,28 @@ const renderToString = (node: ReactNode, options?: RenderToStringOptions): strin
     rootNode.onComputeLayout = () => {
         rootNode.yogaNode!.setWidth(columns);
         rootNode.yogaNode!.calculateLayout(undefined, undefined, Yoga.DIRECTION_LTR);
+
+        // Walk the tree and calculate scroll state for scroll containers,
+        // matching what ink.tsx does in the live rendering pipeline.
+        const walkScroll = (node: DOMElement): void => {
+            if (node.nodeName === "ink-box") {
+                const overflow = node.style.overflow ?? "visible";
+                const overflowX = node.style.overflowX ?? overflow;
+                const overflowY = node.style.overflowY ?? overflow;
+
+                if (overflowX === "scroll" || overflowY === "scroll") {
+                    calculateScroll(node);
+                }
+            }
+
+            for (const child of node.childNodes) {
+                if (child.nodeName !== "#text") {
+                    walkScroll(child as DOMElement);
+                }
+            }
+        };
+
+        walkScroll(rootNode);
     };
 
     rootNode.onImmediateRender = () => {

@@ -10,11 +10,11 @@
 
 /* eslint-disable no-bitwise */
 
-export const BOLD_MASK = 1; // 0b0000_0001
-export const DIM_MASK = 1 << 1; // 0b0000_0010
-export const ITALIC_MASK = 1 << 2; // 0b0000_0100
-export const UNDERLINE_MASK = 1 << 3; // 0b0000_1000
-export const STRIKETHROUGH_MASK = 1 << 4; // 0b0001_0000
-export const INVERSE_MASK = 1 << 5; // 0b0010_0000
-export const HIDDEN_MASK = 1 << 6; // 0b0100_0000
-export const FULL_WIDTH_MASK = 1 << 7; // 0b1000_0000
+export const BOLD_MASK: number = 1; // 0b0000_0001
+export const DIM_MASK: number = 1 << 1; // 0b0000_0010
+export const ITALIC_MASK: number = 1 << 2; // 0b0000_0100
+export const UNDERLINE_MASK: number = 1 << 3; // 0b0000_1000
+export const STRIKETHROUGH_MASK: number = 1 << 4; // 0b0001_0000
+export const INVERSE_MASK: number = 1 << 5; // 0b0010_0000
+export const HIDDEN_MASK: number = 1 << 6; // 0b0100_0000
+export const FULL_WIDTH_MASK: number = 1 << 7; // 0b1000_0000
