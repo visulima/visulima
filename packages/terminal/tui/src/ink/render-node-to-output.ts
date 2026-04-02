@@ -380,20 +380,14 @@ const renderNodeToOutput = (
             const clipVertically = overflowY === "hidden" || overflowY === "scroll";
 
             if (clipHorizontally || clipVertically) {
-                const borderLeft = yogaNode.getComputedBorder(Yoga.EDGE_LEFT);
-                const borderRight = yogaNode.getComputedBorder(Yoga.EDGE_RIGHT);
-                const borderTop = yogaNode.getComputedBorder(Yoga.EDGE_TOP);
-                const borderBottom = yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM);
+                // Only fetch border widths for the axes that need clipping
+                const nodeW = yogaNode.getComputedWidth();
+                const nodeH = yogaNode.getComputedHeight();
 
-                const x1 = clipHorizontally ? x + borderLeft : undefined;
-                const x2 = clipHorizontally ? x + yogaNode.getComputedWidth() - borderRight : undefined;
-                const y1 = clipVertically ? y + borderTop : undefined;
-                const y2 = clipVertically ? y + yogaNode.getComputedHeight() - borderBottom : undefined;
-
-                const regionX = x1 ?? x;
-                const regionY = y1 ?? y;
-                const regionW = (x2 ?? (x + yogaNode.getComputedWidth())) - regionX;
-                const regionH = (y2 ?? (y + yogaNode.getComputedHeight())) - regionY;
+                const regionX = clipHorizontally ? x + yogaNode.getComputedBorder(Yoga.EDGE_LEFT) : x;
+                const regionW = clipHorizontally ? nodeW - yogaNode.getComputedBorder(Yoga.EDGE_LEFT) - yogaNode.getComputedBorder(Yoga.EDGE_RIGHT) : nodeW;
+                const regionY = clipVertically ? y + yogaNode.getComputedBorder(Yoga.EDGE_TOP) : y;
+                const regionH = clipVertically ? nodeH - yogaNode.getComputedBorder(Yoga.EDGE_TOP) - yogaNode.getComputedBorder(Yoga.EDGE_BOTTOM) : nodeH;
 
                 output.startChildRegion(regionX, regionY, Math.max(0, regionW), Math.max(0, regionH));
                 clipped = true;

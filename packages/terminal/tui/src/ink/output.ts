@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, class-methods-use-this, consistent-return, default-case, import/exports-last, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, prefer-const, sonarjs/cognitive-complexity */
 import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
-import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";
+import { getStringWidth, isFullwidthCodePoint } from "@visulima/string";
 
 import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
 import type { OutputTransformer } from "./render-node-to-output";
@@ -350,27 +350,22 @@ export default class Output {
             }
 
             const srcLine = child.lines[y]!;
+
+            // Skip entirely blank lines (common for empty padding rows)
+            if (srcLine.getTrimmedLength() === 0) {
+                continue;
+            }
+
             const dstLine = parent.lines[targetY]!;
+            let col = relX;
 
-            for (let x = 0; x < srcLine.length; x++) {
-                const targetX = relX + x;
-
-                if (targetX < 0 || targetX >= dstLine.length) {
-                    continue;
+            // Use iterator to avoid repeated getter calls per cell
+            for (const char of srcLine) {
+                if (col >= 0 && col < dstLine.length && (char.value !== " " || char.hasStyles)) {
+                    dstLine.setCharFast(col, char.value, char.formatFlags, char.fgColor, char.bgColor, char.link);
                 }
 
-                const value = srcLine.getValue(x);
-
-                if (value !== " " || srcLine.hasStyles(x)) {
-                    dstLine.setCharFast(
-                        targetX,
-                        value,
-                        srcLine.getFormatFlags(x),
-                        srcLine.getFgColor(x),
-                        srcLine.getBgColor(x),
-                        srcLine.getLink(x),
-                    );
-                }
+                col++;
             }
         }
     }
@@ -725,35 +720,6 @@ export default class Output {
         }
 
         return { absX, absY, height, lines, width };
-    }
-
-    private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { lines: string[]; x: number } {
-        const clippedLines: string[] = Array.from<string>({ length: lines.length }).fill("");
-
-        for (const [lineIndex, line] of lines.entries()) {
-            const from = x < x1 ? x1 - x : 0;
-            const width = this.caches.getStringWidth(line);
-            const to = x + width > x2 ? x2 - x : width;
-
-            clippedLines[lineIndex] = from === 0 && to === width ? line : sliceAnsi(line, from, to);
-        }
-
-        return {
-            lines: clippedLines,
-            x: Math.max(x, x1),
-        };
-    }
-
-    private applyVerticalClip(lines: string[], y: number, y1: number, y2: number): { lines: string[]; y: number } {
-        const from = y < y1 ? y1 - y : 0;
-        const height = lines.length;
-        const to = y + height > y2 ? y2 - y : height;
-        const clippedLines = from > 0 || to < height ? lines.slice(from, to) : lines;
-
-        return {
-            lines: clippedLines,
-            y: Math.max(y, y1),
-        };
     }
 
     private disableLineMemoization() {
