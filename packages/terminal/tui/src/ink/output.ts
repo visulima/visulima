@@ -710,6 +710,9 @@ export default class Output {
         return transformedLine;
     }
 
+    /**
+     * Write a text line into a StyledLine row at position x.
+     */
     private writeLineToStyledLine(row: StyledLine, x: number, line: string) {
         if (line.length === 0) {
             return;
@@ -737,7 +740,6 @@ export default class Output {
                 offsetX++;
 
                 if (offsetX < row.length) {
-                    // Continuation cell inherits parent style so spans merge correctly
                     row.setChar(offsetX, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 }
             }
