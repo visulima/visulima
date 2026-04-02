@@ -213,6 +213,17 @@ const renderNodeToOutput = (
         return;
     }
 
+    // Render caching: if this node has a cached render result (a Region),
+    // composite it directly and skip the entire subtree traversal.
+    if (node.cachedRender) {
+        const x = (offsetX ?? 0) + (node.yogaNode?.getComputedLeft() ?? 0);
+        const y = (offsetY ?? 0) + (node.yogaNode?.getComputedTop() ?? 0);
+
+        output.addRegionTree(node.cachedRender, x, y);
+
+        return;
+    }
+
     if (node.nodeName === "ink-cursor") {
         if (!renderState) {
             return;
