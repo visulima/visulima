@@ -265,6 +265,14 @@ const regionalIndicatorEnd = 127_487;
 const memoizationDisableRatio = 0.6;
 const memoizationProbeInterval = 30;
 
+type RegionEntry = {
+    absX: number;
+    absY: number;
+    height: number;
+    lines: StyledLine[];
+    width: number;
+};
+
 export default class Output {
     width: number;
 
@@ -272,15 +280,16 @@ export default class Output {
 
     private readonly caches: OutputCaches;
 
-    // Grid is initialized eagerly and written to directly (no operation queue).
-    private outputGrid: StyledLine[];
+    // Root region — the full terminal screen.
+    private rootRegion: RegionEntry;
+
+    // Region stack — writes go to the top region.
+    // The root region is always at index 0.
+    private readonly regionStack: RegionEntry[] = [];
 
     private readonly previousLines: StyledLine[] = [];
 
     private readonly previousRenderedLines: string[] = [];
-
-    // Clip stack is maintained during rendering for visibility checks.
-    private readonly clipStack: Clip[] = [];
 
     private lineMemoizationEnabled = true;
 
@@ -293,21 +302,82 @@ export default class Output {
         this.height = height;
         this.caches = caches ?? new OutputCaches();
 
-        // Initialize grid eagerly — StyledLine.empty() uses an internal cache.
-        this.outputGrid = this.createGrid(width, height);
+        this.rootRegion = this.createRegionEntry(0, 0, width, height);
+        this.regionStack.push(this.rootRegion);
     }
 
     reset(width: number, height: number): void {
         this.width = width;
         this.height = height;
-        this.clipStack.length = 0;
+        this.regionStack.length = 0;
 
-        // Re-initialize grid for new dimensions
-        this.outputGrid = this.createGrid(width, height);
+        this.rootRegion = this.createRegionEntry(0, 0, width, height);
+        this.regionStack.push(this.rootRegion);
     }
 
     /**
-     * Write text immediately to the grid (no queuing).
+     * Push a child region onto the stack. Writes will be clipped to this
+     * region's bounds until endChildRegion() is called.
+     * Coordinates are absolute (matching caller convention).
+     */
+    startChildRegion(absX: number, absY: number, width: number, height: number): void {
+        const child = this.createRegionEntry(absX, absY, width, height);
+
+        this.regionStack.push(child);
+    }
+
+    /**
+     * Pop the current child region and composite it onto its parent.
+     */
+    endChildRegion(): void {
+        if (this.regionStack.length <= 1) {
+            return;
+        }
+
+        const child = this.regionStack.pop()!;
+        const parent = this.regionStack.at(-1)!;
+
+        // Composite child lines onto parent at the child's absolute position
+        // translated to parent-relative coordinates.
+        const relX = child.absX - parent.absX;
+        const relY = child.absY - parent.absY;
+
+        for (let y = 0; y < child.lines.length; y++) {
+            const targetY = relY + y;
+
+            if (targetY < 0 || targetY >= parent.lines.length) {
+                continue;
+            }
+
+            const srcLine = child.lines[y]!;
+            const dstLine = parent.lines[targetY]!;
+
+            for (let x = 0; x < srcLine.length; x++) {
+                const targetX = relX + x;
+
+                if (targetX < 0 || targetX >= dstLine.length) {
+                    continue;
+                }
+
+                const value = srcLine.getValue(x);
+
+                if (value !== " " || srcLine.hasStyles(x)) {
+                    dstLine.setCharFast(
+                        targetX,
+                        value,
+                        srcLine.getFormatFlags(x),
+                        srcLine.getFgColor(x),
+                        srcLine.getBgColor(x),
+                        srcLine.getLink(x),
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Write text to the active region. Coordinates are absolute;
+     * translated to region-relative internally.
      */
     write(x: number, y: number, text: string, options: { transformers: OutputTransformer[] }): void {
         if (!text) {
@@ -315,54 +385,17 @@ export default class Output {
         }
 
         const { transformers } = options;
-        const clip = this.clipStack.at(-1);
-        let lines = this.caches.getLines(text);
-
-        // Prepare (clip) the write
-        let writeX = x;
-        let writeY = y;
-
-        if (clip) {
-            const clipH = typeof clip.x1 === "number" && typeof clip.x2 === "number";
-            const clipV = typeof clip.y1 === "number" && typeof clip.y2 === "number";
-
-            if (clipH) {
-                const width = this.caches.getWidestLine(text);
-
-                if (writeX + width < clip.x1! || writeX > clip.x2!) {
-                    return;
-                }
-            }
-
-            if (clipV) {
-                const height = lines.length;
-
-                if (writeY + height < clip.y1! || writeY > clip.y2!) {
-                    return;
-                }
-            }
-
-            if (clipH) {
-                const clipped = this.applyHorizontalClip(lines, writeX, clip.x1!, clip.x2!);
-
-                lines = clipped.lines;
-                writeX = clipped.x;
-            }
-
-            if (clipV) {
-                const clipped = this.applyVerticalClip(lines, writeY, clip.y1!, clip.y2!);
-
-                lines = clipped.lines;
-                writeY = clipped.y;
-            }
-        }
+        const region = this.getActiveRegion();
+        const lines = this.caches.getLines(text);
+        const relX = x - region.absX;
+        const relY = y - region.absY;
 
         const hasTransformers = transformers.length > 0;
 
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const rowIndex = writeY + lineIndex;
+            const rowIndex = relY + lineIndex;
 
-            if (rowIndex < 0 || rowIndex >= this.outputGrid.length) {
+            if (rowIndex < 0 || rowIndex >= region.lines.length) {
                 continue;
             }
 
@@ -378,21 +411,23 @@ export default class Output {
                 continue;
             }
 
-            const row = this.outputGrid[rowIndex]!;
+            const row = region.lines[rowIndex]!;
             const parsed = this.caches.getStyledLine(line);
-            let offsetX = writeX;
+            let offsetX = relX;
 
             for (let i = 0; i < parsed.length; i++) {
-                if (offsetX >= row.length) {
+                if (offsetX >= region.width) {
                     break;
                 }
 
-                row.setCharFast(offsetX, parsed.getValue(i), parsed.getFormatFlags(i), parsed.getFgColor(i), parsed.getBgColor(i), parsed.getLink(i));
+                if (offsetX >= 0) {
+                    row.setCharFast(offsetX, parsed.getValue(i), parsed.getFormatFlags(i), parsed.getFgColor(i), parsed.getBgColor(i), parsed.getLink(i));
+                }
 
                 if (parsed.getFullWidth(i)) {
                     offsetX++;
 
-                    if (offsetX < row.length) {
+                    if (offsetX >= 0 && offsetX < region.width) {
                         row.setCharFast(offsetX, "", parsed.getFormatFlags(i) & ~FULL_WIDTH_MASK, parsed.getFgColor(i), parsed.getBgColor(i), parsed.getLink(i));
                     }
                 }
@@ -403,132 +438,57 @@ export default class Output {
     }
 
     /**
-     * Write a StyledLine directly to the grid (fast path, no bridge).
+     * Write a StyledLine directly to the active region (fast path).
+     * Coordinates are absolute; translated to region-relative internally.
      */
     writeStyledLine(x: number, y: number, line: StyledLine): void {
-        if (line.length === 0 || y < 0 || y >= this.outputGrid.length) {
+        const region = this.getActiveRegion();
+        const relY = y - region.absY;
+
+        if (line.length === 0 || relY < 0 || relY >= region.lines.length) {
             return;
         }
 
-        const clip = this.clipStack.at(-1);
-        const row = this.outputGrid[y]!;
-        let col = x;
+        const row = region.lines[relY]!;
 
-        for (let i = 0; i < line.length; i++) {
-            if (col < 0) {
-                col++;
-                continue;
-            }
-
-            if (col >= this.width) {
-                break;
-            }
-
-            if (clip) {
-                if (clip.x1 !== undefined && col < clip.x1) {
-                    col++;
-                    continue;
-                }
-
-                if (clip.x2 !== undefined && col >= clip.x2) {
-                    break;
-                }
-
-                if (clip.y1 !== undefined && y < clip.y1) {
-                    return;
-                }
-
-                if (clip.y2 !== undefined && y >= clip.y2) {
-                    return;
-                }
-            }
-
-            const value = line.getValue(i);
-            const flags = line.getFormatFlags(i);
-            const fgColor = line.getFgColor(i);
-            const bgColor = line.getBgColor(i);
-            const link = line.getLink(i);
-            const isFullWidth = line.getFullWidth(i);
-
-            row.setCharFast(col, value, flags, fgColor, bgColor, link);
-            col++;
-
-            if (isFullWidth && col < this.width) {
-                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
-                col++;
-            }
-        }
+        this.writeStyledLineToRow(row, x - region.absX, line, region.width);
     }
 
     /**
-     * Write pre-tokenized StyledChar[] to the grid (backward compat).
+     * Write pre-tokenized StyledChar[] to the active region.
+     * Coordinates are absolute; translated to region-relative internally.
      */
     writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
-        if (styledChars.length === 0 || y < 0 || y >= this.outputGrid.length) {
+        const region = this.getActiveRegion();
+        const relY = y - region.absY;
+
+        if (styledChars.length === 0 || relY < 0 || relY >= region.lines.length) {
             return;
         }
 
-        const clip = this.clipStack.at(-1);
-        const row = this.outputGrid[y]!;
+        const row = region.lines[relY]!;
         const source = styledCharsToStyledLine(styledChars);
-        let col = x;
 
-        for (let i = 0; i < source.length; i++) {
-            if (col < 0) {
-                col++;
-                continue;
-            }
-
-            if (col >= this.width) {
-                break;
-            }
-
-            if (clip) {
-                if (clip.x1 !== undefined && col < clip.x1) {
-                    col++;
-                    continue;
-                }
-
-                if (clip.x2 !== undefined && col >= clip.x2) {
-                    break;
-                }
-
-                if (clip.y1 !== undefined && y < clip.y1) {
-                    return;
-                }
-
-                if (clip.y2 !== undefined && y >= clip.y2) {
-                    return;
-                }
-            }
-
-            const value = source.getValue(i);
-            const flags = source.getFormatFlags(i);
-            const fgColor = source.getFgColor(i);
-            const bgColor = source.getBgColor(i);
-            const link = source.getLink(i);
-            const isFullWidth = source.getFullWidth(i);
-
-            row.setCharFast(col, value, flags, fgColor, bgColor, link);
-            col++;
-
-            if (isFullWidth && col < this.width) {
-                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
-                col++;
-            }
-        }
+        this.writeStyledLineToRow(row, x - region.absX, source, region.width);
     }
 
-    clip(clip: Clip): void {
-        this.clipStack.push(clip);
-    }
-
-    unclip(): void {
-        this.clipStack.pop();
-    }
-
+    /**
+     * Get the current clip bounds (from the active region's absolute position).
+     * Used by render-node-to-output for visibility culling.
+     */
     getCurrentClip(): Clip | undefined {
-        return this.clipStack.at(-1);
+        if (this.regionStack.length <= 1) {
+            return undefined;
+        }
+
+        const region = this.getActiveRegion();
+
+        return {
+            x1: region.absX,
+            x2: region.absX + region.width,
+            y1: region.absY,
+            y2: region.absY + region.height,
+        };
     }
 
     /**
@@ -540,11 +500,15 @@ export default class Output {
      * region's lines are shared by reference.
      */
     addRegionTree(region: import("./region").Region, x: number, y: number): void {
-        // Composite each line of the cached region onto our grid
-        for (let ry = 0; ry < region.height; ry++) {
-            const targetY = y + ry;
+        const active = this.getActiveRegion();
+        const relX = x - active.absX;
+        const relY = y - active.absY;
 
-            if (targetY < 0 || targetY >= this.outputGrid.length) {
+        // Composite each line of the cached region onto the active region
+        for (let ry = 0; ry < region.height; ry++) {
+            const targetY = relY + ry;
+
+            if (targetY < 0 || targetY >= active.lines.length) {
                 continue;
             }
 
@@ -554,10 +518,10 @@ export default class Output {
                 continue;
             }
 
-            const dstRow = this.outputGrid[targetY]!;
+            const dstRow = active.lines[targetY]!;
 
             for (let rx = 0; rx < srcLine.length; rx++) {
-                const targetX = x + rx;
+                const targetX = relX + rx;
 
                 if (targetX < 0 || targetX >= dstRow.length) {
                     continue;
@@ -589,8 +553,48 @@ export default class Output {
      * Generate ANSI output from the grid. No replay step needed —
      * writes have already been applied directly.
      */
+    /**
+     * Get the active region (top of stack).
+     */
+    private getActiveRegion(): RegionEntry {
+        return this.regionStack.at(-1) ?? this.rootRegion;
+    }
+
+    /**
+     * Write a StyledLine source into a row at position x.
+     */
+    private writeStyledLineToRow(row: StyledLine, x: number, source: StyledLine, maxWidth: number): void {
+        let col = x;
+
+        for (let i = 0; i < source.length; i++) {
+            if (col >= maxWidth) {
+                break;
+            }
+
+            if (col >= 0) {
+                const value = source.getValue(i);
+                const flags = source.getFormatFlags(i);
+                const fgColor = source.getFgColor(i);
+                const bgColor = source.getBgColor(i);
+                const link = source.getLink(i);
+
+                row.setCharFast(col, value, flags, fgColor, bgColor, link);
+
+                if (source.getFullWidth(i)) {
+                    col++;
+
+                    if (col >= 0 && col < maxWidth) {
+                        row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                    }
+                }
+            }
+
+            col++;
+        }
+    }
+
     get(): { height: number; output: string } {
-        const output = this.outputGrid;
+        const output = this.rootRegion.lines;
 
         if (!this.lineMemoizationEnabled) {
             if (this.memoizationProbeCountdown > 0) {
@@ -655,7 +659,7 @@ export default class Output {
      * Convert to Uint32Array for the native Rust renderer.
      */
     getBuffer(): { buffer: Uint32Array; height: number } {
-        const output = this.outputGrid;
+        const output = this.rootRegion.lines;
         const rows = output.length;
         const buffer = new Uint32Array(this.width * rows * 2);
 
@@ -706,14 +710,14 @@ export default class Output {
         return { buffer, height: rows };
     }
 
-    private createGrid(width: number, height: number): StyledLine[] {
-        const grid: StyledLine[] = [];
+    private createRegionEntry(absX: number, absY: number, width: number, height: number): RegionEntry {
+        const lines: StyledLine[] = [];
 
         for (let y = 0; y < height; y++) {
-            grid.push(StyledLine.empty(width));
+            lines.push(StyledLine.empty(width));
         }
 
-        return grid;
+        return { absX, absY, height, lines, width };
     }
 
     private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { lines: string[]; x: number } {

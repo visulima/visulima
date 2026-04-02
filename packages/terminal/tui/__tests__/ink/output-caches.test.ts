@@ -283,7 +283,7 @@ describe("output-caches", () => {
         expect(output.get().output).toBe("\n");
     });
 
-    it("clip applies horizontal and vertical bounds to writes", () => {
+    it("startChildRegion applies horizontal and vertical bounds to writes", () => {
         expect.assertions(1);
 
         const output = new Output({
@@ -291,14 +291,14 @@ describe("output-caches", () => {
             width: 6,
         });
 
-        output.clip({ x1: 1, x2: 5, y1: 0, y2: 2 });
+        output.startChildRegion(1, 0, 4, 2);
         output.write(0, 0, "ABCDE\nFGHIJ", { transformers: [] });
-        output.unclip();
+        output.endChildRegion();
 
         expect(output.get().output).toBe(" BCDE\n GHIJ");
     });
 
-    it("clip can apply vertical-only bounds", () => {
+    it("startChildRegion can apply vertical-only bounds", () => {
         expect.assertions(1);
 
         const output = new Output({
@@ -306,9 +306,9 @@ describe("output-caches", () => {
             width: 8,
         });
 
-        output.clip({ x1: undefined, x2: undefined, y1: 1, y2: 2 });
+        output.startChildRegion(0, 1, 8, 1);
         output.write(0, 0, "top\nbottom", { transformers: [] });
-        output.unclip();
+        output.endChildRegion();
 
         expect(output.get().output).toBe("\nbottom");
     });

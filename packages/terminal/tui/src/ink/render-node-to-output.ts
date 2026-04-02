@@ -390,7 +390,12 @@ const renderNodeToOutput = (
                 const y1 = clipVertically ? y + borderTop : undefined;
                 const y2 = clipVertically ? y + yogaNode.getComputedHeight() - borderBottom : undefined;
 
-                output.clip({ x1, x2, y1, y2 });
+                const regionX = x1 ?? x;
+                const regionY = y1 ?? y;
+                const regionW = (x2 ?? (x + yogaNode.getComputedWidth())) - regionX;
+                const regionH = (y2 ?? (y + yogaNode.getComputedHeight())) - regionY;
+
+                output.startChildRegion(regionX, regionY, Math.max(0, regionW), Math.max(0, regionH));
                 clipped = true;
 
                 // Apply scroll offsets for children
@@ -515,7 +520,7 @@ const renderNodeToOutput = (
             }
 
             if (clipped) {
-                output.unclip();
+                output.endChildRegion();
             }
         }
     }
