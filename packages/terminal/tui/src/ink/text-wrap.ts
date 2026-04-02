@@ -298,22 +298,131 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
     return line.slice(0, endIdx).combine(ellipsis);
 };
 
+/**
+ * Word-wrap a StyledLine at column boundaries. Operates natively on StyledLine
+ * using slice() to preserve styles through wrap boundaries.
+ */
 const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
-    // For wrapping, delegate to StyledChar-based implementation and convert back.
-    // This preserves the complex word-wrap logic while providing StyledLine output.
-    const { styledCharsToStyledLine } = require("./styled-line-bridge") as typeof import("./styled-line-bridge");
-    const chars: StyledChar[] = [];
+    const rows: StyledLine[] = [new StyledLine()];
 
-    for (const entry of line) {
-        chars.push({
-            fullWidth: entry.fullWidth,
-            styles: [],
-            type: "char",
-            value: entry.value,
-        });
+    // Split into words (space/newline boundaries)
+    type Word = { end: number; start: number };
+    const words: Word[] = [];
+    let wordStart = 0;
+    let inWord = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const val = line.getValue(i);
+
+        if (val === "\n" || val === " ") {
+            if (inWord) {
+                words.push({ end: i, start: wordStart });
+                inWord = false;
+            }
+
+            // Space/newline is its own "word"
+            words.push({ end: i + 1, start: i });
+        } else if (!inWord) {
+            wordStart = i;
+            inWord = true;
+        }
     }
 
-    const wrapped = wrapStyledChars(chars, columns);
+    if (inWord) {
+        words.push({ end: line.length, start: wordStart });
+    }
 
-    return wrapped.map((charLine) => styledCharsToStyledLine(charLine));
+    let isAtStartOfLogicalLine = true;
+
+    for (const word of words) {
+        const wordSlice = line.slice(word.start, word.end);
+        const firstVal = line.getValue(word.start);
+
+        if (firstVal === "\n") {
+            rows.push(new StyledLine());
+            isAtStartOfLogicalLine = true;
+            continue;
+        }
+
+        const wordWidth = styledLineWidth(wordSlice);
+        const rowWidth = styledLineWidth(rows.at(-1)!);
+
+        if (rowWidth + wordWidth > columns) {
+            if (!isAtStartOfLogicalLine && firstVal === " " && word.end - word.start === 1) {
+                continue;
+            }
+
+            // Remove trailing spaces from current line
+            if (!isAtStartOfLogicalLine) {
+                const currentRow = rows.at(-1)!;
+                let trimIdx = currentRow.length;
+
+                while (trimIdx > 0 && currentRow.getValue(trimIdx - 1) === " ") {
+                    trimIdx--;
+                }
+
+                if (trimIdx < currentRow.length) {
+                    rows[rows.length - 1] = currentRow.slice(0, trimIdx);
+                }
+            }
+
+            if (wordWidth > columns) {
+                // Word is wider than column — break it character by character
+                if (rowWidth > 0) {
+                    rows.push(new StyledLine());
+                }
+
+                wrapWordStyledLine(rows, wordSlice, columns);
+            } else {
+                rows.push(wordSlice.clone());
+            }
+        } else {
+            // Append word to current row
+            const currentRow = rows.at(-1)!;
+
+            if (currentRow.length === 0) {
+                rows[rows.length - 1] = wordSlice.clone();
+            } else {
+                rows[rows.length - 1] = currentRow.combine(wordSlice);
+            }
+        }
+
+        if (isAtStartOfLogicalLine && !(firstVal === " " && word.end - word.start === 1)) {
+            isAtStartOfLogicalLine = false;
+        }
+    }
+
+    return rows;
+};
+
+/**
+ * Break a single word across multiple lines when it's wider than columns.
+ */
+const wrapWordStyledLine = (rows: StyledLine[], word: StyledLine, columns: number): void => {
+    let currentRow = rows.at(-1)!;
+    let visible = styledLineWidth(currentRow);
+
+    for (let i = 0; i < word.length; i++) {
+        const charWidth = inkCharacterWidth(word.getValue(i));
+
+        if (visible + charWidth > columns && visible > 0) {
+            rows.push(new StyledLine());
+            currentRow = rows.at(-1)!;
+            visible = 0;
+        }
+
+        const charSlice = word.slice(i, i + 1);
+
+        if (currentRow.length === 0) {
+            rows[rows.length - 1] = charSlice;
+            currentRow = charSlice;
+        } else {
+            const combined = currentRow.combine(charSlice);
+
+            rows[rows.length - 1] = combined;
+            currentRow = combined;
+        }
+
+        visible += charWidth;
+    }
 };
