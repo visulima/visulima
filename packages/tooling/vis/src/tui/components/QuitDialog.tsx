@@ -12,10 +12,10 @@ const QuitDialog = ({ countdown }: QuitDialogProps): React.JSX.Element => (
     <Box flexDirection="column">
         {/* Header */}
         <Box gap={1}>
-            <Text bold color="cyan" inverse>
+            <Text bold inverse>
                 {" VIS "}
             </Text>
-            <Text bold color="cyan">
+            <Text bold color="white">
                 Exiting in
                 {" "}
                 {countdown}
@@ -24,34 +24,34 @@ const QuitDialog = ({ countdown }: QuitDialogProps): React.JSX.Element => (
         </Box>
 
         <Box marginBottom={1} marginTop={1}>
-            <Text color="cyan" dimColor>
+            <Text dimColor>
                 {"\u2500".repeat(54)}
             </Text>
         </Box>
 
         <Box>
-            <Text color="cyan">{" \u2022 "}</Text>
+            <Text dimColor>{" \u2022 "}</Text>
             <Text>
                 {"Press "}
-                <Text bold color="cyan">
+                <Text bold color="white">
                     {" q "}
                 </Text>
                 {" to exit or "}
-                <Text bold color="cyan">
+                <Text bold color="white">
                     {" any key "}
                 </Text>
                 {" to stay"}
             </Text>
         </Box>
         <Box paddingLeft={3}>
-            <Text>and explore the results interactively.</Text>
+            <Text dimColor>and explore the results interactively.</Text>
         </Box>
 
         <Box marginTop={1} />
 
         <Box>
-            <Text color="cyan">{" \u2022 "}</Text>
-            <Text>Configure the TUI in the docs:</Text>
+            <Text dimColor>{" \u2022 "}</Text>
+            <Text dimColor>Configure the TUI in the docs:</Text>
         </Box>
         <Box marginTop={1} paddingLeft={3}>
             <Text bold color="cyan" underline>

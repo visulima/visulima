@@ -25,7 +25,7 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
         return (
             <Box>
                 <Box width={3}>
-                    <Text color="cyan">
+                    <Text color="white">
                         <Spinner type="dots" />
                     </Text>
                 </Box>
@@ -68,7 +68,7 @@ const TaskRow = ({ row }: TaskRowProps): React.JSX.Element => {
     // Completed states: success, failure, cache, skipped
     const icon = status === "failure" ? <Text color="red">{CROSS}</Text> : <Text color="green">{TICK}</Text>;
     const dur = row.duration === undefined ? DASH : formatMs(row.duration);
-    const cache = isCacheStatus(status) ? <Text color="cyan">yes</Text> : <Text dimColor>{DASH}</Text>;
+    const cache = isCacheStatus(status) ? <Text dimColor>cached</Text> : <Text dimColor>{DASH}</Text>;
 
     return (
         <Box>
