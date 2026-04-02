@@ -291,6 +291,112 @@ export class StyledLine {
         this.mergeSpans();
     }
 
+    /**
+     * Overwrite a range of this line with content from a source StyledLine.
+     * More efficient than calling setChar() per character because it does
+     * a single span split + rebuild instead of per-character span manipulation.
+     *
+     * @param destStart — start index in this line
+     * @param source — the StyledLine to copy from
+     * @param srcStart — start index in source (default 0)
+     * @param count — number of characters to copy (default: source.length)
+     */
+    writeFrom(destStart: number, source: StyledLine, srcStart = 0, count?: number): void {
+        const n = count ?? source.length - srcStart;
+
+        if (n <= 0 || destStart >= this.length) {
+            return;
+        }
+
+        this.ensureInitialized();
+
+        const actualCount = Math.min(n, this.length - destStart, source.length - srcStart);
+
+        // Rebuild text in the destination range
+        const destTextStart = this.charData![destStart]! & 0x7f_ff;
+        const destTextEnd = destStart + actualCount < this.length ? this.charData![destStart + actualCount]! & 0x7f_ff : this.text!.length;
+
+        // Build new text segment from source
+        let newSegment = "";
+
+        for (let i = 0; i < actualCount; i++) {
+            newSegment += source.getValue(srcStart + i);
+        }
+
+        const oldSegLen = destTextEnd - destTextStart;
+        const diff = newSegment.length - oldSegLen;
+
+        this.text = this.text!.slice(0, destTextStart) + newSegment + this.text!.slice(destTextEnd);
+
+        // Update charData offsets
+        let offset = destTextStart;
+
+        for (let i = 0; i < actualCount; i++) {
+            const srcFullWidth = source.getFullWidth(srcStart + i);
+
+            this.charData![destStart + i] = offset | (srcFullWidth ? 0x80_00 : 0);
+            offset += source.getValue(srcStart + i).length;
+        }
+
+        // Shift subsequent offsets
+        if (diff !== 0) {
+            for (let i = destStart + actualCount; i < this.length; i++) {
+                const data = this.charData![i]!;
+
+                this.charData![i] = ((data & 0x7f_ff) + diff) | (data & 0x80_00);
+            }
+        }
+
+        // Replace spans in the range
+        this.splitSpansAt(destStart);
+        this.splitSpansAt(destStart + actualCount);
+
+        // Build new spans from source for the range
+        const newSpans: StyleSpan[] = [];
+        let srcSpanStart = 0;
+
+        for (const span of source.getSpans()) {
+            const spanEnd = srcSpanStart + span.length;
+            const overlapStart = Math.max(srcStart, srcSpanStart);
+            const overlapEnd = Math.min(srcStart + actualCount, spanEnd);
+
+            if (overlapStart < overlapEnd) {
+                newSpans.push({ ...span, length: overlapEnd - overlapStart });
+            }
+
+            srcSpanStart = spanEnd;
+
+            if (srcSpanStart >= srcStart + actualCount) {
+                break;
+            }
+        }
+
+        // Replace the affected span range
+        let destSpanIdx = 0;
+        let destSpanOffset = 0;
+
+        for (let i = 0; i < this.spans!.length; i++) {
+            if (destSpanOffset === destStart) {
+                destSpanIdx = i;
+                break;
+            }
+
+            destSpanOffset += this.spans![i]!.length;
+        }
+
+        // Find how many spans to remove (those covering destStart..destStart+actualCount)
+        let removeCount = 0;
+        let covered = 0;
+
+        for (let i = destSpanIdx; i < this.spans!.length && covered < actualCount; i++) {
+            covered += this.spans![i]!.length;
+            removeCount++;
+        }
+
+        this.spans!.splice(destSpanIdx, removeCount, ...newSpans);
+        this.mergeSpans();
+    }
+
     pushChar(value: string, formatFlags: number, fgColor?: string, bgColor?: string, link?: string): void {
         this.ensureInitialized();
 

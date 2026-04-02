@@ -833,9 +833,7 @@ export default class Output {
 
             row.setChar(offsetX, value, flags, fgColor, bgColor, link);
 
-            const isFullWidth = parsed.getFullWidth(i);
-
-            if (isFullWidth) {
+            if (parsed.getFullWidth(i)) {
                 offsetX++;
 
                 if (offsetX < row.length) {
