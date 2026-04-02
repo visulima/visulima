@@ -299,130 +299,102 @@ const truncateStyledLine = (line: StyledLine, columns: number, position: "end" |
 };
 
 /**
- * Word-wrap a StyledLine at column boundaries. Operates natively on StyledLine
- * using slice() to preserve styles through wrap boundaries.
+ * Word-wrap a StyledLine at column boundaries. Uses index-based tracking
+ * and only calls line.slice() when emitting a finished row — avoids creating
+ * intermediate StyledLine objects for each word.
+ *
+ * Ported from jacob314/ink (Google LLC, Apache-2.0).
  */
 const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
-    const rows: StyledLine[] = [new StyledLine()];
-
-    // Split into words (space/newline boundaries)
-    type Word = { end: number; start: number };
-    const words: Word[] = [];
-    let wordStart = 0;
-    let inWord = false;
-
-    for (let i = 0; i < line.length; i++) {
-        const val = line.getValue(i);
-
-        if (val === "\n" || val === " ") {
-            if (inWord) {
-                words.push({ end: i, start: wordStart });
-                inWord = false;
-            }
-
-            // Space/newline is its own "word"
-            words.push({ end: i + 1, start: i });
-        } else if (!inWord) {
-            wordStart = i;
-            inWord = true;
-        }
-    }
-
-    if (inWord) {
-        words.push({ end: line.length, start: wordStart });
-    }
-
+    const rows: StyledLine[] = [];
+    let currentRowStart = 0;
+    let currentRowWidth = 0;
     let isAtStartOfLogicalLine = true;
 
-    for (const word of words) {
-        const wordSlice = line.slice(word.start, word.end);
-        const firstVal = line.getValue(word.start);
+    let i = 0;
+
+    while (i < line.length) {
+        const firstVal = line.getValue(i);
 
         if (firstVal === "\n") {
-            rows.push(new StyledLine());
+            rows.push(line.slice(currentRowStart, i));
+            currentRowStart = i + 1;
+            currentRowWidth = 0;
             isAtStartOfLogicalLine = true;
+            i++;
             continue;
         }
 
-        const wordWidth = styledLineWidth(wordSlice);
-        const rowWidth = styledLineWidth(rows.at(-1)!);
+        // Find word/delimiter boundary
+        let j = i;
+        let wordWidth = 0;
 
-        if (rowWidth + wordWidth > columns) {
-            if (!isAtStartOfLogicalLine && firstVal === " " && word.end - word.start === 1) {
+        if (firstVal === " ") {
+            wordWidth = inkCharacterWidth(" ");
+            j = i + 1;
+        } else {
+            while (j < line.length && line.getValue(j) !== " " && line.getValue(j) !== "\n") {
+                wordWidth += inkCharacterWidth(line.getValue(j));
+                j++;
+            }
+        }
+
+        // Word/space is [i, j)
+        if (currentRowWidth + wordWidth > columns && currentRowWidth > 0) {
+            if (firstVal === " " && !isAtStartOfLogicalLine && !line.hasStyles(i)) {
+                // Drop unstyled space that causes wrap
+                i = j;
                 continue;
             }
 
-            // Remove trailing spaces from current line
-            if (!isAtStartOfLogicalLine) {
-                const currentRow = rows.at(-1)!;
-                let trimIdx = currentRow.length;
+            // Wrap: finish previous row, trim trailing unstyled spaces
+            let trimEnd = i;
 
-                while (trimIdx > 0 && currentRow.getValue(trimIdx - 1) === " ") {
-                    trimIdx--;
-                }
-
-                if (trimIdx < currentRow.length) {
-                    rows[rows.length - 1] = currentRow.slice(0, trimIdx);
-                }
+            while (trimEnd > currentRowStart && line.getValue(trimEnd - 1) === " " && !line.hasStyles(trimEnd - 1)) {
+                trimEnd--;
             }
 
-            if (wordWidth > columns) {
-                // Word is wider than column — break it character by character
-                if (rowWidth > 0) {
-                    rows.push(new StyledLine());
-                }
-
-                wrapWordStyledLine(rows, wordSlice, columns);
-            } else {
-                rows.push(wordSlice.clone());
-            }
-        } else {
-            // Append word to current row
-            const currentRow = rows.at(-1)!;
-
-            if (currentRow.length === 0) {
-                rows[rows.length - 1] = wordSlice.clone();
-            } else {
-                rows[rows.length - 1] = currentRow.combine(wordSlice);
-            }
+            rows.push(line.slice(currentRowStart, trimEnd));
+            currentRowStart = i;
+            currentRowWidth = 0;
+            continue;
         }
 
-        if (isAtStartOfLogicalLine && !(firstVal === " " && word.end - word.start === 1)) {
+        if (currentRowWidth === 0 && wordWidth > columns) {
+            // Hard wrap long word
+            let k = i;
+            let chunkWidth = 0;
+
+            while (k < j) {
+                const cw = inkCharacterWidth(line.getValue(k));
+
+                if (chunkWidth + cw > columns && chunkWidth > 0) {
+                    rows.push(line.slice(currentRowStart, k));
+                    currentRowStart = k;
+                    chunkWidth = 0;
+                }
+
+                chunkWidth += cw;
+                k++;
+            }
+
+            currentRowWidth = chunkWidth;
+            i = j;
             isAtStartOfLogicalLine = false;
+        } else {
+            // Fit
+            currentRowWidth += wordWidth;
+            i = j;
+
+            if (firstVal !== " ") {
+                isAtStartOfLogicalLine = false;
+            }
         }
+    }
+
+    if (currentRowStart < line.length || rows.length === 0) {
+        rows.push(line.slice(currentRowStart));
     }
 
     return rows;
-};
-
-/**
- * Break a single word across multiple lines when it's wider than columns.
- */
-const wrapWordStyledLine = (rows: StyledLine[], word: StyledLine, columns: number): void => {
-    let currentRow = rows.at(-1)!;
-    let visible = styledLineWidth(currentRow);
-
-    for (let i = 0; i < word.length; i++) {
-        const charWidth = inkCharacterWidth(word.getValue(i));
-
-        if (visible + charWidth > columns && visible > 0) {
-            rows.push(new StyledLine());
-            currentRow = rows.at(-1)!;
-            visible = 0;
-        }
-
-        const charSlice = word.slice(i, i + 1);
-
-        if (currentRow.length === 0) {
-            rows[rows.length - 1] = charSlice;
-            currentRow = charSlice;
-        } else {
-            const combined = currentRow.combine(charSlice);
-
-            rows[rows.length - 1] = combined;
-            currentRow = combined;
-        }
-
-        visible += charWidth;
-    }
 };
