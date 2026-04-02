@@ -185,7 +185,7 @@ export default function Dialog({
 
                 {/* Footer — fixed below scroll area */}
                 {footer && (
-                    <Box flexShrink={0} justifyContent="center" paddingX={paddingX}>
+                    <Box alignItems="center" flexDirection="column" flexShrink={0} marginTop={1} paddingX={paddingX}>
                         {footer}
                     </Box>
                 )}

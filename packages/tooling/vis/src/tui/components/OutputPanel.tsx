@@ -88,7 +88,7 @@ const OutputPanel = ({ focused, output, scrollRef, status, taskId }: OutputPanel
             </Box>
 
             {/* Output content — scrollable */}
-            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} followOutput paddingX={2} scrollbar scrollbarColor="gray">
+            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} followOutput paddingX={2} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 {lines.map((line, i) => (
                     <Text key={String(i)}>{line}</Text>
                 ))}

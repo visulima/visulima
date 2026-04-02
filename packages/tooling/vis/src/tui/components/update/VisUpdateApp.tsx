@@ -2,6 +2,7 @@ import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
+import QuitDialog from "../QuitDialog";
 import PackageDetailPanel from "./PackageDetailPanel";
 import PackageListPanel from "./PackageListPanel";
 import type { FilterType } from "./UpdateStore";
@@ -24,12 +25,14 @@ const FILTER_KEYS: Record<string, FilterType> = {
 // ── Component ───────────────────────────────────────────────────────────
 
 interface VisUpdateAppProps {
+    /** 0 = no auto-exit (default), >0 = countdown seconds */
+    autoExitSeconds?: number;
     changelogUrls?: Map<string, string>;
     isDryRun: boolean;
     store: UpdateStore;
 }
 
-const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): React.JSX.Element => {
+const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: VisUpdateAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -40,6 +43,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     const confirmScrollRef = useRef<ScrollViewRef>(null);
     const [listScrollOffset, setListScrollOffset] = useState(0);
     const [confirmVisible, setConfirmVisible] = useState(false);
+    const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
     const filteredEntries = useMemo(() => store.getFilteredEntries(), [state.entries, state.filterType, state.filterText]);
 
@@ -108,6 +112,11 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
                 return;
             }
 
+            // Quit dialog handles its own input
+            if (quitDialogVisible) {
+                return;
+            }
+
             // Confirm dialog — u/Enter confirms, Esc/q cancels, arrows scroll
             if (confirmVisible) {
                 if (input === "u" || key.return) {
@@ -135,7 +144,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
                     setHelpVisible(false);
                 } else if (input === "q") {
                     setHelpVisible(false);
-                    exit();
+                    setQuitDialogVisible(true);
                 } else if (key.downArrow || input === "j") {
                     helpScrollRef.current?.scrollBy(1);
                 } else if (key.upArrow || input === "k") {
@@ -146,7 +155,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
 
             // Global
             if (input === "?") { setHelpVisible(true); return; }
-            if (input === "q") { exit(); return; }
+            if (input === "q") { setQuitDialogVisible(true); return; }
             if (key.tab) { store.setFocusedPanel(state.focusedPanel === "list" ? "detail" : "list"); return; }
 
             // Filter type shortcuts
@@ -402,6 +411,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
                 </Box>
                 {footer}
                 {confirmDialog}
+                <QuitDialog autoExitSeconds={autoExitSeconds || 3} onCancel={() => setQuitDialogVisible(false)} visible={quitDialogVisible} />
                 {helpPopup}
             </Box>
         );
@@ -417,6 +427,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             <Box flexGrow={1}>{detailPanel}</Box>
             {footer}
             {confirmDialog}
+            <QuitDialog autoExitSeconds={autoExitSeconds || 3} onCancel={() => setQuitDialogVisible(false)} visible={quitDialogVisible} />
             {helpPopup}
         </Box>
     );

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, ProgressBar, Spinner, Text } from "@visulima/tui";
+import { Box, Spinner, Text, useWindowSize } from "@visulima/tui";
 
 export interface CheckProgressProps {
     readonly current: number;
@@ -7,25 +7,31 @@ export interface CheckProgressProps {
 }
 
 export default function CheckProgressApp({ current, total }: CheckProgressProps): React.ReactElement {
+    const { columns: termColumns } = useWindowSize();
+    const cols = termColumns || 80;
     const percent = total > 0 ? current / total : 0;
     const pctText = `${String(Math.round(percent * 100))}%`;
 
+    // Reserve: 2 padding + percentage text (~5)
+    const barWidth = Math.max(10, cols - 4);
+    const filled = Math.round(barWidth * percent);
+    const empty = barWidth - filled;
+
     return (
-        <Box flexDirection="column">
+        <Box flexDirection="column" paddingX={1} marginTop={1}>
             <Box>
                 <Spinner type="dots" />
                 <Text>
-                    {" "}
-                    Checking {String(total)} catalog dependencies…
-                    <Text dimColor>
-                        {" "}
-                        {String(current)}/{String(total)}
-                    </Text>
+                    {" "}Checking {String(total)} catalog dependencies{" "}
+                </Text>
+                <Text dimColor>
+                    {String(current)}/{String(total)}
                 </Text>
             </Box>
             <Box>
-                <ProgressBar color="cyan" percent={percent} right={6} />
-                <Text dimColor> {pctText}</Text>
+                <Text color="cyan">{"\u2501".repeat(filled)}</Text>
+                <Text dimColor>{"\u2500".repeat(empty)}</Text>
+                <Text> {pctText}</Text>
             </Box>
         </Box>
     );

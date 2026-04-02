@@ -1,64 +1,96 @@
-import { Box, Text } from "@visulima/tui";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Box, Dialog, Text, useApp, useInput } from "@visulima/tui";
 
 interface QuitDialogProps {
-    countdown: number;
+    /** Countdown seconds. 0 = no auto-exit. */
+    readonly autoExitSeconds: number;
+    /** Called when the user cancels (any key except q). */
+    readonly onCancel: () => void;
+    /** Whether the dialog is visible. */
+    readonly visible: boolean;
 }
 
 /**
- * Content for the quit confirmation dialog.
- * Rendered inside a Dialog component by VisTaskRunnerApp.
+ * Reusable quit confirmation dialog with countdown timer.
+ * Shows a countdown, then auto-exits. Any key cancels the countdown.
+ * Press q to exit immediately.
  */
-const QuitDialog = ({ countdown }: QuitDialogProps): React.JSX.Element => (
-    <Box flexDirection="column">
-        {/* Header */}
-        <Box gap={1}>
-            <Text bold inverse>
-                {" VIS "}
-            </Text>
-            <Text bold color="white">
-                Exiting in
-                {" "}
-                {countdown}
-                ...
-            </Text>
-        </Box>
+const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): React.JSX.Element | null => {
+    const { exit } = useApp();
+    const [countdown, setCountdown] = useState(autoExitSeconds || 3);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const openedAtRef = useRef(0);
 
-        <Box marginBottom={1} marginTop={1}>
-            <Text dimColor>
-                {"\u2500".repeat(54)}
-            </Text>
-        </Box>
+    // Reset countdown when dialog opens
+    useEffect(() => {
+        if (visible) {
+            setCountdown(autoExitSeconds || 3);
+            openedAtRef.current = Date.now();
 
-        <Box>
-            <Text dimColor>{" \u2022 "}</Text>
-            <Text>
-                {"Press "}
-                <Text bold color="white">
-                    {" q "}
+            timerRef.current = setInterval(() => {
+                setCountdown((c) => c - 1);
+            }, 1000);
+        }
+
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+        };
+    }, [visible, autoExitSeconds]);
+
+    // Exit when countdown reaches 0
+    useEffect(() => {
+        if (countdown <= 0 && visible) {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+
+            exit();
+        }
+    }, [countdown, visible, exit]);
+
+    const handleCancel = useCallback(() => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+
+        onCancel();
+    }, [onCancel]);
+
+    useInput(
+        (input, _key) => {
+            // Debounce the `q` that opened the dialog
+            if (Date.now() - openedAtRef.current < 200) {
+                return;
+            }
+
+            if (input === "q") {
+                exit();
+            } else {
+                handleCancel();
+            }
+        },
+        { isActive: visible },
+    );
+
+    return (
+        <Dialog
+            footer={
+                <Text dimColor>
+                    Press <Text bold color="white">q</Text> to exit, <Text bold color="white">any key</Text> to stay
                 </Text>
-                {" to exit or "}
-                <Text bold color="white">
-                    {" any key "}
-                </Text>
-                {" to stay"}
-            </Text>
-        </Box>
-        <Box paddingLeft={3}>
-            <Text dimColor>and explore the results interactively.</Text>
-        </Box>
-
-        <Box marginTop={1} />
-
-        <Box>
-            <Text dimColor>{" \u2022 "}</Text>
-            <Text dimColor>Configure the TUI in the docs:</Text>
-        </Box>
-        <Box marginTop={1} paddingLeft={3}>
-            <Text bold color="cyan" underline>
-                https://visulima.com/packages/vis
-            </Text>
-        </Box>
-    </Box>
-);
+            }
+            title={`Exiting in ${countdown}…`}
+            visible={visible}
+            width={50}
+        >
+            <Text dimColor>Stay to explore the results interactively.</Text>
+        </Dialog>
+    );
+};
 
 export default QuitDialog;
