@@ -8,7 +8,7 @@
 - **Phase 4**: DONE — Text pipeline fast path (toStyledLine, writeStyledLine, native wrapStyledLine)
 - **Phase 5**: DONE — Bridge retained for StyledChar tokenization (complex char combining); hot path fully on StyledLine
 - **Phase 6**: DONE — Region-based Output with startChildRegion/endChildRegion, addRegionTree, cachedRender activation
-- **Phase 7**: IN PROGRESS — StaticRender component and internalOnBeforeRender hook needed
+- **Phase 7**: DONE — StaticRender component, renderToStatic, callBeforeRender, render caching active
 
 ### TODOs resolved:
 - ~~styled-line-bridge.ts "TEMPORARY"~~ → Bridge retained, comment updated to explain why
