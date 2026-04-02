@@ -103,6 +103,10 @@ const cleanupNodeTree = (node?: DOMNode): void => {
 
     node.yogaNode?.free();
 
+    if ("cachedRender" in node) {
+        node.cachedRender = undefined;
+    }
+
     if ("childNodes" in node) {
         node.childNodes = [];
     }

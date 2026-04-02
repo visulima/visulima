@@ -19,8 +19,9 @@ const cache = new DataLimitedLruMap<Output>(10_000, 1_000_000);
 // Cache for character width lookups (single characters, bounded by Unicode range)
 const widthCache = new Map<string, number>();
 
-// Cache for styled character tokenization
-const styledCharsCache = new DataLimitedLruMap<StyledChar[]>(10_000, 1_000_000);
+// Cache for styled character tokenization. Reduced from 10k/1M to 2k/100k
+// to limit memory usage — most apps reuse the same text strings frequently.
+const styledCharsCache = new DataLimitedLruMap<StyledChar[]>(2000, 100_000);
 
 let styledCharsCacheEnabled = true;
 
