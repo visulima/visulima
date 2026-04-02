@@ -178,6 +178,19 @@ export type DOMElement = InkNode & {
 
     internal_transform?: OutputTransformer;
 
+    /**
+     * Callback invoked before each render pass. Used by StaticRender
+     * to lazily populate cachedRender on first render.
+     */
+    internalOnBeforeRender?: (node: DOMElement, options?: { trackSelection?: boolean }) => void;
+
+    /**
+     * Cached render result (a Region). When set, the entire subtree is
+     * skipped during rendering and the cached region is composited directly.
+     * Set by setCachedRender(), cleared on unmount by cleanupNodeTree().
+     */
+    cachedRender?: import("./region").Region;
+
     // Internal properties
     isStaticDirty?: boolean;
 
@@ -396,6 +409,26 @@ export const emitLayoutListeners = (rootNode: DOMElement): void => {
 
     for (const listener of rootNode.internal_layoutListeners) {
         listener();
+    }
+};
+
+/**
+ * Store a cached render result on a DOM node. Fixes the Yoga node
+ * dimensions to match the cached region and removes all Yoga children
+ * (since rendering is cached, child layout is no longer needed).
+ *
+ * Ported from jacob314/ink (Google LLC, Apache-2.0).
+ */
+export const setCachedRender = (node: DOMElement, cachedRender: import("./region").Region): void => {
+    node.cachedRender = cachedRender;
+
+    if (node.yogaNode) {
+        node.yogaNode.setWidth(cachedRender.width);
+        node.yogaNode.setHeight(cachedRender.height);
+
+        while (node.yogaNode.getChildCount() > 0) {
+            node.yogaNode.removeChild(node.yogaNode.getChild(0));
+        }
     }
 };
 
