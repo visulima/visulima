@@ -154,9 +154,12 @@ export const styledLineToString = (line: StyledLine): string => {
                 }
             }
 
-            // Emit each style change as its own SGR sequence to match
-            // chalk's per-attribute escape code output.
+            // Emit each style change as its own SGR sequence.
+            // Order: colors first, then format flags — this matches chalk's
+            // nesting convention where colors wrap format attributes.
+            // Bold and dim share SGR 22 for reset, so handle them together.
             {
+                // Colors first (outermost in chalk's nesting)
                 if (fgColor !== prevFg) {
                     if (fgColor) {
                         parts.push(sgr(colorToSgr(fgColor, true)));
@@ -173,16 +176,26 @@ export const styledLineToString = (line: StyledLine): string => {
                     }
                 }
 
-                if ((flags & BOLD_MASK) && !(prevFlags & BOLD_MASK)) {
-                    parts.push(sgr([SGR_BOLD]));
-                } else if (!(flags & BOLD_MASK) && (prevFlags & BOLD_MASK)) {
-                    parts.push(sgr([SGR_NO_BOLD]));
-                }
+                // Bold and dim share SGR 22 for reset
+                const prevBoldDim = prevFlags & (BOLD_MASK | DIM_MASK);
+                const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
 
-                if ((flags & DIM_MASK) && !(prevFlags & DIM_MASK)) {
-                    parts.push(sgr([SGR_DIM]));
-                } else if (!(flags & DIM_MASK) && (prevFlags & DIM_MASK)) {
-                    parts.push(sgr([SGR_NO_BOLD])); // SGR 22 resets both bold and dim
+                if (prevBoldDim !== newBoldDim) {
+                    const removingBold = (prevFlags & BOLD_MASK) && !(flags & BOLD_MASK);
+                    const removingDim = (prevFlags & DIM_MASK) && !(flags & DIM_MASK);
+
+                    if (removingBold || removingDim) {
+                        parts.push(sgr([SGR_NO_BOLD])); // resets both bold and dim
+                    }
+
+                    // Re-apply what's (still) active
+                    if (flags & BOLD_MASK && (!(prevFlags & BOLD_MASK) || removingDim)) {
+                        parts.push(sgr([SGR_BOLD]));
+                    }
+
+                    if (flags & DIM_MASK && (!(prevFlags & DIM_MASK) || removingBold)) {
+                        parts.push(sgr([SGR_DIM]));
+                    }
                 }
 
                 if ((flags & ITALIC_MASK) && !(prevFlags & ITALIC_MASK)) {
@@ -227,9 +240,10 @@ export const styledLineToString = (line: StyledLine): string => {
         parts.push(value);
     }
 
-    // Close any remaining styles with individual targeted resets
+    // Close any remaining styles: innermost (format flags) first, then
+    // outermost (colors) — reverse of opening order, matching chalk.
     if (hasActiveStyles) {
-        if (prevFlags & BOLD_MASK || prevFlags & DIM_MASK) {
+        if (prevFlags & (BOLD_MASK | DIM_MASK)) {
             parts.push(sgr([SGR_NO_BOLD]));
         }
 
