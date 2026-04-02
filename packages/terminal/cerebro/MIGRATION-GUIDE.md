@@ -620,6 +620,35 @@ await cli.run();
 
 ## New Features in Recent Versions
 
+### Global Options (v2.0.0+)
+
+Register options that are available to every command using `addGlobalOption()`. Global options are parsed alongside command-specific options and displayed in the help output:
+
+```typescript
+const cli = createCerebro("my-app");
+
+// Add a global --cwd option available to all commands
+cli.addGlobalOption({
+    name: "cwd",
+    type: String,
+    description: "Override working directory",
+});
+
+// Global options are accessible in commands via toolbox.options
+cli.addCommand({
+    name: "build",
+    execute: ({ options }) => {
+        const cwd = options.cwd as string | undefined;
+        // ...
+    },
+});
+```
+
+**Notes:**
+- Global options appear under "Global Options" in help output alongside built-in options
+- Cannot override built-in options (`verbose`, `debug`, `help`, `quiet`, `version`, `no-color`, `color`)
+- Use `getGlobalOptions()` to retrieve all global options (built-in + custom)
+
 ### Programmatic Command Execution (v1.1.0+)
 
 The `runCommand` method allows commands to call other commands programmatically:
