@@ -12,7 +12,7 @@ const createSingletonHighlighter = async (): Promise<Highlighter> => {
 
     const highlighterCore: unknown = await createHighlighterCore({
         // Defer loading of themes/langs to the core loader
-        themes: [import("@shikijs/themes/github-dark-default"), import("@shikijs/themes/github-light")],
+        themes: [import("@shikijs/themes/min-dark"), import("@shikijs/themes/min-light")],
         langs: [],
         engine: createJavaScriptRegexEngine(),
     });

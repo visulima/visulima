@@ -47,83 +47,37 @@
     --tw-contrast: initial: ;
 }
 
-/* ─── Brand palette ─────────────────────────────────────────────────────── */
+/* ─── Brand palette (Nothing Design System) ────────────────────────────── */
 :host {
-    --brand-violet: #7c3aed;
-    --brand-violet-light: #c4b5fd;
+    --brand-accent: #D71921;
     --brand-white: #ffffff;
-    --brand-frost: #f2f2f2;
-    --brand-silver: #d8d8d8;
-    --brand-graphite: #6b6b6b;
-    --brand-iron: #3c3c3c;
-    --brand-charcoal: #212121;
+    --brand-bg: #F5F5F5;
+    --brand-border-visible: #CCCCCC;
+    --brand-text-secondary: #666666;
+    --brand-surface-dark: #111111;
     --brand-black: #000000;
 }
 
-/* ─── Design tokens — light mode (identical to dev-toolbar) ─────────────── */
+/* ─── Design tokens — light mode (Nothing Design System) ────────────────── */
 :host {
-    /* Core zinc + violet palette */
-    --color-background: #f2f2f2; /* brand-frost */
-    --color-foreground: #18181b; /* zinc-900 */
-    --color-card: #ffffff;
-    --color-accent: #e4e4e7; /* zinc-200 — sidebar/header chrome */
-    --color-muted: #e4e4e7; /* zinc-200 */
-    --color-muted-foreground: #52525b; /* zinc-600 */
-    --color-primary: #7c3aed; /* violet-600 */
-    --color-primary-foreground: #ffffff;
-    --color-border: #d4d4d8; /* zinc-300 */
-    --color-ring: #71717a; /* zinc-500 */
-    --color-destructive: oklch(0.55 0.22 25);
-    --color-destructive-foreground: oklch(0.98 0.01 25);
-    --color-success: oklch(0.48 0.18 155);
-    --color-success-foreground: oklch(0.38 0.17 155);
-    --color-warning: oklch(0.58 0.18 65);
-    --color-info: oklch(0.45 0.2 240);
+    --color-background: #F5F5F5;
+    --color-foreground: #1A1A1A;
+    --color-card: #FFFFFF;
+    --color-accent: #F0F0F0;
+    --color-muted: #E8E8E8;
+    --color-muted-foreground: #666666;
+    --color-primary: #D71921;
+    --color-primary-foreground: #FFFFFF;
+    --color-border: #E8E8E8;
+    --color-ring: #CCCCCC;
+    --color-destructive: #D71921;
+    --color-destructive-foreground: #FFFFFF;
+    --color-success: #4A9E5C;
+    --color-success-foreground: #4A9E5C;
+    --color-warning: #D4A843;
+    --color-info: #666666;
 
-    /* Semantic aliases — ono-v-* mapped to dev-toolbar palette */
-    --ono-v-bg: var(--color-background);
-    --ono-v-surface: var(--color-card);
-    --ono-v-surface-muted: var(--color-accent); /* header/footer chrome */
-    --ono-v-border: var(--color-border);
-    --ono-v-text: var(--color-foreground);
-    --ono-v-text-muted: var(--color-muted-foreground);
-    --ono-v-primary: var(--color-primary);
-    --ono-v-red-orange: var(--color-destructive); /* error accent — kept for JS querySelector compat */
-    --ono-v-link: var(--color-primary);
-    --ono-v-chip-bg: var(--color-muted);
-    --ono-v-chip-text: var(--color-foreground);
-    --ono-v-hover-overlay: color-mix(in srgb, var(--color-foreground) 6%, transparent);
-    --ono-v-on-accent: var(--color-primary-foreground);
-    --ono-v-neutral: var(--color-muted-foreground);
-    --ono-v-neutral-bg: var(--color-muted);
-    --ono-v-success: var(--color-success);
-    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
-}
-
-/* ─── Dark mode — layered zinc-950 palette, identical to dev-toolbar ────── */
-.dark {
-    --color-background: #212121; /* zinc-950 */
-    --color-foreground: #fafafa; /* zinc-50 */
-    --color-card: #18181b; /* zinc-900 */
-    --color-accent: #18181b; /* zinc-900 — same as card in dark */
-    --color-muted: #27272a; /* zinc-800 */
-    --color-muted-foreground: #a1a1aa; /* zinc-400 */
-    --color-primary: #c4b5fd; /* violet-300 */
-    --color-primary-foreground: #09090b;
-    --color-border: oklch(1 0 0 / 10%); /* white hairline */
-    --color-ring: #71717a;
-    --color-destructive: oklch(0.65 0.2 25);
-    --color-destructive-foreground: oklch(0.98 0.01 25);
-    --color-success: oklch(0.65 0.17 155);
-    --color-success-foreground: oklch(0.78 0.15 155);
-    --color-warning: oklch(0.78 0.16 65);
-    --color-info: oklch(0.62 0.2 240);
-
-    /* ─── Resolve --ono-v-* aliases directly in dark context ──────────────
-     * The aliases on :host are resolved eagerly against :host's own cascade,
-     * so var(--color-card) on :host locks to #ffffff before dark mode fires.
-     * Redeclaring them here forces resolution inside #__v_o__root.dark where
-     * all --color-* are already the dark values above.                       */
+    /* Semantic aliases */
     --ono-v-bg: var(--color-background);
     --ono-v-surface: var(--color-card);
     --ono-v-surface-muted: var(--color-accent);
@@ -132,10 +86,49 @@
     --ono-v-text-muted: var(--color-muted-foreground);
     --ono-v-primary: var(--color-primary);
     --ono-v-red-orange: var(--color-destructive);
-    --ono-v-link: var(--color-primary);
+    --ono-v-link: var(--color-foreground);
     --ono-v-chip-bg: var(--color-muted);
     --ono-v-chip-text: var(--color-foreground);
-    --ono-v-hover-overlay: color-mix(in srgb, var(--color-primary) 8%, transparent);
+    --ono-v-hover-overlay: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+    --ono-v-on-accent: var(--color-primary-foreground);
+    --ono-v-neutral: var(--color-muted-foreground);
+    --ono-v-neutral-bg: var(--color-muted);
+    --ono-v-success: var(--color-success);
+    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+/* ─── Dark mode (Nothing Design System — OLED black) ────────────────────── */
+.dark {
+    --color-background: #000000;
+    --color-foreground: #E8E8E8;
+    --color-card: #111111;
+    --color-accent: #1A1A1A;
+    --color-muted: #222222;
+    --color-muted-foreground: #999999;
+    --color-primary: #D71921;
+    --color-primary-foreground: #FFFFFF;
+    --color-border: #222222;
+    --color-ring: #333333;
+    --color-destructive: #D71921;
+    --color-destructive-foreground: #FFFFFF;
+    --color-success: #4A9E5C;
+    --color-success-foreground: #4A9E5C;
+    --color-warning: #D4A843;
+    --color-info: #999999;
+
+    /* Resolve --ono-v-* aliases directly in dark context */
+    --ono-v-bg: var(--color-background);
+    --ono-v-surface: var(--color-card);
+    --ono-v-surface-muted: var(--color-accent);
+    --ono-v-border: var(--color-border);
+    --ono-v-text: var(--color-foreground);
+    --ono-v-text-muted: var(--color-muted-foreground);
+    --ono-v-primary: var(--color-primary);
+    --ono-v-red-orange: var(--color-destructive);
+    --ono-v-link: var(--color-foreground);
+    --ono-v-chip-bg: var(--color-muted);
+    --ono-v-chip-text: var(--color-foreground);
+    --ono-v-hover-overlay: color-mix(in srgb, #FFF 5%, transparent);
     --ono-v-on-accent: var(--color-primary-foreground);
     --ono-v-neutral: var(--color-muted-foreground);
     --ono-v-neutral-bg: var(--color-muted);
@@ -161,31 +154,24 @@
         cursor: pointer;
     }
 
-    /* JetBrains Mono → Geist Mono → system monospace — matches dev-toolbar */
+    /* Nothing Design System — Space Grotesk (body) + Space Mono (code/labels) */
     body,
     :host {
         background-color: transparent;
         color: var(--ono-v-text);
-        font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
-        font-feature-settings:
-            "kern" 1,
-            "liga" 1,
-            "calt" 1,
-            "zero" 1;
-        font-size: 13px;
-        line-height: 1.6;
+        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        font-feature-settings: "kern" 1;
+        font-size: 14px;
+        line-height: 1.5;
+        letter-spacing: -0.01em;
         -webkit-font-smoothing: antialiased;
         box-sizing: border-box;
     }
 
     pre,
     code {
-        font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
-        font-feature-settings:
-            "kern" 1,
-            "liga" 1,
-            "calt" 1,
-            "zero" 1;
+        font-family: "Space Mono", ui-monospace, "Cascadia Code", monospace;
+        font-feature-settings: "kern" 1, "zero" 1;
     }
 
     a {
@@ -197,12 +183,13 @@
     }
 
     ::selection {
-        background: color-mix(in srgb, var(--ono-v-primary) 20%, transparent);
+        background: color-mix(in srgb, var(--ono-v-primary) 15%, transparent);
     }
 
     kbd {
         background-color: var(--ono-v-chip-bg);
         color: var(--ono-v-chip-text);
+        border: 1px solid var(--ono-v-border);
         border-radius: 0;
         padding: 0.125rem 0.375rem;
         font-family: inherit;
@@ -241,7 +228,7 @@
     --ono-v-dialog-max-width: 960px;
 }
 
-/* Focus ring — violet primary matching dev-toolbar */
+/* Focus ring — text color (white dark / black light) per Nothing spec */
 button:focus-visible,
 [role="tab"]:focus-visible,
 summary:focus-visible,
@@ -250,11 +237,27 @@ input:focus-visible,
 textarea:focus-visible,
 [data-open-in-editor]:focus-visible,
 .js-clipboard:focus-visible {
-    outline: 1px solid var(--ono-v-primary);
+    outline: 1px solid var(--ono-v-text);
     outline-offset: 2px;
 }
 
-/* Icon mask system — identical to dev-toolbar */
+/* Nothing Design System — utility classes */
+.v-o-label {
+    font-family: "Space Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.v-o-loading-text {
+    font-family: "Space Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ono-v-text-muted);
+    font-size: 12px;
+}
+
+/* Icon mask system */
 .dui {
     display: inline-block;
     width: 1rem;
@@ -351,28 +354,14 @@ select#editor-selector {
    tell the browser to render the native options popup in dark OS mode. */
 .dark select#editor-selector {
     color-scheme: dark;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23999999' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
 
-/* Skeleton loader — animated sweep matching dev-toolbar pulse */
-.v-o-skeleton {
-    background: linear-gradient(90deg, var(--color-muted) 25%, color-mix(in srgb, var(--color-muted) 40%, transparent) 50%, var(--color-muted) 75%);
-    background-size: 200% 100%;
-    animation: v-o-skeleton-sweep 1.8s ease-in-out infinite;
-}
-
-@keyframes v-o-skeleton-sweep {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
-}
+/* Nothing: no skeleton loaders — use bracket text [LOADING...] instead */
 
 /* Accordion arrow on stack trace summary — rotates the .dui icon */
 #__v_o__stacktrace summary .dui {
-    transition: transform 0.2s ease;
+    transition: transform 0.15s ease-out;
 }
 
 #__v_o__stacktrace[open] summary .dui {
@@ -445,7 +434,7 @@ select#editor-selector {
 }
 
 #__v_o__balloon_count.animate-count-up {
-    animation: counter-animate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: counter-animate 0.2s ease-out forwards;
 }
 
 @keyframes counter-animate {
@@ -457,51 +446,4 @@ select#editor-selector {
     }
 }
 
-/* ─── Balloon signal indicator ─────────────────────────────────────────── */
-.v-o-signal-dot {
-    display: block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.95);
-    position: relative;
-    flex-shrink: 0;
-    animation: v-o-signal-dot 2.6s ease-in-out infinite;
-}
-
-.v-o-signal-dot::before {
-    content: "";
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.55);
-    animation: v-o-signal-ring 2.6s ease-out infinite;
-    pointer-events: none;
-}
-
-@keyframes v-o-signal-dot {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    45% {
-        transform: scale(0.65);
-        opacity: 0.4;
-    }
-}
-
-@keyframes v-o-signal-ring {
-    0% {
-        transform: scale(1);
-        opacity: 0.8;
-    }
-    65% {
-        transform: scale(2.8);
-        opacity: 0;
-    }
-    100% {
-        transform: scale(2.8);
-        opacity: 0;
-    }
-}
+/* Signal dot removed — balloon uses clean flat red button only */

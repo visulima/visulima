@@ -242,7 +242,7 @@ const generateSyntaxHighlightedFrames = async (
 
     const highlighter = await getHighlighter([hlLangCompiled, hlLangOriginal]);
     const highlightOptions = {
-        themes: { dark: "github-dark-default", light: "github-light" },
+        themes: { dark: "min-dark", light: "min-light" },
     };
 
     if (originalSnippet && originalSnippet.trim()) {
@@ -408,7 +408,7 @@ const buildExtendedErrorData = async (
                 message: primaryError.message,
                 originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
                     lang: langName,
-                    themes: { dark: "github-dark-default", light: "github-light" },
+                    themes: { dark: "min-dark", light: "min-light" },
                     transformers: [shikiDiffTransformer()],
                 }),
                 originalFileColumn: compiledColumn,
