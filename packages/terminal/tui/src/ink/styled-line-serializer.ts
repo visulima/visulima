@@ -143,40 +143,30 @@ export const styledLineToString = (line: StyledLine): string => {
         if (flags !== prevFlags || fgColor !== prevFg || bgColor !== prevBg || link !== prevLink) {
             const params: number[] = [];
 
-            // Handle link changes
+            // Handle link changes. Links prefixed with "ST:" use the ST
+            // terminator (\x1B\\); others use BEL (\x07).
             if (link !== prevLink) {
                 if (prevLink) {
-                    parts.push("\u001B]8;;\u0007"); // close link
+                    const prevUseST = prevLink.startsWith("ST:");
+
+                    parts.push(prevUseST ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007");
                 }
 
                 if (link) {
-                    parts.push(`\u001B]8;;${link}\u0007`); // open link
+                    const useST = link.startsWith("ST:");
+                    const url = useST ? link.slice(3) : link;
+                    const terminator = useST ? "\u001B\\" : "\u0007";
+
+                    parts.push(`\u001B]8;;${url}${terminator}`);
                 }
             }
 
             // Emit each style change as its own SGR sequence.
-            // Order: colors first, then format flags — this matches chalk's
-            // nesting convention where colors wrap format attributes.
-            // Bold and dim share SGR 22 for reset, so handle them together.
+            // Bold/dim resets first (since SGR 22 affects both), then new
+            // format flags, then colors. This matches chalk's common nesting
+            // pattern of format(color(text)).
             {
-                // Colors first (outermost in chalk's nesting)
-                if (fgColor !== prevFg) {
-                    if (fgColor) {
-                        parts.push(sgr(colorToSgr(fgColor, true)));
-                    } else {
-                        parts.push(sgr([SGR_FG_DEFAULT]));
-                    }
-                }
-
-                if (bgColor !== prevBg) {
-                    if (bgColor) {
-                        parts.push(sgr(colorToSgr(bgColor, false)));
-                    } else {
-                        parts.push(sgr([SGR_BG_DEFAULT]));
-                    }
-                }
-
-                // Bold and dim share SGR 22 for reset
+                // Bold and dim share SGR 22 for reset — handle first
                 const prevBoldDim = prevFlags & (BOLD_MASK | DIM_MASK);
                 const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
 
@@ -226,6 +216,23 @@ export const styledLineToString = (line: StyledLine): string => {
                     parts.push(sgr([SGR_STRIKETHROUGH]));
                 } else if (!(flags & STRIKETHROUGH_MASK) && (prevFlags & STRIKETHROUGH_MASK)) {
                     parts.push(sgr([SGR_NO_STRIKETHROUGH]));
+                }
+
+                // Colors after format flags
+                if (fgColor !== prevFg) {
+                    if (fgColor) {
+                        parts.push(sgr(colorToSgr(fgColor, true)));
+                    } else {
+                        parts.push(sgr([SGR_FG_DEFAULT]));
+                    }
+                }
+
+                if (bgColor !== prevBg) {
+                    if (bgColor) {
+                        parts.push(sgr(colorToSgr(bgColor, false)));
+                    } else {
+                        parts.push(sgr([SGR_BG_DEFAULT]));
+                    }
                 }
             }
 
@@ -278,7 +285,9 @@ export const styledLineToString = (line: StyledLine): string => {
 
     // Close any remaining link
     if (prevLink) {
-        parts.push("\u001B]8;;\u0007");
+        const useST = prevLink.startsWith("ST:");
+
+        parts.push(useST ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007");
     }
 
     return parts.join("");

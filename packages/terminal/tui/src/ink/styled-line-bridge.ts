@@ -73,10 +73,13 @@ export const ansiCodesToStyleInfo = (styles: StyledChar["styles"]): ParsedStyle 
     for (const style of styles) {
         // Check for hyperlink OSC codes
         if (style.code.startsWith("\u001B]8;")) {
-            const urlMatch = /\u001B\]8;[^;]*;(.+?)(?:\u001B\\|\u0007)/.exec(style.code);
+            const urlMatch = /\u001B\]8;[^;]*;(.+?)(\u001B\\|\u0007)/.exec(style.code);
 
             if (urlMatch?.[1]) {
-                link = urlMatch[1];
+                // Preserve the terminator format: prefix URL with "ST:" for ST terminator
+                const usesST = urlMatch[2] === "\u001B\\";
+
+                link = usesST ? `ST:${urlMatch[1]}` : urlMatch[1];
             }
 
             continue;
