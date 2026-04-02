@@ -3,18 +3,18 @@ import { Box as InkBox, renderToString as inkRenderToString, Text as InkText } f
 import React from "react";
 import { bench, describe } from "vitest";
 
-import { renderToString } from "../src/react/render-to-string";
+import { renderToString } from "../dist/react/render-to-string.js";
 
-function TuiSimpleApp() {
+const TuiSimpleApp = () {
     return React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
         React.createElement("text", { color: "green", bold: true }, "Hello World"),
         React.createElement("text", {}, "A simple line of text."),
     );
-}
+};
 
-function TuiStyledApp() {
+const TuiStyledApp = () {
     return React.createElement(
         "box",
         { flexDirection: "column", padding: 1 },
@@ -37,9 +37,9 @@ function TuiStyledApp() {
             ),
         ),
     );
-}
+};
 
-function TuiDashboardApp() {
+const TuiDashboardApp = () {
     return React.createElement(
         "box",
         { flexDirection: "column", width: 80, height: 24 },
@@ -71,18 +71,18 @@ function TuiDashboardApp() {
             ),
         ),
     );
-}
+};
 
-function InkSimpleApp() {
+const InkSimpleApp = () {
     return React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
         React.createElement(InkText, { color: "green", bold: true }, "Hello World"),
         React.createElement(InkText, {}, "A simple line of text."),
     );
-}
+};
 
-function InkStyledApp() {
+const InkStyledApp = () {
     return React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
@@ -105,9 +105,9 @@ function InkStyledApp() {
             ),
         ),
     );
-}
+};
 
-function InkDashboardApp() {
+const InkDashboardApp = () {
     return React.createElement(
         InkBox,
         { flexDirection: "column", width: 80, height: 24 },
@@ -139,7 +139,7 @@ function InkDashboardApp() {
             ),
         ),
     );
-}
+};
 
 describe("renderToString", () => {
     describe("Simple component", () => {
