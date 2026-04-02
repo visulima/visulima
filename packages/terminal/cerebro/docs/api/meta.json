@@ -1,10 +1,4 @@
 {
     "title": "API Reference",
-    "pages": [
-        "index",
-        "cli",
-        "command",
-        "plugin",
-        "types"
-    ]
+    "pages": ["index", "cli", "command", "plugin", "types"]
 }

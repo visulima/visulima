@@ -28,11 +28,11 @@ Simple command with no arguments:
 
 ```typescript
 cli.addCommand({
-  name: "hello",
-  description: "Say hello",
-  execute: ({ logger }) => {
-    logger.log("Hello!");
-  },
+    name: "hello",
+    description: "Say hello",
+    execute: ({ logger }) => {
+        logger.log("Hello!");
+    },
 });
 ```
 
@@ -42,21 +42,22 @@ Positional arguments that come after the command name:
 
 ```typescript
 cli.addCommand({
-  name: "greet",
-  description: "Greet someone",
-  argument: {
-    name: "name",
-    description: "Person to greet",
-    type: String,
-    required: true,
-  },
-  execute: ({ argument, logger }) => {
-    logger.log(`Hello, ${argument[0]}!`);
-  },
+    name: "greet",
+    description: "Greet someone",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
+        required: true,
+    },
+    execute: ({ argument, logger }) => {
+        logger.log(`Hello, ${argument[0]}!`);
+    },
 });
 ```
 
 Usage:
+
 ```bash
 $ my-cli greet Alice
 Hello, Alice!
@@ -68,38 +69,39 @@ Named options with values or flags:
 
 ```typescript
 cli.addCommand({
-  name: "build",
-  description: "Build project",
-  options: [
-    {
-      name: "output",
-      alias: "o",
-      description: "Output directory",
-      type: String,
-      defaultValue: "./dist",
+    name: "build",
+    description: "Build project",
+    options: [
+        {
+            name: "output",
+            alias: "o",
+            description: "Output directory",
+            type: String,
+            defaultValue: "./dist",
+        },
+        {
+            name: "production",
+            alias: "p",
+            description: "Production build",
+            type: Boolean,
+        },
+        {
+            name: "minify",
+            description: "Minify output",
+            type: Boolean,
+            defaultValue: true,
+        },
+    ],
+    execute: ({ options, logger }) => {
+        logger.log(`Building to ${options.output}`);
+        logger.log(`Production: ${options.production}`);
+        logger.log(`Minify: ${options.minify}`);
     },
-    {
-      name: "production",
-      alias: "p",
-      description: "Production build",
-      type: Boolean,
-    },
-    {
-      name: "minify",
-      description: "Minify output",
-      type: Boolean,
-      defaultValue: true,
-    },
-  ],
-  execute: ({ options, logger }) => {
-    logger.log(`Building to ${options.output}`);
-    logger.log(`Production: ${options.production}`);
-    logger.log(`Minify: ${options.minify}`);
-  },
 });
 ```
 
 Usage:
+
 ```bash
 $ my-cli build --output ./build --production
 Building to ./build
@@ -154,6 +156,7 @@ Options that can be negated with `--no-` prefix:
 ```
 
 Usage:
+
 ```bash
 $ my-cli build --color      # color = true
 $ my-cli build --no-color   # color = false
@@ -165,24 +168,25 @@ Mark options as required:
 
 ```typescript
 cli.addCommand({
-  name: "deploy",
-  description: "Deploy application",
-  options: [
-    {
-      name: "environment",
-      alias: "e",
-      description: "Target environment",
-      type: String,
-      required: true, // Must be provided
+    name: "deploy",
+    description: "Deploy application",
+    options: [
+        {
+            name: "environment",
+            alias: "e",
+            description: "Target environment",
+            type: String,
+            required: true, // Must be provided
+        },
+    ],
+    execute: ({ options, logger }) => {
+        logger.log(`Deploying to ${options.environment}`);
     },
-  ],
-  execute: ({ options, logger }) => {
-    logger.log(`Deploying to ${options.environment}`);
-  },
 });
 ```
 
 Error if not provided:
+
 ```bash
 $ my-cli deploy
 Error: Required option --environment is missing
@@ -194,23 +198,23 @@ Prevent incompatible options:
 
 ```typescript
 cli.addCommand({
-  name: "test",
-  description: "Run tests",
-  options: [
-    {
-      name: "watch",
-      type: Boolean,
-      conflicts: ["ci"], // Can't use with --ci
+    name: "test",
+    description: "Run tests",
+    options: [
+        {
+            name: "watch",
+            type: Boolean,
+            conflicts: ["ci"], // Can't use with --ci
+        },
+        {
+            name: "ci",
+            type: Boolean,
+            conflicts: ["watch"], // Can't use with --watch
+        },
+    ],
+    execute: ({ options }) => {
+        // ...
     },
-    {
-      name: "ci",
-      type: Boolean,
-      conflicts: ["watch"], // Can't use with --watch
-    },
-  ],
-  execute: ({ options }) => {
-    // ...
-  },
 });
 ```
 
@@ -235,23 +239,23 @@ Access typed environment variables:
 
 ```typescript
 cli.addCommand({
-  name: "deploy",
-  description: "Deploy application",
-  env: {
-    API_KEY: {
-      description: "API authentication key",
-      required: true,
+    name: "deploy",
+    description: "Deploy application",
+    env: {
+        API_KEY: {
+            description: "API authentication key",
+            required: true,
+        },
+        API_URL: {
+            description: "API endpoint URL",
+            required: false,
+            defaultValue: "https://api.example.com",
+        },
     },
-    API_URL: {
-      description: "API endpoint URL",
-      required: false,
-      defaultValue: "https://api.example.com",
+    execute: ({ env, logger }) => {
+        logger.log(`Deploying to ${env.API_URL}`);
+        logger.log(`Using key: ${env.API_KEY}`);
     },
-  },
-  execute: ({ env, logger }) => {
-    logger.log(`Deploying to ${env.API_URL}`);
-    logger.log(`Using key: ${env.API_KEY}`);
-  },
 });
 ```
 
@@ -261,40 +265,41 @@ Create command hierarchies for better organization:
 
 ```typescript
 cli.addCommand({
-  name: "database",
-  alias: "db",
-  description: "Database management",
-  commands: [
-    {
-      name: "migrate",
-      description: "Run migrations",
-      options: [
+    name: "database",
+    alias: "db",
+    description: "Database management",
+    commands: [
         {
-          name: "rollback",
-          type: Boolean,
-          description: "Rollback migrations",
+            name: "migrate",
+            description: "Run migrations",
+            options: [
+                {
+                    name: "rollback",
+                    type: Boolean,
+                    description: "Rollback migrations",
+                },
+            ],
+            execute: ({ options, logger }) => {
+                if (options.rollback) {
+                    logger.log("Rolling back migrations...");
+                } else {
+                    logger.log("Running migrations...");
+                }
+            },
         },
-      ],
-      execute: ({ options, logger }) => {
-        if (options.rollback) {
-          logger.log("Rolling back migrations...");
-        } else {
-          logger.log("Running migrations...");
-        }
-      },
-    },
-    {
-      name: "seed",
-      description: "Seed database",
-      execute: ({ logger }) => {
-        logger.log("Seeding database...");
-      },
-    },
-  ],
+        {
+            name: "seed",
+            description: "Seed database",
+            execute: ({ logger }) => {
+                logger.log("Seeding database...");
+            },
+        },
+    ],
 });
 ```
 
 Usage:
+
 ```bash
 $ my-cli db migrate
 $ my-cli db migrate --rollback
@@ -310,12 +315,12 @@ cli.setDefaultCommand("help");
 
 // or with options
 cli.addCommand({
-  name: "serve",
-  description: "Start server",
-  isDefault: true,
-  execute: ({ logger }) => {
-    logger.log("Starting server...");
-  },
+    name: "serve",
+    description: "Start server",
+    isDefault: true,
+    execute: ({ logger }) => {
+        logger.log("Starting server...");
+    },
 });
 ```
 
@@ -325,8 +330,8 @@ Organize help output with sections:
 
 ```typescript
 cli.addCommandSection({
-  name: "Database",
-  description: "Database management commands",
-  commands: ["db:migrate", "db:seed", "db:backup"],
+    name: "Database",
+    description: "Database management commands",
+    commands: ["db:migrate", "db:seed", "db:backup"],
 });
 ```

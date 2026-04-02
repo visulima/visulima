@@ -52,7 +52,8 @@ describe("6. Mixed Positional + Flag Arguments", () => {
                 yargsBuilder
                     .option("output", { alias: "o", type: "string" })
                     .option("format", { alias: "f", type: "string" })
-                    .option("compress", { alias: "c", type: "boolean" }));
+                    .option("compress", { alias: "c", type: "boolean" }),
+            );
 
         await parser.parseAsync(mixedArgs.slice(2));
     });

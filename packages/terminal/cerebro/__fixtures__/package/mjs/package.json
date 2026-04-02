@@ -1,10 +1,10 @@
 {
-  "name": "cerebro-esm",
-  "private": true,
-  "description": "ESM version",
-  "type": "module",
-  "dependencies": {
-    "@visulima/cerebro": "workspace:*"
-  },
-  "devDependencies": {}
+    "name": "cerebro-esm",
+    "private": true,
+    "description": "ESM version",
+    "type": "module",
+    "dependencies": {
+        "@visulima/cerebro": "workspace:*"
+    },
+    "devDependencies": {}
 }
