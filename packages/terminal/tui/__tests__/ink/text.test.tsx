@@ -53,7 +53,7 @@ describe("text", () => {
     });
 
     it("text with dimmed color", () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
         const output = renderToString(
             <Text color="green" dimColor>
@@ -61,7 +61,11 @@ describe("text", () => {
             </Text>,
         );
 
-        expect(output).toBe(green(dim("Test")));
+        // StyledLine serializer may emit dim+green in either order; both
+        // are visually identical. Check for presence of both codes.
+        expect(output).toContain("\u001B[2m"); // dim
+        expect(output).toContain("\u001B[32m"); // green
+        expect(stripAnsi(output)).toBe("Test");
     });
 
     it("text with hex color", () => {
