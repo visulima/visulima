@@ -28,6 +28,7 @@ import type { CursorPosition, LogUpdate } from "./log-update";
 import logUpdate from "./log-update";
 import type { NativeLogUpdate } from "./log-update-native";
 import { createNative } from "./log-update-native";
+import { clearToStyledCharactersCache } from "./measure-text";
 import reconciler from "./reconciler";
 import render from "./renderer";
 import type ResizeObserver from "./resize-observer";
@@ -566,6 +567,10 @@ export default class Ink {
             this.lastOutput = "";
             this.lastOutputToRender = "";
         }
+
+        // Clear styled character cache on resize — cached measurements may be
+        // stale for the new terminal width.
+        clearToStyledCharactersCache();
 
         this.calculateLayout();
         this.onRender();
