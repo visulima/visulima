@@ -335,7 +335,15 @@ export class StyledLine {
             this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
         }
 
-        // Update spans — find the span covering this index
+        // Check if the style at this index already matches — if so, skip
+        // the expensive splitSpansAt + mergeSpans work entirely.
+        const existingSpan = this.getSpan(index);
+
+        if (existingSpan && existingSpan.formatFlags === cleanFormatFlags && existingSpan.fgColor === fgColor && existingSpan.bgColor === bgColor && existingSpan.link === link) {
+            return;
+        }
+
+        // Style changed — split, update, merge
         this.splitSpansAt(index);
         this.splitSpansAt(index + 1);
 
@@ -345,19 +353,14 @@ export class StyledLine {
             const span = this.spans![i]!;
 
             if (current === index && span.length === 1) {
-                // Check if the style actually changed
-                if (span.formatFlags !== cleanFormatFlags || span.fgColor !== fgColor || span.bgColor !== bgColor || span.link !== link) {
-                    this.spans![i] = {
-                        bgColor,
-                        fgColor,
-                        formatFlags: cleanFormatFlags,
-                        length: 1,
-                        link,
-                    };
-                    this.mergeSpans();
-                }
-
-                return;
+                this.spans![i] = {
+                    bgColor,
+                    fgColor,
+                    formatFlags: cleanFormatFlags,
+                    length: 1,
+                    link,
+                };
+                break;
             }
 
             current += span.length;

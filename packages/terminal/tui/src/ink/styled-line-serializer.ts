@@ -50,42 +50,30 @@ const sgr = (params: number[]): string => {
  * Parse a named/hex/rgb/ansi256 color string into SGR parameters.
  * Returns the parameter array for the SGR sequence (e.g., [38, 5, 196] for fg ansi256).
  */
+// Module-level color lookup tables (avoids recreating per call)
+const sgrNamedColors: Record<string, number> = {
+    black: 0, blue: 4, cyan: 6, gray: 60, green: 2, grey: 60,
+    magenta: 5, red: 1, white: 7, yellow: 3,
+};
+
+const sgrBrightColors: Record<string, number> = {
+    blackBright: 60, blueBright: 64, cyanBright: 66, greenBright: 62,
+    magentaBright: 65, redBright: 61, whiteBright: 67, yellowBright: 63,
+};
+
+const ansi256Regex = /^ansi256\(\s?(\d+)\s?\)$/;
+const rgbRegex = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/;
+
 const colorToSgr = (color: string, isFg: boolean): number[] => {
     const base = isFg ? 30 : 40;
 
-    // Named 16-color
-    const namedColors: Record<string, number> = {
-        black: 0,
-        blue: 4,
-        cyan: 6,
-        gray: 60,
-        green: 2,
-        grey: 60,
-        magenta: 5,
-        red: 1,
-        white: 7,
-        yellow: 3,
-    };
-
-    // Bright variants
-    const brightColors: Record<string, number> = {
-        blackBright: 60,
-        blueBright: 64,
-        cyanBright: 66,
-        greenBright: 62,
-        magentaBright: 65,
-        redBright: 61,
-        whiteBright: 67,
-        yellowBright: 63,
-    };
-
-    const named = namedColors[color];
+    const named = sgrNamedColors[color];
 
     if (named !== undefined) {
         return [base + named];
     }
 
-    const bright = brightColors[color];
+    const bright = sgrBrightColors[color];
 
     if (bright !== undefined) {
         return [base + bright];
@@ -100,15 +88,13 @@ const colorToSgr = (color: string, isFg: boolean): number[] => {
         return [isFg ? 38 : 48, 2, r, g, b];
     }
 
-    // ansi256(N)
-    const ansi256Match = /^ansi256\(\s?(\d+)\s?\)$/.exec(color);
+    const ansi256Match = ansi256Regex.exec(color);
 
     if (ansi256Match) {
         return [isFg ? 38 : 48, 5, Number(ansi256Match[1])];
     }
 
-    // rgb(R, G, B)
-    const rgbMatch = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/.exec(color);
+    const rgbMatch = rgbRegex.exec(color);
 
     if (rgbMatch) {
         return [isFg ? 38 : 48, 2, Number(rgbMatch[1]), Number(rgbMatch[2]), Number(rgbMatch[3])];
