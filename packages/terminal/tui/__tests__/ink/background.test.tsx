@@ -423,4 +423,22 @@ describe("background", () => {
 
         expect(output).toBe(`${ansi.bgRed}Hello ${ansi.bgReset}\n${ansi.bgRed}World!!${ansi.bgReset}`);
     });
+
+    it("background does not mutate empty line cache", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <Box flexDirection="column">
+                <Box backgroundColor="red" width={10}>
+                    <Text>A</Text>
+                </Box>
+                <Box width={10}>
+                    <Text>B</Text>
+                </Box>
+            </Box>,
+        );
+
+        expect(output).toContain(`${ansi.bgRed}A${" ".repeat(9)}${ansi.bgReset}`);
+        expect(output).toBe(`${ansi.bgRed}A${" ".repeat(9)}${ansi.bgReset}\nB`);
+    });
 });
