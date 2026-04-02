@@ -644,7 +644,6 @@ catalogs:
     '@types/command-line-args': ^5.2.3
     '@types/cors': ^2.8.19
     '@types/debug': 4.1.13
-    '@types/diff': ^8.0.0
     '@types/etag': ^1.8.4
     '@types/express': ^5.0.6
     '@types/express-serve-static-core': 5.1.1
@@ -674,7 +673,6 @@ catalogs:
     '@types/react-reconciler': ^0.33.0
     '@types/sanitize-html': 2.16.1
     '@types/scheduler': ^0.26.0
-    '@types/signal-exit': 4.0.0
     '@types/stack-utils': ^2.0.3
     '@types/supertest': ^7.2.0
     '@types/swagger-ui-express': ^4.1.8
@@ -685,7 +683,6 @@ catalogs:
     '@types/ws': ^8.18.1
     '@types/yargs': ^17.0.35
     '@types/yargs-parser': 21.0.3
-    '@types/yoga-layout': ^3.1.0
   utils:
     embla-carousel-react: 8.6.0
     use-count-up: 3.0.1
