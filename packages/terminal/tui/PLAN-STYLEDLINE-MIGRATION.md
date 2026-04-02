@@ -1,5 +1,15 @@
 # StyledLine Migration Plan
 
+## Status
+
+- **Phase 1**: DONE — StyledLine class, style flags, serializer
+- **Phase 2**: DONE — Bridge layer (StyledChar ↔ StyledLine)
+- **Phase 3**: DONE — Output grid migration (StyledChar[][] → StyledLine[])
+- **Phase 4**: DONE — Text pipeline fast path (toStyledLine, writeStyledLine)
+- **Phase 5**: PARTIAL — Hot path uses StyledLine; cold path (selection, public API) retains StyledChar
+- **Phase 6**: TODO — Region-based output model
+- **Phase 7**: TODO — Render caching
+
 ## Goal
 
 Replace the per-character `StyledChar` object model in the Output class with a columnar `StyledLine` class that uses packed `Uint16Array` + run-length encoded `StyleSpan[]`. This reduces GC pressure (from ~80 objects/line to 1 string + 1 typed array + ~3 spans), improves cache locality, and enables future region-based rendering.
