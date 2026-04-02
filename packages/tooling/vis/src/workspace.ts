@@ -15,8 +15,10 @@ interface PackageJson {
     name?: string;
     peerDependencies?: Record<string, string>;
     scripts?: Record<string, string>;
-    workspaces?: string[] | { packages: string[] };
+    workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
 }
+
+import type { Configuration as StagedConfig } from "lint-staged";
 
 interface VisConfig {
     /** AI analysis configuration */
@@ -115,8 +117,17 @@ interface VisConfig {
          */
         trustPolicyIgnoreAfter?: number;
     };
-    /** Staged file patterns and commands (replaces lint-staged) */
-    staged?: Record<string, string | string[]>;
+    /**
+     * Staged file patterns and commands (replaces lint-staged).
+     *
+     * Accepts all lint-staged config forms:
+     * - `string` or `string[]` commands
+     * - Sync/async functions returning `string | string[]`
+     * - `{ title, task }` objects for named side-effect tasks
+     * - Mixed arrays of strings and functions
+     * - A top-level generate-task function
+     */
+    staged?: StagedConfig;
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
@@ -404,5 +415,5 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
     return { dependencies, nodes };
 };
 
-export type { PackageJson, VisConfig };
+export type { PackageJson, StagedConfig, VisConfig };
 export { buildProjectGraph, discoverWorkspace, resolveWorkspacePatterns };

@@ -492,7 +492,7 @@ const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions
         name?: string;
         optionalDependencies?: Record<string, string>;
         peerDependencies?: Record<string, string>;
-        workspaces?: string[] | { packages: string[] };
+        workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
     };
 
     let workspaceDirectories: string[] = [];
@@ -501,7 +501,9 @@ const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions
     if (workspacesField) {
         const patterns = Array.isArray(workspacesField) ? workspacesField : workspacesField.packages;
 
-        workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+        if (patterns) {
+            workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+        }
     }
 
     const internalNames = collectInternalPackageNames(workspaceRoot, rootPkg.name, workspaceDirectories);
