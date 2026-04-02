@@ -306,13 +306,18 @@ export default measureText;
 // ── StyledLine-based equivalents ──────────────────────────────────────
 
 import { StyledLine } from "./styled-line";
-import { styledCharsToStyledLine } from "./styled-line-bridge";
+import { ansiCodesToStyleInfo, styledCharsToStyledLine } from "./styled-line-bridge";
+import { FULL_WIDTH_MASK } from "./style-flags";
 
 // Cache for StyledLine tokenization
 const styledLineCache = new DataLimitedLruMap<StyledLine>(10_000, 1_000_000);
 
 /**
  * Convert a text string to a StyledLine, with caching.
+ * Uses the StyledChar pipeline for tokenization (handles combining chars,
+ * tabs, regional indicators, etc.) then converts to StyledLine via the
+ * bridge. The result is cached so repeated calls (e.g., from Yoga measure
+ * + render-text-node) hit the LRU cache.
  */
 export const toStyledLine = (text: string): StyledLine => {
     if (styledCharsCacheEnabled) {
@@ -323,7 +328,8 @@ export const toStyledLine = (text: string): StyledLine => {
         }
     }
 
-    // Reuse the existing StyledChar pipeline then convert
+    // Use StyledChar pipeline for correct tokenization (handles combining
+    // chars, emoji, tabs, etc.) then convert to StyledLine.
     const chars = toStyledCharacters(text);
     const line = styledCharsToStyledLine(chars);
 
