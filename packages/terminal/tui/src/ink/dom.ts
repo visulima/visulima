@@ -329,10 +329,10 @@ export const createTextNode = (text: string): TextNode => {
     return node;
 };
 
-// Note: measureTextNode intentionally uses string-based measurement to stay
-// consistent with the string-based render path in render-node-to-output.ts.
-// When the render path is fully migrated to StyledChar (via render-text-node.ts),
-// this should switch to toStyledCharacters + measureStyledChars + wrapOrTruncateStyledChars.
+// measureTextNode uses string-based measurement for correctness (wrapping must
+// match exactly between Yoga's layout pass and the render pass).
+// TODO: Switch to StyledLine-native measurement once text-wrap.ts operates
+// fully on StyledLine (currently wrapping falls back to string-based wrapText).
 const measureTextNode = function (node: DOMNode, width: number): { height: number; width: number } {
     const text = node.nodeName === "#text" ? node.nodeValue : squashTextNodes(node);
 
