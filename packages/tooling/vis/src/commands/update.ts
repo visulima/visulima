@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 
 import React from "react";
 import type { Command } from "@visulima/cerebro";
+import { red } from "@visulima/colorize";
 import { render, renderToString, Text } from "@visulima/tui";
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 
@@ -351,7 +352,11 @@ const executePmWrapper = (
         const execError = error as { status?: number };
         const exitCode = execError.status ?? 1;
 
-        throw new Error(`Update command failed with exit code ${String(exitCode)}`, { cause: error });
+        logger.error("\n" + red("\u2716") + " Update failed (exit code " + String(exitCode) + ")");
+        logger.error(`  Command: ${fullCommand}`);
+        logger.error(`  Directory: ${workspaceRoot}\n`);
+
+        process.exitCode = exitCode;
     }
 };
 

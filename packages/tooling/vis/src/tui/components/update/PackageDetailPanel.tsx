@@ -1,4 +1,5 @@
-import { Box, Text } from "@visulima/tui";
+import type { ScrollViewRef } from "@visulima/tui";
+import { Box, ScrollView, Text } from "@visulima/tui";
 
 import type { AiRecommendation } from "../../../ai-analysis";
 import type { OutdatedEntry } from "../../../catalog";
@@ -40,10 +41,11 @@ interface PackageDetailPanelProps {
     entry: OutdatedEntry | null;
     focused: boolean;
     recommendation?: AiRecommendation;
+    scrollRef?: React.RefObject<ScrollViewRef>;
 }
 
-const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: PackageDetailPanelProps): React.JSX.Element => {
-    const borderColor = focused ? "cyan" : "gray";
+const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scrollRef }: PackageDetailPanelProps): React.JSX.Element => {
+    const borderColor = focused ? "white" : "gray";
 
     if (!entry) {
         return (
@@ -57,9 +59,14 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: Pa
     const hasVulnerabilities = entry.vulnerabilities && entry.vulnerabilities.length > 0;
 
     return (
-        <Box borderColor={borderColor} borderStyle={focused ? "bold" : "single"} flexDirection="column" flexGrow={1} paddingX={2} paddingY={1} overflow="hidden">
-            {/* Package name title */}
-            <Text bold color="cyan">{entry.packageName}</Text>
+        <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
+            {/* Package name title — fixed */}
+            <Box flexShrink={0} paddingX={2} paddingTop={1}>
+                <Text bold color="white">{entry.packageName}</Text>
+            </Box>
+
+            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} paddingX={2} scrollbar scrollbarColor="gray">
+            {/* Version info */}
             <Text>{""}</Text>
 
             {/* Version info */}
@@ -84,7 +91,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: Pa
             {/* Security section */}
             {hasVulnerabilities && (
                 <Box flexDirection="column" marginTop={1}>
-                    <Text bold color="red">{"\u2500"} Security</Text>
+                    <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="red">SECURITY</Text>
                     <Text>{""}</Text>
                     {entry.vulnerabilities!.map((vuln) => (
                         <Box key={vuln.id} flexDirection="column" marginBottom={1}>
@@ -113,7 +120,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: Pa
             {/* AI Analysis section */}
             {recommendation && (
                 <Box flexDirection="column" marginTop={1}>
-                    <Text bold color="cyan">{"\u2500"} AI Analysis</Text>
+                    <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">AI ANALYSIS</Text>
                     <Text>{""}</Text>
                     <Box gap={2}>
                         <Box>
@@ -152,7 +159,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: Pa
             {/* Changelog section */}
             {changelogUrl && (
                 <Box flexDirection="column" marginTop={1}>
-                    <Text bold color="cyan">{"\u2500"} Changelog</Text>
+                    <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">CHANGELOG</Text>
                     <Box marginTop={1} paddingLeft={2}>
                         <Text color="cyan" underline>{changelogUrl}</Text>
                     </Box>
@@ -165,6 +172,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation }: Pa
                     <Text dimColor>No additional details available.</Text>
                 </Box>
             )}
+            </ScrollView>
         </Box>
     );
 };

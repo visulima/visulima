@@ -1,4 +1,4 @@
-import { Box, Text } from "@visulima/tui";
+import { Box, ScrollView, Text } from "@visulima/tui";
 
 import { getStatusInfo } from "../status-utils";
 import type { TaskRowData } from "./TaskRow";
@@ -6,7 +6,7 @@ import type { TaskRowData } from "./TaskRow";
 // Extended status info for non-TaskStatus states (running, pending)
 const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: string } => {
     if (status === "running") {
-        return { color: "cyan", icon: "\u2022" };
+        return { color: "white", icon: "\u2022" };
     }
 
     if (status === "pending") {
@@ -21,26 +21,26 @@ const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: s
 interface OutputPanelProps {
     focused: boolean;
     output: string;
-    scrollOffset: number;
+    scrollRef?: React.RefObject<import("@visulima/tui").ScrollViewRef>;
     status: TaskRowData["status"] | undefined;
     taskId: string | null;
 }
 
-const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPanelProps): React.JSX.Element => {
+const OutputPanel = ({ focused, output, scrollRef, status, taskId }: OutputPanelProps): React.JSX.Element => {
     const statusValue = status ?? "pending";
     const { color: statusColor, icon: statusIcon } = getDisplayInfo(statusValue);
 
-    const borderStyle = focused ? "bold" : "single";
-    const borderColor = focused ? statusColor : "gray";
+    const borderStyle = "single";
+    const borderColor = focused ? "white" : "gray";
 
     const titleElement = taskId
         ? (
-            <Box>
-                <Text bold={focused} color={statusColor}>
+            <Box gap={1}>
+                <Text color={statusColor}>
                     {statusIcon}
                 </Text>
                 <Text bold={focused} dimColor={!focused}>
-                    {` ${taskId}`}
+                    {taskId}
                 </Text>
             </Box>
         )
@@ -67,7 +67,6 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
 
     // Split output into lines for scrolling
     const lines = output ? output.split("\n") : [];
-    const visibleLines = lines.slice(scrollOffset);
 
     // Waiting state
     if (!output && (statusValue === "running" || statusValue === "pending")) {
@@ -82,30 +81,18 @@ const OutputPanel = ({ focused, output, scrollOffset, status, taskId }: OutputPa
     }
 
     return (
-        <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1} paddingX={2} paddingY={1}>
-            {/* Title bar */}
-            {titleElement}
-            <Text />
-
-            {/* Output content */}
-            <Box flexDirection="column" flexGrow={1} overflow="hidden">
-                {visibleLines.map((line, i) => (
-                    <Text key={String(scrollOffset + i)}>{line}</Text>
-                ))}
+        <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1}>
+            {/* Title bar — fixed */}
+            <Box flexShrink={0} paddingX={2} paddingTop={1}>
+                {titleElement}
             </Box>
 
-            {/* Scroll indicator */}
-            {scrollOffset > 0 && (
-                <Box justifyContent="flex-end">
-                    <Text dimColor>
-                        {"\u2191"}
-                        {" "}
-                        {scrollOffset}
-                        {" "}
-                        lines above
-                    </Text>
-                </Box>
-            )}
+            {/* Output content — scrollable */}
+            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} followOutput paddingX={2} scrollbar scrollbarColor="gray">
+                {lines.map((line, i) => (
+                    <Text key={String(i)}>{line}</Text>
+                ))}
+            </ScrollView>
         </Box>
     );
 };

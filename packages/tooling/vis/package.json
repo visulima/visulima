@@ -77,6 +77,7 @@
     },
     "dependencies": {
         "@visulima/cerebro": "3.0.0-alpha.9",
+        "@visulima/colorize": "2.0.0-alpha.7",
         "@visulima/find-ai-runner": "1.0.0-alpha.2",
         "@visulima/find-cache-dir": "3.0.0-alpha.6",
         "@visulima/fs": "5.0.0-alpha.6",
@@ -101,7 +102,6 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@types/react": "catalog:types",
-        "@visulima/colorize": "2.0.0-alpha.7",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",

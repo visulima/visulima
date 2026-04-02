@@ -1,6 +1,6 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
-import React, { useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import PackageDetailPanel from "./PackageDetailPanel";
 import PackageListPanel from "./PackageListPanel";
@@ -36,6 +36,8 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
 
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
+    const detailScrollRef = useRef<ScrollViewRef>(null);
+    const [listScrollOffset, setListScrollOffset] = useState(0);
     const [confirmVisible, setConfirmVisible] = useState(false);
 
     const filteredEntries = useMemo(() => store.getFilteredEntries(), [state.entries, state.filterType, state.filterText]);
@@ -43,6 +45,55 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     const selectedEntry = filteredEntries[state.selectedIndex] ?? null;
     const selectedRecommendation = selectedEntry ? store.getRecommendation(selectedEntry.packageName) : undefined;
     const selectedChangelog = selectedEntry && changelogUrls ? changelogUrls.get(selectedEntry.packageName) : undefined;
+
+    // Compute the row position for a given entry index.
+    // Each catalog header = 2 rows (marginTop + text), each package = 1 row.
+    const getRowForIndex = useCallback((index: number): number => {
+        let row = 0;
+        let count = 0;
+
+        for (const [, catalogEntries] of state.groupedByCatalog) {
+            row += 2; // catalog header
+
+            for (let i = 0; i < catalogEntries.length; i++) {
+                if (count === index) {
+                    return row;
+                }
+
+                row += 1;
+                count++;
+            }
+        }
+
+        return row;
+    }, [state.groupedByCatalog]);
+
+    // Compute the visible height of the list panel (approximate: total rows - header - filter - border)
+    const listViewportHeight = Math.max(1, rows - 6);
+
+    // Keep selected item in view by adjusting scroll offset
+    const scrollToIndex = useCallback((index: number) => {
+        const targetRow = getRowForIndex(index);
+
+        setListScrollOffset((current) => {
+            // Item below viewport — scroll down
+            if (targetRow >= current + listViewportHeight) {
+                return targetRow - listViewportHeight + 1;
+            }
+
+            // Item above viewport — scroll up
+            if (targetRow < current) {
+                return Math.max(0, targetRow - 1);
+            }
+
+            return current;
+        });
+    }, [getRowForIndex, listViewportHeight]);
+
+    // Reset detail scroll when selected entry changes
+    useEffect(() => {
+        detailScrollRef.current?.scrollToTop();
+    }, [selectedEntry?.packageName]);
 
     // ── Keyboard handling ───────────────────────────────────────────
 
@@ -104,11 +155,38 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             // List panel focused
             if (state.focusedPanel === "list") {
                 if (key.downArrow || input === "j") {
-                    store.setSelectedIndex(state.selectedIndex + 1);
+                    const next = Math.min(state.selectedIndex + 1, filteredEntries.length - 1);
+                    store.setSelectedIndex(next);
+                    scrollToIndex(next);
                     return;
                 }
                 if (key.upArrow || input === "k") {
-                    store.setSelectedIndex(state.selectedIndex - 1);
+                    const next = Math.max(state.selectedIndex - 1, 0);
+                    store.setSelectedIndex(next);
+                    scrollToIndex(next);
+                    return;
+                }
+                if (key.pageDown) {
+                    const next = Math.min(state.selectedIndex + 10, filteredEntries.length - 1);
+                    store.setSelectedIndex(next);
+                    scrollToIndex(next);
+                    return;
+                }
+                if (key.pageUp) {
+                    const next = Math.max(state.selectedIndex - 10, 0);
+                    store.setSelectedIndex(next);
+                    scrollToIndex(next);
+                    return;
+                }
+                if (key.home) {
+                    store.setSelectedIndex(0);
+                    setListScrollOffset(0);
+                    return;
+                }
+                if (key.end) {
+                    const last = filteredEntries.length - 1;
+                    store.setSelectedIndex(last);
+                    scrollToIndex(last);
                     return;
                 }
                 // Toggle check
@@ -133,6 +211,12 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             // Detail panel focused
             if (state.focusedPanel === "detail") {
                 if (key.escape || key.leftArrow) { store.setFocusedPanel("list"); return; }
+                if (key.downArrow || input === "j") { detailScrollRef.current?.scrollBy(1); return; }
+                if (key.upArrow || input === "k") { detailScrollRef.current?.scrollBy(-1); return; }
+                if (key.pageDown) { detailScrollRef.current?.scrollBy(10); return; }
+                if (key.pageUp) { detailScrollRef.current?.scrollBy(-10); return; }
+                if (key.home) { detailScrollRef.current?.scrollToTop(); return; }
+                if (key.end) { detailScrollRef.current?.scrollToBottom(); return; }
                 return;
             }
         },
@@ -155,19 +239,26 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
 
     const footer = (
         <Box flexShrink={0} borderStyle="single" borderColor="gray" borderLeft={false} borderRight={false} borderBottom={false}>
-            <Box paddingX={1} gap={2}>
-                <Text dimColor>quit: </Text><Text bold>q</Text>
-                <Text dimColor>  help: </Text><Text bold>?</Text>
-                <Text dimColor>  nav: </Text><Text bold>{"\u2191\u2193"}</Text>
-                <Text dimColor>  check: </Text><Text bold>Space</Text>
-                <Text dimColor>  all: </Text><Text bold>a</Text>
+            <Box paddingX={1} gap={1}>
+                <Text bold color="white">q</Text><Text dimColor> QUIT</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">?</Text><Text dimColor> HELP</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor> NAV</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">Space</Text><Text dimColor> CHECK</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">a</Text><Text dimColor> ALL</Text>
                 {!isDryRun && state.checkedEntries.size > 0 && (
                     <>
-                        <Text dimColor>  apply: </Text><Text bold color="green">u</Text>
+                        <Text dimColor>{" \u00B7 "}</Text>
+                        <Text bold color="green">u</Text><Text dimColor> APPLY</Text>
                     </>
                 )}
-                <Text dimColor>  filter: </Text><Text bold>1-5 /</Text>
-                <Text dimColor>  switch: </Text><Text bold>Tab</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">1-5 /</Text><Text dimColor> FILTER</Text>
+                <Text dimColor>{" \u00B7 "}</Text>
+                <Text bold color="white">Tab</Text><Text dimColor> PANEL</Text>
             </Box>
         </Box>
     );
@@ -178,46 +269,46 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
         <Dialog
             footer={
                 <Text dimColor>
-                    <Text color="cyan">{"\u2191 \u2193"}</Text> scroll  <Text color="cyan">?</Text>/<Text color="cyan">Esc</Text> close
+                    <Text bold color="white">{"\u2191\u2193"}</Text> scroll  <Text bold color="white">?</Text>/<Text bold color="white">Esc</Text> close
                 </Text>
             }
             scrollRef={helpScrollRef}
-            title="Keyboard Shortcuts"
+            title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
             width={52}
         >
             <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text bold color="white">{"\u2500"} Navigation</Text></Box>
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">NAVIGATION</Text></Box>
                 <Box>
-                    <Box width={24}><Text><Text color="cyan" bold>  {"\u2191"}/k</Text>  Move up</Text></Box>
-                    <Text><Text color="cyan" bold>  {"\u2193"}/j</Text>  Move down</Text>
+                    <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Move up</Text></Text></Box>
+                    <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Move down</Text></Text>
                 </Box>
-                <Text><Text color="cyan" bold>  Tab</Text>    Switch panel</Text>
-                <Text><Text color="cyan" bold>  {"\u2192"}/{"\u2190"}</Text>  Focus detail/list</Text>
+                <Text><Text color="white" bold>  Tab</Text><Text dimColor>    Switch panel</Text></Text>
+                <Text><Text color="white" bold>  {"\u2192"}/{"\u2190"}</Text><Text dimColor>  Focus detail/list</Text></Text>
             </Box>
             <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text bold color="white">{"\u2500"} Selection</Text></Box>
-                <Text><Text color="cyan" bold>  Space</Text>  Toggle check on package</Text>
-                <Text><Text color="cyan" bold>  a</Text>      Toggle check all</Text>
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">SELECTION</Text></Box>
+                <Text><Text color="white" bold>  Space</Text><Text dimColor>  Toggle check on package</Text></Text>
+                <Text><Text color="white" bold>  a</Text><Text dimColor>      Toggle check all</Text></Text>
             </Box>
             <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text bold color="white">{"\u2500"} Filters</Text></Box>
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">FILTERS</Text></Box>
                 <Box>
-                    <Box width={24}><Text><Text color="cyan" bold>  1</Text>  All</Text></Box>
-                    <Text><Text color="cyan" bold>  2</Text>  Major</Text>
+                    <Box width={24}><Text><Text color="white" bold>  1</Text><Text dimColor>  All</Text></Text></Box>
+                    <Text><Text color="white" bold>  2</Text><Text dimColor>  Major</Text></Text>
                 </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="cyan" bold>  3</Text>  Minor</Text></Box>
-                    <Text><Text color="cyan" bold>  4</Text>  Patch</Text>
+                    <Box width={24}><Text><Text color="white" bold>  3</Text><Text dimColor>  Minor</Text></Text></Box>
+                    <Text><Text color="white" bold>  4</Text><Text dimColor>  Patch</Text></Text>
                 </Box>
-                <Text><Text color="cyan" bold>  5</Text>  Security only</Text>
-                <Text><Text color="cyan" bold>  /</Text>  Text filter</Text>
+                <Text><Text color="white" bold>  5</Text><Text dimColor>  Security only</Text></Text>
+                <Text><Text color="white" bold>  /</Text><Text dimColor>  Text filter</Text></Text>
             </Box>
             <Box flexDirection="column">
-                <Box marginBottom={1}><Text bold color="white">{"\u2500"} Actions</Text></Box>
-                {!isDryRun && <Text><Text color="cyan" bold>  u</Text>  Apply selected updates</Text>}
-                <Text><Text color="cyan" bold>  q</Text>  Quit</Text>
-                <Text><Text color="cyan" bold>  ?</Text>  Toggle this help</Text>
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">ACTIONS</Text></Box>
+                {!isDryRun && <Text><Text color="white" bold>  u</Text><Text dimColor>  Apply selected updates</Text></Text>}
+                <Text><Text color="white" bold>  q</Text><Text dimColor>  Quit</Text></Text>
+                <Text><Text color="white" bold>  ?</Text><Text dimColor>  Toggle help</Text></Text>
             </Box>
         </Dialog>
     );
@@ -228,7 +319,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     const majorCount = checkedList.filter((e) => e.updateType === "major").length;
 
     const confirmDialog = (
-        <Dialog title="Apply Updates" visible={confirmVisible} width={56}>
+        <Dialog title="APPLY UPDATES" visible={confirmVisible} width={56}>
             <Box flexDirection="column">
                 <Text>Apply {checkedList.length} update{checkedList.length !== 1 ? "s" : ""}?</Text>
                 <Text>{""}</Text>
@@ -247,7 +338,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
                     </Box>
                 )}
                 <Box marginTop={1}>
-                    <Text dimColor>Press <Text color="cyan" bold>u</Text> or <Text color="cyan" bold>Enter</Text> to confirm, <Text color="cyan" bold>Esc</Text> to cancel</Text>
+                    <Text dimColor>Press <Text color="white" bold>u</Text> or <Text color="white" bold>Enter</Text> to confirm, <Text color="white" bold>Esc</Text> to cancel</Text>
                 </Box>
             </Box>
         </Dialog>
@@ -265,6 +356,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             focused={state.focusedPanel === "list"}
             groupedByCatalog={state.groupedByCatalog}
             isDryRun={isDryRun}
+            scrollOffset={listScrollOffset}
             selectedIndex={state.selectedIndex}
             totalEntries={store.getFilteredEntries().length}
         />
@@ -276,13 +368,14 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             entry={selectedEntry}
             focused={state.focusedPanel === "detail"}
             recommendation={selectedRecommendation}
+            scrollRef={detailScrollRef}
         />
     );
 
     // ── Horizontal layout ───────────────────────────────────────────
 
     if (isHorizontal) {
-        const listWidth = Math.floor(columns * 0.45);
+        const listWidth = Math.floor(columns * 0.7);
 
         return (
             <Box flexDirection="column" height={rows} width={columns}>
@@ -299,7 +392,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
 
     // ── Vertical layout ─────────────────────────────────────────────
 
-    const listHeight = Math.floor(rows * 0.45);
+    const listHeight = Math.floor(rows * 0.55);
 
     return (
         <Box flexDirection="column" height={rows} width={columns}>

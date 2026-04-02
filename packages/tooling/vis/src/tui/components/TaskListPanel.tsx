@@ -1,5 +1,5 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { Box, Spinner, Text } from "@visulima/tui";
+import { Box, ScrollView, Spinner, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
@@ -50,7 +50,7 @@ const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListR
     // Fixed width to prevent alignment drift
     const connector = (
         <Box width={1}>
-            <Text color={parallelConnector ? "cyan" : undefined}>{parallelConnector ? "\u2502" : " "}</Text>
+            <Text dimColor={parallelConnector}>{parallelConnector ? "\u2502" : " "}</Text>
         </Box>
     );
 
@@ -58,7 +58,7 @@ const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListR
 
     if (status === "running") {
         statusIcon = (
-            <Text bold color="cyan">
+            <Text bold color="white">
                 {"  "}
                 <Spinner type="dots" />
                 {"  "}
@@ -136,14 +136,14 @@ const TaskListPanel = ({
     selectedIndex,
     title,
 }: TaskListPanelProps): React.JSX.Element => {
-    const borderColor = focused ? "cyan" : "gray";
+    const borderColor = focused ? "white" : "gray";
 
     // Rows are already filtered by the parent — use directly
     const running = rows.filter((r) => r.status === "running");
     const completed = rows.filter((r) => r.status !== "pending" && r.status !== "running");
     const pending = rows.filter((r) => r.status === "pending");
 
-    const badgeColor = headerStatus === "error" ? "red" : headerStatus === "success" ? "green" : "cyan";
+    const statusDotColor = headerStatus === "error" ? "red" : headerStatus === "success" ? "green" : "white";
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
     // Parallel section — only while tasks are still active
@@ -170,7 +170,7 @@ const TaskListPanel = ({
                 <Box key={`par-empty-${String(i)}`}>
                     <Text> </Text>
                     <Box width={1}>
-                        <Text color={connector ? "cyan" : undefined}>{connector ? "\u2502" : " "}</Text>
+                        <Text dimColor={connector}>{connector ? "\u2502" : " "}</Text>
                     </Box>
                     <Box width={STATUS_ICON_WIDTH}>
                         <Text> </Text>
@@ -197,9 +197,10 @@ const TaskListPanel = ({
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             <Box gap={1} paddingX={1}>
-                <Text bold color={badgeColor} inverse>
+                <Text bold inverse>
                     {" VIS "}
                 </Text>
+                <Text bold color={statusDotColor}>{" \u2022 "}</Text>
                 <Text>{title}</Text>
             </Box>
 
@@ -209,19 +210,19 @@ const TaskListPanel = ({
                     <Box>
                         <Text> </Text>
                         <Box width={1}>
-                            <Text color="cyan">{"\u2514"}</Text>
+                            <Text dimColor>{"\u2514"}</Text>
                         </Box>
                     </Box>
                 </Box>
             )}
 
-            <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingLeft={1}>
+            <ScrollView flexGrow={1} flexShrink={1} paddingLeft={1} scrollbar scrollbarColor="gray">
                 {listRows}
-            </Box>
+            </ScrollView>
 
             {filterActive && (
-                <Box borderBottom={false} borderColor="yellow" borderLeft={false} borderRight={false} borderStyle="single" borderTop paddingX={1}>
-                    <Text color="yellow">{"/  "}</Text>
+                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop paddingX={1}>
+                    <Text color="white" bold>{"/ "}</Text>
                     <Text>{filterText}</Text>
                     <Text inverse> </Text>
                 </Box>

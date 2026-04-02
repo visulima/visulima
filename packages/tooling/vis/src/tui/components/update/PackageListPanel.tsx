@@ -30,31 +30,22 @@ interface PackageRowProps {
 const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.Element => {
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasSecurity = entry.vulnerabilities && entry.vulnerabilities.length > 0;
-    const checkbox = checked ? "\u2611" : "\u2610"; // ☑ or ☐
+    const checkbox = checked ? "\u2611" : "\u2610";
 
     return (
-        <Box>
+        <Box height={1} flexShrink={0}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "cyan" : "gray"}> {checkbox} </Text>
-            {hasSecurity && <Text color="red">{"\u26A0"} </Text>}
-            {!hasSecurity && <Text>{"  "}</Text>}
+            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
+            {hasSecurity ? <Text color="red">{"\u26A0 "}</Text> : <Text>{"  "}</Text>}
             <Box flexGrow={1}>
-                <Text bold={isSelected} inverse={isSelected}>
+                <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
                 </Text>
             </Box>
-            <Box width={14} justifyContent="flex-end">
-                <Text dimColor>{entry.currentRange}</Text>
-            </Box>
+            <Text dimColor> {entry.currentRange}</Text>
             <Text dimColor> {"\u2192"} </Text>
-            <Box width={14}>
-                <Text>{entry.newRange}</Text>
-            </Box>
-            <Box width={7} justifyContent="flex-end">
-                <Text color={typeColor} bold>
-                    {entry.updateType}
-                </Text>
-            </Box>
+            <Text>{entry.newRange} </Text>
+            <Text color={typeColor} bold>{entry.updateType}</Text>
         </Box>
     );
 };
@@ -66,11 +57,12 @@ interface CatalogHeaderProps {
 
 const CatalogHeader = ({ count, name }: CatalogHeaderProps): React.JSX.Element => {
     return (
-        <Box marginTop={1}>
-            <Text color="cyan" bold>
-                {"\u25BC"} {name}
+        <Box height={1} flexShrink={0} marginTop={1}>
+            <Text dimColor>{"\u25BC"} </Text>
+            <Text bold color="white">
+                {name.toUpperCase()}
             </Text>
-            <Text dimColor> ({count} package{count !== 1 ? "s" : ""})</Text>
+            <Text dimColor> ({count})</Text>
         </Box>
     );
 };
@@ -86,6 +78,7 @@ interface PackageListPanelProps {
     focused: boolean;
     groupedByCatalog: Map<string, OutdatedEntry[]>;
     isDryRun: boolean;
+    scrollOffset: number;
     selectedIndex: number;
     totalEntries: number;
 }
@@ -99,12 +92,12 @@ const PackageListPanel = ({
     focused,
     groupedByCatalog,
     isDryRun,
+    scrollOffset,
     selectedIndex,
     totalEntries,
 }: PackageListPanelProps): React.JSX.Element => {
-    const borderColor = focused ? "cyan" : "gray";
+    const borderColor = focused ? "white" : "gray";
 
-    // Count by type for header summary
     const majors = entries.filter((e) => e.updateType === "major").length;
     const minors = entries.filter((e) => e.updateType === "minor").length;
     const patches = entries.filter((e) => e.updateType === "patch").length;
@@ -120,7 +113,7 @@ const PackageListPanel = ({
     const summaryText = summaryParts.length > 0 ? ` (${summaryParts.join(", ")})` : "";
     const checkedCount = checkedEntries.size;
 
-    // Build flat row list with catalog headers interleaved
+    // Build flat row list
     const rows: React.JSX.Element[] = [];
     let flatIndex = 0;
 
@@ -147,29 +140,31 @@ const PackageListPanel = ({
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             {/* Header */}
-            <Box paddingX={1} gap={1}>
-                <Text bold inverse color="cyan">
+            <Box flexShrink={0} paddingX={1} gap={1}>
+                <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text>
+                <Text wrap="truncate">
                     {totalEntries} outdated{summaryText}
                 </Text>
                 {!isDryRun && checkedCount > 0 && (
-                    <Text dimColor> \u2014 {checkedCount} selected</Text>
+                    <Text dimColor> — {checkedCount} selected</Text>
                 )}
             </Box>
 
-            {/* Package list */}
+            {/* Package list — simple offset-based scrolling */}
             <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingX={1}>
-                {rows}
+                <Box flexDirection="column" marginTop={-scrollOffset}>
+                    {rows}
+                </Box>
             </Box>
 
             {/* Filter type bar */}
             <Box paddingX={1} gap={1} flexShrink={0}>
                 {FILTER_LABELS.map((f) => (
                     <Box key={f.key}>
-                        <Text color={filterType === f.key ? "cyan" : "gray"} bold={filterType === f.key}>
-                            {f.shortcut}:{f.label}
+                        <Text color={filterType === f.key ? "white" : "gray"} bold={filterType === f.key}>
+                            {f.shortcut}:{f.label.toUpperCase()}
                         </Text>
                     </Box>
                 ))}
@@ -177,8 +172,8 @@ const PackageListPanel = ({
 
             {/* Text filter bar */}
             {filterActive && (
-                <Box paddingX={1} borderStyle="single" borderColor="yellow" borderTop borderBottom={false} borderLeft={false} borderRight={false} flexShrink={0}>
-                    <Text color="yellow">{"/  "}</Text>
+                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexShrink={0} paddingX={1}>
+                    <Text color="white" bold>{"/ "}</Text>
                     <Text>{filterText}</Text>
                     <Text inverse>{" "}</Text>
                 </Box>
