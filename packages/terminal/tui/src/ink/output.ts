@@ -532,6 +532,60 @@ export default class Output {
     }
 
     /**
+     * Composite a cached Region onto the current grid at position (x, y).
+     * This is used by render caching (Phase 7) to graft a pre-rendered
+     * subtree into the output without re-traversing the DOM.
+     *
+     * Uses Object.create() for zero-copy position adjustment — the cached
+     * region's lines are shared by reference.
+     */
+    addRegionTree(region: import("./region").Region, x: number, y: number): void {
+        // Composite each line of the cached region onto our grid
+        for (let ry = 0; ry < region.height; ry++) {
+            const targetY = y + ry;
+
+            if (targetY < 0 || targetY >= this.outputGrid.length) {
+                continue;
+            }
+
+            const srcLine = region.lines[ry];
+
+            if (!srcLine) {
+                continue;
+            }
+
+            const dstRow = this.outputGrid[targetY]!;
+
+            for (let rx = 0; rx < srcLine.length; rx++) {
+                const targetX = x + rx;
+
+                if (targetX < 0 || targetX >= dstRow.length) {
+                    continue;
+                }
+
+                const value = srcLine.getValue(rx);
+
+                // Only copy non-blank cells
+                if (value !== " " || srcLine.hasStyles(rx)) {
+                    dstRow.setCharFast(
+                        targetX,
+                        value,
+                        srcLine.getFormatFlags(rx),
+                        srcLine.getFgColor(rx),
+                        srcLine.getBgColor(rx),
+                        srcLine.getLink(rx),
+                    );
+                }
+            }
+        }
+
+        // Recursively composite child regions
+        for (const child of region.children) {
+            this.addRegionTree(child, x + child.x, y + child.y);
+        }
+    }
+
+    /**
      * Generate ANSI output from the grid. No replay step needed —
      * writes have already been applied directly.
      */
