@@ -170,7 +170,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
             <Box flexDirection="column" marginTop={1}>
                 <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">LINKS</Text>
                 <Box marginTop={1} paddingLeft={2} flexDirection="column">
-                    <Text color="cyan" underline>https://www.npmjs.com/package/{entry.packageName}</Text>
+                    <Text color="cyan" underline>https://npmx.dev/{entry.packageName}</Text>
                 </Box>
             </Box>
 

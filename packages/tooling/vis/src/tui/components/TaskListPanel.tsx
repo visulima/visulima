@@ -1,5 +1,5 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { Box, ScrollView, Spinner, Text } from "@visulima/tui";
+import { Box, ScrollBar, Spinner, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
@@ -121,8 +121,10 @@ interface TaskListPanelProps {
     parallelSlots: number;
     pinnedTaskIds: [string | null, string | null];
     rows: TaskRowData[];
+    scrollOffset: number;
     selectedIndex: number;
     title: string;
+    viewportHeight: number;
 }
 
 const TaskListPanel = ({
@@ -133,8 +135,10 @@ const TaskListPanel = ({
     parallelSlots,
     pinnedTaskIds,
     rows,
+    scrollOffset,
     selectedIndex,
     title,
+    viewportHeight,
 }: TaskListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
 
@@ -194,6 +198,9 @@ const TaskListPanel = ({
         />
     ));
 
+    // Content height: parallel section + completed/pending rows
+    const contentHeight = (hasParallelSection ? parallelSlots + 2 : 0) + listRows.length;
+
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             <Box gap={1} paddingX={1}>
@@ -216,9 +223,24 @@ const TaskListPanel = ({
                 </Box>
             )}
 
-            <ScrollView flexGrow={1} flexShrink={1} paddingLeft={1} scrollbar scrollbarColor="gray">
-                {listRows}
-            </ScrollView>
+            <Box flexDirection="row" flexGrow={1} overflow="hidden">
+                <Box flexDirection="column" flexGrow={1} paddingLeft={1} overflow="hidden">
+                    <Box flexDirection="column" marginTop={-scrollOffset}>
+                        {listRows}
+                    </Box>
+                </Box>
+                {contentHeight > viewportHeight && viewportHeight > 0 && (
+                    <Box flexShrink={0} marginLeft={1} marginRight={1}>
+                        <ScrollBar
+                            contentHeight={contentHeight}
+                            placement="inset"
+                            scrollOffset={scrollOffset}
+                            style="block"
+                            viewportHeight={viewportHeight}
+                        />
+                    </Box>
+                )}
+            </Box>
 
             {filterActive && (
                 <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop paddingX={1}>

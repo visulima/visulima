@@ -36,6 +36,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
     const outputScrollRef = useRef<ScrollViewRef>(null);
+    const [listScrollOffset, setListScrollOffset] = useState(0);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
     const [quitCountdown, setQuitCountdown] = useState(autoExitSeconds || 3);
     const quitTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -103,6 +104,24 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             quitTimerRef.current = null;
         }
     }, []);
+
+    // List viewport height for scroll calculation
+    const listViewportHeight = Math.max(1, rows - 6);
+
+    // Scroll the task list to keep selected item visible
+    const scrollListToIndex = useCallback((index: number) => {
+        setListScrollOffset((current) => {
+            if (index >= current + listViewportHeight - 1) {
+                return index - listViewportHeight + 2;
+            }
+
+            if (index <= current) {
+                return Math.max(0, index);
+            }
+
+            return current;
+        });
+    }, [listViewportHeight]);
 
     // Filter rows
     const filteredRows = useMemo(() => {
@@ -249,15 +268,19 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             if (state.focusedPanel === "tasks") {
                 // Navigation
                 if (key.downArrow || input === "j") {
-                    const maxIndex = Math.max(0, filteredRows.length - 1);
+                    const next = Math.min(state.selectedIndex + 1, Math.max(0, filteredRows.length - 1));
 
-                    store.setSelectedIndex(Math.min(state.selectedIndex + 1, maxIndex));
+                    store.setSelectedIndex(next);
+                    scrollListToIndex(next);
 
                     return;
                 }
 
                 if (key.upArrow || input === "k") {
-                    store.setSelectedIndex(Math.max(state.selectedIndex - 1, 0));
+                    const next = Math.max(state.selectedIndex - 1, 0);
+
+                    store.setSelectedIndex(next);
+                    scrollListToIndex(next);
 
                     return;
                 }
@@ -711,8 +734,10 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                             parallelSlots={parallelSlots}
                             pinnedTaskIds={state.pinnedTaskIds}
                             rows={filteredRows}
+                            scrollOffset={listScrollOffset}
                             selectedIndex={state.selectedIndex}
                             title={headerTitle}
+                            viewportHeight={listViewportHeight}
                         />
                     </Box>
                     <Box flexGrow={1}>
