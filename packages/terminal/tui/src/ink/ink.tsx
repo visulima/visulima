@@ -31,7 +31,7 @@ import { createNative } from "./log-update-native";
 import reconciler from "./reconciler";
 import render from "./renderer";
 import type ResizeObserver from "./resize-observer";
-import { ResizeObserverEntry } from "./resize-observer";
+import { measureAndExtractObservers, type ResizeObserverEntry } from "./resize-observer";
 import { calculateScroll } from "./scroll";
 import { getWindowSize } from "./utils";
 import { bsu, esu, shouldSynchronize } from "./write-synchronized";
@@ -645,24 +645,11 @@ export default class Ink {
             }
         }
 
-        if (node.resizeObservers && node.resizeObservers.size > 0 && node.yogaNode) {
-            const width = node.yogaNode.getComputedWidth();
-            const height = node.yogaNode.getComputedHeight();
-            const lastSize = node.internal_lastMeasuredSize;
+        measureAndExtractObservers(node, observerEntries);
 
-            if (lastSize?.width !== width || lastSize.height !== height) {
-                const entry = new ResizeObserverEntry(node, { height, width });
-
-                for (const observer of node.resizeObservers) {
-                    if (!observerEntries.has(observer)) {
-                        observerEntries.set(observer, []);
-                    }
-
-                    observerEntries.get(observer)!.push(entry);
-                }
-
-                node.internal_lastMeasuredSize = { height, width };
-            }
+        // Skip traversal into static subtrees
+        if (node.internal_static) {
+            return;
         }
 
         for (const child of node.childNodes) {

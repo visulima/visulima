@@ -43,8 +43,11 @@ class ResizeObserver {
             const width = element.yogaNode.getComputedWidth();
             const height = element.yogaNode.getComputedHeight();
 
-            lastMeasuredSize = { height, width };
-            element.internal_lastMeasuredSize = lastMeasuredSize;
+            // Avoid spurious measurements when layout isn't available (NaN != NaN causes bugs)
+            if (!Number.isNaN(width) && !Number.isNaN(height)) {
+                lastMeasuredSize = { height, width };
+                element.internal_lastMeasuredSize = lastMeasuredSize;
+            }
         }
 
         if (lastMeasuredSize) {
@@ -80,6 +83,71 @@ class ResizeObserver {
         } catch (error) {
             console.error(error);
         }
+    }
+}
+
+/**
+ * Measure a node and collect resize observer entries for it.
+ * Used by both the main render loop and static render processing.
+ */
+export function measureAndExtractObservers(
+    node: DOMElement,
+    observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>,
+    forceCache = false,
+): void {
+    const hasObservers = node.resizeObservers && node.resizeObservers.size > 0;
+
+    if ((hasObservers || forceCache) && node.yogaNode) {
+        const width = node.yogaNode.getComputedWidth();
+        const height = node.yogaNode.getComputedHeight();
+
+        if (!Number.isNaN(width) && !Number.isNaN(height)) {
+            const lastSize = node.internal_lastMeasuredSize;
+
+            if (!lastSize || lastSize.width !== width || lastSize.height !== height) {
+                node.internal_lastMeasuredSize = { height, width };
+
+                if (hasObservers) {
+                    const entry = new ResizeObserverEntry(node, { height, width });
+
+                    for (const observer of node.resizeObservers!) {
+                        if (!observerEntries.has(observer)) {
+                            observerEntries.set(observer, []);
+                        }
+
+                        observerEntries.get(observer)!.push(entry);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Traverse a node tree, measure all nodes, and trigger resize observers.
+ * Skips into static/cached subtrees to avoid double-counting.
+ */
+export function triggerResizeObservers(node: DOMElement, forceCache = false): void {
+    const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
+
+    function traverse(n: DOMElement): void {
+        measureAndExtractObservers(n, observerEntries, forceCache);
+
+        if (n.internal_static) {
+            return;
+        }
+
+        for (const child of n.childNodes) {
+            if (child.nodeName !== "#text") {
+                traverse(child as DOMElement);
+            }
+        }
+    }
+
+    traverse(node);
+
+    for (const [observer, entries] of observerEntries) {
+        observer.internalTrigger(entries);
     }
 }
 
