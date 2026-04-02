@@ -11,46 +11,17 @@ import { styledCharsToStyledLine } from "./styled-line-bridge";
 import { styledLineToString } from "./styled-line-serializer";
 
 /**
- * "Virtual" output class
+ * "Virtual" output class — immediate-write model.
  *
- * Uses StyledLine (columnar data) internally instead of per-character StyledChar objects,
- * reducing GC pressure from ~80 objects/line to 1 string + 1 typed array + ~3 spans.
+ * Writes go directly to the StyledLine grid instead of being queued
+ * as operations and replayed later. This eliminates the operation queue
+ * allocation and iteration overhead.
  */
 
 type Options = {
     caches?: OutputCaches;
     height: number;
     width: number;
-};
-
-type Operation = WriteOperation | StyledWriteOperation | StyledLineWriteOperation | ClipOperation | UnclipOperation;
-
-type WriteOperation = {
-    text: string;
-    transformers: OutputTransformer[];
-    type: "write";
-    x: number;
-    y: number;
-};
-
-type StyledWriteOperation = {
-    styledChars: StyledChar[];
-    transformers: OutputTransformer[];
-    type: "styledWrite";
-    x: number;
-    y: number;
-};
-
-type StyledLineWriteOperation = {
-    line: StyledLine;
-    type: "styledLineWrite";
-    x: number;
-    y: number;
-};
-
-type ClipOperation = {
-    clip: Clip;
-    type: "clip";
 };
 
 type Clip = {
@@ -60,19 +31,9 @@ type Clip = {
     y2: number | undefined;
 };
 
-type UnclipOperation = {
-    type: "unclip";
-};
-
 type OutputCachesOptions = {
     maxEntries?: number;
     pruneToFactor?: number;
-};
-
-type PreparedWrite = {
-    lines: string[];
-    x: number;
-    y: number;
 };
 
 export class OutputCaches {
@@ -309,17 +270,17 @@ export default class Output {
 
     height: number;
 
-    private readonly operations: Operation[] = [];
-
     private readonly caches: OutputCaches;
 
-    private readonly outputGrid: StyledLine[] = [];
+    // Grid is initialized eagerly and written to directly (no operation queue).
+    private outputGrid: StyledLine[];
 
     private readonly previousLines: StyledLine[] = [];
 
     private readonly previousRenderedLines: string[] = [];
 
-    private readonly activeClipStack: Clip[] = [];
+    // Clip stack is maintained during rendering for visibility checks.
+    private readonly clipStack: Clip[] = [];
 
     private lineMemoizationEnabled = true;
 
@@ -331,118 +292,251 @@ export default class Output {
         this.width = width;
         this.height = height;
         this.caches = caches ?? new OutputCaches();
+
+        // Initialize grid eagerly — StyledLine.empty() uses an internal cache.
+        this.outputGrid = this.createGrid(width, height);
     }
 
     reset(width: number, height: number): void {
         this.width = width;
         this.height = height;
-        this.operations.length = 0;
-        this.activeClipStack.length = 0;
+        this.clipStack.length = 0;
+
+        // Re-initialize grid for new dimensions
+        this.outputGrid = this.createGrid(width, height);
     }
 
+    /**
+     * Write text immediately to the grid (no queuing).
+     */
     write(x: number, y: number, text: string, options: { transformers: OutputTransformer[] }): void {
-        const { transformers } = options;
-
         if (!text) {
             return;
         }
 
-        this.operations.push({
-            text,
-            transformers,
-            type: "write",
-            x,
-            y,
-        });
-    }
+        const { transformers } = options;
+        const clip = this.clipStack.at(-1);
+        let lines = this.caches.getLines(text);
 
-    /**
-     * Write a StyledLine directly to the output, skipping the StyledChar bridge.
-     * This is the fast path for pre-parsed content.
-     */
-    writeStyledLine(x: number, y: number, line: StyledLine): void {
-        if (line.length === 0) {
-            return;
+        // Prepare (clip) the write
+        let writeX = x;
+        let writeY = y;
+
+        if (clip) {
+            const clipH = typeof clip.x1 === "number" && typeof clip.x2 === "number";
+            const clipV = typeof clip.y1 === "number" && typeof clip.y2 === "number";
+
+            if (clipH) {
+                const width = this.caches.getWidestLine(text);
+
+                if (writeX + width < clip.x1! || writeX > clip.x2!) {
+                    return;
+                }
+            }
+
+            if (clipV) {
+                const height = lines.length;
+
+                if (writeY + height < clip.y1! || writeY > clip.y2!) {
+                    return;
+                }
+            }
+
+            if (clipH) {
+                const clipped = this.applyHorizontalClip(lines, writeX, clip.x1!, clip.x2!);
+
+                lines = clipped.lines;
+                writeX = clipped.x;
+            }
+
+            if (clipV) {
+                const clipped = this.applyVerticalClip(lines, writeY, clip.y1!, clip.y2!);
+
+                lines = clipped.lines;
+                writeY = clipped.y;
+            }
         }
 
-        this.operations.push({
-            line,
-            type: "styledLineWrite",
-            x,
-            y,
-        });
-    }
+        const hasTransformers = transformers.length > 0;
 
-    writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
-        if (styledChars.length === 0) {
-            return;
-        }
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const rowIndex = writeY + lineIndex;
 
-        this.operations.push({
-            styledChars,
-            transformers: options.transformers,
-            type: "styledWrite",
-            x,
-            y,
-        });
-    }
+            if (rowIndex < 0 || rowIndex >= this.outputGrid.length) {
+                continue;
+            }
 
-    clip(clip: Clip): void {
-        this.operations.push({
-            clip,
-            type: "clip",
-        });
-        this.activeClipStack.push(clip);
-    }
+            let line = lines[lineIndex] ?? "";
 
-    unclip(): void {
-        this.operations.push({
-            type: "unclip",
-        });
-        this.activeClipStack.pop();
-    }
+            if (hasTransformers) {
+                for (const transformer of transformers) {
+                    line = transformer(line, lineIndex);
+                }
+            }
 
-    getCurrentClip(): Clip | undefined {
-        return this.activeClipStack.at(-1);
-    }
+            if (line.length === 0) {
+                continue;
+            }
 
-    private replayOperations(output: StyledLine[]): void {
-        const clips: Clip[] = [];
+            const row = this.outputGrid[rowIndex]!;
+            const parsed = this.caches.getStyledLine(line);
+            let offsetX = writeX;
 
-        for (const operation of this.operations) {
-            switch (operation.type) {
-                case "clip": {
-                    clips.push(operation.clip);
+            for (let i = 0; i < parsed.length; i++) {
+                if (offsetX >= row.length) {
                     break;
                 }
 
-                case "styledLineWrite": {
-                    this.processStyledLineWriteOperation(operation, output, clips.at(-1));
-                    break;
+                row.setCharFast(offsetX, parsed.getValue(i), parsed.getFormatFlags(i), parsed.getFgColor(i), parsed.getBgColor(i), parsed.getLink(i));
+
+                if (parsed.getFullWidth(i)) {
+                    offsetX++;
+
+                    if (offsetX < row.length) {
+                        row.setCharFast(offsetX, "", parsed.getFormatFlags(i) & ~FULL_WIDTH_MASK, parsed.getFgColor(i), parsed.getBgColor(i), parsed.getLink(i));
+                    }
                 }
 
-                case "styledWrite": {
-                    this.processStyledWriteOperation(operation, output, clips.at(-1));
-                    break;
-                }
-
-                case "unclip": {
-                    clips.pop();
-                    break;
-                }
-
-                case "write": {
-                    this.processWriteOperation(operation, output, clips.at(-1));
-                    break;
-                }
+                offsetX++;
             }
         }
     }
 
-    get(): { height: number; output: string } {
-        const output = this.getOutputGrid();
+    /**
+     * Write a StyledLine directly to the grid (fast path, no bridge).
+     */
+    writeStyledLine(x: number, y: number, line: StyledLine): void {
+        if (line.length === 0 || y < 0 || y >= this.outputGrid.length) {
+            return;
+        }
 
-        this.replayOperations(output);
+        const clip = this.clipStack.at(-1);
+        const row = this.outputGrid[y]!;
+        let col = x;
+
+        for (let i = 0; i < line.length; i++) {
+            if (col < 0) {
+                col++;
+                continue;
+            }
+
+            if (col >= this.width) {
+                break;
+            }
+
+            if (clip) {
+                if (clip.x1 !== undefined && col < clip.x1) {
+                    col++;
+                    continue;
+                }
+
+                if (clip.x2 !== undefined && col >= clip.x2) {
+                    break;
+                }
+
+                if (clip.y1 !== undefined && y < clip.y1) {
+                    return;
+                }
+
+                if (clip.y2 !== undefined && y >= clip.y2) {
+                    return;
+                }
+            }
+
+            const value = line.getValue(i);
+            const flags = line.getFormatFlags(i);
+            const fgColor = line.getFgColor(i);
+            const bgColor = line.getBgColor(i);
+            const link = line.getLink(i);
+            const isFullWidth = line.getFullWidth(i);
+
+            row.setCharFast(col, value, flags, fgColor, bgColor, link);
+            col++;
+
+            if (isFullWidth && col < this.width) {
+                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                col++;
+            }
+        }
+    }
+
+    /**
+     * Write pre-tokenized StyledChar[] to the grid (backward compat).
+     */
+    writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
+        if (styledChars.length === 0 || y < 0 || y >= this.outputGrid.length) {
+            return;
+        }
+
+        const clip = this.clipStack.at(-1);
+        const row = this.outputGrid[y]!;
+        const source = styledCharsToStyledLine(styledChars);
+        let col = x;
+
+        for (let i = 0; i < source.length; i++) {
+            if (col < 0) {
+                col++;
+                continue;
+            }
+
+            if (col >= this.width) {
+                break;
+            }
+
+            if (clip) {
+                if (clip.x1 !== undefined && col < clip.x1) {
+                    col++;
+                    continue;
+                }
+
+                if (clip.x2 !== undefined && col >= clip.x2) {
+                    break;
+                }
+
+                if (clip.y1 !== undefined && y < clip.y1) {
+                    return;
+                }
+
+                if (clip.y2 !== undefined && y >= clip.y2) {
+                    return;
+                }
+            }
+
+            const value = source.getValue(i);
+            const flags = source.getFormatFlags(i);
+            const fgColor = source.getFgColor(i);
+            const bgColor = source.getBgColor(i);
+            const link = source.getLink(i);
+            const isFullWidth = source.getFullWidth(i);
+
+            row.setCharFast(col, value, flags, fgColor, bgColor, link);
+            col++;
+
+            if (isFullWidth && col < this.width) {
+                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                col++;
+            }
+        }
+    }
+
+    clip(clip: Clip): void {
+        this.clipStack.push(clip);
+    }
+
+    unclip(): void {
+        this.clipStack.pop();
+    }
+
+    getCurrentClip(): Clip | undefined {
+        return this.clipStack.at(-1);
+    }
+
+    /**
+     * Generate ANSI output from the grid. No replay step needed —
+     * writes have already been applied directly.
+     */
+    get(): { height: number; output: string } {
+        const output = this.outputGrid;
 
         if (!this.lineMemoizationEnabled) {
             if (this.memoizationProbeCountdown > 0) {
@@ -503,11 +597,11 @@ export default class Output {
         };
     }
 
+    /**
+     * Convert to Uint32Array for the native Rust renderer.
+     */
     getBuffer(): { buffer: Uint32Array; height: number } {
-        const output = this.getOutputGrid();
-
-        this.replayOperations(output);
-
+        const output = this.outputGrid;
         const rows = output.length;
         const buffer = new Uint32Array(this.width * rows * 2);
 
@@ -558,216 +652,14 @@ export default class Output {
         return { buffer, height: rows };
     }
 
-    /**
-     * Write a StyledLine directly to the grid — fast path that skips
-     * StyledChar bridge conversion entirely.
-     */
-    private processStyledLineWriteOperation(operation: StyledLineWriteOperation, output: StyledLine[], clip: Clip | undefined): void {
-        const { line: source, x, y } = operation;
+    private createGrid(width: number, height: number): StyledLine[] {
+        const grid: StyledLine[] = [];
 
-        while (output.length <= y) {
-            output.push(StyledLine.empty(this.width));
+        for (let y = 0; y < height; y++) {
+            grid.push(StyledLine.empty(width));
         }
 
-        const row = output[y];
-
-        if (!row) {
-            return;
-        }
-
-        let col = x;
-
-        for (let i = 0; i < source.length; i++) {
-            if (col < 0) {
-                col++;
-                continue;
-            }
-
-            if (col >= this.width) {
-                break;
-            }
-
-            if (clip) {
-                if (clip.x1 !== undefined && col < clip.x1) {
-                    col++;
-                    continue;
-                }
-
-                if (clip.x2 !== undefined && col >= clip.x2) {
-                    break;
-                }
-
-                if (clip.y1 !== undefined && y < clip.y1) {
-                    return;
-                }
-
-                if (clip.y2 !== undefined && y >= clip.y2) {
-                    return;
-                }
-            }
-
-            const value = source.getValue(i);
-            const flags = source.getFormatFlags(i);
-            const fgColor = source.getFgColor(i);
-            const bgColor = source.getBgColor(i);
-            const link = source.getLink(i);
-            const isFullWidth = source.getFullWidth(i);
-
-            row.setCharFast(col, value, flags, fgColor, bgColor, link);
-            col++;
-
-            if (isFullWidth && col < this.width) {
-                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
-                col++;
-            }
-        }
-    }
-
-    private processStyledWriteOperation(operation: StyledWriteOperation, output: StyledLine[], clip: Clip | undefined): void {
-        const { styledChars, x, y } = operation;
-
-        while (output.length <= y) {
-            output.push(StyledLine.empty(this.width));
-        }
-
-        const row = output[y];
-
-        if (!row) {
-            return;
-        }
-
-        // Convert StyledChar[] to StyledLine once (avoids per-char ansiCodesToStyleInfo)
-        const source = styledCharsToStyledLine(styledChars);
-        let col = x;
-
-        for (let i = 0; i < source.length; i++) {
-            if (col < 0) {
-                col++;
-                continue;
-            }
-
-            if (col >= this.width) {
-                break;
-            }
-
-            if (clip) {
-                if (clip.x1 !== undefined && col < clip.x1) {
-                    col++;
-                    continue;
-                }
-
-                if (clip.x2 !== undefined && col >= clip.x2) {
-                    break;
-                }
-
-                if (clip.y1 !== undefined && y < clip.y1) {
-                    return;
-                }
-
-                if (clip.y2 !== undefined && y >= clip.y2) {
-                    return;
-                }
-            }
-
-            const value = source.getValue(i);
-            const flags = source.getFormatFlags(i);
-            const fgColor = source.getFgColor(i);
-            const bgColor = source.getBgColor(i);
-            const link = source.getLink(i);
-            const isFullWidth = source.getFullWidth(i);
-
-            row.setCharFast(col, value, flags, fgColor, bgColor, link);
-            col++;
-
-            if (isFullWidth && col < this.width) {
-                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
-                col++;
-            }
-        }
-    }
-
-    private processWriteOperation(operation: WriteOperation, output: StyledLine[], clip: Clip | undefined) {
-        const prepared = this.prepareWrite(operation, clip);
-
-        if (!prepared) {
-            return;
-        }
-
-        const hasTransformers = operation.transformers.length > 0;
-
-        for (let lineIndex = 0; lineIndex < prepared.lines.length; lineIndex++) {
-            const rowIndex = prepared.y + lineIndex;
-
-            if (rowIndex < 0) {
-                continue;
-            }
-
-            if (rowIndex >= output.length) {
-                break;
-            }
-
-            const currentLine = output[rowIndex];
-
-            if (!currentLine) {
-                continue;
-            }
-
-            let line = prepared.lines[lineIndex] ?? "";
-
-            if (hasTransformers) {
-                line = this.applyTransformers(line, operation.transformers, lineIndex);
-            }
-
-            this.writeLineToStyledLine(currentLine, prepared.x, line);
-        }
-    }
-
-    private prepareWrite(operation: WriteOperation, clip: Clip | undefined): PreparedWrite | undefined {
-        let { text, x, y } = operation;
-        let lines = this.caches.getLines(text);
-
-        if (!clip) {
-            return { lines, x, y };
-        }
-
-        const clipHorizontally = typeof clip.x1 === "number" && typeof clip.x2 === "number";
-        const clipVertically = typeof clip.y1 === "number" && typeof clip.y2 === "number";
-
-        if (clipHorizontally) {
-            const clipX1 = clip.x1!;
-            const clipX2 = clip.x2!;
-            const width = this.caches.getWidestLine(text);
-
-            if (x + width < clipX1 || x > clipX2) {
-                return;
-            }
-        }
-
-        if (clipVertically) {
-            const clipY1 = clip.y1!;
-            const clipY2 = clip.y2!;
-            const height = lines.length;
-
-            if (y + height < clipY1 || y > clipY2) {
-                return;
-            }
-        }
-
-        if (clipHorizontally) {
-            const clipped = this.applyHorizontalClip(lines, x, clip.x1!, clip.x2!);
-
-            lines = clipped.lines;
-            x = clipped.x;
-        }
-
-        if (clipVertically) {
-            const clipped = this.applyVerticalClip(lines, y, clip.y1!, clip.y2!);
-
-            lines = clipped.lines;
-            y = clipped.y;
-        }
-
-        return { lines, x, y };
+        return grid;
     }
 
     private applyHorizontalClip(lines: string[], x: number, x1: number, x2: number): { lines: string[]; x: number } {
@@ -797,66 +689,6 @@ export default class Output {
             lines: clippedLines,
             y: Math.max(y, y1),
         };
-    }
-
-    private applyTransformers(line: string, transformers: OutputTransformer[], lineIndex: number): string {
-        let transformedLine = line;
-
-        for (const transformer of transformers) {
-            transformedLine = transformer(transformedLine, lineIndex);
-        }
-
-        return transformedLine;
-    }
-
-    /**
-     * Write a text line into a StyledLine row at position x.
-     */
-    private writeLineToStyledLine(row: StyledLine, x: number, line: string) {
-        if (line.length === 0) {
-            return;
-        }
-
-        const parsed = this.caches.getStyledLine(line);
-        let offsetX = x;
-
-        for (let i = 0; i < parsed.length; i++) {
-            if (offsetX >= row.length) {
-                break;
-            }
-
-            const value = parsed.getValue(i);
-            const flags = parsed.getFormatFlags(i);
-            const fgColor = parsed.getFgColor(i);
-            const bgColor = parsed.getBgColor(i);
-            const link = parsed.getLink(i);
-
-            row.setCharFast(offsetX, value, flags, fgColor, bgColor, link);
-
-            if (parsed.getFullWidth(i)) {
-                offsetX++;
-
-                if (offsetX < row.length) {
-                    row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
-                }
-            }
-
-            offsetX++;
-        }
-    }
-
-    private getOutputGrid(): StyledLine[] {
-        const { height, width } = this;
-
-        if (this.outputGrid.length > height) {
-            this.outputGrid.length = height;
-        }
-
-        for (let y = 0; y < height; y++) {
-            this.outputGrid[y] = StyledLine.empty(width);
-        }
-
-        return this.outputGrid;
     }
 
     private disableLineMemoization() {
