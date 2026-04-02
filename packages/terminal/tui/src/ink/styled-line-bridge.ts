@@ -13,6 +13,7 @@
 
 import type { StyledChar } from "@alcalzone/ansi-tokenize";
 
+import { ansi256ToColorName, colorToAnsiCode } from "./color-utils";
 import { StyledLine } from "./styled-line";
 import {
     BOLD_MASK,
@@ -48,20 +49,7 @@ type ParsedStyle = {
     link?: string;
 };
 
-// Map ANSI 256-color index to named color string or ansi256(N) string.
-// Standard colors (0-7) map to names; everything else uses ansi256(N)
-// to preserve the exact escape code format through round-trips.
-const ansi256IndexToColor = (index: number): string => {
-    const standardColors = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
-
-    if (index >= 0 && index <= 7) {
-        return standardColors[index]!;
-    }
-
-    // Indices 8-15 (bright) and 16-255 (extended) use ansi256 format
-    // to preserve the exact \x1b[38;5;Nm / \x1b[48;5;Nm escape codes.
-    return `ansi256(${index})`;
-};
+// ansi256IndexToColor is now imported from color-utils.ts as ansi256ToColorName
 
 /**
  * Convert a StyledChar's AnsiCode[] styles to StyledLine-compatible format flags and colors.
@@ -149,13 +137,13 @@ export const ansiCodesToStyleInfo = (styles: StyledChar["styles"]): ParsedStyle 
                 case 35:
                 case 36:
                 case 37: {
-                    fgColor = ansi256IndexToColor(code - 30);
+                    fgColor = ansi256ToColorName(code - 30);
                     break;
                 }
 
                 case 38: {
                     if (params[index + 1] === 5 && params[index + 2] !== undefined) {
-                        fgColor = ansi256IndexToColor(params[index + 2]!);
+                        fgColor = ansi256ToColorName(params[index + 2]!);
                         index += 2;
                     } else if (params[index + 1] === 2 && index + 4 < params.length) {
                         fgColor = `rgb(${params[index + 2]}, ${params[index + 3]}, ${params[index + 4]})`;
@@ -178,13 +166,13 @@ export const ansiCodesToStyleInfo = (styles: StyledChar["styles"]): ParsedStyle 
                 case 45:
                 case 46:
                 case 47: {
-                    bgColor = ansi256IndexToColor(code - 40);
+                    bgColor = ansi256ToColorName(code - 40);
                     break;
                 }
 
                 case 48: {
                     if (params[index + 1] === 5 && params[index + 2] !== undefined) {
-                        bgColor = ansi256IndexToColor(params[index + 2]!);
+                        bgColor = ansi256ToColorName(params[index + 2]!);
                         index += 2;
                     } else if (params[index + 1] === 2 && index + 4 < params.length) {
                         bgColor = `rgb(${params[index + 2]}, ${params[index + 3]}, ${params[index + 4]})`;
@@ -325,65 +313,4 @@ export const styledLineToStyledChars = (line: StyledLine): StyledChar[] => {
     return chars;
 };
 
-/**
- * Convert a color name/hex/rgb/ansi256 string to an ANSI escape code.
- */
-const colorToAnsiCode = (color: string, isFg: boolean): string | undefined => {
-    const base = isFg ? 30 : 40;
-
-    const namedColors: Record<string, number> = {
-        black: 0,
-        blue: 4,
-        cyan: 6,
-        green: 2,
-        magenta: 5,
-        red: 1,
-        white: 7,
-        yellow: 3,
-    };
-
-    const brightColors: Record<string, number> = {
-        blackBright: 60,
-        blueBright: 64,
-        cyanBright: 66,
-        greenBright: 62,
-        magentaBright: 65,
-        redBright: 61,
-        whiteBright: 67,
-        yellowBright: 63,
-    };
-
-    const named = namedColors[color];
-
-    if (named !== undefined) {
-        return `\u001B[${base + named}m`;
-    }
-
-    const bright = brightColors[color];
-
-    if (bright !== undefined) {
-        return `\u001B[${base + bright}m`;
-    }
-
-    if (color.startsWith("#") && color.length === 7) {
-        const r = Number.parseInt(color.slice(1, 3), 16);
-        const g = Number.parseInt(color.slice(3, 5), 16);
-        const b = Number.parseInt(color.slice(5, 7), 16);
-
-        return `\u001B[${isFg ? 38 : 48};2;${r};${g};${b}m`;
-    }
-
-    const ansi256Match = /^ansi256\(\s?(\d+)\s?\)$/.exec(color);
-
-    if (ansi256Match) {
-        return `\u001B[${isFg ? 38 : 48};5;${ansi256Match[1]}m`;
-    }
-
-    const rgbMatch = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/.exec(color);
-
-    if (rgbMatch) {
-        return `\u001B[${isFg ? 38 : 48};2;${rgbMatch[1]};${rgbMatch[2]};${rgbMatch[3]}m`;
-    }
-
-    return undefined;
-};
+// colorToAnsiCode is now imported from color-utils.ts

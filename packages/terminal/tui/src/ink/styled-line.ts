@@ -155,77 +155,25 @@ export class StyledLine {
     }
 
     setInverted(index: number, inverted: boolean): void {
-        if (index < 0 || index >= this.length) {
-            return;
-        }
-
-        this.ensureInitialized();
-        this.splitSpansAt(index);
-        this.splitSpansAt(index + 1);
-
-        let current = 0;
-
-        for (const span of this.spans!) {
-            if (current === index && span.length === 1) {
-                if (inverted) {
-                    span.formatFlags |= INVERSE_MASK;
-                } else {
-                    span.formatFlags &= ~INVERSE_MASK;
-                }
-
-                break;
+        this.updateSpanAt(index, (span) => {
+            if (inverted) {
+                span.formatFlags |= INVERSE_MASK;
+            } else {
+                span.formatFlags &= ~INVERSE_MASK;
             }
-
-            current += span.length;
-        }
-
-        this.mergeSpans();
+        });
     }
 
     setBackgroundColor(index: number, color: string | undefined): void {
-        if (index < 0 || index >= this.length) {
-            return;
-        }
-
-        this.ensureInitialized();
-        this.splitSpansAt(index);
-        this.splitSpansAt(index + 1);
-
-        let current = 0;
-
-        for (const span of this.spans!) {
-            if (current === index && span.length === 1) {
-                span.bgColor = color;
-                break;
-            }
-
-            current += span.length;
-        }
-
-        this.mergeSpans();
+        this.updateSpanAt(index, (span) => {
+            span.bgColor = color;
+        });
     }
 
     setForegroundColor(index: number, color: string | undefined): void {
-        if (index < 0 || index >= this.length) {
-            return;
-        }
-
-        this.ensureInitialized();
-        this.splitSpansAt(index);
-        this.splitSpansAt(index + 1);
-
-        let current = 0;
-
-        for (const span of this.spans!) {
-            if (current === index && span.length === 1) {
-                span.fgColor = color;
-                break;
-            }
-
-            current += span.length;
-        }
-
-        this.mergeSpans();
+        this.updateSpanAt(index, (span) => {
+            span.fgColor = color;
+        });
     }
 
     setChar(index: number, value: string, formatFlags: number, fgColor?: string, bgColor?: string, link?: string): void {
@@ -822,6 +770,33 @@ export class StyledLine {
                 }
             }
         }
+    }
+
+    /**
+     * Split the span at `index` into a single-char span, apply the updater,
+     * then merge adjacent spans. Shared by setInverted/setBackgroundColor/setForegroundColor.
+     */
+    private updateSpanAt(index: number, updater: (span: StyleSpan) => void): void {
+        if (index < 0 || index >= this.length) {
+            return;
+        }
+
+        this.ensureInitialized();
+        this.splitSpansAt(index);
+        this.splitSpansAt(index + 1);
+
+        let current = 0;
+
+        for (const span of this.spans!) {
+            if (current === index && span.length === 1) {
+                updater(span);
+                break;
+            }
+
+            current += span.length;
+        }
+
+        this.mergeSpans();
     }
 
     private ensureInitialized(initialCapacity = 16): void {
