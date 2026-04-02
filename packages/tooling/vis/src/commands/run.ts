@@ -4,6 +4,8 @@ import type { Command } from "@visulima/cerebro";
 import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
 import { createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
 
+import isInCi from "is-in-ci";
+
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
 import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
@@ -144,7 +146,7 @@ const run: Command = {
             ...config.taskRunnerOptions,
         };
 
-        const isTTY = process.stdout.isTTY && !process.env["CI"];
+        const isTTY = process.stdout.isTTY && !isInCi;
         const autoExitConfig = config.tui?.autoExit ?? false;
         const lifecycleOptions = {
             args: { parallel: runnerOptions.parallel, targets: [target] },

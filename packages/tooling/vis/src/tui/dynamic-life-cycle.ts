@@ -52,6 +52,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
     const onSignal = (): void => {
         cleanup();
+        clearKeepAlive();
 
         // Force restore terminal: leave alternate screen, show cursor
         process.stdout.write("\u001B[?1049l\u001B[?25h");
@@ -153,10 +154,31 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         }
     };
 
+    // Keepalive timer to prevent the event loop from draining after tasks complete
+    let keepAliveTimer: ReturnType<typeof setInterval> | undefined;
+
+    const clearKeepAlive = (): void => {
+        if (keepAliveTimer) {
+            clearInterval(keepAliveTimer);
+            keepAliveTimer = undefined;
+        }
+    };
+
     const lifeCycle: LifeCycleInterface = {
         endCommand(): void {
             cleanup();
             store.markDone();
+
+            // Keep event loop alive + ensure stdin stays in raw mode for keyboard input
+            if (!keepAliveTimer) {
+                keepAliveTimer = setInterval(() => {}, 1000);
+            }
+
+            if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
+                process.stdin.setRawMode(true);
+                process.stdin.ref();
+                process.stdin.resume();
+            }
         },
 
         endTasks(results: TaskResult[]): void {
@@ -191,6 +213,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
             instance.waitUntilExit().then(
                 () => {
+                    clearKeepAlive();
                     process.removeListener("SIGINT", onSignal);
                     process.removeListener("SIGTERM", onSignal);
 
@@ -198,6 +221,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                     resolveDone();
                 },
                 () => {
+                    clearKeepAlive();
                     resolveDone();
                 },
             );

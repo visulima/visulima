@@ -1105,26 +1105,113 @@ const enrichWithSecurity = async (outdated: OutdatedEntry[], entries: { catalogN
     }
 };
 
+// ── Outdated result cache (1-minute TTL) ────────────────────────────────
+
+const OUTDATED_CACHE_TTL_MS = 60_000;
+
+interface OutdatedCache {
+    hash: string;
+    result: CheckOutdatedResult;
+    timestamp: number;
+}
+
+const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: CatalogCheckOptions): string => {
+    const parts: string[] = [];
+
+    for (const [name, deps] of catalogs) {
+        for (const [pkg, range] of deps) {
+            parts.push(`${name}:${pkg}=${range}`);
+        }
+    }
+
+    parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
+    parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")}`);
+
+    let hash = 5381;
+    const str = parts.join("|");
+
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0; // eslint-disable-line no-bitwise
+    }
+
+    return String(hash);
+};
+
+const getOutdatedCachePath = (workspaceRoot: string): string | undefined => {
+    const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
+
+    return cacheDir ? join(cacheDir, "outdated-cache.json") : undefined;
+};
+
+const readOutdatedCache = (workspaceRoot: string, hash: string): CheckOutdatedResult | undefined => {
+    const cachePath = getOutdatedCachePath(workspaceRoot);
+
+    if (!cachePath || !isAccessibleSync(cachePath)) {
+        return undefined;
+    }
+
+    try {
+        const cache = readJsonSync(cachePath) as OutdatedCache;
+
+        if (cache.hash === hash && Date.now() - cache.timestamp < OUTDATED_CACHE_TTL_MS) {
+            return cache.result;
+        }
+    } catch {
+        // Corrupt cache — ignore
+    }
+
+    return undefined;
+};
+
+const writeOutdatedCache = (workspaceRoot: string, hash: string, result: CheckOutdatedResult): void => {
+    const cachePath = getOutdatedCachePath(workspaceRoot);
+
+    if (!cachePath) {
+        return;
+    }
+
+    try {
+        ensureDirSync(dirname(cachePath));
+        writeJsonSync(cachePath, { hash, result, timestamp: Date.now() } satisfies OutdatedCache);
+    } catch {
+        // Non-critical
+    }
+};
+
 const checkOutdated = async (
     catalogs: Map<string, Map<string, string>>,
     options: CatalogCheckOptions,
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
+    workspaceRoot?: string,
 ): Promise<CheckOutdatedResult> => {
-    const entries = collectEntries(catalogs, options);
+    const hash = computeCacheHash(catalogs, options);
 
-    // Deduplicate package names for fetching
+    if (workspaceRoot) {
+        const cached = readOutdatedCache(workspaceRoot, hash);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
+    const entries = collectEntries(catalogs, options);
     const uniquePackages = [...new Set(entries.map((entry) => entry.packageName))];
 
     const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
-    // Enrich with security data if requested
     if (options.security && outdated.length > 0) {
         await enrichWithSecurity(outdated, entries);
     }
 
-    return { failed, outdated };
+    const result = { failed, outdated };
+
+    if (workspaceRoot) {
+        writeOutdatedCache(workspaceRoot, hash, result);
+    }
+
+    return result;
 };
 
 // --- Backup & Rollback ---
