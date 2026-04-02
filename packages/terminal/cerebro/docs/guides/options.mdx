@@ -687,6 +687,46 @@ Cerebro provides built-in global options available to all commands:
 
 These don't need to be defined in your commands.
 
+### Custom Global Options
+
+You can add your own global options using `addGlobalOption()`. These are available
+to every command and appear in the help output alongside the built-in ones:
+
+```typescript
+const cli = new Cerebro("my-app");
+
+cli.addGlobalOption({
+    name: "cwd",
+    type: String,
+    description: "Override working directory",
+});
+
+cli.addGlobalOption({
+    name: "config",
+    alias: "C",
+    type: String,
+    description: "Path to config file",
+});
+```
+
+Custom global options work exactly like command options — they support `type`, `alias`,
+`description`, `defaultValue`, and all other `OptionDefinition` fields. They are parsed
+for every command and accessible via `toolbox.options`:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    execute: ({ options }) => {
+        const cwd = options.cwd as string | undefined;
+        const config = options.config as string | undefined;
+        // ...
+    },
+});
+```
+
+> **Note:** You cannot override built-in global options. Attempting to add an option
+> with the same name or alias as a built-in will throw an error.
+
 ## Global Environment Variables
 
 Cerebro also provides built-in global environment variables:
