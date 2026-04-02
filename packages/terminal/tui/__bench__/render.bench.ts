@@ -6,74 +6,76 @@ import { render as inkRender, Box as InkBox, Text as InkText } from "ink";
 import React from "react";
 import { bench, describe } from "vitest";
 
-import tuiRender from "../src/ink/render";
+// Import from production build (pre-compiled JS) for accurate benchmarks.
+// Run `pnpm --filter @visulima/tui run build:prod` before benchmarking.
+import { render as tuiRender, Box as TuiBox, Text as TuiText } from "../dist/ink/index.js";
 
-function createMockStdout() {
+const createMockStdout = () => {
     const stream = new PassThrough() as NodeJS.WriteStream;
 
     stream.columns = 80;
     stream.rows = 24;
 
     return stream;
-}
+};
 
-// --- @visulima/tui components ---
+// --- @visulima/tui components (use exported Box/Text from dist) ---
 
-function TuiSimpleApp() {
+const TuiSimpleApp = () => {
     return React.createElement(
-        "box",
+        TuiBox,
         { flexDirection: "column", padding: 1 },
-        React.createElement("text", { color: "green", bold: true }, "Hello World"),
-        React.createElement("text", {}, "A simple line of text."),
+        React.createElement(TuiText, { color: "green", bold: true }, "Hello World"),
+        React.createElement(TuiText, {}, "A simple line of text."),
     );
-}
+};
 
-function TuiDashboardApp() {
+const TuiDashboardApp = () => {
     return React.createElement(
-        "box",
+        TuiBox,
         { flexDirection: "column", width: 80, height: 24 },
         React.createElement(
-            "box",
+            TuiBox,
             { borderStyle: "round", borderColor: "green", padding: 1, marginBottom: 1 },
-            React.createElement("text", { bold: true, color: "cyan" }, "Dashboard"),
+            React.createElement(TuiText, { bold: true, color: "cyan" }, "Dashboard"),
         ),
         React.createElement(
-            "box",
+            TuiBox,
             { flexDirection: "row", gap: 2 },
             React.createElement(
-                "box",
+                TuiBox,
                 { borderStyle: "single", width: 20 },
-                React.createElement("text", { color: "yellow" }, "Panel A"),
-                React.createElement("text", {}, "val: 42"),
+                React.createElement(TuiText, { color: "yellow" }, "Panel A"),
+                React.createElement(TuiText, {}, "val: 42"),
             ),
             React.createElement(
-                "box",
+                TuiBox,
                 { borderStyle: "single", width: 20 },
-                React.createElement("text", { color: "magenta" }, "Panel B"),
-                React.createElement("text", {}, "val: 77"),
+                React.createElement(TuiText, { color: "magenta" }, "Panel B"),
+                React.createElement(TuiText, {}, "val: 77"),
             ),
             React.createElement(
-                "box",
+                TuiBox,
                 { borderStyle: "single", width: 20 },
-                React.createElement("text", { color: "blue" }, "Panel C"),
-                React.createElement("text", {}, "val: 13"),
+                React.createElement(TuiText, { color: "blue" }, "Panel C"),
+                React.createElement(TuiText, {}, "val: 13"),
             ),
         ),
     );
-}
+};
 
 // --- ink components ---
 
-function InkSimpleApp() {
+const InkSimpleApp = () => {
     return React.createElement(
         InkBox,
         { flexDirection: "column", padding: 1 },
         React.createElement(InkText, { color: "green", bold: true }, "Hello World"),
         React.createElement(InkText, {}, "A simple line of text."),
     );
-}
+};
 
-function InkDashboardApp() {
+const InkDashboardApp = () => {
     return React.createElement(
         InkBox,
         { flexDirection: "column", width: 80, height: 24 },
@@ -105,20 +107,20 @@ function InkDashboardApp() {
             ),
         ),
     );
-}
+};
 
 // --- @jrichman/ink components ---
 
-function JrInkSimpleApp() {
+const JrInkSimpleApp = () => {
     return React.createElement(
         JrInkBox,
         { flexDirection: "column", padding: 1 },
         React.createElement(JrInkText, { color: "green", bold: true }, "Hello World"),
         React.createElement(JrInkText, {}, "A simple line of text."),
     );
-}
+};
 
-function JrInkDashboardApp() {
+const JrInkDashboardApp = () => {
     return React.createElement(
         JrInkBox,
         { flexDirection: "column", width: 80, height: 24 },
@@ -150,7 +152,7 @@ function JrInkDashboardApp() {
             ),
         ),
     );
-}
+};
 
 const renderOpts = { exitOnCtrlC: false, patchConsole: false };
 
@@ -213,10 +215,10 @@ describe("render (rerender)", () => {
             () => {
                 tuiInst.rerender(
                     React.createElement(
-                        "box",
+                        TuiBox,
                         { flexDirection: "column", padding: 1 },
-                        React.createElement("text", { color: "green", bold: true }, "Hello World"),
-                        React.createElement("text", {}, `Counter: ${++tuiFrame}`),
+                        React.createElement(TuiText, { color: "green", bold: true }, "Hello World"),
+                        React.createElement(TuiText, {}, `Counter: ${++tuiFrame}`),
                     ),
                 );
             },
