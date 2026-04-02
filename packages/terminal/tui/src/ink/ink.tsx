@@ -44,6 +44,10 @@ if (!(console as any).Console) {
 
 const noop = () => {};
 
+// React.memo cannot skip App re-render because `children` changes on every
+// rerender. The App's ~40 hooks run every time. This is architectural — the
+// only way to avoid it would be to move App's hook logic out of React.
+
 const yieldImmediate = async () =>
     new Promise<void>((resolve) => {
         setImmediate(resolve);
@@ -846,10 +850,8 @@ export default class Ink {
         );
 
         if (this.options.concurrent) {
-            // Concurrent mode: use updateContainer (async scheduling)
             reconciler.updateContainer(tree, this.container, null, noop);
         } else {
-            // Legacy mode: use updateContainerSync + flushSyncWork (sync)
             reconciler.updateContainerSync(tree, this.container, null, noop);
             reconciler.flushSyncWork();
         }
