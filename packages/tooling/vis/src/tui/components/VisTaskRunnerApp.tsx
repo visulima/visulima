@@ -382,65 +382,48 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
     // ── Footer bar (full-width, below both panels) ──────────────────
 
-    let footerContent: React.JSX.Element;
+    let footerItems: React.JSX.Element[];
 
     if (state.done) {
-        footerContent = (
-            <Box justifyContent="space-between" paddingX={1}>
-                <Box gap={1}>
-                    <Text bold color="white">q</Text><Text dimColor> QUIT</Text>
-                    <Text dimColor>{" \u00B7 "}</Text>
-                    <Text bold color="white">r</Text><Text dimColor> RERUN</Text>
-                    <Text dimColor>{" \u00B7 "}</Text>
-                    <Text bold color="white">?</Text><Text dimColor> HELP</Text>
-                    <Text dimColor>{" \u00B7 "}</Text>
-                    <Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor> NAV</Text>
-                </Box>
+        footerItems = [
+            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+            <Box key="r" gap={1}><Text bold color="white">r</Text><Text dimColor>RERUN</Text></Box>,
+            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
+            <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
+            <Box key="status" flexGrow={1} justifyContent="flex-end">
                 <Text color={state.failed > 0 ? "red" : "green"}>
                     {state.failed > 0 ? `${state.failed} FAILED` : "DONE"}
                     <Text dimColor>{" \u2014 "}</Text>
                     <Text bold color="white">q</Text>
                     <Text dimColor> TO EXIT</Text>
                 </Text>
-            </Box>
-        );
+            </Box>,
+        ];
     } else if (state.focusedPanel === "output") {
-        footerContent = (
-            <Box gap={1} paddingX={1}>
-                <Text bold color="white">q</Text><Text dimColor> QUIT</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">Esc</Text><Text dimColor> BACK</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor> SCROLL</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">^u ^d</Text><Text dimColor> PAGE</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">?</Text><Text dimColor> HELP</Text>
-            </Box>
-        );
+        footerItems = [
+            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+            <Box key="esc" gap={1}><Text bold color="white">Esc</Text><Text dimColor>BACK</Text></Box>,
+            <Box key="scroll" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>SCROLL</Text></Box>,
+            <Box key="page" gap={1}><Text bold color="white">^u ^d</Text><Text dimColor>PAGE</Text></Box>,
+            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
+        ];
     } else {
-        footerContent = (
-            <Box gap={1} paddingX={1}>
-                <Text bold color="white">q</Text><Text dimColor> QUIT</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">?</Text><Text dimColor> HELP</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor> NAV</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">/</Text><Text dimColor> FILTER</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">1 2</Text><Text dimColor> PIN</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">{"\u23CE"}</Text><Text dimColor> OUTPUT</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">Tab</Text><Text dimColor> PANEL</Text>
-            </Box>
-        );
+        footerItems = [
+            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
+            <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
+            <Box key="/" gap={1}><Text bold color="white">/</Text><Text dimColor>FILTER</Text></Box>,
+            <Box key="pin" gap={1}><Text bold color="white">1 2</Text><Text dimColor>PIN</Text></Box>,
+            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>OUTPUT</Text></Box>,
+            <Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>,
+        ];
     }
 
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0}>
-            {footerContent}
+            <Box paddingX={1} gap={2} flexWrap="wrap">
+                {footerItems}
+            </Box>
         </Box>
     );
 

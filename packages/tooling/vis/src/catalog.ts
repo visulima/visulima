@@ -1350,9 +1350,9 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     return renderToString(
         React.createElement(
             Box,
-            { borderStyle: "round", flexDirection: "column", paddingLeft: 1, paddingRight: 1, paddingY: 1 },
-            React.createElement(Text, { bold: true }, "Summary"),
-            React.createElement(Text, null, summary),
+            { flexDirection: "column", paddingX: 1 },
+            React.createElement(Text, { bold: true }, "\u2500 Summary"),
+            React.createElement(Text, null, "  " + summary),
         ),
         { columns },
     );

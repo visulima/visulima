@@ -1,4 +1,4 @@
-import { Box, Text } from "@visulima/tui";
+import { Box, ScrollBar, Text } from "@visulima/tui";
 
 import type { OutdatedEntry } from "../../../catalog";
 import type { FilterType } from "./UpdateStore";
@@ -81,6 +81,7 @@ interface PackageListPanelProps {
     scrollOffset: number;
     selectedIndex: number;
     totalEntries: number;
+    viewportHeight: number;
 }
 
 const PackageListPanel = ({
@@ -95,6 +96,7 @@ const PackageListPanel = ({
     scrollOffset,
     selectedIndex,
     totalEntries,
+    viewportHeight,
 }: PackageListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
 
@@ -137,6 +139,15 @@ const PackageListPanel = ({
         }
     }
 
+    // Total content height: each catalog header = 2 rows, each package = 1 row
+    let contentHeight = 0;
+
+    for (const [, catalogEntries] of groupedByCatalog) {
+        contentHeight += 2 + catalogEntries.length;
+    }
+
+    const showScrollbar = contentHeight > viewportHeight && viewportHeight > 0;
+
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             {/* Header */}
@@ -152,32 +163,50 @@ const PackageListPanel = ({
                 )}
             </Box>
 
-            {/* Package list — simple offset-based scrolling */}
-            <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingX={1}>
-                <Box flexDirection="column" marginTop={-scrollOffset}>
-                    {rows}
-                </Box>
+            {/* Filter type bar — below header */}
+            <Box flexShrink={0} paddingX={1} paddingY={1} gap={1}>
+                {FILTER_LABELS.map((f) => {
+                    const isActive = filterType === f.key;
+
+                    return (
+                        <Box key={f.key}>
+                            <Text dimColor={!isActive}>[</Text>
+                            <Text color={isActive ? "cyan" : "gray"} bold={isActive}>{f.shortcut}</Text>
+                            <Text dimColor={!isActive}>]</Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
+                        </Box>
+                    );
+                })}
             </Box>
 
-            {/* Filter type bar */}
-            <Box paddingX={1} gap={1} flexShrink={0}>
-                {FILTER_LABELS.map((f) => (
-                    <Box key={f.key}>
-                        <Text color={filterType === f.key ? "white" : "gray"} bold={filterType === f.key}>
-                            {f.shortcut}:{f.label.toUpperCase()}
-                        </Text>
-                    </Box>
-                ))}
-            </Box>
-
-            {/* Text filter bar */}
+            {/* Text filter input */}
             {filterActive && (
-                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexShrink={0} paddingX={1}>
+                <Box flexShrink={0} paddingX={1}>
                     <Text color="white" bold>{"/ "}</Text>
                     <Text>{filterText}</Text>
                     <Text inverse>{" "}</Text>
                 </Box>
             )}
+
+            {/* Package list with scrollbar */}
+            <Box flexDirection="row" flexGrow={1} overflow="hidden">
+                <Box flexDirection="column" flexGrow={1} paddingLeft={1} overflow="hidden">
+                    <Box flexDirection="column" marginTop={-scrollOffset}>
+                        {rows}
+                    </Box>
+                </Box>
+                {showScrollbar && (
+                    <Box flexShrink={0} marginLeft={1} marginRight={1}>
+                        <ScrollBar
+                            contentHeight={contentHeight}
+                            placement="inset"
+                            scrollOffset={scrollOffset}
+                            style="block"
+                            viewportHeight={viewportHeight}
+                        />
+                    </Box>
+                )}
+            </Box>
         </Box>
     );
 };

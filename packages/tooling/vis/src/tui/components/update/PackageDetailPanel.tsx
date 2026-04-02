@@ -166,10 +166,42 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                 </Box>
             )}
 
-            {/* Empty state for no extra info */}
-            {!hasVulnerabilities && !recommendation && !changelogUrl && (
-                <Box marginTop={1}>
-                    <Text dimColor>No additional details available.</Text>
+            {/* Links & guidance */}
+            <Box flexDirection="column" marginTop={1}>
+                <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">LINKS</Text>
+                <Box marginTop={1} paddingLeft={2} flexDirection="column">
+                    <Text color="cyan" underline>https://www.npmjs.com/package/{entry.packageName}</Text>
+                </Box>
+            </Box>
+
+            {/* Update guidance when no AI analysis */}
+            {!recommendation && (
+                <Box flexDirection="column" marginTop={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">GUIDANCE</Text>
+                    <Box marginTop={1} paddingLeft={2} flexDirection="column">
+                        {entry.updateType === "major" && (
+                            <>
+                                <Text color="red">{"\u26A0"} Major update — likely contains breaking changes.</Text>
+                                <Text dimColor>  Review the changelog before updating.</Text>
+                                <Text dimColor>  Use --changelog to fetch release URLs.</Text>
+                            </>
+                        )}
+                        {entry.updateType === "minor" && (
+                            <>
+                                <Text color="yellow">{"\u2139"} Minor update — new features, backward compatible.</Text>
+                                <Text dimColor>  Generally safe to update.</Text>
+                            </>
+                        )}
+                        {entry.updateType === "patch" && (
+                            <>
+                                <Text color="green">{"\u2713"} Patch update — bug fixes only.</Text>
+                                <Text dimColor>  Safe to update.</Text>
+                            </>
+                        )}
+                        {!recommendation && (
+                            <Text dimColor marginTop={1}>  Use --ai to get AI-powered analysis.</Text>
+                        )}
+                    </Box>
                 </Box>
             )}
             </ScrollView>

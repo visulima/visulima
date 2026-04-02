@@ -1076,12 +1076,17 @@ export default class Ink {
     };
 
     async waitUntilExit(): Promise<unknown> {
-        if (!this.beforeExitHandler) {
+        // For non-interactive mode, register a beforeExit handler to auto-unmount
+        // when the event loop drains (no pending work). Interactive apps should NOT
+        // auto-unmount — they stay alive waiting for user input until exit() is
+        // explicitly called. The event loop naturally drains between keystrokes
+        // and that's expected, not a signal to quit.
+        if (!this.interactive && !this.beforeExitHandler) {
             this.beforeExitHandler = () => {
                 this.unmount();
             };
 
-            process.once("beforeExit", this.beforeExitHandler);
+            process.on("beforeExit", this.beforeExitHandler);
         }
 
         return this.exitPromise;
