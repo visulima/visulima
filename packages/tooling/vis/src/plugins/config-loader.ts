@@ -1,5 +1,6 @@
 import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
+import isInCi from "is-in-ci";
 import { findMonorepoRootSync } from "@visulima/package";
 
 import { findVisConfigFile, loadVisConfig } from "../config";
@@ -67,7 +68,7 @@ const configLoaderPlugin: Plugin = {
             const command = process.argv[2] ?? "";
             const skipHint = new Set(["--help", "--version", "-h", "-V", "create", "help", "implode", "init"]);
 
-            if (!skipHint.has(command) && !findVisConfigFile(workspaceRoot) && !process.env["CI"]) {
+            if (!skipHint.has(command) && !findVisConfigFile(workspaceRoot) && !isInCi) {
                 if (process.stdin.isTTY) {
                     const { createInterface } = await import("node:readline");
                     const rl = createInterface({ input: process.stdin, output: process.stderr });

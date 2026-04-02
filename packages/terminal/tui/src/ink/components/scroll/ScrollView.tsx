@@ -75,6 +75,12 @@ export interface ScrollViewProps extends BoxProps {
     scrollbarColor?: string;
 
     /**
+     * Scrollbar visual style.
+     * @default "line"
+     */
+    scrollbarStyle?: "arrow" | "block" | "bold" | "classic" | "dots" | "double" | "doubleSingle" | "line" | "round" | "single" | "singleDouble" | "thick";
+
+    /**
      * Enable vim-style keybindings (j/k/g/G/u/d). Requires `keyboard` to be true.
      * @default false
      */
@@ -119,6 +125,7 @@ export const ScrollView = ({
     ref,
     scrollbar = false,
     scrollbarColor,
+    scrollbarStyle: scrollbarStyleProp = "line",
     vimBindings = false,
     virtualize,
     ...boxProps
@@ -294,7 +301,7 @@ export const ScrollView = ({
                     contentHeight={scrollbarContentHeight}
                     placement="inset"
                     scrollOffset={scrollOffset}
-                    style="line"
+                    style={scrollbarStyleProp}
                     viewportHeight={scrollbarViewportHeight}
                 />
             </Box>

@@ -109,13 +109,17 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const listViewportHeight = Math.max(1, rows - 6);
 
     // Scroll the task list to keep selected item visible
+    // Scroll the task list. The content has a parallel section at the top
+    // (parallelSlots + 1 connector line when active), then the flat list rows.
     const scrollListToIndex = useCallback((index: number) => {
         setListScrollOffset((current) => {
+            // Item below viewport — scroll down
             if (index >= current + listViewportHeight - 1) {
-                return index - listViewportHeight + 2;
+                return Math.max(0, index - listViewportHeight + 2);
             }
 
-            if (index <= current) {
+            // Item above viewport — scroll up
+            if (index < current) {
                 return Math.max(0, index);
             }
 
@@ -772,8 +776,10 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                     parallelSlots={parallelSlots}
                     pinnedTaskIds={state.pinnedTaskIds}
                     rows={filteredRows}
+                    scrollOffset={listScrollOffset}
                     selectedIndex={state.selectedIndex}
                     title={headerTitle}
+                    viewportHeight={listViewportHeight}
                 />
             </Box>
             <Box flexGrow={1}>

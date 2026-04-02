@@ -37,6 +37,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
     const detailScrollRef = useRef<ScrollViewRef>(null);
+    const confirmScrollRef = useRef<ScrollViewRef>(null);
     const [listScrollOffset, setListScrollOffset] = useState(0);
     const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -78,14 +79,14 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
         const targetRow = getRowForIndex(index);
 
         setListScrollOffset((current) => {
-            // Item below viewport — scroll down so item is visible at bottom
-            if (targetRow >= current + listViewportHeight - 1) {
-                return targetRow - listViewportHeight + 2;
+            // Item below visible area — scroll so item is near the bottom
+            if (targetRow > current + listViewportHeight - 2) {
+                return Math.max(0, targetRow - listViewportHeight + 2);
             }
 
-            // Item above viewport — scroll up so item is visible at top
-            if (targetRow <= current) {
-                return Math.max(0, targetRow);
+            // Item above visible area — scroll so item is near the top
+            if (targetRow < current + 1) {
+                return Math.max(0, targetRow - 1);
             }
 
             return current;
@@ -107,15 +108,24 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
                 return;
             }
 
-            // Confirm dialog
+            // Confirm dialog — u/Enter confirms, Esc/q cancels, arrows scroll
             if (confirmVisible) {
                 if (input === "u" || key.return) {
                     setConfirmVisible(false);
                     store.startApply();
                     exit(store.getCheckedEntries());
-                } else {
+                } else if (key.escape || input === "q") {
                     setConfirmVisible(false);
+                } else if (key.downArrow || input === "j") {
+                    confirmScrollRef.current?.scrollBy(1);
+                } else if (key.upArrow || input === "k") {
+                    confirmScrollRef.current?.scrollBy(-1);
+                } else if (key.pageDown) {
+                    confirmScrollRef.current?.scrollBy(5);
+                } else if (key.pageUp) {
+                    confirmScrollRef.current?.scrollBy(-5);
                 }
+
                 return;
             }
 
@@ -319,29 +329,34 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     const checkedList = store.getCheckedEntries();
     const majorCount = checkedList.filter((e) => e.updateType === "major").length;
 
-    const confirmDialog = (
-        <Dialog title="APPLY UPDATES" visible={confirmVisible} width={56}>
-            <Box flexDirection="column">
-                <Text>Apply {checkedList.length} update{checkedList.length !== 1 ? "s" : ""}?</Text>
-                <Text>{""}</Text>
-                {checkedList.map((e) => (
-                    <Box key={e.packageName} gap={1}>
-                        <Text>  {e.packageName}</Text>
-                        <Text dimColor>{e.currentRange} {"\u2192"} {e.newRange}</Text>
-                        <Text color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"} bold>
-                            {e.updateType}
-                        </Text>
-                    </Box>
-                ))}
-                {majorCount > 0 && (
-                    <Box marginTop={1}>
-                        <Text color="yellow">{"\u26A0"} {majorCount} major update{majorCount !== 1 ? "s" : ""} — review breaking changes</Text>
-                    </Box>
-                )}
-                <Box marginTop={1}>
-                    <Text dimColor>Press <Text color="white" bold>u</Text> or <Text color="white" bold>Enter</Text> to confirm, <Text color="white" bold>Esc</Text> to cancel</Text>
+    const confirmFooter = (
+        <Box flexDirection="column" alignItems="center">
+            {majorCount > 0 && (
+                <Box marginTop={1} marginBottom={1}>
+                    <Text color="yellow">{"\u26A0"} {majorCount} major update{majorCount !== 1 ? "s" : ""} — review breaking changes</Text>
                 </Box>
-            </Box>
+            )}
+            <Text dimColor>Press <Text color="white" bold>u</Text> or <Text color="white" bold>Enter</Text> to confirm, <Text color="white" bold>Esc</Text> to cancel</Text>
+        </Box>
+    );
+
+    const confirmDialog = (
+        <Dialog
+            footer={confirmFooter}
+            scrollRef={confirmScrollRef}
+            title={`Apply ${checkedList.length} update${checkedList.length !== 1 ? "s" : ""}?`}
+            visible={confirmVisible}
+            width={70}
+        >
+            {checkedList.map((e) => (
+                <Box key={e.packageName} gap={1}>
+                    <Text>  {e.packageName}</Text>
+                    <Text dimColor>{e.currentRange} {"\u2192"} {e.newRange}</Text>
+                    <Text color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"} bold>
+                        {e.updateType}
+                    </Text>
+                </Box>
+            ))}
         </Dialog>
     );
 

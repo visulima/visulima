@@ -81,6 +81,12 @@ export type Props = {
     readonly title?: ReactNode;
 
     /**
+     * Scrollbar visual style.
+     * @default "block"
+     */
+    readonly scrollbarStyle?: "arrow" | "block" | "bold" | "classic" | "dots" | "double" | "doubleSingle" | "line" | "round" | "single" | "singleDouble" | "thick";
+
+    /**
      * Whether the dialog is visible. When `false`, nothing is rendered.
      * @default true
      */
@@ -117,6 +123,7 @@ export default function Dialog({
     paddingX = 2,
     paddingY = 1,
     rows: rowsProp,
+    scrollbarStyle: scrollbarStyleProp = "block",
     scrollRef: externalScrollRef,
     title,
     visible = true,
@@ -161,23 +168,24 @@ export default function Dialog({
                 flexDirection="column"
                 maxHeight={resolvedMaxHeight}
                 opaque
+                paddingY={paddingY}
                 width={Math.min(width, cols - 4)}
             >
                 {/* Title — fixed above scroll area */}
                 {titleElement && (
-                    <Box flexShrink={0} paddingTop={paddingY} paddingX={paddingX}>
+                    <Box flexShrink={0} paddingX={paddingX}>
                         {titleElement}
                     </Box>
                 )}
 
                 {/* Scrollable content with built-in scrollbar */}
-                <ScrollView flexGrow={1} flexShrink={1} paddingX={paddingX} ref={scrollViewRef} scrollbar scrollbarColor={borderColor}>
+                <ScrollView flexGrow={1} flexShrink={1} paddingX={paddingX} ref={scrollViewRef} scrollbar scrollbarColor={borderColor} scrollbarStyle={scrollbarStyleProp}>
                     {children}
                 </ScrollView>
 
                 {/* Footer — fixed below scroll area */}
                 {footer && (
-                    <Box flexShrink={0} justifyContent="center" paddingBottom={paddingY} paddingX={paddingX}>
+                    <Box flexShrink={0} justifyContent="center" paddingX={paddingX}>
                         {footer}
                     </Box>
                 )}

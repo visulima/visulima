@@ -14,6 +14,8 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+import isInCi from "is-in-ci";
+
 interface TipContext {
     args: string[];
     command: string;
@@ -166,7 +168,7 @@ const tips: Tip[] = [
  */
 const showTip = (context: TipContext): void => {
     // Skip in test/CI environments
-    if (process.env.VIS_CLI_TEST || process.env.CI) {
+    if (process.env.VIS_CLI_TEST || isInCi) {
         return;
     }
 

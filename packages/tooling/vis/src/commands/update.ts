@@ -3,7 +3,9 @@ import { execSync } from "node:child_process";
 import React from "react";
 import type { Command } from "@visulima/cerebro";
 import { red } from "@visulima/colorize";
+import isInCi from "is-in-ci";
 import { render, renderToString, Text } from "@visulima/tui";
+
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
 
 import type { AiAnalysisResult } from "../ai-analysis";
@@ -27,6 +29,7 @@ import {
 } from "../catalog";
 import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
+import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import type { VisConfig } from "../workspace";
@@ -147,9 +150,34 @@ const executeCatalogUpdate = async (
         totalDeps += deps.size;
     }
 
-    logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
+    const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
+    let progressInstance: ReturnType<typeof render> | undefined;
 
-    const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig);
+    const onProgress = isTTY
+        ? (current: number, total: number): void => {
+              if (!progressInstance) {
+                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                      interactive: true,
+                      patchConsole: false,
+                  });
+              } else {
+                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+              }
+          }
+        : (current: number, total: number): void => {
+              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+          };
+
+    if (!isTTY) {
+        logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
+    }
+
+    const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot);
+
+    if (progressInstance) {
+        progressInstance.clear();
+        progressInstance.unmount();
+    }
 
     if (failed.length > 0) {
         logger.warn(`Failed to fetch: ${failed.join(", ")}`);
@@ -173,7 +201,6 @@ const executeCatalogUpdate = async (
     }
 
     const isDryRun = Boolean(options["dry-run"]);
-    const isTTY = Boolean(process.stdout.isTTY) && !process.env["CI"];
 
     // Interactive TUI mode: TTY + table format
     if (isTTY && format === "table") {

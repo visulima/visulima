@@ -13,6 +13,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+import isInCi from "is-in-ci";
+
 import { bold, cyan, dim, green, SYMBOLS, yellow } from "./output";
 
 const VIS_HOME = join(homedir(), ".vis");
@@ -140,7 +142,7 @@ const showUpgradeNotice = (currentVersion: string, cache: UpgradeCheckCache): vo
  */
 const shouldCheck = (command: string): boolean => {
     // Skip in CI
-    if (process.env.CI) {
+    if (isInCi) {
         return false;
     }
 

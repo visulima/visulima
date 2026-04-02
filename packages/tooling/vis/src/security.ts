@@ -16,6 +16,8 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import isInCi from "is-in-ci";
+
 import { error as errorOutput, info, note, warn } from "./output";
 import type { VisConfig } from "./workspace";
 
@@ -87,7 +89,7 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
  * Skipped in CI unless VIS_SECURITY_WARNINGS=1.
  */
 const emitSecurityWarnings = (config: VisConfig, packageManager: string): void => {
-    if (process.env.CI && !process.env.VIS_SECURITY_WARNINGS) {
+    if (isInCi && !process.env.VIS_SECURITY_WARNINGS) {
         return;
     }
 
