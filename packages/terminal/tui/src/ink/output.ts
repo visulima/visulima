@@ -23,7 +23,7 @@ type Options = {
     width: number;
 };
 
-type Operation = WriteOperation | StyledWriteOperation | ClipOperation | UnclipOperation;
+type Operation = WriteOperation | StyledWriteOperation | StyledLineWriteOperation | ClipOperation | UnclipOperation;
 
 type WriteOperation = {
     text: string;
@@ -37,6 +37,13 @@ type StyledWriteOperation = {
     styledChars: StyledChar[];
     transformers: OutputTransformer[];
     type: "styledWrite";
+    x: number;
+    y: number;
+};
+
+type StyledLineWriteOperation = {
+    line: StyledLine;
+    type: "styledLineWrite";
     x: number;
     y: number;
 };
@@ -349,6 +356,23 @@ export default class Output {
         });
     }
 
+    /**
+     * Write a StyledLine directly to the output, skipping the StyledChar bridge.
+     * This is the fast path for pre-parsed content.
+     */
+    writeStyledLine(x: number, y: number, line: StyledLine): void {
+        if (line.length === 0) {
+            return;
+        }
+
+        this.operations.push({
+            line,
+            type: "styledLineWrite",
+            x,
+            y,
+        });
+    }
+
     writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
         if (styledChars.length === 0) {
             return;
@@ -389,6 +413,11 @@ export default class Output {
             switch (operation.type) {
                 case "clip": {
                     clips.push(operation.clip);
+                    break;
+                }
+
+                case "styledLineWrite": {
+                    this.processStyledLineWriteOperation(operation, output, clips.at(-1));
                     break;
                 }
 
@@ -527,6 +556,71 @@ export default class Output {
         }
 
         return { buffer, height: rows };
+    }
+
+    /**
+     * Write a StyledLine directly to the grid — fast path that skips
+     * StyledChar bridge conversion entirely.
+     */
+    private processStyledLineWriteOperation(operation: StyledLineWriteOperation, output: StyledLine[], clip: Clip | undefined): void {
+        const { line: source, x, y } = operation;
+
+        while (output.length <= y) {
+            output.push(StyledLine.empty(this.width));
+        }
+
+        const row = output[y];
+
+        if (!row) {
+            return;
+        }
+
+        let col = x;
+
+        for (let i = 0; i < source.length; i++) {
+            if (col < 0) {
+                col++;
+                continue;
+            }
+
+            if (col >= this.width) {
+                break;
+            }
+
+            if (clip) {
+                if (clip.x1 !== undefined && col < clip.x1) {
+                    col++;
+                    continue;
+                }
+
+                if (clip.x2 !== undefined && col >= clip.x2) {
+                    break;
+                }
+
+                if (clip.y1 !== undefined && y < clip.y1) {
+                    return;
+                }
+
+                if (clip.y2 !== undefined && y >= clip.y2) {
+                    return;
+                }
+            }
+
+            const value = source.getValue(i);
+            const flags = source.getFormatFlags(i);
+            const fgColor = source.getFgColor(i);
+            const bgColor = source.getBgColor(i);
+            const link = source.getLink(i);
+            const isFullWidth = source.getFullWidth(i);
+
+            row.setChar(col, value, flags, fgColor, bgColor, link);
+            col++;
+
+            if (isFullWidth && col < this.width) {
+                row.setChar(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                col++;
+            }
+        }
     }
 
     private processStyledWriteOperation(operation: StyledWriteOperation, output: StyledLine[], clip: Clip | undefined): void {

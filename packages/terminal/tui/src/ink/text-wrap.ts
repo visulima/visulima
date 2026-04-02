@@ -186,3 +186,134 @@ export const wrapOrTruncateStyledChars = (styledChars: StyledChar[], maxWidth: n
 
     return wrapStyledChars(styledChars, maxWidth);
 };
+
+// ── StyledLine-based equivalents ──────────────────────────────────────
+
+import { StyledLine } from "./styled-line";
+import { styledLineWidth } from "./measure-text";
+
+export const wrapOrTruncateStyledLine = (line: StyledLine, maxWidth: number, textWrap = "wrap"): StyledLine[] => {
+    if (textWrap.startsWith("truncate")) {
+        let position: "end" | "middle" | "start" = "end";
+
+        if (textWrap === "truncate-middle") {
+            position = "middle";
+        } else if (textWrap === "truncate-start") {
+            position = "start";
+        }
+
+        return [truncateStyledLine(line, maxWidth, position)];
+    }
+
+    return wrapStyledLine(line, maxWidth);
+};
+
+const truncateStyledLine = (line: StyledLine, columns: number, position: "end" | "middle" | "start" = "end"): StyledLine => {
+    if (columns < 1) {
+        return new StyledLine();
+    }
+
+    const textWidth = styledLineWidth(line);
+
+    if (textWidth <= columns) {
+        return line;
+    }
+
+    const ellipsis = new StyledLine();
+
+    ellipsis.pushChar("\u2026", 0);
+
+    if (columns === 1) {
+        return ellipsis;
+    }
+
+    if (position === "start") {
+        // Keep the right portion
+        let width = 0;
+        let startIdx = line.length;
+
+        for (let i = line.length - 1; i >= 0; i--) {
+            width += inkCharacterWidth(line.getValue(i));
+
+            if (width > columns - 1) {
+                break;
+            }
+
+            startIdx = i;
+        }
+
+        return ellipsis.combine(line.slice(startIdx));
+    }
+
+    if (position === "middle") {
+        const leftWidth = Math.ceil(columns / 2);
+        const rightWidth = columns - leftWidth;
+
+        let leftEnd = 0;
+        let w = 0;
+
+        for (let i = 0; i < line.length; i++) {
+            const cw = inkCharacterWidth(line.getValue(i));
+
+            if (w + cw > leftWidth - 1) {
+                break;
+            }
+
+            w += cw;
+            leftEnd = i + 1;
+        }
+
+        let rightStart = line.length;
+
+        w = 0;
+
+        for (let i = line.length - 1; i >= 0; i--) {
+            w += inkCharacterWidth(line.getValue(i));
+
+            if (w > rightWidth) {
+                break;
+            }
+
+            rightStart = i;
+        }
+
+        return line.slice(0, leftEnd).combine(ellipsis, line.slice(rightStart));
+    }
+
+    // position === "end"
+    let endIdx = 0;
+    let w = 0;
+
+    for (let i = 0; i < line.length; i++) {
+        const cw = inkCharacterWidth(line.getValue(i));
+
+        if (w + cw > columns - 1) {
+            break;
+        }
+
+        w += cw;
+        endIdx = i + 1;
+    }
+
+    return line.slice(0, endIdx).combine(ellipsis);
+};
+
+const wrapStyledLine = (line: StyledLine, columns: number): StyledLine[] => {
+    // For wrapping, delegate to StyledChar-based implementation and convert back.
+    // This preserves the complex word-wrap logic while providing StyledLine output.
+    const { styledCharsToStyledLine } = require("./styled-line-bridge") as typeof import("./styled-line-bridge");
+    const chars: StyledChar[] = [];
+
+    for (const entry of line) {
+        chars.push({
+            fullWidth: entry.fullWidth,
+            styles: [],
+            type: "char",
+            value: entry.value,
+        });
+    }
+
+    const wrapped = wrapStyledChars(chars, columns);
+
+    return wrapped.map((charLine) => styledCharsToStyledLine(charLine));
+};

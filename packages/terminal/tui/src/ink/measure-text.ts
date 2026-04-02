@@ -302,3 +302,89 @@ const measureText = (text: string): Output => {
 };
 
 export default measureText;
+
+// ── StyledLine-based equivalents ──────────────────────────────────────
+
+import { StyledLine } from "./styled-line";
+import { styledCharsToStyledLine } from "./styled-line-bridge";
+
+// Cache for StyledLine tokenization
+const styledLineCache = new DataLimitedLruMap<StyledLine>(10_000, 1_000_000);
+
+/**
+ * Convert a text string to a StyledLine, with caching.
+ */
+export const toStyledLine = (text: string): StyledLine => {
+    if (styledCharsCacheEnabled) {
+        const cached = styledLineCache.get(text);
+
+        if (cached !== undefined) {
+            return cached;
+        }
+    }
+
+    // Reuse the existing StyledChar pipeline then convert
+    const chars = toStyledCharacters(text);
+    const line = styledCharsToStyledLine(chars);
+
+    if (styledCharsCacheEnabled) {
+        styledLineCache.set(text, line);
+    }
+
+    return line;
+};
+
+/**
+ * Get the total visual width of a StyledLine.
+ */
+export const styledLineWidth = (line: StyledLine): number => {
+    let length = 0;
+
+    for (let i = 0; i < line.length; i++) {
+        length += inkCharacterWidth(line.getValue(i));
+    }
+
+    return length;
+};
+
+/**
+ * Split a StyledLine by newline characters into multiple StyledLines.
+ */
+export const splitStyledLineByNewline = (line: StyledLine): StyledLine[] => {
+    if (line.length === 0) {
+        return [new StyledLine()];
+    }
+
+    const lines: StyledLine[] = [];
+    let start = 0;
+
+    for (let i = 0; i < line.length; i++) {
+        if (line.getValue(i) === "\n") {
+            lines.push(i > start ? line.slice(start, i) : new StyledLine());
+            start = i + 1;
+        }
+    }
+
+    lines.push(start < line.length ? line.slice(start) : new StyledLine());
+
+    return lines;
+};
+
+/**
+ * Measure the dimensions of a StyledLine (width of widest line, height in lines).
+ */
+export const measureStyledLine = (line: StyledLine): { height: number; width: number } => {
+    if (line.length === 0) {
+        return { height: 0, width: 0 };
+    }
+
+    const lines = splitStyledLineByNewline(line);
+    let maxWidth = 0;
+
+    for (const l of lines) {
+        maxWidth = Math.max(maxWidth, styledLineWidth(l));
+    }
+
+    return { height: lines.length, width: maxWidth };
+};
+
