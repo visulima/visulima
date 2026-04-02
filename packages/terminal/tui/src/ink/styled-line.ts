@@ -292,6 +292,81 @@ export class StyledLine {
     }
 
     /**
+     * Optimized setChar for same-length single-byte replacement.
+     * Skips string rebuild and offset adjustment when old and new values
+     * have the same byte length (the common case for ASCII overwrites on empty lines).
+     */
+    setCharFast(index: number, value: string, formatFlags: number, fgColor?: string, bgColor?: string, link?: string): void {
+        if (index < 0 || index >= this.length) {
+            return;
+        }
+
+        this.ensureInitialized();
+
+        const isFullWidth = (formatFlags & FULL_WIDTH_MASK) !== 0;
+        const cleanFormatFlags = formatFlags & ~FULL_WIDTH_MASK;
+
+        const start = this.charData![index]! & 0x7f_ff;
+        const end = index + 1 < this.length ? this.charData![index + 1]! & 0x7f_ff : this.text!.length;
+        const oldLen = end - start;
+
+        // Fast path: same-length replacement (no offset adjustment needed)
+        if (value.length === oldLen) {
+            // Replace the character in the text string
+            if (value !== this.text!.slice(start, end)) {
+                this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
+            }
+
+            this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
+        } else {
+            // Slow path: different length, need offset adjustment
+            this.text = this.text!.slice(0, start) + value + this.text!.slice(end);
+
+            if (oldLen !== value.length) {
+                const diff = value.length - oldLen;
+
+                for (let i = index + 1; i < this.length; i++) {
+                    const data = this.charData![i]!;
+
+                    this.charData![i] = ((data & 0x7f_ff) + diff) | (data & 0x80_00);
+                }
+            }
+
+            this.charData![index] = start | (isFullWidth ? 0x80_00 : 0);
+        }
+
+        // Update spans — find the span covering this index
+        this.splitSpansAt(index);
+        this.splitSpansAt(index + 1);
+
+        let current = 0;
+
+        for (let i = 0; i < this.spans!.length; i++) {
+            const span = this.spans![i]!;
+
+            if (current === index && span.length === 1) {
+                // Check if the style actually changed
+                if (span.formatFlags !== cleanFormatFlags || span.fgColor !== fgColor || span.bgColor !== bgColor || span.link !== link) {
+                    this.spans![i] = {
+                        bgColor,
+                        fgColor,
+                        formatFlags: cleanFormatFlags,
+                        length: 1,
+                        link,
+                    };
+                    this.mergeSpans();
+                }
+
+                return;
+            }
+
+            current += span.length;
+        }
+
+        this.mergeSpans();
+    }
+
+    /**
      * Overwrite a range of this line with content from a source StyledLine.
      * More efficient than calling setChar() per character because it does
      * a single span split + rebuild instead of per-character span manipulation.

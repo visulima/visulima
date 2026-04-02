@@ -613,11 +613,11 @@ export default class Output {
             const link = source.getLink(i);
             const isFullWidth = source.getFullWidth(i);
 
-            row.setChar(col, value, flags, fgColor, bgColor, link);
+            row.setCharFast(col, value, flags, fgColor, bgColor, link);
             col++;
 
             if (isFullWidth && col < this.width) {
-                row.setChar(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 col++;
             }
         }
@@ -676,11 +676,11 @@ export default class Output {
             const link = source.getLink(i);
             const isFullWidth = source.getFullWidth(i);
 
-            row.setChar(col, value, flags, fgColor, bgColor, link);
+            row.setCharFast(col, value, flags, fgColor, bgColor, link);
             col++;
 
             if (isFullWidth && col < this.width) {
-                row.setChar(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 col++;
             }
         }
@@ -831,13 +831,13 @@ export default class Output {
             const bgColor = parsed.getBgColor(i);
             const link = parsed.getLink(i);
 
-            row.setChar(offsetX, value, flags, fgColor, bgColor, link);
+            row.setCharFast(offsetX, value, flags, fgColor, bgColor, link);
 
             if (parsed.getFullWidth(i)) {
                 offsetX++;
 
                 if (offsetX < row.length) {
-                    row.setChar(offsetX, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
+                    row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 }
             }
 
