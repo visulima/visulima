@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, class-methods-use-this, consistent-return, default-case, import/exports-last, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, prefer-const, sonarjs/cognitive-complexity */
 import type { StyledChar } from "@alcalzone/ansi-tokenize";
-import { ansiCodesToString, diffAnsiCodes, reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
+import { reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth, isFullwidthCodePoint, slice as sliceAnsi } from "@visulima/string";
 
-import { CONTINUATION_CELL_CODE, packStyledChar } from "./ansi-to-cell";
+import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
 import type { OutputTransformer } from "./render-node-to-output";
+import { FULL_WIDTH_MASK } from "./style-flags";
+import { StyledLine } from "./styled-line";
+import { ansiCodesToStyleInfo, styledCharsToStyledLine } from "./styled-line-bridge";
+import { styledLineToString } from "./styled-line-serializer";
 
 /**
  * "Virtual" output class
  *
- * Handles the positioning and saving of the output of each node in the tree. Also responsible for applying transformations to each character of the output.
- *
- * Used to generate the final output of all nodes before writing it to actual output stream (e.g. stdout)
+ * Uses StyledLine (columnar data) internally instead of per-character StyledChar objects,
+ * reducing GC pressure from ~80 objects/line to 1 string + 1 typed array + ~3 spans.
  */
 
 type Options = {
@@ -72,6 +75,8 @@ export class OutputCaches {
 
     styledChars: Map<string, StyledChar[]> = new Map<string, StyledChar[]>();
 
+    styledLines: Map<string, StyledLine> = new Map<string, StyledLine>();
+
     lines: Map<string, string[]> = new Map<string, string[]>();
 
     private readonly asciiStyledCharCache = new Map<string, StyledChar>();
@@ -85,6 +90,19 @@ export class OutputCaches {
 
         this.maxEntries = Math.max(1, maxEntries);
         this.pruneToFactor = Math.min(0.99, Math.max(0.1, pruneToFactor));
+    }
+
+    getStyledLine(line: string): StyledLine {
+        let cached = this.styledLines.get(line);
+
+        if (cached === undefined) {
+            const chars = this.getStyledChars(line);
+
+            cached = styledCharsToStyledLine(chars);
+            this.setCacheEntry(this.styledLines, line, cached);
+        }
+
+        return cached;
     }
 
     getStyledChars(line: string): StyledChar[] {
@@ -114,7 +132,6 @@ export class OutputCaches {
             return 2;
         }
 
-        // Fast path for printable ASCII graphemes.
         if (character.value.length === 1) {
             const code = character.value.codePointAt(0)!;
 
@@ -123,7 +140,6 @@ export class OutputCaches {
             }
         }
 
-        // Fallback for non-ASCII and complex graphemes.
         return Math.max(1, this.getStringWidth(character.value));
     }
 
@@ -269,22 +285,6 @@ export class OutputCaches {
     }
 }
 
-const blankCell: StyledChar = {
-    fullWidth: false,
-    styles: [],
-    type: "char",
-    value: " ",
-};
-
-// Shared continuation cell for full-width characters — avoids allocating
-// a new object on every full-width character write.
-const continuationBlankCell: StyledChar = {
-    fullWidth: false,
-    styles: [],
-    type: "char",
-    value: "",
-};
-
 const noStyles: StyledChar["styles"] = [];
 const asciiPrintableRegex = /^[\u0020-\u007E]*$/;
 const ansiControlMarkerCodePoints = new Set<number>([27, 144, 152, 155, 157, 158, 159]);
@@ -306,21 +306,12 @@ export default class Output {
 
     private readonly caches: OutputCaches;
 
-    private readonly outputGrid: StyledChar[][] = [];
+    private readonly outputGrid: StyledLine[] = [];
 
-    private readonly previousLineCells: StyledChar[][] = [];
+    private readonly previousLines: StyledLine[] = [];
 
     private readonly previousRenderedLines: string[] = [];
 
-    private readonly continuationCellCache = new WeakMap<StyledChar, StyledChar>();
-
-    private readonly stylePrefixCache = new WeakMap<StyledChar["styles"], string>();
-
-    private readonly styleTransitionCache = new WeakMap<StyledChar["styles"], WeakMap<StyledChar["styles"], string>>();
-
-    /**
-     * Real-time clip stack for visibility queries during rendering.
-     */
     private readonly activeClipStack: Clip[] = [];
 
     private lineMemoizationEnabled = true;
@@ -358,10 +349,6 @@ export default class Output {
         });
     }
 
-    /**
-     * Write pre-tokenized StyledChar arrays directly to the output.
-     * Bypasses re-tokenization, preserving styling through wrap boundaries.
-     */
     writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
         if (styledChars.length === 0) {
             return;
@@ -391,18 +378,11 @@ export default class Output {
         this.activeClipStack.pop();
     }
 
-    /**
-     * Get the current clip region, if any. Used for visibility optimization
-     * to skip rendering nodes that are entirely outside the visible area.
-     */
     getCurrentClip(): Clip | undefined {
         return this.activeClipStack.at(-1);
     }
 
-    /**
-     * Replay queued operations onto the output grid.
-     */
-    private replayOperations(output: StyledChar[][]): void {
+    private replayOperations(output: StyledLine[]): void {
         const clips: Clip[] = [];
 
         for (const operation of this.operations) {
@@ -435,9 +415,6 @@ export default class Output {
 
         this.replayOperations(output);
 
-        // Line memoization: reuse previously rendered lines for unchanged rows.
-        // On the first render (no previous state), skip memoization entirely to
-        // avoid the overhead of row comparison and snapshot copying.
         if (!this.lineMemoizationEnabled) {
             if (this.memoizationProbeCountdown > 0) {
                 this.memoizationProbeCountdown--;
@@ -447,38 +424,39 @@ export default class Output {
         }
 
         const canUseMemoization = this.lineMemoizationEnabled;
-        const hasPrevious = this.previousLineCells.length > 0;
+        const hasPrevious = this.previousLines.length > 0;
         const canReuseRows
-            = canUseMemoization && hasPrevious && this.previousLineCells.length === output.length && this.previousRenderedLines.length === output.length;
+            = canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
 
-        if (this.previousLineCells.length > output.length) {
-            this.previousLineCells.length = output.length;
+        if (this.previousLines.length > output.length) {
+            this.previousLines.length = output.length;
         }
 
         if (this.previousRenderedLines.length > output.length) {
             this.previousRenderedLines.length = output.length;
         }
 
-        const generatedLines = Array.from({ length: output.length });
+        const generatedLines = new Array<string>(output.length);
         let changedRows = 0;
 
-        for (const [rowIndex, element] of output.entries()) {
-            const row = element;
+        for (let rowIndex = 0; rowIndex < output.length; rowIndex++) {
+            const row = output[rowIndex]!;
 
-            if (canReuseRows && this.isSameRow(row, this.previousLineCells[rowIndex])) {
+            if (canReuseRows && this.previousLines[rowIndex] && this.previousLines[rowIndex]!.equals(row)) {
                 generatedLines[rowIndex] = this.previousRenderedLines[rowIndex] ?? "";
                 continue;
             }
 
             changedRows++;
 
-            const renderedLine = this.renderRow(row);
+            const trimmed = row.trimEnd();
+            const renderedLine = styledLineToString(trimmed);
 
             generatedLines[rowIndex] = renderedLine;
 
             if (canUseMemoization) {
                 this.previousRenderedLines[rowIndex] = renderedLine;
-                this.copyRowSnapshot(row, rowIndex);
+                this.previousLines[rowIndex] = row.clone();
             }
         }
 
@@ -496,14 +474,6 @@ export default class Output {
         };
     }
 
-    /**
-     * Convert the output to a Uint32Array in the packed cell format used by
-     * the Rust renderer: [charCode, (styles &lt;< 16) | (bg &lt;< 8) | fg] per cell.
-     *
-     * This is the buffer-based alternative to `get()` — it reuses the same
-     * operation processing and grid building, but packs cells into the native
-     * format instead of generating ANSI strings.
-     */
     getBuffer(): { buffer: Uint32Array; height: number } {
         const output = this.getOutputGrid();
 
@@ -512,41 +482,46 @@ export default class Output {
         const rows = output.length;
         const buffer = new Uint32Array(this.width * rows * 2);
 
-        // Default: space with terminal default colors
         const defaultAttribute = (0 << 16) | (255 << 8) | 255;
 
         for (let index = 0; index < buffer.length; index += 2) {
-            buffer[index] = 32; // space
+            buffer[index] = 32;
             buffer[index + 1] = defaultAttribute;
         }
 
         for (let y = 0; y < rows; y++) {
-            const row = output[y];
-
-            if (!row) {
-                continue;
-            }
+            const row = output[y]!;
 
             for (let x = 0; x < row.length && x < this.width; x++) {
-                const cell = row[x];
+                const value = row.getValue(x);
 
-                if (!cell || cell.value.length === 0) {
+                if (value.length === 0) {
                     continue;
                 }
 
+                const charCode = value.codePointAt(0) ?? 32;
                 const bufIndex = (y * this.width + x) * 2;
-                const [charCode, attributeCode] = packStyledChar(cell);
+
+                const span = row.getSpan(x);
+                const formatFlags = span?.formatFlags ?? 0;
+                const fgColor = span?.fgColor;
+                const bgColor = span?.bgColor;
+
+                const fg = fgColor ? colorNameToAnsi256(fgColor) : 255;
+                const bg = bgColor ? colorNameToAnsi256(bgColor) : 255;
+                const styleBits = formatFlags & 0xff;
+
+                const attributeCode = (styleBits << 16) | ((bg & 0xff) << 8) | (fg & 0xff);
 
                 buffer[bufIndex] = charCode;
                 buffer[bufIndex + 1] = attributeCode;
 
-                // Handle wide characters: write continuation sentinel to next cell
-                if (cell.fullWidth && x + 1 < this.width) {
+                if (row.getFullWidth(x) && x + 1 < this.width) {
                     const nextIndex = bufIndex + 2;
 
                     buffer[nextIndex] = CONTINUATION_CELL_CODE;
                     buffer[nextIndex + 1] = attributeCode;
-                    x++; // Skip the continuation cell
+                    x++;
                 }
             }
         }
@@ -554,19 +529,11 @@ export default class Output {
         return { buffer, height: rows };
     }
 
-    /**
-     * Write pre-tokenized StyledChar arrays directly to the output grid.
-     * This bypasses text tokenization, preserving styles from the wrapping phase.
-     */
-    private processStyledWriteOperation(operation: StyledWriteOperation, output: StyledChar[][], clip: Clip | undefined): void {
+    private processStyledWriteOperation(operation: StyledWriteOperation, output: StyledLine[], clip: Clip | undefined): void {
         const { styledChars, x, y } = operation;
 
-        // Ensure the output grid has enough rows
         while (output.length <= y) {
-            const newRow = new Array<StyledChar>(this.width);
-
-            newRow.fill(blankCell);
-            output.push(newRow);
+            output.push(StyledLine.empty(this.width));
         }
 
         const row = output[y];
@@ -587,7 +554,6 @@ export default class Output {
                 break;
             }
 
-            // Apply clip bounds
             if (clip) {
                 if (clip.x1 !== undefined && col < clip.x1) {
                     col++;
@@ -607,18 +573,21 @@ export default class Output {
                 }
             }
 
-            row[col] = char;
+            const { bgColor, fgColor, formatFlags, link } = ansiCodesToStyleInfo(char.styles);
+            const flags = char.fullWidth ? formatFlags | FULL_WIDTH_MASK : formatFlags;
+
+            row.setChar(col, char.value, flags, fgColor, bgColor, link);
             col++;
 
-            // Handle full-width characters
             if (char.fullWidth && col < this.width) {
-                row[col] = continuationBlankCell;
+                // Continuation cell inherits parent style so spans merge correctly
+                row.setChar(col, "", formatFlags, fgColor, bgColor, link);
                 col++;
             }
         }
     }
 
-    private processWriteOperation(operation: WriteOperation, output: StyledChar[][], clip: Clip | undefined) {
+    private processWriteOperation(operation: WriteOperation, output: StyledLine[], clip: Clip | undefined) {
         const prepared = this.prepareWrite(operation, clip);
 
         if (!prepared) {
@@ -650,7 +619,7 @@ export default class Output {
                 line = this.applyTransformers(line, operation.transformers, lineIndex);
             }
 
-            this.writeLineToOutput(currentLine, prepared.x, line);
+            this.writeLineToStyledLine(currentLine, prepared.x, line);
         }
     }
 
@@ -741,226 +710,122 @@ export default class Output {
         return transformedLine;
     }
 
-    private writeLineToOutput(currentLine: StyledChar[], x: number, line: string) {
+    private writeLineToStyledLine(row: StyledLine, x: number, line: string) {
         if (line.length === 0) {
             return;
         }
 
-        const characters = this.caches.getStyledChars(line);
+        const parsed = this.caches.getStyledLine(line);
         let offsetX = x;
 
-        for (const character of characters) {
-            currentLine[offsetX] = character;
+        for (let i = 0; i < parsed.length; i++) {
+            if (offsetX >= row.length) {
+                break;
+            }
 
-            const characterWidth = this.getCharacterWidthForRender(character);
+            const value = parsed.getValue(i);
+            const flags = parsed.getFormatFlags(i);
+            const fgColor = parsed.getFgColor(i);
+            const bgColor = parsed.getBgColor(i);
+            const link = parsed.getLink(i);
 
-            if (characterWidth > 1) {
-                const continuationCell = this.getContinuationCell(character);
+            row.setChar(offsetX, value, flags, fgColor, bgColor, link);
 
-                for (let continuationIndex = 1; continuationIndex < characterWidth; continuationIndex++) {
-                    currentLine[offsetX + continuationIndex] = continuationCell;
+            const isFullWidth = parsed.getFullWidth(i);
+
+            if (isFullWidth) {
+                offsetX++;
+
+                if (offsetX < row.length) {
+                    // Continuation cell inherits parent style so spans merge correctly
+                    row.setChar(offsetX, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 }
             }
 
-            offsetX += characterWidth;
+            offsetX++;
         }
     }
 
-    private getOutputGrid(): StyledChar[][] {
+    private getOutputGrid(): StyledLine[] {
         const { height, width } = this;
 
-        // Truncate excess rows
         if (this.outputGrid.length > height) {
             this.outputGrid.length = height;
         }
 
-        // Grow/initialize rows as needed, then fill all with blanks
         for (let y = 0; y < height; y++) {
-            let row = this.outputGrid[y];
-
-            if (!row || row.length !== width) {
-                row = new Array<StyledChar>(width);
-                this.outputGrid[y] = row;
-            }
-
-            row.fill(blankCell);
+            this.outputGrid[y] = StyledLine.empty(width);
         }
 
         return this.outputGrid;
     }
 
-    private isSameRow(currentRow: StyledChar[], previousRow: StyledChar[] | undefined): boolean {
-        if (previousRow?.length !== currentRow.length) {
-            return false;
-        }
-
-        for (const [index, currentCell] of currentRow.entries()) {
-            if (currentCell !== previousRow[index]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private copyRowSnapshot(row: StyledChar[], rowIndex: number) {
-        const snapshot = this.previousLineCells[rowIndex] ?? [];
-
-        if (snapshot.length !== row.length) {
-            snapshot.length = row.length;
-        }
-
-        for (const [index, cell] of row.entries()) {
-            snapshot[index] = cell;
-        }
-
-        this.previousLineCells[rowIndex] = snapshot;
-    }
-
-    private renderRow(row: StyledChar[]): string {
-        if (this.hasStyledCells(row)) {
-            return this.renderStyledRow(row);
-        }
-
-        return this.renderUnstyledRow(row);
-    }
-
-    private hasStyledCells(row: StyledChar[]): boolean {
-        for (const cell of row) {
-            if (cell?.styles.length) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private renderUnstyledRow(row: StyledChar[]): string {
-        // Find the last non-space cell to avoid trailing spaces
-        let end = row.length;
-
-        while (end > 0 && (!row[end - 1] || row[end - 1]!.value === " " || row[end - 1]!.value === "")) {
-            end--;
-        }
-
-        if (end === 0) {
-            return "";
-        }
-
-        const parts = new Array<string>(end);
-
-        for (let i = 0; i < end; i++) {
-            parts[i] = row[i] ? row[i]!.value : " ";
-        }
-
-        return parts.join("");
-    }
-
-    private renderStyledRow(row: StyledChar[]): string {
-        // Find the last non-blank cell to trim trailing whitespace
-        let end = row.length;
-
-        while (end > 0 && (!row[end - 1] || (row[end - 1]!.value === " " && row[end - 1]!.styles.length === 0))) {
-            end--;
-        }
-
-        if (end === 0) {
-            return "";
-        }
-
-        const parts: string[] = [];
-        let previousStyles: StyledChar["styles"] | undefined;
-
-        for (let i = 0; i < end; i++) {
-            const cell = row[i];
-
-            if (!cell) {
-                continue;
-            }
-
-            const { styles, value } = cell;
-
-            if (previousStyles === undefined) {
-                parts.push(this.getStylePrefix(styles));
-            } else if (previousStyles !== styles) {
-                parts.push(this.getStyleTransition(previousStyles, styles));
-            }
-
-            parts.push(value);
-            previousStyles = styles;
-        }
-
-        if (previousStyles !== undefined && previousStyles.length > 0) {
-            parts.push(this.getStyleTransition(previousStyles, noStyles));
-        }
-
-        return parts.join("");
-    }
-
-    private getStylePrefix(styles: StyledChar["styles"]): string {
-        let cached = this.stylePrefixCache.get(styles);
-
-        if (cached === undefined) {
-            cached = ansiCodesToString(styles);
-            this.stylePrefixCache.set(styles, cached);
-        }
-
-        return cached;
-    }
-
-    private getStyleTransition(fromStyles: StyledChar["styles"], toStyles: StyledChar["styles"]): string {
-        let fromCache = this.styleTransitionCache.get(fromStyles);
-
-        if (fromCache === undefined) {
-            fromCache = new WeakMap<StyledChar["styles"], string>();
-            this.styleTransitionCache.set(fromStyles, fromCache);
-        }
-
-        let cached = fromCache.get(toStyles);
-
-        if (cached === undefined) {
-            cached = ansiCodesToString(diffAnsiCodes(fromStyles, toStyles));
-            fromCache.set(toStyles, cached);
-        }
-
-        return cached;
-    }
-
-    private getCharacterWidthForRender(character: StyledChar): number {
-        if (character.fullWidth) {
-            return 2;
-        }
-
-        if (character.value.length === 1) {
-            return 1;
-        }
-
-        return this.caches.getCharacterWidth(character);
-    }
-
-    private getContinuationCell(character: StyledChar): StyledChar {
-        const cached = this.continuationCellCache.get(character);
-
-        if (cached) {
-            return cached;
-        }
-
-        const continuationCell: StyledChar = {
-            fullWidth: false,
-            styles: character.styles,
-            type: "char",
-            value: "",
-        };
-
-        this.continuationCellCache.set(character, continuationCell);
-
-        return continuationCell;
-    }
-
     private disableLineMemoization() {
         this.lineMemoizationEnabled = false;
         this.memoizationProbeCountdown = memoizationProbeInterval;
-        this.previousLineCells.length = 0;
+        this.previousLines.length = 0;
         this.previousRenderedLines.length = 0;
     }
 }
+
+const colorNameToAnsi256 = (color: string): number => {
+    const namedColors: Record<string, number> = {
+        black: 0,
+        blue: 4,
+        cyan: 6,
+        green: 2,
+        magenta: 5,
+        red: 1,
+        white: 7,
+        yellow: 3,
+    };
+
+    const brightColors: Record<string, number> = {
+        blackBright: 8,
+        blueBright: 12,
+        cyanBright: 14,
+        greenBright: 10,
+        magentaBright: 13,
+        redBright: 9,
+        whiteBright: 15,
+        yellowBright: 11,
+    };
+
+    const named = namedColors[color];
+
+    if (named !== undefined) {
+        return named;
+    }
+
+    const bright = brightColors[color];
+
+    if (bright !== undefined) {
+        return bright;
+    }
+
+    const ansi256Match = /^ansi256\(\s?(\d+)\s?\)$/.exec(color);
+
+    if (ansi256Match) {
+        return Number(ansi256Match[1]) & 0xff;
+    }
+
+    if (color.startsWith("#") && color.length === 7) {
+        const r = Number.parseInt(color.slice(1, 3), 16);
+        const g = Number.parseInt(color.slice(3, 5), 16);
+        const b = Number.parseInt(color.slice(5, 7), 16);
+
+        return 16 + 36 * Math.round(r / 51) + 6 * Math.round(g / 51) + Math.round(b / 51);
+    }
+
+    const rgbMatch = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/.exec(color);
+
+    if (rgbMatch) {
+        const r = Number(rgbMatch[1]);
+        const g = Number(rgbMatch[2]);
+        const b = Number(rgbMatch[3]);
+
+        return 16 + 36 * Math.round(r / 51) + 6 * Math.round(g / 51) + Math.round(b / 51);
+    }
+
+    return 255;
+};
