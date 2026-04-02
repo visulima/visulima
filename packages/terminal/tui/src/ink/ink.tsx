@@ -830,9 +830,17 @@ export default class Ink {
         this.renderInteractiveFrame(output, outputHeight, hasStaticOutput ? staticOutput : "");
     };
 
+    // Cache AccessibilityContext value to avoid creating a new object
+    // on every render() call, which would force all consumers to re-render.
+    private accessibilityContextValue: { isScreenReaderEnabled: boolean } | undefined;
+
     render(node: ReactNode): void {
+        if (!this.accessibilityContextValue) {
+            this.accessibilityContextValue = { isScreenReaderEnabled: this.isScreenReaderEnabled };
+        }
+
         const tree = (
-            <AccessibilityContext.Provider value={{ isScreenReaderEnabled: this.isScreenReaderEnabled }}>
+            <AccessibilityContext.Provider value={this.accessibilityContextValue}>
                 <App
                     exitOnCtrlC={this.options.exitOnCtrlC}
                     interactive={this.interactive}
