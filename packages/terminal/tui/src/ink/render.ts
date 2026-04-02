@@ -240,14 +240,22 @@ const render = (node: ReactNode, options?: NodeJS.WriteStream | RenderOptions): 
         cleanup() {
             instance.unmount();
         },
-        clear: instance.clear,
-        rerender: instance.render,
+        clear() {
+            instance.clear();
+        },
+        rerender(n: ReactNode) {
+            instance.render(n);
+        },
         rootNode: instance.rootNode,
         unmount() {
             instance.unmount();
         },
-        waitUntilExit: instance.waitUntilExit,
-        waitUntilRenderFlush: instance.waitUntilRenderFlush,
+        waitUntilExit() {
+            return instance.waitUntilExit();
+        },
+        waitUntilRenderFlush() {
+            return instance.waitUntilRenderFlush();
+        },
     };
 };
 

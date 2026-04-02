@@ -5,7 +5,8 @@ import process from "node:process";
 
 import { ALT_SCREEN_OFF, ALT_SCREEN_ON, eraseLines, resetTerminal } from "@visulima/ansi";
 import { wordWrap } from "@visulima/string";
-import autoBind from "auto-bind";
+// autoBind removed — only methods passed as callbacks need binding,
+// and those are defined as arrow function properties.
 import type { DebouncedFunc } from "es-toolkit/compat";
 import { throttle } from "es-toolkit/compat";
 import isInCi from "is-in-ci";
@@ -358,8 +359,6 @@ export default class Ink {
     private deferredInitDone = false;
 
     constructor(options: Options) {
-        autoBind(this);
-
         this.options = options;
         this.rootNode = dom.createNode("ink-root");
         this.rootNode.onComputeLayout = this.calculateLayout;
@@ -861,7 +860,7 @@ export default class Ink {
         }
     }
 
-    writeToStdout(data: string): void {
+    writeToStdout = (data: string): void => {
         if (this.isUnmounted) {
             return;
         }
@@ -891,9 +890,9 @@ export default class Ink {
         if (sync) {
             this.options.stdout.write(esu);
         }
-    }
+    };
 
-    writeToStderr(data: string): void {
+    writeToStderr = (data: string): void => {
         if (this.isUnmounted) {
             return;
         }
@@ -924,9 +923,9 @@ export default class Ink {
         if (sync) {
             this.options.stdout.write(esu);
         }
-    }
+    };
 
-    unmount(error?: Error | number | null): void {
+    unmount = (error?: Error | number | null): void => {
         if (this.isUnmounted || this.isUnmounting) {
             return;
         }
@@ -1072,7 +1071,7 @@ export default class Ink {
             reconciler.flushSyncWork();
             finishUnmount();
         }
-    }
+    };
 
     async waitUntilExit(): Promise<unknown> {
         if (!this.beforeExitHandler) {
