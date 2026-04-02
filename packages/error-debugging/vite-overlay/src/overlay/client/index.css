@@ -47,7 +47,7 @@
     --tw-contrast: initial: ;
 }
 
-/* ─── Brand palette (Nothing Design System) ────────────────────────────── */
+/* ─── Brand palette ─────────────────────────────────────────────────────── */
 :host {
     --brand-accent: #D71921;
     --brand-white: #ffffff;
@@ -58,7 +58,7 @@
     --brand-black: #000000;
 }
 
-/* ─── Design tokens — light mode (Nothing Design System) ────────────────── */
+/* ─── Design tokens — light mode ─────────────────────────────────────────── */
 :host {
     --color-background: #F5F5F5;
     --color-foreground: #1A1A1A;
@@ -97,7 +97,7 @@
     --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
 }
 
-/* ─── Dark mode (Nothing Design System — OLED black) ────────────────────── */
+/* ─── Dark mode ──────────────────────────────────────────────────────────── */
 .dark {
     --color-background: #000000;
     --color-foreground: #E8E8E8;
@@ -154,7 +154,7 @@
         cursor: pointer;
     }
 
-    /* Nothing Design System — Space Grotesk (body) + Space Mono (code/labels) */
+    /* Space Grotesk (body) + Space Mono (code/labels) */
     body,
     :host {
         background-color: transparent;
@@ -228,7 +228,7 @@
     --ono-v-dialog-max-width: 960px;
 }
 
-/* Focus ring — text color (white dark / black light) per Nothing spec */
+/* Focus ring — text color (white dark / black light) */
 button:focus-visible,
 [role="tab"]:focus-visible,
 summary:focus-visible,
@@ -241,7 +241,7 @@ textarea:focus-visible,
     outline-offset: 2px;
 }
 
-/* Nothing Design System — utility classes */
+/* ─── Utility classes ────────────────────────────────────────────────────── */
 .v-o-label {
     font-family: "Space Mono", ui-monospace, monospace;
     text-transform: uppercase;
@@ -357,8 +357,6 @@ select#editor-selector {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23999999' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
 
-/* Nothing: no skeleton loaders — use bracket text [LOADING...] instead */
-
 /* Accordion arrow on stack trace summary — rotates the .dui icon */
 #__v_o__stacktrace summary .dui {
     transition: transform 0.15s ease-out;
@@ -445,5 +443,3 @@ select#editor-selector {
         --num: var(--num-end);
     }
 }
-
-/* Signal dot removed — balloon uses clean flat red button only */
