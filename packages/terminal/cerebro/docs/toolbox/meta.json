@@ -1,9 +1,4 @@
 {
     "title": "Toolbox",
-    "pages": [
-        "parameters",
-        "runtime",
-        "logger",
-        "print"
-    ]
+    "pages": ["parameters", "runtime", "logger", "print"]
 }

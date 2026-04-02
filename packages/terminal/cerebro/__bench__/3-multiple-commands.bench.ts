@@ -65,7 +65,8 @@ describe("3. Multiple Command Registration (Realistic CLI)", () => {
                         alias: "c",
                         description: "Config file",
                         type: "string",
-                    }));
+                    }),
+            );
         });
     });
 

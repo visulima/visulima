@@ -48,7 +48,8 @@ describe("10. Full Lifecycle (Init + Register + Parse)", () => {
         const parser = yargs(hideBin(["node", "script.js"]))
             .scriptName("test-cli")
             .command("build", "Build command", (yargsBuilder) =>
-                yargsBuilder.option("verbose", { alias: "v", type: "boolean" }).option("output", { alias: "o", type: "string" }));
+                yargsBuilder.option("verbose", { alias: "v", type: "boolean" }).option("output", { alias: "o", type: "string" }),
+            );
 
         await parser.parseAsync(simpleCommand.slice(2));
     });

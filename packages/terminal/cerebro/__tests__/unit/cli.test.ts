@@ -63,7 +63,7 @@ describe("cli", () => {
 
         cli.addCommand({ execute: vi.fn(), name: "duplicate" });
 
-        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow("Command with path \"duplicate\" already exists");
+        expect(() => cli.addCommand({ execute: vi.fn(), name: "duplicate" })).toThrow('Command with path "duplicate" already exists');
     });
 
     it("should throw error when running a command with missing required options", async () => {
@@ -81,7 +81,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("Command \"test\" is missing required options: requiredOption");
+        ).rejects.toThrow('Command "test" is missing required options: requiredOption');
     });
 
     it("should throw error when running a command with unknown options", async () => {
@@ -95,7 +95,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("Found unknown option \"--unknownOption\"");
+        ).rejects.toThrow('Found unknown option "--unknownOption"');
     });
 
     it("should throw error when running a command with conflicting options", async () => {
@@ -116,7 +116,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("Options \"option1\" and \"option2\" cannot be used together");
+        ).rejects.toThrow('Options "option1" and "option2" cannot be used together');
     });
 
     it("should not throw a error when running a command with one options that dont conflict", async () => {
@@ -208,7 +208,7 @@ describe("cli", () => {
             cli.run({
                 shouldExitProcess: false,
             }),
-        ).rejects.toThrow("Options \"clean\" and \"no-clean\" cannot be used together");
+        ).rejects.toThrow('Options "clean" and "no-clean" cannot be used together');
     });
 
     describe("runCommand", () => {
@@ -356,7 +356,7 @@ describe("cli", () => {
                 name: "parent",
             });
 
-            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow("Command \"nonexistent\" not found");
+            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow('Command "nonexistent" not found');
 
             expect(parentExecute).toHaveBeenCalledTimes(1);
         });
@@ -382,7 +382,7 @@ describe("cli", () => {
                 name: "parent",
             });
 
-            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow("Command \"invalid\" has no function to execute");
+            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow('Command "invalid" has no function to execute');
         });
 
         it("should validate required options for called command", async () => {
@@ -405,7 +405,7 @@ describe("cli", () => {
                 name: "parent",
             });
 
-            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow("Command \"test\" is missing required options: requiredOption");
+            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow('Command "test" is missing required options: requiredOption');
         });
 
         it("should validate conflicting options for called command", async () => {
@@ -431,7 +431,7 @@ describe("cli", () => {
                 name: "parent",
             });
 
-            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow("Options \"option1\" and \"option2\" cannot be used together");
+            await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow('Options "option1" and "option2" cannot be used together');
         });
 
         it("should execute plugin lifecycle hooks for called command", async () => {
@@ -831,9 +831,7 @@ describe("cli", () => {
                 argument: { name: "target", type: String },
                 execute,
                 name: "run",
-                options: [
-                    { name: "root", type: String },
-                ],
+                options: [{ name: "root", type: String }],
             });
 
             await cli.run({ shouldExitProcess: false });
@@ -861,9 +859,7 @@ describe("cli", () => {
                 argument: { name: "target", type: String },
                 execute,
                 name: "run",
-                options: [
-                    { name: "root", type: String },
-                ],
+                options: [{ name: "root", type: String }],
             });
 
             await cli.run({ shouldExitProcess: false });

@@ -70,7 +70,8 @@ describe("5. Complex Argument Parsing (Many flags)", () => {
                         .option("dry-run", { type: "boolean" })
                         .option("workers", { alias: "w", type: "number" })
                         .option("timeout", { alias: "t", type: "number" })
-                        .option("config", { alias: "c", type: "string" }));
+                        .option("config", { alias: "c", type: "string" }),
+                );
 
             await parser.parseAsync(complexArgs.slice(2));
         });

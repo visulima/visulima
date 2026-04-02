@@ -72,7 +72,8 @@ describe("7. Help Text Generation", () => {
                             alias: "w",
                             description: "Set number of parallel workers (1-10)",
                             type: "number",
-                        }))
+                        }),
+                )
                 .help();
 
             await parser.parseAsync(helpArgs.slice(2));

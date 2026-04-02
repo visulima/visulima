@@ -15,17 +15,17 @@ import { createCerebro } from "@visulima/cerebro";
 
 // Create CLI instance
 const cli = createCerebro("greet-cli", {
-  packageName: "greet-cli",
-  packageVersion: "1.0.0",
+    packageName: "greet-cli",
+    packageVersion: "1.0.0",
 });
 
 // Add a command
 cli.addCommand({
-  name: "hello",
-  description: "Greet someone",
-  execute: ({ logger }) => {
-    logger.log("Hello, World!");
-  },
+    name: "hello",
+    description: "Greet someone",
+    execute: ({ logger }) => {
+        logger.log("Hello, World!");
+    },
 });
 
 // Run the CLI
@@ -33,6 +33,7 @@ await cli.run();
 ```
 
 Run it:
+
 ```bash
 $ node cli.js hello
 Hello, World!
@@ -44,17 +45,17 @@ Add arguments to your commands:
 
 ```typescript
 cli.addCommand({
-  name: "greet",
-  description: "Greet someone by name",
-  argument: {
-    name: "name",
-    description: "Person to greet",
-    type: String,
-  },
-  execute: ({ argument, logger }) => {
-    const name = argument[0];
-    logger.log(`Hello, ${name}!`);
-  },
+    name: "greet",
+    description: "Greet someone by name",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
+    },
+    execute: ({ argument, logger }) => {
+        const name = argument[0];
+        logger.log(`Hello, ${name}!`);
+    },
 });
 ```
 
@@ -69,37 +70,37 @@ Add options for more flexibility:
 
 ```typescript
 cli.addCommand({
-  name: "greet",
-  description: "Greet someone",
-  argument: {
-    name: "name",
-    description: "Person to greet",
-    type: String,
-  },
-  options: [
-    {
-      name: "loud",
-      alias: "l",
-      description: "Make it loud",
-      type: Boolean,
+    name: "greet",
+    description: "Greet someone",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
     },
-    {
-      name: "times",
-      alias: "t",
-      description: "Number of times to greet",
-      type: Number,
-      defaultValue: 1,
-    },
-  ],
-  execute: ({ argument, options, logger }) => {
-    const name = argument[0];
-    const message = `Hello, ${name}!`;
-    const output = options.loud ? message.toUpperCase() : message;
+    options: [
+        {
+            name: "loud",
+            alias: "l",
+            description: "Make it loud",
+            type: Boolean,
+        },
+        {
+            name: "times",
+            alias: "t",
+            description: "Number of times to greet",
+            type: Number,
+            defaultValue: 1,
+        },
+    ],
+    execute: ({ argument, options, logger }) => {
+        const name = argument[0];
+        const message = `Hello, ${name}!`;
+        const output = options.loud ? message.toUpperCase() : message;
 
-    for (let i = 0; i < options.times; i++) {
-      logger.log(output);
-    }
-  },
+        for (let i = 0; i < options.times; i++) {
+            logger.log(output);
+        }
+    },
 });
 ```
 
@@ -134,17 +135,17 @@ Access environment variables in your commands:
 
 ```typescript
 cli.addCommand({
-  name: "env",
-  description: "Show environment info",
-  env: {
-    API_KEY: {
-      description: "API key for authentication",
-      required: true,
+    name: "env",
+    description: "Show environment info",
+    env: {
+        API_KEY: {
+            description: "API key for authentication",
+            required: true,
+        },
     },
-  },
-  execute: ({ env, logger }) => {
-    logger.log(`API Key: ${env.API_KEY}`);
-  },
+    execute: ({ env, logger }) => {
+        logger.log(`API Key: ${env.API_KEY}`);
+    },
 });
 ```
 
@@ -159,24 +160,24 @@ Create command hierarchies:
 
 ```typescript
 cli.addCommand({
-  name: "db",
-  description: "Database commands",
-  commands: [
-    {
-      name: "migrate",
-      description: "Run migrations",
-      execute: ({ logger }) => {
-        logger.log("Running migrations...");
-      },
-    },
-    {
-      name: "seed",
-      description: "Seed database",
-      execute: ({ logger }) => {
-        logger.log("Seeding database...");
-      },
-    },
-  ],
+    name: "db",
+    description: "Database commands",
+    commands: [
+        {
+            name: "migrate",
+            description: "Run migrations",
+            execute: ({ logger }) => {
+                logger.log("Running migrations...");
+            },
+        },
+        {
+            name: "seed",
+            description: "Seed database",
+            execute: ({ logger }) => {
+                logger.log("Seeding database...");
+            },
+        },
+    ],
 });
 ```
 
@@ -191,13 +192,13 @@ Seeding database...
 ## Next Steps
 
 <Cards>
-  <Card title="Concepts" href="/concepts/architecture">
-    Learn how Cerebro works under the hood
-  </Card>
-  <Card title="Commands Guide" href="/usage/commands">
-    Deep dive into command creation
-  </Card>
-  <Card title="Plugins" href="/guides/using-plugins">
-    Extend your CLI with plugins
-  </Card>
+    <Card title="Concepts" href="/concepts/architecture">
+        Learn how Cerebro works under the hood
+    </Card>
+    <Card title="Commands Guide" href="/usage/commands">
+        Deep dive into command creation
+    </Card>
+    <Card title="Plugins" href="/guides/using-plugins">
+        Extend your CLI with plugins
+    </Card>
 </Cards>

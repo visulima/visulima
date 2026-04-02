@@ -39,9 +39,9 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 ...options,
             };
 
-            const shouldCheck
-                = updateNotifierOptions.alwaysRun
-                    || !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
+            const shouldCheck =
+                updateNotifierOptions.alwaysRun ||
+                !(env.NO_UPDATE_NOTIFIER || env.NODE_ENV === "test" || toolbox.argv.includes("--no-update-notifier") || isCI);
 
             if (!shouldCheck) {
                 logger.debug("Update notifier: skipping check (disabled by environment or flags)");

@@ -16,17 +16,18 @@ The `Cerebro` class is the main entry point. It manages commands, plugins, and t
 import { createCerebro } from "@visulima/cerebro";
 
 const cli = createCerebro("my-cli", {
-  packageName: "my-cli",
-  packageVersion: "1.0.0",
-  logger: console, // Custom logger
-  cwd: process.cwd(), // Working directory
-  argv: process.argv.slice(2), // Command-line arguments
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+    logger: console, // Custom logger
+    cwd: process.cwd(), // Working directory
+    argv: process.argv.slice(2), // Command-line arguments
 });
 ```
 
 ### Command Registry
 
 Commands are stored in a hierarchical registry that supports:
+
 - Flat commands (`build`, `deploy`)
 - Nested commands (`db migrate`, `server start`)
 - Command aliases and suggestions
@@ -107,22 +108,22 @@ Full TypeScript support with generics for type-safe toolbox extensions:
 ```typescript
 // Declare custom toolbox properties
 declare global {
-  namespace Cerebro {
-    interface ExtensionOverrides {
-      http: {
-        get: <T>(url: string) => Promise<T>;
-      };
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            http: {
+                get: <T>(url: string) => Promise<T>;
+            };
+        }
     }
-  }
 }
 
 // Now http is fully typed in commands
 cli.addCommand({
-  name: "fetch",
-  execute: async ({ http }) => {
-    const data = await http.get<User>("/api/user");
-    // data is typed as User
-  },
+    name: "fetch",
+    execute: async ({ http }) => {
+        const data = await http.get<User>("/api/user");
+        // data is typed as User
+    },
 });
 ```
 
@@ -160,13 +161,13 @@ Implementation:
 
 ```typescript
 cli.addCommand({
-  name: "db",
-  description: "Database commands",
-  commands: [
-    { name: "migrate", execute: ({ logger }) => {} },
-    { name: "seed", execute: ({ logger }) => {} },
-    { name: "backup", execute: ({ logger }) => {} },
-  ],
+    name: "db",
+    description: "Database commands",
+    commands: [
+        { name: "migrate", execute: ({ logger }) => {} },
+        { name: "seed", execute: ({ logger }) => {} },
+        { name: "backup", execute: ({ logger }) => {} },
+    ],
 });
 ```
 
@@ -182,8 +183,10 @@ Cerebro provides comprehensive error handling:
 ```typescript
 import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
 
-cli.use(errorHandlerPlugin({
-  exitOnError: true,
-  showStackTrace: false,
-}));
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true,
+        showStackTrace: false,
+    }),
+);
 ```

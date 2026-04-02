@@ -1,23 +1,23 @@
 {
-  "name": "cerebro-bench",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test:bench": "vitest bench"
-  },
-  "dependencies": {
-    "@oclif/core": "catalog:prod",
-    "@visulima/cerebro": "workspace:*",
-    "cac": "catalog:prod",
-    "cleye": "catalog:prod",
-    "commander": "catalog:prod",
-    "gunshi": "catalog:prod",
-    "meow": "catalog:prod",
-    "yargs": "catalog:prod"
-  },
-  "devDependencies": {
-    "@types/yargs": "catalog:types",
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test"
-  }
+    "name": "cerebro-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@oclif/core": "catalog:prod",
+        "@visulima/cerebro": "workspace:*",
+        "cac": "catalog:prod",
+        "cleye": "catalog:prod",
+        "commander": "catalog:prod",
+        "gunshi": "catalog:prod",
+        "meow": "catalog:prod",
+        "yargs": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/yargs": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
 }

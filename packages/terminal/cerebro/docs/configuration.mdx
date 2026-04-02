@@ -14,11 +14,11 @@ Configure the CLI instance at creation:
 import { createCerebro } from "@visulima/cerebro";
 
 const cli = createCerebro("my-cli", {
-  packageName: "@company/my-cli",
-  packageVersion: "1.0.0",
-  logger: console,
-  cwd: process.cwd(),
-  argv: process.argv.slice(2),
+    packageName: "@company/my-cli",
+    packageVersion: "1.0.0",
+    logger: console,
+    cwd: process.cwd(),
+    argv: process.argv.slice(2),
 });
 ```
 
@@ -28,11 +28,12 @@ The npm package name:
 
 ```typescript
 {
-  packageName: "@company/my-cli"
+    packageName: "@company/my-cli";
 }
 ```
 
 Used by:
+
 - Update notifier plugin
 - Version command
 - Help text generation
@@ -43,7 +44,7 @@ The package version:
 
 ```typescript
 {
-  packageVersion: "1.0.0"
+    packageVersion: "1.0.0";
 }
 ```
 
@@ -59,7 +60,7 @@ import { createPail } from "@visulima/pail";
 const logger = createPail();
 
 const cli = createCerebro("my-cli", {
-  logger,
+    logger,
 });
 ```
 
@@ -69,7 +70,7 @@ Working directory (default: `process.cwd()`):
 
 ```typescript
 {
-  cwd: "/custom/directory"
+    cwd: "/custom/directory";
 }
 ```
 
@@ -79,7 +80,7 @@ Command-line arguments (default: `process.argv.slice(2)`):
 
 ```typescript
 {
-  argv: ["build", "--production"]
+    argv: ["build", "--production"];
 }
 ```
 
@@ -97,6 +98,7 @@ CEREBRO_OUTPUT_LEVEL=debug my-cli build    # Debug output
 ```
 
 Values:
+
 - `quiet` - No output
 - `normal` - Standard output
 - `verbose` - Detailed output
@@ -125,11 +127,13 @@ CEREBRO_TERMINAL_WIDTH=120 my-cli help
 ```typescript
 import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
 
-cli.use(errorHandlerPlugin({
-  exitOnError: true,      // Exit process on errors
-  showStackTrace: false,  // Hide stack traces
-  logErrors: true,        // Log to console
-}));
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true, // Exit process on errors
+        showStackTrace: false, // Hide stack traces
+        logErrors: true, // Log to console
+    }),
+);
 ```
 
 ### Runtime Version Check
@@ -137,10 +141,12 @@ cli.use(errorHandlerPlugin({
 ```typescript
 import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
 
-cli.use(runtimeVersionCheckPlugin({
-  requiredVersion: ">=18.0.0",
-  message: "Custom error message",
-}));
+cli.use(
+    runtimeVersionCheckPlugin({
+        requiredVersion: ">=18.0.0",
+        message: "Custom error message",
+    }),
+);
 ```
 
 ### Update Notifier
@@ -148,12 +154,14 @@ cli.use(runtimeVersionCheckPlugin({
 ```typescript
 import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
 
-cli.use(updateNotifierPlugin({
-  packageName: "my-cli",
-  packageVersion: "1.0.0",
-  checkInterval: 86400000,  // 24 hours in ms
-  updateMessage: "Update available: {latest}",
-}));
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+        checkInterval: 86400000, // 24 hours in ms
+        updateMessage: "Update available: {latest}",
+    }),
+);
 ```
 
 ## Command Configuration
@@ -164,11 +172,11 @@ Add options available to all commands:
 
 ```typescript
 cli.addGlobalOption({
-  name: "config",
-  alias: "c",
-  description: "Configuration file path",
-  type: String,
-  defaultValue: "./config.json",
+    name: "config",
+    alias: "c",
+    description: "Configuration file path",
+    type: String,
+    defaultValue: "./config.json",
 });
 ```
 
@@ -186,15 +194,15 @@ Organize commands in help output:
 
 ```typescript
 cli.addCommandSection({
-  name: "Database Commands",
-  description: "Manage database operations",
-  commands: ["db:migrate", "db:seed"],
+    name: "Database Commands",
+    description: "Manage database operations",
+    commands: ["db:migrate", "db:seed"],
 });
 
 cli.addCommandSection({
-  name: "Build Commands",
-  description: "Build and deploy",
-  commands: ["build", "deploy"],
+    name: "Build Commands",
+    description: "Build and deploy",
+    commands: ["build", "deploy"],
 });
 ```
 
@@ -219,21 +227,21 @@ import { resolve } from "path";
 import { readFileSync, existsSync } from "fs";
 
 function loadConfig(cwd: string) {
-  const configPath = resolve(cwd, "my-cli.config.json");
+    const configPath = resolve(cwd, "my-cli.config.json");
 
-  if (!existsSync(configPath)) {
-    return {};
-  }
+    if (!existsSync(configPath)) {
+        return {};
+    }
 
-  return JSON.parse(readFileSync(configPath, "utf-8"));
+    return JSON.parse(readFileSync(configPath, "utf-8"));
 }
 
 cli.addCommand({
-  name: "build",
-  execute: async ({ cwd, logger }) => {
-    const config = loadConfig(cwd);
-    logger.log(`Using config:`, config);
-  },
+    name: "build",
+    execute: async ({ cwd, logger }) => {
+        const config = loadConfig(cwd);
+        logger.log(`Using config:`, config);
+    },
 });
 ```
 
@@ -244,19 +252,19 @@ Configure TypeScript for your CLI project:
 ```json
 // tsconfig.json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "bundler",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "declaration": true,
+        "declarationMap": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
 }
 ```

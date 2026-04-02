@@ -47,7 +47,8 @@ describe("4. Simple Argument Parsing", () => {
                 yargsBuilder.option("verbose", {
                     alias: "v",
                     type: "boolean",
-                }));
+                }),
+            );
 
         await parser.parseAsync(simpleCommand.slice(2));
     });

@@ -1,8 +1,4 @@
 {
     "title": "Concepts",
-    "pages": [
-        "architecture",
-        "commands",
-        "plugins"
-    ]
+    "pages": ["architecture", "commands", "plugins"]
 }

@@ -13,23 +13,22 @@ Complete API reference for Cerebro CLI framework.
 Create a new CLI instance:
 
 ```typescript
-function createCerebro<T extends Console = Console>(
-  name: string,
-  options?: CliOptions<T>
-): Cerebro<T>
+function createCerebro<T extends Console = Console>(name: string, options?: CliOptions<T>): Cerebro<T>;
 ```
 
 **Parameters:**
+
 - `name` - CLI application name
 - `options` - Configuration options (optional)
 
 **Returns:** Configured Cerebro instance
 
 **Example:**
+
 ```typescript
 const cli = createCerebro("my-cli", {
-  packageName: "my-cli",
-  packageVersion: "1.0.0",
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
 });
 ```
 

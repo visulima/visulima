@@ -61,7 +61,8 @@ describe("2. Single Command Registration", () => {
                         alias: "w",
                         description: "Number of workers",
                         type: "number",
-                    }));
+                    }),
+            );
     });
 
     bench("Meow - Define flags for command", () => {
