@@ -505,25 +505,19 @@ const App = ({
         };
     }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC]);
 
-    const stdoutContextValue = useMemo(() => {
-        return {
-            stdout,
-            write: writeToStdout,
-        };
-    }, [stdout, writeToStdout]);
+    const stdoutContextValue = useMemo(() => ({
+        stdout,
+        write: writeToStdout,
+    }), [stdout, writeToStdout]);
 
-    const stderrContextValue = useMemo(() => {
-        return {
-            stderr,
-            write: writeToStderr,
-        };
-    }, [stderr, writeToStderr]);
+    const stderrContextValue = useMemo(() => ({
+        stderr,
+        write: writeToStderr,
+    }), [stderr, writeToStderr]);
 
-    const cursorContextValue = useMemo(() => {
-        return {
-            setCursorPosition,
-        };
-    }, [setCursorPosition]);
+    const cursorContextValue = useMemo(() => ({
+        setCursorPosition,
+    }), [setCursorPosition]);
 
     const focusContextValue = useMemo(() => {
         return {
