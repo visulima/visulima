@@ -7,7 +7,7 @@ import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
 import type { OutputTransformer } from "./render-node-to-output";
 import { FULL_WIDTH_MASK } from "./style-flags";
 import { StyledLine } from "./styled-line";
-import { ansiCodesToStyleInfo, styledCharsToStyledLine } from "./styled-line-bridge";
+import { styledCharsToStyledLine } from "./styled-line-bridge";
 import { styledLineToString } from "./styled-line-serializer";
 
 /**
@@ -542,9 +542,11 @@ export default class Output {
             return;
         }
 
+        // Convert StyledChar[] to StyledLine once (avoids per-char ansiCodesToStyleInfo)
+        const source = styledCharsToStyledLine(styledChars);
         let col = x;
 
-        for (const char of styledChars) {
+        for (let i = 0; i < source.length; i++) {
             if (col < 0) {
                 col++;
                 continue;
@@ -573,15 +575,18 @@ export default class Output {
                 }
             }
 
-            const { bgColor, fgColor, formatFlags, link } = ansiCodesToStyleInfo(char.styles);
-            const flags = char.fullWidth ? formatFlags | FULL_WIDTH_MASK : formatFlags;
+            const value = source.getValue(i);
+            const flags = source.getFormatFlags(i);
+            const fgColor = source.getFgColor(i);
+            const bgColor = source.getBgColor(i);
+            const link = source.getLink(i);
+            const isFullWidth = source.getFullWidth(i);
 
-            row.setChar(col, char.value, flags, fgColor, bgColor, link);
+            row.setChar(col, value, flags, fgColor, bgColor, link);
             col++;
 
-            if (char.fullWidth && col < this.width) {
-                // Continuation cell inherits parent style so spans merge correctly
-                row.setChar(col, "", formatFlags, fgColor, bgColor, link);
+            if (isFullWidth && col < this.width) {
+                row.setChar(col, "", flags & ~FULL_WIDTH_MASK, fgColor, bgColor, link);
                 col++;
             }
         }
