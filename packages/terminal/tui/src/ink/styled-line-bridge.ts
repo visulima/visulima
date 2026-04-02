@@ -4,7 +4,9 @@
  * These functions allow incremental migration -- existing code can convert
  * between the two formats until all consumers are migrated to StyledLine.
  *
- * These functions are TEMPORARY and should be removed after Phase 5.
+ * The bridge remains necessary because toStyledCharacters() handles complex
+ * character combining (emoji ZWJ sequences, regional indicators, skin tones,
+ * tabs) that has not been replicated in native StyledLine tokenization.
  */
 
 /* eslint-disable no-bitwise */

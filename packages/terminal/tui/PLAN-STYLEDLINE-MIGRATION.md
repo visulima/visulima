@@ -5,10 +5,15 @@
 - **Phase 1**: DONE — StyledLine class, style flags, serializer
 - **Phase 2**: DONE — Bridge layer (StyledChar ↔ StyledLine)
 - **Phase 3**: DONE — Output grid migration (StyledChar[][] → StyledLine[])
-- **Phase 4**: DONE — Text pipeline fast path (toStyledLine, writeStyledLine)
-- **Phase 5**: PARTIAL — Hot path uses StyledLine; cold path (selection, public API) retains StyledChar
+- **Phase 4**: DONE — Text pipeline fast path (toStyledLine, writeStyledLine, native wrapStyledLine)
+- **Phase 5**: DONE — Bridge retained for StyledChar tokenization (complex char combining); hot path fully on StyledLine
 - **Phase 6**: TODO — Region-based output model
 - **Phase 7**: TODO — Render caching
+
+### TODOs resolved:
+- ~~styled-line-bridge.ts "TEMPORARY"~~ → Bridge retained, comment updated to explain why
+- ~~dom.ts "Switch to StyledLine-native measurement"~~ → Reverted to string-based for Yoga correctness; render path uses StyledLine natively
+- text-wrap.ts wrapStyledLine → Now native (no longer delegates to StyledChar)
 
 ## Goal
 
