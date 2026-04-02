@@ -49,8 +49,6 @@ type ParsedStyle = {
     link?: string;
 };
 
-// ansi256IndexToColor is now imported from color-utils.ts as ansi256ToColorName
-
 /**
  * Convert a StyledChar's AnsiCode[] styles to StyledLine-compatible format flags and colors.
  */
@@ -312,5 +310,3 @@ export const styledLineToStyledChars = (line: StyledLine): StyledChar[] => {
 
     return chars;
 };
-
-// colorToAnsiCode is now imported from color-utils.ts
