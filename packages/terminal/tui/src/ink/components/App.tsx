@@ -69,13 +69,20 @@ const App = ({
     // Count how many components enabled bracketed paste mode
     const bracketedPasteModeEnabledCount = useRef(0);
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const internal_eventEmitter = useRef(new EventEmitter());
+    const [internal_eventEmitter] = useState(() => {
+        const emitter = new EventEmitter();
+        // Each useInput hook adds a listener, so the count can legitimately exceed the default limit of 10.
+        emitter.setMaxListeners(Infinity);
 
-    // Each useInput hook adds a listener, so the count can legitimately exceed the default limit of 10.
-    internal_eventEmitter.current.setMaxListeners(Infinity);
+        return emitter;
+    });
     // Store the currently attached readable listener to avoid stale closure issues
     const readableListenerRef = useRef<(() => void) | undefined>(undefined);
-    const inputParserRef = useRef(createInputParser());
+    const inputParserRef = useRef<ReturnType<typeof createInputParser> | undefined>(undefined);
+
+    if (!inputParserRef.current) {
+        inputParserRef.current = createInputParser();
+    }
     const pendingInputFlushRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const didWarnAboutDeprecatedPasteFallbackRef = useRef(false);
     // Small delay to let chunked escape sequences complete before flushing as literal input.
@@ -150,7 +157,7 @@ const App = ({
     const emitInput = useCallback(
         (input: string): void => {
             handleInput(input);
-            internal_eventEmitter.current.emit("input", input);
+            internal_eventEmitter.emit("input", input);
         },
         [handleInput],
     );
@@ -182,7 +189,7 @@ const App = ({
                 } else {
                     // Keep paste on a separate channel from `useInput` so key handlers
                     // don't need to branch on mixed key-vs-paste event shapes.
-                    if (internal_eventEmitter.current.listenerCount("paste") === 0) {
+                    if (internal_eventEmitter.listenerCount("paste") === 0) {
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
                             didWarnAboutDeprecatedPasteFallbackRef.current = true;
                             writeToStderr(
@@ -196,7 +203,7 @@ const App = ({
                         continue;
                     }
 
-                    internal_eventEmitter.current.emit("paste", event.paste);
+                    internal_eventEmitter.emit("paste", event.paste);
                 }
             }
         }
@@ -346,8 +353,8 @@ const App = ({
             }
         };
 
-        internal_eventEmitter.current.on("input", handleTabNavigation);
-        const emitter = internal_eventEmitter.current;
+        internal_eventEmitter.on("input", handleTabNavigation);
+        const emitter = internal_eventEmitter;
 
         return () => {
             emitter.off("input", handleTabNavigation);
@@ -488,7 +495,7 @@ const App = ({
 
     const stdinContextValue = useMemo(() => {
         return {
-            internal_eventEmitter: internal_eventEmitter.current,
+            internal_eventEmitter: internal_eventEmitter,
 
             internal_exitOnCtrlC: exitOnCtrlC,
             isRawModeSupported,
