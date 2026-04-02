@@ -52,7 +52,7 @@ const rootElement = (
     <div class="relative z-1 w-full max-w-(--ono-v-dialog-max-width) mx-auto flex flex-col">
 
         <div id="__v_o__panel" role="dialog" aria-modal="true" aria-label="Runtime Error Overlay"
-             class="w-full max-h-[80vh] flex flex-col bg-(--ono-v-surface) border border-(--ono-v-border) shadow-2xl overflow-hidden">
+             class="w-full max-h-[80vh] flex flex-col bg-(--ono-v-surface) border border-(--ono-v-border) overflow-hidden">
 
             <!-- ── Header bar ── replaces old SVG notch tabs ─────────────────────── -->
             <div id="__v_o__notch"
@@ -61,13 +61,11 @@ const rootElement = (
                 <!-- Left: error dot · label · pagination -->
                 <div class="flex items-center gap-2 px-3 flex-1 min-w-0">
                     <span class="size-1.5 rounded-full bg-(--ono-v-red-orange) shrink-0"></span>
-                    <span class="text-xs font-bold uppercase tracking-widest text-(--ono-v-text-muted) shrink-0 whitespace-nowrap">
-                        <span style="color: color-mix(in srgb, var(--ono-v-primary) 50%, transparent)">// </span>Runtime Error
-                    </span>
+                    <span class="v-o-label text-xs text-(--ono-v-text-muted) shrink-0 whitespace-nowrap">RUNTIME ERROR</span>
 
                     <nav class="error-overlay-pagination dialog-exclude-closing-from-outside-click flex items-center gap-1 ml-1">
                         <button id="__v_o__error-overlay-pagination-previous" type="button" aria-disabled="true"
-                                class="error-overlay-pagination-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-1 focus-visible:outline-(--ono-v-primary)" disabled>
+                                class="error-overlay-pagination-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-1 focus-visible:outline-(--ono-v-text)" disabled>
                             <span class="dui size-4" style="-webkit-mask-image: url('${chevronLeftIcon}'); mask-image: url('${chevronLeftIcon}')" aria-label="previous"></span>
                         </button>
                         <div id="__v_o__error-overlay_pagination_count"
@@ -77,11 +75,11 @@ const rootElement = (
                             <span id="__v_o__pagination_total">1</span>
                         </div>
                         <button id="__v_o__error-overlay-pagination-next" type="button" aria-disabled="true"
-                                class="error-overlay-pagination-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-1 focus-visible:outline-(--ono-v-primary)" disabled>
+                                class="error-overlay-pagination-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-1 focus-visible:outline-(--ono-v-text)" disabled>
                             <span class="dui size-4" style="-webkit-mask-image: url('${chevronRightIcon}'); mask-image: url('${chevronRightIcon}')" aria-label="next"></span>
                         </button>
                         <button id="__v_o__history_toggle" type="button" title="Toggle Error History" aria-label="Toggle Error History"
-                                class="error-overlay-history-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform focus-visible:outline-1 focus-visible:outline-(--ono-v-primary)">
+                                class="error-overlay-history-button inline-flex items-center justify-center size-7 hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 focus-visible:outline-1 focus-visible:outline-(--ono-v-text)">
                             <span class="dui size-4" style="-webkit-mask-image: url('${clockIcon}'); mask-image: url('${clockIcon}')"></span>
                         </button>
                         <div id="__v_o__history_indicator" class="flex items-center gap-1 text-xs text-(--ono-v-text-muted) hidden">
@@ -110,24 +108,24 @@ const rootElement = (
                     </div>
                     <div id="v-o-theme-switch" class="flex items-center">
                         <button type="button" title="Switch to dark mode" aria-label="Switch to dark mode"
-                                class="hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform text-(--ono-v-text)" data-v-o-theme-click-value="dark">
+                                class="hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 text-(--ono-v-text)" data-v-o-theme-click-value="dark">
                             <span class="inline-flex items-center justify-center size-8">
                                 <span class="dui size-4" style="-webkit-mask-image: url('${moonStarIcon}'); mask-image: url('${moonStarIcon}')"></span>
                             </span>
                         </button>
                         <button type="button" title="Switch to light mode" aria-label="Switch to light mode"
-                                class="hidden hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform text-(--ono-v-text)" data-v-o-theme-click-value="light">
+                                class="hidden hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 text-(--ono-v-text)" data-v-o-theme-click-value="light">
                             <span class="inline-flex items-center justify-center size-8">
                                 <span class="dui size-4" style="-webkit-mask-image: url('${sunIcon}'); mask-image: url('${sunIcon}')"></span>
                             </span>
                         </button>
                     </div>
                     <button type="button" id="__v_o__copy_error" title="Copy Error Info" aria-label="Copy Error Info"
-                            class="inline-flex items-center justify-center size-8 hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform text-(--ono-v-text)">
+                            class="inline-flex items-center justify-center size-8 hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 text-(--ono-v-text)">
                         <span class="dui size-4" style="-webkit-mask-image: url('${copyIcon}'); mask-image: url('${copyIcon}')"></span>
                     </button>
                     <button type="button" id="__v_o__close" aria-label="Close error overlay"
-                            class="inline-flex items-center justify-center size-8 hover:bg-(--ono-v-hover-overlay) active:scale-95 transition-transform text-(--ono-v-text)">
+                            class="inline-flex items-center justify-center size-8 hover:bg-(--ono-v-hover-overlay) active:opacity-80 transition-opacity duration-150 text-(--ono-v-text)">
                         <span class="dui size-4" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
                     </button>
                 </div>`
@@ -136,7 +134,7 @@ const rootElement = (
 
             <!-- ── File / error title ──────────────────────────────────────────────── -->
             <div id="__v_o__header" class="flex items-center gap-2 justify-between border-b border-(--ono-v-border) bg-(--ono-v-surface) px-4 py-2 min-h-10">
-                <div id="__v_o__header_loader" class="v-o-skeleton h-5 w-3/5"></div>
+                <div id="__v_o__header_loader"><span class="v-o-loading-text">[LOADING...]</span></div>
                 <div id="__v_o__title" class="flex items-center gap-2 w-full hidden">
                     <span id="__v_o__heading" class="leading-none text-(--ono-v-red-orange) font-mono text-sm font-semibold"></span>
                     <button type="button" id="__v_o__filelink"
@@ -153,7 +151,7 @@ const rootElement = (
             <!-- ── Scrollable content ─────────────────────────────────────────────── -->
             <div class="flex-1 min-h-0 overflow-y-auto devtools-content-scroll">
                 <div id="__v_o__message_loader" class="px-4 py-2 bg-(--ono-v-surface-muted) border-b border-(--ono-v-border)">
-                    <div class="v-o-skeleton h-4 w-full"></div>
+                    <span class="v-o-loading-text">[LOADING...]</span>
                 </div>
                 <!-- CRITICAL: class selector used by runtime.js querySelector — do not change -->
                 <div id="__v_o__message" class="px-4 py-2 text-sm text-[var(--ono-v-red-orange)] font-mono bg-[var(--ono-v-surface-muted)] border-b border-(--ono-v-border) font-medium hidden"></div>
@@ -166,15 +164,8 @@ const rootElement = (
                 </div>
 
                 <div id="__v_o__body" class="relative flex min-h-0 bg-(--ono-v-surface)">
-                    <div id="__v_o__body_loader" class="w-full p-4 space-y-1.5">
-                        <div class="v-o-skeleton h-4 w-full"></div>
-                        <div class="v-o-skeleton h-4 w-3/4"></div>
-                        <div class="v-o-skeleton h-4 w-1/2"></div>
-                        <div class="v-o-skeleton h-4 w-2/3"></div>
-                        <div class="v-o-skeleton h-4 w-4/5"></div>
-                        <div class="v-o-skeleton h-4 w-1/3"></div>
-                        <div class="v-o-skeleton h-4 w-2/5"></div>
-                        <div class="v-o-skeleton h-4 w-3/5"></div>
+                    <div id="__v_o__body_loader" class="w-full p-4">
+                        <span class="v-o-loading-text">[LOADING...]</span>
                     </div>
                     <div id="__v_o__overlay" class="overflow-auto w-full hidden"></div>
                 </div>
@@ -182,9 +173,9 @@ const rootElement = (
 
             <!-- ── Stack trace footer (collapsible) ──────────────────────────────── -->
             <details id="__v_o__stacktrace" class="shrink-0 border-t border-(--ono-v-border) bg-(--ono-v-surface-muted)">
-                <summary class="cursor-pointer px-4 py-3 list-none flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--ono-v-text-muted) hover:text-(--ono-v-text) transition-colors duration-200">
+                <summary class="cursor-pointer px-4 py-3 list-none flex items-center gap-2 v-o-label text-xs text-(--ono-v-text-muted) hover:text-(--ono-v-text) transition-colors duration-150">
                     <span class="dui size-3" style="-webkit-mask-image: url('${chevronRightIcon}'); mask-image: url('${chevronRightIcon}')"></span>
-                    Stack Trace
+                    STACK TRACE
                 </summary>
                 <!-- CRITICAL: class selector used by runtime.js querySelector — do not change -->
                 <div class="px-4 py-3 text-xs font-mono text-[var(--ono-v-text-muted)] whitespace-pre-wrap leading-5 overflow-auto max-h-[160px] bg-(--ono-v-surface) border-t border-(--ono-v-border)"></div>
@@ -194,7 +185,7 @@ const rootElement = (
         <!-- ── History depth visual layers ───────────────────────────────────────── -->
         <div id="__v_o__history_layer_depth"
              class="relative flex items-center flex-col -z-1 w-[calc(100%-24px)] mx-auto h-10 opacity-0 transition-opacity duration-200 pointer-events-none">
-            <div id="__v_o__history_layer_depth_1" class="relative w-full h-5 bg-(--ono-v-surface-muted) border border-(--ono-v-border) border-t-0 -mt-3 shadow-sm"></div>
+            <div id="__v_o__history_layer_depth_1" class="relative w-full h-5 bg-(--ono-v-surface-muted) border border-(--ono-v-border) border-t-0 -mt-3"></div>
             <div id="__v_o__history_layer_depth_2" class="relative w-[calc(100%-24px)] h-5 bg-(--ono-v-surface-muted) border border-(--ono-v-border) border-t-0 -mt-3 -z-1"></div>
         </div>
     </div>
@@ -263,23 +254,17 @@ const generateBalloonButton = (balloonConfig?: BalloonConfig): string => {
     const positionStyle = position ? getPositionStyles(position) : getPositionStyles("bottom-right");
     const iconHtml = balloonConfig?.icon ? `<img src="${balloonConfig.icon}" alt="" class="size-4" />` : "";
 
-    const shadowStyle = "box-shadow: 0 6px 20px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.07);";
-
-    return `<div id="__v_o__balloon_group" class="fixed z-2147483646 inline-flex font-mono" data-balloon-position="${position}" style="${customStyle} ${positionStyle} ${shadowStyle}">
-    <!-- Signal zone — animated pulse dot on darker red strip -->
-    <div class="flex items-center justify-center w-8 shrink-0 pointer-events-none" style="background: color-mix(in srgb, var(--ono-v-red-orange) 55%, black); border-right: 1px solid rgba(255,255,255,0.1);">
-        <span class="v-o-signal-dot"></span>
-    </div>
+    return `<div id="__v_o__balloon_group" class="fixed z-2147483646 inline-flex" data-balloon-position="${position}" style="${customStyle} ${positionStyle}">
     <!-- Toggle button: count + label -->
     <button type="button" id="__v_o__balloon" title="Toggle error overlay" aria-label="Toggle error overlay"
-            class="flex items-center gap-1.5 px-2.5 py-2 text-white cursor-pointer hover:bg-white/10 active:bg-white/15 transition-colors" style="background: var(--ono-v-red-orange);">
+            class="flex items-center gap-1.5 px-3 py-2 text-white cursor-pointer hover:opacity-90 active:opacity-80 transition-opacity duration-150" style="background: var(--ono-v-red-orange);">
         ${iconHtml ? `<img src="${iconHtml}" alt="" class="size-3.5 opacity-90 shrink-0" />` : ""}
         <span id="__v_o__balloon_count" style="--num: 0"></span>
-        <span id="__v_o__balloon_text" class="text-xs font-bold uppercase tracking-widest leading-none" style="color: rgba(255,255,255,0.65)">Errors</span>
+        <span id="__v_o__balloon_text" class="v-o-label text-xs leading-none" style="color: rgba(255,255,255,0.7)">ERRORS</span>
     </button>
     <!-- Dismiss button -->
     <button type="button" id="__v_o__balloon_close" title="Dismiss balloon" aria-label="Dismiss balloon"
-            class="flex items-center justify-center w-7 shrink-0 text-white cursor-pointer hover:bg-white/15 active:bg-white/20 transition-colors" style="background: var(--ono-v-red-orange); border-left: 1px solid rgba(255,255,255,0.1);">
+            class="flex items-center justify-center w-7 shrink-0 text-white cursor-pointer hover:opacity-90 active:opacity-80 transition-opacity duration-150" style="background: var(--ono-v-red-orange); border-left: 1px solid rgba(255,255,255,0.15);">
         <span class="dui size-3" style="-webkit-mask-image: url('${closeIcon}'); mask-image: url('${closeIcon}')"></span>
     </button>
 </div>`;
@@ -311,7 +296,10 @@ const generateOverlayTemplate = (showBalloonButton: boolean, balloonConfig?: Bal
     const cssString = customCSSToString(customCSS);
     const customStyleTag = cssString ? `<style>${cssString}</style>` : "";
 
-    return `<style>${styleCss}</style>
+    return `<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>${styleCss}</style>
 ${customStyleTag}
 ${rootElement("__v_o__root", editorOptions)}
 
