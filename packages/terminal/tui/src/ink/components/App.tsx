@@ -129,18 +129,23 @@ const App = ({
         [isRawModeSupported, disableRawMode, onExit],
     );
 
+    // Break the callback dependency chain by storing handlers in refs.
+    // This prevents cascading recreations: handleInput → emitInput →
+    // schedulePendingInputFlush → handleReadable → handleSetRawMode.
+    // (rerender-functional-setstate + advanced-event-handler-refs patterns)
+    const handleExitRef = useRef(handleExit);
+
+    handleExitRef.current = handleExit;
+
     const handleInput = useCallback(
         (input: string): void => {
-            // Exit on Ctrl+C — use includes() to handle multi-byte input buffers
-            // where Ctrl+C may be embedded within a larger chunk
             // eslint-disable-next-line unicorn/no-hex-escape
             if (input.includes("\x03") && exitOnCtrlC) {
-                handleExit();
+                handleExitRef.current();
 
                 return;
             }
 
-            // Reset focus when there's an active focused component on Esc
             if (input === escape) {
                 setActiveFocusId((currentActiveFocusId) => {
                     if (currentActiveFocusId) {
@@ -151,7 +156,7 @@ const App = ({
                 });
             }
         },
-        [exitOnCtrlC, handleExit],
+        [exitOnCtrlC], // stable — only depends on exitOnCtrlC prop
     );
 
     const emitInput = useCallback(
@@ -159,36 +164,42 @@ const App = ({
             handleInput(input);
             internal_eventEmitter.emit("input", input);
         },
-        [handleInput],
+        [handleInput, internal_eventEmitter],
     );
+
+    const emitInputRef = useRef(emitInput);
+
+    emitInputRef.current = emitInput;
 
     const schedulePendingInputFlush = useCallback((): void => {
         clearPendingInputFlush();
         pendingInputFlushRef.current = setTimeout(() => {
             pendingInputFlushRef.current = undefined;
-            const pendingEscape = inputParserRef.current.flushPendingEscape();
+            const pendingEscape = inputParserRef.current!.flushPendingEscape();
 
             if (!pendingEscape) {
                 return;
             }
 
-            emitInput(pendingEscape);
+            emitInputRef.current(pendingEscape);
         }, pendingInputFlushDelayMilliseconds);
-    }, [clearPendingInputFlush, emitInput]);
+    }, [clearPendingInputFlush]); // stable — uses ref for emitInput
+
+    const schedulePendingInputFlushRef = useRef(schedulePendingInputFlush);
+
+    schedulePendingInputFlushRef.current = schedulePendingInputFlush;
 
     const handleReadable = useCallback((): void => {
         clearPendingInputFlush();
         let chunk;
 
         while ((chunk = stdin.read() as string | null) !== null) {
-            const inputEvents = inputParserRef.current.push(chunk);
+            const inputEvents = inputParserRef.current!.push(chunk);
 
             for (const event of inputEvents) {
                 if (typeof event === "string") {
-                    emitInput(event);
+                    emitInputRef.current(event);
                 } else {
-                    // Keep paste on a separate channel from `useInput` so key handlers
-                    // don't need to branch on mixed key-vs-paste event shapes.
                     if (internal_eventEmitter.listenerCount("paste") === 0) {
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
                             didWarnAboutDeprecatedPasteFallbackRef.current = true;
@@ -199,7 +210,7 @@ const App = ({
                             );
                         }
 
-                        emitInput(event.paste);
+                        emitInputRef.current(event.paste);
                         continue;
                     }
 
@@ -208,10 +219,10 @@ const App = ({
             }
         }
 
-        if (inputParserRef.current.hasPendingEscape()) {
-            schedulePendingInputFlush();
+        if (inputParserRef.current!.hasPendingEscape()) {
+            schedulePendingInputFlushRef.current();
         }
-    }, [stdin, emitInput, clearPendingInputFlush, schedulePendingInputFlush, writeToStderr]);
+    }, [stdin, clearPendingInputFlush, writeToStderr, internal_eventEmitter]); // uses refs for emitInput + schedulePendingInputFlush
 
     const handleSetRawMode = useCallback(
         (isEnabled: boolean): void => {
@@ -338,18 +349,29 @@ const App = ({
         });
     }, [findPreviousFocusable]);
 
-    // Handle tab navigation via effect that subscribes to input events
+    // Handle tab navigation via effect that subscribes to input events.
+    // Store handlers in refs to avoid re-subscribing when callbacks change
+    // (advanced-event-handler-refs pattern from Vercel best practices).
+    const focusNextRef = useRef(focusNext);
+    const focusPreviousRef = useRef(focusPrevious);
+    const isFocusEnabledRef = useRef(isFocusEnabled);
+
+    focusNextRef.current = focusNext;
+    focusPreviousRef.current = focusPrevious;
+    isFocusEnabledRef.current = isFocusEnabled;
+
     useEffect(() => {
         const handleTabNavigation = (input: string): void => {
-            if (!isFocusEnabled || focusablesCountRef.current === 0)
+            if (!isFocusEnabledRef.current || focusablesCountRef.current === 0) {
                 return;
+            }
 
             if (input === tab) {
-                focusNext();
+                focusNextRef.current();
             }
 
             if (input === shiftTab) {
-                focusPrevious();
+                focusPreviousRef.current();
             }
         };
 
@@ -359,7 +381,7 @@ const App = ({
         return () => {
             emitter.off("input", handleTabNavigation);
         };
-    }, [isFocusEnabled, focusNext, focusPrevious]);
+    }, [internal_eventEmitter]); // stable dependency — never re-subscribes
 
     const enableFocus = useCallback((): void => {
         setIsFocusEnabled(true);
