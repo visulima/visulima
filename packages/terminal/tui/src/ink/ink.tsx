@@ -697,16 +697,15 @@ export default class Ink {
             return;
         }
 
-        // Run deferred initialization (alternate screen, console patching,
-        // resize listeners, Kitty keyboard) on the first render frame.
-        this.runDeferredInit();
+        if (!this.deferredInitDone) {
+            this.runDeferredInit();
+        }
 
         if (this.nextRenderCommit) {
             this.nextRenderCommit.resolve();
             this.nextRenderCommit = undefined;
         }
 
-        const startTime = performance.now();
         const renderResult = render(this.rootNode, this.isScreenReaderEnabled, {
             useNativeRenderer: this.useNativeRenderer,
         });
@@ -724,7 +723,6 @@ export default class Ink {
             }
 
             this.nativeLog.render(outputBuffer, outputWidth, outputHeight);
-            this.options.onRender?.({ renderTime: performance.now() - startTime });
             this.lastOutputHeight = outputHeight;
 
             return;
@@ -736,8 +734,6 @@ export default class Ink {
         if (cursorRequested) {
             this.log.setCursorPosition(this.getActiveCursorPosition());
         }
-
-        this.options.onRender?.({ renderTime: performance.now() - startTime });
 
         // If <Static> output isn't empty, it means new children have been added to it
         const hasStaticOutput = staticOutput && staticOutput !== "\n";
