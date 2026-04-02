@@ -69,21 +69,23 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     }, [state.groupedByCatalog]);
 
     // Compute the visible height of the list panel (approximate: total rows - header - filter - border)
-    const listViewportHeight = Math.max(1, rows - 6);
+    // Viewport height for the list: total rows minus header(1) + filter bar(1) + border(2) + footer(2) + text filter(1 if active)
+    // Viewport = total rows - border(2) - header(1) - filter bar with padding(3) - footer(2) - text filter(1 if active)
+    const listViewportHeight = Math.max(1, rows - 8 - (state.filterActive ? 1 : 0));
 
     // Keep selected item in view by adjusting scroll offset
     const scrollToIndex = useCallback((index: number) => {
         const targetRow = getRowForIndex(index);
 
         setListScrollOffset((current) => {
-            // Item below viewport — scroll down
-            if (targetRow >= current + listViewportHeight) {
-                return targetRow - listViewportHeight + 1;
+            // Item below viewport — scroll down so item is visible at bottom
+            if (targetRow >= current + listViewportHeight - 1) {
+                return targetRow - listViewportHeight + 2;
             }
 
-            // Item above viewport — scroll up
-            if (targetRow < current) {
-                return Math.max(0, targetRow - 1);
+            // Item above viewport — scroll up so item is visible at top
+            if (targetRow <= current) {
+                return Math.max(0, targetRow);
             }
 
             return current;
@@ -237,28 +239,27 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
 
     // ── Footer ──────────────────────────────────────────────────────
 
+    const footerItems: React.JSX.Element[] = [
+        <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+        <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
+        <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
+        <Box key="sp" gap={1}><Text bold color="white">Space</Text><Text dimColor>CHECK</Text></Box>,
+        <Box key="a" gap={1}><Text bold color="white">a</Text><Text dimColor>ALL</Text></Box>,
+    ];
+
+    if (!isDryRun && state.checkedEntries.size > 0) {
+        footerItems.push(<Box key="u" gap={1}><Text bold color="green">u</Text><Text dimColor>APPLY</Text></Box>);
+    }
+
+    footerItems.push(
+        <Box key="f" gap={1}><Text bold color="white">1-5 /</Text><Text dimColor>FILTER</Text></Box>,
+        <Box key="t" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>,
+    );
+
     const footer = (
         <Box flexShrink={0} borderStyle="single" borderColor="gray" borderLeft={false} borderRight={false} borderBottom={false}>
-            <Box paddingX={1} gap={1}>
-                <Text bold color="white">q</Text><Text dimColor> QUIT</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">?</Text><Text dimColor> HELP</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor> NAV</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">Space</Text><Text dimColor> CHECK</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">a</Text><Text dimColor> ALL</Text>
-                {!isDryRun && state.checkedEntries.size > 0 && (
-                    <>
-                        <Text dimColor>{" \u00B7 "}</Text>
-                        <Text bold color="green">u</Text><Text dimColor> APPLY</Text>
-                    </>
-                )}
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">1-5 /</Text><Text dimColor> FILTER</Text>
-                <Text dimColor>{" \u00B7 "}</Text>
-                <Text bold color="white">Tab</Text><Text dimColor> PANEL</Text>
+            <Box paddingX={1} gap={2} flexWrap="wrap">
+                {footerItems}
             </Box>
         </Box>
     );
@@ -359,6 +360,7 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
             scrollOffset={listScrollOffset}
             selectedIndex={state.selectedIndex}
             totalEntries={store.getFilteredEntries().length}
+            viewportHeight={listViewportHeight}
         />
     );
 
@@ -375,13 +377,13 @@ const VisUpdateApp = ({ changelogUrls, isDryRun, store }: VisUpdateAppProps): Re
     // ── Horizontal layout ───────────────────────────────────────────
 
     if (isHorizontal) {
-        const listWidth = Math.floor(columns * 0.7);
+        const detailWidth = Math.floor(columns * 0.35);
 
         return (
             <Box flexDirection="column" height={rows} width={columns}>
                 <Box flexDirection="row" flexGrow={1}>
-                    <Box width={listWidth}>{listPanel}</Box>
-                    <Box flexGrow={1}>{detailPanel}</Box>
+                    <Box flexGrow={1}>{listPanel}</Box>
+                    <Box width={detailWidth}>{detailPanel}</Box>
                 </Box>
                 {footer}
                 {confirmDialog}
