@@ -59,4 +59,14 @@ const colorize = (string_: string, color: string | undefined, type: ColorType): 
     return string_;
 };
 
+export const getBackgroundColorEscape = (color: string): string | undefined => {
+    const colorized = colorize("x", color, "background");
+
+    if (colorized !== "x") {
+        return colorized.split("x")[0];
+    }
+
+    return undefined;
+};
+
 export default colorize;

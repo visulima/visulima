@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion, no-plusplus */
-import colorize from "./colorize";
+import { getBackgroundColorEscape } from "./colorize";
 import type { DOMNode } from "./dom";
 import type Output from "./output";
 
@@ -24,8 +24,14 @@ const renderBackground = (x: number, y: number, node: DOMNode, output: Output): 
         return;
     }
 
-    // Create background fill for each row
-    const backgroundLine = colorize(" ".repeat(contentWidth), node.style.backgroundColor, "background");
+    // Build the background string once using raw escape codes
+    const bgEsc = getBackgroundColorEscape(node.style.backgroundColor);
+
+    if (!bgEsc) {
+        return;
+    }
+
+    const backgroundLine = `${bgEsc}${" ".repeat(contentWidth)}\u001B[49m`;
 
     for (let row = 0; row < contentHeight; row++) {
         output.write(x + leftBorderWidth, y + topBorderHeight + row, backgroundLine, { transformers: [] });
