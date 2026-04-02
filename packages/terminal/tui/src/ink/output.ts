@@ -4,6 +4,7 @@ import { reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
 import { getStringWidth, isFullwidthCodePoint } from "@visulima/string";
 
 import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
+import { colorToAnsi256 } from "./color-utils";
 import type { OutputTransformer } from "./render-node-to-output";
 import { FULL_WIDTH_MASK } from "./style-flags";
 import { StyledLine } from "./styled-line";
@@ -690,8 +691,8 @@ export default class Output {
                 const fgColor = span?.fgColor;
                 const bgColor = span?.bgColor;
 
-                const fg = fgColor ? colorNameToAnsi256(fgColor) : 255;
-                const bg = bgColor ? colorNameToAnsi256(bgColor) : 255;
+                const fg = fgColor ? colorToAnsi256(fgColor) : 255;
+                const bg = bgColor ? colorToAnsi256(bgColor) : 255;
                 const styleBits = formatFlags & 0xff;
 
                 const attributeCode = (styleBits << 16) | ((bg & 0xff) << 8) | (fg & 0xff);
@@ -729,65 +730,3 @@ export default class Output {
         this.previousRenderedLines.length = 0;
     }
 }
-
-const colorNameToAnsi256 = (color: string): number => {
-    const namedColors: Record<string, number> = {
-        black: 0,
-        blue: 4,
-        cyan: 6,
-        green: 2,
-        magenta: 5,
-        red: 1,
-        white: 7,
-        yellow: 3,
-    };
-
-    const brightColors: Record<string, number> = {
-        blackBright: 8,
-        blueBright: 12,
-        cyanBright: 14,
-        greenBright: 10,
-        magentaBright: 13,
-        redBright: 9,
-        whiteBright: 15,
-        yellowBright: 11,
-    };
-
-    const named = namedColors[color];
-
-    if (named !== undefined) {
-        return named;
-    }
-
-    const bright = brightColors[color];
-
-    if (bright !== undefined) {
-        return bright;
-    }
-
-    const ansi256Match = /^ansi256\(\s?(\d+)\s?\)$/.exec(color);
-
-    if (ansi256Match) {
-        return Number(ansi256Match[1]) & 0xff;
-    }
-
-    if (color.startsWith("#") && color.length === 7) {
-        const r = Number.parseInt(color.slice(1, 3), 16);
-        const g = Number.parseInt(color.slice(3, 5), 16);
-        const b = Number.parseInt(color.slice(5, 7), 16);
-
-        return 16 + 36 * Math.round(r / 51) + 6 * Math.round(g / 51) + Math.round(b / 51);
-    }
-
-    const rgbMatch = /^rgb\(\s?(\d+),\s?(\d+),\s?(\d+)\s?\)$/.exec(color);
-
-    if (rgbMatch) {
-        const r = Number(rgbMatch[1]);
-        const g = Number(rgbMatch[2]);
-        const b = Number(rgbMatch[3]);
-
-        return 16 + 36 * Math.round(r / 51) + 6 * Math.round(g / 51) + Math.round(b / 51);
-    }
-
-    return 255;
-};
