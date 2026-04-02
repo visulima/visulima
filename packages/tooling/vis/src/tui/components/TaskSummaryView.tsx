@@ -40,7 +40,7 @@ const TaskSummaryView = ({ entries }: TaskSummaryViewProps): React.JSX.Element =
                         {icon}
                         {"  "}
                         {entry.taskId}
-                        {cacheLabel ? <Text color="cyan">{cacheLabel}</Text> : null}
+                        {cacheLabel ? <Text dimColor>{cacheLabel}</Text> : null}
                         {elapsed ? <Text dimColor>{elapsed}</Text> : null}
                     </Text>
                 );
