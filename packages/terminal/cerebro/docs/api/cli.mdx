@@ -74,6 +74,56 @@ cli.addCommand({
 });
 ```
 
+### addGlobalOption()
+
+Add a global option available to all commands. Global options are parsed alongside
+command-specific options and displayed in the help output under "Global Options".
+
+```typescript
+cli.addGlobalOption(option: OptionDefinition): this
+```
+
+**Example:**
+
+```typescript
+cli.addGlobalOption({
+    name: "cwd",
+    type: String,
+    description: "Override working directory",
+});
+
+cli.addGlobalOption({
+    name: "config",
+    alias: "C",
+    type: String,
+    description: "Path to config file",
+});
+```
+
+Throws an error if the option name or alias conflicts with a built-in global option
+(`verbose`, `debug`, `help`, `quiet`, `version`, `no-color`, `color`) or a previously
+added custom global option.
+
+Global options are accessible in commands via `toolbox.options`:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    execute: ({ options }) => {
+        const cwd = options.cwd as string | undefined;
+        // ...
+    },
+});
+```
+
+### getGlobalOptions()
+
+Get all global options (built-in + custom):
+
+```typescript
+cli.getGlobalOptions(): OptionDefinition[]
+```
+
 ### addPlugin()
 
 Add a plugin to extend functionality:
