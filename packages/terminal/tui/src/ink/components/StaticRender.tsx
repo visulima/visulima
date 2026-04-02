@@ -27,7 +27,7 @@ export type Props = {
     readonly width?: number;
 };
 
-const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
+function StaticRender({ children, style, width }: Props): React.ReactNode {
     const ref = useRef<DOMElement>(null);
 
     useEffect(() => {
@@ -53,8 +53,6 @@ const StaticRender = ({ children, style, width }: Props): React.ReactNode => {
             {children}
         </ink-box>
     );
-};
-
-StaticRender.displayName = "StaticRender";
+}
 
 export default StaticRender;
