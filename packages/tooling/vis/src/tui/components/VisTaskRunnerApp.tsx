@@ -38,9 +38,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const outputScrollRef = useRef<ScrollViewRef>(null);
     const [listScrollOffset, setListScrollOffset] = useState(0);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
-    const [quitCountdown, setQuitCountdown] = useState(autoExitSeconds || 3);
-    const quitTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const quitDialogOpenedAtRef = useRef(0);
 
     // Auto-show quit dialog when tasks complete — only if autoExit is enabled
     const previousDoneRef = useRef(false);
@@ -51,59 +48,14 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
             if (autoExitSeconds > 0) {
                 setQuitDialogVisible(true);
-                setQuitCountdown(autoExitSeconds);
-                quitDialogOpenedAtRef.current = Date.now();
             }
         }
 
         if (!state.done && previousDoneRef.current) {
-            // Rerun happened — reset
             previousDoneRef.current = false;
             setQuitDialogVisible(false);
-
-            if (quitTimerRef.current) {
-                clearInterval(quitTimerRef.current);
-                quitTimerRef.current = null;
-            }
         }
     }, [state.done, autoExitSeconds]);
-
-    // Quit countdown timer
-    useEffect(() => {
-        if (quitDialogVisible && !quitTimerRef.current) {
-            quitTimerRef.current = setInterval(() => {
-                setQuitCountdown((c) => c - 1);
-            }, 1000);
-        }
-
-        return () => {
-            if (quitTimerRef.current) {
-                clearInterval(quitTimerRef.current);
-                quitTimerRef.current = null;
-            }
-        };
-    }, [quitDialogVisible]);
-
-    // Exit when countdown reaches 0 (separate effect to avoid state update during render)
-    useEffect(() => {
-        if (quitCountdown <= 0 && quitDialogVisible) {
-            if (quitTimerRef.current) {
-                clearInterval(quitTimerRef.current);
-                quitTimerRef.current = null;
-            }
-
-            exit();
-        }
-    }, [quitCountdown, quitDialogVisible, exit]);
-
-    const cancelQuitDialog = useCallback(() => {
-        setQuitDialogVisible(false);
-
-        if (quitTimerRef.current) {
-            clearInterval(quitTimerRef.current);
-            quitTimerRef.current = null;
-        }
-    }, []);
 
     // List viewport height for scroll calculation
     const listViewportHeight = Math.max(1, rows - 6);
@@ -164,19 +116,8 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 return;
             }
 
-            // Quit dialog: q exits, anything else cancels
-            // Ignore keypresses within 200ms of opening (debounce the `q` that opened it)
+            // Quit dialog handles its own input via useInput
             if (quitDialogVisible) {
-                if (Date.now() - quitDialogOpenedAtRef.current < 200) {
-                    return;
-                }
-
-                if (input === "q") {
-                    exit();
-                } else {
-                    cancelQuitDialog();
-                }
-
                 return;
             }
 
@@ -187,8 +128,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 } else if (input === "q") {
                     setHelpVisible(false);
                     setQuitDialogVisible(true);
-                    setQuitCountdown(autoExitSeconds > 0 ? autoExitSeconds : 3);
-                    quitDialogOpenedAtRef.current = Date.now();
                 } else if (key.downArrow || input === "j") {
                     helpScrollRef.current?.scrollBy(1);
                 } else if (key.upArrow || input === "k") {
@@ -216,8 +155,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             // Global: quit — show confirmation dialog
             if (input === "q") {
                 setQuitDialogVisible(true);
-                setQuitCountdown(autoExitSeconds > 0 ? autoExitSeconds : 3);
-                quitDialogOpenedAtRef.current = Date.now();
 
                 return;
             }
@@ -458,257 +395,59 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
-                    <Text bold color="white">{"\u2191\u2193"}</Text>
-                    {" scroll  "}
-                    <Text bold color="white">?</Text>
-                    /
-                    <Text bold color="white">Esc</Text>
-                    {" close  "}
-                    <Text bold color="white">q</Text>
-                    {" quit"}
+                    <Text bold color="white">{"\u2191\u2193"}</Text> scroll  <Text bold color="white">?</Text>/<Text bold color="white">Esc</Text> close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
-            width={56}
+            width={52}
         >
-            <Box flexDirection="column" marginBottom={1}>
-                <Box marginBottom={1}>
-                    <Text dimColor>
-                        {"\u2500\u2500 "}
-                    </Text>
-                    <Text bold color="white">NAVIGATION</Text>
-                </Box>
+            <Box marginBottom={1} flexDirection="column">
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">NAVIGATION</Text></Box>
                 <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {"  \u2191"}
-                            </Text>
-                            <Text dimColor>/</Text>
-                            <Text bold color="white">
-                                k
-                            </Text>
-                            <Text dimColor>
-                                {" Move up"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {"  \u2193"}
-                        </Text>
-                        <Text dimColor>/</Text>
-                        <Text bold color="white">
-                            j
-                        </Text>
-                        <Text dimColor>
-                            {" Move down"}
-                        </Text>
-                    </Text>
+                    <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Move up</Text></Text></Box>
+                    <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Move down</Text></Text>
                 </Box>
-                <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                Tab
-                            </Text>
-                            <Text dimColor>
-                                {" Switch panel"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            Esc
-                        </Text>
-                        <Text dimColor>
-                            {" Back"}
-                        </Text>
-                    </Text>
-                </Box>
-                <Text>
-                    <Text bold color="white">
-                        {" "}
-                        Enter
-                    </Text>
-                    <Text dimColor>
-                        {" View task output"}
-                    </Text>
-                </Text>
+                <Text><Text color="white" bold>  Tab</Text><Text dimColor>    Switch panel</Text></Text>
+                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Back</Text></Text>
+                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  View task output</Text></Text>
             </Box>
 
-            <Box flexDirection="column" marginBottom={1}>
-                <Box marginBottom={1}>
-                    <Text dimColor>
-                        {"\u2500\u2500 "}
-                    </Text>
-                    <Text bold color="white">ACTIONS</Text>
-                </Box>
+            <Box marginBottom={1} flexDirection="column">
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">ACTIONS</Text></Box>
                 <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                /
-                            </Text>
-                            <Text dimColor>
-                                {" Filter tasks"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            0
-                        </Text>
-                        <Text dimColor>
-                            {" Clear pins"}
-                        </Text>
-                    </Text>
+                    <Box width={24}><Text><Text color="white" bold>  /</Text><Text dimColor>      Filter tasks</Text></Text></Box>
+                    <Text><Text color="white" bold>  0</Text><Text dimColor>  Clear pins</Text></Text>
                 </Box>
-                <Text>
-                    <Text bold color="white">
-                        {" "}
-                        1
-                    </Text>
-                    <Text dimColor>/</Text>
-                    <Text bold color="white">
-                        2
-                    </Text>
-                    <Text dimColor>
-                        {" Pin to output pane"}
-                    </Text>
-                </Text>
+                <Text><Text color="white" bold>  1</Text><Text dimColor>/</Text><Text color="white" bold>2</Text><Text dimColor>    Pin to output pane</Text></Text>
+                <Text><Text color="white" bold>  r</Text><Text dimColor>      Rerun (when done)</Text></Text>
             </Box>
 
-            <Box flexDirection="column" marginBottom={1}>
-                <Box marginBottom={1}>
-                    <Text dimColor>
-                        {"\u2500\u2500 "}
-                    </Text>
-                    <Text bold color="white">SCROLLING</Text>
-                    <Text dimColor>{" (output panel)"}</Text>
+            <Box marginBottom={1} flexDirection="column">
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">SCROLLING</Text><Text dimColor> (output panel)</Text></Box>
+                <Box>
+                    <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Scroll up</Text></Text></Box>
+                    <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Scroll down</Text></Text>
                 </Box>
                 <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {"  \u2191"}
-                            </Text>
-                            <Text dimColor>/</Text>
-                            <Text bold color="white">
-                                k
-                            </Text>
-                            <Text dimColor>
-                                {" Scroll up"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {"  \u2193"}
-                        </Text>
-                        <Text dimColor>/</Text>
-                        <Text bold color="white">
-                            j
-                        </Text>
-                        <Text dimColor>
-                            {" Scroll down"}
-                        </Text>
-                    </Text>
+                    <Box width={24}><Text><Text color="white" bold>  ^u</Text><Text dimColor>    Page up</Text></Text></Box>
+                    <Text><Text color="white" bold>  ^d</Text><Text dimColor>    Page down</Text></Text>
                 </Box>
                 <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                ^u
-                            </Text>
-                            <Text dimColor>
-                                {" Page up"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            ^d
-                        </Text>
-                        <Text dimColor>
-                            {" Page down"}
-                        </Text>
-                    </Text>
-                </Box>
-                <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                Home
-                            </Text>
-                            <Text dimColor>
-                                {" Top"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            End
-                        </Text>
-                        <Text dimColor>
-                            {" Bottom"}
-                        </Text>
-                    </Text>
+                    <Box width={24}><Text><Text color="white" bold>  Home</Text><Text dimColor>  Top</Text></Text></Box>
+                    <Text><Text color="white" bold>  End</Text><Text dimColor>   Bottom</Text></Text>
                 </Box>
             </Box>
 
-            <Box flexDirection="column" marginBottom={1}>
-                <Box marginBottom={1}>
-                    <Text dimColor>
-                        {"\u2500\u2500 "}
-                    </Text>
-                    <Text bold color="white">GENERAL</Text>
-                </Box>
+            <Box flexDirection="column">
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">GENERAL</Text></Box>
                 <Box>
-                    <Box width={26}>
-                        <Text>
-                            <Text bold color="white">
-                                {" "}
-                                q
-                            </Text>
-                            <Text dimColor>
-                                {" Quit"}
-                            </Text>
-                        </Text>
-                    </Box>
-                    <Text>
-                        <Text bold color="white">
-                            {" "}
-                            ?
-                        </Text>
-                        <Text dimColor>
-                            {" Toggle help"}
-                        </Text>
-                    </Text>
+                    <Box width={24}><Text><Text color="white" bold>  q</Text><Text dimColor>      Quit</Text></Text></Box>
+                    <Text><Text color="white" bold>  ?</Text><Text dimColor>  Toggle help</Text></Text>
                 </Box>
-                <Text>
-                    <Text bold color="white">
-                        {" "}
-                        r
-                    </Text>
-                    <Text dimColor>
-                        {" Rerun"}
-                    </Text>
-                    {" "}
-                    <Text dimColor>(when done)</Text>
-                </Text>
             </Box>
         </Dialog>
     );
@@ -716,9 +455,11 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     // ── Quit dialog overlay ───────────────────────────────────────────
 
     const quitDialog = (
-        <Dialog visible={quitDialogVisible} width={62}>
-            <QuitDialog countdown={quitCountdown} />
-        </Dialog>
+        <QuitDialog
+            autoExitSeconds={autoExitSeconds > 0 ? autoExitSeconds : 3}
+            onCancel={() => setQuitDialogVisible(false)}
+            visible={quitDialogVisible}
+        />
     );
 
     // ── Horizontal layout (side by side) ────────────────────────────

@@ -225,8 +225,12 @@ const executeCatalogUpdate = async (
             }
         }
 
+        const autoExitConfig = visConfig.tui?.autoExit ?? false;
+        const autoExitSeconds = autoExitConfig === true ? 3 : typeof autoExitConfig === "number" ? autoExitConfig : 0;
+
         const instance = render(
             React.createElement(VisUpdateApp, {
+                autoExitSeconds,
                 changelogUrls,
                 isDryRun,
                 store,
