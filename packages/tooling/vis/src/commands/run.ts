@@ -1,8 +1,6 @@
-import { spawn } from "node:child_process";
-
 import type { Command } from "@visulima/cerebro";
-import type { Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
-import { createTaskGraph, defaultTaskRunner, generateRunSummary, writeRunSummary } from "@visulima/task-runner";
+import type { ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
+import { createTaskGraph, defaultTaskRunner, generateRunSummary, runConcurrently, writeRunSummary } from "@visulima/task-runner";
 
 import isInCi from "is-in-ci";
 
@@ -11,11 +9,54 @@ import { StaticOutputLifeCycle } from "../tui/static-life-cycle";
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
 
 /**
- * Creates an async task executor that runs commands via shell.
- * Uses spawn instead of execSync so the event loop stays unblocked,
- * allowing the TUI render interval to update spinners and durations.
+ * Maximum output buffer size per task (512 KB).
+ * For long-running tasks (vite dev, tsc --watch), only the tail is kept.
+ * Short-lived tasks (build, lint) rarely exceed this.
  */
-const createShellExecutor = (workspaceRoot: string) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
+const MAX_OUTPUT_BYTES = 512 * 1024;
+
+/**
+ * Ring buffer that keeps the last `maxBytes` of appended text.
+ * Avoids unbounded memory growth for long-running dev servers.
+ */
+class OutputRingBuffer {
+    readonly #maxBytes: number;
+    #buffer = "";
+    #truncated = false;
+
+    constructor(maxBytes: number) {
+        this.#maxBytes = maxBytes;
+    }
+
+    append(text: string): void {
+        this.#buffer += text;
+
+        if (this.#buffer.length > this.#maxBytes) {
+            // Keep the tail, trim from the front
+            this.#buffer = this.#buffer.slice(-this.#maxBytes);
+            this.#truncated = true;
+        }
+    }
+
+    toString(): string {
+        if (this.#truncated) {
+            return `[...output truncated, showing last ${Math.round(this.#maxBytes / 1024)}KB...]\n${this.#buffer}`;
+        }
+        return this.#buffer;
+    }
+}
+
+/**
+ * Creates an async task executor using the concurrent process runner.
+ *
+ * Uses the native Rust addon (setsid/killpg process groups, tokio I/O)
+ * when available, falling back to a JS implementation.
+ * Commands originate from package.json scripts (trusted input).
+ *
+ * Output is collected in a ring buffer capped at MAX_OUTPUT_BYTES to
+ * prevent unbounded memory growth with long-running tasks like dev servers.
+ */
+const createConcurrentExecutor = (workspaceRoot: string) => async (task: Task, options: { cwd?: string; env?: Record<string, string> }) => {
     const taskCwd = options.cwd ?? task.projectRoot ?? workspaceRoot;
     const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
 
@@ -25,39 +66,27 @@ const createShellExecutor = (workspaceRoot: string) => async (task: Task, option
         return { code: 0, terminalOutput: `No command configured for ${task.target.project}:${task.target.target}` };
     }
 
-    return new Promise<{ code: number; terminalOutput: string }>((resolvePromise) => {
-        const chunks: string[] = [];
+    const output = new OutputRingBuffer(MAX_OUTPUT_BYTES);
 
-        // command sourced from package.json scripts, not user input
-        const child = spawn(command, {
-            cwd: resolvedCwd,
-            env: { ...process.env, ...options.env },
-            shell: true,
-            stdio: "pipe",
-        });
+    const onEvent = (event: ProcessEvent): void => {
+        if (event.kind === "stdout" || event.kind === "stderr") {
+            if (event.text !== undefined) {
+                output.append(event.text + "\n");
+            }
+        }
+    };
 
-        child.stdout?.on("data", (data: Buffer) => {
-            chunks.push(data.toString());
-        });
+    const result = await runConcurrently(
+        [{ command, cwd: resolvedCwd, env: options.env, name: task.id }],
+        { killOthers: ["failure"], onEvent },
+    );
 
-        child.stderr?.on("data", (data: Buffer) => {
-            chunks.push(data.toString());
-        });
+    const closeEvent = result.closeEvents[0];
 
-        child.on("close", (code) => {
-            resolvePromise({
-                code: code ?? 0,
-                terminalOutput: chunks.join(""),
-            });
-        });
-
-        child.on("error", (error) => {
-            resolvePromise({
-                code: 1,
-                terminalOutput: chunks.join("") + (error.message ?? ""),
-            });
-        });
-    });
+    return {
+        code: closeEvent?.exitCode ?? 0,
+        terminalOutput: output.toString(),
+    };
 };
 
 const run: Command = {
@@ -155,7 +184,7 @@ const run: Command = {
             tasks: initialTasks,
         };
 
-        const taskExecutor = createShellExecutor(workspaceRoot);
+        const taskExecutor = createConcurrentExecutor(workspaceRoot);
 
         if (isTTY) {
             const dynamic = createDynamicOutputRenderer(lifecycleOptions);
