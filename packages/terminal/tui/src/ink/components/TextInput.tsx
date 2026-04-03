@@ -10,7 +10,7 @@
  * Copyright (c) Vadym Demedes (github.com/vadimdemedes)
  */
 import type { ReactElement } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import useInput from "../hooks/use-input";
 import { isInsertableInput } from "../input-utils";
@@ -147,26 +147,14 @@ export default function TextInput({ defaultValue = "", isDisabled = false, mask 
     const [cursor, setCursor] = useState(defaultValue.length);
 
     const valueRef = useRef(value);
+    valueRef.current = value;
     const cursorRef = useRef(cursor);
-
-    useEffect(() => {
-        valueRef.current = value;
-    });
-
-    useEffect(() => {
-        cursorRef.current = cursor;
-    });
+    cursorRef.current = cursor;
 
     const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
     const onSubmitRef = useRef(onSubmit);
-
-    useEffect(() => {
-        onChangeRef.current = onChange;
-    });
-
-    useEffect(() => {
-        onSubmitRef.current = onSubmit;
-    });
+    onSubmitRef.current = onSubmit;
 
     const suggestion = findSuggestion(value, suggestions);
 

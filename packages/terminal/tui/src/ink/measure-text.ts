@@ -307,8 +307,7 @@ export default measureText;
 // ── StyledLine-based equivalents ──────────────────────────────────────
 
 import { StyledLine } from "./styled-line";
-import { ansiCodesToStyleInfo, styledCharsToStyledLine } from "./styled-line-bridge";
-import { FULL_WIDTH_MASK } from "./style-flags";
+import { styledCharsToStyledLine } from "./styled-line-bridge";
 
 // Cache for StyledLine tokenization
 const styledLineCache = new DataLimitedLruMap<StyledLine>(10_000, 1_000_000);
@@ -394,4 +393,3 @@ export const measureStyledLine = (line: StyledLine): { height: number; width: nu
 
     return { height: lines.length, width: maxWidth };
 };
-

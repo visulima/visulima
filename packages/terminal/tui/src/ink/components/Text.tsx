@@ -2,7 +2,7 @@
 import type { AnsiColors } from "@visulima/colorize";
 import colorizeDefault from "@visulima/colorize";
 import type { ReactElement, ReactNode } from "react";
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import colorize from "../colorize";
@@ -102,44 +102,47 @@ export default function Text({
         return null;
     }
 
-    const transform = (children: string): string => {
-        if (dimColor) {
-            children = colorizeDefault.dim(children);
-        }
+    const transform = useCallback(
+        (children: string): string => {
+            if (dimColor) {
+                children = colorizeDefault.dim(children);
+            }
 
-        if (color) {
-            children = colorize(children, color, "foreground");
-        }
+            if (color) {
+                children = colorize(children, color, "foreground");
+            }
 
-        // Use explicit backgroundColor if provided, otherwise use inherited from parent Box
-        const effectiveBackgroundColor = backgroundColor ?? inheritedBackgroundColor;
+            // Use explicit backgroundColor if provided, otherwise use inherited from parent Box
+            const effectiveBackgroundColor = backgroundColor ?? inheritedBackgroundColor;
 
-        if (effectiveBackgroundColor) {
-            children = colorize(children, effectiveBackgroundColor, "background");
-        }
+            if (effectiveBackgroundColor) {
+                children = colorize(children, effectiveBackgroundColor, "background");
+            }
 
-        if (bold) {
-            children = colorizeDefault.bold(children);
-        }
+            if (bold) {
+                children = colorizeDefault.bold(children);
+            }
 
-        if (italic) {
-            children = colorizeDefault.italic(children);
-        }
+            if (italic) {
+                children = colorizeDefault.italic(children);
+            }
 
-        if (underline) {
-            children = colorizeDefault.underline(children);
-        }
+            if (underline) {
+                children = colorizeDefault.underline(children);
+            }
 
-        if (strikethrough) {
-            children = colorizeDefault.strikethrough(children);
-        }
+            if (strikethrough) {
+                children = colorizeDefault.strikethrough(children);
+            }
 
-        if (inverse) {
-            children = colorizeDefault.inverse(children);
-        }
+            if (inverse) {
+                children = colorizeDefault.inverse(children);
+            }
 
-        return children;
-    };
+            return children;
+        },
+        [dimColor, color, backgroundColor, inheritedBackgroundColor, bold, italic, underline, strikethrough, inverse],
+    );
 
     if (isScreenReaderEnabled && ariaHidden) {
         return null;

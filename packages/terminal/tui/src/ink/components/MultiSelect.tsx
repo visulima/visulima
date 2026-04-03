@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-live-state-to-parent, react/function-component-definition, unicorn/filename-case */
+/* eslint-disable import/exports-last, react/function-component-definition, unicorn/filename-case */
 
 /**
  * Multi-select input component for Ink.
@@ -11,7 +11,7 @@
  */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement } from "react";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useMemo, useReducer, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import useInput from "../hooks/use-input";
@@ -147,51 +147,54 @@ export default function MultiSelect({
     });
 
     const [selectedValues, setSelectedValues] = useState(defaultValue);
-    const previousSelectedRef = useRef(selectedValues);
+    const selectedValuesRef = useRef(selectedValues);
+    selectedValuesRef.current = selectedValues;
+    const onSubmitRef = useRef(onSubmit);
+    onSubmitRef.current = onSubmit;
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
 
-    useEffect(() => {
-        if (previousSelectedRef.current !== selectedValues) {
-            onChange?.(selectedValues);
-            previousSelectedRef.current = selectedValues;
-        }
-    }, [selectedValues, onChange]);
+    const stateRef = useRef(state);
+    stateRef.current = state;
 
     const visibleOptions = useMemo(() => options.slice(state.visibleFrom, state.visibleFrom + limit), [options, state.visibleFrom, limit]);
 
     const handleToggle = useCallback(() => {
+        const focusedValue = options[stateRef.current.focusedIndex]?.value;
+
+        if (!focusedValue) {
+            return;
+        }
+
         setSelectedValues((previous) => {
-            const focusedValue = options[state.focusedIndex]?.value;
+            const next = previous.includes(focusedValue) ? previous.filter((v) => v !== focusedValue) : [...previous, focusedValue];
 
-            if (!focusedValue) {
-                return previous;
-            }
+            onChangeRef.current?.(next);
 
-            if (previous.includes(focusedValue)) {
-                return previous.filter((v) => v !== focusedValue);
-            }
-
-            return [...previous, focusedValue];
+            return next;
         });
-    }, [options, state.focusedIndex]);
+    }, [options]);
 
     const handleToggleAll = useCallback(() => {
         setSelectedValues((previous) => {
-            if (previous.length === options.length) {
-                return [];
-            }
+            const next = previous.length === options.length ? [] : options.map((o) => o.value);
 
-            return options.map((o) => o.value);
+            onChangeRef.current?.(next);
+
+            return next;
         });
     }, [options]);
 
     useInput(
         useCallback(
             (input: string, key) => {
-                if ((key.downArrow || input === "j") && state.focusedIndex < options.length - 1) {
+                const { focusedIndex } = stateRef.current;
+
+                if ((key.downArrow || input === "j") && focusedIndex < options.length - 1) {
                     dispatch({ limit, type: "focus-next" });
                 }
 
-                if ((key.upArrow || input === "k") && state.focusedIndex > 0) {
+                if ((key.upArrow || input === "k") && focusedIndex > 0) {
                     dispatch({ limit, type: "focus-prev" });
                 }
 
@@ -204,10 +207,10 @@ export default function MultiSelect({
                 }
 
                 if (key.return) {
-                    onSubmit?.(selectedValues);
+                    onSubmitRef.current?.(selectedValuesRef.current);
                 }
             },
-            [state.focusedIndex, options.length, limit, handleToggle, handleToggleAll, onSubmit, selectedValues],
+            [options.length, limit, handleToggle, handleToggleAll],
         ),
         { isActive: !isDisabled && isFocused },
     );
@@ -237,17 +240,13 @@ export default function MultiSelect({
                             <Text> </Text>
                         )}
                         <Text color={labelColor} dimColor={isDisabled}>
-                            {isSelected ? "◼" : "◻"}
-                            {" "}
-                            {option.label}
+                            {isSelected ? "◼" : "◻"} {option.label}
                         </Text>
-                        {isSelected
-                            ? (
-                                <Text color="green" dimColor={!isFocused}>
-                                    ✓
-                                </Text>
-                            )
-                            : undefined}
+                        {isSelected ? (
+                            <Text color="green" dimColor={!isFocused}>
+                                ✓
+                            </Text>
+                        ) : undefined}
                     </Box>
                 );
             })}

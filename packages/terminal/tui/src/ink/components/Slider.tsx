@@ -8,7 +8,7 @@
  */
 import type { AnsiColors } from "@visulima/colorize";
 import type { ReactElement } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { LiteralUnion } from "type-fest";
 
 import useInput from "../hooks/use-input";
@@ -140,15 +140,9 @@ export default function Slider({
     const current = isControlled ? clamp(controlledValue, safeMin, safeMax) : internalValue;
 
     const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
     const currentRef = useRef(current);
-
-    useEffect(() => {
-        onChangeRef.current = onChange;
-    });
-
-    useEffect(() => {
-        currentRef.current = current;
-    });
+    currentRef.current = current;
 
     const setValue = useCallback(
         (next: number) => {

@@ -190,9 +190,7 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
     const inputHandlerRef = useRef(inputHandler);
 
     // Keep inputHandler ref up to date
-    useEffect(() => {
-        inputHandlerRef.current = inputHandler;
-    }, [inputHandler]);
+    inputHandlerRef.current = inputHandler;
 
     // Initialize IME buffer
     useEffect(() => {

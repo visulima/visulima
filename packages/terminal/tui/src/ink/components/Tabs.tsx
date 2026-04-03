@@ -302,12 +302,12 @@ export default function Tabs({
                     <Box flexDirection={flexDirection} key={name}>
                         {index !== 0 && <Text color="dim">{separator}</Text>}
                         <Box>
-                            {showIndex && (
+                            {showIndex ? (
                                 <Text color="grey">
                                     {/* eslint-disable-next-line @stylistic/jsx-one-expression-per-line, react/jsx-one-expression-per-line */}
                                     {index + 1}.{" "}
                                 </Text>
-                            )}
+                            ) : null}
                             <Text backgroundColor={textColors.backgroundColor} color={textColors.color}>
                                 {child}
                             </Text>

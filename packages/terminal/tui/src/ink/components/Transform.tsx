@@ -4,6 +4,8 @@ import { useContext } from "react";
 
 import { accessibilityContext } from "./AccessibilityContext";
 
+const TRANSFORM_STYLE = { flexDirection: "row", flexGrow: 0, flexShrink: 1 } as const;
+
 export type Props = {
     /**
      * Screen-reader-specific text to output. If this is set, all children will be ignored.
@@ -29,7 +31,7 @@ export default function Transform({ accessibilityLabel, children, transform }: P
     }
 
     return (
-        <ink-text internal_transform={transform} style={{ flexDirection: "row", flexGrow: 0, flexShrink: 1 }}>
+        <ink-text internal_transform={transform} style={TRANSFORM_STYLE}>
             {isScreenReaderEnabled && accessibilityLabel ? accessibilityLabel : children}
         </ink-text>
     );

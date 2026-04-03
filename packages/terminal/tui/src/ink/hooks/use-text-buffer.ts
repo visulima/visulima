@@ -2,7 +2,7 @@
 /**
  * React hook for managing a multi-line text buffer with cursor, selection, and undo/redo.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 export type CursorPosition = {
     readonly col: number;
@@ -166,17 +166,11 @@ const useTextBuffer = (initialValue = ""): UseTextBufferResult => {
 
     // Track "desired column" for vertical movement
     const desiredCol = useRef(state.cursor.col);
-
-    useEffect(() => {
-        desiredCol.current = state.cursor.col;
-    }, [state.cursor.col]);
+    desiredCol.current = state.cursor.col;
 
     // Keep a ref to the latest state for use in callbacks that read but don't write via setState updater
     const stateRef = useRef(state);
-
-    useEffect(() => {
-        stateRef.current = state;
-    });
+    stateRef.current = state;
 
     const pushUndo = useCallback((snapshot: Snapshot) => {
         const now = Date.now();

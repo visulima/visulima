@@ -61,10 +61,7 @@ const useTextSelection = (ref: RefObject<DOMElement | null>, options: UseTextSel
     const [selectedText, setSelectedText] = useState("");
 
     const onSelectionChangeRef = useRef(onSelectionChange);
-
-    useEffect(() => {
-        onSelectionChangeRef.current = onSelectionChange;
-    });
+    onSelectionChangeRef.current = onSelectionChange;
 
     // Listen for selection changes
     useEffect(() => {

@@ -10,6 +10,7 @@
  * Copyright (c) Vadym Demedes (github.com/vadimdemedes)
  */
 import type { ReactElement } from "react";
+import { useCallback, useRef } from "react";
 
 import useInput from "../hooks/use-input";
 import Box from "./Box";
@@ -50,28 +51,36 @@ export type Props = {
  * or "y/N" when default is cancel.
  */
 export default function ConfirmInput({ defaultChoice = "confirm", isDisabled = false, onCancel, onConfirm, submitOnEnter = true }: Props): ReactElement {
+    const onConfirmRef = useRef(onConfirm);
+    onConfirmRef.current = onConfirm;
+    const onCancelRef = useRef(onCancel);
+    onCancelRef.current = onCancel;
+
     useInput(
-        (input, key) => {
-            if (input.toLowerCase() === "y") {
-                onConfirm();
+        useCallback(
+            (input, key) => {
+                if (input.toLowerCase() === "y") {
+                    onConfirmRef.current();
 
-                return;
-            }
-
-            if (input.toLowerCase() === "n") {
-                onCancel();
-
-                return;
-            }
-
-            if (key.return && submitOnEnter) {
-                if (defaultChoice === "confirm") {
-                    onConfirm();
-                } else {
-                    onCancel();
+                    return;
                 }
-            }
-        },
+
+                if (input.toLowerCase() === "n") {
+                    onCancelRef.current();
+
+                    return;
+                }
+
+                if (key.return && submitOnEnter) {
+                    if (defaultChoice === "confirm") {
+                        onConfirmRef.current();
+                    } else {
+                        onCancelRef.current();
+                    }
+                }
+            },
+            [submitOnEnter, defaultChoice],
+        ),
         { isActive: !isDisabled },
     );
 
