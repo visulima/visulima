@@ -34,71 +34,22 @@
 
 ---
 
-React-based TUI library powered by a native Rust diff engine with drop-in Ink-compatible API.
+## Overview
+
+`@visulima/tui` is a React-based terminal UI library with a native Rust diff engine and drop-in [Ink](https://github.com/vadimdemedes/ink)-compatible API. Build rich, interactive CLI applications with React components, hooks, and a familiar developer experience.
 
 Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 
 ## Features
 
-- **~30x faster** complex rerenders vs Ink (native Rust diff engine via NAPI)
-- **Drop-in Ink-compatible** React API (`@visulima/tui`)
-- **Framework-agnostic** core runtime (`@visulima/tui/core`)
-- **React hooks** for input, focus, clipboard, mouse, and window size
-- **Cross-platform** native bindings for macOS, Linux (glibc/musl), and Windows (x64/arm64)
+- **Faster than Ink** on mount (1.3-2.3x), competitive on rerender
+- **Drop-in Ink-compatible** React API
+- **Native Rust diff engine** via NAPI for high-throughput rendering
+- **React hooks** for input, focus, clipboard, mouse, scroll, and window size
+- **Rich component library** - Box, Text, Spinner, Select, TextInput, Tabs, ScrollView, and more
+- **Cross-platform** native bindings (macOS, Linux glibc/musl, Windows x64/arm64)
 - **Server-side rendering** via `renderToString`
-- **Testing utilities** — Framework-agnostic `render()` + mock streams via `@visulima/tui/test`
-
-## Performance
-
-### Core runtime (~700 FPS sustained)
-
-![Stress test (700 FPS)](docs/media/ratatat-stress-test-700fps.png)
-
-### render — @visulima/tui vs Ink
-
-Measured with `vitest bench`. Mount + first paint and rerender comparisons.
-
-| Scenario                                  | @visulima/tui (ops/s) | Ink (ops/s) | Speedup |
-| ----------------------------------------- | --------------------: | ----------: | ------: |
-| Mount + render (simple)                   |                 1,267 |         793 |   1.60× |
-| Mount + render (dashboard, borders+panels)|                   836 |         279 |   3.00× |
-| Rerender (simple)                         |                 8,851 |      12,195 |   0.73× |
-
-### Diff engine (native Rust NAPI binding)
-
-| Scenario                       |   ops/sec |
-| ------------------------------ | --------: |
-| No changes (hot path)          | 8,004,862 |
-| All cells dirty (first frame)  | 8,507,637 |
-| 5% cells dirty (typical frame) | 8,970,817 |
-
-### Additional module benchmarks
-
-| Module             | Benchmark                     |    ops/sec |
-| ------------------ | ----------------------------- | ---------: |
-| Color matrix       | Single RGB transform          |  8,577,660 |
-| Color matrix       | 256 colors through protanopia |    142,577 |
-| Text buffer        | Split small (1 line)          | 14,597,113 |
-| Text buffer        | Insert char (100-line doc)    |    767,068 |
-| Text buffer        | Delete line (100-line doc)    |    632,014 |
-| Shiki highlighting | Warm cache get                |  2,171,663 |
-| Shiki highlighting | Cold init                     |      3,655 |
-| Markdown lexer     | Small (~50 chars)             |    226,022 |
-| Markdown lexer     | Large (~4000 chars)           |      4,180 |
-| Diff computation   | createPatch (small)           |    247,287 |
-| Diff computation   | diffChars (small)             |    106,410 |
-
-> Run benchmarks yourself: `pnpm --filter @visulima/tui run test:bench`
-
-### Kitchen sink demo
-
-| Layout                              | Focus                             | Graph                             | Live                            |
-| ----------------------------------- | --------------------------------- | --------------------------------- | ------------------------------- |
-| ![Layout](docs/media/ks-layout.png) | ![Focus](docs/media/ks-focus.png) | ![Graph](docs/media/ks-graph.png) | ![Live](docs/media/ks-live.png) |
-
-| Incremental                                   | UI                          | Static                              | Mouse                             |
-| --------------------------------------------- | --------------------------- | ----------------------------------- | --------------------------------- |
-| ![Incremental](docs/media/ks-incremental.png) | ![UI](docs/media/ks-ui.png) | ![Static](docs/media/ks-static.png) | ![Mouse](docs/media/ks-mouse.png) |
+- **Testing utilities** with mock streams and frame capture
 
 ## Install
 
@@ -114,11 +65,7 @@ yarn add @visulima/tui
 pnpm add @visulima/tui
 ```
 
-## Usage
-
-### Ink-compatible API
-
-The easiest way to get started, especially if you're familiar with [Ink](https://github.com/vadimdemedes/ink):
+## Quick Start
 
 ```tsx
 import { render, Box, Text } from "@visulima/tui";
@@ -133,64 +80,48 @@ const App = () => (
 render(<App />);
 ```
 
-### React API
+## Documentation
 
-For more control, use the React entry point directly:
+Full documentation, API reference, component gallery, and guides are available at:
 
-```tsx
-import { render } from "@visulima/tui/react";
-import { useInput, useApp } from "@visulima/tui/react";
+**[visulima.com/packages/tui](https://visulima.com/packages/tui)**
 
-const Counter = () => {
-    const [count, setCount] = useState(0);
-    const { exit } = useApp();
+- [Getting Started](https://visulima.com/packages/tui/getting-started)
+- [Package Map](https://visulima.com/packages/tui/package-map) - Entry points and what they export
+- [Components](https://visulima.com/packages/tui/components) - Box, Text, Spinner, Select, TextInput, and more
+- [Hooks](https://visulima.com/packages/tui/hooks) - useInput, useFocus, useApp, useStdout, and more
+- [Mouse Support](https://visulima.com/packages/tui/mouse) - Click, hover, drag, and scroll events
+- [Scroll](https://visulima.com/packages/tui/scroll) - ScrollView, ScrollList, and overflow handling
+- [Rendering Modes](https://visulima.com/packages/tui/rendering-modes) - Ink-compatible, React, and raw buffer
+- [Ink Compatibility](https://visulima.com/packages/tui/ink-compat) - Migration guide from Ink
+- [Testing](https://visulima.com/packages/tui/testing) - Testing utilities with mock streams
+- [Troubleshooting](https://visulima.com/packages/tui/troubleshooting)
 
-    useInput((input, key) => {
-        if (input === "q") {
-            exit();
-        }
-        if (key.return) {
-            setCount((prev) => prev + 1);
-        }
-    });
+## Performance
 
-    return <Text>Count: {count}</Text>;
-};
+| Scenario | @visulima/tui | Ink 6.8 | Speedup |
+| --- | ---: | ---: | ---: |
+| Mount + render (simple) | 3,221 ops/s | 2,694 ops/s | **1.2x faster** |
+| Mount + render (dashboard) | 1,659 ops/s | 718 ops/s | **2.3x faster** |
+| Rerender (simple) | 19,111 ops/s | 25,743 ops/s | 0.74x |
 
-render(<Counter />);
-```
+> Benchmarks use production builds. Run: `pnpm --filter @visulima/tui run build:prod && pnpm vitest bench`
 
-### Core Runtime
+### Kitchen Sink Demo
 
-The core module provides low-level access to the native terminal engine:
+| Layout | Focus | Graph | Live |
+| --- | --- | --- | --- |
+| ![Layout](docs/media/ks-layout.png) | ![Focus](docs/media/ks-focus.png) | ![Graph](docs/media/ks-graph.png) | ![Live](docs/media/ks-live.png) |
 
-```ts
-import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
-```
-
-### Testing
-
-Test your TUI components without a real terminal using mock streams and frame capture:
-
-```tsx
-import { render, cleanup } from "@visulima/tui/test";
-import { Text } from "@visulima/tui";
-import { afterEach, expect, it } from "vitest";
-
-afterEach(() => {
-    cleanup();
-});
-
-it("renders greeting", () => {
-    const { lastFrame } = render(<Text>Hello World</Text>);
-    expect(lastFrame()).toBe("Hello World");
-});
-```
+| Incremental | UI | Static | Mouse |
+| --- | --- | --- | --- |
+| ![Incremental](docs/media/ks-incremental.png) | ![UI](docs/media/ks-ui.png) | ![Static](docs/media/ks-static.png) | ![Mouse](docs/media/ks-mouse.png) |
 
 ## Related
 
 - [ink](https://github.com/vadimdemedes/ink) - React for interactive command-line apps
 - [ratatat](https://github.com/geoffmiller/ratatat) - The project this library is based on
+- [jacob314/ink](https://github.com/jacob314/ink) - Fork with StyledLine, Region model, and render caching (ported features)
 
 ## Supported Node.js Versions
 
@@ -207,6 +138,9 @@ If you would like to help take a look at the [list of issues](https://github.com
 
 - [Daniel Bannert](https://github.com/prisis)
 - [Geoff Miller](https://github.com/geoffmiller) - Original [ratatat](https://github.com/geoffmiller/ratatat) library
+- [Vadym Demedes](https://github.com/vadimdemedes) - [Ink](https://github.com/vadimdemedes/ink) (MIT)
+- [Google LLC / jacob314](https://github.com/jacob314/ink) - StyledLine, Region model, render caching (Apache-2.0)
+- [Zeno Jiricek](https://github.com/nickhudkins/ink-mouse) - Mouse event system (Apache-2.0)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
 ## Made with ❤️ at Anolilab
