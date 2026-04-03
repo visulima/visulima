@@ -143,6 +143,9 @@ export class TaskStore {
         this.#emit({ ...this.#state, cached, completed, failed, outputs, rows, succeeded });
     }
 
+    /** Maximum output stored per task (256 KB). Prevents OOM with long-running dev servers. */
+    static readonly #MAX_OUTPUT_BYTES = 256 * 1024;
+
     public addOutput(taskId: string, output: string): void {
         if (!output.trim()) {
             return;
@@ -150,7 +153,14 @@ export class TaskStore {
 
         // Mutate in-place to avoid copying the entire Map on every streaming chunk.
         // A new state shell triggers useSyncExternalStore re-render.
-        this.#state.outputs.set(taskId, (this.#state.outputs.get(taskId) ?? "") + output);
+        let current = (this.#state.outputs.get(taskId) ?? "") + output;
+
+        // Cap output to prevent unbounded memory growth with long-running tasks
+        if (current.length > TaskStore.#MAX_OUTPUT_BYTES) {
+            current = current.slice(-TaskStore.#MAX_OUTPUT_BYTES);
+        }
+
+        this.#state.outputs.set(taskId, current);
         this.#emit({ ...this.#state });
     }
 
