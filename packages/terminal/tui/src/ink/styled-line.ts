@@ -823,6 +823,51 @@ export class StyledLine {
         this.mergeSpans();
     }
 
+    /**
+     * Grow the line to at least `minWidth` columns, filling new cells with
+     * empty strings (zero-width placeholders). This matches the behavior of
+     * sparse JS arrays in the original ink Output where out-of-bounds writes
+     * created gaps that produced no visible output.
+     */
+    ensureWidth(minWidth: number): void {
+        if (minWidth <= this.length) {
+            return;
+        }
+
+        const safeWidth = Math.min(minWidth, MAX_SAFE_OFFSET);
+
+        this.ensureInitialized();
+
+        const oldLength = this.length;
+        const extraCount = safeWidth - oldLength;
+        const oldTextLen = this.text!.length;
+
+        // Do NOT extend text — new cells are empty (zero-length) placeholders
+        // Grow charData if needed
+        if (this.charData!.length < safeWidth) {
+            const newCharData = new Uint16Array(safeWidth);
+
+            newCharData.set(this.charData!.subarray(0, oldLength));
+            this.charData = newCharData;
+        }
+
+        // All new cells point to the same offset (end of text) — zero-length values
+        for (let i = 0; i < extraCount; i++) {
+            this.charData![oldLength + i] = oldTextLen;
+        }
+
+        this.length = safeWidth;
+
+        // Extend the last span or add a new default span
+        const lastSpan = this.spans!.at(-1);
+
+        if (lastSpan && lastSpan.formatFlags === 0 && lastSpan.fgColor === undefined && lastSpan.bgColor === undefined && lastSpan.link === undefined) {
+            lastSpan.length += extraCount;
+        } else {
+            this.spans!.push({ formatFlags: 0, length: extraCount });
+        }
+    }
+
     private ensureInitialized(initialCapacity = 16): void {
         if (this.charData === undefined) {
             this.text = "";
