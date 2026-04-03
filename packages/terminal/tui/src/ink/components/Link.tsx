@@ -41,12 +41,23 @@ type Props = {
  * Covers the most common terminals. For exhaustive detection,
  * use the `supports-hyperlinks` package externally.
  */
+let _cachedSupportsHyperlinks: boolean | undefined;
+
 const supportsHyperlinks = (): boolean => {
-    // Explicit override
+    // Skip cache when FORCE_HYPERLINK is set (allows runtime override)
     if (process.env["FORCE_HYPERLINK"]) {
         return process.env["FORCE_HYPERLINK"] !== "0";
     }
 
+    if (_cachedSupportsHyperlinks !== undefined) {
+        return _cachedSupportsHyperlinks;
+    }
+
+    // eslint-disable-next-line no-return-assign
+    return (_cachedSupportsHyperlinks = detectHyperlinkSupport());
+};
+
+const detectHyperlinkSupport = (): boolean => {
     // Not a TTY — no hyperlink support
     if (!process.stdout.isTTY) {
         return false;

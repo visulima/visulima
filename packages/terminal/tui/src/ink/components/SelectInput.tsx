@@ -303,6 +303,10 @@ export default function SelectInput<V>({
 
     const hasInitialSelectionRef = useRef(hasInitialSelection);
     const resolvedInitialRef = useRef(resolvedInitial);
+    const stateRef = useRef(state);
+    stateRef.current = state;
+    const onSelectRef = useRef(onSelect);
+    onSelectRef.current = onSelect;
     const previousItems = useRef(items);
 
     // Extract values for comparison, treating separators as a stable sentinel (Symbol avoids value collisions)
@@ -320,10 +324,8 @@ export default function SelectInput<V>({
 
     const previousItemValues = useRef(itemValues);
 
-    useEffect(() => {
-        hasInitialSelectionRef.current = hasInitialSelection;
-        resolvedInitialRef.current = resolvedInitial;
-    });
+    hasInitialSelectionRef.current = hasInitialSelection;
+    resolvedInitialRef.current = resolvedInitial;
 
     useEffect(() => {
         if (resetOnItemsChange && !isDeepStrictEqual(previousItemValues.current, itemValues)) {
@@ -442,39 +444,41 @@ export default function SelectInput<V>({
     useInput(
         useCallback(
             (input: string, key) => {
+                const { rotateIndex, selectedIndex } = stateRef.current;
+
                 if (input === "k" || key.upArrow) {
-                    handleUpArrow(state.rotateIndex, state.selectedIndex);
+                    handleUpArrow(rotateIndex, selectedIndex);
                 }
 
                 if (input === "j" || key.downArrow) {
-                    handleDownArrow(state.rotateIndex, state.selectedIndex);
+                    handleDownArrow(rotateIndex, selectedIndex);
                 }
 
                 if (NUMBER_KEY_PATTERN.test(input)) {
                     const targetIndex = Number.parseInt(input, 10) - 1;
-                    const visibleItems = getVisibleItems(items, hasLimit, state.rotateIndex, limit);
+                    const visibleItems = getVisibleItems(items, hasLimit, rotateIndex, limit);
 
                     if (targetIndex >= 0 && targetIndex < visibleItems.length) {
                         const selectedItem = visibleItems[targetIndex];
 
                         if (selectedItem && !isSeparator(selectedItem)) {
-                            onSelect?.(selectedItem);
+                            onSelectRef.current?.(selectedItem);
                             selectedItem.action?.();
                         }
                     }
                 }
 
-                if (key.return && state.selectedIndex !== NO_SELECTION) {
-                    const slicedItems = getVisibleItems(items, hasLimit, state.rotateIndex, limit);
-                    const selectedItem = slicedItems[state.selectedIndex];
+                if (key.return && selectedIndex !== NO_SELECTION) {
+                    const slicedItems = getVisibleItems(items, hasLimit, rotateIndex, limit);
+                    const selectedItem = slicedItems[selectedIndex];
 
                     if (selectedItem && !isSeparator(selectedItem)) {
-                        onSelect?.(selectedItem);
+                        onSelectRef.current?.(selectedItem);
                         selectedItem.action?.();
                     }
                 }
             },
-            [handleUpArrow, handleDownArrow, hasLimit, limit, state, items, onSelect],
+            [handleUpArrow, handleDownArrow, hasLimit, limit, items],
         ),
         { isActive: isFocused },
     );

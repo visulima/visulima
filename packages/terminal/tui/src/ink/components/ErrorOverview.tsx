@@ -47,24 +47,16 @@ export default function ErrorOverview({ error }: Props): ReactElement {
             <Box>
                 <Text backgroundColor="red" color="white">
                     {" "}
-                    ERROR
-                    {" "}
+                    ERROR{" "}
                 </Text>
 
-                <Text>
-                    {" "}
-                    {error.message}
-                </Text>
+                <Text> {error.message}</Text>
             </Box>
 
             {origin && filePath ? (
                 <Box marginTop={1}>
                     <Text dimColor>
-                        {filePath}
-                        :
-                        {origin.line}
-                        :
-                        {origin.column}
+                        {filePath}:{origin.line}:{origin.column}
                     </Text>
                 </Box>
             ) : null}
@@ -80,8 +72,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                                     color={line === origin.line ? "white" : undefined}
                                     dimColor={line !== origin.line}
                                 >
-                                    {String(line).padStart(lineWidth, " ")}
-                                    :
+                                    {String(line).padStart(lineWidth, " ")}:
                                 </Text>
                             </Box>
 
@@ -93,51 +84,41 @@ export default function ErrorOverview({ error }: Props): ReactElement {
                 </Box>
             ) : null}
 
-            {error.stack ? (
+            {stack ? (
                 <Box flexDirection="column" marginTop={1}>
-                    {error.stack
-                        .split("\n")
-                        .slice(1)
-                        .map((line) => {
-                            const parsedLine = stackUtils.parseLine(line);
+                    {stack.map((line) => {
+                        const parsedLine = stackUtils.parseLine(line);
 
-                            // If the line from the stack cannot be parsed, we print out the unparsed line.
-                            if (!parsedLine) {
-                                return (
-                                    <Box key={line}>
-                                        <Text dimColor>- </Text>
-                                        <Text bold dimColor>
-                                            {line}
-                                            \t
-                                            {" "}
-                                        </Text>
-                                    </Box>
-                                );
-                            }
-
+                        // If the line from the stack cannot be parsed, we print out the unparsed line.
+                        if (!parsedLine) {
                             return (
                                 <Box key={line}>
                                     <Text dimColor>- </Text>
                                     <Text bold dimColor>
-                                        {parsedLine.function}
-                                    </Text>
-                                    <Text
-                                        aria-label={`at ${cleanupPath(parsedLine.file) ?? ""} line ${parsedLine.line} column ${parsedLine.column}`}
-                                        color="gray"
-                                        dimColor
-                                    >
-                                        {" "}
-                                        (
-                                        {cleanupPath(parsedLine.file) ?? ""}
-                                        :
-                                        {parsedLine.line}
-                                        :
-                                        {parsedLine.column}
-                                        )
+                                        {line}
+                                        \t{" "}
                                     </Text>
                                 </Box>
                             );
-                        })}
+                        }
+
+                        return (
+                            <Box key={line}>
+                                <Text dimColor>- </Text>
+                                <Text bold dimColor>
+                                    {parsedLine.function}
+                                </Text>
+                                <Text
+                                    aria-label={`at ${cleanupPath(parsedLine.file) ?? ""} line ${parsedLine.line} column ${parsedLine.column}`}
+                                    color="gray"
+                                    dimColor
+                                >
+                                    {" "}
+                                    ({cleanupPath(parsedLine.file) ?? ""}:{parsedLine.line}:{parsedLine.column})
+                                </Text>
+                            </Box>
+                        );
+                    })}
                 </Box>
             ) : null}
         </Box>

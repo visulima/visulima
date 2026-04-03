@@ -75,6 +75,43 @@ export type Props = {
  * </Gradient>
  * ```
  */
+const containsBoxDescendant = (nodeChildren: ReactNode): boolean => {
+    let hasBox = false;
+
+    const search = (value: ReactNode) => {
+        // eslint-disable-next-line react-x/no-children-for-each
+        Children.forEach(value, (child) => {
+            if (hasBox) {
+                return;
+            }
+
+            if (!isValidElement(child)) {
+                return;
+            }
+
+            if (child.type === Box) {
+                hasBox = true;
+
+                return;
+            }
+
+            const childProps = child.props as Record<string, unknown>;
+
+            if (Object.hasOwn(childProps, "children")) {
+                search(childProps["children"] as ReactNode);
+            }
+        });
+    };
+
+    search(nodeChildren);
+
+    return hasBox;
+};
+
+const hasChildrenProp = (properties: Record<string, unknown>) => Object.hasOwn(properties, "children");
+const isPlainTextNode = (node: ReactNode): node is number | string => typeof node === "string" || typeof node === "number";
+const isNonRenderableChild = (node: ReactNode) => node === null || node === undefined || typeof node === "boolean";
+
 export default function Gradient({ children, colors, name }: Props): ReactElement | null {
     if (name && colors) {
         throw new Error("The `name` and `colors` props are mutually exclusive");
@@ -89,43 +126,6 @@ export default function Gradient({ children, colors, name }: Props): ReactElemen
         [name, colors],
     );
     const applyGradient = (text: string) => gradientFunction(strip(text));
-
-    const containsBoxDescendant = (nodeChildren: ReactNode): boolean => {
-        let hasBox = false;
-
-        const search = (value: ReactNode) => {
-            // eslint-disable-next-line react-x/no-children-for-each
-            Children.forEach(value, (child) => {
-                if (hasBox) {
-                    return;
-                }
-
-                if (!isValidElement(child)) {
-                    return;
-                }
-
-                if (child.type === Box) {
-                    hasBox = true;
-
-                    return;
-                }
-
-                const childProps = child.props as Record<string, unknown>;
-
-                if (Object.hasOwn(childProps, "children")) {
-                    search(childProps["children"] as ReactNode);
-                }
-            });
-        };
-
-        search(nodeChildren);
-
-        return hasBox;
-    };
-
-    const hasChildrenProp = (properties: Record<string, unknown>) => Object.hasOwn(properties, "children");
-    const isPlainTextNode = (node: ReactNode): node is number | string => typeof node === "string" || typeof node === "number";
-    const isNonRenderableChild = (node: ReactNode) => node === null || node === undefined || typeof node === "boolean";
     // eslint-disable-next-line react-x/no-children-count
     const childrenCount = Children.count(children);
 

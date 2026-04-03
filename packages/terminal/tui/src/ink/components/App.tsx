@@ -114,7 +114,7 @@ const App = ({
         detachReadableListener();
         stdin.unref();
         rawModeEnabledCount.current = 0;
-        inputParserRef.current.reset();
+        inputParserRef.current?.reset();
         clearPendingInputFlush();
     }, [stdin, detachReadableListener, clearPendingInputFlush]);
 
@@ -188,9 +188,9 @@ const App = ({
                         if (!didWarnAboutDeprecatedPasteFallbackRef.current) {
                             didWarnAboutDeprecatedPasteFallbackRef.current = true;
                             writeToStderr(
-                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. "
-                                + "This fallback is deprecated and will be removed in the next major version. "
-                                + "Migrate paste handling to usePaste().\n",
+                                "Warning: useInput() received bracketed paste because no usePaste() handler is active. " +
+                                    "This fallback is deprecated and will be removed in the next major version. " +
+                                    "Migrate paste handling to usePaste().\n",
                             );
                         }
 
@@ -500,19 +500,28 @@ const App = ({
         };
     }, [stdin, handleSetRawMode, handleSetBracketedPasteMode, isRawModeSupported, exitOnCtrlC]);
 
-    const stdoutContextValue = useMemo(() => ({
-        stdout,
-        write: writeToStdout,
-    }), [stdout, writeToStdout]);
+    const stdoutContextValue = useMemo(
+        () => ({
+            stdout,
+            write: writeToStdout,
+        }),
+        [stdout, writeToStdout],
+    );
 
-    const stderrContextValue = useMemo(() => ({
-        stderr,
-        write: writeToStderr,
-    }), [stderr, writeToStderr]);
+    const stderrContextValue = useMemo(
+        () => ({
+            stderr,
+            write: writeToStderr,
+        }),
+        [stderr, writeToStderr],
+    );
 
-    const cursorContextValue = useMemo(() => ({
-        setCursorPosition,
-    }), [setCursorPosition]);
+    const cursorContextValue = useMemo(
+        () => ({
+            setCursorPosition,
+        }),
+        [setCursorPosition],
+    );
 
     const focusContextValue = useMemo(() => {
         return {

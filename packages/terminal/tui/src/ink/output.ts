@@ -398,7 +398,7 @@ export default class Output {
         this.writeStyledLineToRow(this.grid[y]!, x, line, this.width, clip);
     }
 
-    writeStyledChars(x: number, y: number, styledChars: StyledChar[], options: { transformers: OutputTransformer[] }): void {
+    writeStyledChars(x: number, y: number, styledChars: StyledChar[], _options: { transformers: OutputTransformer[] }): void {
         if (styledChars.length === 0 || y < 0 || y >= this.grid.length) {
             return;
         }
@@ -509,7 +509,8 @@ export default class Output {
 
         const canUseMemoization = this.lineMemoizationEnabled;
         const hasPrevious = this.previousLines.length > 0;
-        const canReuseRows = canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
+        const canReuseRows =
+            canUseMemoization && hasPrevious && this.previousLines.length === output.length && this.previousRenderedLines.length === output.length;
 
         if (this.previousLines.length > output.length) {
             this.previousLines.length = output.length;

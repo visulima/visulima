@@ -12,7 +12,7 @@ import { EventEmitter } from "node:events";
 import process from "node:process";
 
 import type { PropsWithChildren } from "react";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useReducer, useRef } from "react";
 
 import { useStdinContext } from "../hooks/use-stdin";
 import useStdout from "../hooks/use-stdout";
@@ -21,17 +21,69 @@ import { ANSI_CODES } from "./constants";
 import type { MouseButton, MouseClickAction, MouseContextShape, MouseDragAction, MousePosition, MouseScrollAction } from "./mouse-context";
 import { MouseContext } from "./mouse-context";
 
+type MouseState = {
+    button: MouseButton | null;
+    click: MouseClickAction;
+    drag: MouseDragAction;
+    position: MousePosition;
+    scroll: MouseScrollAction;
+};
+
+type MouseAction =
+    | { button: MouseButton; click: MouseClickAction; position: MousePosition; type: "click" }
+    | { type: "click-reset" }
+    | { button: MouseButton; drag: MouseDragAction; position: MousePosition; type: "drag" }
+    | { position: MousePosition; type: "move" }
+    | { position: MousePosition; scroll: MouseScrollAction; type: "scroll" }
+    | { type: "scroll-reset" };
+
+const initialMouseState: MouseState = {
+    button: null,
+    click: null,
+    drag: null,
+    position: { x: 0, y: 0 },
+    scroll: null,
+};
+
+const mouseReducer = (state: MouseState, action: MouseAction): MouseState => {
+    switch (action.type) {
+        case "click": {
+            return { ...state, button: action.button, click: action.click, position: action.position };
+        }
+
+        case "click-reset": {
+            return { ...state, button: null, click: null };
+        }
+
+        case "drag": {
+            return { ...state, button: action.button, drag: action.drag, position: action.position };
+        }
+
+        case "move": {
+            return { ...state, position: action.position };
+        }
+
+        case "scroll": {
+            return { ...state, position: action.position, scroll: action.scroll };
+        }
+
+        case "scroll-reset": {
+            return { ...state, scroll: null };
+        }
+
+        default: {
+            return state;
+        }
+    }
+};
+
 const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
     const { internal_eventEmitter: internalEventEmitter } = useStdinContext();
     const { stdout } = useStdout();
     // eslint-disable-next-line unicorn/prefer-event-target
     const events = useRef(new EventEmitter());
 
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [button, setButton] = useState<MouseButton | null>(null);
-    const [click, setClick] = useState<MouseClickAction>(null);
-    const [scroll, setScroll] = useState<MouseScrollAction>(null);
-    const [drag, setDrag] = useState<MouseDragAction>(null);
+    const [state, dispatch] = useReducer(mouseReducer, initialMouseState);
 
     const clickTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -58,19 +110,16 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
 
             const pos: MousePosition = { x: event.x, y: event.y };
 
-            setPosition(pos);
             events.current.emit("position", pos);
 
             switch (event.type) {
                 case "click": {
-                    setButton(event.button);
-                    setClick(event.action);
+                    dispatch({ button: event.button, click: event.action, position: pos, type: "click" });
                     events.current.emit("click", pos, event.action, event.button);
 
                     clearTimeout(clickTimeoutRef.current);
                     clickTimeoutRef.current = setTimeout(() => {
-                        setClick(null);
-                        setButton(null);
+                        dispatch({ type: "click-reset" });
                     }, 100);
                     break;
                 }
@@ -78,24 +127,23 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
                 case "drag": {
                     const dragAction = event.action === "press" ? "dragging" : null;
 
-                    setButton(event.button);
-                    setDrag(dragAction);
+                    dispatch({ button: event.button, drag: dragAction, position: pos, type: "drag" });
                     events.current.emit("drag", pos, dragAction, event.button);
                     break;
                 }
 
                 case "move": {
-                    // position already emitted above
+                    dispatch({ position: pos, type: "move" });
                     break;
                 }
 
                 case "scroll": {
-                    setScroll(event.direction);
+                    dispatch({ position: pos, scroll: event.direction, type: "scroll" });
                     events.current.emit("scroll", pos, event.direction);
 
                     clearTimeout(scrollTimeoutRef.current);
                     scrollTimeoutRef.current = setTimeout(() => {
-                        setScroll(null);
+                        dispatch({ type: "scroll-reset" });
                     }, 100);
                     break;
                 }
@@ -117,14 +165,14 @@ const MouseProvider = ({ children }: PropsWithChildren): React.JSX.Element => {
 
     const value: MouseContextShape = useMemo(() => {
         return {
-            button,
-            click,
-            drag,
+            button: state.button,
+            click: state.click,
+            drag: state.drag,
             events: events.current,
-            position,
-            scroll,
+            position: state.position,
+            scroll: state.scroll,
         };
-    }, [button, click, drag, position, scroll]);
+    }, [state]);
 
     return <MouseContext value={value}>{children}</MouseContext>;
 };

@@ -302,7 +302,13 @@ export class StyledLine {
         // the expensive splitSpansAt + mergeSpans work entirely.
         const existingSpan = this.getSpan(index);
 
-        if (existingSpan && existingSpan.formatFlags === cleanFormatFlags && existingSpan.fgColor === fgColor && existingSpan.bgColor === bgColor && existingSpan.link === link) {
+        if (
+            existingSpan &&
+            existingSpan.formatFlags === cleanFormatFlags &&
+            existingSpan.fgColor === fgColor &&
+            existingSpan.bgColor === bgColor &&
+            existingSpan.link === link
+        ) {
             return;
         }
 
@@ -608,7 +614,7 @@ export class StyledLine {
         let currentOffset = 0;
 
         for (const line of allLines) {
-            const lineCharData = (line as { charData?: Uint16Array }).charData;
+            const lineCharData = (line as unknown as { charData?: Uint16Array }).charData;
             const lineText = line.getText();
 
             if (lineCharData) {
@@ -650,10 +656,7 @@ export class StyledLine {
             for (let s = this.spans.length - 1; s >= 0; s--) {
                 const span = this.spans[s]!;
                 const hasStylesOnSpan =
-                    (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 ||
-                    span.fgColor !== undefined ||
-                    span.bgColor !== undefined ||
-                    span.link !== undefined;
+                    (span.formatFlags & ~FULL_WIDTH_MASK) !== 0 || span.fgColor !== undefined || span.bgColor !== undefined || span.link !== undefined;
 
                 if (hasStylesOnSpan) {
                     return currentIdx + 1;
@@ -713,13 +716,19 @@ export class StyledLine {
             const sp1 = s1[i]!;
             const sp2 = s2[i]!;
 
-            if (sp1.length !== sp2.length || sp1.formatFlags !== sp2.formatFlags || sp1.fgColor !== sp2.fgColor || sp1.bgColor !== sp2.bgColor || sp1.link !== sp2.link) {
+            if (
+                sp1.length !== sp2.length ||
+                sp1.formatFlags !== sp2.formatFlags ||
+                sp1.fgColor !== sp2.fgColor ||
+                sp1.bgColor !== sp2.bgColor ||
+                sp1.link !== sp2.link
+            ) {
                 return false;
             }
         }
 
         const thisCharData = this.charData;
-        const otherCharData = (other as { charData?: Uint16Array }).charData;
+        const otherCharData = (other as unknown as { charData?: Uint16Array }).charData;
 
         if (thisCharData && otherCharData) {
             for (let i = 0; i < this.length; i++) {
@@ -871,7 +880,7 @@ export class StyledLine {
         }
 
         const textOffset = this.getText().length;
-        const otherCharData = (other as { charData?: Uint16Array }).charData;
+        const otherCharData = (other as unknown as { charData?: Uint16Array }).charData;
 
         if (otherCharData) {
             for (let i = 0; i < otherCharsToTake; i++) {

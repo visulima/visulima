@@ -8,6 +8,13 @@ import type { Styles } from "../styles";
 import { accessibilityContext } from "./AccessibilityContext";
 import { backgroundContext } from "./BackgroundContext";
 
+const BOX_BASE_STYLE = {
+    flexDirection: "row",
+    flexGrow: 0,
+    flexShrink: 1,
+    flexWrap: "nowrap",
+} as const;
+
 export type Props = Except<Styles, "textWrap"> & {
     /**
      * Hide the element from screen readers.
@@ -121,10 +128,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                 scrollbar={scrollbar}
                 sticky={sticky}
                 style={{
-                    flexDirection: "row",
-                    flexGrow: 0,
-                    flexShrink: 1,
-                    flexWrap: "nowrap",
+                    ...BOX_BASE_STYLE,
                     ...style,
                     backgroundColor,
                     overflowX: style.overflowX ?? style.overflow ?? "visible",
@@ -132,7 +136,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                 }}
             >
                 {isScreenReaderEnabled && label ? label : children}
-                {sticky && stickyChildren && !isScreenReaderEnabled && (
+                {sticky && stickyChildren && !isScreenReaderEnabled ? (
                     <ink-box
                         internalStickyAlternate
                         style={{
@@ -142,7 +146,7 @@ const Box: ForwardRefExoticComponent<PropsWithChildren<Props> & RefAttributes<DO
                     >
                         {stickyChildren}
                     </ink-box>
-                )}
+                ) : null}
             </ink-box>
         );
 

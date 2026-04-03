@@ -17,7 +17,6 @@ import type { StyledLine } from "./styled-line";
 import { BOLD_MASK, DIM_MASK, HIDDEN_MASK, INVERSE_MASK, ITALIC_MASK, STRIKETHROUGH_MASK, UNDERLINE_MASK } from "./style-flags";
 
 // SGR parameter codes
-const SGR_RESET = 0;
 const SGR_BOLD = 1;
 const SGR_DIM = 2;
 const SGR_ITALIC = 3;
@@ -99,8 +98,8 @@ export const styledLineToString = (line: StyledLine): string => {
             const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
 
             if (prevBoldDim !== newBoldDim) {
-                const removingBold = (prevFlags & BOLD_MASK) && !(flags & BOLD_MASK);
-                const removingDim = (prevFlags & DIM_MASK) && !(flags & DIM_MASK);
+                const removingBold = prevFlags & BOLD_MASK && !(flags & BOLD_MASK);
+                const removingDim = prevFlags & DIM_MASK && !(flags & DIM_MASK);
 
                 if (removingBold || removingDim) {
                     result += sgr([SGR_NO_BOLD]);
@@ -115,23 +114,42 @@ export const styledLineToString = (line: StyledLine): string => {
                 }
             }
 
-            if ((flags & ITALIC_MASK) && !(prevFlags & ITALIC_MASK)) { result += sgr([SGR_ITALIC]); }
-            else if (!(flags & ITALIC_MASK) && (prevFlags & ITALIC_MASK)) { result += sgr([SGR_NO_ITALIC]); }
+            if (flags & ITALIC_MASK && !(prevFlags & ITALIC_MASK)) {
+                result += sgr([SGR_ITALIC]);
+            } else if (!(flags & ITALIC_MASK) && prevFlags & ITALIC_MASK) {
+                result += sgr([SGR_NO_ITALIC]);
+            }
 
-            if ((flags & UNDERLINE_MASK) && !(prevFlags & UNDERLINE_MASK)) { result += sgr([SGR_UNDERLINE]); }
-            else if (!(flags & UNDERLINE_MASK) && (prevFlags & UNDERLINE_MASK)) { result += sgr([SGR_NO_UNDERLINE]); }
+            if (flags & UNDERLINE_MASK && !(prevFlags & UNDERLINE_MASK)) {
+                result += sgr([SGR_UNDERLINE]);
+            } else if (!(flags & UNDERLINE_MASK) && prevFlags & UNDERLINE_MASK) {
+                result += sgr([SGR_NO_UNDERLINE]);
+            }
 
-            if ((flags & INVERSE_MASK) && !(prevFlags & INVERSE_MASK)) { result += sgr([SGR_INVERSE]); }
-            else if (!(flags & INVERSE_MASK) && (prevFlags & INVERSE_MASK)) { result += sgr([SGR_NO_INVERSE]); }
+            if (flags & INVERSE_MASK && !(prevFlags & INVERSE_MASK)) {
+                result += sgr([SGR_INVERSE]);
+            } else if (!(flags & INVERSE_MASK) && prevFlags & INVERSE_MASK) {
+                result += sgr([SGR_NO_INVERSE]);
+            }
 
-            if ((flags & HIDDEN_MASK) && !(prevFlags & HIDDEN_MASK)) { result += sgr([SGR_HIDDEN]); }
-            else if (!(flags & HIDDEN_MASK) && (prevFlags & HIDDEN_MASK)) { result += sgr([SGR_NO_HIDDEN]); }
+            if (flags & HIDDEN_MASK && !(prevFlags & HIDDEN_MASK)) {
+                result += sgr([SGR_HIDDEN]);
+            } else if (!(flags & HIDDEN_MASK) && prevFlags & HIDDEN_MASK) {
+                result += sgr([SGR_NO_HIDDEN]);
+            }
 
-            if ((flags & STRIKETHROUGH_MASK) && !(prevFlags & STRIKETHROUGH_MASK)) { result += sgr([SGR_STRIKETHROUGH]); }
-            else if (!(flags & STRIKETHROUGH_MASK) && (prevFlags & STRIKETHROUGH_MASK)) { result += sgr([SGR_NO_STRIKETHROUGH]); }
+            if (flags & STRIKETHROUGH_MASK && !(prevFlags & STRIKETHROUGH_MASK)) {
+                result += sgr([SGR_STRIKETHROUGH]);
+            } else if (!(flags & STRIKETHROUGH_MASK) && prevFlags & STRIKETHROUGH_MASK) {
+                result += sgr([SGR_NO_STRIKETHROUGH]);
+            }
 
-            if (fgColor !== prevFg) { result += fgColor ? sgr(colorToSgrParams(fgColor, true)) : sgr([SGR_FG_DEFAULT]); }
-            if (bgColor !== prevBg) { result += bgColor ? sgr(colorToSgrParams(bgColor, false)) : sgr([SGR_BG_DEFAULT]); }
+            if (fgColor !== prevFg) {
+                result += fgColor ? sgr(colorToSgrParams(fgColor, true)) : sgr([SGR_FG_DEFAULT]);
+            }
+            if (bgColor !== prevBg) {
+                result += bgColor ? sgr(colorToSgrParams(bgColor, false)) : sgr([SGR_BG_DEFAULT]);
+            }
 
             hasActiveStyles = flags !== 0 || fgColor !== undefined || bgColor !== undefined;
             prevFlags = flags;
@@ -146,14 +164,30 @@ export const styledLineToString = (line: StyledLine): string => {
 
     // Close remaining styles
     if (hasActiveStyles) {
-        if (prevFlags & (BOLD_MASK | DIM_MASK)) { result += sgr([SGR_NO_BOLD]); }
-        if (prevFlags & ITALIC_MASK) { result += sgr([SGR_NO_ITALIC]); }
-        if (prevFlags & UNDERLINE_MASK) { result += sgr([SGR_NO_UNDERLINE]); }
-        if (prevFlags & INVERSE_MASK) { result += sgr([SGR_NO_INVERSE]); }
-        if (prevFlags & HIDDEN_MASK) { result += sgr([SGR_NO_HIDDEN]); }
-        if (prevFlags & STRIKETHROUGH_MASK) { result += sgr([SGR_NO_STRIKETHROUGH]); }
-        if (prevFg !== undefined) { result += sgr([SGR_FG_DEFAULT]); }
-        if (prevBg !== undefined) { result += sgr([SGR_BG_DEFAULT]); }
+        if (prevFlags & (BOLD_MASK | DIM_MASK)) {
+            result += sgr([SGR_NO_BOLD]);
+        }
+        if (prevFlags & ITALIC_MASK) {
+            result += sgr([SGR_NO_ITALIC]);
+        }
+        if (prevFlags & UNDERLINE_MASK) {
+            result += sgr([SGR_NO_UNDERLINE]);
+        }
+        if (prevFlags & INVERSE_MASK) {
+            result += sgr([SGR_NO_INVERSE]);
+        }
+        if (prevFlags & HIDDEN_MASK) {
+            result += sgr([SGR_NO_HIDDEN]);
+        }
+        if (prevFlags & STRIKETHROUGH_MASK) {
+            result += sgr([SGR_NO_STRIKETHROUGH]);
+        }
+        if (prevFg !== undefined) {
+            result += sgr([SGR_FG_DEFAULT]);
+        }
+        if (prevBg !== undefined) {
+            result += sgr([SGR_BG_DEFAULT]);
+        }
     }
 
     if (prevLink) {

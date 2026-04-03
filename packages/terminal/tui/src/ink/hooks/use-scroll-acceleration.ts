@@ -74,10 +74,7 @@ const useScrollAcceleration = (options: UseScrollAccelerationOptions = {}): UseS
     const skipNextTickRef = useRef(false);
     const tickTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
     const onScrollRef = useRef(onScroll);
-
-    useEffect(() => {
-        onScrollRef.current = onScroll;
-    });
+    onScrollRef.current = onScroll;
 
     // Momentum tick loop — only runs while coasting to avoid idle CPU usage
     useEffect(() => {

@@ -13,8 +13,10 @@ import type { ReactElement, ReactNode } from "react";
 
 import Box from "./Box";
 import Text from "./Text";
+import type { Variant } from "./variant-config";
+import VARIANT_CONFIG from "./variant-config";
 
-export type AlertVariant = "error" | "info" | "success" | "warning";
+export type AlertVariant = Variant;
 
 export type Props = {
     /**
@@ -31,13 +33,6 @@ export type Props = {
      * Determines the border color and icon.
      */
     readonly variant: AlertVariant;
-};
-
-const VARIANT_CONFIG: Record<AlertVariant, { color: string; icon: string }> = {
-    error: { color: "red", icon: "✖" },
-    info: { color: "blue", icon: "ℹ" },
-    success: { color: "green", icon: "✔" },
-    warning: { color: "yellow", icon: "⚠" },
 };
 
 /**
