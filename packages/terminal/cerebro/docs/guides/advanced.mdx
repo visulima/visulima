@@ -503,12 +503,79 @@ cli.addCommand({
 });
 ```
 
+## Performance Helpers
+
+Cerebro ships with two standalone helpers that run **before** the CLI framework loads.
+Call them at the very top of your entry point — before `createCerebro()` and any heavy imports.
+
+```typescript
+// bin.ts
+import enableCompileCache from "@visulima/cerebro/compile-cache";
+import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
+
+// 1. Tune V8 heap (may re-spawn the process and never return)
+applyHeapTuning();
+
+// 2. Enable compile cache for faster subsequent startups
+enableCompileCache();
+
+// Now load the rest of your CLI
+import { createCerebro } from "@visulima/cerebro";
+const cli = createCerebro("my-cli");
+// ...
+```
+
+### Heap Tuning
+
+`applyHeapTuning()` computes optimal `--max-old-space-size` and `--max-semi-space-size`
+V8 flags based on system memory. Because these flags can only be set at process startup,
+the helper re-spawns the current process with the computed flags when they are missing.
+After re-spawn, the flags are already present and the call becomes a no-op.
+
+**How it works:**
+
+- Allocates a percentage of total system RAM to V8's old-space (default: 75%)
+- Applies tiered semi-space sizing for the young generation:
+
+| Old-space (MiB) | Semi-space (MiB) |
+| --------------- | ---------------- |
+| &le; 512        | 4                |
+| &le; 1024       | 8                |
+| &le; 2048       | 16               |
+| &le; 4096       | 32               |
+| &le; 8192       | 64               |
+| &gt; 8192       | log2-scaled      |
+
+- Respects existing flags — if the user sets `NODE_OPTIONS="--max-old-space-size=4096"`, their value is kept
+
+**Custom allocation:**
+
+```typescript
+// Use 50% of RAM instead of the default 75%
+applyHeapTuning({ maxOldSpacePercent: 0.5 });
+```
+
+### Compile Cache
+
+`enableCompileCache()` enables V8's compile cache so that subsequent runs of your CLI
+skip re-parsing and re-compiling JavaScript source files. This can reduce startup time
+by 30–70% for large CLI tools.
+
+**How it works:**
+
+1. Tries `module.enableCompileCache()` — a native Node.js 22.8+ API that stores compiled
+   bytecode alongside source files for instant reuse
+2. Falls back to the [`v8-compile-cache`](https://www.npmjs.com/package/v8-compile-cache) npm
+   package on older Node.js versions (must be installed as a dependency)
+3. If neither is available, silently does nothing
+
 ## Performance Tips
 
-1. **Lazy load plugins** - Only load plugins when needed
-2. **Use command groups** - Organize commands for faster lookups
-3. **Cache expensive operations** - Cache results in plugin `init`
-4. **Minimize toolbox extensions** - Only add what's needed
+1. **Use the performance helpers above** - Heap tuning and compile cache make the biggest difference
+2. **Lazy load plugins** - Only load plugins when needed
+3. **Use command groups** - Organize commands for faster lookups
+4. **Cache expensive operations** - Cache results in plugin `init`
+5. **Minimize toolbox extensions** - Only add what's needed
 
 ## Testing
 

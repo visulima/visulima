@@ -90,6 +90,14 @@
             "types": "./dist/plugins/update-notifier/update-notifier-plugin.d.ts",
             "default": "./dist/plugins/update-notifier/update-notifier-plugin.js"
         },
+        "./compile-cache": {
+            "types": "./dist/util/general/compile-cache.d.ts",
+            "default": "./dist/util/general/compile-cache.js"
+        },
+        "./heap-tuning": {
+            "types": "./dist/util/general/heap-tuning.d.ts",
+            "default": "./dist/util/general/heap-tuning.js"
+        },
         "./logger/pail": {
             "types": "./dist/logger/create-pail-logger.d.ts",
             "default": "./dist/logger/create-pail-logger.js"
