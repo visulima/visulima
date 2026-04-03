@@ -84,7 +84,7 @@ const createConcurrentExecutor = (workspaceRoot: string) => async (task: Task, o
     const closeEvent = result.closeEvents[0];
 
     return {
-        code: closeEvent?.exitCode ?? 0,
+        code: closeEvent?.exitCode ?? 1,
         terminalOutput: output.toString(),
     };
 };
@@ -190,38 +190,87 @@ const run: Command = {
             const dynamic = createDynamicOutputRenderer(lifecycleOptions);
             const { lifeCycle, store } = dynamic;
 
-            // Run tasks in a loop — supports rerun via `r` key
-            let shouldRerun = true;
+            // Run tasks in a loop — supports rerun (r) and single-task retry (R)
+            let loopAction: "quit" | "rerun" | "retry" = "rerun";
+            let retryTaskId: string | null = null;
 
-            while (shouldRerun) {
-                shouldRerun = false;
+            while (loopAction !== "quit") {
+                if (loopAction === "rerun") {
+                    // Full rerun of all tasks
+                    // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
+                    await defaultTaskRunner(initialTasks, runnerOptions, {
+                        lifeCycle,
+                        projectGraph,
+                        taskExecutor,
+                        taskGraph,
+                        workspaceRoot,
+                    });
+                } else if (loopAction === "retry" && retryTaskId) {
+                    // Retry a single failed task
+                    const task = initialTasks.find((t) => t.id === retryTaskId);
+                    const command = task?.overrides["command"] as string | undefined;
 
+                    if (task && command) {
+                        const taskCwd = task.projectRoot ?? workspaceRoot;
+                        const resolvedCwd = taskCwd.startsWith("/") ? taskCwd : `${workspaceRoot}/${taskCwd}`;
+
+                        lifeCycle.startTasks?.([task]);
+
+                        // eslint-disable-next-line no-await-in-loop -- sequential retry
+                        const retryResult = await runConcurrently(
+                            [{ command, cwd: resolvedCwd, name: task.id }],
+                            {
+                                onEvent: (event: ProcessEvent) => {
+                                    if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
+                                        store.addOutput(task.id, event.text + "\n");
+                                    }
+                                },
+                            },
+                        );
+
+                        const closeEvent = retryResult.closeEvents[0];
+
+                        lifeCycle.endTasks?.([{
+                            code: closeEvent?.exitCode ?? 1,
+                            status: closeEvent?.exitCode === 0 ? "success" : "failure",
+                            task,
+                            terminalOutput: store.getSnapshot().outputs.get(task.id),
+                        }]);
+                    } else if (task) {
+                        lifeCycle.endTasks?.([{
+                            code: 1,
+                            status: "failure",
+                            task,
+                            terminalOutput: `No command configured for ${task.id}`,
+                        }]);
+                    }
+
+                    retryTaskId = null;
+                }
+
+                // Wait for user action: quit, rerun, or retry
                 // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
-                await defaultTaskRunner(initialTasks, runnerOptions, {
-                    lifeCycle,
-                    projectGraph,
-                    taskExecutor,
-                    taskGraph,
-                    workspaceRoot,
-                });
-
-                // Wait for either quit (renderIsDone resolves) or rerun request
-                // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
-                shouldRerun = await new Promise<boolean>((resolve) => {
+                loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
                     // Check if already resolved (user quit before we got here)
                     dynamic.renderIsDone.then(
-                        () => { resolve(false); },
-                        () => { resolve(false); },
+                        () => { resolve("quit"); },
+                        () => { resolve("quit"); },
                     );
 
-                    // Watch for rerun requests
+                    // Watch for rerun or retry requests
                     const unsubscribe = store.subscribe(() => {
-                        const state = store.getSnapshot();
+                        const s = store.getSnapshot();
 
-                        if (state.rerunRequested) {
+                        if (s.rerunRequested) {
                             store.acknowledgeRerun();
                             unsubscribe();
-                            resolve(true);
+                            resolve("rerun");
+                        }
+
+                        if (s.retryTaskId) {
+                            retryTaskId = store.acknowledgeRetry();
+                            unsubscribe();
+                            resolve("retry");
                         }
                     });
                 });

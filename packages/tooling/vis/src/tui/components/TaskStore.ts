@@ -27,14 +27,20 @@ export interface TaskState {
     pinnedTaskIds: [string | null, string | null];
     /** Whether a rerun has been requested by the user. */
     rerunRequested: boolean;
+    /** Task ID requested for single-task retry (null = none). */
+    retryTaskId: string | null;
     /** All task rows with current status. */
     rows: TaskRowData[];
     /** Currently highlighted task index in the list. */
     selectedIndex: number;
+    /** Status filter for task list: "all", "failed", "running", "passed". */
+    statusFilter: "all" | "failed" | "passed" | "running";
     /** Command start timestamp (Date.now). */
     startTime: number;
     /** Number of successfully completed tasks. */
     succeeded: number;
+    /** Current view mode: list (full width), split (list + output), fullscreen (output only). */
+    viewMode: "fullscreen" | "list" | "split";
 }
 
 type Listener = () => void;
@@ -61,10 +67,13 @@ export class TaskStore {
             outputs: new Map(),
             pinnedTaskIds: [null, null],
             rerunRequested: false,
+            retryTaskId: null,
             rows: tasks.map((t) => { return { status: "pending" as const, taskId: t.id }; }),
             selectedIndex: 0,
+            statusFilter: "all",
             startTime: Date.now(),
             succeeded: 0,
+            viewMode: "list",
         };
     }
 
@@ -140,7 +149,18 @@ export class TaskStore {
             this.#hrtimeStarts.delete(res.task.id);
         }
 
-        this.#emit({ ...this.#state, cached, completed, failed, outputs, rows, succeeded });
+        // Auto-scroll to first failed task so the user sees it immediately
+        let selectedIndex = this.#state.selectedIndex;
+
+        if (failed > this.#state.failed) {
+            const firstFailureIdx = rows.findIndex((r) => r.status === "failure");
+
+            if (firstFailureIdx !== -1) {
+                selectedIndex = firstFailureIdx;
+            }
+        }
+
+        this.#emit({ ...this.#state, cached, completed, failed, outputs, rows, selectedIndex, succeeded });
     }
 
     /** Maximum output stored per task (256 KB). Prevents OOM with long-running dev servers. */
@@ -238,6 +258,63 @@ export class TaskStore {
         this.#emit({ ...this.#state, pinnedTaskIds: [null, null] });
     }
 
+    /** Request retry of a single failed task. */
+    public requestRetry(taskId: string): void {
+        // Reset the task to "running" state
+        const rows = [...this.#state.rows];
+        const index = rows.findIndex((r) => r.taskId === taskId);
+        let { completed, failed, succeeded } = this.#state;
+
+        if (index !== -1) {
+            const previousStatus = rows[index]!.status;
+
+            // Adjust counters to undo the previous terminal state
+            if (previousStatus === "failure") {
+                failed = Math.max(0, failed - 1);
+                completed = Math.max(0, completed - 1);
+            } else if (previousStatus === "success") {
+                succeeded = Math.max(0, succeeded - 1);
+                completed = Math.max(0, completed - 1);
+            }
+
+            rows[index] = { ...rows[index]!, elapsed: 0, status: "running" };
+            this.#hrtimeStarts.set(taskId, process.hrtime());
+        }
+
+        this.#emit({
+            ...this.#state,
+            completed,
+            done: false,
+            failed,
+            retryTaskId: taskId,
+            rows,
+            succeeded,
+        });
+    }
+
+    /** Acknowledge the retry request (called by lifecycle after re-launching). */
+    public acknowledgeRetry(): string | null {
+        const id = this.#state.retryTaskId;
+
+        if (id) {
+            this.#emit({ ...this.#state, retryTaskId: null });
+        }
+
+        return id;
+    }
+
+    /** Set the current view mode. */
+    public setViewMode(mode: "fullscreen" | "list" | "split"): void {
+        if (mode !== this.#state.viewMode) {
+            this.#emit({ ...this.#state, viewMode: mode });
+        }
+    }
+
+    /** Set status filter for the task list. */
+    public setStatusFilter(filter: "all" | "failed" | "passed" | "running"): void {
+        this.#emit({ ...this.#state, selectedIndex: 0, statusFilter: filter });
+    }
+
     /** Request a rerun — resets all task state back to pending. */
     public requestRerun(): void {
         this.#hrtimeStarts.clear();
@@ -253,6 +330,7 @@ export class TaskStore {
             rows: this.#state.rows.map((r) => { return { status: "pending" as const, taskId: r.taskId }; }),
             startTime: Date.now(),
             succeeded: 0,
+            viewMode: "list",
         });
     }
 

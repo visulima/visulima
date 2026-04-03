@@ -4,7 +4,7 @@ import React from "react";
 
 import { CROSS, DASH, TICK } from "./symbols";
 
-export const isCacheStatus = (status: TaskStatus): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
+export const isCacheStatus = (status: string): boolean => status === "local-cache" || status === "local-cache-kept-existing" || status === "remote-cache";
 
 export interface StatusInfo {
     color: string;

@@ -1,18 +1,18 @@
 import type { Task } from "@visulima/task-runner";
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
-import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useMemo, useRef, useState, useEffect, useSyncExternalStore } from "react";
 
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
+import { isCacheStatus } from "../status-utils";
 import OutputPanel from "./OutputPanel";
 import QuitDialog from "./QuitDialog";
 import TaskListPanel from "./TaskListPanel";
 import type { TaskStore } from "./TaskStore";
 
-// ── Layout constants (matching Nx layout_manager.rs) ────────────────────
+// ── Layout constants ───────────────────────────────────────────────────
 
-const MIN_HORIZONTAL_WIDTH = 120;
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
 
@@ -28,15 +28,15 @@ interface VisTaskRunnerAppProps {
     tasks: Task[];
 }
 
-const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
+const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
 
     const [helpVisible, setHelpVisible] = useState(false);
     const helpScrollRef = useRef<ScrollViewRef>(null);
+    const listScrollRef = useRef<ScrollViewRef>(null);
     const outputScrollRef = useRef<ScrollViewRef>(null);
-    const [listScrollOffset, setListScrollOffset] = useState(0);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
     // Auto-show quit dialog when tasks complete — only if autoExit is enabled
@@ -57,53 +57,51 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
         }
     }, [state.done, autoExitSeconds]);
 
-    // List viewport height for scroll calculation
-    const listViewportHeight = Math.max(1, rows - 6);
-
-    // Scroll the task list to keep selected item visible
-    // Scroll the task list. The content has a parallel section at the top
-    // (parallelSlots + 1 connector line when active), then the flat list rows.
-    const scrollListToIndex = useCallback((index: number) => {
-        setListScrollOffset((current) => {
-            // Item below viewport — scroll down
-            if (index >= current + listViewportHeight - 1) {
-                return Math.max(0, index - listViewportHeight + 2);
-            }
-
-            // Item above viewport — scroll up
-            if (index < current) {
-                return Math.max(0, index);
-            }
-
-            return current;
-        });
-    }, [listViewportHeight]);
-
-    // Filter rows
+    // Filter rows by status and text
     const filteredRows = useMemo(() => {
-        if (!state.filterText) {
-            return state.rows;
+        let filtered = state.rows;
+
+        if (state.statusFilter !== "all") {
+            filtered = filtered.filter((r) => {
+                if (state.statusFilter === "failed") return r.status === "failure";
+                if (state.statusFilter === "running") return r.status === "running" || r.status === "pending";
+                if (state.statusFilter === "passed") return r.status === "success" || isCacheStatus(r.status);
+                return true;
+            });
         }
 
-        const lower = state.filterText.toLowerCase();
+        if (state.filterText) {
+            const lower = state.filterText.toLowerCase();
 
-        return state.rows.filter((r) => r.taskId.toLowerCase().includes(lower));
-    }, [state.rows, state.filterText]);
+            filtered = filtered.filter((r) => r.taskId.toLowerCase().includes(lower));
+        }
 
-    // Get selected task — always show output for selected task
+        return filtered;
+    }, [state.rows, state.filterText, state.statusFilter]);
+
+    // Count running tasks for status bar
+    const runningCount = state.rows.filter((r) => r.status === "running").length;
+
+    // Get selected task
     const selectedRow = filteredRows[state.selectedIndex] ?? null;
     const selectedTaskId = selectedRow?.taskId ?? null;
 
-    // Output shows: pinned task if any, otherwise selected task
+    // Output shows selected task content
     const outputTaskId = state.pinnedTaskIds[0] ?? selectedTaskId;
     const outputTask = outputTaskId ? state.rows.find((r) => r.taskId === outputTaskId) : null;
     const outputContent = outputTaskId ? state.outputs.get(outputTaskId) ?? "" : "";
-
 
     // Header title and status
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
     const headerTitle = state.done ? `Completed ${description} (${formatMs(Date.now() - state.startTime)})` : `Running ${description}...`;
     const headerStatus: "error" | "running" | "success" = state.done ? state.failed > 0 ? "error" : "success" : "running";
+
+    // Scroll selected item into view
+    const scrollToSelected = useCallback((index: number) => {
+        // ScrollView handles visibility automatically; we just need to ensure
+        // the selected item is scrolled to via the ref
+        listScrollRef.current?.scrollTo(Math.max(0, index - 2));
+    }, []);
 
     // ── Keyboard handling ───────────────────────────────────────────
 
@@ -159,18 +157,30 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 return;
             }
 
-            // Global: rerun (only when done)
+            // Global: rerun all (only when done)
             if (input === "r" && state.done) {
                 store.requestRerun();
 
                 return;
             }
 
-            // Global: Tab / Shift+Tab to cycle focus
-            if (key.tab) {
-                const nextPanel = state.focusedPanel === "tasks" ? "output" : "tasks";
+            // Retry single failed task (Shift+R, only when done)
+            if (input === "R" && state.done) {
+                const row = filteredRows[state.selectedIndex];
 
-                store.setFocusedPanel(nextPanel);
+                if (row && row.status === "failure") {
+                    store.requestRetry(row.taskId);
+                }
+
+                return;
+            }
+
+            // Status filter cycling (Shift+F)
+            if (input === "F" && !state.filterActive) {
+                const filters = ["all", "failed", "running", "passed"] as const;
+                const currentIdx = filters.indexOf(state.statusFilter);
+
+                store.setStatusFilter(filters[(currentIdx + 1) % filters.length]!);
 
                 return;
             }
@@ -205,82 +215,15 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 return;
             }
 
-            // ── Task list focused ───────────────────────────────────
-            if (state.focusedPanel === "tasks") {
-                // Navigation
-                if (key.downArrow || input === "j") {
-                    const next = Math.min(state.selectedIndex + 1, Math.max(0, filteredRows.length - 1));
-
-                    store.setSelectedIndex(next);
-                    scrollListToIndex(next);
-
-                    return;
-                }
-
-                if (key.upArrow || input === "k") {
-                    const next = Math.max(state.selectedIndex - 1, 0);
-
-                    store.setSelectedIndex(next);
-                    scrollListToIndex(next);
-
-                    return;
-                }
-
-                // Enter: focus output panel for selected task
-                if (key.return) {
-                    store.setFocusedPanel("output");
-
-                    return;
-                }
-
-                // Filter
-                if (input === "/") {
-                    store.setFilterActive(true);
-
-                    return;
-                }
-
-                // Pin to slot 1
-                if (input === "1" && selectedTaskId) {
-                    store.pinTask(0, selectedTaskId);
-
-                    return;
-                }
-
-                // Pin to slot 2
-                if (input === "2" && selectedTaskId) {
-                    store.pinTask(1, selectedTaskId);
-
-                    return;
-                }
-
-                // Clear pins
-                if (input === "0") {
-                    store.clearPins();
-
-                    return;
-                }
-
-                // Escape: clear filter
+            // ── Fullscreen output mode ─────────────────────────────
+            if (state.viewMode === "fullscreen") {
                 if (key.escape) {
-                    if (state.filterText) {
-                        store.setFilterActive(false);
-                    }
+                    store.setViewMode("split");
 
                     return;
                 }
 
-                return;
-            }
-
-            // ── Output panel focused ────────────────────────────────
-            if (state.focusedPanel === "output") {
-                if (key.escape) {
-                    store.setFocusedPanel("tasks");
-
-                    return;
-                }
-
+                // Scroll output
                 if (key.downArrow || input === "j") {
                     outputScrollRef.current?.scrollBy(1);
 
@@ -316,6 +259,152 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
                     return;
                 }
+
+                return;
+            }
+
+            // ── Split view ─────────────────────────────────────────
+            if (state.viewMode === "split") {
+                // Tab switches focus between panels
+                if (key.tab) {
+                    const nextPanel = state.focusedPanel === "tasks" ? "output" : "tasks";
+
+                    store.setFocusedPanel(nextPanel);
+
+                    return;
+                }
+
+                if (state.focusedPanel === "output") {
+                    if (key.escape) {
+                        store.setFocusedPanel("tasks");
+
+                        return;
+                    }
+
+                    // Enter in output panel → fullscreen
+                    if (key.return) {
+                        store.setViewMode("fullscreen");
+
+                        return;
+                    }
+
+                    // Scroll output
+                    if (key.downArrow || input === "j") {
+                        outputScrollRef.current?.scrollBy(1);
+
+                        return;
+                    }
+
+                    if (key.upArrow || input === "k") {
+                        outputScrollRef.current?.scrollBy(-1);
+
+                        return;
+                    }
+
+                    if (key.pageDown || (key.ctrl && input === "d")) {
+                        outputScrollRef.current?.scrollBy(12);
+
+                        return;
+                    }
+
+                    if (key.pageUp || (key.ctrl && input === "u")) {
+                        outputScrollRef.current?.scrollBy(-12);
+
+                        return;
+                    }
+
+                    if (key.home) {
+                        outputScrollRef.current?.scrollToTop();
+
+                        return;
+                    }
+
+                    if (key.end) {
+                        outputScrollRef.current?.scrollToBottom();
+
+                        return;
+                    }
+
+                    return;
+                }
+
+                // Task list focused in split view
+                if (key.escape) {
+                    store.setViewMode("list");
+
+                    return;
+                }
+
+                // Enter → fullscreen for selected task
+                if (key.return) {
+                    store.setViewMode("fullscreen");
+
+                    return;
+                }
+            }
+
+            // ── List view / task list navigation (list + split task-focused) ──
+            if (state.viewMode === "list" || (state.viewMode === "split" && state.focusedPanel === "tasks")) {
+                // Navigation
+                if (key.downArrow || input === "j") {
+                    const next = Math.min(state.selectedIndex + 1, Math.max(0, filteredRows.length - 1));
+
+                    store.setSelectedIndex(next);
+                    scrollToSelected(next);
+
+                    return;
+                }
+
+                if (key.upArrow || input === "k") {
+                    const next = Math.max(state.selectedIndex - 1, 0);
+
+                    store.setSelectedIndex(next);
+                    scrollToSelected(next);
+
+                    return;
+                }
+
+                // Enter in list view → switch to split view
+                if (key.return && state.viewMode === "list") {
+                    store.setViewMode("split");
+
+                    return;
+                }
+
+                // Filter
+                if (input === "/") {
+                    store.setFilterActive(true);
+
+                    return;
+                }
+
+                // Pin to slot 1
+                if (input === "1" && selectedTaskId) {
+                    store.pinTask(0, selectedTaskId);
+
+                    return;
+                }
+
+                // Pin to slot 2
+                if (input === "2" && selectedTaskId) {
+                    store.pinTask(1, selectedTaskId);
+
+                    return;
+                }
+
+                // Clear pins
+                if (input === "0") {
+                    store.clearPins();
+
+                    return;
+                }
+
+                // Escape: clear filter in list mode
+                if (key.escape && state.filterText) {
+                    store.setFilterActive(false);
+
+                    return;
+                }
             }
         },
         { isActive: true },
@@ -342,33 +431,48 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
         );
     }
 
-    const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
+    // ── Status summary (right-aligned in footer) ───────────────────
 
-    // ── Footer bar (full-width, below both panels) ──────────────────
+    const statusSummary = (
+        <Box gap={1}>
+            {state.succeeded > 0 && <Text color="green" bold>{"\u2713"} {state.succeeded}</Text>}
+            {state.failed > 0 && <Text color="red" bold>{"\u2717"} {state.failed}</Text>}
+            {runningCount > 0 && <Text color="cyan">{"\u25F7"} {runningCount}</Text>}
+            <Text dimColor>{state.rows.length} total</Text>
+            {state.statusFilter !== "all" && <Text color="yellow">[{state.statusFilter}]</Text>}
+        </Box>
+    );
+
+    // ── Footer ─────────────────────────────────────────────────────
 
     let footerItems: React.JSX.Element[];
 
-    if (state.done) {
+    if (state.viewMode === "fullscreen") {
+        footerItems = [
+            <Box key="esc" gap={1}><Text bold color="white">Esc</Text><Text dimColor>BACK</Text></Box>,
+            <Box key="scroll" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>SCROLL</Text></Box>,
+            <Box key="page" gap={1}><Text bold color="white">^u ^d</Text><Text dimColor>PAGE</Text></Box>,
+            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+        ];
+    } else if (state.done) {
+        const canRetry = filteredRows[state.selectedIndex]?.status === "failure";
+
         footerItems = [
             <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
             <Box key="r" gap={1}><Text bold color="white">r</Text><Text dimColor>RERUN</Text></Box>,
+            ...(canRetry ? [<Box key="R" gap={1}><Text bold color="white">R</Text><Text dimColor>RETRY</Text></Box>] : []),
             <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
             <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
-            <Box key="status" flexGrow={1} justifyContent="flex-end">
-                <Text color={state.failed > 0 ? "red" : "green"}>
-                    {state.failed > 0 ? `${state.failed} FAILED` : "DONE"}
-                    <Text dimColor>{" \u2014 "}</Text>
-                    <Text bold color="white">q</Text>
-                    <Text dimColor> TO EXIT</Text>
-                </Text>
-            </Box>,
+            <Box key="F" gap={1}><Text bold color="white">F</Text><Text dimColor>FILTER</Text></Box>,
+            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text></Box>,
         ];
-    } else if (state.focusedPanel === "output") {
+    } else if (state.viewMode === "split" && state.focusedPanel === "output") {
         footerItems = [
             <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
             <Box key="esc" gap={1}><Text bold color="white">Esc</Text><Text dimColor>BACK</Text></Box>,
             <Box key="scroll" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>SCROLL</Text></Box>,
-            <Box key="page" gap={1}><Text bold color="white">^u ^d</Text><Text dimColor>PAGE</Text></Box>,
+            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>FULLSCREEN</Text></Box>,
+            <Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>,
             <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
         ];
     } else {
@@ -377,16 +481,19 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
             <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
             <Box key="/" gap={1}><Text bold color="white">/</Text><Text dimColor>FILTER</Text></Box>,
-            <Box key="pin" gap={1}><Text bold color="white">1 2</Text><Text dimColor>PIN</Text></Box>,
-            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>OUTPUT</Text></Box>,
-            <Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>,
+            <Box key="F" gap={1}><Text bold color="white">F</Text><Text dimColor>STATUS</Text></Box>,
+            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text></Box>,
+            ...(state.viewMode === "split" ? [<Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>] : []),
         ];
     }
 
     const footer = (
-        <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0}>
-            <Box paddingX={1} gap={2} flexWrap="wrap">
+        <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0} justifyContent="space-between">
+            <Box paddingX={1} gap={2} flexShrink={0}>
                 {footerItems}
+            </Box>
+            <Box paddingX={1} flexShrink={0}>
+                {statusSummary}
             </Box>
         </Box>
     );
@@ -411,19 +518,31 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                     <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Move up</Text></Text></Box>
                     <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Move down</Text></Text>
                 </Box>
-                <Text><Text color="white" bold>  Tab</Text><Text dimColor>    Switch panel</Text></Text>
-                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Back</Text></Text>
-                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  View task output</Text></Text>
+                <Text><Text color="white" bold>  Tab</Text><Text dimColor>    Switch panel (split)</Text></Text>
+                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Back / close</Text></Text>
+                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  Show output / fullscreen</Text></Text>
+            </Box>
+
+            <Box marginBottom={1} flexDirection="column">
+                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">VIEWS</Text></Box>
+                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  List {"\u2192"} Split {"\u2192"} Fullscreen</Text></Text>
+                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Fullscreen {"\u2192"} Split {"\u2192"} List</Text></Text>
             </Box>
 
             <Box marginBottom={1} flexDirection="column">
                 <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">ACTIONS</Text></Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  /</Text><Text dimColor>      Filter tasks</Text></Text></Box>
+                    <Box width={24}><Text><Text color="white" bold>  /</Text><Text dimColor>      Filter by text</Text></Text></Box>
+                    <Text><Text color="white" bold>  F</Text><Text dimColor>  Filter by status</Text></Text>
+                </Box>
+                <Box>
+                    <Box width={24}><Text><Text color="white" bold>  1</Text><Text dimColor>/</Text><Text color="white" bold>2</Text><Text dimColor>    Pin to output pane</Text></Text></Box>
                     <Text><Text color="white" bold>  0</Text><Text dimColor>  Clear pins</Text></Text>
                 </Box>
-                <Text><Text color="white" bold>  1</Text><Text dimColor>/</Text><Text color="white" bold>2</Text><Text dimColor>    Pin to output pane</Text></Text>
-                <Text><Text color="white" bold>  r</Text><Text dimColor>      Rerun (when done)</Text></Text>
+                <Box>
+                    <Box width={24}><Text><Text color="white" bold>  r</Text><Text dimColor>      Rerun all (done)</Text></Text></Box>
+                    <Text><Text color="white" bold>  R</Text><Text dimColor>  Retry failed task</Text></Text>
+                </Box>
             </Box>
 
             <Box marginBottom={1} flexDirection="column">
@@ -462,10 +581,32 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
         />
     );
 
-    // ── Horizontal layout (side by side) ────────────────────────────
+    // ── FULLSCREEN OUTPUT VIEW ──────────────────────────────────────
 
-    if (isHorizontal) {
-        const taskListWidth = Math.floor(columns * 0.6);
+    if (state.viewMode === "fullscreen") {
+        return (
+            <Box flexDirection="column" height={rows} width={columns}>
+                <Box flexGrow={1}>
+                    <OutputPanel
+                        duration={outputTask?.duration ?? outputTask?.elapsed}
+                        focused
+                        output={outputContent}
+                        scrollRef={outputScrollRef}
+                        status={outputTask?.status}
+                        taskId={outputTaskId}
+                    />
+                </Box>
+                {footer}
+                {quitDialog}
+                {helpPopup}
+            </Box>
+        );
+    }
+
+    // ── SPLIT VIEW ──────────────────────────────────────────────────
+
+    if (state.viewMode === "split") {
+        const taskListWidth = Math.floor(columns * 0.4);
 
         return (
             <Box flexDirection="column" height={rows} width={columns}>
@@ -476,20 +617,20 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                             filterText={state.filterText}
                             focused={state.focusedPanel === "tasks"}
                             headerStatus={headerStatus}
-                            parallelSlots={parallelSlots}
                             pinnedTaskIds={state.pinnedTaskIds}
                             rows={filteredRows}
-                            scrollOffset={listScrollOffset}
+                            scrollRef={listScrollRef}
                             selectedIndex={state.selectedIndex}
                             title={headerTitle}
-                            viewportHeight={listViewportHeight}
                         />
                     </Box>
                     <Box flexGrow={1}>
                         <OutputPanel
+                            duration={outputTask?.duration ?? outputTask?.elapsed}
                             focused={state.focusedPanel === "output"}
                             output={outputContent}
                             scrollRef={outputScrollRef}
+                            showFullscreenHint
                             status={outputTask?.status}
                             taskId={outputTaskId}
                         />
@@ -502,34 +643,21 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
         );
     }
 
-    // ── Vertical layout (stacked) ───────────────────────────────────
-
-    const taskListHeight = Math.floor((rows * 2) / 5);
+    // ── LIST VIEW (default, full width) ─────────────────────────────
 
     return (
         <Box flexDirection="column" height={rows} width={columns}>
-            <Box height={taskListHeight}>
+            <Box flexGrow={1}>
                 <TaskListPanel
                     filterActive={state.filterActive}
                     filterText={state.filterText}
-                    focused={state.focusedPanel === "tasks"}
+                    focused
                     headerStatus={headerStatus}
-                    parallelSlots={parallelSlots}
                     pinnedTaskIds={state.pinnedTaskIds}
                     rows={filteredRows}
-                    scrollOffset={listScrollOffset}
+                    scrollRef={listScrollRef}
                     selectedIndex={state.selectedIndex}
                     title={headerTitle}
-                    viewportHeight={listViewportHeight}
-                />
-            </Box>
-            <Box flexGrow={1}>
-                <OutputPanel
-                    focused={state.focusedPanel === "output"}
-                    output={outputContent}
-                    scrollRef={outputScrollRef}
-                    status={outputTask?.status}
-                    taskId={outputTaskId}
                 />
             </Box>
             {footer}
