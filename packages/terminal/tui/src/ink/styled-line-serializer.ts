@@ -58,167 +58,107 @@ export const styledLineToString = (line: StyledLine): string => {
         return "";
     }
 
-    const parts: string[] = [];
+    // Direct indexed access — avoids iterator object allocation per character.
+    // Single getSpan() call per character, all properties derived from the span.
+    let result = "";
     let prevFlags = 0;
     let prevFg: string | undefined;
     let prevBg: string | undefined;
     let prevLink: string | undefined;
     let hasActiveStyles = false;
 
-    for (const char of line) {
-        const { bgColor, fgColor, formatFlags, link, value } = char;
-        const flags = formatFlags & 0x7f; // strip FULL_WIDTH_MASK
+    // Walk spans directly instead of per-character iteration.
+    // This is O(spans) not O(characters) for the style-diff logic.
+    let charIdx = 0;
+    const spans = line.getSpans();
 
-        // Compute style diff
+    for (const span of spans) {
+        const spanFlags = span.formatFlags & 0x7f; // strip FULL_WIDTH_MASK
+        const fgColor = span.fgColor;
+        const bgColor = span.bgColor;
+        const link = span.link;
+        const flags = spanFlags;
+
+        // Emit style diff once per span (not per character)
         if (flags !== prevFlags || fgColor !== prevFg || bgColor !== prevBg || link !== prevLink) {
-            const params: number[] = [];
-
-            // Handle link changes. Links prefixed with "ST:" use the ST
-            // terminator (\x1B\\); others use BEL (\x07).
+            // Handle link changes
             if (link !== prevLink) {
                 if (prevLink) {
-                    const prevUseST = prevLink.startsWith("ST:");
-
-                    parts.push(prevUseST ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007");
+                    result += prevLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
                 }
 
                 if (link) {
                     const useST = link.startsWith("ST:");
-                    const url = useST ? link.slice(3) : link;
-                    const terminator = useST ? "\u001B\\" : "\u0007";
 
-                    parts.push(`\u001B]8;;${url}${terminator}`);
+                    result += `\u001B]8;;${useST ? link.slice(3) : link}${useST ? "\u001B\\" : "\u0007"}`;
                 }
             }
 
-            // Emit each style change as its own SGR sequence.
-            // Bold/dim resets first (since SGR 22 affects both), then new
-            // format flags, then colors. This matches chalk's common nesting
-            // pattern of format(color(text)).
-            {
-                // Bold and dim share SGR 22 for reset — handle first
-                const prevBoldDim = prevFlags & (BOLD_MASK | DIM_MASK);
-                const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
+            // Bold/dim (share SGR 22 reset)
+            const prevBoldDim = prevFlags & (BOLD_MASK | DIM_MASK);
+            const newBoldDim = flags & (BOLD_MASK | DIM_MASK);
 
-                if (prevBoldDim !== newBoldDim) {
-                    const removingBold = (prevFlags & BOLD_MASK) && !(flags & BOLD_MASK);
-                    const removingDim = (prevFlags & DIM_MASK) && !(flags & DIM_MASK);
+            if (prevBoldDim !== newBoldDim) {
+                const removingBold = (prevFlags & BOLD_MASK) && !(flags & BOLD_MASK);
+                const removingDim = (prevFlags & DIM_MASK) && !(flags & DIM_MASK);
 
-                    if (removingBold || removingDim) {
-                        parts.push(sgr([SGR_NO_BOLD])); // resets both bold and dim
-                    }
-
-                    // Re-apply what's (still) active
-                    if (flags & BOLD_MASK && (!(prevFlags & BOLD_MASK) || removingDim)) {
-                        parts.push(sgr([SGR_BOLD]));
-                    }
-
-                    if (flags & DIM_MASK && (!(prevFlags & DIM_MASK) || removingBold)) {
-                        parts.push(sgr([SGR_DIM]));
-                    }
+                if (removingBold || removingDim) {
+                    result += sgr([SGR_NO_BOLD]);
                 }
 
-                if ((flags & ITALIC_MASK) && !(prevFlags & ITALIC_MASK)) {
-                    parts.push(sgr([SGR_ITALIC]));
-                } else if (!(flags & ITALIC_MASK) && (prevFlags & ITALIC_MASK)) {
-                    parts.push(sgr([SGR_NO_ITALIC]));
+                if (flags & BOLD_MASK && (!(prevFlags & BOLD_MASK) || removingDim)) {
+                    result += sgr([SGR_BOLD]);
                 }
 
-                if ((flags & UNDERLINE_MASK) && !(prevFlags & UNDERLINE_MASK)) {
-                    parts.push(sgr([SGR_UNDERLINE]));
-                } else if (!(flags & UNDERLINE_MASK) && (prevFlags & UNDERLINE_MASK)) {
-                    parts.push(sgr([SGR_NO_UNDERLINE]));
-                }
-
-                if ((flags & INVERSE_MASK) && !(prevFlags & INVERSE_MASK)) {
-                    parts.push(sgr([SGR_INVERSE]));
-                } else if (!(flags & INVERSE_MASK) && (prevFlags & INVERSE_MASK)) {
-                    parts.push(sgr([SGR_NO_INVERSE]));
-                }
-
-                if ((flags & HIDDEN_MASK) && !(prevFlags & HIDDEN_MASK)) {
-                    parts.push(sgr([SGR_HIDDEN]));
-                } else if (!(flags & HIDDEN_MASK) && (prevFlags & HIDDEN_MASK)) {
-                    parts.push(sgr([SGR_NO_HIDDEN]));
-                }
-
-                if ((flags & STRIKETHROUGH_MASK) && !(prevFlags & STRIKETHROUGH_MASK)) {
-                    parts.push(sgr([SGR_STRIKETHROUGH]));
-                } else if (!(flags & STRIKETHROUGH_MASK) && (prevFlags & STRIKETHROUGH_MASK)) {
-                    parts.push(sgr([SGR_NO_STRIKETHROUGH]));
-                }
-
-                // Colors after format flags
-                if (fgColor !== prevFg) {
-                    if (fgColor) {
-                        parts.push(sgr(colorToSgrParams(fgColor, true)));
-                    } else {
-                        parts.push(sgr([SGR_FG_DEFAULT]));
-                    }
-                }
-
-                if (bgColor !== prevBg) {
-                    if (bgColor) {
-                        parts.push(sgr(colorToSgrParams(bgColor, false)));
-                    } else {
-                        parts.push(sgr([SGR_BG_DEFAULT]));
-                    }
+                if (flags & DIM_MASK && (!(prevFlags & DIM_MASK) || removingBold)) {
+                    result += sgr([SGR_DIM]);
                 }
             }
+
+            if ((flags & ITALIC_MASK) && !(prevFlags & ITALIC_MASK)) { result += sgr([SGR_ITALIC]); }
+            else if (!(flags & ITALIC_MASK) && (prevFlags & ITALIC_MASK)) { result += sgr([SGR_NO_ITALIC]); }
+
+            if ((flags & UNDERLINE_MASK) && !(prevFlags & UNDERLINE_MASK)) { result += sgr([SGR_UNDERLINE]); }
+            else if (!(flags & UNDERLINE_MASK) && (prevFlags & UNDERLINE_MASK)) { result += sgr([SGR_NO_UNDERLINE]); }
+
+            if ((flags & INVERSE_MASK) && !(prevFlags & INVERSE_MASK)) { result += sgr([SGR_INVERSE]); }
+            else if (!(flags & INVERSE_MASK) && (prevFlags & INVERSE_MASK)) { result += sgr([SGR_NO_INVERSE]); }
+
+            if ((flags & HIDDEN_MASK) && !(prevFlags & HIDDEN_MASK)) { result += sgr([SGR_HIDDEN]); }
+            else if (!(flags & HIDDEN_MASK) && (prevFlags & HIDDEN_MASK)) { result += sgr([SGR_NO_HIDDEN]); }
+
+            if ((flags & STRIKETHROUGH_MASK) && !(prevFlags & STRIKETHROUGH_MASK)) { result += sgr([SGR_STRIKETHROUGH]); }
+            else if (!(flags & STRIKETHROUGH_MASK) && (prevFlags & STRIKETHROUGH_MASK)) { result += sgr([SGR_NO_STRIKETHROUGH]); }
+
+            if (fgColor !== prevFg) { result += fgColor ? sgr(colorToSgrParams(fgColor, true)) : sgr([SGR_FG_DEFAULT]); }
+            if (bgColor !== prevBg) { result += bgColor ? sgr(colorToSgrParams(bgColor, false)) : sgr([SGR_BG_DEFAULT]); }
 
             hasActiveStyles = flags !== 0 || fgColor !== undefined || bgColor !== undefined;
-
             prevFlags = flags;
             prevFg = fgColor;
             prevBg = bgColor;
             prevLink = link;
         }
 
-        parts.push(value);
+        result += line.getTextRange(charIdx, charIdx + span.length);
+        charIdx += span.length;
     }
 
-    // Close any remaining styles: innermost (format flags) first, then
-    // outermost (colors) — reverse of opening order, matching chalk.
+    // Close remaining styles
     if (hasActiveStyles) {
-        if (prevFlags & (BOLD_MASK | DIM_MASK)) {
-            parts.push(sgr([SGR_NO_BOLD]));
-        }
-
-        if (prevFlags & ITALIC_MASK) {
-            parts.push(sgr([SGR_NO_ITALIC]));
-        }
-
-        if (prevFlags & UNDERLINE_MASK) {
-            parts.push(sgr([SGR_NO_UNDERLINE]));
-        }
-
-        if (prevFlags & INVERSE_MASK) {
-            parts.push(sgr([SGR_NO_INVERSE]));
-        }
-
-        if (prevFlags & HIDDEN_MASK) {
-            parts.push(sgr([SGR_NO_HIDDEN]));
-        }
-
-        if (prevFlags & STRIKETHROUGH_MASK) {
-            parts.push(sgr([SGR_NO_STRIKETHROUGH]));
-        }
-
-        if (prevFg !== undefined) {
-            parts.push(sgr([SGR_FG_DEFAULT]));
-        }
-
-        if (prevBg !== undefined) {
-            parts.push(sgr([SGR_BG_DEFAULT]));
-        }
+        if (prevFlags & (BOLD_MASK | DIM_MASK)) { result += sgr([SGR_NO_BOLD]); }
+        if (prevFlags & ITALIC_MASK) { result += sgr([SGR_NO_ITALIC]); }
+        if (prevFlags & UNDERLINE_MASK) { result += sgr([SGR_NO_UNDERLINE]); }
+        if (prevFlags & INVERSE_MASK) { result += sgr([SGR_NO_INVERSE]); }
+        if (prevFlags & HIDDEN_MASK) { result += sgr([SGR_NO_HIDDEN]); }
+        if (prevFlags & STRIKETHROUGH_MASK) { result += sgr([SGR_NO_STRIKETHROUGH]); }
+        if (prevFg !== undefined) { result += sgr([SGR_FG_DEFAULT]); }
+        if (prevBg !== undefined) { result += sgr([SGR_BG_DEFAULT]); }
     }
 
-    // Close any remaining link
     if (prevLink) {
-        const useST = prevLink.startsWith("ST:");
-
-        parts.push(useST ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007");
+        result += prevLink.startsWith("ST:") ? "\u001B]8;;\u001B\\" : "\u001B]8;;\u0007";
     }
 
-    return parts.join("");
+    return result;
 };
