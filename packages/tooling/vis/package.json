@@ -76,6 +76,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@visulima/ansi": "workspace:*",
         "@visulima/cerebro": "3.0.0-alpha.9",
         "@visulima/colorize": "2.0.0-alpha.7",
         "@visulima/find-ai-runner": "1.0.0-alpha.2",

@@ -9051,6 +9051,9 @@ importers:
 
   packages/tooling/vis:
     dependencies:
+      '@visulima/ansi':
+        specifier: workspace:*
+        version: link:../../terminal/ansi
       '@visulima/cerebro':
         specifier: 3.0.0-alpha.9
         version: link:../../terminal/cerebro

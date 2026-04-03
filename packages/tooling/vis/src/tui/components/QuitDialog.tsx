@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Dialog, Text, useApp, useInput } from "@visulima/tui";
+import { Dialog, Text, useApp, useInput } from "@visulima/tui";
 
 interface QuitDialogProps {
     /** Countdown seconds. 0 = no auto-exit. */
