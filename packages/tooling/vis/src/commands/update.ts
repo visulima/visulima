@@ -39,7 +39,16 @@ type FilterOption = string | string[] | undefined;
 
 const buildCatalogCheckOptions = (
     options: Record<string, unknown>,
-    configDefaults: { exclude?: string[]; format?: string; include?: string[]; install?: boolean; prerelease?: boolean; security?: boolean; target?: string },
+    configDefaults: {
+        exclude?: string[];
+        format?: string;
+        ignore?: string[];
+        include?: string[];
+        install?: boolean;
+        prerelease?: boolean;
+        security?: boolean;
+        target?: string;
+    },
     argument: string[],
 ): CatalogCheckOptions => {
     const target = (options.target as string) ?? configDefaults.target ?? "latest";
@@ -50,6 +59,7 @@ const buildCatalogCheckOptions = (
 
     return {
         exclude: [...toFilterArray(options.exclude as FilterOption), ...toFilterArray(configDefaults.exclude)],
+        ignore: toFilterArray(configDefaults.ignore),
         include: [...toFilterArray(options.include as FilterOption), ...toFilterArray(configDefaults.include), ...argument],
         includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
         security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
@@ -59,7 +69,7 @@ const buildCatalogCheckOptions = (
 
 const writeFormattedOutput = (entries: OutdatedEntry[], failed: string[], format: string, logger: Console): void => {
     if (format === "json") {
-        process.stdout.write(`${formatOutdatedJson({ failed, outdated: entries })}\n`);
+        process.stdout.write(`${formatOutdatedJson({ failed, ignored: [], outdated: entries })}\n`);
     } else if (format === "minimal") {
         process.stdout.write(`${formatOutdatedMinimal(entries)}\n`);
     } else {
@@ -172,7 +182,7 @@ const executeCatalogUpdate = async (
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
     }
 
-    const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot);
+    const { failed, ignored, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot);
 
     if (progressInstance) {
         progressInstance.clear();
@@ -181,6 +191,10 @@ const executeCatalogUpdate = async (
 
     if (failed.length > 0) {
         logger.warn(`Failed to fetch: ${failed.join(", ")}`);
+    }
+
+    if (ignored.length > 0) {
+        logger.info(`Skipped ${String(ignored.length)} ignored package${ignored.length === 1 ? "" : "s"}: ${ignored.join(", ")}`);
     }
 
     if (outdated.length === 0) {
@@ -289,7 +303,7 @@ const executeCatalogUpdate = async (
     // Static output mode (non-TTY, CI, json, minimal)
     if (isDryRun) {
         if (format === "json") {
-            const output: Record<string, unknown> = { failed, outdated };
+            const output: Record<string, unknown> = { failed, ignored, outdated };
 
             if (aiResult) {
                 output.aiAnalysis = aiResult;

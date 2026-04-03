@@ -4,7 +4,7 @@ import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 
-import { resolveWorkspacePatterns } from "./workspace";
+import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
 
@@ -74,6 +74,7 @@ interface OutdatedEntry {
 
 interface CatalogCheckOptions {
     exclude: string[];
+    ignore: string[];
     include: string[];
     includePrerelease: boolean;
     security?: boolean;
@@ -431,7 +432,7 @@ const filterExternalDeps = (deps: Record<string, string>, internalNames: Set<str
             continue;
         }
 
-        if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:")) {
+        if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range.startsWith("catalog:")) {
             continue;
         }
 
@@ -503,6 +504,15 @@ const readPackageJsonDeps = (workspaceRoot: string, options?: ReadCatalogOptions
 
         if (patterns) {
             workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, patterns);
+        }
+    }
+
+    // Also check pnpm-workspace.yaml for workspace patterns
+    if (workspaceDirectories.length === 0) {
+        const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
+
+        if (pnpmPatterns) {
+            workspaceDirectories = resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
         }
     }
 
@@ -587,20 +597,27 @@ const hasCatalogs = (workspaceRoot: string, packageManager?: string): boolean =>
 };
 
 const readCatalogs = (workspaceRoot: string, packageManager?: string, options?: ReadCatalogOptions): Map<string, Map<string, string>> => {
+    let catalogs: Map<string, Map<string, string>>;
+
     if (packageManager === "bun") {
-        const catalogs = readBunCatalogs(workspaceRoot);
-
-        return catalogs.size > 0 ? catalogs : readPackageJsonDeps(workspaceRoot, options);
+        catalogs = readBunCatalogs(workspaceRoot);
+    } else if (packageManager === "npm" || packageManager === "yarn") {
+        catalogs = new Map();
+    } else {
+        // pnpm
+        catalogs = readPnpmCatalogs(workspaceRoot);
     }
 
-    if (packageManager === "npm" || packageManager === "yarn") {
-        return readPackageJsonDeps(workspaceRoot, options);
+    // Always merge in non-catalog package.json deps (direct version ranges)
+    const pkgDeps = readPackageJsonDeps(workspaceRoot, options);
+
+    for (const [key, deps] of pkgDeps) {
+        if (!catalogs.has(key)) {
+            catalogs.set(key, deps);
+        }
     }
 
-    // pnpm: try catalogs first, fall back to package.json deps
-    const catalogs = readPnpmCatalogs(workspaceRoot);
-
-    return catalogs.size > 0 ? catalogs : readPackageJsonDeps(workspaceRoot, options);
+    return catalogs;
 };
 
 // --- .npmrc support ---
@@ -962,6 +979,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
 
 interface CheckOutdatedResult {
     failed: string[];
+    ignored: string[];
     outdated: OutdatedEntry[];
 }
 
@@ -970,13 +988,20 @@ interface CheckOutdatedResult {
 const collectEntries = (
     catalogs: Map<string, Map<string, string>>,
     options: CatalogCheckOptions,
-): { catalogName: string; packageName: string; range: string }[] => {
+): { entries: { catalogName: string; packageName: string; range: string }[]; ignored: string[] } => {
     const entries: { catalogName: string; packageName: string; range: string }[] = [];
+    const ignoredSet = new Set<string>();
 
     for (const [catalogName, deps] of catalogs) {
         for (const [packageName, range] of deps) {
             // Skip non-version protocols
             if (range.startsWith("workspace:") || range.startsWith("file:") || range.startsWith("link:") || range === "*") {
+                continue;
+            }
+
+            // Check ignore list before other filters
+            if (options.ignore.length > 0 && options.ignore.some((p) => matchesPattern(packageName, p))) {
+                ignoredSet.add(packageName);
                 continue;
             }
 
@@ -986,7 +1011,7 @@ const collectEntries = (
         }
     }
 
-    return entries;
+    return { entries, ignored: [...ignoredSet] };
 };
 
 const fetchVersionsBatched = async (
@@ -1127,7 +1152,7 @@ const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: C
     }
 
     parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
-    parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")}`);
+    parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")},ig=${options.ignore.join(",")}`);
 
     let hash = 5381;
     const str = parts.join("|");
@@ -1197,7 +1222,7 @@ const checkOutdated = async (
         }
     }
 
-    const entries = collectEntries(catalogs, options);
+    const { entries, ignored } = collectEntries(catalogs, options);
     const uniquePackages = [...new Set(entries.map((entry) => entry.packageName))];
 
     const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
@@ -1207,7 +1232,7 @@ const checkOutdated = async (
         await enrichWithSecurity(outdated, entries);
     }
 
-    const result = { failed, outdated };
+    const result = { failed, ignored, outdated };
 
     if (workspaceRoot) {
         writeOutdatedCache(workspaceRoot, hash, result);
@@ -1264,20 +1289,25 @@ const createBackup = (workspaceRoot: string, packageManager?: string, updates?: 
         return createPackageJsonBackup(workspaceRoot, updates);
     }
 
+    let catalogBackupPath: string | undefined;
+
     const filePath = getCatalogFilePath(workspaceRoot, packageManager);
 
-    if (!isAccessibleSync(filePath)) {
-        return undefined;
+    if (isAccessibleSync(filePath)) {
+        catalogBackupPath = `${filePath}.bak`;
+        writeFileSync(catalogBackupPath, readFileSync(filePath));
     }
 
-    const backupPath = `${filePath}.bak`;
+    // Also backup package.json files that have direct (non-catalog) deps
+    if (updates) {
+        const pkgJsonUpdates = updates.filter((u) => parseCompositeCatalogName(u.catalogName));
 
-    // Always overwrite existing backup with latest state
-    const content = readFileSync(filePath);
+        if (pkgJsonUpdates.length > 0) {
+            createPackageJsonBackup(workspaceRoot, pkgJsonUpdates);
+        }
+    }
 
-    writeFileSync(backupPath, content);
-
-    return backupPath;
+    return catalogBackupPath;
 };
 
 const restorePackageJsonBackup = (workspaceRoot: string): boolean => {
@@ -1600,12 +1630,32 @@ const applyCatalogUpdates = (workspaceRoot: string, updates: OutdatedEntry[], pa
         backupPath = createBackup(workspaceRoot, packageManager, updates);
     }
 
-    if (packageManager === "npm" || packageManager === "yarn") {
-        applyPackageJsonUpdates(workspaceRoot, updates);
-    } else if (packageManager === "bun") {
-        applyBunCatalogUpdates(workspaceRoot, updates);
-    } else {
-        applyPnpmCatalogUpdates(workspaceRoot, updates);
+    // Split updates into catalog entries and direct package.json entries
+    const catalogUpdates: OutdatedEntry[] = [];
+    const pkgJsonUpdates: OutdatedEntry[] = [];
+
+    for (const update of updates) {
+        if (parseCompositeCatalogName(update.catalogName)) {
+            pkgJsonUpdates.push(update);
+        } else {
+            catalogUpdates.push(update);
+        }
+    }
+
+    // Apply catalog updates via the appropriate provider
+    if (catalogUpdates.length > 0) {
+        if (packageManager === "npm" || packageManager === "yarn") {
+            applyPackageJsonUpdates(workspaceRoot, catalogUpdates);
+        } else if (packageManager === "bun") {
+            applyBunCatalogUpdates(workspaceRoot, catalogUpdates);
+        } else {
+            applyPnpmCatalogUpdates(workspaceRoot, catalogUpdates);
+        }
+    }
+
+    // Apply direct package.json version updates
+    if (pkgJsonUpdates.length > 0) {
+        applyPackageJsonUpdates(workspaceRoot, pkgJsonUpdates);
     }
 
     return backupPath;

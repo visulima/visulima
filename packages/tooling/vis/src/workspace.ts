@@ -145,6 +145,13 @@ interface VisConfig {
     update?: {
         exclude?: string[];
         format?: "json" | "minimal" | "table";
+        /**
+         * Package names or glob patterns to permanently ignore during updates.
+         * Ignored packages are skipped and listed in the output so you know
+         * they were not checked.
+         * @example ["eslint", "@types/*"]
+         */
+        ignore?: string[];
         include?: string[];
         install?: boolean;
         prerelease?: boolean;
@@ -415,4 +422,4 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
 };
 
 export type { PackageJson, StagedConfig, VisConfig };
-export { buildProjectGraph, discoverWorkspace, resolveWorkspacePatterns };
+export { buildProjectGraph, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns };
