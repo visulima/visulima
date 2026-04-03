@@ -77,8 +77,8 @@ const stackTraceViewer = async (
             const code = highlighter.codeToHtml(sourceCodeFrame, {
                 lang,
                 themes: {
-                    dark: "github-dark-default",
-                    light: "github-light",
+                    dark: "min-dark",
+                    light: "min-light",
                 },
             });
 
