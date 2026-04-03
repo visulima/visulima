@@ -798,6 +798,88 @@ catalogs:
 
         expect(readCatalogs(temporaryDirectory).size).toBe(0);
     });
+
+    it("should merge pnpm catalogs with non-catalog package.json deps", () => {
+        expect.assertions(5);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        // pnpm-workspace.yaml with catalog and workspace packages
+        writeFileSync(
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
+            `packages:
+  - packages/*
+catalog:
+  react: ^18.0.0
+`,
+        );
+
+        // Root package.json with a direct dependency (not using catalog:)
+        writeFileSync(
+            join(temporaryDirectory, "package.json"),
+            JSON.stringify({
+                dependencies: {
+                    lodash: "^4.17.0",
+                    react: "catalog:default",
+                },
+                name: "root",
+            }),
+        );
+
+        // Workspace package with a direct dependency
+        mkdirSync(join(temporaryDirectory, "packages", "app"), { recursive: true });
+        writeFileSync(
+            join(temporaryDirectory, "packages", "app", "package.json"),
+            JSON.stringify({
+                dependencies: {
+                    axios: "^1.0.0",
+                    react: "catalog:default",
+                },
+                name: "@myorg/app",
+            }),
+        );
+
+        const catalogs = readCatalogs(temporaryDirectory, "pnpm");
+
+        // Should have catalog entry + package.json dep entries
+        expect(catalogs.get("default")?.get("react")).toBe("^18.0.0");
+        // Root package.json dep (not using catalog: reference)
+        expect(catalogs.get(".:dependencies")?.get("lodash")).toBe("^4.17.0");
+        // catalog: references should be filtered out from package.json scanning
+        expect(catalogs.get(".:dependencies")?.has("react")).toBe(false);
+        // Workspace package dep
+        expect(catalogs.get("packages/app:dependencies")?.get("axios")).toBe("^1.0.0");
+        expect(catalogs.get("packages/app:dependencies")?.has("react")).toBe(false);
+    });
+
+    it("should skip catalog: references in package.json deps", () => {
+        expect.assertions(2);
+
+        const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
+
+        writeFileSync(
+            join(temporaryDirectory, "pnpm-workspace.yaml"),
+            `catalog:
+  react: ^18.0.0
+`,
+        );
+
+        writeFileSync(
+            join(temporaryDirectory, "package.json"),
+            JSON.stringify({
+                dependencies: {
+                    react: "catalog:default",
+                },
+                name: "root",
+            }),
+        );
+
+        const catalogs = readCatalogs(temporaryDirectory, "pnpm");
+
+        // Only the catalog entry, no package.json entry for react
+        expect(catalogs.get("default")?.get("react")).toBe("^18.0.0");
+        expect(catalogs.has(".:dependencies")).toBe(false);
+    });
 });
 
 // --- checkOutdated ---
@@ -836,7 +918,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -857,7 +939,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -881,7 +963,7 @@ describe("checkOutdated", () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -907,7 +989,7 @@ describe("checkOutdated", () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], include: ["react"], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: ["react"], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -932,12 +1014,84 @@ describe("checkOutdated", () => {
                 ]),
             ],
         ]);
-        const options: CatalogCheckOptions = { exclude: ["react*"], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: ["react*"], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         // Only vue should be checked (react excluded)
         expect(result.outdated).toHaveLength(1);
         expect(result.outdated[0]?.packageName).toBe("vue");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should respect ignore list and return ignored package names", async () => {
+        expect.assertions(4);
+
+        mockFetch({
+            vue: { latest: "4.0.0", versions: ["3.0.0", "4.0.0"] },
+        });
+
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["react", "^18.0.0"],
+                    ["vue", "^3.0.0"],
+                ]),
+            ],
+        ]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["react"], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        // react is ignored, only vue is checked
+        expect(result.outdated).toHaveLength(1);
+        expect(result.outdated[0]?.packageName).toBe("vue");
+        expect(result.ignored).toHaveLength(1);
+        expect(result.ignored[0]).toBe("react");
+
+        vi.restoreAllMocks();
+    });
+
+    it("should support glob patterns in ignore list", async () => {
+        expect.assertions(3);
+
+        mockFetch({
+            vue: { latest: "4.0.0", versions: ["3.0.0", "4.0.0"] },
+        });
+
+        const catalogs = new Map([
+            [
+                "default",
+                new Map([
+                    ["@types/node", "^20.0.0"],
+                    ["@types/react", "^18.0.0"],
+                    ["vue", "^3.0.0"],
+                ]),
+            ],
+        ]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["@types/*"], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.ignored).toHaveLength(2);
+        expect(result.ignored).toEqual(expect.arrayContaining(["@types/node", "@types/react"]));
+
+        vi.restoreAllMocks();
+    });
+
+    it("should return empty ignored array when no ignore patterns match", async () => {
+        expect.assertions(2);
+
+        mockFetch({
+            react: { latest: "19.0.0", versions: ["18.2.0", "19.0.0"] },
+        });
+
+        const catalogs = new Map([["default", new Map([["react", "^18.2.0"]])]]);
+        const options: CatalogCheckOptions = { exclude: [], ignore: ["vue"], include: [], includePrerelease: false, target: "latest" };
+        const result = await checkOutdated(catalogs, options);
+
+        expect(result.outdated).toHaveLength(1);
+        expect(result.ignored).toHaveLength(0);
 
         vi.restoreAllMocks();
     });
@@ -950,7 +1104,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(0);
@@ -970,7 +1124,7 @@ describe("checkOutdated", () => {
             ["default", new Map([["react", "^18.0.0"]])],
             ["dev", new Map([["react", "^18.0.0"]])],
         ]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const result = await checkOutdated(catalogs, options);
 
         // Two outdated entries (one per catalog) but fetch called once
@@ -988,7 +1142,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "minor" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "minor" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1006,7 +1160,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "patch" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "patch" };
         const result = await checkOutdated(catalogs, options);
 
         expect(result.outdated).toHaveLength(1);
@@ -1024,7 +1178,7 @@ describe("checkOutdated", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^18.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const onProgress = vi.fn<(current: number, total: number) => void>();
 
         await checkOutdated(catalogs, options, undefined, onProgress);
@@ -2365,7 +2519,7 @@ describe("checkOutdated with npmrcConfig", () => {
         });
 
         const catalogs = new Map([["default", new Map([["@myorg/utils", "^1.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
         const npmrcConfig: NpmrcConfig = {
             authTokens: new Map(),
             defaultRegistry: "https://registry.npmjs.org",
@@ -2396,7 +2550,7 @@ describe("checkOutdated with npmrcConfig", () => {
         });
 
         const catalogs = new Map([["default", new Map([["react", "^1.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, target: "latest" };
 
         await checkOutdated(catalogs, options);
 
@@ -2676,7 +2830,7 @@ describe("checkOutdated with security", () => {
         });
 
         const catalogs = new Map([["default", new Map([["lodash", "^4.17.20"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, security: true, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, security: true, target: "latest" };
         const { outdated } = await checkOutdated(catalogs, options);
 
         expect(outdated).toHaveLength(1);
@@ -2705,7 +2859,7 @@ describe("checkOutdated with security", () => {
         );
 
         const catalogs = new Map([["default", new Map([["react", "^1.0.0"]])]]);
-        const options: CatalogCheckOptions = { exclude: [], include: [], includePrerelease: false, security: false, target: "latest" };
+        const options: CatalogCheckOptions = { exclude: [], ignore: [], include: [], includePrerelease: false, security: false, target: "latest" };
         const { outdated } = await checkOutdated(catalogs, options);
 
         expect(outdated).toHaveLength(1);

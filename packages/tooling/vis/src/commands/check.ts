@@ -91,6 +91,7 @@ const check: Command = {
 
         const checkOptions: CatalogCheckOptions = {
             exclude: [...toFilterArray(options.exclude as string | string[] | undefined), ...toFilterArray(configDefaults.exclude)],
+            ignore: toFilterArray(configDefaults.ignore),
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...argument],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
             security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
