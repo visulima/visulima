@@ -148,6 +148,36 @@ export type Styles = {
     readonly borderTopDimColor?: boolean;
 
     /**
+     * Text to display embedded in the top border line.
+     * Rendered as: `┌─ title ─────────┐`
+     */
+    readonly borderTopTitle?: string;
+
+    /**
+     * Alignment of the top border title.
+     * @default "left"
+     */
+    readonly borderTopTitleAlignment?: "center" | "left" | "right";
+
+    /**
+     * Text to display on the right side of the top border line.
+     * Rendered as: `┌─ title ──── rightTitle ─┐`
+     */
+    readonly borderTopRightTitle?: string;
+
+    /**
+     * Text to display embedded in the bottom border line.
+     * Rendered as: `└─ title ─────────┘`
+     */
+    readonly borderBottomTitle?: string;
+
+    /**
+     * Alignment of the bottom border title.
+     * @default "left"
+     */
+    readonly borderBottomTitleAlignment?: "center" | "left" | "right";
+
+    /**
      * Bottom offset for positioned elements.
      */
     readonly bottom?: number | string;

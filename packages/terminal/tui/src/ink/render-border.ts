@@ -18,6 +18,68 @@ const stylePiece = (segment: string, fg?: string, bg?: string, dim?: boolean): s
     return styled;
 };
 
+/**
+ * Embed title text into a border line.
+ *
+ * @param borderChar - The horizontal border character (e.g., "─")
+ * @param contentWidth - Available width between corners
+ * @param title - Text to embed (left/center aligned)
+ * @param titleAlignment - "left" | "center" | "right"
+ * @param rightTitle - Optional text on the right side
+ * @param borderFg - Border foreground color
+ * @param borderBg - Border background color
+ * @param borderDim - Whether to dim the border
+ * @returns The styled border string (without corner characters)
+ */
+const buildBorderWithTitle = (
+    borderChar: string,
+    contentWidth: number,
+    title?: string,
+    titleAlignment?: "center" | "left" | "right",
+    rightTitle?: string,
+    borderFg?: string,
+    borderBg?: string,
+    borderDim?: boolean,
+): string => {
+    if (!title && !rightTitle) {
+        return stylePiece(borderChar.repeat(contentWidth), borderFg, borderBg, borderDim);
+    }
+
+    const leftTitle = title ? ` ${title} ` : "";
+    const right = rightTitle ? ` ${rightTitle} ` : "";
+    const leftLen = leftTitle.length;
+    const rightLen = right.length;
+    const alignment = titleAlignment ?? "left";
+
+    // If both titles together exceed width, just show as much as fits
+    if (leftLen + rightLen >= contentWidth) {
+        const truncated = (leftTitle + right).slice(0, contentWidth);
+
+        return truncated;
+    }
+
+    const middleWidth = contentWidth - leftLen - rightLen;
+
+    if (alignment === "left" || rightTitle) {
+        // Left-aligned title + fill + right title
+        return leftTitle + stylePiece(borderChar.repeat(middleWidth), borderFg, borderBg, borderDim) + right;
+    }
+
+    if (alignment === "right") {
+        const fillWidth = contentWidth - leftLen;
+
+        return stylePiece(borderChar.repeat(fillWidth), borderFg, borderBg, borderDim) + leftTitle;
+    }
+
+    // Center
+    const leftFill = Math.floor(middleWidth / 2);
+    const rightFill = middleWidth - leftFill;
+
+    return stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim)
+        + leftTitle
+        + stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim);
+};
+
 const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void => {
     if (node.style.borderStyle) {
         const width = node.yogaNode!.getComputedWidth();
@@ -46,9 +108,26 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
 
         const contentWidth = width - (showLeftBorder ? 1 : 0) - (showRightBorder ? 1 : 0);
 
-        let topBorder = showTopBorder ? (showLeftBorder ? box.topLeft : "") + box.top.repeat(contentWidth) + (showRightBorder ? box.topRight : "") : undefined;
+        // ── Top border (with optional titles) ──────────────────────
+        let topBorder: string | undefined;
 
-        topBorder &&= stylePiece(topBorder, topBorderColor, topBorderBackgroundColor, dimTopBorderColor);
+        if (showTopBorder) {
+            const topLeftCorner = showLeftBorder ? stylePiece(box.topLeft, topBorderColor, topBorderBackgroundColor, dimTopBorderColor) : "";
+            const topRightCorner = showRightBorder ? stylePiece(box.topRight, topBorderColor, topBorderBackgroundColor, dimTopBorderColor) : "";
+
+            const topContent = buildBorderWithTitle(
+                box.top,
+                contentWidth,
+                node.style.borderTopTitle,
+                node.style.borderTopTitleAlignment,
+                node.style.borderTopRightTitle,
+                topBorderColor,
+                topBorderBackgroundColor,
+                dimTopBorderColor,
+            );
+
+            topBorder = topLeftCorner + topContent + topRightCorner;
+        }
 
         let verticalBorderHeight = height;
 
@@ -76,11 +155,26 @@ const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void
             rightBorder = `${one}\n`.repeat(verticalBorderHeight);
         }
 
-        let bottomBorder = showBottomBorder
-            ? (showLeftBorder ? box.bottomLeft : "") + box.bottom.repeat(contentWidth) + (showRightBorder ? box.bottomRight : "")
-            : undefined;
+        // ── Bottom border (with optional title) ────────────────────
+        let bottomBorder: string | undefined;
 
-        bottomBorder &&= stylePiece(bottomBorder, bottomBorderColor, bottomBorderBackgroundColor, dimBottomBorderColor);
+        if (showBottomBorder) {
+            const bottomLeftCorner = showLeftBorder ? stylePiece(box.bottomLeft, bottomBorderColor, bottomBorderBackgroundColor, dimBottomBorderColor) : "";
+            const bottomRightCorner = showRightBorder ? stylePiece(box.bottomRight, bottomBorderColor, bottomBorderBackgroundColor, dimBottomBorderColor) : "";
+
+            const bottomContent = buildBorderWithTitle(
+                box.bottom,
+                contentWidth,
+                node.style.borderBottomTitle,
+                node.style.borderBottomTitleAlignment,
+                undefined,
+                bottomBorderColor,
+                bottomBorderBackgroundColor,
+                dimBottomBorderColor,
+            );
+
+            bottomBorder = bottomLeftCorner + bottomContent + bottomRightCorner;
+        }
 
         const offsetY = showTopBorder ? 1 : 0;
 
