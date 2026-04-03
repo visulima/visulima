@@ -273,9 +273,10 @@ describe("text", () => {
         const input = "\u009D8;;https://example.com\u0007link\u009D8;;\u0007";
         const output = renderText(input);
 
-        expect(output).toContain("\u009D8;;https://example.com");
-        expect(output).toContain("\u009D8;;\u0007");
-        expect(output).toBe(input);
+        // The new pipeline normalizes C1 OSC (\u009D) to ESC-based (\u001B])
+        expect(output).toContain("\u001B]8;;https://example.com");
+        expect(output).toContain("\u001B]8;;\u0007");
+        expect(stripAnsi(output)).toBe("link");
     });
 
     it("preserve C1 OSC hyperlink sequences with ST terminator in text", () => {
@@ -284,9 +285,10 @@ describe("text", () => {
         const input = "\u009D8;;https://example.com\u001B\\link\u009D8;;\u001B\\";
         const output = renderText(input);
 
-        expect(output).toContain("\u009D8;;https://example.com");
+        // The new pipeline normalizes C1 OSC (\u009D) to ESC-based (\u001B])
+        expect(output).toContain("\u001B]8;;https://example.com");
         expect(output).toContain("\u001B\\");
-        expect(output).toBe(input);
+        expect(stripAnsi(output)).toBe("link");
     });
 
     it("preserve SGR sequences with colon parameters", () => {
@@ -294,7 +296,8 @@ describe("text", () => {
 
         const output = renderText("A\u001B[38:2::255:100:0mcolor\u001B[0mB");
 
-        expect(output).toContain("\u001B[38:2::255:100:0m");
+        // The new pipeline normalizes colon-delimited SGR to semicolon-delimited
+        expect(output).toContain("\u001B[38;2;255;100;0m");
         expect(stripAnsi(output)).toBe("AcolorB");
     });
 

@@ -1,8 +1,7 @@
 /**
  * Columnar data structure for a single line of styled terminal text.
  *
- * Instead of one heap-allocated object per visible character (the StyledChar
- * model from @alcalzone/ansi-tokenize), StyledLine stores:
+ * Instead of one heap-allocated object per visible character, StyledLine stores:
  *
  * - `text: string` — concatenated raw character values
  * - `charData: Uint16Array` — per-character: 15-bit offset into text | 1-bit full-width flag

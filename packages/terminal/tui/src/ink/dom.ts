@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, import/exports-last, no-param-reassign, no-plusplus, unicorn/no-null, unicorn/prefer-dom-node-remove */
-import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import type { Node as YogaNode } from "yoga-layout";
 import Yoga from "yoga-layout";
 
 import measureText from "./measure-text";
 import type { OutputTransformer } from "./render-node-to-output";
+import type { StyledLine } from "./styled-line";
 import type ResizeObserver from "./resize-observer";
 import type { ScrollState } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
@@ -37,7 +37,7 @@ export type StickyHeader = {
     /** If true, natural 'lines' are already in background content. */
     isStuckOnly: boolean;
     /** Lines rendered in the natural (scrolling) position. */
-    lines: ReadonlyArray<ReadonlyArray<StyledChar>>;
+    lines: ReadonlyArray<StyledLine>;
     /** Natural row offset relative to content start. */
     naturalRow: number;
     /** Reference to the DOM node for this header. */
@@ -49,7 +49,7 @@ export type StickyHeader = {
     /** Content-relative start row. */
     startRow: number;
     /** Lines rendered in the stuck (pinned) position, if different. */
-    stuckLines?: ReadonlyArray<ReadonlyArray<StyledChar>>;
+    stuckLines?: ReadonlyArray<StyledLine>;
     /** Sticky type: top-pinned or bottom-pinned. */
     type?: "top" | "bottom";
     /** Stuck X position relative to region. */

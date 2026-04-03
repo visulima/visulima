@@ -17,7 +17,7 @@ describe("output-caches", () => {
         output.get();
 
         expect((output as unknown as { caches: OutputCaches }).caches).toBe(caches);
-        expect(caches.styledChars.size).toBeGreaterThan(0);
+        expect(caches.styledLines.size).toBeGreaterThan(0);
     });
 
     it("default caches are isolated per Output instance", () => {
@@ -53,7 +53,7 @@ describe("output-caches", () => {
         output1.get();
 
         const widthSizeAfterFirst = caches.widths.size;
-        const styledCharsSizeAfterFirst = caches.styledChars.size;
+        const styledLinesSizeAfterFirst = caches.styledLines.size;
 
         const output2 = new Output({
             caches,
@@ -65,7 +65,7 @@ describe("output-caches", () => {
         output2.get();
 
         expect(caches.widths.size).toBe(widthSizeAfterFirst);
-        expect(caches.styledChars.size).toBe(styledCharsSizeAfterFirst);
+        expect(caches.styledLines.size).toBe(styledLinesSizeAfterFirst);
     });
 
     it("reset clears frame operations before next render", () => {
@@ -88,75 +88,34 @@ describe("output-caches", () => {
         expect(next).not.toContain("before");
     });
 
-    it("getCharacterWidth fast-path avoids cache writes for printable ASCII and full-width chars", () => {
-        expect.assertions(4);
-
-        const caches = new OutputCaches();
-
-        const asciiWidth = caches.getCharacterWidth({
-            fullWidth: false,
-            styles: [],
-            type: "char",
-            value: "A",
-        });
-        const cjkWidth = caches.getCharacterWidth({
-            fullWidth: true,
-            styles: [],
-            type: "char",
-            value: "漢",
-        });
-
-        expect(asciiWidth).toBe(1);
-        expect(cjkWidth).toBe(2);
-        expect(caches.widths.has("A")).toBe(false);
-        expect(caches.widths.has("漢")).toBe(false);
-    });
-
-    it("getCharacterWidth falls back to string-width for non-ASCII narrow chars", () => {
+    it("getStyledLine returns a StyledLine for plain text", () => {
         expect.assertions(2);
 
         const caches = new OutputCaches();
+        const line = caches.getStyledLine("Hello");
 
-        const width = caches.getCharacterWidth({
-            fullWidth: false,
-            styles: [],
-            type: "char",
-            value: "é",
-        });
-
-        expect(width).toBe(1);
-        expect(caches.widths.has("é")).toBe(true);
+        expect(line.length).toBe(5);
+        expect(line.getText()).toBe("Hello");
     });
 
-    it("plain ASCII lines reuse StyledChar instances", () => {
+    it("getStyledLine returns a StyledLine for ANSI text", () => {
+        expect.assertions(2);
+
+        const caches = new OutputCaches();
+        const line = caches.getStyledLine("\u001B[31mA\u001B[39m");
+
+        expect(line.length).toBe(1);
+        expect(line.getText()).toBe("A");
+    });
+
+    it("getStyledLine caches results", () => {
         expect.assertions(1);
 
         const caches = new OutputCaches();
+        const first = caches.getStyledLine("abc");
+        const second = caches.getStyledLine("abc");
 
-        const single = caches.getStyledChars("a");
-        const repeated = caches.getStyledChars("aa");
-
-        expect(single[0]).toBe(repeated[0]);
-    });
-
-    it("aNSI-marked lines preserve styles", () => {
-        expect.assertions(2);
-
-        const caches = new OutputCaches();
-        const styledChars = caches.getStyledChars("\u001B[31mA\u001B[39m");
-
-        expect(styledChars).toHaveLength(1);
-        expect(styledChars[0]!.styles.length).toBeGreaterThan(0);
-    });
-
-    it("aNSI style runs reuse style array references", () => {
-        expect.assertions(2);
-
-        const caches = new OutputCaches();
-        const styledChars = caches.getStyledChars("\u001B[31mAB\u001B[39m");
-
-        expect(styledChars).toHaveLength(2);
-        expect(styledChars[0]!.styles).toBe(styledChars[1]!.styles);
+        expect(first).toBe(second);
     });
 
     it("styled rendering preserves ANSI transitions", () => {
@@ -172,14 +131,14 @@ describe("output-caches", () => {
         expect(output.get().output).toBe("\u001B[31mA\u001B[32mB\u001B[39m");
     });
 
-    it("plain non-ASCII lines include full-width metadata", () => {
+    it("getStyledLine marks full-width characters", () => {
         expect.assertions(2);
 
         const caches = new OutputCaches();
-        const styledChars = caches.getStyledChars("漢");
+        const line = caches.getStyledLine("漢");
 
-        expect(styledChars).toHaveLength(1);
-        expect(styledChars[0]!.fullWidth).toBe(true);
+        expect(line.length).toBe(1);
+        expect(line.getFullWidth(0)).toBe(true);
     });
 
     it("outputCaches prunes width cache when maxEntries is exceeded", () => {
@@ -195,17 +154,17 @@ describe("output-caches", () => {
         expect(caches.widths.has("c")).toBe(true);
     });
 
-    it("outputCaches prunes styledChars cache when maxEntries is exceeded", () => {
+    it("outputCaches prunes styledLines cache when maxEntries is exceeded", () => {
         expect.assertions(2);
 
         const caches = new OutputCaches({ maxEntries: 2 });
 
-        caches.getStyledChars("a");
-        caches.getStyledChars("b");
-        caches.getStyledChars("c");
+        caches.getStyledLine("a");
+        caches.getStyledLine("b");
+        caches.getStyledLine("c");
 
-        expect(caches.styledChars.size).toBeLessThanOrEqual(2);
-        expect(caches.styledChars.has("c")).toBe(true);
+        expect(caches.styledLines.size).toBeLessThanOrEqual(2);
+        expect(caches.styledLines.has("c")).toBe(true);
     });
 
     it("getLines caches split line arrays", () => {

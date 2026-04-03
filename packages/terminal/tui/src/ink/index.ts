@@ -169,15 +169,11 @@ export {
 export type { StringWidthFunction } from "./measure-text";
 export {
     clearStringWidthCache,
-    clearToStyledCharactersCache,
+    clearStyledLineCache,
     inkCharacterWidth,
-    measureStyledChars,
-    setEnableToStyledCharactersCache,
+    setEnableStyledLineCache,
     setStringWidthFunction,
-    splitStyledCharsByNewline,
-    styledCharsToString,
-    styledCharsWidth,
-    toStyledCharacters,
+    toStyledLine,
 } from "./measure-text";
 export type {
     MouseAction,
@@ -213,9 +209,9 @@ export type { ResizeObserverCallback } from "./resize-observer";
 export { default as ResizeObserver, ResizeObserverEntry } from "./resize-observer";
 export type { ScrollState } from "./scroll";
 export { calculateScroll, getScrollHeight, getScrollLeft, getScrollTop, getScrollWidth } from "./scroll";
-export { applySelectionStyle, applySelectionToStyledChars, comparePoints, Range, Selection } from "./selection";
+export { applySelectionToStyledLine, comparePoints, Range, Selection } from "./selection";
 export type { CharOffsetMap, CharOffsetRange } from "./squash-text-nodes";
 export { squashTextNodesWithMap } from "./squash-text-nodes";
 export type { TerminalPalette } from "./terminal-palette";
 export { isTerminalPaletteQuerySupported, queryTerminalPalette } from "./terminal-palette";
-export { sliceStyledChars, truncateStyledChars, wrapOrTruncateStyledChars, wrapStyledChars } from "./text-wrap";
+export { wrapOrTruncateStyledLine } from "./text-wrap";

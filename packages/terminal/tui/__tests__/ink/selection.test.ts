@@ -1,15 +1,9 @@
-import type { StyledChar } from "@alcalzone/ansi-tokenize";
 import { describe, expect, it } from "vitest";
 
 import { createNode, createTextNode } from "../../src/ink/dom";
-import { applySelectionToStyledChars, comparePoints, Range, Selection } from "../../src/ink/selection";
-
-const char = (value: string): StyledChar => ({
-    fullWidth: false,
-    styles: [],
-    type: "char",
-    value,
-});
+import { applySelectionToStyledLine, comparePoints, Range, Selection } from "../../src/ink/selection";
+import { INVERSE_MASK } from "../../src/ink/style-flags";
+import { plainTextToStyledLine } from "../../src/ink/styled-line-factory";
 
 describe("selection", () => {
     describe("comparePoints", () => {
@@ -235,39 +229,53 @@ describe("selection", () => {
         });
     });
 
-    describe("applySelectionToStyledChars", () => {
-        it("should apply selection style to characters in range", () => {
-            const styledChars = [char("h"), char("e"), char("l"), char("l"), char("o")];
+    describe("applySelectionToStyledLine", () => {
+        it("should apply INVERSE style to characters in range", () => {
+            const line = plainTextToStyledLine("hello");
 
-            const result = applySelectionToStyledChars(styledChars, { currentOffset: 0, range: { end: 3, start: 1 } });
+            const result = applySelectionToStyledLine(line, { end: 3, start: 1 });
 
-            // Characters at index 1 and 2 should have inverse style applied
-            expect(result[0]!.styles).toHaveLength(0); // 'h' - not selected
-            expect(result[1]!.styles).toHaveLength(1); // 'e' - selected
-            expect(result[2]!.styles).toHaveLength(1); // 'l' - selected
-            expect(result[3]!.styles).toHaveLength(0); // 'l' - not selected
+            // Characters at index 1 and 2 should have INVERSE applied
+            expect(result.getFormatFlags(0) & INVERSE_MASK).toBe(0); // 'h' - not selected
+            expect(result.getFormatFlags(1) & INVERSE_MASK).toBe(INVERSE_MASK); // 'e' - selected
+            expect(result.getFormatFlags(2) & INVERSE_MASK).toBe(INVERSE_MASK); // 'l' - selected
+            expect(result.getFormatFlags(3) & INVERSE_MASK).toBe(0); // 'l' - not selected
         });
 
-        it("should not apply style when range is empty", () => {
-            const styledChars = [char("h"), char("e"), char("l")];
+        it("should not modify when range is empty", () => {
+            const line = plainTextToStyledLine("hel");
 
-            const result = applySelectionToStyledChars(styledChars, { currentOffset: 0, range: { end: 0, start: 0 } });
+            const result = applySelectionToStyledLine(line, { end: 0, start: 0 });
 
-            expect(result.every((c) => c.styles.length === 0)).toBe(true);
+            // Should return the same line (no mutation needed)
+            expect(result).toBe(line);
         });
 
-        it("should track currentOffset across calls", () => {
-            const state = { currentOffset: 0, range: { end: 3, start: 1 } };
+        it("should not modify empty line", () => {
+            const line = plainTextToStyledLine("");
 
-            applySelectionToStyledChars([char("a"), char("b")], state);
+            const result = applySelectionToStyledLine(line, { end: 3, start: 1 });
 
-            expect(state.currentOffset).toBe(2);
+            expect(result).toBe(line);
+        });
 
-            const result = applySelectionToStyledChars([char("c"), char("d")], state);
+        it("should clamp range to line bounds", () => {
+            const line = plainTextToStyledLine("abc");
 
-            // 'c' is at offset 2 (within range 1-3), 'd' is at offset 3 (not in range)
-            expect(result[0]!.styles).toHaveLength(1); // 'c' selected
-            expect(result[1]!.styles).toHaveLength(0); // 'd' not selected
+            const result = applySelectionToStyledLine(line, { end: 10, start: 1 });
+
+            expect(result.getFormatFlags(0) & INVERSE_MASK).toBe(0); // 'a' - not selected
+            expect(result.getFormatFlags(1) & INVERSE_MASK).toBe(INVERSE_MASK); // 'b' - selected
+            expect(result.getFormatFlags(2) & INVERSE_MASK).toBe(INVERSE_MASK); // 'c' - selected
+        });
+
+        it("should not mutate the original line", () => {
+            const line = plainTextToStyledLine("hello");
+
+            applySelectionToStyledLine(line, { end: 3, start: 1 });
+
+            // Original should be unchanged
+            expect(line.getFormatFlags(1) & INVERSE_MASK).toBe(0);
         });
     });
 });
