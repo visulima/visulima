@@ -37,12 +37,13 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 // ── Sub-components ──────────────────────────────────────────────────────
 
 interface TaskListRowProps {
+    compact?: boolean;
     isSelected: boolean;
     pinLabel: string;
     row: TaskRowData;
 }
 
-const TaskListRow = ({ isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
+const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
     const { status, taskId } = row;
 
     const selectChar = isSelected ? ">" : " ";
@@ -93,12 +94,16 @@ const TaskListRow = ({ isSelected, pinLabel, row }: TaskListRowProps): React.JSX
                 </Text>
                 {pinLabel ? <Text dimColor>{` ${pinLabel}`}</Text> : null}
             </Box>
-            <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
-                <Text dimColor={!isCacheStatus(status as TaskStatus)}>{getCacheLabel(status)}</Text>
-            </Box>
-            <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
-                <Text dimColor={status === "pending"}>{durationText}</Text>
-            </Box>
+            {!compact && (
+                <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
+                    <Text dimColor={!isCacheStatus(status as TaskStatus)}>{getCacheLabel(status)}</Text>
+                </Box>
+            )}
+            {!compact && (
+                <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
+                    <Text dimColor={status === "pending"}>{durationText}</Text>
+                </Box>
+            )}
         </Box>
     );
 };
@@ -106,6 +111,8 @@ const TaskListRow = ({ isSelected, pinLabel, row }: TaskListRowProps): React.JSX
 // ── Main Component ──────────────────────────────────────────────────────
 
 interface TaskListPanelProps {
+    /** Hide Cache + Duration columns (used in split view where output panel shows them). */
+    compact?: boolean;
     filterActive: boolean;
     filterText: string;
     focused: boolean;
@@ -118,6 +125,7 @@ interface TaskListPanelProps {
 }
 
 const TaskListPanel = ({
+    compact,
     filterActive,
     filterText,
     focused,
@@ -134,7 +142,6 @@ const TaskListPanel = ({
         return focused ? "white" : "gray";
     })();
 
-    const statusDotColor = headerStatus === "error" ? "red" : headerStatus === "success" ? "green" : "white";
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
     // Single flat list: running tasks first, then completed, then pending
@@ -151,17 +158,18 @@ const TaskListPanel = ({
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text bold color={statusDotColor}>{" \u2022 "}</Text>
                 <Text>{title}</Text>
-                {/* Column headers aligned right */}
-                <Box flexGrow={1} justifyContent="flex-end" gap={0}>
-                    <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
-                        <Text dimColor>Cache</Text>
+                {/* Column headers aligned right (hidden in compact/split mode) */}
+                {!compact && (
+                    <Box flexGrow={1} justifyContent="flex-end" gap={0}>
+                        <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
+                            <Text dimColor>Cache</Text>
+                        </Box>
+                        <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
+                            <Text dimColor>Duration</Text>
+                        </Box>
                     </Box>
-                    <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
-                        <Text dimColor>Duration</Text>
-                    </Box>
-                </Box>
+                )}
             </Box>
 
             {/* Scrollable task list */}
@@ -170,12 +178,14 @@ const TaskListPanel = ({
                 flexGrow={1}
                 flexShrink={1}
                 paddingLeft={1}
+                paddingY={1}
                 scrollbar
                 scrollbarColor="gray"
                 scrollbarStyle="block"
             >
                 {sorted.map((row) => (
                     <TaskListRow
+                        compact={compact}
                         isSelected={row.taskId === selectedTaskId}
                         key={row.taskId}
                         pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}

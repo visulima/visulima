@@ -1,6 +1,6 @@
 import type { Command } from "@visulima/cerebro";
 import type { ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
-import { createTaskGraph, defaultTaskRunner, generateRunSummary, runConcurrently, writeRunSummary } from "@visulima/task-runner";
+import { createTaskGraph, defaultTaskRunner, enforceProjectConstraints, generateRunSummary, parsePartition, runConcurrently, TaskScheduler, writeRunSummary } from "@visulima/task-runner";
 
 import isInCi from "is-in-ci";
 
@@ -117,6 +117,19 @@ const run: Command = {
         const { config, workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
+        // Enforce project constraints if configured
+        if (config.constraints && !options.skipConstraints) {
+            const violations = enforceProjectConstraints(projectGraph, config.constraints);
+
+            if (violations.length > 0) {
+                for (const v of violations) {
+                    logger.error(`[${v.rule}] ${v.message}`);
+                }
+
+                throw new Error(`${violations.length} project constraint violation(s) found. Use --skip-constraints to bypass.`);
+            }
+        }
+
         let projectNames = Object.keys(workspace.projects);
 
         if (options.projects) {
@@ -141,7 +154,7 @@ const run: Command = {
             return;
         }
 
-        const initialTasks: Task[] = projectsWithTarget.map((projectName) => {
+        let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
             const project = workspace.projects[projectName];
             const targetConfig = project?.targets?.[target];
             const taskTarget: TaskTarget = { project: projectName, target };
@@ -157,6 +170,21 @@ const run: Command = {
                 target: taskTarget,
             };
         });
+
+        // Apply CI job partitioning if --partition or VIS_PARTITION is set
+        const partition = parsePartition(options.partition as string | undefined);
+
+        if (partition) {
+            initialTasks = TaskScheduler.partitionTasks(initialTasks, partition);
+
+            logger.info(`Partition ${partition.index}/${partition.total}: running ${initialTasks.length} task(s)`);
+
+            if (initialTasks.length === 0) {
+                logger.info("No tasks assigned to this partition.");
+
+                return;
+            }
+        }
 
         const taskGraph = createTaskGraph(initialTasks, {
             projectGraph,
@@ -342,6 +370,17 @@ const run: Command = {
             defaultValue: false,
             description: "Generate a run summary after execution",
             name: "summarize",
+            type: Boolean,
+        },
+        {
+            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
+            name: "partition",
+            type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Skip project constraint validation",
+            name: "skip-constraints",
             type: Boolean,
         },
     ],

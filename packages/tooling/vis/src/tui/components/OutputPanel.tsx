@@ -35,22 +35,28 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     const statusValue = status ?? "pending";
     const { icon: statusIcon } = getDisplayInfo(statusValue);
 
-    const borderStyle = "single";
+    const borderStyle = focused ? "bold" : "single";
     const borderColor = (() => {
         if (statusValue === "failure") return "red";
-        if (statusValue === "success" || isCacheStatus(statusValue)) return "green";
+        if (statusValue === "success" || isCacheStatus(statusValue)) return focused ? "green" : "gray";
         if (statusValue === "running") return focused ? "white" : "cyan";
         return focused ? "white" : "gray";
     })();
 
-    // Build border title: "✓ task-name" on top-left
+    // Build border title: "✓ task-name" on top-left (always short)
     const topTitle = taskId ? `${statusIcon}  ${taskId}` : undefined;
 
     // Duration on top-right
     const topRightTitle = duration !== undefined ? formatMs(duration) : undefined;
 
-    // Bottom hint
-    const bottomTitle = showFullscreenHint ? "<enter> full screen" : undefined;
+    // Bottom hint: context-dependent
+    const bottomTitle = !taskId
+        ? undefined
+        : focused && showFullscreenHint
+            ? "<enter> full screen"
+            : !focused
+                ? "<tab> or <enter> to focus"
+                : undefined;
 
     // Empty state
     if (!taskId) {
@@ -106,11 +112,13 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
             flexGrow={1}
         >
             {/* Output content — scrollable */}
-            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} followOutput paddingX={2} scrollbar scrollbarColor="gray" scrollbarStyle="block">
-                {lines.map((line, i) => (
-                    <Text key={String(i)}>{line}</Text>
-                ))}
-            </ScrollView>
+            <Box flexGrow={1} flexShrink={1} paddingY={1}>
+                <ScrollView ref={scrollRef} flexGrow={1} followOutput paddingX={2} scrollbar scrollbarColor="gray" scrollbarStyle="block">
+                    {lines.map((line, i) => (
+                        <Text key={String(i)}>{line}</Text>
+                    ))}
+                </ScrollView>
+            </Box>
         </Box>
     );
 };
