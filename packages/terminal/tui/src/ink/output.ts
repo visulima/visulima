@@ -348,8 +348,11 @@ export default class Output {
             const parsed = this.caches.getStyledLine(line);
             let offsetX = x;
 
+            // When not clipped, allow writes beyond terminal width by growing the row
+            const maxX = clip ? Math.min(clip.x2!, row.length) : Infinity;
+
             for (let i = 0; i < parsed.length; i++) {
-                if (offsetX >= this.width) {
+                if (offsetX >= maxX) {
                     break;
                 }
 
@@ -364,6 +367,11 @@ export default class Output {
                 }
 
                 if (offsetX >= 0) {
+                    // Grow row if writing beyond current length (no clip active)
+                    if (offsetX >= row.length) {
+                        row.ensureWidth(offsetX + 2);
+                    }
+
                     const span = parsed.getSpan(i);
                     const isFullWidth = parsed.getFullWidth(i);
                     const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
@@ -373,9 +381,11 @@ export default class Output {
                     if (isFullWidth) {
                         offsetX++;
 
-                        if (offsetX < this.width) {
-                            row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
+                        if (offsetX >= row.length) {
+                            row.ensureWidth(offsetX + 1);
                         }
+
+                        row.setCharFast(offsetX, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
                     }
                 }
 
@@ -460,9 +470,10 @@ export default class Output {
 
     private writeStyledLineToRow(row: StyledLine, x: number, source: StyledLine, maxWidth: number, clip?: Clip): void {
         let col = x;
+        const effectiveMax = clip ? Math.min(clip.x2!, maxWidth) : Infinity;
 
         for (let i = 0; i < source.length; i++) {
-            if (col >= maxWidth) {
+            if (col >= effectiveMax) {
                 break;
             }
 
@@ -477,6 +488,11 @@ export default class Output {
             }
 
             if (col >= 0) {
+                // Grow row if writing beyond current length (no clip active)
+                if (col >= row.length) {
+                    row.ensureWidth(col + 2);
+                }
+
                 const span = source.getSpan(i);
                 const isFullWidth = source.getFullWidth(i);
                 const flags = (span?.formatFlags ?? 0) | (isFullWidth ? FULL_WIDTH_MASK : 0);
@@ -486,9 +502,11 @@ export default class Output {
                 if (isFullWidth) {
                     col++;
 
-                    if (col < maxWidth) {
-                        row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
+                    if (col >= row.length) {
+                        row.ensureWidth(col + 1);
                     }
+
+                    row.setCharFast(col, "", flags & ~FULL_WIDTH_MASK, span?.fgColor, span?.bgColor, span?.link);
                 }
             }
 
