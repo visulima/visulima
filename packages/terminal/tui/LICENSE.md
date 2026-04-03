@@ -45,11 +45,23 @@ Copyright (c) 2025 ByteLand Technology Limited
 
 ---
 
-The CSS-level scroll system (overflow:'scroll', scrollbar rendering, scroll calculations),
-ResizeObserver API, DataLimitedLruMap, enhanced measureElement APIs (getBoundingBox,
-getInnerWidth, getInnerHeight, scrollbar bounding box), and related rendering pipeline
-improvements are ported from jacob314/ink (https://github.com/jacob314/ink)
+The following components are ported from jacob314/ink (https://github.com/jacob314/ink):
+CSS-level scroll system (overflow:'scroll', scrollbar rendering, scroll calculations),
+ResizeObserver API, DataLimitedLruMap, enhanced measureElement APIs, StyledLine columnar
+data structure, style flags, styled-line serializer, Region type, render caching
+(setCachedRender, StaticRender), reconciler cleanup (cleanupNodeTree), text wrapping
+(wrapStyledLine), text measurement, selection handling, render-text-node pipeline,
+layout utilities, and squash-text-nodes.
 Copyright 2025 Google LLC
+Licensed under the Apache License, Version 2.0
+
+---
+
+The mouse event system (MouseProvider, useMousePosition, useMouse, useMouseAction,
+useOnMouseState, useOnMouseHover, useOnMouseClick, useElementPosition, Fullscreen,
+isIntersecting, ANSI mouse parser, mouse constants) is ported from
+ink-mouse (https://github.com/nickhudkins/ink-mouse)
+Copyright Zeno Jiricek
 Licensed under the Apache License, Version 2.0
 
 <!-- DEPENDENCIES -->
