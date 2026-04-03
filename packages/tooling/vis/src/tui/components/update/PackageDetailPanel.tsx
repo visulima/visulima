@@ -199,7 +199,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                             </>
                         )}
                         {!recommendation && (
-                            <Text dimColor marginTop={1}>  Use --ai to get AI-powered analysis.</Text>
+                            <Text dimColor>  Use --ai to get AI-powered analysis.</Text>
                         )}
                     </Box>
                 </Box>

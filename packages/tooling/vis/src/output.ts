@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+
+import { hyperlink } from "@visulima/ansi";
 import isInCi from "is-in-ci";
 
 /**
@@ -37,10 +40,10 @@ const colorEnabled = supportsColor();
 
 // ── ANSI helpers (zero-dep, respects NO_COLOR) ───────────────────────
 
-const ansi
-    = (open: string, close: string) =>
-        (s: string): string =>
-            colorEnabled ? `\u001B[${open}m${s}\u001B[${close}m` : s;
+const ansi =
+    (open: string, close: string) =>
+    (s: string): string =>
+        colorEnabled ? `\u001B[${open}m${s}\u001B[${close}m` : s;
 
 const bold: (s: string) => string = ansi("1", "22");
 const dim: (s: string) => string = ansi("2", "22");
@@ -109,6 +112,20 @@ const failure = (message: string): void => {
     process.stderr.write(`${red(SYMBOLS.failure)} ${message}\n`);
 };
 
+// ── Terminal hyperlinks (OSC 8) ─────────────────────────────────────
+
+/**
+ * Creates a clickable terminal hyperlink using `@visulima/ansi` OSC 8
+ * implementation. Falls back to "text (url)" when not in a TTY.
+ */
+const link = (text: string, url: string): string => {
+    if (!process.stderr.isTTY || process.env.TERM === "dumb") {
+        return text === url ? url : `${text} (${dim(url)})`;
+    }
+
+    return hyperlink(text, url);
+};
+
 // ── Branding ─────────────────────────────────────────────────────────
 
 /** Resolves the VIS version from env var or package.json. */
@@ -118,8 +135,9 @@ const getVersion = (): string => {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports,global-require
-        return require("../../package.json").version;
+        const pkgPath = new URL("../../package.json", import.meta.url);
+
+        return (JSON.parse(readFileSync(pkgPath, "utf8")) as { version: string }).version;
     } catch {
         return "0.0.0";
     }
@@ -141,7 +159,7 @@ const setTerminalTitle = (title: string): void => {
         return;
     }
 
-    process.stdout.write(`\x1B]0;${title}\x07`);
+    process.stdout.write(`\u001B]0;${title}\u0007`);
 };
 
-export { bold, cyan, dim, error, failure, green, info, injectVersion, note, red, setTerminalTitle, success, SYMBOLS, warn, yellow };
+export { bold, cyan, dim, error, failure, green, info, injectVersion, link, note, red, setTerminalTitle, success, SYMBOLS, warn, yellow };

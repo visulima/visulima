@@ -1,4 +1,6 @@
 import { createCerebro } from "@visulima/cerebro";
+import enableCompileCache from "@visulima/cerebro/compile-cache";
+import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 import { readJsonSync } from "@visulima/fs";
 import { findMonorepoRootSync } from "@visulima/package";
@@ -38,6 +40,10 @@ import postCommandPlugin from "./plugins/post-command";
 import securityEnforcementPlugin from "./plugins/security-enforcement";
 import { startUpgradeCheck } from "./upgrade-check";
 
+// Apply heap memory tuning before any heavy work begins.
+// May re-spawn the process with tuned V8 flags and never return.
+applyHeapTuning();
+
 // Inject VIS_VERSION for child processes before any commands run
 injectVersion();
 
@@ -56,22 +62,8 @@ try {
 // Start background upgrade check immediately (non-blocking)
 const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");
 
-/**
- * Attempts to load and enable V8 compile cache for better performance.
- * Falls back to v8-compile-cache module if Node.js native compile cache is not available.
- */
-try {
-    // @ts-expect-error - enableCompileCache is only available in Node.js 22.8+
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    Module.enableCompileCache?.();
-} catch {
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require("v8-compile-cache");
-    } catch {
-        // We don't have/need to care about v8-compile-cache failed
-    }
-}
+// Enable V8 compile cache for faster subsequent startups
+enableCompileCache();
 
 const cli = createCerebro("vis", {
     packageName: "vis",
