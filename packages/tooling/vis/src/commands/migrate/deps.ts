@@ -91,7 +91,40 @@ const rewritePackageJson = (root: string, packageManager: PackageManagerType, ov
         // Add PM-specific overrides if configured
         if (Object.keys(overrides).length > 0) {
             switch (packageManager) {
-                case "bun":
+                case "bun": {
+                    // Bun supports catalogs in both workspaces.catalog and top-level catalog;
+                    // prefer the location the user already chose to avoid moving their config.
+                    const workspacesField = pkg["workspaces"] as
+                        | string[]
+                        | { catalog?: Record<string, string>; packages?: string[] }
+                        | undefined;
+                    const workspacesObj = workspacesField && !Array.isArray(workspacesField) ? workspacesField : undefined;
+                    const bunCatalog: Record<string, string> = {
+                        ...(workspacesObj?.catalog ?? (pkg["catalog"] as Record<string, string> | undefined)),
+                    };
+
+                    for (const [key, value] of Object.entries(overrides)) {
+                        bunCatalog[key] = value;
+                    }
+
+                    if (workspacesObj?.catalog != null) {
+                        workspacesObj.catalog = bunCatalog;
+                    } else {
+                        pkg["catalog"] = bunCatalog;
+                    }
+
+                    // bun overrides support catalog: references
+                    const bunOverrides = (pkg["overrides"] ?? {}) as Record<string, string>;
+
+                    for (const key of Object.keys(overrides)) {
+                        bunOverrides[key] = "catalog:";
+                    }
+
+                    pkg["overrides"] = bunOverrides;
+                    modified = true;
+                    break;
+                }
+
                 case "npm": {
                     const existing = (pkg["overrides"] ?? {}) as Record<string, string>;
 

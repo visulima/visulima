@@ -809,8 +809,8 @@ describe("rewritePackageJson", () => {
         expect(pkg.pnpm.overrides).toStrictEqual({ lodash: "lodash-es@^4.0.0" });
     });
 
-    it("should add bun overrides", () => {
-        expect.assertions(1);
+    it("should add bun overrides with catalog references", () => {
+        expect.assertions(2);
 
         writeFileSync(join(temporary.root, "package.json"), JSON.stringify({ name: "test" }, undefined, 4));
 
@@ -820,7 +820,101 @@ describe("rewritePackageJson", () => {
 
         const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
 
-        expect(pkg.overrides).toStrictEqual({ lodash: "lodash-es@^4.0.0" });
+        expect(pkg.catalog).toStrictEqual({ lodash: "lodash-es@^4.0.0" });
+        expect(pkg.overrides).toStrictEqual({ lodash: "catalog:" });
+    });
+
+    it("should write bun catalog to top-level when workspaces is an array", () => {
+        expect.assertions(3);
+
+        writeFileSync(
+            join(temporary.root, "package.json"),
+            JSON.stringify(
+                {
+                    name: "bun-monorepo",
+                    workspaces: ["packages/*"],
+                    packageManager: "bun@1.3.11",
+                },
+                undefined,
+                4,
+            ),
+        );
+
+        const report = createMigrationReport();
+
+        rewritePackageJson(temporary.root, "bun", { vite: "^7.0.0" }, report);
+
+        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
+
+        expect(pkg.catalog.vite).toBe("^7.0.0");
+        expect(pkg.overrides.vite).toBe("catalog:");
+        // workspaces should remain an array
+        expect(Array.isArray(pkg.workspaces)).toBe(true);
+    });
+
+    it("should write bun catalog to workspaces.catalog when workspaces is an object with existing catalog", () => {
+        expect.assertions(4);
+
+        writeFileSync(
+            join(temporary.root, "package.json"),
+            JSON.stringify(
+                {
+                    name: "bun-monorepo",
+                    workspaces: {
+                        packages: ["packages/*"],
+                        catalog: { react: "^19.0.0" },
+                    },
+                    packageManager: "bun@1.3.11",
+                },
+                undefined,
+                4,
+            ),
+        );
+
+        const report = createMigrationReport();
+
+        rewritePackageJson(temporary.root, "bun", { vite: "^7.0.0" }, report);
+
+        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
+
+        // No top-level catalog
+        expect(pkg.catalog).toBeUndefined();
+        // workspaces.catalog should have merged entries
+        expect(pkg.workspaces.catalog.react).toBe("^19.0.0");
+        expect(pkg.workspaces.catalog.vite).toBe("^7.0.0");
+        // workspaces.packages should be preserved
+        expect(pkg.workspaces.packages).toStrictEqual(["packages/*"]);
+    });
+
+    it("should write bun catalog to top-level when workspaces is an object without catalog", () => {
+        expect.assertions(3);
+
+        writeFileSync(
+            join(temporary.root, "package.json"),
+            JSON.stringify(
+                {
+                    name: "bun-monorepo",
+                    workspaces: {
+                        packages: ["packages/*"],
+                    },
+                    packageManager: "bun@1.3.11",
+                },
+                undefined,
+                4,
+            ),
+        );
+
+        const report = createMigrationReport();
+
+        rewritePackageJson(temporary.root, "bun", { vite: "^7.0.0" }, report);
+
+        const pkg = JSON.parse(readFileSync(join(temporary.root, "package.json"), "utf8"));
+
+        // catalog should be at top level since workspaces.catalog didn't exist
+        expect(pkg.catalog.vite).toBe("^7.0.0");
+        // workspaces object should be preserved
+        expect(pkg.workspaces.packages).toStrictEqual(["packages/*"]);
+        expect(pkg.overrides.vite).toBe("catalog:");
     });
 
     it("should rewrite scripts", () => {
