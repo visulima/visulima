@@ -645,6 +645,7 @@ cli.addCommand({
 ```
 
 **Notes:**
+
 - Global options appear under "Global Options" in help output alongside built-in options
 - Cannot override built-in options (`verbose`, `debug`, `help`, `quiet`, `version`, `no-color`, `color`)
 - Use `getGlobalOptions()` to retrieve all global options (built-in + custom)
