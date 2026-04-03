@@ -1,0 +1,11 @@
+{
+    "name": "lib-fast-7",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building lib-fast-7...' && sleep .4 && echo 'lib-fast-7 built!'",
+        "lint": "echo 'Linting lib-fast-7... OK'",
+        "test": "echo 'Testing lib-fast-7... 3 tests passed'",
+        "dev": "echo 'lib-fast-7 dev server on port 3007' && while true; do sleep 1; echo '[lib-fast-7] heartbeat'; done"
+    }
+}

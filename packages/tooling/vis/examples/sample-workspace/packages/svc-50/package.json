@@ -1,0 +1,11 @@
+{
+    "name": "svc-50",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'svc-50 built' && sleep 0.3",
+        "lint": "echo 'svc-50 lint OK'",
+        "test": "echo 'svc-50 tests OK'",
+        "dev": "echo 'svc-50 server starting on port 4050...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-50: request handled\"; done"
+    }
+}
