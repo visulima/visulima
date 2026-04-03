@@ -24,6 +24,7 @@ import { useRef, useState, useEffect } from "react";
 import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import type { ScrollListRef } from "../../../src/ink/index";
 import { describe, it, expect, vi } from "vitest";
+import waitFor from "../../helpers/wait-for";
 
 /**
  * Helper function to introduce artificial delays in tests.
@@ -72,17 +73,18 @@ describe("Viewport", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
         // Initial width 10. Long text wraps.
+        await waitFor(() => scrollList.getContentHeight() >= 1);
         const h1 = scrollList.getContentHeight();
         expect(h1).toBeGreaterThanOrEqual(1);
 
         // Increase width to 25 - text should fit without wrapping
         setWidthFn!(25);
-        await delay(100);
+        await waitFor(() => scrollList.getContentHeight() === 2);
 
         const h2 = scrollList.getContentHeight();
         // Height should decrease (less wrapping)
@@ -127,7 +129,7 @@ describe("Viewport", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => onViewportSizeChange.mock.calls.length > 0);
 
         // Initial call on mount
         expect(onViewportSizeChange).toHaveBeenCalled();
@@ -137,7 +139,7 @@ describe("Viewport", () => {
         // Change size
         onViewportSizeChange.mockClear();
         setSizeFn!({ w: 15, h: 8 });
-        await delay(100);
+        await waitFor(() => onViewportSizeChange.mock.calls.length > 0);
 
         // Should be called again with new dimensions
         expect(onViewportSizeChange).toHaveBeenCalled();
@@ -191,19 +193,20 @@ describe("Viewport", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
         // Initial: height 5, content 20, selectedIndex 10
         // Item 10 should be visible. With auto alignment, offset should be around 6.
+        await waitFor(() => scrollList.getScrollOffset() > 0);
         const offsetBefore = scrollList.getScrollOffset();
         expect(offsetBefore).toBeGreaterThan(0);
 
         // Increase height to 15. More content visible.
         // Max scroll = 20 - 15 = 5. Current offset may need clamping.
         setHeightFn!(15);
-        await delay(100);
+        await waitFor(() => scrollList.getScrollOffset() <= 5);
 
         // If previous offset was 6, it should clamp to max (5)
         expect(scrollList.getScrollOffset()).toBeLessThanOrEqual(5);
@@ -212,7 +215,7 @@ describe("Viewport", () => {
         // Item 10 must still be visible -> offset should be 9 or 10.
         // handleViewportSizeChange auto-scrolls to keep selection visible.
         setHeightFn!(2);
-        await delay(100);
+        await waitFor(() => scrollList.getScrollOffset() >= 9);
 
         const offsetAfter = scrollList.getScrollOffset();
         // Item 10 is at line 10. Viewport 2 shows [offset, offset+2).
@@ -260,12 +263,13 @@ describe("Viewport", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Content height 3. Viewport 10. Max scroll = max(0, 3-10) = 0.
             // Any scroll attempt should clamp to 0.
             scrollList.scrollTo(5);
+            // Offset stays 0 (clamped). Give a brief delay then check.
             await delay(50);
             expect(scrollList.getScrollOffset()).toBe(0);
 
@@ -304,12 +308,12 @@ describe("Viewport", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Content 5. Viewport 1. Max scroll = 5 - 1 = 4.
             scrollList.scrollTo(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 4);
             expect(scrollList.getScrollOffset()).toBe(4);
 
             unmount();

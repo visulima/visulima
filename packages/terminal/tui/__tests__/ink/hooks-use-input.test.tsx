@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 import term from "../helpers/ink-term";
+import waitFor from "../helpers/wait-for";
 
 const ptyRequire = createRequire(import.meta.url);
 const ptyAvailable = (() => {
@@ -27,8 +28,8 @@ describe("hooks-use-input", () => {
                     setTimeout(resolve, ms);
                 });
 
-            // Wait for the app to be ready and initial render to complete
-            await sleep(1000);
+            // Wait for the app to be ready (ink-term waits for __READY__ internally)
+            await waitFor(() => ps.output.includes("__READY__"), 5000);
 
             // Send 5 delete keys with enough delay between them for React concurrent
             // scheduler to process each update. The fixture has a 30ms blocking useMemo
@@ -38,8 +39,8 @@ describe("hooks-use-input", () => {
                 await sleep(200);
             }
 
-            // Wait for React concurrent mode to process all transitions
-            await sleep(3000);
+            // Poll for React concurrent mode to process all transitions instead of fixed delay
+            await waitFor(() => ps.output.includes("query:"), 5000);
 
             ps.write("\r");
             await ps.waitForExit();

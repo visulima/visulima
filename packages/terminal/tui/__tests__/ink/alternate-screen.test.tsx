@@ -1,8 +1,8 @@
-import delay from "delay";
 import { describe, expect, it } from "vitest";
 
 import { render, Text } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const ALT_SCREEN_ON = "\u001B[?1049h";
 const ALT_SCREEN_OFF = "\u001B[?1049l";
@@ -35,7 +35,7 @@ describe("alternate screen", () => {
         unmount();
 
         // Wait for unmount to complete
-        await delay(50);
+        await waitFor(() => stdout.getWrites().join("").includes(ALT_SCREEN_OFF));
 
         const writes = stdout.getWrites();
         const allOutput = writes.join("");
@@ -73,14 +73,14 @@ describe("alternate screen", () => {
         });
 
         // Let at least one render happen
-        await delay(50);
+        await waitFor(() => stdout.getWrites().some((w) => w.includes("Secret Content")));
 
         // Clear the writes so we only see unmount-related output
         (stdout.write as ReturnType<typeof import("vitest").vi.fn>).mockClear();
 
         unmount();
 
-        await delay(50);
+        await waitFor(() => stdout.getWrites().join("").includes(ALT_SCREEN_OFF));
 
         const writes = stdout.getWrites();
         const postUnmountOutput = writes.join("");
@@ -111,7 +111,7 @@ describe("alternate screen", () => {
             stdout,
         });
 
-        await delay(50);
+        await waitFor(() => renderCount >= 1);
 
         const rendersBefore = renderCount;
 
@@ -120,7 +120,7 @@ describe("alternate screen", () => {
 
         unmount();
 
-        await delay(50);
+        await waitFor(() => stdout.getWrites().join("").includes(ALT_SCREEN_OFF));
 
         // The final frame render should be skipped in alternate screen mode
         // Only ALT_SCREEN_OFF + cursor show should be written, no frame content

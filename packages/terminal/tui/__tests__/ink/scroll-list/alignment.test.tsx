@@ -26,6 +26,7 @@ import { useRef, useState, useEffect } from "react";
 import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import type { ScrollListRef } from "../../../src/ink/index";
 import { describe, it, expect } from "vitest";
+import waitFor from "../../helpers/wait-for";
 
 /**
  * Helper function to introduce artificial delays in tests.
@@ -78,19 +79,19 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Manually scroll to offset 10 (viewport shows lines 10-14)
             scrollList.scrollTo(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 10);
             expect(scrollList.getScrollOffset()).toBe(10);
 
             // Select item 5, which is above the viewport
             // Item 5 is at line 5. Since 5 < 10 (current offset), scroll up.
             // Auto mode: new offset = item top = 5
             setIndexFn!(5);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -132,14 +133,14 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Initially at offset 0. Viewport shows lines 0-4.
             // Select item 8 (at lines 8-9), which is below viewport.
             // Auto mode: scroll to show bottom. offset = itemBottom - viewport = 9 - 5 = 4
             setIndexFn!(8);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 4);
             expect(scrollList.getScrollOffset()).toBe(4);
 
             unmount();
@@ -180,12 +181,13 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Viewport at offset 0 shows lines 0-4.
             // Item 2 (lines 2-3) is fully visible. No scroll needed.
             setIndexFn!(2);
+            // Item is already visible, offset stays 0. Give a brief delay then check.
             await delay(50);
             expect(scrollList.getScrollOffset()).toBe(0);
 
@@ -193,7 +195,7 @@ describe("ScrollAlignment", () => {
             // Item 7 is at line 7-8. From offset 0, it's below viewport (0-4).
             // Auto mode should scroll to show it: offset = 8 - 5 = 3.
             setIndexFn!(7);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 3);
             expect(scrollList.getScrollOffset()).toBe(3);
 
             // Now item 7 is visible (viewport shows 3-7).
@@ -201,7 +203,7 @@ describe("ScrollAlignment", () => {
             // Item 7 visible bounds: min = 7 + 1 - 5 = 3, max = 7.
             // So scrollTo(5) should result in offset 5 (within [3, 7]).
             scrollList.scrollTo(5);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -243,12 +245,12 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Top alignment: offset = item top = 10
             setIndexFn!(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 10);
             expect(scrollList.getScrollOffset()).toBe(10);
 
             unmount();
@@ -287,12 +289,12 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Bottom alignment: offset = itemTop + itemHeight - viewport = 10 + 1 - 5 = 6
             setIndexFn!(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -331,12 +333,12 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Center alignment: offset = itemCenter - viewportCenter = 10.5 - 2.5 = 8
             setIndexFn!(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 8);
             expect(scrollList.getScrollOffset()).toBe(8);
 
             unmount();
@@ -385,20 +387,21 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
             // Total height 10. Viewport 5. Max scroll = 10 - 5 = 5.
 
             // Select item 1. Center of 1 is 1.5.
             // Target offset = 1.5 - 2.5 = -1. Clamp to 0.
             setIndexFn!(1);
+            // Offset stays 0 (clamped from negative). Give a brief delay then check.
             await delay(50);
             expect(scrollList.getScrollOffset()).toBe(0);
 
             // Select item 8. Center of 8 is 8.5.
             // Target offset = 8.5 - 2.5 = 6. Max is 5. Clamp to 5.
             setIndexFn!(8);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -450,13 +453,13 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Select large item (index 1). Top: 1. Height: 10. Bottom: 11.
             // Auto mode: bottom 11 > viewport end 5, so offset = 11 - 5 = 6
             setIndexFn!(1);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -499,13 +502,14 @@ describe("ScrollAlignment", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Bottom alignment for item 0:
             // offset = top + height - viewport = 0 + 1 - 5 = -4
             // Clamp to 0
             setIndexFn!(0);
+            // Offset stays 0 (clamped from negative). Give a brief delay then check.
             await delay(50);
             expect(scrollList.getScrollOffset()).toBe(0);
 
