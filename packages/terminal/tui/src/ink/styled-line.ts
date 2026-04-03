@@ -96,6 +96,21 @@ export class StyledLine {
         return this.text.slice(start, end);
     }
 
+    /**
+     * Get the raw text for a range of characters as a single string slice.
+     * Much faster than calling getValue() per character.
+     */
+    getTextRange(start: number, end: number): string {
+        if (this.text === undefined || start < 0 || end > this.length || start >= end) {
+            return "";
+        }
+
+        const textStart = this.charData![start]! & 0x7f_ff;
+        const textEnd = end < this.length ? this.charData![end]! & 0x7f_ff : this.text.length;
+
+        return this.text.slice(textStart, textEnd);
+    }
+
     getSpan(index: number): StyleSpan | undefined {
         if (this.spans === undefined || index < 0 || index >= this.length) {
             return undefined;
