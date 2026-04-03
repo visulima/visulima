@@ -1,5 +1,6 @@
 import type { TaskStatus } from "@visulima/task-runner";
-import { Box, ScrollBar, Spinner, Text } from "@visulima/tui";
+import type { ScrollViewRef } from "@visulima/tui";
+import { Box, ScrollView, Spinner, Text } from "@visulima/tui";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
@@ -37,22 +38,14 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 
 interface TaskListRowProps {
     isSelected: boolean;
-    parallelConnector: boolean;
     pinLabel: string;
     row: TaskRowData;
 }
 
-const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
+const TaskListRow = ({ isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
     const { status, taskId } = row;
 
     const selectChar = isSelected ? ">" : " ";
-
-    // Fixed width to prevent alignment drift
-    const connector = (
-        <Box width={1}>
-            <Text dimColor={parallelConnector}>{parallelConnector ? "\u2502" : " "}</Text>
-        </Box>
-    );
 
     let statusIcon: React.JSX.Element;
 
@@ -93,7 +86,6 @@ const TaskListRow = ({ isSelected, parallelConnector, pinLabel, row }: TaskListR
     return (
         <Box>
             <Text>{selectChar}</Text>
-            {connector}
             <Box width={STATUS_ICON_WIDTH}>{statusIcon}</Box>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected}>
@@ -118,13 +110,11 @@ interface TaskListPanelProps {
     filterText: string;
     focused: boolean;
     headerStatus: "error" | "running" | "success";
-    parallelSlots: number;
     pinnedTaskIds: [string | null, string | null];
     rows: TaskRowData[];
-    scrollOffset: number;
+    scrollRef: React.RefObject<ScrollViewRef>;
     selectedIndex: number;
     title: string;
-    viewportHeight: number;
 }
 
 const TaskListPanel = ({
@@ -132,118 +122,71 @@ const TaskListPanel = ({
     filterText,
     focused,
     headerStatus,
-    parallelSlots,
     pinnedTaskIds,
     rows,
-    scrollOffset,
+    scrollRef,
     selectedIndex,
     title,
-    viewportHeight,
 }: TaskListPanelProps): React.JSX.Element => {
-    const borderColor = focused ? "white" : "gray";
-
-    // Rows are already filtered by the parent — use directly
-    const running = rows.filter((r) => r.status === "running");
-    const completed = rows.filter((r) => r.status !== "pending" && r.status !== "running");
-    const pending = rows.filter((r) => r.status === "pending");
+    const borderColor = (() => {
+        if (headerStatus === "error") return "red";
+        if (headerStatus === "success") return "green";
+        return focused ? "white" : "gray";
+    })();
 
     const statusDotColor = headerStatus === "error" ? "red" : headerStatus === "success" ? "green" : "white";
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
-    // Parallel section — only while tasks are still active
-    const hasActiveWork = running.length > 0 || pending.length > 0;
-    const parallelRows: React.JSX.Element[] = [];
-
-    for (let i = 0; i < (hasActiveWork ? parallelSlots : 0); i++) {
-        const row = running[i];
-        const isLast = i === parallelSlots - 1;
-        const connector = !isLast;
-
-        if (row) {
-            parallelRows.push(
-                <TaskListRow
-                    isSelected={row.taskId === selectedTaskId}
-                    key={`par-${String(i)}`}
-                    parallelConnector={connector}
-                    pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
-                    row={row}
-                />,
-            );
-        } else {
-            parallelRows.push(
-                <Box key={`par-empty-${String(i)}`}>
-                    <Text> </Text>
-                    <Box width={1}>
-                        <Text dimColor={connector}>{connector ? "\u2502" : " "}</Text>
-                    </Box>
-                    <Box width={STATUS_ICON_WIDTH}>
-                        <Text> </Text>
-                    </Box>
-                    <Text dimColor>Waiting for task...</Text>
-                </Box>,
-            );
-        }
-    }
-
-    const hasParallelSection = parallelSlots > 0 && hasActiveWork;
-
-    // Completed + pending rows (merged into single loop)
-    const listRows = [...completed, ...pending].map((row) => (
-        <TaskListRow
-            isSelected={row.taskId === selectedTaskId}
-            key={row.taskId}
-            parallelConnector={false}
-            pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
-            row={row}
-        />
-    ));
-
-    // Content height: parallel section + completed/pending rows
-    const contentHeight = (hasParallelSection ? parallelSlots + 2 : 0) + listRows.length;
+    // Single flat list: running tasks first, then completed, then pending
+    const sorted = [
+        ...rows.filter((r) => r.status === "running"),
+        ...rows.filter((r) => r.status !== "pending" && r.status !== "running"),
+        ...rows.filter((r) => r.status === "pending"),
+    ];
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
-            <Box gap={1} paddingX={1}>
+            {/* Header */}
+            <Box gap={1} paddingX={1} flexShrink={0}>
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
                 <Text bold color={statusDotColor}>{" \u2022 "}</Text>
                 <Text>{title}</Text>
-            </Box>
-
-            {hasParallelSection && (
-                <Box flexDirection="column" paddingLeft={1}>
-                    {parallelRows}
-                    <Box>
-                        <Text> </Text>
-                        <Box width={1}>
-                            <Text dimColor>{"\u2514"}</Text>
-                        </Box>
+                {/* Column headers aligned right */}
+                <Box flexGrow={1} justifyContent="flex-end" gap={0}>
+                    <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
+                        <Text dimColor>Cache</Text>
+                    </Box>
+                    <Box justifyContent="flex-end" width={DURATION_COLUMN_WIDTH}>
+                        <Text dimColor>Duration</Text>
                     </Box>
                 </Box>
-            )}
-
-            <Box flexDirection="row" flexGrow={1} overflow="hidden">
-                <Box flexDirection="column" flexGrow={1} paddingLeft={1} overflow="hidden">
-                    <Box flexDirection="column" marginTop={-scrollOffset}>
-                        {listRows}
-                    </Box>
-                </Box>
-                {contentHeight > viewportHeight && viewportHeight > 0 && (
-                    <Box flexShrink={0} marginLeft={1} marginRight={1}>
-                        <ScrollBar
-                            contentHeight={contentHeight}
-                            placement="inset"
-                            scrollOffset={scrollOffset}
-                            style="block"
-                            viewportHeight={viewportHeight}
-                        />
-                    </Box>
-                )}
             </Box>
 
+            {/* Scrollable task list */}
+            <ScrollView
+                ref={scrollRef}
+                flexGrow={1}
+                flexShrink={1}
+                paddingLeft={1}
+                scrollbar
+                scrollbarColor="gray"
+                scrollbarStyle="block"
+            >
+                {sorted.map((row) => (
+                    <TaskListRow
+                        isSelected={row.taskId === selectedTaskId}
+                        key={row.taskId}
+                        pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
+                        row={row}
+                    />
+                ))}
+            </ScrollView>
+
+            {/* Filter bar */}
             {filterActive && (
-                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop paddingX={1}>
+                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexShrink={0} paddingX={1}>
                     <Text color="white" bold>{"/ "}</Text>
                     <Text>{filterText}</Text>
                     <Text inverse> </Text>

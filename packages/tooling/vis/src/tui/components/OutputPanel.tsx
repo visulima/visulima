@@ -1,6 +1,7 @@
 import { Box, ScrollView, Text } from "@visulima/tui";
 
-import { getStatusInfo } from "../status-utils";
+import { formatMs } from "../pretty-time";
+import { getStatusInfo, isCacheStatus } from "../status-utils";
 import type { TaskRowData } from "./TaskRow";
 
 // Extended status info for non-TaskStatus states (running, pending)
@@ -19,32 +20,37 @@ const getDisplayInfo = (status: TaskRowData["status"]): { color: string; icon: s
 // ── Component ───────────────────────────────────────────────────────────
 
 interface OutputPanelProps {
+    /** Duration in ms (for top-right border display). */
+    duration?: number;
     focused: boolean;
     output: string;
     scrollRef?: React.RefObject<import("@visulima/tui").ScrollViewRef>;
+    /** Whether to show "<enter> full screen" hint in bottom border. */
+    showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;
     taskId: string | null;
 }
 
-const OutputPanel = ({ focused, output, scrollRef, status, taskId }: OutputPanelProps): React.JSX.Element => {
+const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint, status, taskId }: OutputPanelProps): React.JSX.Element => {
     const statusValue = status ?? "pending";
-    const { color: statusColor, icon: statusIcon } = getDisplayInfo(statusValue);
+    const { icon: statusIcon } = getDisplayInfo(statusValue);
 
     const borderStyle = "single";
-    const borderColor = focused ? "white" : "gray";
+    const borderColor = (() => {
+        if (statusValue === "failure") return "red";
+        if (statusValue === "success" || isCacheStatus(statusValue)) return "green";
+        if (statusValue === "running") return focused ? "white" : "cyan";
+        return focused ? "white" : "gray";
+    })();
 
-    const titleElement = taskId
-        ? (
-            <Box gap={1}>
-                <Text color={statusColor}>
-                    {statusIcon}
-                </Text>
-                <Text bold={focused} dimColor={!focused}>
-                    {taskId}
-                </Text>
-            </Box>
-        )
-        : null;
+    // Build border title: "✓ task-name" on top-left
+    const topTitle = taskId ? `${statusIcon}  ${taskId}` : undefined;
+
+    // Duration on top-right
+    const topRightTitle = duration !== undefined ? formatMs(duration) : undefined;
+
+    // Bottom hint
+    const bottomTitle = showFullscreenHint ? "<enter> full screen" : undefined;
 
     // Empty state
     if (!taskId) {
@@ -71,8 +77,17 @@ const OutputPanel = ({ focused, output, scrollRef, status, taskId }: OutputPanel
     // Waiting state
     if (!output && (statusValue === "running" || statusValue === "pending")) {
         return (
-            <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1} paddingX={2} paddingY={1}>
-                {titleElement}
+            <Box
+                borderColor={borderColor}
+                borderStyle={borderStyle}
+                borderTopTitle={topTitle}
+                borderTopRightTitle={topRightTitle}
+                borderBottomTitle={bottomTitle}
+                flexDirection="column"
+                flexGrow={1}
+                paddingX={2}
+                paddingY={1}
+            >
                 <Box alignItems="center" flexGrow={1} justifyContent="center">
                     <Text dimColor>Waiting for task output...</Text>
                 </Box>
@@ -81,12 +96,15 @@ const OutputPanel = ({ focused, output, scrollRef, status, taskId }: OutputPanel
     }
 
     return (
-        <Box borderColor={borderColor} borderStyle={borderStyle} flexDirection="column" flexGrow={1}>
-            {/* Title bar — fixed */}
-            <Box flexShrink={0} paddingX={2} paddingTop={1}>
-                {titleElement}
-            </Box>
-
+        <Box
+            borderColor={borderColor}
+            borderStyle={borderStyle}
+            borderTopTitle={topTitle}
+            borderTopRightTitle={topRightTitle}
+            borderBottomTitle={bottomTitle}
+            flexDirection="column"
+            flexGrow={1}
+        >
             {/* Output content — scrollable */}
             <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} followOutput paddingX={2} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 {lines.map((line, i) => (
