@@ -133,7 +133,7 @@ jobs:
               uses: "actions/cache@5a3ec84eff668545956fd18022155c47e93e2684" # v4.2.3
               with:
                   path: "${{ matrix.package.dir }}/*.node"
-                  key: "native-${{ matrix.package.name }}-${{ matrix.settings.target }}-${{ hashFiles(format('{0}/native/Cargo.toml', matrix.package.dir), format('{0}/native/Cargo.lock', matrix.package.dir), format('{0}/native/build.rs', matrix.package.dir), format('{0}/native/src/**', matrix.package.dir)) }}"
+                  key: "native-${{ matrix.package.name }}-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', format('{0}/native/Cargo.toml', matrix.package.dir), format('{0}/native/Cargo.lock', matrix.package.dir), format('{0}/native/build.rs', matrix.package.dir), format('{0}/native/src/**', matrix.package.dir)) }}"
 
             - name: "Setup resources and environment"
               if: "(github.event_name != 'pull_request' || matrix.package.changed == 'true') && steps.native-cache.outputs.cache-hit != 'true'"
