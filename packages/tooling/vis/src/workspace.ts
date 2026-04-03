@@ -8,6 +8,7 @@ import type {
     TargetConfiguration,
     WorkspaceConfiguration,
 } from "@visulima/task-runner";
+import type { Configuration as StagedConfig } from "lint-staged";
 
 interface PackageJson {
     dependencies?: Record<string, string>;
@@ -17,8 +18,6 @@ interface PackageJson {
     scripts?: Record<string, string>;
     workspaces?: string[] | { catalog?: Record<string, string>; packages?: string[] };
 }
-
-import type { Configuration as StagedConfig } from "lint-staged";
 
 interface VisConfig {
     /** AI analysis configuration */
