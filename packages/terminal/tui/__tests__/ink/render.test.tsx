@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 import { Box, render, Text, useApp } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
 import { run } from "../helpers/ink-run";
+import waitFor from "../helpers/wait-for";
 
 const require = createRequire(import.meta.url);
 
@@ -140,6 +141,7 @@ describe("render", () => {
         const ps = term("erase", ["3"]);
 
         await ps.waitForExit();
+        await waitFor(() => ps.output.includes(resetTerminal) && ps.output.includes("C"));
 
         expect(ps.output).toContain(resetTerminal);
 
@@ -154,6 +156,7 @@ describe("render", () => {
         const ps = term("clear");
 
         await ps.waitForExit();
+        await waitFor(() => ps.output.includes(eraseLines(4)));
 
         const secondFrame = ps.output.split(eraseLines(4))[1];
 
@@ -168,6 +171,7 @@ describe("render", () => {
         const ps = term("console");
 
         await ps.waitForExit();
+        await waitFor(() => ps.output.includes("Second log"));
 
         const frames = ps.output.split(eraseLines(2)).map((line) => stripAnsi(line));
 
@@ -195,7 +199,10 @@ describe("render", () => {
 
         stdout.columns = 8;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => {
+            const writes = getContentWrites(stdout.write);
+            return stripAnsi(writes.at(-1) ?? "") !== stripAnsi(contentWrites[0]!);
+        });
 
         const contentWritesAfterResize = getContentWrites(stdout.write);
 

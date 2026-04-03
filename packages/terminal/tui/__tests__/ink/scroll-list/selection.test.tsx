@@ -24,13 +24,7 @@ import { useRef, useState, useEffect } from "react";
 import { Box, render, ScrollList, Text } from "../../../src/ink/index";
 import type { ScrollListRef } from "../../../src/ink/index";
 import { describe, it, expect } from "vitest";
-
-/**
- * Helper function to introduce artificial delays in tests.
- * Necessary because Ink rendering is asynchronous.
- * @param ms - Milliseconds to wait
- */
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import waitFor from "../../helpers/wait-for";
 
 describe("Selection", () => {
     /**
@@ -73,7 +67,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
@@ -83,14 +77,14 @@ describe("Selection", () => {
         // Change to index 8, should scroll to show it (auto alignment)
         // Item 8 spans lines 8-9. To show line 9 in viewport of 5, offset = 9 - 5 = 4
         setIndexFn!(8);
-        await delay(50);
+        await waitFor(() => scrollList.getScrollOffset() === 4);
         expect(scrollList.getScrollOffset()).toBe(4);
 
         // Change to index 2, should scroll back up
         // Item 2 is at line 2. Current viewport shows 4-9.
         // Since 2 < 4, scroll to show item at top: offset = 2
         setIndexFn!(2);
-        await delay(50);
+        await waitFor(() => scrollList.getScrollOffset() === 2);
         expect(scrollList.getScrollOffset()).toBe(2);
 
         unmount();
@@ -131,7 +125,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
@@ -177,7 +171,7 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
@@ -220,13 +214,13 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
 
         const scrollList = scrollListRef!;
 
         // Manual scroll should work even without selectedIndex
         scrollList.scrollTo(5);
-        await delay(50);
+        await waitFor(() => scrollList.getScrollOffset() === 5);
         expect(scrollList.getScrollOffset()).toBe(5);
 
         unmount();
@@ -270,15 +264,18 @@ describe("Selection", () => {
         };
 
         const { unmount } = render(<TestComponent />);
-        await delay(100);
+        await waitFor(() => scrollListRef != null);
+
+        const scrollList = scrollListRef!;
 
         // Simulate rapid keyboard navigation
         for (let i = 0; i <= 15; i++) {
             setIndexFn!(i);
-            await delay(50); // Allow time for React to process state updates and scroll
+            // Wait for each scroll to settle before moving to the next
+            const expectedOffset = Math.max(0, i + 1 - 3);
+            await waitFor(() => scrollList.getScrollOffset() === expectedOffset);
         }
 
-        const scrollList = scrollListRef!;
         // After selecting 15, it should be visible at bottom of viewport
         // Item 15 at lines 15-16. Viewport 3. Offset = 16 - 3 = 13
         expect(scrollList.getScrollOffset()).toBe(13);
@@ -318,7 +315,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Empty list should have zero metrics and no crashes
@@ -363,10 +360,11 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
             const scrollList = scrollListRef!;
 
             // Single item should work correctly
+            await waitFor(() => scrollList.getContentHeight() === 1);
             expect(scrollList.getScrollOffset()).toBe(0);
             expect(scrollList.getContentHeight()).toBe(1);
 
@@ -414,25 +412,27 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
 
             // Item 10: top=10, height=1. Visible bounds: [6, 10]
+            // Wait for initial auto-scroll to settle for selectedIndex=10
+            await waitFor(() => scrollList.getScrollOffset() >= 6);
 
             // Try to scroll to 0 - should clamp to 6
             scrollList.scrollTo(0);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // Try to scroll to 15 - should clamp to 10
             scrollList.scrollTo(15);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 10);
             expect(scrollList.getScrollOffset()).toBe(10);
 
             // Scroll to 8 - within bounds, should work
             scrollList.scrollTo(8);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 8);
             expect(scrollList.getScrollOffset()).toBe(8);
 
             unmount();
@@ -467,13 +467,16 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
 
+            // Wait for initial auto-scroll to settle for selectedIndex=10
+            await waitFor(() => scrollList.getScrollOffset() >= 6);
+
             // scrollToTop with item 10 selected should go to min offset = 6
             scrollList.scrollToTop();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();
@@ -510,14 +513,17 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
+
+            // Wait for initial auto-scroll to settle for selectedIndex=5
+            await waitFor(() => scrollList.getScrollOffset() >= 1);
 
             // scrollToBottom with item 5 selected should go to max offset = 5
             // (because item 5 visible range is [1, 5])
             scrollList.scrollToBottom();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -552,23 +558,26 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
 
+            // Wait for initial auto-scroll to settle for selectedIndex=10
+            await waitFor(() => scrollList.getScrollOffset() >= 6);
+
             // Start at offset 8 (within [6, 10])
             scrollList.scrollTo(8);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 8);
             expect(scrollList.getScrollOffset()).toBe(8);
 
             // scrollBy(-5): 8 - 5 = 3, but min is 6, so should be 6
             scrollList.scrollBy(-5);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // scrollBy(+10): 6 + 10 = 16, but max is 10, so should be 10
             scrollList.scrollBy(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 10);
             expect(scrollList.getScrollOffset()).toBe(10);
 
             unmount();
@@ -601,22 +610,22 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
 
             // Global max scroll = 10 - 5 = 5
             // Without selectedIndex, we can scroll freely within [0, 5]
             scrollList.scrollTo(5);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             scrollList.scrollToTop();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 0);
             expect(scrollList.getScrollOffset()).toBe(0);
 
             scrollList.scrollToBottom();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 5);
             expect(scrollList.getScrollOffset()).toBe(5);
 
             unmount();
@@ -667,7 +676,7 @@ describe("Selection", () => {
             };
 
             const { unmount } = render(<TestComponent />);
-            await delay(100);
+            await waitFor(() => scrollListRef != null);
 
             const scrollList = scrollListRef!;
 
@@ -677,29 +686,32 @@ describe("Selection", () => {
             // Item visible bounds (before swap): min=6, max=1
             // After swap: min=1, max=6
 
+            // Wait for initial auto-scroll to settle for selectedIndex=1
+            await waitFor(() => scrollList.getScrollOffset() >= 1);
+
             // Try scrollTo(0) - should clamp to min=1
             scrollList.scrollTo(0);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 1);
             expect(scrollList.getScrollOffset()).toBe(1);
 
             // scrollToTop should go to min=1
             scrollList.scrollToTop();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 1);
             expect(scrollList.getScrollOffset()).toBe(1);
 
             // scrollTo(3) should work (within [1, 6])
             scrollList.scrollTo(3);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 3);
             expect(scrollList.getScrollOffset()).toBe(3);
 
             // scrollTo(10) should clamp to max=6
             scrollList.scrollTo(10);
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             // scrollToBottom should go to max=6
             scrollList.scrollToBottom();
-            await delay(50);
+            await waitFor(() => scrollList.getScrollOffset() === 6);
             expect(scrollList.getScrollOffset()).toBe(6);
 
             unmount();

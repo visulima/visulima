@@ -596,14 +596,14 @@ describe("components", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe("A\nB\n");
     });
 
-    it("render only new items in static output on final render", () => {
+    it("render only new items in static output on final render", async () => {
         expect.assertions(3);
 
         const stdout = createStdout();
 
         const Dynamic = ({ items }: { readonly items: string[] }) => <Static items={items}>{(item) => <Text key={item}>{item}</Text>}</Static>;
 
-        const { rerender, unmount } = render(<Dynamic items={[]} />, {
+        const { rerender, unmount, waitUntilExit } = render(<Dynamic items={[]} />, {
             debug: true,
             stdout,
         });
@@ -616,6 +616,7 @@ describe("components", () => {
 
         rerender(<Dynamic items={["A", "B"]} />);
         unmount();
+        await waitUntilExit();
 
         const allWrites = stdout.getWrites();
         const lastContentWrite = allWrites.findLast((w) => !w.startsWith("\u001B[?25"));

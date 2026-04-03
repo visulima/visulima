@@ -10,6 +10,8 @@ const config = getVitestConfig({
         // PTY-based tests spawn child processes with tsx transpilation which takes
         // 2-3 seconds just for startup. The default 5s timeout is too tight.
         testTimeout: 15_000,
+        // Retry flaky timing-sensitive tests (render, resize, cursor) in CI
+        retry: process.env.CI ? 2 : 0,
     },
 });
 

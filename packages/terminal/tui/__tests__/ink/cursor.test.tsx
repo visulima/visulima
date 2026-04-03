@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { Box, Cursor, render, Text, useCursor, useInput, useStdout } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const showCursorEscape = "\u001B[?25h";
 const hideCursorEscape = "\u001B[?25l";
@@ -25,42 +26,6 @@ const getWriteCalls = (stream: NodeJS.WriteStream): string[] => {
     }
 
     return writes;
-};
-
-const waitForCondition = async (condition: () => boolean): Promise<void> => {
-    if (condition()) {
-        return;
-    }
-
-    const timeoutMs = 2000;
-    const intervalMs = 10;
-    const maxAttempts = Math.ceil(timeoutMs / intervalMs);
-
-    await new Promise<void>((resolve, reject) => {
-        let attempts = 0;
-        const interval = setInterval(() => {
-            try {
-                if (condition()) {
-                    clearInterval(interval);
-                    resolve();
-
-                    return;
-                }
-            } catch (error) {
-                clearInterval(interval);
-                reject(error instanceof Error ? error : new Error("Condition check threw"));
-
-                return;
-            }
-
-            attempts += 1;
-
-            if (attempts >= maxAttempts) {
-                clearInterval(interval);
-                reject(new Error(`Condition was not met in ${String(timeoutMs)}ms`));
-            }
-        }, intervalMs);
-    });
 };
 
 const InputApp = () => {
@@ -106,7 +71,7 @@ describe("cursor", () => {
         const { unmount } = render(<InputApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const firstRenderOutput = getWriteCalls(stdout).join("");
 
@@ -123,7 +88,7 @@ describe("cursor", () => {
         const { unmount } = render(<InputApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const output = getWriteCalls(stdout).join("");
         const lastShowIndex = output.lastIndexOf(showCursorEscape);
@@ -141,10 +106,10 @@ describe("cursor", () => {
         const { unmount } = render(<InputApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         emitReadable(stdin, "a");
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(3)));
 
         const allOutput = getWriteCalls(stdout).join("");
 
@@ -161,14 +126,14 @@ describe("cursor", () => {
         const { unmount } = render(<InputApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(100);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         emitReadable(stdin, "a");
-        await delay(100);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(3)));
         const afterA = (stdout.write as any).mock.calls.length;
 
         emitReadable(stdin, " ");
-        await delay(100);
+        await waitFor(() => (stdout.write as any).mock.calls.length > afterA);
 
         expect((stdout.write as any).mock.calls.length).toBeGreaterThan(afterA);
 
@@ -206,7 +171,7 @@ describe("cursor", () => {
         const { unmount } = render(<Parent />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const initialRenderOutput = getWriteCalls(stdout).join("");
 
@@ -215,7 +180,10 @@ describe("cursor", () => {
         const writesBeforeEnter = (stdout.write as any).mock.calls.length;
 
         emitReadable(stdin, "\r");
-        await delay(50);
+        await waitFor(() => {
+            const output = getWriteCalls(stdout).slice(writesBeforeEnter).join("");
+            return output.includes(hideCursorEscape);
+        });
 
         const outputAfterChildUnmount = getWriteCalls(stdout).slice(writesBeforeEnter).join("");
         const lastShowIndex = outputAfterChildUnmount.lastIndexOf(showCursorEscape);
@@ -301,12 +269,12 @@ describe("cursor", () => {
         const { unmount } = render(<MultiLineApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const writesBeforeInput = (stdout.write as any).mock.calls.length;
 
         emitReadable(stdin, "x");
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).slice(writesBeforeInput).join("").includes("x"));
 
         const secondRenderOutput = getWriteCalls(stdout).slice(writesBeforeInput).join("");
 
@@ -331,7 +299,7 @@ describe("cursor", () => {
         const { unmount } = render(<DebugStdoutWriteApp />, { debug: true, stdout });
         currentUnmount = unmount;
 
-        await waitForCondition(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
+        await waitFor(() => getWriteCalls(stdout).some((write) => write.includes("from stdout hook\nHello")));
 
         const writes = getWriteCalls(stdout);
         const hookWrite = writes.find((write) => write.includes("from stdout hook\nHello"));
@@ -356,7 +324,7 @@ describe("cursor", () => {
         const { unmount } = render(<InlineApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const output = getWriteCalls(stdout).join("");
 
@@ -382,7 +350,7 @@ describe("cursor", () => {
         const { unmount } = render(<InlineApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const output = getWriteCalls(stdout).join("");
 
@@ -417,7 +385,7 @@ describe("cursor", () => {
         const { unmount } = render(<InlineInputApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(2)));
 
         // Initial: "> " is 2 chars, cursor at column 2
         let output = getWriteCalls(stdout).join("");
@@ -425,7 +393,7 @@ describe("cursor", () => {
         expect(output).toContain(cursorTo(2));
 
         emitReadable(stdin, "ab");
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(cursorTo(4)));
 
         // After "ab": "> ab" is 4 chars, cursor at column 4
         output = getWriteCalls(stdout).join("");
@@ -449,7 +417,7 @@ describe("cursor", () => {
         const { unmount } = render(<InlineApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const output = getWriteCalls(stdout).join("");
 
@@ -475,7 +443,7 @@ describe("cursor", () => {
         const { unmount } = render(<InlineApp />, { stdin, stdout });
         currentUnmount = unmount;
 
-        await delay(50);
+        await waitFor(() => getWriteCalls(stdout).join("").includes(showCursorEscape));
 
         const output = getWriteCalls(stdout).join("");
 

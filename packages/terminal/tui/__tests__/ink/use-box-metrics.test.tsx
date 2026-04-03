@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import type { DOMElement } from "../../src/ink/index";
 import { Box, render, Text, useBoxMetrics } from "../../src/ink/index";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 describe("use-box-metrics", () => {
     it("returns correct size on first render", async () => {
@@ -91,7 +92,7 @@ describe("use-box-metrics", () => {
 
         (stdout as any).columns = 60;
         stdout.emit("resize");
-        await delay(200);
+        await waitFor(() => stripAnsi(stdout.get()).includes("Width:60"));
 
         expect(stripAnsi(stdout.get())).toContain("Width:60");
     });

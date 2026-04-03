@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { Box, render, Text, useWindowSize } from "../../src/ink/index";
 import type { FakeStdout } from "../helpers/ink-create-stdout";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const getWriteContents = (stdout: FakeStdout): string[] => stdout.getWrites().filter((w) => !w.startsWith("\u001B[?25") && !w.startsWith("\u001B[?2026"));
 
@@ -35,7 +36,7 @@ describe("terminal-resize", () => {
         (stdout as any).columns = 60;
         (stdout as any).rows = 20;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "").includes("60x20"));
 
         expect(stripAnsi(getWriteContents(stdout).at(-1)!)).toContain("60x20");
     });
@@ -138,7 +139,7 @@ describe("terminal-resize", () => {
 
         stdout.columns = 50;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "") !== initialOutput);
 
         const lastOutput = stripAnsi(getWriteContents(stdout).at(-1)!);
 
@@ -164,7 +165,7 @@ describe("terminal-resize", () => {
 
         stdout.columns = 100;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "") !== stripAnsi(initialOutput));
 
         const lastOutput = getWriteContents(stdout).at(-1)!;
 
@@ -189,7 +190,7 @@ describe("terminal-resize", () => {
 
         stdout.columns = 80;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "") !== initialOutput);
 
         const afterFirstDecrease = stripAnsi(getWriteContents(stdout).at(-1)!);
 
@@ -198,7 +199,7 @@ describe("terminal-resize", () => {
 
         stdout.columns = 60;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "") !== afterFirstDecrease);
 
         const afterSecondDecrease = stripAnsi(getWriteContents(stdout).at(-1)!);
 
@@ -223,7 +224,7 @@ describe("terminal-resize", () => {
 
         stdout.columns = 50;
         stdout.emit("resize");
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "") !== initialOutput);
 
         const afterResizeOutput = stripAnsi(getWriteContents(stdout).at(-1)!);
 
@@ -235,7 +236,7 @@ describe("terminal-resize", () => {
                 <Text>Updated Content</Text>
             </Box>,
         );
-        await delay(100);
+        await waitFor(() => stripAnsi(getWriteContents(stdout).at(-1) ?? "").includes("Updated Content"));
 
         expect(stripAnsi(getWriteContents(stdout).at(-1)!)).toContain("Updated Content");
     });
