@@ -1,0 +1,248 @@
+import { PassThrough } from "node:stream";
+
+import { describe, expect, it } from "vitest";
+
+import { createInputHandler } from "../src/flow-controllers/input-handler";
+import { formatTimingTable } from "../src/flow-controllers/log-timings";
+import { withRestart } from "../src/flow-controllers/restart-process";
+import { runTeardown } from "../src/flow-controllers/teardown";
+import { runConcurrentFallback } from "../src/concurrent-fallback";
+import type { ConcurrentCloseEvent } from "../src/types";
+
+describe("formatTimingTable", () => {
+    const makeEvent = (
+        index: number,
+        name: string,
+        exitCode: number,
+        durationMs: number,
+    ): ConcurrentCloseEvent => ({
+        index,
+        command: `echo ${name}`,
+        name,
+        exitCode,
+        killed: false,
+        durationMs,
+    });
+
+    it("should format a single command", () => {
+        const table = formatTimingTable([makeEvent(0, "build", 0, 1234)]);
+
+        expect(table).toContain("build");
+        expect(table).toContain("1.2s");
+        expect(table).toContain("0");
+    });
+
+    it("should sort by duration descending", () => {
+        const events = [
+            makeEvent(0, "fast", 0, 100),
+            makeEvent(1, "slow", 0, 5000),
+            makeEvent(2, "medium", 0, 1000),
+        ];
+
+        const table = formatTimingTable(events);
+        const lines = table.split("\n");
+
+        // Skip header and separator (first 2 lines)
+        const dataLines = lines.slice(2);
+        expect(dataLines[0]).toContain("slow");
+        expect(dataLines[1]).toContain("medium");
+        expect(dataLines[2]).toContain("fast");
+    });
+
+    it("should show killed status", () => {
+        const event: ConcurrentCloseEvent = {
+            index: 0,
+            command: "sleep 10",
+            name: "long",
+            exitCode: -9,
+            killed: true,
+            durationMs: 500,
+        };
+
+        const table = formatTimingTable([event]);
+        expect(table).toContain("yes");
+    });
+
+    it("should return empty string for no events", () => {
+        expect(formatTimingTable([])).toBe("");
+    });
+
+    it("should truncate long commands", () => {
+        const event = makeEvent(0, "x", 0, 100);
+        event.command = "a".repeat(50);
+
+        const table = formatTimingTable([event]);
+        expect(table).toContain("\u2026"); // ellipsis
+    });
+
+    it("should format millisecond durations", () => {
+        const table = formatTimingTable([makeEvent(0, "quick", 0, 42)]);
+        expect(table).toContain("42ms");
+    });
+
+    it("should format minute durations", () => {
+        const table = formatTimingTable([makeEvent(0, "long", 0, 90_000)]);
+        expect(table).toContain("1m");
+    });
+});
+
+describe("createInputHandler", () => {
+    it("should route unprefixed input to default target", () => {
+        const stdin0 = new PassThrough();
+        const inputStream = new PassThrough();
+        const chunks: string[] = [];
+
+        stdin0.on("data", (data: Buffer) => chunks.push(data.toString()));
+
+        const cleanup = createInputHandler(
+            [{ index: 0, name: "server", stdin: stdin0 }],
+            { inputStream, defaultTarget: 0 },
+        );
+
+        inputStream.write("hello\n");
+
+        expect(chunks).toEqual(["hello\n"]);
+        cleanup();
+    });
+
+    it("should route prefixed input by name", () => {
+        const stdin0 = new PassThrough();
+        const stdin1 = new PassThrough();
+        const inputStream = new PassThrough();
+        const chunks0: string[] = [];
+        const chunks1: string[] = [];
+
+        stdin0.on("data", (data: Buffer) => chunks0.push(data.toString()));
+        stdin1.on("data", (data: Buffer) => chunks1.push(data.toString()));
+
+        const cleanup = createInputHandler(
+            [
+                { index: 0, name: "server", stdin: stdin0 },
+                { index: 1, name: "client", stdin: stdin1 },
+            ],
+            { inputStream },
+        );
+
+        inputStream.write("client:hello\n");
+
+        expect(chunks0).toEqual([]);
+        expect(chunks1).toEqual(["hello\n"]);
+        cleanup();
+    });
+
+    it("should route prefixed input by index", () => {
+        const stdin0 = new PassThrough();
+        const stdin1 = new PassThrough();
+        const inputStream = new PassThrough();
+        const chunks1: string[] = [];
+
+        stdin1.on("data", (data: Buffer) => chunks1.push(data.toString()));
+
+        const cleanup = createInputHandler(
+            [
+                { index: 0, stdin: stdin0 },
+                { index: 1, stdin: stdin1 },
+            ],
+            { inputStream },
+        );
+
+        inputStream.write("1:world\n");
+
+        expect(chunks1).toEqual(["world\n"]);
+        cleanup();
+    });
+
+    it("should cleanup listeners on dispose", () => {
+        const inputStream = new PassThrough();
+
+        const cleanup = createInputHandler([], { inputStream });
+        cleanup();
+
+        expect(inputStream.listenerCount("data")).toBe(0);
+    });
+});
+
+describe("withRestart", () => {
+    it("should not restart when tries is 0", async () => {
+        let callCount = 0;
+
+        const result = await withRestart(
+            async (commands, options) => {
+                callCount++;
+                return runConcurrentFallback(commands, options);
+            },
+            [{ command: "exit 1" }],
+            {},
+            { tries: 0, delay: 0 },
+        );
+
+        expect(callCount).toBe(1);
+        expect(result.success).toBe(false);
+    });
+
+    it("should restart failing commands up to N tries", async () => {
+        let callCount = 0;
+
+        const result = await withRestart(
+            async (commands, options) => {
+                callCount++;
+                return runConcurrentFallback(commands, options);
+            },
+            [{ command: "exit 1" }],
+            {},
+            { tries: 2, delay: 0 },
+        );
+
+        // Original + 2 retries = 3 calls
+        expect(callCount).toBe(3);
+        expect(result.success).toBe(false);
+    });
+
+    it("should not restart successful commands", async () => {
+        let callCount = 0;
+
+        const result = await withRestart(
+            async (commands, options) => {
+                callCount++;
+                return runConcurrentFallback(commands, options);
+            },
+            [{ command: "echo ok" }],
+            {},
+            { tries: 3, delay: 0 },
+        );
+
+        expect(callCount).toBe(1);
+        expect(result.success).toBe(true);
+    });
+});
+
+describe("runTeardown", () => {
+    it("should run teardown commands sequentially", async () => {
+        const results = await runTeardown({
+            commands: ["echo cleanup1", "echo cleanup2"],
+        });
+
+        expect(results).toEqual([0, 0]);
+    });
+
+    it("should return non-zero for failing commands", async () => {
+        const results = await runTeardown({
+            commands: ["exit 42"],
+        });
+
+        expect(results).toEqual([42]);
+    });
+
+    it("should continue after a failure", async () => {
+        const results = await runTeardown({
+            commands: ["exit 1", "echo ok"],
+        });
+
+        expect(results).toEqual([1, 0]);
+    });
+
+    it("should handle empty commands", async () => {
+        const results = await runTeardown({ commands: [] });
+        expect(results).toEqual([]);
+    });
+});

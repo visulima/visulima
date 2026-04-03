@@ -402,6 +402,136 @@ export interface TaskRunnerContext {
     workspaceRoot: string;
 }
 
+// ─── Concurrent Process Runner Types ───────────────────────────────────
+
+/**
+ * Input for a concurrent command -- either a string or a config object.
+ */
+export type ConcurrentCommandInput =
+    | string
+    | {
+          command: string;
+          cwd?: string;
+          env?: Record<string, string>;
+          name?: string;
+          prefixColor?: string;
+          stdin?: "inherit" | "null" | "pipe";
+      };
+
+/**
+ * Configuration for a single command to run concurrently.
+ */
+export interface ConcurrentCommandConfig {
+    /** The command string to execute (passed to shell). */
+    command: string;
+    /** Working directory for the command. */
+    cwd?: string;
+    /** Additional environment variables merged with process env. */
+    env?: Record<string, string>;
+    /** Human-readable name for this command (used in prefixes/logs). */
+    name?: string;
+    /** Color for the prefix (used by output formatter). */
+    prefixColor?: string;
+    /** Whether to use shell execution (default: true). */
+    shell?: boolean;
+    /**
+     * Stdin mode for the child process.
+     * - "null" (default): stdin closed, child cannot read input
+     * - "pipe": stdin is piped, can be written to programmatically
+     * - "inherit": child inherits parent's stdin (for interactive commands like vite dev)
+     */
+    stdin?: "inherit" | "null" | "pipe";
+}
+
+/**
+ * Options controlling the concurrent runner behavior.
+ */
+export interface ConcurrentRunnerOptions {
+    /** Conditions under which to kill other processes: "success", "failure". */
+    killOthers?: ("failure" | "success")[];
+    /** Signal to send when killing processes (default: "SIGTERM"). */
+    killSignal?: string;
+    /** Milliseconds to wait after kill signal before sending SIGKILL (default: 5000). */
+    killTimeout?: number;
+    /** Maximum number of processes to run simultaneously. 0 = unlimited. */
+    maxProcesses?: number;
+    /** Callback for real-time process events. */
+    onEvent?: (event: ProcessEvent) => void;
+    /**
+     * Custom shell path for command execution.
+     * Overrides the platform default (/bin/sh on Unix, cmd.exe on Windows).
+     * Automatically detected from npm's `script-shell` config if not set.
+     */
+    shellPath?: string;
+    /** Restart options for failed commands. */
+    restart?: {
+        /** Delay between restarts in ms. "exponential" for 2^attempt * 1000ms. */
+        delay?: number | "exponential";
+        /** Maximum restart attempts per command. 0 = no restarts. -1 = infinite. */
+        tries: number;
+    };
+    /** Success condition: "first", "last", "all", or "command-<name|index>". */
+    successCondition?: string;
+    /** Commands to run sequentially after all processes complete. */
+    teardown?: string[];
+    /** Working directory for teardown commands. */
+    teardownCwd?: string;
+    /** Print a timing summary table after completion. Default: false. */
+    timings?: boolean;
+}
+
+/**
+ * An event emitted during concurrent execution.
+ */
+export interface ProcessEvent {
+    /** Command name (for close events). */
+    commandName?: string;
+    /** Duration in milliseconds (for close events). */
+    durationMs?: number;
+    /** Exit code (for close events). */
+    exitCode?: number;
+    /** Index of the command that produced this event. */
+    index: number;
+    /** Whether the process was killed (for close events). */
+    killed?: boolean;
+    /** Event type: "stdout", "stderr", "close", "error". */
+    kind: "close" | "error" | "stderr" | "stdout";
+    /** Error message (for error events). */
+    message?: string;
+    /** Text content (for stdout/stderr events). */
+    text?: string;
+}
+
+/**
+ * Result of a close event for a single command.
+ */
+export interface ConcurrentCloseEvent {
+    /** The command string that was executed. */
+    command: string;
+    /** Duration in milliseconds. */
+    durationMs: number;
+    /** Exit code. -1 if killed by signal. */
+    exitCode: number;
+    /** Index of the command. */
+    index: number;
+    /** Whether the process was forcefully killed. */
+    killed: boolean;
+    /** The command name (if provided). */
+    name?: string;
+}
+
+/**
+ * Overall result of a concurrent run.
+ */
+export interface ConcurrentRunResult {
+    /** Close events for all commands, in completion order. */
+    closeEvents: ConcurrentCloseEvent[];
+    /** Whether the run succeeded according to the success condition. */
+    success: boolean;
+}
+
+// ─── Lifecycle Types ────────────────────────────────────────────────────
+
 /**
  * Interface for lifecycle event handlers.
  */
