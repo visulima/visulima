@@ -590,4 +590,6 @@ module.exports.hashFilesBatch = nativeBinding.hashFilesBatch
 module.exports.hashFilesInDirectory = nativeBinding.hashFilesInDirectory
 module.exports.hashString = nativeBinding.hashString
 module.exports.hashStrings = nativeBinding.hashStrings
+module.exports.runConcurrent = nativeBinding.runConcurrent
+module.exports.runConcurrentBatch = nativeBinding.runConcurrentBatch
 module.exports.topologicalSort = nativeBinding.topologicalSort

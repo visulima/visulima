@@ -37,6 +37,49 @@ interface NativeCycleResult {
     has_cycle: boolean;
 }
 
+interface NativeConcurrentCommandConfig {
+    command: string;
+    cwd?: string;
+    env?: Record<string, string>;
+    name?: string;
+    shell?: boolean;
+    stdin?: string;
+}
+
+interface NativeConcurrentRunnerOptions {
+    killOthers?: string[];
+    killSignal?: string;
+    killTimeout?: number;
+    maxProcesses?: number;
+    shellPath?: string;
+    successCondition?: string;
+}
+
+interface NativeProcessEvent {
+    commandName?: string;
+    durationMs?: number;
+    exitCode?: number;
+    index: number;
+    killed?: boolean;
+    kind: string;
+    message?: string;
+    text?: string;
+}
+
+interface NativeConcurrentCloseEvent {
+    command: string;
+    durationMs: number;
+    exitCode: number;
+    index: number;
+    killed: boolean;
+    name?: string;
+}
+
+interface NativeConcurrentRunResult {
+    closeEvents: NativeConcurrentCloseEvent[];
+    success: boolean;
+}
+
 interface NativeBindings {
     collectFiles: (directory: string) => string[];
     computeTaskHash: (details: NativeTaskHashDetails) => string;
@@ -57,6 +100,17 @@ interface NativeBindings {
     hashFilesInDirectory: (directory: string, workspaceRoot: string) => NativeFileHash[];
     hashString: (input: string) => string;
     hashStrings: (inputs: string[]) => string;
+
+    // Concurrent process runner
+    runConcurrent: (
+        commands: NativeConcurrentCommandConfig[],
+        options: NativeConcurrentRunnerOptions,
+        onEvent: (event: NativeProcessEvent) => void,
+    ) => Promise<NativeConcurrentRunResult>;
+    runConcurrentBatch: (
+        commands: NativeConcurrentCommandConfig[],
+        options: NativeConcurrentRunnerOptions,
+    ) => Promise<NativeConcurrentRunResult>;
     topologicalSort: (graph: NativeTaskGraph) => string[];
 }
 
@@ -87,7 +141,7 @@ const loadNativeBindings = (): NativeBindings | undefined => {
 
         // Validate that the loaded binding has the expected API surface.
         // A stale .node binary may load successfully but be missing functions.
-        if (typeof loaded.hashCommand === "function" && typeof loaded.hashFile === "function") {
+        if (typeof loaded.hashCommand === "function" && typeof loaded.hashFile === "function" && typeof loaded.runConcurrent === "function") {
             nativeBindings = loaded;
         }
     } catch {
@@ -103,5 +157,16 @@ const loadNativeBindings = (): NativeBindings | undefined => {
  */
 const isNativeAvailable = (): boolean => loadNativeBindings() !== undefined;
 
-export type { NativeBindings, NativeCycleResult, NativeFileHash, NativeTaskGraph, NativeTaskHashDetails };
+export type {
+    NativeBindings,
+    NativeConcurrentCloseEvent,
+    NativeConcurrentCommandConfig,
+    NativeConcurrentRunnerOptions,
+    NativeConcurrentRunResult,
+    NativeCycleResult,
+    NativeFileHash,
+    NativeProcessEvent,
+    NativeTaskGraph,
+    NativeTaskHashDetails,
+};
 export { isNativeAvailable, loadNativeBindings };

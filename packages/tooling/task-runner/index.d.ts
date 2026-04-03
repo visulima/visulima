@@ -12,6 +12,72 @@ export declare function collectFiles(dir: string): Array<string>
  */
 export declare function computeTaskHash(details: NativeTaskHashDetails): string
 
+/** Result of a close event for a single command. */
+export interface ConcurrentCloseEvent {
+  /** Index of the command. */
+  index: number
+  /** The command string that was executed. */
+  command: string
+  /** The command name (if provided). */
+  name?: string
+  /** Exit code. -1 if killed by signal. */
+  exitCode: number
+  /** Whether the process was forcefully killed. */
+  killed: boolean
+  /** Duration in milliseconds. */
+  durationMs: number
+}
+
+/** Configuration for a single command to run concurrently. */
+export interface ConcurrentCommandConfig {
+  /** The command string to execute (passed to shell). */
+  command: string
+  /** Human-readable name for this command (used in prefixes/logs). */
+  name?: string
+  /** Working directory for the command. */
+  cwd?: string
+  /** Additional environment variables merged with process env. */
+  env?: Record<string, string>
+  /** Whether to use shell execution (default: true). */
+  shell?: boolean
+  /** Stdin mode: "null" (default), "pipe", or "inherit". */
+  stdin?: string
+}
+
+/** Options controlling the concurrent runner behavior. */
+export interface ConcurrentRunnerOptions {
+  /**
+   * Maximum number of processes to run simultaneously.
+   * 0 or absent means unlimited.
+   */
+  maxProcesses?: number
+  /** Signal to send when killing processes (default: "SIGTERM"). */
+  killSignal?: string
+  /**
+   * Conditions under which to kill other processes.
+   * Values: "success", "failure". Empty = never kill others.
+   */
+  killOthers?: Array<string>
+  /** Success condition: "first", "last", "all", or "command-<name|index>". */
+  successCondition?: string
+  /** Milliseconds to wait after sending kill signal before sending SIGKILL. */
+  killTimeout?: number
+  /**
+   * Custom shell path for command execution (e.g., from npm script-shell config).
+   * When set, used instead of the platform default (/bin/sh or cmd.exe).
+   * Format: "/path/to/shell" — args are always ["-c", command].
+   */
+  shellPath?: string
+}
+
+/** Overall result of a concurrent run. */
+export interface ConcurrentRunResult {
+  /** Close events for all commands, in completion order. */
+  closeEvents: Array<ConcurrentCloseEvent>
+  /** Whether the run succeeded according to the success condition. */
+  success: boolean
+}
+
 /** Result of cycle detection. */
 export interface CycleResult {
   /** Whether a cycle was found. */
@@ -107,6 +173,50 @@ export interface NativeTaskHashDetails {
   /** Runtime hashes as key-value pairs [key, hash]. */
   runtime?: Array<Array<string>>
 }
+
+/**
+ * An event emitted during concurrent execution.
+ * Discriminated by the `kind` field.
+ */
+export interface ProcessEvent {
+  /** Event type: "stdout", "stderr", "close", "error". */
+  kind: string
+  /** Index of the command that produced this event. */
+  index: number
+  /** Text content (for stdout/stderr events). */
+  text?: string
+  /** Exit code (for close events). -1 if killed by signal. */
+  exitCode?: number
+  /** Whether the process was killed (for close events). */
+  killed?: boolean
+  /** Error message (for error events). */
+  message?: string
+  /** Command name (for close events). */
+  commandName?: string
+  /** Duration in milliseconds (for close events). */
+  durationMs?: number
+}
+
+/**
+ * Run commands concurrently with real-time event streaming.
+ *
+ * Each stdout/stderr line and process lifecycle event is sent to the
+ * `on_event` callback as it occurs. The function resolves with the
+ * final result after all processes have completed.
+ *
+ * Commands originate from package.json scripts (trusted input).
+ */
+export declare function runConcurrent(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions, onEvent: (event: ProcessEvent) => void): Promise<ConcurrentRunResult>
+
+/**
+ * Run commands concurrently without event streaming.
+ *
+ * Collects all output internally and returns the final result.
+ * Useful for non-interactive contexts where real-time output is not needed.
+ *
+ * Commands originate from package.json scripts (trusted input).
+ */
+export declare function runConcurrentBatch(commands: Array<ConcurrentCommandConfig>, options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult>
 
 /**
  * Performs a topological sort of the task graph.

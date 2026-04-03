@@ -1,3 +1,18 @@
+// Command parser
+export type { ParseCommandsOptions } from "./command-parser";
+export { expandArguments, expandShortcut, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
+
+// Concurrent process runner
+export { runConcurrently } from "./concurrent";
+export { runConcurrentFallback } from "./concurrent-fallback";
+
+// Shell detection
+export { detectScriptShell } from "./detect-shell";
+
+// Flow controllers
+export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
+export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
+
 // Affected detection (git diff-based)
 export type { AffectedOptions, AffectedResult } from "./affected";
 export { filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
@@ -73,12 +88,18 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 
 // Core types
 export type {
+    ConcurrentCloseEvent,
+    ConcurrentCommandConfig,
+    ConcurrentCommandInput,
+    ConcurrentRunnerOptions,
+    ConcurrentRunResult,
     EnvironmentInput,
     ExternalDependencyInput,
     FileSetInput,
     InputDefinition,
     LifeCycleInterface,
     NamedInputs,
+    ProcessEvent,
     ProjectConfiguration,
     ProjectGraph,
     ProjectGraphDependency,

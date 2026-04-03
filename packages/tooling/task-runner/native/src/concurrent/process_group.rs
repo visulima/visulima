@@ -1,0 +1,148 @@
+/// Platform-specific process tree management.
+///
+/// Unix: spawn children in new process groups via `setsid`, kill via `killpg`.
+/// Windows: assign children to Job Objects, terminate via `TerminateJobObject`.
+
+#[cfg(unix)]
+mod unix {
+    use std::io;
+
+    use nix::libc;
+    use nix::sys::signal::{self, Signal};
+    use nix::unistd::Pid;
+
+    /// Pre-exec hook: call `setsid()` to create a new session/process group.
+    /// Must be called inside `Command::pre_exec` (unsafe).
+    pub unsafe fn pre_exec_setsid() -> io::Result<()> {
+        if libc::setsid() == -1 {
+            return Err(io::Error::last_os_error());
+        }
+        Ok(())
+    }
+
+    /// Kill an entire process group by PID.
+    /// The PID is used as the PGID (since we called setsid).
+    pub fn kill_process_group(pid: u32, signal_name: &str) -> io::Result<()> {
+        let sig = parse_signal(signal_name).unwrap_or(Signal::SIGTERM);
+        let pgid = Pid::from_raw(-(pid as i32));
+        signal::kill(pgid, sig).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    }
+
+    fn parse_signal(name: &str) -> Option<Signal> {
+        match name.to_uppercase().as_str() {
+            "SIGTERM" | "TERM" => Some(Signal::SIGTERM),
+            "SIGKILL" | "KILL" => Some(Signal::SIGKILL),
+            "SIGINT" | "INT" => Some(Signal::SIGINT),
+            "SIGHUP" | "HUP" => Some(Signal::SIGHUP),
+            "SIGQUIT" | "QUIT" => Some(Signal::SIGQUIT),
+            _ => None,
+        }
+    }
+}
+
+#[cfg(windows)]
+mod windows {
+    use std::io;
+    use std::os::windows::io::AsRawHandle;
+    use std::process::Child;
+
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows_sys::Win32::System::JobObjects::{
+        AssignProcessToJobObject, CreateJobObjectW, SetInformationJobObject,
+        TerminateJobObject, JobObjectExtendedLimitInformation,
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+    };
+
+    /// A Windows Job Object handle that ensures child process tree cleanup.
+    pub struct JobObject {
+        handle: HANDLE,
+    }
+
+    impl JobObject {
+        pub fn new() -> io::Result<Self> {
+            let handle = unsafe { CreateJobObjectW(std::ptr::null(), std::ptr::null()) };
+            if handle == 0 {
+                return Err(io::Error::last_os_error());
+            }
+
+            // Configure: kill all processes when the job object is closed
+            let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { std::mem::zeroed() };
+            info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+
+            let result = unsafe {
+                SetInformationJobObject(
+                    handle,
+                    JobObjectExtendedLimitInformation,
+                    &info as *const _ as *const _,
+                    std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+                )
+            };
+
+            if result == 0 {
+                unsafe { CloseHandle(handle) };
+                return Err(io::Error::last_os_error());
+            }
+
+            Ok(Self { handle })
+        }
+
+        pub fn assign_process(&self, child: &Child) -> io::Result<()> {
+            let process_handle = child.as_raw_handle() as HANDLE;
+            let result = unsafe { AssignProcessToJobObject(self.handle, process_handle) };
+            if result == 0 {
+                return Err(io::Error::last_os_error());
+            }
+            Ok(())
+        }
+
+        pub fn terminate(&self, exit_code: u32) -> io::Result<()> {
+            let result = unsafe { TerminateJobObject(self.handle, exit_code) };
+            if result == 0 {
+                return Err(io::Error::last_os_error());
+            }
+            Ok(())
+        }
+    }
+
+    impl Drop for JobObject {
+        fn drop(&mut self) {
+            unsafe { CloseHandle(self.handle) };
+        }
+    }
+
+    // SAFETY: The Job Object handle is thread-safe in Windows.
+    unsafe impl Send for JobObject {}
+    unsafe impl Sync for JobObject {}
+}
+
+/// Kill a process tree by PID with the given signal.
+pub fn kill_tree(pid: u32, signal: &str) -> std::io::Result<()> {
+    #[cfg(unix)]
+    {
+        unix::kill_process_group(pid, signal)
+    }
+
+    #[cfg(windows)]
+    {
+        // On Windows, if we have a Job Object, termination happens via the Job.
+        // This fallback kills just the process if no Job Object is available.
+        let _ = signal;
+        let output = std::process::Command::new("taskkill")
+            .args(["/F", "/T", "/PID", &pid.to_string()])
+            .output()?;
+        if output.status.success() {
+            Ok(())
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("taskkill failed: {}", String::from_utf8_lossy(&output.stderr)),
+            ))
+        }
+    }
+}
+
+#[cfg(unix)]
+pub use unix::pre_exec_setsid;
+
+#[cfg(windows)]
+pub use windows::JobObject;
