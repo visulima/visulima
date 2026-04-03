@@ -15,6 +15,7 @@ import type { TaskStore } from "./TaskStore";
 
 const MIN_VIEWPORT_WIDTH = 40;
 const MIN_VIEWPORT_HEIGHT = 10;
+const MIN_HORIZONTAL_WIDTH = 100;
 
 // ── Component ───────────────────────────────────────────────────────────
 
@@ -335,9 +336,9 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
                     return;
                 }
 
-                // Enter → fullscreen for selected task
+                // Enter in task list → focus the output panel
                 if (key.return) {
-                    store.setViewMode("fullscreen");
+                    store.setFocusedPanel("output");
 
                     return;
                 }
@@ -364,9 +365,10 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
                     return;
                 }
 
-                // Enter in list view → switch to split view
+                // Enter in list view → switch to split view with output focused
                 if (key.return && state.viewMode === "list") {
                     store.setViewMode("split");
+                    store.setFocusedPanel("output");
 
                     return;
                 }
@@ -489,7 +491,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
 
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0} justifyContent="space-between">
-            <Box paddingX={1} gap={2} flexShrink={0}>
+            <Box paddingX={1} gap={2} flexWrap="wrap" flexGrow={1}>
                 {footerItems}
             </Box>
             <Box paddingX={1} flexShrink={0}>
@@ -502,6 +504,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
 
     const helpPopup = (
         <Dialog
+            backgroundColor="#1e1e1e"
             footer={
                 <Text dimColor>
                     <Text bold color="white">{"\u2191\u2193"}</Text> scroll  <Text bold color="white">?</Text>/<Text bold color="white">Esc</Text> close
@@ -606,36 +609,58 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
     // ── SPLIT VIEW ──────────────────────────────────────────────────
 
     if (state.viewMode === "split") {
-        const taskListWidth = Math.floor(columns * 0.4);
+        const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;
+
+        const taskListPanel = (
+            <TaskListPanel
+                compact
+                filterActive={state.filterActive}
+                filterText={state.filterText}
+                focused={state.focusedPanel === "tasks"}
+                headerStatus={headerStatus}
+                pinnedTaskIds={state.pinnedTaskIds}
+                rows={filteredRows}
+                scrollRef={listScrollRef}
+                selectedIndex={state.selectedIndex}
+                title={headerTitle}
+            />
+        );
+
+        const outputPanel = (
+            <OutputPanel
+                duration={outputTask?.duration ?? outputTask?.elapsed}
+                focused={state.focusedPanel === "output"}
+                output={outputContent}
+                scrollRef={outputScrollRef}
+                showFullscreenHint
+                status={outputTask?.status}
+                taskId={outputTaskId}
+            />
+        );
+
+        if (isHorizontal) {
+            const taskListWidth = Math.floor(columns * 0.4);
+
+            return (
+                <Box flexDirection="column" height={rows} width={columns}>
+                    <Box flexDirection="row" flexGrow={1}>
+                        <Box width={taskListWidth}>{taskListPanel}</Box>
+                        <Box flexGrow={1}>{outputPanel}</Box>
+                    </Box>
+                    {footer}
+                    {quitDialog}
+                    {helpPopup}
+                </Box>
+            );
+        }
+
+        // Vertical layout (narrow terminal)
+        const listHeight = Math.floor(rows * 0.45);
 
         return (
             <Box flexDirection="column" height={rows} width={columns}>
-                <Box flexDirection="row" flexGrow={1}>
-                    <Box width={taskListWidth}>
-                        <TaskListPanel
-                            filterActive={state.filterActive}
-                            filterText={state.filterText}
-                            focused={state.focusedPanel === "tasks"}
-                            headerStatus={headerStatus}
-                            pinnedTaskIds={state.pinnedTaskIds}
-                            rows={filteredRows}
-                            scrollRef={listScrollRef}
-                            selectedIndex={state.selectedIndex}
-                            title={headerTitle}
-                        />
-                    </Box>
-                    <Box flexGrow={1}>
-                        <OutputPanel
-                            duration={outputTask?.duration ?? outputTask?.elapsed}
-                            focused={state.focusedPanel === "output"}
-                            output={outputContent}
-                            scrollRef={outputScrollRef}
-                            showFullscreenHint
-                            status={outputTask?.status}
-                            taskId={outputTaskId}
-                        />
-                    </Box>
-                </Box>
+                <Box height={listHeight}>{taskListPanel}</Box>
+                <Box flexGrow={1}>{outputPanel}</Box>
                 {footer}
                 {quitDialog}
                 {helpPopup}

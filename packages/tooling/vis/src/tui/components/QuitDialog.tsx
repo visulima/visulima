@@ -79,6 +79,7 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
 
     return (
         <Dialog
+            backgroundColor="#1e1e1e"
             footer={
                 <Text dimColor>
                     Press <Text bold color="white">q</Text> to exit, <Text bold color="white">any key</Text> to stay

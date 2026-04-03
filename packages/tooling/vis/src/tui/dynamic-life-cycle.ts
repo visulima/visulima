@@ -186,7 +186,10 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
         },
 
         printTaskTerminalOutput(task: Task, _status: TaskStatus, output: string): void {
-            store.addOutput(task.id, output);
+            // Only add if endTasks didn't already set it (avoids double output)
+            if (!store.getSnapshot().outputs.has(task.id)) {
+                store.addOutput(task.id, output);
+            }
         },
 
         startCommand(): void {
