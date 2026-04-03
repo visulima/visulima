@@ -255,6 +255,109 @@ describe("expandWildcard", () => {
         const configs = result as ConcurrentCommandConfig[];
         expect(configs[0]!.name).toBe("my-name");
     });
+
+    it("should expand deno task wildcards from deno.json", () => {
+        writeFileSync(
+            join(fixtureDir, "deno.json"),
+            JSON.stringify({
+                tasks: {
+                    "dev-api": "deno run api.ts",
+                    "dev-web": "deno run web.ts",
+                    "build": "deno compile",
+                },
+            }),
+        );
+
+        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
+
+        expect(Array.isArray(result)).toBe(true);
+        const configs = result as ConcurrentCommandConfig[];
+        expect(configs).toHaveLength(2);
+
+        const commands = configs.map((c) => c.command).sort();
+        expect(commands).toEqual([
+            "deno task dev-api",
+            "deno task dev-web",
+        ]);
+    });
+
+    it("should expand deno task wildcards from deno.jsonc", () => {
+        writeFileSync(
+            join(fixtureDir, "deno.jsonc"),
+            `{
+                // This is a comment
+                "tasks": {
+                    "test-unit": "deno test unit/",
+                    "test-e2e": "deno test e2e/"
+                }
+            }`,
+        );
+
+        const result = expandWildcard({ command: "deno task test-*", cwd: fixtureDir });
+
+        expect(Array.isArray(result)).toBe(true);
+        const configs = result as ConcurrentCommandConfig[];
+        expect(configs).toHaveLength(2);
+    });
+
+    it("should handle deno.jsonc with URLs in string values", () => {
+        writeFileSync(
+            join(fixtureDir, "deno.jsonc"),
+            `{
+                // Import map
+                "imports": { "std/": "https://deno.land/std/" },
+                "tasks": {
+                    "dev-serve": "deno run --allow-net https://example.com/server.ts"
+                }
+            }`,
+        );
+
+        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
+
+        expect(Array.isArray(result)).toBe(true);
+        const configs = result as ConcurrentCommandConfig[];
+        expect(configs).toHaveLength(1);
+        expect(configs[0]!.command).toContain("dev-serve");
+    });
+
+    it("should give deno.json tasks precedence over package.json scripts", () => {
+        writeFileSync(
+            join(fixtureDir, "deno.json"),
+            JSON.stringify({ tasks: { "dev-app": "deno run app.ts" } }),
+        );
+        writeFileSync(
+            join(fixtureDir, "package.json"),
+            JSON.stringify({ scripts: { "dev-app": "node app.js" } }),
+        );
+
+        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
+
+        expect(Array.isArray(result)).toBe(true);
+        const configs = result as ConcurrentCommandConfig[];
+        expect(configs).toHaveLength(1);
+        // deno.json task should win over package.json script
+        expect(configs[0]!.command).toContain("dev-app");
+    });
+
+    it("should merge deno.json tasks with package.json scripts for deno", () => {
+        writeFileSync(
+            join(fixtureDir, "deno.json"),
+            JSON.stringify({ tasks: { "dev-deno": "deno run main.ts" } }),
+        );
+        writeFileSync(
+            join(fixtureDir, "package.json"),
+            JSON.stringify({ scripts: { "dev-node": "node main.js" } }),
+        );
+
+        const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
+
+        expect(Array.isArray(result)).toBe(true);
+        const configs = result as ConcurrentCommandConfig[];
+        expect(configs).toHaveLength(2);
+
+        const names = configs.map((c) => c.name).sort();
+        expect(names).toEqual(["dev-deno", "dev-node"]);
+    });
 });
 
 describe("parseCommands", () => {

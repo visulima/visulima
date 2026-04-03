@@ -202,7 +202,15 @@ impl ConcurrentRunner {
     }
 
     fn kill_all(&self, active: &mut [ProcessInfo]) {
-        for info in active.iter() {
+        for info in active.iter_mut() {
+            // Windows: use Job Object for reliable tree killing
+            #[cfg(windows)]
+            if let Some(ref job) = info.job {
+                let _ = job.terminate(1);
+                continue;
+            }
+
+            // Unix: kill process group; Windows fallback: taskkill
             if let Some(pid) = info.pid {
                 let _ = super::process_group::kill_tree(pid, &self.kill_signal);
             }

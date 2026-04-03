@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { ConcurrentCommandConfig } from "../types";
@@ -17,6 +17,48 @@ const readPackageScripts = (cwd: string): Record<string, string> => {
     } catch {
         return {};
     }
+};
+
+/**
+ * Reads tasks from deno.json or deno.jsonc at the given directory.
+ * Deno can also run package.json scripts as fallback, so both are merged.
+ */
+const readDenoTasks = (cwd: string): Record<string, string> => {
+    const tasks: Record<string, string> = {};
+
+    // Try deno.json first, then deno.jsonc
+    for (const filename of ["deno.json", "deno.jsonc"]) {
+        const filepath = join(cwd, filename);
+
+        if (existsSync(filepath)) {
+            try {
+                let raw = readFileSync(filepath, "utf8");
+
+                // Strip single-line comments for .jsonc.
+                // Only strips // comments that are NOT inside quoted strings.
+                if (filename.endsWith("c")) {
+                    raw = raw.replaceAll(/"(?:[^"\\]|\\.)*"|\/\/[^\n]*/g, (match) =>
+                        match.startsWith('"') ? match : "",
+                    );
+                }
+
+                const config = JSON.parse(raw) as { tasks?: Record<string, string> };
+
+                if (config.tasks) {
+                    Object.assign(tasks, config.tasks);
+                }
+            } catch {
+                // Malformed JSON -- skip
+            }
+
+            break; // Only read the first found
+        }
+    }
+
+    // Deno falls back to package.json scripts, but deno.json tasks take precedence
+    const pkgScripts = readPackageScripts(cwd);
+
+    return { ...pkgScripts, ...tasks };
 };
 
 /**
@@ -53,7 +95,8 @@ export const expandWildcard = (config: ConcurrentCommandConfig): ConcurrentComma
     }
 
     const cwd = config.cwd ?? process.cwd();
-    const scripts = readPackageScripts(cwd);
+    const isDeno = runMatch[0] === "deno task";
+    const scripts = isDeno ? readDenoTasks(cwd) : readPackageScripts(cwd);
     const scriptNames = Object.keys(scripts);
 
     // Build regex from the wildcard pattern

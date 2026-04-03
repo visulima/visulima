@@ -104,7 +104,22 @@ pub fn spawn_process(
         let _ = completion_tx.send(CompletionMessage { index, close_event });
     });
 
-    Ok(ProcessInfo { index, pid })
+    // Windows: create Job Object and assign the child process for tree killing
+    #[cfg(windows)]
+    let job = {
+        let job = process_group::JobObject::new().ok();
+        if let (Some(ref j), Some(p)) = (&job, pid) {
+            let _ = j.assign_process_by_pid(p);
+        }
+        job
+    };
+
+    Ok(ProcessInfo {
+        index,
+        pid,
+        #[cfg(windows)]
+        job,
+    })
 }
 
 /// Message sent when a process completes (after all I/O is drained).
@@ -117,6 +132,10 @@ pub struct CompletionMessage {
 pub struct ProcessInfo {
     pub index: u32,
     pub pid: Option<u32>,
+    /// Windows: Job Object that owns the process tree.
+    /// When terminated or dropped, kills all child processes.
+    #[cfg(windows)]
+    pub job: Option<process_group::JobObject>,
 }
 
 /// Build a tokio Command configured for execution.

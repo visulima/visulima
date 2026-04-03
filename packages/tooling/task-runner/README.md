@@ -27,11 +27,17 @@
 
 ## Features
 
+- **Concurrent process runner**: Run multiple commands in parallel with native Rust performance (NAPI bindings) and JS fallback
+- **Process tree management**: Proper cleanup via setsid/killpg (Unix) and Job Objects (Windows)
+- **Command parser pipeline**: `npm:build` shortcuts, `npm run watch-*` wildcard expansion, `{1}` argument placeholders
+- **Flow controllers**: Restart with backoff, stdin routing, timing summaries, teardown commands
+- **npm script-shell support**: Honors `npm config set script-shell` for custom shells (Git Bash, etc.)
+- **Long-running process support**: Configurable stdin mode (null/pipe/inherit), bounded output buffers
 - **Two caching modes**: Nx-style explicit inputs or Vite Task-style auto-fingerprinting
 - **Smart lockfile hashing**: Only hashes resolved versions relevant to each package (like Turborepo)
 - **Framework env inference**: Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, and more
 - **Remote caching**: Turborepo-compatible HTTP cache protocol
-- **Native Rust addon**: Optional xxHash-based parallel file hashing via napi-rs
+- **Native Rust addon**: Parallel file hashing (xxHash), concurrent process management via tokio
 - **Dependency-aware scheduling**: Topological task ordering with priority-based batching
 - **Incremental file hashing**: mtime-based change detection for near-instant cache checks
 - **Affected detection**: Git diff-based filtering to only run tasks for changed packages
@@ -87,6 +93,112 @@ const results = await defaultTaskRunner(tasks, {
 }, context);
 ```
 
+## Concurrent Process Runner
+
+Run multiple commands in parallel with real-time output streaming, process tree management, and automatic native acceleration.
+
+```typescript
+import { runConcurrently } from "@visulima/task-runner";
+
+// Basic usage
+const result = await runConcurrently(["npm run build", "npm run test", "npm run lint"]);
+console.log(result.success ? "All passed" : "Some failed");
+
+// With options
+const result = await runConcurrently(
+    [
+        { command: "vite dev", name: "web", stdin: "inherit" },
+        { command: "node api.js", name: "api" },
+    ],
+    {
+        maxProcesses: 4,
+        killOthers: ["failure"],     // Kill all if one fails
+        successCondition: "all",     // All must exit 0
+        onEvent: (event) => {        // Real-time streaming
+            if (event.kind === "stdout") {
+                console.log(`[${event.index}] ${event.text}`);
+            }
+        },
+    },
+);
+```
+
+### Command Parser
+
+Use `parseCommands` to expand shortcuts and wildcards before passing to `runConcurrently`:
+
+```typescript
+import { parseCommands, runConcurrently } from "@visulima/task-runner";
+
+const commands = parseCommands([
+    "npm:build",           // -> npm run build
+    "pnpm:test",           // -> pnpm run test
+    '"quoted command"',    // -> quoted command (quotes stripped)
+    "npm run watch-*",     // -> expands to all matching scripts in package.json
+    "deno task dev-*",     // -> expands from deno.json/deno.jsonc tasks
+]);
+
+await runConcurrently(commands);
+```
+
+### Flow Controllers
+
+```typescript
+import { runConcurrently } from "@visulima/task-runner";
+
+// Restart failed commands with exponential backoff
+await runConcurrently(["flaky-command"], {
+    restart: { tries: 3, delay: "exponential" },
+});
+
+// Print timing summary after completion
+await runConcurrently(["npm run build", "npm run test"], {
+    timings: true,
+});
+
+// Run cleanup commands after all processes finish
+await runConcurrently(["npm run dev"], {
+    teardown: ["docker compose down", "rm -rf .cache"],
+});
+```
+
+### Shell Configuration
+
+The runner automatically detects `npm config set script-shell` for custom shells (e.g., Git Bash on Windows):
+
+```typescript
+import { runConcurrently, detectScriptShell } from "@visulima/task-runner";
+
+// Auto-detected from npm config
+await runConcurrently(["echo hello"]);
+
+// Or override explicitly
+await runConcurrently(["echo hello"], {
+    shellPath: "/usr/bin/bash",
+});
+```
+
+### Stdin Modes
+
+For long-running processes like dev servers:
+
+```typescript
+await runConcurrently([
+    { command: "vite dev", stdin: "inherit" },  // Child reads terminal directly
+    { command: "node worker.js", stdin: "null" }, // No stdin (default)
+    { command: "node repl.js", stdin: "pipe" },   // Programmatic stdin access
+]);
+```
+
+### Native vs Fallback
+
+The runner automatically uses the Rust NAPI addon when available for:
+- Process tree killing via setsid/killpg (Unix) and Job Objects (Windows)
+- Async I/O multiplexing via tokio
+- Signal propagation (SIGINT/SIGTERM/SIGHUP)
+
+Falls back to a pure JavaScript implementation when the native addon is not compiled.
+
 ## Caching Modes
 
 ### Nx-style (explicit inputs)
@@ -127,6 +239,23 @@ const results = await defaultTaskRunner(tasks, {
 
 The main entry point. Runs tasks with caching, scheduling, and lifecycle support.
 
+### `runConcurrently(commands, options?)`
+
+Run commands concurrently with process management and output streaming.
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `maxProcesses` | `number` | Max simultaneous processes (0 = unlimited) |
+| `killOthers` | `("failure" \| "success")[]` | Kill others when a process exits |
+| `killSignal` | `string` | Signal for killing (default: "SIGTERM") |
+| `killTimeout` | `number` | Ms before SIGKILL after kill signal (default: 5000) |
+| `successCondition` | `string` | "all", "first", "last", "command-\<name\>" |
+| `shellPath` | `string` | Custom shell path (auto-detected from npm config) |
+| `restart` | `{ tries, delay }` | Restart failed commands with backoff |
+| `teardown` | `string[]` | Cleanup commands to run after completion |
+| `timings` | `boolean` | Print timing summary table |
+| `onEvent` | `(event) => void` | Real-time stdout/stderr/close/error events |
+
 ### Key Options
 
 | Option | Type | Description |
@@ -148,6 +277,9 @@ The main entry point. Runs tasks with caching, scheduling, and lifecycle support
 
 The package exports many building blocks for custom task runners:
 
+- **Concurrent Runner**: `runConcurrently`, `runConcurrentFallback`, `detectScriptShell`
+- **Command Parser**: `parseCommands`, `expandShortcut`, `expandWildcard`, `expandArguments`, `stripQuotes`
+- **Flow Controllers**: `withRestart`, `createInputHandler`, `logTimings`, `formatTimingTable`, `runTeardown`
 - **Task Graph**: `createTaskGraph`, `findCycle`, `walkTaskGraph`, `makeAcyclic`
 - **Hashing**: `InProcessTaskHasher`, `IncrementalFileHasher`, `computeTaskHash`
 - **Caching**: `Cache`, `RemoteCache`, `FingerprintManager`

@@ -43,17 +43,17 @@ mod unix {
 #[cfg(windows)]
 mod windows {
     use std::io;
-    use std::os::windows::io::AsRawHandle;
-    use std::process::Child;
 
-    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
     use windows_sys::Win32::System::JobObjects::{
         AssignProcessToJobObject, CreateJobObjectW, SetInformationJobObject,
         TerminateJobObject, JobObjectExtendedLimitInformation,
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     };
+    use windows_sys::Win32::System::Threading::{OpenProcess, PROCESS_SET_QUOTA, PROCESS_TERMINATE};
 
     /// A Windows Job Object handle that ensures child process tree cleanup.
+    /// When the Job Object is dropped, all assigned processes are terminated.
     pub struct JobObject {
         handle: HANDLE,
     }
@@ -86,9 +86,18 @@ mod windows {
             Ok(Self { handle })
         }
 
-        pub fn assign_process(&self, child: &Child) -> io::Result<()> {
-            let process_handle = child.as_raw_handle() as HANDLE;
+        /// Assign a process to this Job Object by PID.
+        /// Opens the process handle, assigns it, then closes the handle.
+        pub fn assign_process_by_pid(&self, pid: u32) -> io::Result<()> {
+            // Minimum permissions needed for Job Object assignment + termination
+            let process_handle = unsafe { OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, 0, pid) };
+            if process_handle == INVALID_HANDLE_VALUE || process_handle == 0 {
+                return Err(io::Error::last_os_error());
+            }
+
             let result = unsafe { AssignProcessToJobObject(self.handle, process_handle) };
+            unsafe { CloseHandle(process_handle) };
+
             if result == 0 {
                 return Err(io::Error::last_os_error());
             }

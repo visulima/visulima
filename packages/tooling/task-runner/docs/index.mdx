@@ -11,11 +11,16 @@ description: High-performance monorepo task runner with intelligent caching
 
 ## Why Task Runner?
 
+- **Concurrent process runner** - Run multiple commands in parallel with native Rust performance and JS fallback
+- **Process tree management** - Clean signal propagation via setsid/killpg (Unix) and Job Objects (Windows)
+- **Command parser** - `npm:build` shortcuts, `npm run watch-*` wildcards, `{1}` argument placeholders
+- **npm script-shell support** - Honors `npm config set script-shell` for custom shells
+- **Long-running processes** - Configurable stdin (null/pipe/inherit), bounded output buffers
 - **Two caching modes** - Choose Nx-style explicit inputs or Vite Task-style auto-fingerprinting
 - **Smart lockfile hashing** - Lockfile changes only bust cache for affected packages
 - **Framework env inference** - Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, Expo, and more
 - **Remote caching** - Turborepo-compatible HTTP cache protocol
-- **Native Rust addon** - Optional xxHash-based parallel file hashing
+- **Native Rust addon** - Parallel file hashing (xxHash) and concurrent process management via tokio
 - **Dependency-aware scheduling** - Topological ordering with priority-based batching
 - **Incremental hashing** - mtime-based change detection for near-instant cache checks
 - **Affected detection** - Git diff-based filtering

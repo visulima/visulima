@@ -414,7 +414,6 @@ export type ConcurrentCommandInput =
           cwd?: string;
           env?: Record<string, string>;
           name?: string;
-          prefixColor?: string;
           stdin?: "inherit" | "null" | "pipe";
       };
 
@@ -430,8 +429,6 @@ export interface ConcurrentCommandConfig {
     env?: Record<string, string>;
     /** Human-readable name for this command (used in prefixes/logs). */
     name?: string;
-    /** Color for the prefix (used by output formatter). */
-    prefixColor?: string;
     /** Whether to use shell execution (default: true). */
     shell?: boolean;
     /**
