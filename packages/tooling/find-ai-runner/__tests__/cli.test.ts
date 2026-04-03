@@ -1,16 +1,34 @@
 import { execFileSync } from "node:child_process";
-import { resolve } from "node:path";
+import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, expectTypeOf, it } from "vitest";
 
 const CLI_PATH = resolve(import.meta.dirname, "..", "dist", "cli.js");
 const VERSION_PATTERN = /^\d+\.\d+\.\d+/;
 const PROVIDER_NAMES_PATTERN = /claude|gemini|codex|copilot|cursor|crush|amp|kimi|qwen|opencode|droid/i;
 
-const run = (args: string[] = []): { exitCode: number; stderr: string; stdout: string } => {
+// Create a fake "claude" binary so detection works on CI (no real providers installed).
+let fakeBinDir: string;
+let fakeBinPath: string;
+
+beforeAll(() => {
+    fakeBinDir = mkdtempSync(join(tmpdir(), "find-ai-runner-test-"));
+    fakeBinPath = join(fakeBinDir, "claude");
+    writeFileSync(fakeBinPath, '#!/bin/sh\necho "claude-code 1.0.0"', { mode: 0o755 });
+    chmodSync(fakeBinPath, 0o755);
+});
+
+afterAll(() => {
+    rmSync(fakeBinDir, { force: true, recursive: true });
+});
+
+const run = (args: string[] = [], env?: Record<string, string>): { exitCode: number; stderr: string; stdout: string } => {
     try {
         const stdout = execFileSync(process.execPath, [CLI_PATH, ...args], {
             encoding: "utf8",
+            env: { ...process.env, ...env },
             stdio: ["pipe", "pipe", "pipe"],
             timeout: 30_000,
         });
@@ -69,10 +87,9 @@ describe("cLI", () => {
 
     describe("list", () => {
         it("should list providers", () => {
-            const result = run(["list"]);
+            const result = run(["list"], { CLAUDE_PATH: fakeBinPath });
 
             expect(result.exitCode).toBe(0);
-            // Output should contain at least some provider names
             expect(result.stdout).toMatch(PROVIDER_NAMES_PATTERN);
         });
 
