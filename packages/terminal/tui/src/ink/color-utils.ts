@@ -1,7 +1,7 @@
 /**
  * Shared color lookup tables and parsing utilities.
  *
- * Used by styled-line-serializer.ts, styled-line-bridge.ts, and output.ts
+ * Used by styled-line-serializer.ts, styled-line-factory.ts, and output.ts
  * to avoid triplicate color mapping code.
  */
 

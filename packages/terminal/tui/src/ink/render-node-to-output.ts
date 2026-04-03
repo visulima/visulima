@@ -188,7 +188,6 @@ const renderNodeToOutput = (
         offsetY?: number;
         renderState?: RenderState;
         selectionMap?: Map<DOMNode, { end: number; start: number }>;
-        selectionStyle?: (char: import("@alcalzone/ansi-tokenize").StyledChar) => import("@alcalzone/ansi-tokenize").StyledChar;
         skipStaticElements: boolean;
         transformers?: OutputTransformer[];
     },
@@ -200,7 +199,6 @@ const renderNodeToOutput = (
         offsetY = 0,
         renderState,
         selectionMap,
-        selectionStyle,
         skipStaticElements,
         transformers = [],
     } = options;
@@ -412,7 +410,6 @@ const renderNodeToOutput = (
                     offsetY: y + scrollOffsetY,
                     renderState,
                     selectionMap,
-                    selectionStyle,
                     skipStaticElements,
                     transformers: newTransformers,
                 });

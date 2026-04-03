@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-use-before-define, class-methods-use-this, consistent-return, default-case, import/exports-last, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, prefer-const, sonarjs/cognitive-complexity */
-import type { StyledChar } from "@alcalzone/ansi-tokenize";
-import { reduceAnsiCodesIncremental, tokenize } from "@alcalzone/ansi-tokenize";
-import { getStringWidth, isFullwidthCodePoint } from "@visulima/string";
+import { getStringWidth } from "@visulima/string";
 
 import { CONTINUATION_CELL_CODE } from "./ansi-to-cell";
 import { colorToAnsi256 } from "./color-utils";
 import type { OutputTransformer } from "./render-node-to-output";
 import { FULL_WIDTH_MASK } from "./style-flags";
 import { StyledLine } from "./styled-line";
-import { styledCharsToStyledLine } from "./styled-line-bridge";
+import { plainTextToStyledLine, textToStyledLine } from "./styled-line-factory";
 import { styledLineToString } from "./styled-line-serializer";
 
 /**
@@ -42,13 +40,9 @@ export class OutputCaches {
 
     blockWidths: Map<string, number> = new Map<string, number>();
 
-    styledChars: Map<string, StyledChar[]> = new Map<string, StyledChar[]>();
-
     styledLines: Map<string, StyledLine> = new Map<string, StyledLine>();
 
     lines: Map<string, string[]> = new Map<string, string[]>();
-
-    private readonly asciiStyledCharCache = new Map<string, StyledChar>();
 
     private readonly maxEntries: number;
 
@@ -65,21 +59,8 @@ export class OutputCaches {
         let cached = this.styledLines.get(line);
 
         if (cached === undefined) {
-            const chars = this.getStyledChars(line);
-
-            cached = styledCharsToStyledLine(chars);
+            cached = this.hasAnsiControlMarker(line) ? textToStyledLine(line) : plainTextToStyledLine(line);
             this.setCacheEntry(this.styledLines, line, cached);
-        }
-
-        return cached;
-    }
-
-    getStyledChars(line: string): StyledChar[] {
-        let cached = this.styledChars.get(line);
-
-        if (cached === undefined) {
-            cached = this.hasAnsiControlMarker(line) ? this.getAnsiStyledChars(line) : this.getPlainStyledChars(line);
-            this.setCacheEntry(this.styledChars, line, cached);
         }
 
         return cached;
@@ -94,22 +75,6 @@ export class OutputCaches {
         }
 
         return cached;
-    }
-
-    getCharacterWidth(character: StyledChar): number {
-        if (character.fullWidth) {
-            return 2;
-        }
-
-        if (character.value.length === 1) {
-            const code = character.value.codePointAt(0)!;
-
-            if (code >= 0x20 && code <= 0x7e) {
-                return 1;
-            }
-        }
-
-        return Math.max(1, this.getStringWidth(character.value));
     }
 
     getWidestLine(text: string): number {
@@ -152,87 +117,6 @@ export class OutputCaches {
         return false;
     }
 
-    private getAnsiStyledChars(text: string): StyledChar[] {
-        let activeStyles: StyledChar["styles"] = noStyles;
-        const styledChars: StyledChar[] = [];
-
-        for (const token of tokenize(text)) {
-            if (token.type === "ansi") {
-                activeStyles = reduceAnsiCodesIncremental(activeStyles, [token]);
-
-                if (activeStyles.length === 0) {
-                    activeStyles = noStyles;
-                }
-
-                continue;
-            }
-
-            if (token.type === "char") {
-                styledChars.push({
-                    fullWidth: token.fullWidth,
-                    styles: activeStyles,
-                    type: token.type,
-                    value: token.value,
-                });
-            }
-        }
-
-        return styledChars;
-    }
-
-    private getPlainStyledChars(text: string): StyledChar[] {
-        if (asciiPrintableRegex.test(text)) {
-            return Array.from(text, (character) => this.getAsciiStyledChar(character));
-        }
-
-        const styledChars: StyledChar[] = [];
-
-        for (const { segment } of plainTextSegmenter.segment(text)) {
-            const codePoint = segment.codePointAt(0)!;
-
-            styledChars.push({
-                fullWidth: this.isFullwidthGrapheme(segment, codePoint),
-                styles: noStyles,
-                type: "char",
-                value: segment,
-            });
-        }
-
-        return styledChars;
-    }
-
-    private getAsciiStyledChar(character: string): StyledChar {
-        let cached = this.asciiStyledCharCache.get(character);
-
-        if (cached === undefined) {
-            cached = {
-                fullWidth: false,
-                styles: noStyles,
-                type: "char",
-                value: character,
-            };
-            this.asciiStyledCharCache.set(character, cached);
-        }
-
-        return cached;
-    }
-
-    private isFullwidthGrapheme(grapheme: string, codePoint: number): boolean {
-        if (isFullwidthCodePoint(codePoint)) {
-            return true;
-        }
-
-        if (grapheme.includes("\uFE0F")) {
-            return true;
-        }
-
-        if (codePoint >= regionalIndicatorStart && codePoint <= regionalIndicatorEnd) {
-            return true;
-        }
-
-        return false;
-    }
-
     private setCacheEntry<T>(cache: Map<string, T>, key: string, value: T) {
         if (!cache.has(key) && cache.size >= this.maxEntries) {
             this.pruneCache(cache);
@@ -254,14 +138,7 @@ export class OutputCaches {
     }
 }
 
-const noStyles: StyledChar["styles"] = [];
-const asciiPrintableRegex = /^[\u0020-\u007E]*$/;
 const ansiControlMarkerCodePoints = new Set<number>([27, 144, 152, 155, 157, 158, 159]);
-const plainTextSegmenter = new Intl.Segmenter(undefined, {
-    granularity: "grapheme",
-});
-const regionalIndicatorStart = 127_462;
-const regionalIndicatorEnd = 127_487;
 
 const memoizationDisableRatio = 0.6;
 const memoizationProbeInterval = 30;
@@ -406,22 +283,6 @@ export default class Output {
         }
 
         this.writeStyledLineToRow(this.grid[y]!, x, line, this.width, clip);
-    }
-
-    writeStyledChars(x: number, y: number, styledChars: StyledChar[], _options: { transformers: OutputTransformer[] }): void {
-        if (styledChars.length === 0 || y < 0 || y >= this.grid.length) {
-            return;
-        }
-
-        const clip = this.clipStack.at(-1);
-
-        if (clip && (y < clip.y1! || y >= clip.y2!)) {
-            return;
-        }
-
-        const source = styledCharsToStyledLine(styledChars);
-
-        this.writeStyledLineToRow(this.grid[y]!, x, source, this.width, clip);
     }
 
     getRootLines(): readonly StyledLine[] {

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, max-classes-per-file, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
+/* eslint-disable @typescript-eslint/explicit-member-accessibility, @typescript-eslint/no-non-null-assertion, max-classes-per-file, no-bitwise, no-for-of-array/no-for-of-array, no-param-reassign, no-plusplus, sonarjs/cognitive-complexity, sonarjs/no-nested-conditional */
 
 /**
  * DOM-like Selection and Range API for terminal text selection.
@@ -8,34 +8,34 @@
  *
  * Ported from jacob314/ink fork (Google LLC, Apache-2.0).
  */
-import type { StyledChar } from "@alcalzone/ansi-tokenize";
 
 import type { DOMElement, DOMNode } from "./dom";
 import { getPathToRoot } from "./dom";
-import { toStyledCharacters } from "./measure-text";
+import { toStyledLine } from "./measure-text";
+import type { StyledLine } from "./styled-line";
 import type { CharOffsetMap } from "./squash-text-nodes";
 import { squashTextNodesWithMap } from "./squash-text-nodes";
 
 /**
- * Extract styled characters from a DOM node with character offset mapping.
+ * Extract styled line from a DOM node with character offset mapping.
  * Used for resolving selection ranges to character positions.
  */
-const getPlainTextFromDomNode = (node: DOMNode): { charOffsetMap: CharOffsetMap; styledChars: StyledChar[] } => {
+const getPlainTextFromDomNode = (node: DOMNode): { charOffsetMap: CharOffsetMap; styledLine: StyledLine } => {
     if (node.nodeName === "#text") {
-        const styledChars = toStyledCharacters(node.nodeValue);
-        const charOffsetMap: CharOffsetMap = new Map([[node, { end: styledChars.length, start: 0 }]]);
+        const styledLine = toStyledLine(node.nodeValue);
+        const charOffsetMap: CharOffsetMap = new Map([[node, { end: styledLine.length, start: 0 }]]);
 
-        return { charOffsetMap, styledChars };
+        return { charOffsetMap, styledLine };
     }
 
     const charOffsetMap: CharOffsetMap = new Map();
     const offsetRef = { current: 0 };
     const text = squashTextNodesWithMap(node, charOffsetMap, offsetRef);
-    const styledChars = toStyledCharacters(text);
+    const styledLine = toStyledLine(text);
 
-    charOffsetMap.set(node, { end: styledChars.length, start: 0 });
+    charOffsetMap.set(node, { end: styledLine.length, start: 0 });
 
-    return { charOffsetMap, styledChars };
+    return { charOffsetMap, styledLine };
 };
 
 /**
@@ -220,17 +220,16 @@ export class Range {
             return "";
         }
 
-        const { charOffsetMap, styledChars } = getPlainTextFromDomNode(this.commonAncestorContainer);
+        const { charOffsetMap, styledLine } = getPlainTextFromDomNode(this.commonAncestorContainer);
         const offsets = getRangeCharacterOffsets(this, charOffsetMap);
 
         if (!offsets) {
             return "";
         }
 
-        return styledChars
-            .slice(offsets.start, offsets.end)
-            .map((char) => char.value)
-            .join("");
+        const sliced = styledLine.slice(offsets.start, offsets.end);
+
+        return sliced.getTextRange(0, sliced.length);
     }
 
     private updateCollapsed(): void {
@@ -400,56 +399,27 @@ export class Selection {
 }
 
 /**
- * Apply inverse (highlight) styling to a single character for selection display.
- */
-export const applySelectionStyle = (char: StyledChar, selectionStyle?: (char: StyledChar) => StyledChar): StyledChar => {
-    if (selectionStyle) {
-        return selectionStyle(char);
-    }
-
-    return {
-        ...char,
-        styles: [
-            ...char.styles,
-            {
-                code: "\u001B[7m",
-                endCode: "\u001B[27m",
-                type: "ansi",
-            },
-        ],
-    };
-};
-
-/**
- * Apply selection highlighting to a range of StyledChars.
+ * Apply selection highlighting to a range of characters in a StyledLine.
  *
- * Characters whose global offset falls within the selection range
- * get the inverse/highlight style applied.
+ * Characters whose index falls within [start, end) of the selection range
+ * get the INVERSE style flag applied. Returns a new StyledLine with the
+ * selection highlighting — the original is not mutated.
  */
-export const applySelectionToStyledChars = (
-    styledChars: StyledChar[],
-    selectionState: { currentOffset: number; range: { end: number; start: number } },
-    selectionStyle?: (char: StyledChar) => StyledChar,
-): StyledChar[] => {
-    const { currentOffset, range } = selectionState;
-    const { end, start } = range;
-    let charCodeUnitOffset = 0;
-    const newStyledChars: StyledChar[] = [];
-
-    for (const char of styledChars) {
-        const charLength = char.value.length;
-        const globalOffset = currentOffset + charCodeUnitOffset;
-
-        if (globalOffset >= start && globalOffset < end) {
-            newStyledChars.push(applySelectionStyle(char, selectionStyle));
-        } else {
-            newStyledChars.push(char);
-        }
-
-        charCodeUnitOffset += charLength;
+export const applySelectionToStyledLine = (
+    line: StyledLine,
+    range: { end: number; start: number },
+): StyledLine => {
+    if (line.length === 0 || range.start >= range.end) {
+        return line;
     }
 
-    selectionState.currentOffset += charCodeUnitOffset;
+    const result = line.clone();
+    const selStart = Math.max(0, range.start);
+    const selEnd = Math.min(line.length, range.end);
 
-    return newStyledChars;
+    for (let i = selStart; i < selEnd; i++) {
+        result.setInverted(i, true);
+    }
+
+    return result;
 };

@@ -90,7 +90,6 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@alcalzone/ansi-tokenize": "catalog:prod",
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
         "@visulima/ansi": "workspace:*",

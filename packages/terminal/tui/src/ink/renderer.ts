@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-for-of-array/no-for-of-array, no-param-reassign, sonarjs/cognitive-complexity */
-import type { StyledChar } from "@alcalzone/ansi-tokenize";
-
 import type { DOMElement, DOMNode } from "./dom";
 import { isNodeSelectable } from "./dom";
 import type { CursorPosition } from "./log-update";
@@ -210,7 +208,6 @@ const renderer = (
     isScreenReaderEnabled: boolean,
     options?: {
         selection?: Selection;
-        selectionStyle?: (char: StyledChar) => StyledChar;
         useNativeRenderer?: boolean;
     },
 ): Result => {
@@ -258,7 +255,6 @@ const renderer = (
         renderNodeToOutput(node, output, {
             renderState,
             selectionMap,
-            selectionStyle: options?.selectionStyle,
             skipStaticElements: true,
         });
 
