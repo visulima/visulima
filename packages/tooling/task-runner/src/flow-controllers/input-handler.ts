@@ -8,6 +8,17 @@
  * NOTE: This module does NOT execute commands -- it only pipes user-typed
  * stdin data to already-running child process stdin streams. No shell
  * invocation or command injection risk.
+ *
+ * LIMITATION: This is a standalone utility -- it is NOT integrated into
+ * runConcurrently() because the concurrent runner does not expose child
+ * stdin streams. To use this, spawn processes manually with stdin: "pipe"
+ * and pass the writable streams to createInputHandler().
+ *
+ * TODO: To fully integrate stdin routing into runConcurrently(), we would need:
+ * 1. A new "started" ProcessEvent that carries a writable stdin reference
+ * 2. On the Rust side: expose tokio::process::ChildStdin through NAPI
+ *    (requires a custom wrapper since ChildStdin can't cross FFI directly)
+ * 3. In the JS fallback: return child.stdin from spawnCommand()
  */
 
 import type { Readable, Writable } from "node:stream";

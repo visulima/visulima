@@ -5,6 +5,7 @@
         {
             "title": "Concepts",
             "pages": [
+                "concepts/concurrent-runner",
                 "concepts/task-graph",
                 "concepts/caching",
                 "concepts/auto-fingerprinting",
@@ -14,6 +15,7 @@
         {
             "title": "Guides",
             "pages": [
+                "guides/concurrent-processes",
                 "guides/smart-lockfile-hashing",
                 "guides/framework-inference",
                 "guides/affected-detection",
