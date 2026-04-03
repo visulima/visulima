@@ -365,8 +365,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     const curlHtmlRaw = highlighter.codeToHtml(curl, {
         lang: "bash",
         themes: {
-            dark: "github-dark-default",
-            light: "github-light",
+            dark: "min-dark",
+            light: "min-light",
         },
     });
     const curlHtml = sanitizeCodeHtml(curlHtmlRaw);
