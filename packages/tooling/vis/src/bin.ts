@@ -1,5 +1,8 @@
 import { createCerebro } from "@visulima/cerebro";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
+import { readJsonSync } from "@visulima/fs";
+import { findMonorepoRootSync } from "@visulima/package";
+import { join } from "@visulima/path";
 
 import pkg from "../package.json";
 import addCommand from "./commands/add";
@@ -29,7 +32,7 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
-import { injectVersion } from "./output";
+import { injectVersion, setTerminalTitle } from "./output";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
 import securityEnforcementPlugin from "./plugins/security-enforcement";
@@ -37,6 +40,18 @@ import { startUpgradeCheck } from "./upgrade-check";
 
 // Inject VIS_VERSION for child processes before any commands run
 injectVersion();
+
+// Set terminal title to the project name from package.json
+try {
+    const rootDir = findMonorepoRootSync(process.cwd()).path;
+    const rootPkg = readJsonSync(join(rootDir, "package.json")) as { name?: string };
+
+    if (rootPkg.name) {
+        setTerminalTitle(rootPkg.name);
+    }
+} catch {
+    // No workspace root or package.json found — skip
+}
 
 // Start background upgrade check immediately (non-blocking)
 const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");

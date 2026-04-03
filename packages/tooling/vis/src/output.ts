@@ -1,3 +1,5 @@
+import isInCi from "is-in-ci";
+
 /**
  * Unified output module with standardized prefixes, symbols, and branding.
  *
@@ -130,4 +132,16 @@ const injectVersion = (): void => {
     process.env.VIS_VERSION = getVersion();
 };
 
-export { bold, cyan, dim, error, failure, green, info, injectVersion, note, red, success, SYMBOLS, warn, yellow };
+/**
+ * Set the terminal window title using OSC 0 escape sequence.
+ * No-op when stdout is not a TTY, running in CI, or TERM=dumb.
+ */
+const setTerminalTitle = (title: string): void => {
+    if (!process.stdout.isTTY || isInCi || process.env.TERM === "dumb") {
+        return;
+    }
+
+    process.stdout.write(`\x1B]0;${title}\x07`);
+};
+
+export { bold, cyan, dim, error, failure, green, info, injectVersion, note, red, setTerminalTitle, success, SYMBOLS, warn, yellow };
