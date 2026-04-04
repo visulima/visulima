@@ -2,10 +2,10 @@ import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
 
-import { info, warn } from "../output";
+import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
-import { buildSocketOptions, fetchSocketReports, formatReportSummary, scoreColor, scoreLabel } from "../socket-security";
-import type { PackageReportData, SocketSecurityOptions } from "../socket-security";
+import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, scoreColor, scoreLabel } from "../socket-security";
+import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import { toStringArray } from "../utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────
@@ -93,25 +93,32 @@ const resolveLatestVersions = async (
 
 /**
  * Displays Socket.dev security reports for packages being added.
- * Returns the list of packages with low scores that need confirmation.
+ * Returns the list of packages with low scores that need confirmation
+ * (excludes packages with accepted risks).
  */
 const displaySecurityReports = (
     reports: Map<string, PackageReportData>,
     minimumScore: number,
+    acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): PackageReportData[] => {
     const lowScorePackages: PackageReportData[] = [];
 
     for (const report of reports.values()) {
         const overall = report.score.overall;
         const color = scoreColor(overall);
-        const label = scoreLabel(overall);
         const pct = `${String(Math.round(overall * 100))}%`;
         const alertCount = report.alerts.length;
+        const fullName = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+        const accepted = findAcceptedRisk(fullName, report.version, acceptedRisks);
 
         const colorFn = color === "red" ? "\u001B[31m" : color === "yellow" ? "\u001B[33m" : "\u001B[32m";
         const reset = "\u001B[0m";
 
-        info(`  ${colorFn}${pct}${reset} ${formatReportSummary(report)}`);
+        if (accepted) {
+            info(`  ${colorFn}${pct}${reset} ${formatReportSummary(report)} \u001B[90m[accepted: ${accepted.reason}]\u001B[0m`);
+        } else {
+            info(`  ${colorFn}${pct}${reset} ${formatReportSummary(report)}`);
+        }
 
         if (alertCount > 0) {
             const critHigh = report.alerts.filter((a) => a.severity === "critical" || a.severity === "high").length;
@@ -121,7 +128,7 @@ const displaySecurityReports = (
             }
         }
 
-        if (overall < minimumScore) {
+        if (overall < minimumScore && !accepted) {
             lowScorePackages.push(report);
         }
     }
@@ -159,9 +166,33 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
 
     const answer = await ask("Continue adding these packages? [y/N] ");
 
+    if (answer.toLowerCase() !== "y" && answer.toLowerCase() !== "yes") {
+        rl.close();
+
+        return false;
+    }
+
+    // Offer to print accepted risk snippet
+    const rememberAnswer = await ask("Remember this decision? (prints config snippet) [y/N] ");
+
     rl.close();
 
-    return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
+    if (rememberAnswer.toLowerCase() === "y" || rememberAnswer.toLowerCase() === "yes") {
+        note("");
+        note("Add the following to security.socket.acceptedRisks in vis.config.ts:");
+        note("");
+
+        for (const report of lowScorePackages) {
+            const fullName = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+            const snippet = formatAcceptedRiskSnippet(fullName, report.version, report.score.overall, "Reviewed and accepted");
+
+            note(snippet);
+        }
+
+        note("");
+    }
+
+    return true;
 };
 
 /**
@@ -172,6 +203,7 @@ const runSocketPreCheck = async (
     packages: string[],
     socketOptions: SocketSecurityOptions,
     minimumScore: number,
+    acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
     const parsed = packages.map(parseAddArgument);
     const names = parsed.map((p) => p.name);
@@ -206,7 +238,7 @@ const runSocketPreCheck = async (
         return true;
     }
 
-    const lowScorePackages = displaySecurityReports(reports, minimumScore);
+    const lowScorePackages = displaySecurityReports(reports, minimumScore, acceptedRisks);
 
     if (lowScorePackages.length === 0) {
         info("");
@@ -255,7 +287,12 @@ const add: Command = {
             if (socketOpts) {
                 const minimumScore = visConfig?.security?.socket?.minimumScore ?? DEFAULT_MINIMUM_SCORE;
 
-                const shouldContinue = await runSocketPreCheck(packages, socketOpts, minimumScore);
+                const shouldContinue = await runSocketPreCheck(
+                    packages,
+                    socketOpts,
+                    minimumScore,
+                    visConfig?.security?.socket?.acceptedRisks,
+                );
 
                 if (!shouldContinue) {
                     process.exitCode = 1;

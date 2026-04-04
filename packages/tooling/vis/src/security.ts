@@ -81,6 +81,22 @@ const checkSecurityConfig = (config: VisConfig, packageManager: string): Securit
         );
     }
 
+    // Warn about stale accepted risks (>90 days old)
+    if (security.socket?.acceptedRisks) {
+        const staleThresholdMs = 90 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
+        for (const [pkg, risk] of Object.entries(security.socket.acceptedRisks)) {
+            const acceptedTime = new Date(risk.acceptedAt).getTime();
+
+            if (now - acceptedTime > staleThresholdMs) {
+                result.warnings.push(
+                    `Accepted risk for "${pkg}" is over 90 days old (accepted ${risk.acceptedAt}). Consider re-evaluating with 'vis audit'.`,
+                );
+            }
+        }
+    }
+
     return result;
 };
 
@@ -130,6 +146,19 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         info(`  socket.minimumScore:    ${security.socket?.minimumScore ?? "default (0.4)"}`);
         info(`  socket.cacheTtlMs:      ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
         info(`  socket.timeoutMs:       ${security.socket?.timeoutMs ?? "default (15s)"}`);
+
+        if (security.socket?.acceptedRisks) {
+            const risks = Object.entries(security.socket.acceptedRisks);
+
+            info(`  socket.acceptedRisks:   ${String(risks.length)} entr${risks.length === 1 ? "y" : "ies"}`);
+
+            for (const [pkg, risk] of risks) {
+                info(`    ${pkg}: ${risk.reason} (accepted ${risk.acceptedAt.slice(0, 10)})`);
+            }
+        } else {
+            info("  socket.acceptedRisks:   none");
+        }
+
         info("");
     }
 

@@ -559,7 +559,79 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
     };
 };
 
+// ── Accepted risks ──────────────────────────────────────────────────
+
+/** A persisted "accepted risk" entry from the vis config. */
+interface AcceptedRisk {
+    /** ISO 8601 timestamp when the risk was accepted. */
+    acceptedAt: string;
+    /** The overall Socket.dev score at the time of acceptance. */
+    acceptedScore: number;
+    /** User-provided reason for accepting the risk. */
+    reason: string;
+}
+
+/**
+ * Checks if a package has an accepted risk entry.
+ * Matches by exact name@version, unversioned name, or trailing glob patterns.
+ * Returns the matching AcceptedRisk if found, undefined otherwise.
+ */
+const findAcceptedRisk = (
+    packageName: string,
+    version: string,
+    acceptedRisks: Record<string, AcceptedRisk> | undefined,
+): AcceptedRisk | undefined => {
+    if (!acceptedRisks) {
+        return undefined;
+    }
+
+    // Check exact name@version first
+    const versionedKey = `${packageName}@${version}`;
+
+    if (acceptedRisks[versionedKey]) {
+        return acceptedRisks[versionedKey];
+    }
+
+    // Check unversioned name
+    if (acceptedRisks[packageName]) {
+        return acceptedRisks[packageName];
+    }
+
+    // Check glob patterns (e.g., "@myorg/*")
+    for (const [pattern, risk] of Object.entries(acceptedRisks)) {
+        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
+            return risk;
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Formats a config snippet for the user to paste into vis.config.ts
+ * to persist an accepted risk decision.
+ */
+const formatAcceptedRiskSnippet = (
+    packageName: string,
+    version: string,
+    score: number,
+    reason: string,
+): string => {
+    const key = `"${packageName}"`;
+    const lines = [
+        `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
+        `    ${key}: {`,
+        `      reason: "${reason}",`,
+        `      acceptedAt: "${new Date().toISOString()}",`,
+        `      acceptedScore: ${String(score)},`,
+        `    },`,
+    ];
+
+    return lines.join("\n");
+};
+
 export type {
+    AcceptedRisk,
     PackageAlert,
     PackageAlertProps,
     PackageReportData,
@@ -573,6 +645,8 @@ export {
     calculateOverallScore,
     clearSocketCache,
     fetchSocketReports,
+    findAcceptedRisk,
+    formatAcceptedRiskSnippet,
     formatReportDetailed,
     formatReportSummary,
     formatSecurityOverview,

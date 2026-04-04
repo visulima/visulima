@@ -74,6 +74,34 @@ interface VisConfig {
          */
         socket?: {
             /**
+             * Packages whose low Socket.dev scores or alerts have been reviewed
+             * and explicitly accepted. These packages skip the confirmation
+             * prompt during `vis add` and show as "acknowledged" in `vis audit`.
+             *
+             * Key format: package name (`"lodash"`), name@version
+             * (`"lodash@4.17.21"`), or glob (`"@myorg/*"`).
+             * Unversioned keys match all versions of that package.
+             *
+             * @example
+             * ```
+             * acceptedRisks: {
+             *   "some-risky-pkg": {
+             *     reason: "Internal fork, low score expected",
+             *     acceptedAt: "2026-03-15T10:00:00Z",
+             *     acceptedScore: 0.25,
+             *   },
+             * }
+             * ```
+             */
+            acceptedRisks?: Record<string, {
+                /** ISO 8601 timestamp when the risk was accepted. */
+                acceptedAt: string;
+                /** The overall Socket.dev score at the time of acceptance. */
+                acceptedScore: number;
+                /** User-provided reason for accepting the risk. */
+                reason: string;
+            }>;
+            /**
              * Custom Socket.dev API token. Falls back to the public API token.
              * Set via VIS_SOCKET_TOKEN environment variable or here.
              */
