@@ -1,4 +1,5 @@
 import { strip as stripAnsi } from "@visulima/ansi";
+import { getStringWidth } from "@visulima/string";
 import { describe, expect, it } from "vitest";
 
 import { Box, Text } from "../../src/ink/index";
@@ -102,5 +103,68 @@ describe("text-width", () => {
         );
 
         expect(output).toBe("hello");
+    });
+
+    it("truncate CJK text at end", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={20}>
+                <Text wrap="truncate">あいうえおかきくけこ|end</Text>
+            </Box>,
+        );
+
+        const stripped = stripAnsi(output);
+
+        expect(getStringWidth(stripped)).toBeLessThanOrEqual(20);
+    });
+
+    it("truncate CJK text in the middle", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={20}>
+                <Text wrap="truncate-middle">あいうえおかきくけこ|end</Text>
+            </Box>,
+        );
+
+        const stripped = stripAnsi(output);
+
+        expect(getStringWidth(stripped)).toBeLessThanOrEqual(20);
+    });
+
+    it("truncate CJK text at start", () => {
+        expect.assertions(1);
+
+        const output = renderToString(
+            <Box width={20}>
+                <Text wrap="truncate-start">あいうえおかきくけこ|end</Text>
+            </Box>,
+        );
+
+        const stripped = stripAnsi(output);
+
+        expect(getStringWidth(stripped)).toBeLessThanOrEqual(20);
+    });
+
+    it("truncate CJK text does not exceed Box width", () => {
+        expect.assertions(2);
+
+        const output = renderToString(
+            <Box>
+                <Box width={20}>
+                    <Text wrap="truncate">あいうえおかきくけこ|end</Text>
+                </Box>
+                <Text>|</Text>
+            </Box>,
+        );
+
+        const lines = output.split("\n");
+
+        expect(lines).toHaveLength(1);
+
+        const stripped = stripAnsi(lines[0]!);
+
+        expect(stripped.endsWith("|")).toBe(true);
     });
 });
