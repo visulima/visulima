@@ -80,7 +80,7 @@ interface VisConfig {
             apiToken?: string;
             /**
              * Cache TTL in milliseconds for Socket.dev reports.
-             * @default 10_800_000 (3 hours)
+             * @default 3_600_000 (1 hour)
              */
             cacheTtlMs?: number;
             /**

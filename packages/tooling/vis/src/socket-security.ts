@@ -20,7 +20,7 @@ const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
 const SOCKET_PUBLIC_API_TOKEN = "sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api";
 
 const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "socket-security");
-const DEFAULT_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours
+const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_BATCH_SIZE = 100;
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -75,7 +75,7 @@ interface PackageReportData {
 interface SocketSecurityOptions {
     /** Custom API token. Falls back to the public token. */
     apiToken?: string;
-    /** Cache TTL in milliseconds. Defaults to 3 hours. */
+    /** Cache TTL in milliseconds. Defaults to 1 hour. */
     cacheTtlMs?: number;
     /** Request timeout in milliseconds. Defaults to 15 seconds. */
     timeoutMs?: number;
