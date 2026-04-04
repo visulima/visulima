@@ -3,9 +3,12 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import type { Command } from "@visulima/cerebro";
 import { join } from "@visulima/path";
 
+import type { NativeAuditExclusions } from "../audit-config";
+import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
 import { fetchVulnerabilities } from "../catalog";
 import { error as errorOutput, info, note, success, warn } from "../output";
+import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, scoreLabel } from "../socket-security";
 
@@ -20,6 +23,8 @@ interface InstalledPackage {
 interface AuditEntry {
     acceptedRisk?: AcceptedRisk;
     name: string;
+    /** True if the package or its advisory IDs are excluded by native PM config. */
+    nativeExcluded: boolean;
     socketReport?: PackageReportData;
     version: string;
     vulnerabilities: SecurityVulnerability[];
@@ -174,6 +179,14 @@ const executeAudit = async (
     const socketConfig = (visConfig as { security?: { socket?: Record<string, unknown> } } | undefined)?.security?.socket;
     const acceptedRisks = socketConfig?.acceptedRisks as Record<string, AcceptedRisk> | undefined;
 
+    // Read native PM audit exclusions
+    const pm = detectPm(workspaceRoot);
+    const nativeExclusions = readNativeAuditExclusions(workspaceRoot, pm.name);
+
+    if (nativeExclusions.ignoredAdvisories.length > 0 || nativeExclusions.excludedPackages.length > 0) {
+        info(`Loaded ${String(nativeExclusions.ignoredAdvisories.length)} ignored advisor${nativeExclusions.ignoredAdvisories.length === 1 ? "y" : "ies"} and ${String(nativeExclusions.excludedPackages.length)} excluded package${nativeExclusions.excludedPackages.length === 1 ? "" : "s"} from ${pm.name} config.`);
+    }
+
     // 1. Discover installed packages
     info("Scanning installed packages...");
 
@@ -201,9 +214,17 @@ const executeAudit = async (
     const entries: AuditEntry[] = [];
 
     for (const pkg of installed) {
+        // Skip packages excluded by native PM config (yarn npmAuditExcludePackages)
+        if (isPackageExcluded(pkg.name, nativeExclusions)) {
+            continue;
+        }
+
         const vulns = vulnMap.get(pkg.name) ?? [];
         const report = socketReports.get(`${pkg.name}@${pkg.version}`);
         const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
+
+        // Check if all vulns are excluded by native PM config
+        const nativeExcluded = vulns.length > 0 && vulns.every((v) => isAdvisoryExcluded(v.id, nativeExclusions));
 
         const hasVulns = vulns.length > 0;
         const hasLowScore = report ? report.score.overall < 0.4 : false;
@@ -213,6 +234,7 @@ const executeAudit = async (
             entries.push({
                 acceptedRisk: accepted,
                 name: pkg.name,
+                nativeExcluded,
                 socketReport: report,
                 version: pkg.version,
                 vulnerabilities: vulns,
@@ -298,9 +320,9 @@ const executeAudit = async (
         info(`\n\u2500\u2500 ${severity} (${String(items.length)}) \u2500\u2500`);
 
         for (const { entry, vuln } of items) {
-            const isAccepted = Boolean(entry.acceptedRisk);
+            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded || isAdvisoryExcluded(vuln.id, nativeExclusions);
 
-            if (isAccepted) {
+            if (isExcluded) {
                 acknowledgedVulns++;
 
                 if (!showAccepted) {
@@ -309,7 +331,7 @@ const executeAudit = async (
             }
 
             totalVulns++;
-            info(formatVulnLine(entry.name, entry.version, vuln, isAccepted));
+            info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
 
             if (showFixes && vuln.fixedVersions.length > 0) {
                 note(`    Fix: update to ${vuln.fixedVersions[vuln.fixedVersions.length - 1]}`);
@@ -328,13 +350,13 @@ const executeAudit = async (
                 continue;
             }
 
-            const isAccepted = Boolean(entry.acceptedRisk);
+            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded;
 
-            if (isAccepted && !showAccepted) {
+            if (isExcluded && !showAccepted) {
                 continue;
             }
 
-            info(formatSocketLine(entry.socketReport, isAccepted));
+            info(formatSocketLine(entry.socketReport, isExcluded));
 
             for (const alert of entry.socketReport.alerts) {
                 const color = SOCKET_SEVERITY_ORDER[alert.severity] !== undefined && SOCKET_SEVERITY_ORDER[alert.severity] <= 1 ? "\u001B[31m" : "\u001B[33m";
@@ -345,15 +367,20 @@ const executeAudit = async (
     }
 
     // Summary
-    const unacknowledgedCount = filtered.filter((e) => !e.acceptedRisk).length;
+    const isEntryExcluded = (e: AuditEntry): boolean => Boolean(e.acceptedRisk) || e.nativeExcluded;
+    const unacknowledgedCount = filtered.filter((e) => !isEntryExcluded(e)).length;
 
     info("");
     info(`\u2500 Audit Summary`);
     info(`  ${String(installed.length)} packages scanned`);
 
+    if (nativeExclusions.ignoredAdvisories.length > 0) {
+        info(`  ${String(nativeExclusions.ignoredAdvisories.length)} ${pm.name} audit exclusion${nativeExclusions.ignoredAdvisories.length === 1 ? "" : "s"} applied`);
+    }
+
     if (totalVulns > 0) {
-        const critCount = vulnsBySeverity.CRITICAL?.filter((i) => !i.entry.acceptedRisk).length ?? 0;
-        const highCount = vulnsBySeverity.HIGH?.filter((i) => !i.entry.acceptedRisk).length ?? 0;
+        const critCount = vulnsBySeverity.CRITICAL?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
+        const highCount = vulnsBySeverity.HIGH?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
 
         errorOutput(`  ${String(totalVulns)} vulnerabilit${totalVulns === 1 ? "y" : "ies"} found`);
 
@@ -369,7 +396,7 @@ const executeAudit = async (
     }
 
     if (socketIssues.length > 0) {
-        const unacknowledgedSocket = socketIssues.filter((e) => !e.acceptedRisk).length;
+        const unacknowledgedSocket = socketIssues.filter((e) => !isEntryExcluded(e)).length;
 
         warn(`  ${String(unacknowledgedSocket)} package${unacknowledgedSocket === 1 ? "" : "s"} with Socket.dev supply chain issues`);
     }
@@ -384,6 +411,33 @@ const executeAudit = async (
 
     if (unacknowledgedCount === 0) {
         success("\n  All issues are acknowledged. No action required.");
+    }
+
+    // Sync accepted risks to native PM config
+    if (options.sync && acceptedRisks) {
+        const advisoryIds: string[] = [];
+
+        // Collect CVE/GHSA IDs from accepted risk entries by looking at their vuln data
+        for (const entry of filtered) {
+            if (entry.acceptedRisk) {
+                for (const vuln of entry.vulnerabilities) {
+                    if (vuln.id.startsWith("CVE-") || vuln.id.startsWith("GHSA-")) {
+                        advisoryIds.push(vuln.id);
+                    }
+                }
+            }
+        }
+
+        if (advisoryIds.length > 0) {
+            info("");
+            const actions = syncAcceptedRisksToNativeConfig(pm.name, workspaceRoot, advisoryIds);
+
+            for (const action of actions) {
+                success(`  ${action}`);
+            }
+        } else {
+            info("\nNo advisory IDs to sync to native PM config.");
+        }
     }
 
     if (options["exit-code"] && unacknowledgedCount > 0) {
@@ -403,6 +457,7 @@ const audit: Command = {
         ["vis audit --fix", "Show fix suggestions for vulnerabilities"],
         ["vis audit --exit-code", "Exit with code 1 if issues found (for CI)"],
         ["vis audit --show-accepted", "Include acknowledged risks in output"],
+        ["vis audit --sync", `Sync accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)`],
     ],
     execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
@@ -440,6 +495,12 @@ const audit: Command = {
             defaultValue: false,
             description: "Include acknowledged (accepted risk) issues in output",
             name: "show-accepted",
+            type: Boolean,
+        },
+        {
+            defaultValue: false,
+            description: "Sync vis accepted risks to native PM config (pnpm-workspace.yaml / .yarnrc.yml)",
+            name: "sync",
             type: Boolean,
         },
     ],
