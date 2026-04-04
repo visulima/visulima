@@ -135,7 +135,7 @@ const check: Command = {
             npmrcConfig,
             onProgress,
             workspaceRoot,
-            socketOptions ? { ...socketOptions, enabled: true } : undefined,
+            socketOptions,
             visConfig?.security?.socket?.acceptedRisks,
         );
 

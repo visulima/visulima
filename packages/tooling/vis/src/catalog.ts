@@ -5,7 +5,7 @@ import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
-import { fetchSocketReports, findAcceptedRisk } from "./socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "./socket-security";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
@@ -64,18 +64,7 @@ interface SecurityVulnerability {
     summary: string;
 }
 
-interface SocketReport {
-    alerts: { category: string; key: string; severity: "critical" | "high" | "low" | "medium"; type: string }[];
-    license: string;
-    score: {
-        license: number;
-        maintenance: number;
-        overall: number;
-        quality: number;
-        supplyChain: number;
-        vulnerability: number;
-    };
-}
+type SocketReport = Pick<PackageReportData, "alerts" | "license" | "score">;
 
 interface OutdatedEntry {
     acceptedRisk?: { acceptedAt: string; reason: string };
@@ -1126,7 +1115,7 @@ const buildOutdatedEntries = (
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
-    socketOptions?: SocketSecurityOptions & { enabled?: boolean },
+    socketOptions?: SocketSecurityOptions,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
@@ -1144,7 +1133,7 @@ const enrichWithSecurity = async (
     ].filter((p) => p.version);
 
     // Fetch OSV vulnerabilities and Socket.dev reports in parallel
-    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions?.enabled
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions
         ? fetchSocketReports(packagesToScan, {
               apiToken: socketOptions.apiToken ?? process.env.VIS_SOCKET_TOKEN,
               cacheTtlMs: socketOptions.cacheTtlMs,
@@ -1271,7 +1260,7 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
-    socketOptions?: SocketSecurityOptions & { enabled?: boolean },
+    socketOptions?: SocketSecurityOptions,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
     const hash = computeCacheHash(catalogs, options);
@@ -1290,7 +1279,7 @@ const checkOutdated = async (
     const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
-    if ((options.security || socketOptions?.enabled) && outdated.length > 0) {
+    if ((options.security || socketOptions) && outdated.length > 0) {
         await enrichWithSecurity(outdated, entries, socketOptions, acceptedRisks);
     }
 
@@ -1556,7 +1545,7 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
 
         if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
         if (entry.socketReport?.alerts.length) socketAlertCount++;
-        if (entry.socketReport && entry.socketReport.score.overall < 0.4) lowScoreCount++;
+        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) lowScoreCount++;
     }
 
     const parts: string[] = [];

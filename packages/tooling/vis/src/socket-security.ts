@@ -21,6 +21,7 @@ const SOCKET_PUBLIC_API_TOKEN = "sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMq
 
 const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "socket-security");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
+const DEFAULT_LOW_SCORE_THRESHOLD = 0.4;
 const MAX_BATCH_SIZE = 100;
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -344,6 +345,12 @@ const parseNdjsonResponse = (
     }
 };
 
+// ── Name helpers ────────────────────────────────────────────────────
+
+/** Returns the full package name including namespace scope if present. */
+const getFullPackageName = (report: Pick<PackageReportData, "name" | "namespace">): string =>
+    report.namespace ? `${report.namespace}/${report.name}` : report.name;
+
 // ── Display helpers ─────────────────────────────────────────────────
 
 /** Maps a 0–1 score to a human-readable label. */
@@ -403,7 +410,7 @@ const alertSeverityColor = (severity: PackageAlert["severity"]): "cyan" | "magen
 
 /** Formats a PackageReportData into a compact one-line summary string. */
 const formatReportSummary = (report: PackageReportData): string => {
-    const name = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+    const name = getFullPackageName(report);
     const score = `score: ${String(Math.round(report.score.overall * 100))}%`;
     const alertCount = report.alerts.length;
     const alertSummary = alertCount > 0
@@ -415,7 +422,7 @@ const formatReportSummary = (report: PackageReportData): string => {
 
 /** Formats a detailed multi-line report for a single package. */
 const formatReportDetailed = (report: PackageReportData): string => {
-    const name = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+    const name = getFullPackageName(report);
     const lines: string[] = [];
 
     lines.push(`${name}@${report.version}`);
@@ -482,7 +489,7 @@ const formatSecurityOverview = (reports: Map<string, PackageReportData>): string
             }
         }
 
-        if (report.score.overall < 0.4) {
+        if (report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
             lowScorePackages++;
         }
     }
@@ -649,9 +656,11 @@ export {
     buildSocketOptions,
     calculateOverallScore,
     clearSocketCache,
+    DEFAULT_LOW_SCORE_THRESHOLD,
     fetchSocketReports,
     findAcceptedRisk,
     formatAcceptedRiskSnippet,
+    getFullPackageName,
     formatReportDetailed,
     formatReportSummary,
     formatSecurityOverview,

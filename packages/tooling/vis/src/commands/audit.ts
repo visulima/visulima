@@ -12,7 +12,8 @@ import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
-import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, scoreLabel } from "../socket-security";
+import type { VisConfig } from "../workspace";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -153,7 +154,7 @@ const formatVulnLine = (name: string, version: string, vuln: SecurityVulnerabili
 };
 
 const formatSocketLine = (report: PackageReportData, isAccepted: boolean): string => {
-    const name = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+    const name = getFullPackageName(report);
     const pct = `${String(Math.round(report.score.overall * 100))}%`;
     const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
     const alerts = report.alerts.length > 0
@@ -169,15 +170,15 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 const executeAudit = async (
     workspaceRoot: string,
     options: Record<string, unknown>,
-    visConfig: Record<string, unknown> | undefined,
+    visConfig: VisConfig | undefined,
     logger: Console,
 ): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const isJson = Boolean(options.json);
     const showFixes = Boolean(options.fix);
     const showAccepted = Boolean(options["show-accepted"]);
-    const socketConfig = (visConfig as { security?: { socket?: Record<string, unknown> } } | undefined)?.security?.socket;
-    const acceptedRisks = socketConfig?.acceptedRisks as Record<string, AcceptedRisk> | undefined;
+    const socketConfig = visConfig?.security?.socket;
+    const acceptedRisks = socketConfig?.acceptedRisks;
 
     // Read native PM audit exclusions
     const pm = detectPm(workspaceRoot);
@@ -203,7 +204,7 @@ const executeAudit = async (
     // 2. Fetch vulnerability and security data in parallel
     const packagesToScan = installed.map((p) => ({ name: p.name, version: p.version }));
 
-    const socketOpts = buildSocketOptions(socketConfig as Record<string, unknown> | undefined);
+    const socketOpts = buildSocketOptions(socketConfig);
 
     const [vulnMap, socketReports] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
@@ -227,7 +228,7 @@ const executeAudit = async (
         const nativeExcluded = vulns.length > 0 && vulns.every((v) => isAdvisoryExcluded(v.id, nativeExclusions));
 
         const hasVulns = vulns.length > 0;
-        const hasLowScore = report ? report.score.overall < 0.4 : false;
+        const hasLowScore = report ? report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD : false;
         const hasAlerts = report ? report.alerts.length > 0 : false;
 
         if (hasVulns || hasLowScore || hasAlerts) {
@@ -248,7 +249,7 @@ const executeAudit = async (
         const socketPasses = entry.socketReport?.alerts.some((a) =>
             severityPassesFilter(a.severity === "medium" ? "MODERATE" : a.severity.toUpperCase(), severityFilter),
         );
-        const lowScorePasses = entry.socketReport && entry.socketReport.score.overall < 0.4;
+        const lowScorePasses = entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD;
 
         return vulnPasses || socketPasses || lowScorePasses;
     });
@@ -340,7 +341,7 @@ const executeAudit = async (
     }
 
     // Print Socket.dev supply chain issues
-    const socketIssues = filtered.filter((e) => e.socketReport && (e.socketReport.score.overall < 0.4 || e.socketReport.alerts.length > 0));
+    const socketIssues = filtered.filter((e) => e.socketReport && (e.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD || e.socketReport.alerts.length > 0));
 
     if (socketIssues.length > 0) {
         info(`\n\u2500\u2500 Socket.dev Supply Chain (${String(socketIssues.length)}) \u2500\u2500`);

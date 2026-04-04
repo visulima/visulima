@@ -6,14 +6,13 @@ import { dim, green, red, yellow } from "@visulima/colorize";
 
 import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
-import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, scoreColor, scoreLabel } from "../socket-security";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, getFullPackageName, scoreColor, scoreLabel } from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import { toStringArray } from "../utils";
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
 const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
-const DEFAULT_MINIMUM_SCORE = 0.4;
 
 /**
  * Extracts the package name from an add argument like "react", "react@19", "@scope/pkg@^2".
@@ -110,7 +109,7 @@ const displaySecurityReports = (
         const color = scoreColor(overall);
         const pct = `${String(Math.round(overall * 100))}%`;
         const alertCount = report.alerts.length;
-        const fullName = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+        const fullName = getFullPackageName(report);
         const accepted = findAcceptedRisk(fullName, report.version, acceptedRisks);
 
         const colorFn = color === "red" ? red : color === "yellow" ? yellow : green;
@@ -157,7 +156,7 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
     warn(`${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} scored below the minimum threshold (${pct}%):`);
 
     for (const report of lowScorePackages) {
-        const name = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+        const name = getFullPackageName(report);
         const score = `${String(Math.round(report.score.overall * 100))}%`;
 
         warn(`  \u2022 ${name}@${report.version} — score: ${score} (${scoreLabel(report.score.overall)})`);
@@ -184,7 +183,7 @@ const confirmLowScorePackages = async (lowScorePackages: PackageReportData[], mi
         note("");
 
         for (const report of lowScorePackages) {
-            const fullName = report.namespace ? `${report.namespace}/${report.name}` : report.name;
+            const fullName = getFullPackageName(report);
             const snippet = formatAcceptedRiskSnippet(fullName, report.version, report.score.overall, "Reviewed and accepted");
 
             note(snippet);
@@ -207,7 +206,6 @@ const runSocketPreCheck = async (
     acceptedRisks: Record<string, AcceptedRisk> | undefined,
 ): Promise<boolean> => {
     const parsed = packages.map(parseAddArgument);
-    const names = parsed.map((p) => p.name);
 
     // Resolve versions for packages without an explicit version
     const needsResolution = parsed.filter((p) => !p.versionSpec).map((p) => p.name);
@@ -286,7 +284,7 @@ const add: Command = {
             const socketOpts = buildSocketOptions(visConfig?.security?.socket);
 
             if (socketOpts) {
-                const minimumScore = visConfig?.security?.socket?.minimumScore ?? DEFAULT_MINIMUM_SCORE;
+                const minimumScore = visConfig?.security?.socket?.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
                 const shouldContinue = await runSocketPreCheck(
                     packages,
