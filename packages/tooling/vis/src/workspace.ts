@@ -89,6 +89,14 @@ interface VisConfig {
              */
             enabled?: boolean;
             /**
+             * Minimum overall Socket.dev score (0–1) for a package to be
+             * accepted without a confirmation prompt during `vis add`.
+             * Packages scoring below this threshold trigger an interactive
+             * prompt asking the user to confirm. Set to 0 to disable.
+             * @default 0.4
+             */
+            minimumScore?: number;
+            /**
              * Request timeout in milliseconds for the Socket.dev API.
              * @default 15_000 (15 seconds)
              */

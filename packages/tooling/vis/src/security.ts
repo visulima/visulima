@@ -127,6 +127,7 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         info("Socket.dev integration:");
         info(`  socket.enabled:         ${security.socket?.enabled ?? false}`);
         info(`  socket.apiToken:        ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`);
+        info(`  socket.minimumScore:    ${security.socket?.minimumScore ?? "default (0.4)"}`);
         info(`  socket.cacheTtlMs:      ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
         info(`  socket.timeoutMs:       ${security.socket?.timeoutMs ?? "default (15s)"}`);
         info("");
