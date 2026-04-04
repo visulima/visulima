@@ -4,8 +4,8 @@ import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 
-import type { PackageReportData, SocketSecurityOptions } from "./socket-security";
-import { fetchSocketReports } from "./socket-security";
+import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
+import { fetchSocketReports, findAcceptedRisk } from "./socket-security";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
@@ -78,6 +78,7 @@ interface SocketReport {
 }
 
 interface OutdatedEntry {
+    acceptedRisk?: { acceptedAt: string; reason: string };
     catalogName: string;
     currentRange: string;
     newRange: string;
@@ -1126,6 +1127,7 @@ const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
     socketOptions?: SocketSecurityOptions & { enabled?: boolean },
+    acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
     const packagesToScan = [
@@ -1174,6 +1176,17 @@ const enrichWithSecurity = async (
                     license: report.license,
                     score: report.score,
                 };
+            }
+        }
+
+        // Cross-reference accepted risks
+        if (acceptedRisks) {
+            const parsed = parseVersion(entry.currentRange);
+            const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
+            const risk = findAcceptedRisk(entry.packageName, version, acceptedRisks);
+
+            if (risk) {
+                entry.acceptedRisk = { acceptedAt: risk.acceptedAt, reason: risk.reason };
             }
         }
     }
@@ -1259,6 +1272,7 @@ const checkOutdated = async (
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
     socketOptions?: SocketSecurityOptions & { enabled?: boolean },
+    acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
     const hash = computeCacheHash(catalogs, options);
 
@@ -1277,7 +1291,7 @@ const checkOutdated = async (
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
     if ((options.security || socketOptions?.enabled) && outdated.length > 0) {
-        await enrichWithSecurity(outdated, entries, socketOptions);
+        await enrichWithSecurity(outdated, entries, socketOptions, acceptedRisks);
     }
 
     const result = { failed, ignored, outdated };

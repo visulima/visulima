@@ -31,6 +31,7 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasSecurity = entry.vulnerabilities && entry.vulnerabilities.length > 0;
     const hasSocketAlerts = entry.socketReport && entry.socketReport.alerts.length > 0;
+    const isAcknowledged = Boolean(entry.acceptedRisk);
     const checkbox = checked ? "\u2611" : "\u2610";
 
     // Socket.dev score badge
@@ -45,10 +46,10 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
         <Box height={1} flexShrink={0}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
-            {hasSecurity || hasSocketAlerts ? <Text color="red">{"\u26A0 "}</Text> : <Text>{"  "}</Text>}
+            {hasSecurity || hasSocketAlerts ? <Text color={isAcknowledged ? "gray" : "red"}>{isAcknowledged ? "\u2713 " : "\u26A0 "}</Text> : <Text>{"  "}</Text>}
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
-                    {entry.packageName}
+                    {entry.packageName}{isAcknowledged ? " [ack]" : ""}
                 </Text>
             </Box>
             {scoreText && <Text color={scoreColor}> {scoreText}</Text>}

@@ -192,6 +192,7 @@ const executeCatalogUpdate = async (
         onProgress,
         workspaceRoot,
         socketOptions ? { ...socketOptions, enabled: true } : undefined,
+        visConfig.security?.socket?.acceptedRisks,
     );
 
     if (progressInstance) {
@@ -276,8 +277,9 @@ const executeCatalogUpdate = async (
 
         for (const entry of outdated) {
             const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
-            const icon = hasSecurityIssue ? "\u26A0" : "\u2713";
-            const iconColor = entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+            const isAck = Boolean(entry.acceptedRisk);
+            const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
+            const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
             const socketOverall = entry.socketReport?.score.overall;
             const scoreSuffix = socketOverall !== undefined ? ` [${String(Math.round(socketOverall * 100))}%]` : "";
             const socketColor = socketOverall !== undefined

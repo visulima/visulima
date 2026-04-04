@@ -99,6 +99,23 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                 <Text>{entry.catalogName}</Text>
             </Box>
 
+            {/* Accepted risk notice */}
+            {entry.acceptedRisk && (
+                <Box marginTop={1} flexDirection="column">
+                    <Text color="gray">{"\u2500\u2500 "}</Text><Text bold color="gray">ACKNOWLEDGED RISK</Text>
+                    <Box paddingLeft={2} flexDirection="column">
+                        <Box>
+                            <Text dimColor>Reason: </Text>
+                            <Text>{entry.acceptedRisk.reason}</Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>Accepted: </Text>
+                            <Text>{entry.acceptedRisk.acceptedAt.slice(0, 10)}</Text>
+                        </Box>
+                    </Box>
+                </Box>
+            )}
+
             {/* Security section */}
             {hasVulnerabilities && (
                 <Box flexDirection="column" marginTop={1}>
