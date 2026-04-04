@@ -13,7 +13,7 @@ import { buildProjectGraph, discoverWorkspace } from "../workspace";
  * For long-running tasks (vite dev, tsc --watch), only the tail is kept.
  * Short-lived tasks (build, lint) rarely exceed this.
  */
-const MAX_OUTPUT_BYTES = 512 * 1024;
+const MAX_OUTPUT_BYTES = 256 * 1024;
 
 /**
  * Ring buffer that keeps the last `maxBytes` of appended text.
@@ -274,17 +274,14 @@ const run: Command = {
                     }
 
                     retryTaskId = null;
+
+                    // Mark done after retry so user can rerun/retry again
+                    store.markDone();
                 }
 
                 // Wait for user action: quit, rerun, or retry
                 // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
                 loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
-                    // Check if already resolved (user quit before we got here)
-                    dynamic.renderIsDone.then(
-                        () => { resolve("quit"); },
-                        () => { resolve("quit"); },
-                    );
-
                     // Watch for rerun or retry requests
                     const unsubscribe = store.subscribe(() => {
                         const s = store.getSnapshot();
@@ -301,6 +298,12 @@ const run: Command = {
                             resolve("retry");
                         }
                     });
+
+                    // Check if user quit -- clean up subscription to avoid leak
+                    dynamic.renderIsDone.then(
+                        () => { unsubscribe(); resolve("quit"); },
+                        () => { unsubscribe(); resolve("quit"); },
+                    );
                 });
             }
 

@@ -40,6 +40,42 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const outputScrollRef = useRef<ScrollViewRef>(null);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
+    // Save scroll positions per view mode so transitions don't lose the user's place
+    const savedScrollRef = useRef<{ list: number; splitList: number; splitOutput: number }>({
+        list: 0,
+        splitList: 0,
+        splitOutput: 0,
+    });
+
+    // Helper: save current scroll positions before transitioning
+    const saveScrollPositions = useCallback(() => {
+        if (state.viewMode === "list") {
+            savedScrollRef.current.list = listScrollRef.current?.getScrollOffset() ?? 0;
+        } else if (state.viewMode === "split") {
+            savedScrollRef.current.splitList = listScrollRef.current?.getScrollOffset() ?? 0;
+            savedScrollRef.current.splitOutput = outputScrollRef.current?.getScrollOffset() ?? 0;
+        }
+    }, [state.viewMode]);
+
+    // Helper: restore scroll positions after transitioning (deferred for React re-render)
+    const restoreScrollPositions = useCallback((targetMode: "fullscreen" | "list" | "split") => {
+        setTimeout(() => {
+            if (targetMode === "list") {
+                const saved = savedScrollRef.current.list;
+                listScrollRef.current?.scrollTo(saved);
+            } else if (targetMode === "split") {
+                const savedList = savedScrollRef.current.splitList;
+                // If no saved position, scroll to selected item
+                if (savedList > 0) {
+                    listScrollRef.current?.scrollTo(savedList);
+                } else {
+                    listScrollRef.current?.scrollTo(Math.max(0, store.getSnapshot().selectedIndex - 2));
+                }
+                outputScrollRef.current?.scrollTo(savedScrollRef.current.splitOutput);
+            }
+        }, 0);
+    }, [store]);
+
     // Auto-show quit dialog when tasks complete — only if autoExit is enabled
     const previousDoneRef = useRef(false);
 
@@ -81,7 +117,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     }, [state.rows, state.filterText, state.statusFilter]);
 
     // Count running tasks for status bar
-    const runningCount = state.rows.filter((r) => r.status === "running").length;
+    const runningCount = useMemo(() => state.rows.filter((r) => r.status === "running").length, [state.rows]);
 
     // Get selected task
     const selectedRow = filteredRows[state.selectedIndex] ?? null;
@@ -94,7 +130,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
     // Header title and status
     const description = formatTargetsAndProjects(projectNames, targets, tasks);
-    const headerTitle = state.done ? `Completed ${description} (${formatMs(Date.now() - state.startTime)})` : `Running ${description}...`;
+    const headerTitle = state.done ? `Completed ${description} (${formatMs((state.endTime ?? Date.now()) - state.startTime)})` : `Running ${description}...`;
     const headerStatus: "error" | "running" | "success" = state.done ? state.failed > 0 ? "error" : "success" : "running";
 
     // Scroll selected item into view
@@ -220,6 +256,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             if (state.viewMode === "fullscreen") {
                 if (key.escape) {
                     store.setViewMode("split");
+                    restoreScrollPositions("split");
 
                     return;
                 }
@@ -284,6 +321,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
                     // Enter in output panel → fullscreen
                     if (key.return) {
+                        saveScrollPositions();
                         store.setViewMode("fullscreen");
 
                         return;
@@ -329,9 +367,10 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                     return;
                 }
 
-                // Task list focused in split view
+                // Task list focused in split view → back to list
                 if (key.escape) {
                     store.setViewMode("list");
+                    restoreScrollPositions("list");
 
                     return;
                 }
@@ -367,8 +406,13 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
                 // Enter in list view → switch to split view with output focused
                 if (key.return && state.viewMode === "list") {
+                    saveScrollPositions();
+                    // Reset split scroll so it scrolls to selected item
+                    savedScrollRef.current.splitList = 0;
+                    savedScrollRef.current.splitOutput = 0;
                     store.setViewMode("split");
                     store.setFocusedPanel("output");
+                    restoreScrollPositions("split");
 
                     return;
                 }
@@ -401,9 +445,9 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                     return;
                 }
 
-                // Escape: clear filter in list mode
+                // Escape: clear filter text in list mode
                 if (key.escape && state.filterText) {
-                    store.setFilterActive(false);
+                    store.setFilter("");
 
                     return;
                 }

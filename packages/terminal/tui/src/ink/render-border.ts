@@ -51,11 +51,22 @@ const buildBorderWithTitle = (
     const rightLen = right.length;
     const alignment = titleAlignment ?? "left";
 
-    // If both titles together exceed width, just show as much as fits
+    // If both titles together exceed width, truncate the right title first, then left
     if (leftLen + rightLen >= contentWidth) {
-        const truncated = (leftTitle + right).slice(0, contentWidth);
+        if (leftLen >= contentWidth) {
+            // Left title alone exceeds width -- truncate it
+            return leftTitle.slice(0, contentWidth - 1) + "\u2026";
+        }
 
-        return truncated;
+        // Left title fits, truncate or drop the right title
+        const remainingForRight = contentWidth - leftLen;
+
+        if (remainingForRight > 3) {
+            return leftTitle + right.slice(0, remainingForRight);
+        }
+
+        // Not enough space for right title, fill with border
+        return leftTitle + stylePiece(borderChar.repeat(contentWidth - leftLen), borderFg, borderBg, borderDim);
     }
 
     const middleWidth = contentWidth - leftLen - rightLen;

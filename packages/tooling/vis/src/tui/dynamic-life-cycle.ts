@@ -238,6 +238,8 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
                 },
                 () => {
                     clearKeepAlive();
+                    process.removeListener("SIGINT", onSignal);
+                    process.removeListener("SIGTERM", onSignal);
                     resolveDone();
                 },
             );
