@@ -29,7 +29,7 @@ interface VisTaskRunnerAppProps {
     tasks: Task[];
 }
 
-const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
+const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store, targets, tasks }: VisTaskRunnerAppProps): React.JSX.Element => {
     const { exit } = useApp();
     const { columns, rows } = useWindowSize();
     const state = useSyncExternalStore(store.subscribe, store.getSnapshot);
@@ -618,6 +618,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
                 filterText={state.filterText}
                 focused={state.focusedPanel === "tasks"}
                 headerStatus={headerStatus}
+                parallelSlots={parallelSlots}
                 pinnedTaskIds={state.pinnedTaskIds}
                 rows={filteredRows}
                 scrollRef={listScrollRef}
@@ -678,6 +679,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, projectNames, store, targets, tasks
                     filterText={state.filterText}
                     focused
                     headerStatus={headerStatus}
+                    parallelSlots={parallelSlots}
                     pinnedTaskIds={state.pinnedTaskIds}
                     rows={filteredRows}
                     scrollRef={listScrollRef}
