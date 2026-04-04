@@ -196,6 +196,19 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
             process.on("SIGINT", onSignal);
             process.on("SIGTERM", onSignal);
 
+            // Keep event loop alive from the start to prevent beforeExit
+            // from unmounting the TUI before tasks begin
+            if (!keepAliveTimer) {
+                keepAliveTimer = setInterval(() => {}, 1000);
+            }
+
+            // Ensure stdin stays in raw mode for keyboard interaction
+            if (process.stdin.isTTY && typeof process.stdin.setRawMode === "function") {
+                process.stdin.setRawMode(true);
+                process.stdin.ref();
+                process.stdin.resume();
+            }
+
             // Start the full-screen interactive TUI
             instance = render(
                 React.createElement(VisTaskRunnerApp, {

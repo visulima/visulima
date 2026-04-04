@@ -38,15 +38,25 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 
 interface TaskListRowProps {
     compact?: boolean;
+    connector?: boolean;
     isSelected: boolean;
     pinLabel: string;
     row: TaskRowData;
 }
 
-const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
+const TaskListRow = ({ compact, connector, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
     const { status, taskId } = row;
 
     const selectChar = isSelected ? ">" : " ";
+
+    // Vertical connector line for parallel section
+    const connectorEl = connector !== undefined
+        ? (
+            <Box width={1}>
+                <Text dimColor={connector}>{connector ? "\u2502" : " "}</Text>
+            </Box>
+        )
+        : null;
 
     let statusIcon: React.JSX.Element;
 
@@ -87,6 +97,7 @@ const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): 
     return (
         <Box>
             <Text>{selectChar}</Text>
+            {connectorEl}
             <Box width={STATUS_ICON_WIDTH}>{statusIcon}</Box>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected}>
@@ -117,6 +128,8 @@ interface TaskListPanelProps {
     filterText: string;
     focused: boolean;
     headerStatus: "error" | "running" | "success";
+    /** Number of parallel task slots to display at the bottom. */
+    parallelSlots?: number;
     pinnedTaskIds: [string | null, string | null];
     rows: TaskRowData[];
     scrollRef: React.RefObject<ScrollViewRef>;
@@ -130,6 +143,7 @@ const TaskListPanel = ({
     filterText,
     focused,
     headerStatus,
+    parallelSlots = 3,
     pinnedTaskIds,
     rows,
     scrollRef,
@@ -144,12 +158,47 @@ const TaskListPanel = ({
 
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
-    // Single flat list: running tasks first, then completed, then pending
-    const sorted = [
-        ...rows.filter((r) => r.status === "running"),
-        ...rows.filter((r) => r.status !== "pending" && r.status !== "running"),
-        ...rows.filter((r) => r.status === "pending"),
-    ];
+    // Split rows: completed/failed/pending go in scrollable area, running in bottom slots
+    const listRows = rows.filter((r) => r.status !== "running");
+    const runningRows = rows.filter((r) => r.status === "running");
+    const hasActiveWork = runningRows.length > 0 || rows.some((r) => r.status === "pending");
+
+    // Build parallel section slots
+    const parallelElements: React.JSX.Element[] = [];
+
+    if (hasActiveWork) {
+        for (let i = 0; i < parallelSlots; i++) {
+            const row = runningRows[i];
+            const isLast = i === parallelSlots - 1;
+            const showConnector = !isLast;
+
+            if (row) {
+                parallelElements.push(
+                    <TaskListRow
+                        compact={compact}
+                        connector={showConnector}
+                        isSelected={row.taskId === selectedTaskId}
+                        key={`par-${row.taskId}`}
+                        pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
+                        row={row}
+                    />,
+                );
+            } else {
+                parallelElements.push(
+                    <Box key={`par-empty-${String(i)}`}>
+                        <Text> </Text>
+                        <Box width={1}>
+                            <Text dimColor={showConnector}>{showConnector ? "\u2502" : " "}</Text>
+                        </Box>
+                        <Box width={STATUS_ICON_WIDTH}>
+                            <Text bold color="gray">{"  \u00B7  "}</Text>
+                        </Box>
+                        <Text dimColor>Waiting for task...</Text>
+                    </Box>,
+                );
+            }
+        }
+    }
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
@@ -172,7 +221,7 @@ const TaskListPanel = ({
                 )}
             </Box>
 
-            {/* Scrollable task list */}
+            {/* Scrollable completed task list */}
             <ScrollView
                 ref={scrollRef}
                 flexGrow={1}
@@ -183,7 +232,7 @@ const TaskListPanel = ({
                 scrollbarColor="gray"
                 scrollbarStyle="block"
             >
-                {sorted.map((row) => (
+                {listRows.map((row) => (
                     <TaskListRow
                         compact={compact}
                         isSelected={row.taskId === selectedTaskId}
@@ -193,6 +242,13 @@ const TaskListPanel = ({
                     />
                 ))}
             </ScrollView>
+
+            {/* Fixed parallel slots at bottom (only while tasks active) */}
+            {hasActiveWork && (
+                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexDirection="column" flexShrink={0} paddingLeft={1} paddingY={1}>
+                    {parallelElements}
+                </Box>
+            )}
 
             {/* Filter bar */}
             {filterActive && (

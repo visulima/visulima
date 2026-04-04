@@ -8,6 +8,7 @@
         "test": "echo 'Testing lib-b...' && sleep 0.3 && echo 'lib-b tests passed!'"
     },
     "dependencies": {
-        "lib-c": "1.0.0"
+        "lib-c": "1.0.0",
+        "lib-fast-2": "1.0.0"
     }
 }
