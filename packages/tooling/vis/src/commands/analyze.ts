@@ -4,6 +4,7 @@ import { findPackageManagerSync } from "@visulima/package";
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { OutdatedEntry } from "../catalog";
 import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../catalog";
+import { buildSocketOptions, fetchSocketReports } from "../socket-security";
 
 const VERSION_PREFIX_REGEX = /^[\^~>=<]+/;
 
@@ -114,26 +115,18 @@ const analyze: Command = {
             }
 
             // Also fetch Socket.dev report if enabled
-            if (visConfig?.security?.socket?.enabled) {
-                try {
-                    const { fetchSocketReports } = await import("../socket-security");
-                    const socketConfig = visConfig.security.socket;
-                    const reports = await fetchSocketReports([{ name: packageName, version }], {
-                        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
-                        cacheTtlMs: socketConfig.cacheTtlMs,
-                        timeoutMs: socketConfig.timeoutMs,
-                    });
-                    const report = reports.get(`${packageName}@${version}`);
+            const socketOpts = buildSocketOptions(visConfig?.security?.socket);
 
-                    if (report) {
-                        entry.socketReport = {
-                            alerts: report.alerts,
-                            license: report.license,
-                            score: report.score,
-                        };
-                    }
-                } catch {
-                    // Graceful degradation
+            if (socketOpts) {
+                const reports = await fetchSocketReports([{ name: packageName, version }], socketOpts);
+                const report = reports.get(`${packageName}@${version}`);
+
+                if (report) {
+                    entry.socketReport = {
+                        alerts: report.alerts,
+                        license: report.license,
+                        score: report.score,
+                    };
                 }
             }
         }

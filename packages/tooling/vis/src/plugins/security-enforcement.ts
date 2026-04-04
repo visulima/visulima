@@ -1,10 +1,69 @@
-import type { Plugin } from "@visulima/cerebro";
+import { existsSync, readFileSync } from "node:fs";
 
+import type { Plugin } from "@visulima/cerebro";
+import { join } from "@visulima/path";
+
+import { info, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import { emitSecurityWarnings, enforceScriptSecurity, runApprovedScripts } from "../security";
+import { buildSocketOptions, fetchSocketReports, formatSecurityOverview } from "../socket-security";
 
 const INSTALL_COMMANDS = new Set(["add", "install", "update"]);
 const PM_COMMANDS = new Set(["add", "dedupe", "install", "remove", "update"]);
+
+const VERSION_REGEX = /(\d+\.\d+\.\d+)/;
+
+/**
+ * Resolves installed packages from the workspace root.
+ * Reads the top-level package.json and resolves actual versions from node_modules.
+ */
+const resolveInstalledPackages = (workspaceRoot: string): { name: string; version: string }[] => {
+    const pkgJsonPath = join(workspaceRoot, "package.json");
+
+    if (!existsSync(pkgJsonPath)) {
+        return [];
+    }
+
+    const packages: { name: string; version: string }[] = [];
+
+    try {
+        const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {
+            dependencies?: Record<string, string>;
+            devDependencies?: Record<string, string>;
+        };
+
+        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+        for (const [name, range] of Object.entries(allDeps)) {
+            // Try to resolve actual installed version from node_modules
+            const installedPkgPath = join(workspaceRoot, "node_modules", name, "package.json");
+
+            if (existsSync(installedPkgPath)) {
+                try {
+                    const installedPkg = JSON.parse(readFileSync(installedPkgPath, "utf8")) as { version?: string };
+
+                    if (installedPkg.version) {
+                        packages.push({ name, version: installedPkg.version });
+                        continue;
+                    }
+                } catch {
+                    // Fall through to range parsing
+                }
+            }
+
+            // Fall back to parsing version from range
+            const versionMatch = VERSION_REGEX.exec(range);
+
+            if (versionMatch) {
+                packages.push({ name, version: versionMatch[1] });
+            }
+        }
+    } catch {
+        // Non-critical
+    }
+
+    return packages;
+};
 
 /* eslint-disable no-param-reassign -- cerebro plugin pattern */
 
@@ -25,21 +84,14 @@ const securityEnforcementPlugin: Plugin = {
         // Display Socket.dev security summary after install/update commands
         const command = process.argv[2] ?? "";
 
-        if (INSTALL_COMMANDS.has(command) && toolbox.visConfig?.security?.socket?.enabled && toolbox.workspaceRoot) {
-            try {
-                const { fetchSocketReports, formatSecurityOverview } = await import("../socket-security");
-                const { info, warn } = await import("../output");
-                const socketConfig = toolbox.visConfig.security.socket;
+        const socketOpts = buildSocketOptions(toolbox.visConfig?.security?.socket);
 
-                // Read lockfile to discover installed packages
-                const packages = await resolveInstalledPackages(toolbox.workspaceRoot);
+        if (INSTALL_COMMANDS.has(command) && socketOpts && toolbox.workspaceRoot) {
+            try {
+                const packages = resolveInstalledPackages(toolbox.workspaceRoot);
 
                 if (packages.length > 0) {
-                    const reports = await fetchSocketReports(packages, {
-                        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
-                        cacheTtlMs: socketConfig.cacheTtlMs,
-                        timeoutMs: socketConfig.timeoutMs,
-                    });
+                    const reports = await fetchSocketReports(packages, socketOpts);
 
                     if (reports.size > 0) {
                         const overview = formatSecurityOverview(reports);
@@ -96,59 +148,5 @@ const securityEnforcementPlugin: Plugin = {
 };
 
 /* eslint-enable no-param-reassign */
-
-/**
- * Resolves recently installed/updated packages from the workspace root.
- * Reads the top-level package.json dependencies to get a representative sample.
- */
-const resolveInstalledPackages = async (workspaceRoot: string): Promise<{ name: string; version: string }[]> => {
-    const { existsSync, readFileSync } = await import("node:fs");
-    const { join } = await import("@visulima/path");
-
-    const packages: { name: string; version: string }[] = [];
-    const pkgJsonPath = join(workspaceRoot, "package.json");
-
-    if (!existsSync(pkgJsonPath)) {
-        return packages;
-    }
-
-    try {
-        const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {
-            dependencies?: Record<string, string>;
-            devDependencies?: Record<string, string>;
-        };
-
-        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-
-        for (const [name, range] of Object.entries(allDeps)) {
-            // Try to resolve actual installed version from node_modules
-            const installedPkgPath = join(workspaceRoot, "node_modules", name, "package.json");
-
-            if (existsSync(installedPkgPath)) {
-                try {
-                    const installedPkg = JSON.parse(readFileSync(installedPkgPath, "utf8")) as { version?: string };
-
-                    if (installedPkg.version) {
-                        packages.push({ name, version: installedPkg.version });
-                        continue;
-                    }
-                } catch {
-                    // Fall through to range parsing
-                }
-            }
-
-            // Fall back to parsing version from range
-            const versionMatch = /(\d+\.\d+\.\d+)/.exec(range);
-
-            if (versionMatch) {
-                packages.push({ name, version: versionMatch[1] });
-            }
-        }
-    } catch {
-        // Non-critical
-    }
-
-    return packages;
-};
 
 export default securityEnforcementPlugin;

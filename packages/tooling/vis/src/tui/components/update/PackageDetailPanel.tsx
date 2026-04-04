@@ -64,6 +64,10 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
 
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasVulnerabilities = entry.vulnerabilities && entry.vulnerabilities.length > 0;
+    const socketScore = entry.socketReport?.score.overall ?? 0;
+    const socketScoreColor = entry.socketReport
+        ? socketScore >= 0.6 ? "green" as const : socketScore >= 0.4 ? "yellow" as const : "red" as const
+        : "gray" as const;
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
@@ -132,8 +136,8 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                     <Box gap={2}>
                         <Box>
                             <Text dimColor>Overall: </Text>
-                            <Text bold color={entry.socketReport.score.overall >= 0.6 ? "green" : entry.socketReport.score.overall >= 0.4 ? "yellow" : "red"}>
-                                {String(Math.round(entry.socketReport.score.overall * 100))}%
+                            <Text bold color={socketScoreColor}>
+                                {String(Math.round(socketScore * 100))}%
                             </Text>
                         </Box>
                         <Box>

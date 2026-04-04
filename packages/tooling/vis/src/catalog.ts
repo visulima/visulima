@@ -4,6 +4,8 @@ import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
 
+import type { PackageReportData, SocketSecurityOptions } from "./socket-security";
+import { fetchSocketReports } from "./socket-security";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
@@ -1123,7 +1125,7 @@ const buildOutdatedEntries = (
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
-    socketOptions?: { apiToken?: string; cacheTtlMs?: number; enabled?: boolean; timeoutMs?: number },
+    socketOptions?: SocketSecurityOptions & { enabled?: boolean },
 ): Promise<void> => {
     // Check current versions for known vulnerabilities
     const packagesToScan = [
@@ -1140,22 +1142,18 @@ const enrichWithSecurity = async (
     ].filter((p) => p.version);
 
     // Fetch OSV vulnerabilities and Socket.dev reports in parallel
-    const promises: [Promise<Map<string, SecurityVulnerability[]>>, Promise<Map<string, import("./socket-security").PackageReportData>> | undefined] = [
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions?.enabled
+        ? fetchSocketReports(packagesToScan, {
+              apiToken: socketOptions.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+              cacheTtlMs: socketOptions.cacheTtlMs,
+              timeoutMs: socketOptions.timeoutMs,
+          })
+        : undefined;
+
+    const [vulnMap, socketReports] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
-        undefined,
-    ];
-
-    if (socketOptions?.enabled) {
-        const { fetchSocketReports } = await import("./socket-security");
-
-        promises[1] = fetchSocketReports(packagesToScan, {
-            apiToken: socketOptions.apiToken ?? process.env.VIS_SOCKET_TOKEN,
-            cacheTtlMs: socketOptions.cacheTtlMs,
-            timeoutMs: socketOptions.timeoutMs,
-        });
-    }
-
-    const [vulnMap, socketReports] = await Promise.all([promises[0], promises[1]]);
+        socketPromise,
+    ]);
 
     for (const entry of outdated) {
         const vulns = vulnMap.get(entry.packageName);
@@ -1260,7 +1258,7 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
-    socketOptions?: { apiToken?: string; cacheTtlMs?: number; enabled?: boolean; timeoutMs?: number },
+    socketOptions?: SocketSecurityOptions & { enabled?: boolean },
 ): Promise<CheckOutdatedResult> => {
     const hash = computeCacheHash(catalogs, options);
 

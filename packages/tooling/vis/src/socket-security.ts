@@ -3,7 +3,7 @@
  *
  * Ported from @vltpkg/security-archive and adapted to use the Socket.dev
  * public API for fetching package security scores, alerts, and report data.
- * Uses a file-based cache (following the ai-cache.ts pattern) with a 3-hour TTL.
+ * Uses a file-based cache (following the ai-cache.ts pattern) with a 1-hour TTL.
  *
  * @see https://socket.dev
  * @see https://github.com/vltpkg/vltpkg/tree/main/src/security-archive
@@ -535,6 +535,30 @@ const clearSocketCache = (): number => {
     return files.length;
 };
 
+/** Socket.dev config shape as it appears in VisConfig.security.socket. */
+interface SocketConfigLike {
+    apiToken?: string;
+    cacheTtlMs?: number;
+    enabled?: boolean;
+    timeoutMs?: number;
+}
+
+/**
+ * Builds SocketSecurityOptions from the VisConfig socket config section.
+ * Returns undefined if Socket.dev is not enabled.
+ */
+const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketSecurityOptions | undefined => {
+    if (!socketConfig?.enabled) {
+        return undefined;
+    }
+
+    return {
+        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+        cacheTtlMs: socketConfig.cacheTtlMs,
+        timeoutMs: socketConfig.timeoutMs,
+    };
+};
+
 export type {
     PackageAlert,
     PackageAlertProps,
@@ -545,6 +569,7 @@ export type {
 
 export {
     alertSeverityColor,
+    buildSocketOptions,
     calculateOverallScore,
     clearSocketCache,
     fetchSocketReports,
