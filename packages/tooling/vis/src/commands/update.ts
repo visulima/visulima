@@ -32,7 +32,7 @@ import { resolveUpdateCommand } from "../package-manager";
 import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
-import { buildSocketOptions } from "../socket-security";
+import { buildSocketOptions, scoreColor } from "../socket-security";
 import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -282,9 +282,7 @@ const executeCatalogUpdate = async (
             const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
             const socketOverall = entry.socketReport?.score.overall;
             const scoreSuffix = socketOverall !== undefined ? ` [${String(Math.round(socketOverall * 100))}%]` : "";
-            const socketColor = socketOverall !== undefined
-                ? socketOverall >= 0.6 ? "green" : socketOverall >= 0.4 ? "yellow" : "red"
-                : undefined;
+            const socketColorName = socketOverall !== undefined ? scoreColor(socketOverall) : undefined;
 
             process.stdout.write(
                 renderToString(
@@ -295,7 +293,7 @@ const executeCatalogUpdate = async (
                         React.createElement(Text, { color: iconColor }, icon),
                         `  ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}`,
                         React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
-                        socketColor ? React.createElement(Text, { color: socketColor }, scoreSuffix) : null,
+                        socketColorName ? React.createElement(Text, { color: socketColorName }, scoreSuffix) : null,
                     ),
                     { columns },
                 ) + "\n",

@@ -10,6 +10,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
+import { isAccessibleSync, readYamlSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
 // ── Types ───────────────────────────────────────────────────────────
@@ -23,34 +24,13 @@ interface NativeAuditExclusions {
 
 // ── Shared helpers ──────────────────────────────────────────────────
 
-const YAML_ENTRY_STRIP_RE = /^\s+-\s+['"]?/;
-const YAML_TRAILING_QUOTE_RE = /['"]?$/;
-
-/** Extracts values from a YAML list section like `key:\n  - value1\n  - value2`. */
-const parseYamlList = (content: string, keyRegex: RegExp): string[] => {
-    const match = keyRegex.exec(content);
-
-    if (!match?.[1]) {
+/** Safely coerces a YAML value to a string array. */
+const toStringArray = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
         return [];
     }
 
-    const entries = match[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
-
-    if (!entries) {
-        return [];
-    }
-
-    const results: string[] = [];
-
-    for (const entry of entries) {
-        const value = entry.replace(YAML_ENTRY_STRIP_RE, "").replace(YAML_TRAILING_QUOTE_RE, "").trim();
-
-        if (value) {
-            results.push(value);
-        }
-    }
-
-    return results;
+    return value.filter((v): v is string => typeof v === "string");
 };
 
 /** Checks if a value matches any pattern in a list (exact or trailing glob). */
@@ -68,48 +48,59 @@ const matchesGlobList = (value: string, patterns: string[]): boolean => {
     return false;
 };
 
-// ── Readers ─────────────────────────────────────────────────────────
+// ── Readers (use @visulima/fs readYamlSync for proper parsing) ──────
+
+interface PnpmWorkspaceYaml {
+    auditConfig?: {
+        ignoreCves?: string[];
+        ignoreGhsas?: string[];
+    };
+}
+
+interface YarnrcYml {
+    npmAuditExcludePackages?: string[];
+    npmAuditIgnoreAdvisories?: string[];
+}
 
 const readPnpmAuditExclusions = (workspaceRoot: string): NativeAuditExclusions => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return { excludedPackages: [], ignoredAdvisories: [] };
     }
 
-    const content = readFileSync(filePath, "utf8");
+    try {
+        const data = readYamlSync<PnpmWorkspaceYaml>(filePath);
 
-    // Extract the auditConfig block first
-    const sectionMatch = /^auditConfig:\s*\n([\s\S]*?)(?=^\S|\z)/m.exec(content);
-
-    if (!sectionMatch) {
+        return {
+            excludedPackages: [],
+            ignoredAdvisories: [
+                ...toStringArray(data?.auditConfig?.ignoreCves),
+                ...toStringArray(data?.auditConfig?.ignoreGhsas),
+            ],
+        };
+    } catch {
         return { excludedPackages: [], ignoredAdvisories: [] };
     }
-
-    const block = sectionMatch[1];
-
-    return {
-        excludedPackages: [],
-        ignoredAdvisories: [
-            ...parseYamlList(block, /ignoreCves:\s*\n((?:\s+-\s+.+\n)*)/m),
-            ...parseYamlList(block, /ignoreGhsas:\s*\n((?:\s+-\s+.+\n)*)/m),
-        ],
-    };
 };
 
 const readYarnAuditExclusions = (workspaceRoot: string): NativeAuditExclusions => {
     const filePath = join(workspaceRoot, ".yarnrc.yml");
 
-    if (!existsSync(filePath)) {
+    if (!isAccessibleSync(filePath)) {
         return { excludedPackages: [], ignoredAdvisories: [] };
     }
 
-    const content = readFileSync(filePath, "utf8");
+    try {
+        const data = readYamlSync<YarnrcYml>(filePath);
 
-    return {
-        excludedPackages: parseYamlList(content, /npmAuditExcludePackages:\s*\n((?:\s+-\s+.+\n)*)/m),
-        ignoredAdvisories: parseYamlList(content, /npmAuditIgnoreAdvisories:\s*\n((?:\s+-\s+.+\n)*)/m),
-    };
+        return {
+            excludedPackages: toStringArray(data?.npmAuditExcludePackages),
+            ignoredAdvisories: toStringArray(data?.npmAuditIgnoreAdvisories),
+        };
+    } catch {
+        return { excludedPackages: [], ignoredAdvisories: [] };
+    }
 };
 
 const readNativeAuditExclusions = (workspaceRoot: string, pm: string): NativeAuditExclusions => {

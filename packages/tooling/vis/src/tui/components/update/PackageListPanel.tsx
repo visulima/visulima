@@ -1,6 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 
 import type { OutdatedEntry } from "../../../catalog";
+import { scoreColor } from "../../../socket-security";
 import type { FilterType } from "./UpdateStore";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
@@ -38,9 +39,9 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
     const scoreText = entry.socketReport
         ? `${String(Math.round(entry.socketReport.score.overall * 100))}%`
         : "";
-    const scoreColor = entry.socketReport
-        ? entry.socketReport.score.overall >= 0.6 ? "green" : entry.socketReport.score.overall >= 0.4 ? "yellow" : "red"
-        : "gray";
+    const scoreColorName = entry.socketReport
+        ? scoreColor(entry.socketReport.score.overall)
+        : "gray" as const;
 
     return (
         <Box height={1} flexShrink={0}>
@@ -52,7 +53,7 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
                     {entry.packageName}{isAcknowledged ? " [ack]" : ""}
                 </Text>
             </Box>
-            {scoreText && <Text color={scoreColor}> {scoreText}</Text>}
+            {scoreText && <Text color={scoreColorName}> {scoreText}</Text>}
             <Text dimColor> {entry.currentRange}</Text>
             <Text dimColor> {"\u2192"} </Text>
             <Text>{entry.newRange} </Text>

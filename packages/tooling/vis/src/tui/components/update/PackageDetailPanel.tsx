@@ -3,6 +3,7 @@ import { Box, ScrollView, Text } from "@visulima/tui";
 
 import type { AiRecommendation } from "../../../ai-analysis";
 import type { OutdatedEntry } from "../../../catalog";
+import { scoreColor } from "../../../socket-security";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -65,9 +66,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasVulnerabilities = entry.vulnerabilities && entry.vulnerabilities.length > 0;
     const socketScore = entry.socketReport?.score.overall ?? 0;
-    const socketScoreColor = entry.socketReport
-        ? socketScore >= 0.6 ? "green" as const : socketScore >= 0.4 ? "yellow" as const : "red" as const
-        : "gray" as const;
+    const socketScoreColor = entry.socketReport ? scoreColor(socketScore) : "gray" as const;
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
