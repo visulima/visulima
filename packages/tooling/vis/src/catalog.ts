@@ -57,6 +57,8 @@ interface ParsedVersion {
 }
 
 interface SecurityVulnerability {
+    /** Alternate identifiers (CVE-*, GHSA-*, etc.) from the OSV database. */
+    aliases?: string[];
     cvssScore?: number;
     fixedVersions: string[];
     id: string;
@@ -850,6 +852,7 @@ const mapOsvFixedVersions = (vuln: OsvVuln): string[] => {
 
 const mapOsvVuln = (vuln: OsvVuln): SecurityVulnerability => {
     return {
+        aliases: vuln.aliases?.length ? vuln.aliases : undefined,
         cvssScore: mapOsvCvss(vuln),
         fixedVersions: mapOsvFixedVersions(vuln),
         id: vuln.id,
@@ -1191,7 +1194,12 @@ interface OutdatedCache {
     timestamp: number;
 }
 
-const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: CatalogCheckOptions): string => {
+const computeCacheHash = (
+    catalogs: Map<string, Map<string, string>>,
+    options: CatalogCheckOptions,
+    socketEnabled?: boolean,
+    acceptedRiskKeys?: string[],
+): string => {
     const parts: string[] = [];
 
     for (const [name, deps] of catalogs) {
@@ -1202,6 +1210,11 @@ const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: C
 
     parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
     parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")},ig=${options.ignore.join(",")}`);
+    parts.push(`socket=${String(socketEnabled ?? false)}`);
+
+    if (acceptedRiskKeys && acceptedRiskKeys.length > 0) {
+        parts.push(`risks=${acceptedRiskKeys.toSorted().join(",")}`);
+    }
 
     let hash = 5381;
     const str = parts.join("|");
@@ -1263,7 +1276,12 @@ const checkOutdated = async (
     socketOptions?: SocketSecurityOptions,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
-    const hash = computeCacheHash(catalogs, options);
+    const hash = computeCacheHash(
+        catalogs,
+        options,
+        Boolean(socketOptions),
+        acceptedRisks ? Object.keys(acceptedRisks) : undefined,
+    );
 
     if (workspaceRoot) {
         const cached = readOutdatedCache(workspaceRoot, hash);

@@ -119,8 +119,22 @@ const readNativeAuditExclusions = (workspaceRoot: string, pm: string): NativeAud
     }
 };
 
-const isAdvisoryExcluded = (vulnId: string, exclusions: NativeAuditExclusions): boolean =>
-    matchesGlobList(vulnId, exclusions.ignoredAdvisories);
+/** Checks if any of the given IDs (primary + aliases) match the exclusion list. */
+const isAdvisoryExcluded = (vulnId: string, exclusions: NativeAuditExclusions, aliases?: string[]): boolean => {
+    if (matchesGlobList(vulnId, exclusions.ignoredAdvisories)) {
+        return true;
+    }
+
+    if (aliases) {
+        for (const alias of aliases) {
+            if (matchesGlobList(alias, exclusions.ignoredAdvisories)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
 
 const isPackageExcluded = (packageName: string, exclusions: NativeAuditExclusions): boolean =>
     matchesGlobList(packageName, exclusions.excludedPackages);
@@ -147,13 +161,30 @@ const syncAcceptedRisksToNativeConfig = (
                 break;
             }
 
+            // Read existing exclusions to merge with new ones
+            const existing = readPnpmAuditExclusions(workspaceRoot);
+            const existingCves = new Set(existing.ignoredAdvisories.filter((id) => id.startsWith("CVE-")));
+            const existingGhsas = new Set(existing.ignoredAdvisories.filter((id) => id.startsWith("GHSA-")));
+
+            const newCves = advisoryIds.filter((id) => id.startsWith("CVE-"));
+            const newGhsas = advisoryIds.filter((id) => id.startsWith("GHSA-"));
+
+            // Merge and deduplicate
+            const mergedCves = [...new Set([...existingCves, ...newCves])];
+            const mergedGhsas = [...new Set([...existingGhsas, ...newGhsas])];
+
+            const addedCves = newCves.filter((id) => !existingCves.has(id)).length;
+            const addedGhsas = newGhsas.filter((id) => !existingGhsas.has(id)).length;
+
+            if (addedCves === 0 && addedGhsas === 0) {
+                actions.push("All advisory IDs already present in pnpm-workspace.yaml.");
+                break;
+            }
+
             let content = readFileSync(filePath, "utf8");
 
-            const cves = advisoryIds.filter((id) => id.startsWith("CVE-"));
-            const ghsas = advisoryIds.filter((id) => id.startsWith("GHSA-"));
-
-            if (cves.length > 0) {
-                const cveBlock = `  ignoreCves:\n${cves.map((id) => `    - ${id}`).join("\n")}\n`;
+            if (mergedCves.length > 0) {
+                const cveBlock = `  ignoreCves:\n${mergedCves.map((id) => `    - ${id}`).join("\n")}\n`;
 
                 if (/auditConfig:/m.test(content)) {
                     if (/ignoreCves:/m.test(content)) {
@@ -165,11 +196,13 @@ const syncAcceptedRisksToNativeConfig = (
                     content = `${content.trimEnd()}\n\nauditConfig:\n${cveBlock}`;
                 }
 
-                actions.push(`Synced ${String(cves.length)} CVE${cves.length === 1 ? "" : "s"} to pnpm-workspace.yaml auditConfig.ignoreCves`);
+                if (addedCves > 0) {
+                    actions.push(`Added ${String(addedCves)} new CVE${addedCves === 1 ? "" : "s"} to pnpm-workspace.yaml (${String(mergedCves.length)} total)`);
+                }
             }
 
-            if (ghsas.length > 0) {
-                const ghsaBlock = `  ignoreGhsas:\n${ghsas.map((id) => `    - ${id}`).join("\n")}\n`;
+            if (mergedGhsas.length > 0) {
+                const ghsaBlock = `  ignoreGhsas:\n${mergedGhsas.map((id) => `    - ${id}`).join("\n")}\n`;
 
                 if (/auditConfig:/m.test(content)) {
                     if (/ignoreGhsas:/m.test(content)) {
@@ -179,7 +212,9 @@ const syncAcceptedRisksToNativeConfig = (
                     }
                 }
 
-                actions.push(`Synced ${String(ghsas.length)} GHSA${ghsas.length === 1 ? "" : "s"} to pnpm-workspace.yaml auditConfig.ignoreGhsas`);
+                if (addedGhsas > 0) {
+                    actions.push(`Added ${String(addedGhsas)} new GHSA${addedGhsas === 1 ? "" : "s"} to pnpm-workspace.yaml (${String(mergedGhsas.length)} total)`);
+                }
             }
 
             writeFileSync(filePath, content);
@@ -194,9 +229,20 @@ const syncAcceptedRisksToNativeConfig = (
                 break;
             }
 
+            // Read existing exclusions to merge
+            const existingYarn = readYarnAuditExclusions(workspaceRoot);
+            const existingSet = new Set(existingYarn.ignoredAdvisories);
+            const merged = [...new Set([...existingSet, ...advisoryIds])];
+            const added = advisoryIds.filter((id) => !existingSet.has(id)).length;
+
+            if (added === 0) {
+                actions.push("All advisory IDs already present in .yarnrc.yml.");
+                break;
+            }
+
             let content = readFileSync(filePath, "utf8");
 
-            const advisoryBlock = `npmAuditIgnoreAdvisories:\n${advisoryIds.map((id) => `  - "${id}"`).join("\n")}\n`;
+            const advisoryBlock = `npmAuditIgnoreAdvisories:\n${merged.map((id) => `  - "${id}"`).join("\n")}\n`;
 
             if (/npmAuditIgnoreAdvisories:/m.test(content)) {
                 content = content.replace(/npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+.+\n)*/m, advisoryBlock);
@@ -205,7 +251,7 @@ const syncAcceptedRisksToNativeConfig = (
             }
 
             writeFileSync(filePath, content);
-            actions.push(`Synced ${String(advisoryIds.length)} advisor${advisoryIds.length === 1 ? "y" : "ies"} to .yarnrc.yml npmAuditIgnoreAdvisories`);
+            actions.push(`Added ${String(added)} new advisor${added === 1 ? "y" : "ies"} to .yarnrc.yml (${String(merged.length)} total)`);
             break;
         }
 

@@ -26,8 +26,6 @@ interface InstalledPackage {
 interface AuditEntry {
     acceptedRisk?: AcceptedRisk;
     name: string;
-    /** True if the package or its advisory IDs are excluded by native PM config. */
-    nativeExcluded: boolean;
     socketReport?: PackageReportData;
     version: string;
     vulnerabilities: SecurityVulnerability[];
@@ -224,9 +222,6 @@ const executeAudit = async (
         const report = socketReports.get(`${pkg.name}@${pkg.version}`);
         const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
 
-        // Check if all vulns are excluded by native PM config
-        const nativeExcluded = vulns.length > 0 && vulns.every((v) => isAdvisoryExcluded(v.id, nativeExclusions));
-
         const hasVulns = vulns.length > 0;
         const hasLowScore = report ? report.score.overall < DEFAULT_LOW_SCORE_THRESHOLD : false;
         const hasAlerts = report ? report.alerts.length > 0 : false;
@@ -235,7 +230,6 @@ const executeAudit = async (
             entries.push({
                 acceptedRisk: accepted,
                 name: pkg.name,
-                nativeExcluded,
                 socketReport: report,
                 version: pkg.version,
                 vulnerabilities: vulns,
@@ -321,7 +315,7 @@ const executeAudit = async (
         info(`\n\u2500\u2500 ${severity} (${String(items.length)}) \u2500\u2500`);
 
         for (const { entry, vuln } of items) {
-            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded || isAdvisoryExcluded(vuln.id, nativeExclusions);
+            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases);
 
             if (isExcluded) {
                 acknowledgedVulns++;
@@ -351,7 +345,7 @@ const executeAudit = async (
                 continue;
             }
 
-            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded;
+            const isExcluded = Boolean(entry.acceptedRisk);
 
             if (isExcluded && !showAccepted) {
                 continue;
@@ -368,7 +362,9 @@ const executeAudit = async (
     }
 
     // Summary
-    const isEntryExcluded = (e: AuditEntry): boolean => Boolean(e.acceptedRisk) || e.nativeExcluded;
+    const isEntryExcluded = (e: AuditEntry): boolean =>
+        Boolean(e.acceptedRisk)
+        || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
     const unacknowledgedCount = filtered.filter((e) => !isEntryExcluded(e)).length;
 
     info("");
@@ -416,18 +412,29 @@ const executeAudit = async (
 
     // Sync accepted risks to native PM config
     if (options.sync && acceptedRisks) {
-        const advisoryIds: string[] = [];
+        // Collect CVE/GHSA IDs from ALL accepted entries (not just severity-filtered)
+        const idSet = new Set<string>();
 
-        // Collect CVE/GHSA IDs from accepted risk entries by looking at their vuln data
-        for (const entry of filtered) {
+        for (const entry of entries) {
             if (entry.acceptedRisk) {
                 for (const vuln of entry.vulnerabilities) {
                     if (vuln.id.startsWith("CVE-") || vuln.id.startsWith("GHSA-")) {
-                        advisoryIds.push(vuln.id);
+                        idSet.add(vuln.id);
+                    }
+
+                    // Also include aliases (CVE/GHSA variants)
+                    if (vuln.aliases) {
+                        for (const alias of vuln.aliases) {
+                            if (alias.startsWith("CVE-") || alias.startsWith("GHSA-")) {
+                                idSet.add(alias);
+                            }
+                        }
                     }
                 }
             }
         }
+
+        const advisoryIds = [...idSet];
 
         if (advisoryIds.length > 0) {
             info("");

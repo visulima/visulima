@@ -17,7 +17,6 @@ import { join } from "@visulima/path";
 // ── Constants ───────────────────────────────────────────────────────
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
-const SOCKET_PUBLIC_API_TOKEN = "sktsec_t_--RAN5U4ivauy4w37-6aoKyYPDt5ZbaT5JBVMqiwKo_api";
 
 const getCacheDirectory = (): string => join(homedir(), ".vis", "cache", "socket-security");
 const DEFAULT_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -74,10 +73,12 @@ interface PackageReportData {
 
 /** Configuration options for the Socket.dev security client. */
 interface SocketSecurityOptions {
-    /** Custom API token. Falls back to the public token. */
+    /** Custom API token. Required — set via VIS_SOCKET_TOKEN env var or config. */
     apiToken?: string;
     /** Cache TTL in milliseconds. Defaults to 1 hour. */
     cacheTtlMs?: number;
+    /** Minimum overall score (0–1) below which packages are flagged. Defaults to 0.4. */
+    minimumScore?: number;
     /** Request timeout in milliseconds. Defaults to 15 seconds. */
     timeoutMs?: number;
 }
@@ -126,8 +127,7 @@ const ensureCacheDirectory = (): void => {
 };
 
 const buildCacheKey = (name: string, version: string): string => {
-    // Simple key: scope and name with version, sanitized for filesystem
-    return `${name.replaceAll("/", "__").replace("@", "")}@${version}`;
+    return `${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
 };
 
 const getCachedReport = (name: string, version: string): PackageReportData | undefined => {
@@ -198,7 +198,7 @@ const fetchSocketReports = async (
     options: SocketSecurityOptions = {},
 ): Promise<Map<string, PackageReportData>> => {
     const {
-        apiToken = SOCKET_PUBLIC_API_TOKEN,
+        apiToken,
         cacheTtlMs = DEFAULT_TTL_MS,
         timeoutMs = 15_000,
     } = options;
@@ -206,6 +206,10 @@ const fetchSocketReports = async (
     const results = new Map<string, PackageReportData>();
 
     if (packages.length === 0) {
+        return results;
+    }
+
+    if (!apiToken) {
         return results;
     }
 
@@ -227,7 +231,7 @@ const fetchSocketReports = async (
     }
 
     // Pre-compute auth header and ensure cache dir exists before batch loop
-    const authHeader = `Basic ${Buffer.from(`${apiToken}:`).toString("base64url")}`;
+    const authHeader = `Basic ${Buffer.from(`${apiToken}:`).toString("base64")}`;
 
     if (uncached.length > 0) {
         ensureCacheDirectory();
@@ -552,21 +556,29 @@ interface SocketConfigLike {
     apiToken?: string;
     cacheTtlMs?: number;
     enabled?: boolean;
+    minimumScore?: number;
     timeoutMs?: number;
 }
 
 /**
  * Builds SocketSecurityOptions from the VisConfig socket config section.
- * Returns undefined if Socket.dev is not enabled.
+ * Returns undefined if Socket.dev is not enabled or no API token is available.
  */
 const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketSecurityOptions | undefined => {
     if (!socketConfig?.enabled) {
         return undefined;
     }
 
+    const apiToken = socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN;
+
+    if (!apiToken) {
+        return undefined;
+    }
+
     return {
-        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+        apiToken,
         cacheTtlMs: socketConfig.cacheTtlMs,
+        minimumScore: socketConfig.minimumScore,
         timeoutMs: socketConfig.timeoutMs,
     };
 };
@@ -629,7 +641,7 @@ const formatAcceptedRiskSnippet = (
     score: number,
     reason: string,
 ): string => {
-    const key = `"${packageName}"`;
+    const key = `"${packageName}@${version}"`;
     const lines = [
         `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
         `    ${key}: {`,

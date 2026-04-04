@@ -284,7 +284,7 @@ const add: Command = {
             const socketOpts = buildSocketOptions(visConfig?.security?.socket);
 
             if (socketOpts) {
-                const minimumScore = visConfig?.security?.socket?.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
+                const minimumScore = socketOpts.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
                 const shouldContinue = await runSocketPreCheck(
                     packages,
