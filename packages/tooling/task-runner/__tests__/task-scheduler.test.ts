@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { TaskScheduler } from "../src/task-scheduler";
-import type { ProjectGraph, TaskGraph } from "../src/types";
+import { parsePartition, TaskScheduler } from "../src/task-scheduler";
+import type { ProjectGraph, Task, TaskGraph } from "../src/types";
 
 const createTestGraph = (): { projectGraph: ProjectGraph; taskGraph: TaskGraph } => {
     const taskGraph: TaskGraph = {
@@ -141,5 +141,177 @@ describe(TaskScheduler, () => {
         const batch2 = scheduler.getNextBatch();
 
         expect(batch2).toHaveLength(0);
+    });
+});
+
+const makeTask = (id: string): Task => ({
+    id,
+    outputs: [],
+    overrides: {},
+    target: { project: id.split(":")[0] as string, target: id.split(":")[1] as string },
+});
+
+describe("TaskScheduler.partitionTasks", () => {
+    it("should split 10 tasks into 4 partitions of [3, 3, 3, 1]", () => {
+        const tasks = Array.from({ length: 10 }, (_, i) => makeTask(`p${String(i).padStart(2, "0")}:build`));
+
+        const p1 = TaskScheduler.partitionTasks(tasks, { index: 1, total: 4 });
+        const p2 = TaskScheduler.partitionTasks(tasks, { index: 2, total: 4 });
+        const p3 = TaskScheduler.partitionTasks(tasks, { index: 3, total: 4 });
+        const p4 = TaskScheduler.partitionTasks(tasks, { index: 4, total: 4 });
+
+        expect(p1).toHaveLength(3);
+        expect(p2).toHaveLength(3);
+        expect(p3).toHaveLength(3);
+        expect(p4).toHaveLength(1);
+
+        // All tasks are covered, no duplicates
+        const allIds = [...p1, ...p2, ...p3, ...p4].map((t) => t.id);
+
+        expect(new Set(allIds).size).toBe(10);
+    });
+
+    it("should split 4 tasks into 4 partitions of [1, 1, 1, 1]", () => {
+        const tasks = [makeTask("a:build"), makeTask("b:build"), makeTask("c:build"), makeTask("d:build")];
+
+        for (let i = 1; i <= 4; i++) {
+            const partition = TaskScheduler.partitionTasks(tasks, { index: i, total: 4 });
+
+            expect(partition).toHaveLength(1);
+        }
+    });
+
+    it("should assign single task to partition 1 and empty to others", () => {
+        const tasks = [makeTask("a:build")];
+
+        expect(TaskScheduler.partitionTasks(tasks, { index: 1, total: 4 })).toHaveLength(1);
+        expect(TaskScheduler.partitionTasks(tasks, { index: 2, total: 4 })).toHaveLength(0);
+        expect(TaskScheduler.partitionTasks(tasks, { index: 3, total: 4 })).toHaveLength(0);
+        expect(TaskScheduler.partitionTasks(tasks, { index: 4, total: 4 })).toHaveLength(0);
+    });
+
+    it("should return empty for empty task list", () => {
+        expect(TaskScheduler.partitionTasks([], { index: 1, total: 4 })).toHaveLength(0);
+    });
+
+    it("should throw for invalid partition index (0)", () => {
+        const tasks = [makeTask("a:build")];
+
+        expect(() => TaskScheduler.partitionTasks(tasks, { index: 0, total: 4 })).toThrow("Invalid partition index");
+    });
+
+    it("should throw for partition index exceeding total", () => {
+        const tasks = [makeTask("a:build")];
+
+        expect(() => TaskScheduler.partitionTasks(tasks, { index: 5, total: 4 })).toThrow("Invalid partition index");
+    });
+
+    it("should produce deterministic results regardless of input order", () => {
+        const tasks1 = [makeTask("c:build"), makeTask("a:build"), makeTask("b:build")];
+        const tasks2 = [makeTask("b:build"), makeTask("c:build"), makeTask("a:build")];
+
+        const result1 = TaskScheduler.partitionTasks(tasks1, { index: 1, total: 2 });
+        const result2 = TaskScheduler.partitionTasks(tasks2, { index: 1, total: 2 });
+
+        expect(result1.map((t) => t.id)).toEqual(result2.map((t) => t.id));
+    });
+
+    it("should handle single partition (1/1) returning all tasks", () => {
+        const tasks = [makeTask("a:build"), makeTask("b:build"), makeTask("c:build")];
+
+        const result = TaskScheduler.partitionTasks(tasks, { index: 1, total: 1 });
+
+        expect(result).toHaveLength(3);
+    });
+
+    it("should handle more partitions than tasks", () => {
+        const tasks = [makeTask("a:build"), makeTask("b:build")];
+
+        const p1 = TaskScheduler.partitionTasks(tasks, { index: 1, total: 5 });
+        const p2 = TaskScheduler.partitionTasks(tasks, { index: 2, total: 5 });
+        const p3 = TaskScheduler.partitionTasks(tasks, { index: 3, total: 5 });
+        const p4 = TaskScheduler.partitionTasks(tasks, { index: 4, total: 5 });
+        const p5 = TaskScheduler.partitionTasks(tasks, { index: 5, total: 5 });
+
+        // 2 tasks across 5 partitions: first 2 get 1 each, rest empty
+        const allIds = [...p1, ...p2, ...p3, ...p4, ...p5].map((t) => t.id);
+
+        expect(allIds).toHaveLength(2);
+        expect(new Set(allIds).size).toBe(2);
+    });
+});
+
+describe(parsePartition, () => {
+    it('should parse "1/4" correctly', () => {
+        expect(parsePartition("1/4")).toEqual({ index: 1, total: 4 });
+    });
+
+    it('should parse "3/3" correctly', () => {
+        expect(parsePartition("3/3")).toEqual({ index: 3, total: 3 });
+    });
+
+    it("should return undefined for undefined input and no env var", () => {
+        const original = process.env.VIS_PARTITION;
+
+        delete process.env.VIS_PARTITION;
+
+        expect(parsePartition(undefined)).toBeUndefined();
+        process.env.VIS_PARTITION = original;
+    });
+
+    it("should throw for invalid format", () => {
+        expect(() => parsePartition("1")).toThrow("Invalid partition format");
+        expect(() => parsePartition("1/2/3")).toThrow("Invalid partition format");
+    });
+
+    it("should throw for non-integer values", () => {
+        expect(() => parsePartition("1.5/4")).toThrow("Invalid partition values");
+        expect(() => parsePartition("a/b")).toThrow("Invalid partition values");
+    });
+
+    it("should throw when index exceeds total", () => {
+        expect(() => parsePartition("5/4")).toThrow("Invalid partition index");
+    });
+
+    it("should throw for zero values", () => {
+        expect(() => parsePartition("0/4")).toThrow("Invalid partition values");
+        expect(() => parsePartition("1/0")).toThrow("Invalid partition values");
+    });
+
+    it("should throw for negative values", () => {
+        expect(() => parsePartition("-1/4")).toThrow("Invalid partition values");
+        expect(() => parsePartition("1/-2")).toThrow("Invalid partition values");
+    });
+
+    it("should read from VIS_PARTITION env var when no argument given", () => {
+        const original = process.env.VIS_PARTITION;
+
+        try {
+            process.env.VIS_PARTITION = "2/3";
+
+            expect(parsePartition(undefined)).toEqual({ index: 2, total: 3 });
+        } finally {
+            if (original === undefined) {
+                delete process.env.VIS_PARTITION;
+            } else {
+                process.env.VIS_PARTITION = original;
+            }
+        }
+    });
+
+    it("should prefer explicit argument over VIS_PARTITION env var", () => {
+        const original = process.env.VIS_PARTITION;
+
+        try {
+            process.env.VIS_PARTITION = "1/2";
+
+            expect(parsePartition("3/4")).toEqual({ index: 3, total: 4 });
+        } finally {
+            if (original === undefined) {
+                delete process.env.VIS_PARTITION;
+            } else {
+                process.env.VIS_PARTITION = original;
+            }
+        }
     });
 });

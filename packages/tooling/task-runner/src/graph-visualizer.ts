@@ -448,9 +448,19 @@ const projectGraphToDot = (projectGraph: ProjectGraph): string => {
 
     for (const [project, deps] of Object.entries(projectGraph.dependencies)) {
         for (const dep of deps) {
-            const style = dep.type === "implicit" ? "dashed" : "solid";
+            const attrs: string[] = [];
 
-            lines.push(`  "${project}" -> "${dep.target}" [style=${style}];`);
+            if (dep.type === "implicit") {
+                attrs.push("style=dashed");
+            } else if (dep.type === "devDependency") {
+                attrs.push("style=dotted", 'color="#888888"');
+            } else if (dep.type === "peerDependency") {
+                attrs.push("style=dashed", 'color="#CC8800"');
+            } else {
+                attrs.push("style=solid");
+            }
+
+            lines.push(`  "${project}" -> "${dep.target}" [${attrs.join(", ")}];`);
         }
     }
 

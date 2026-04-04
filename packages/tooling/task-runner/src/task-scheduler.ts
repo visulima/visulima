@@ -1,5 +1,46 @@
 import type { ProjectGraph, Task, TaskGraph } from "./types";
 
+/**
+ * Options for partitioning tasks across CI runners.
+ */
+export interface PartitionOptions {
+    /** 1-based partition index (e.g., 1 for the first partition) */
+    index: number;
+    /** Total number of partitions */
+    total: number;
+}
+
+/**
+ * Parses a partition string like "1/4" into PartitionOptions.
+ * Also supports the VIS_PARTITION environment variable as fallback.
+ */
+export const parsePartition = (value?: string): PartitionOptions | undefined => {
+    const raw = value ?? process.env.VIS_PARTITION;
+
+    if (!raw) {
+        return undefined;
+    }
+
+    const parts = raw.split("/");
+
+    if (parts.length !== 2) {
+        throw new Error(`Invalid partition format: "${raw}". Expected format: "index/total" (e.g., "1/4").`);
+    }
+
+    const index = Number(parts[0]);
+    const total = Number(parts[1]);
+
+    if (!Number.isInteger(index) || !Number.isInteger(total) || index < 1 || total < 1) {
+        throw new Error(`Invalid partition values: "${raw}". Both index and total must be positive integers.`);
+    }
+
+    if (index > total) {
+        throw new Error(`Invalid partition index: ${index} exceeds total ${total}.`);
+    }
+
+    return { index, total };
+};
+
 const calculateProjectDepths = (projectGraph: ProjectGraph): Map<string, number> => {
     const depths = new Map<string, number>();
     const visited = new Set<string>();
@@ -54,6 +95,38 @@ export class TaskScheduler {
     readonly #dependentCounts: Map<string, number>;
 
     readonly #projectDepths: Map<string, number>;
+
+    /**
+     * Partitions a list of tasks for distributed CI execution.
+     * Tasks are sorted by ID for deterministic distribution, then split
+     * using ceiling division so partitions differ by at most one task.
+     *
+     * @param tasks - The full list of tasks to partition
+     * @param partition - The partition configuration (1-based index and total)
+     * @returns The subset of tasks assigned to this partition
+     */
+    public static partitionTasks(tasks: Task[], partition: PartitionOptions): Task[] {
+        if (partition.total < 1) {
+            throw new Error(`Invalid partition total: ${partition.total}. Must be at least 1.`);
+        }
+
+        if (partition.index < 1 || partition.index > partition.total) {
+            throw new Error(`Invalid partition index: ${partition.index}. Must be between 1 and ${partition.total}.`);
+        }
+
+        if (tasks.length === 0) {
+            return [];
+        }
+
+        // Sort by ID for deterministic partitioning across CI runners
+        const sorted = [...tasks].toSorted((a, b) => a.id.localeCompare(b.id));
+
+        const size = Math.ceil(sorted.length / partition.total);
+        const start = size * (partition.index - 1);
+        const end = partition.index === partition.total ? sorted.length : size * partition.index;
+
+        return sorted.slice(start, end);
+    }
 
     public constructor(taskGraph: TaskGraph, projectGraph: ProjectGraph, maxParallel: number = 3) {
         this.#taskGraph = taskGraph;
