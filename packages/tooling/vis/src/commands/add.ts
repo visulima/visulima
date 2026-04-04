@@ -2,7 +2,9 @@ import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
 
-import { dim, green, info, note, red, warn, yellow } from "../output";
+import { dim, green, red, yellow } from "@visulima/colorize";
+
+import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
 import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, scoreColor, scoreLabel } from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";

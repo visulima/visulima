@@ -7,7 +7,9 @@ import type { NativeAuditExclusions } from "../audit-config";
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
 import { fetchVulnerabilities } from "../catalog";
-import { error as errorOutput, cyan, dim, info, note, red, success, warn, yellow } from "../output";
+import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
+
+import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, scoreLabel } from "../socket-security";
@@ -136,7 +138,7 @@ const severityPassesFilter = (severity: string, filter: SeverityFilter): boolean
 
 const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
     CRITICAL: red,
-    HIGH: (s: string) => `\u001B[35m${s}\u001B[0m`, // magenta (not in output.ts)
+    HIGH: magenta,
     LOW: cyan,
     MODERATE: yellow,
     UNKNOWN: dim,
