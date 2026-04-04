@@ -28,7 +28,7 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
             openedAtRef.current = Date.now();
 
             timerRef.current = setInterval(() => {
-                setCountdown((c) => c - 1);
+                setCountdown((c) => Math.max(0, c - 1));
             }, 1000);
         }
 

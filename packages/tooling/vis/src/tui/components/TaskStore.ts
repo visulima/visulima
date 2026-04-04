@@ -13,6 +13,8 @@ export interface TaskState {
     completed: number;
     /** All tasks finished — triggers summary/countdown. */
     done: boolean;
+    /** Timestamp when all tasks completed (Date.now). null while running. */
+    endTime: number | null;
     /** Number of failed tasks. */
     failed: number;
     /** Whether the filter input bar is active. */
@@ -60,6 +62,7 @@ export class TaskStore {
             cached: 0,
             completed: 0,
             done: false,
+            endTime: null,
             failed: 0,
             filterActive: false,
             filterText: "",
@@ -142,7 +145,8 @@ export class TaskStore {
                 // no default
             }
 
-            if (res.terminalOutput) {
+            // Only set output if not already streamed (avoids replacing incremental output)
+            if (res.terminalOutput && !outputs.has(res.task.id)) {
                 outputs.set(res.task.id, res.terminalOutput);
             }
 
@@ -185,7 +189,7 @@ export class TaskStore {
     }
 
     public markDone(): void {
-        this.#emit({ ...this.#state, done: true });
+        this.#emit({ ...this.#state, done: true, endTime: Date.now() });
     }
 
     /** Update elapsed times for running tasks. Called every 100ms. */
@@ -285,6 +289,7 @@ export class TaskStore {
             ...this.#state,
             completed,
             done: false,
+            endTime: null,
             failed,
             retryTaskId: taskId,
             rows,
@@ -324,6 +329,7 @@ export class TaskStore {
             cached: 0,
             completed: 0,
             done: false,
+            endTime: null,
             failed: 0,
             outputs: new Map(),
             rerunRequested: true,

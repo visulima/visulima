@@ -38,25 +38,15 @@ const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | nul
 
 interface TaskListRowProps {
     compact?: boolean;
-    connector?: boolean;
     isSelected: boolean;
     pinLabel: string;
     row: TaskRowData;
 }
 
-const TaskListRow = ({ compact, connector, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
+const TaskListRow = ({ compact, isSelected, pinLabel, row }: TaskListRowProps): React.JSX.Element => {
     const { status, taskId } = row;
 
     const selectChar = isSelected ? ">" : " ";
-
-    // Vertical connector line for parallel section
-    const connectorEl = connector !== undefined
-        ? (
-            <Box width={1}>
-                <Text dimColor={connector}>{connector ? "\u2502" : " "}</Text>
-            </Box>
-        )
-        : null;
 
     let statusIcon: React.JSX.Element;
 
@@ -97,7 +87,6 @@ const TaskListRow = ({ compact, connector, isSelected, pinLabel, row }: TaskList
     return (
         <Box>
             <Text>{selectChar}</Text>
-            {connectorEl}
             <Box width={STATUS_ICON_WIDTH}>{statusIcon}</Box>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected}>
@@ -158,8 +147,7 @@ const TaskListPanel = ({
 
     const selectedTaskId = rows[selectedIndex]?.taskId;
 
-    // Split rows: completed/failed/pending go in scrollable area, running in bottom slots
-    const listRows = rows.filter((r) => r.status !== "running");
+    // All rows in original order in scrollable area (no reordering = no jumping)
     const runningRows = rows.filter((r) => r.status === "running");
     const hasActiveWork = runningRows.length > 0 || rows.some((r) => r.status === "pending");
 
@@ -169,14 +157,10 @@ const TaskListPanel = ({
     if (hasActiveWork) {
         for (let i = 0; i < parallelSlots; i++) {
             const row = runningRows[i];
-            const isLast = i === parallelSlots - 1;
-            const showConnector = !isLast;
-
             if (row) {
                 parallelElements.push(
                     <TaskListRow
                         compact={compact}
-                        connector={showConnector}
                         isSelected={row.taskId === selectedTaskId}
                         key={`par-${row.taskId}`}
                         pinLabel={getPinLabel(row.taskId, pinnedTaskIds)}
@@ -187,9 +171,6 @@ const TaskListPanel = ({
                 parallelElements.push(
                     <Box key={`par-empty-${String(i)}`}>
                         <Text> </Text>
-                        <Box width={1}>
-                            <Text dimColor={showConnector}>{showConnector ? "\u2502" : " "}</Text>
-                        </Box>
                         <Box width={STATUS_ICON_WIDTH}>
                             <Text bold color="gray">{"  \u00B7  "}</Text>
                         </Box>
@@ -232,7 +213,7 @@ const TaskListPanel = ({
                 scrollbarColor="gray"
                 scrollbarStyle="block"
             >
-                {listRows.map((row) => (
+                {rows.map((row) => (
                     <TaskListRow
                         compact={compact}
                         isSelected={row.taskId === selectedTaskId}
