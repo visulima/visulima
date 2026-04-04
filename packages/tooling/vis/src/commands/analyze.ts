@@ -105,11 +105,36 @@ const analyze: Command = {
         if (analysisType === "security" || options.security) {
             logger.info("Checking for known vulnerabilities...\n");
 
-            const vulnMap = await fetchVulnerabilities([{ name: packageName, version: currentRange.replace(VERSION_PREFIX_REGEX, "") }]);
+            const version = currentRange.replace(VERSION_PREFIX_REGEX, "");
+            const vulnMap = await fetchVulnerabilities([{ name: packageName, version }]);
             const vulns = vulnMap.get(packageName);
 
             if (vulns && vulns.length > 0) {
                 entry.vulnerabilities = vulns;
+            }
+
+            // Also fetch Socket.dev report if enabled
+            if (visConfig?.security?.socket?.enabled) {
+                try {
+                    const { fetchSocketReports } = await import("../socket-security");
+                    const socketConfig = visConfig.security.socket;
+                    const reports = await fetchSocketReports([{ name: packageName, version }], {
+                        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+                        cacheTtlMs: socketConfig.cacheTtlMs,
+                        timeoutMs: socketConfig.timeoutMs,
+                    });
+                    const report = reports.get(`${packageName}@${version}`);
+
+                    if (report) {
+                        entry.socketReport = {
+                            alerts: report.alerts,
+                            license: report.license,
+                            score: report.score,
+                        };
+                    }
+                } catch {
+                    // Graceful degradation
+                }
             }
         }
 

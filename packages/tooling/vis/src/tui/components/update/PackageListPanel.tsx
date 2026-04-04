@@ -30,18 +30,28 @@ interface PackageRowProps {
 const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.Element => {
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasSecurity = entry.vulnerabilities && entry.vulnerabilities.length > 0;
+    const hasSocketAlerts = entry.socketReport && entry.socketReport.alerts.length > 0;
     const checkbox = checked ? "\u2611" : "\u2610";
+
+    // Socket.dev score badge
+    const scoreText = entry.socketReport
+        ? `${String(Math.round(entry.socketReport.score.overall * 100))}%`
+        : "";
+    const scoreColor = entry.socketReport
+        ? entry.socketReport.score.overall >= 0.6 ? "green" : entry.socketReport.score.overall >= 0.4 ? "yellow" : "red"
+        : "gray";
 
     return (
         <Box height={1} flexShrink={0}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
-            {hasSecurity ? <Text color="red">{"\u26A0 "}</Text> : <Text>{"  "}</Text>}
+            {hasSecurity || hasSocketAlerts ? <Text color="red">{"\u26A0 "}</Text> : <Text>{"  "}</Text>}
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
                 </Text>
             </Box>
+            {scoreText && <Text color={scoreColor}> {scoreText}</Text>}
             <Text dimColor> {entry.currentRange}</Text>
             <Text dimColor> {"\u2192"} </Text>
             <Text>{entry.newRange} </Text>

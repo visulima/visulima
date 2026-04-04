@@ -21,6 +21,57 @@ const securityEnforcementPlugin: Plugin = {
         if (enforcement?.postInstallPackages.length && toolbox.workspaceRoot) {
             runApprovedScripts(toolbox.workspaceRoot, enforcement.postInstallPackages);
         }
+
+        // Display Socket.dev security summary after install/update commands
+        const command = process.argv[2] ?? "";
+
+        if (INSTALL_COMMANDS.has(command) && toolbox.visConfig?.security?.socket?.enabled && toolbox.workspaceRoot) {
+            try {
+                const { fetchSocketReports, formatSecurityOverview } = await import("../socket-security");
+                const { info, warn } = await import("../output");
+                const socketConfig = toolbox.visConfig.security.socket;
+
+                // Read lockfile to discover installed packages
+                const packages = await resolveInstalledPackages(toolbox.workspaceRoot);
+
+                if (packages.length > 0) {
+                    const reports = await fetchSocketReports(packages, {
+                        apiToken: socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+                        cacheTtlMs: socketConfig.cacheTtlMs,
+                        timeoutMs: socketConfig.timeoutMs,
+                    });
+
+                    if (reports.size > 0) {
+                        const overview = formatSecurityOverview(reports);
+
+                        if (overview) {
+                            info("");
+                            info(overview);
+
+                            // Warn about critical/high alerts
+                            let criticalHighCount = 0;
+
+                            for (const report of reports.values()) {
+                                for (const alert of report.alerts) {
+                                    if (alert.severity === "critical" || alert.severity === "high") {
+                                        criticalHighCount++;
+                                    }
+                                }
+                            }
+
+                            if (criticalHighCount > 0) {
+                                warn(
+                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
+                                    + "Run 'vis check --security' for details.",
+                                );
+                            }
+                        }
+                    }
+                }
+            } catch {
+                // Graceful degradation: don't fail the install if Socket.dev is unreachable
+            }
+        }
     },
     beforeCommand: async (toolbox) => {
         const command = process.argv[2] ?? "";
@@ -45,5 +96,59 @@ const securityEnforcementPlugin: Plugin = {
 };
 
 /* eslint-enable no-param-reassign */
+
+/**
+ * Resolves recently installed/updated packages from the workspace root.
+ * Reads the top-level package.json dependencies to get a representative sample.
+ */
+const resolveInstalledPackages = async (workspaceRoot: string): Promise<{ name: string; version: string }[]> => {
+    const { existsSync, readFileSync } = await import("node:fs");
+    const { join } = await import("@visulima/path");
+
+    const packages: { name: string; version: string }[] = [];
+    const pkgJsonPath = join(workspaceRoot, "package.json");
+
+    if (!existsSync(pkgJsonPath)) {
+        return packages;
+    }
+
+    try {
+        const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8")) as {
+            dependencies?: Record<string, string>;
+            devDependencies?: Record<string, string>;
+        };
+
+        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+        for (const [name, range] of Object.entries(allDeps)) {
+            // Try to resolve actual installed version from node_modules
+            const installedPkgPath = join(workspaceRoot, "node_modules", name, "package.json");
+
+            if (existsSync(installedPkgPath)) {
+                try {
+                    const installedPkg = JSON.parse(readFileSync(installedPkgPath, "utf8")) as { version?: string };
+
+                    if (installedPkg.version) {
+                        packages.push({ name, version: installedPkg.version });
+                        continue;
+                    }
+                } catch {
+                    // Fall through to range parsing
+                }
+            }
+
+            // Fall back to parsing version from range
+            const versionMatch = /(\d+\.\d+\.\d+)/.exec(range);
+
+            if (versionMatch) {
+                packages.push({ name, version: versionMatch[1] });
+            }
+        }
+    } catch {
+        // Non-critical
+    }
+
+    return packages;
+};
 
 export default securityEnforcementPlugin;

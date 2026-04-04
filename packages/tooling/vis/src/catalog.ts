@@ -62,11 +62,25 @@ interface SecurityVulnerability {
     summary: string;
 }
 
+interface SocketReport {
+    alerts: { category: string; key: string; severity: "critical" | "high" | "low" | "medium"; type: string }[];
+    license: string;
+    score: {
+        license: number;
+        maintenance: number;
+        overall: number;
+        quality: number;
+        supplyChain: number;
+        vulnerability: number;
+    };
+}
+
 interface OutdatedEntry {
     catalogName: string;
     currentRange: string;
     newRange: string;
     packageName: string;
+    socketReport?: SocketReport;
     targetVersion: string;
     updateType: "major" | "minor" | "patch";
     vulnerabilities?: SecurityVulnerability[];
@@ -1106,7 +1120,11 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
-const enrichWithSecurity = async (outdated: OutdatedEntry[], entries: { catalogName: string; packageName: string; range: string }[]): Promise<void> => {
+const enrichWithSecurity = async (
+    outdated: OutdatedEntry[],
+    entries: { catalogName: string; packageName: string; range: string }[],
+    socketOptions?: { apiToken?: string; cacheTtlMs?: number; enabled?: boolean; timeoutMs?: number },
+): Promise<void> => {
     // Check current versions for known vulnerabilities
     const packagesToScan = [
         ...new Map(
@@ -1121,13 +1139,44 @@ const enrichWithSecurity = async (outdated: OutdatedEntry[], entries: { catalogN
         ).values(),
     ].filter((p) => p.version);
 
-    const vulnMap = await fetchVulnerabilities(packagesToScan);
+    // Fetch OSV vulnerabilities and Socket.dev reports in parallel
+    const promises: [Promise<Map<string, SecurityVulnerability[]>>, Promise<Map<string, import("./socket-security").PackageReportData>> | undefined] = [
+        fetchVulnerabilities(packagesToScan),
+        undefined,
+    ];
+
+    if (socketOptions?.enabled) {
+        const { fetchSocketReports } = await import("./socket-security");
+
+        promises[1] = fetchSocketReports(packagesToScan, {
+            apiToken: socketOptions.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+            cacheTtlMs: socketOptions.cacheTtlMs,
+            timeoutMs: socketOptions.timeoutMs,
+        });
+    }
+
+    const [vulnMap, socketReports] = await Promise.all([promises[0], promises[1]]);
 
     for (const entry of outdated) {
         const vulns = vulnMap.get(entry.packageName);
 
         if (vulns && vulns.length > 0) {
             entry.vulnerabilities = vulns;
+        }
+
+        // Attach Socket.dev report data if available
+        if (socketReports) {
+            const parsed = parseVersion(entry.currentRange);
+            const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
+            const report = socketReports.get(`${entry.packageName}@${version}`);
+
+            if (report) {
+                entry.socketReport = {
+                    alerts: report.alerts,
+                    license: report.license,
+                    score: report.score,
+                };
+            }
         }
     }
 };
@@ -1211,6 +1260,7 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
+    socketOptions?: { apiToken?: string; cacheTtlMs?: number; enabled?: boolean; timeoutMs?: number },
 ): Promise<CheckOutdatedResult> => {
     const hash = computeCacheHash(catalogs, options);
 
@@ -1228,8 +1278,8 @@ const checkOutdated = async (
     const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
-    if (options.security && outdated.length > 0) {
-        await enrichWithSecurity(outdated, entries);
+    if ((options.security || socketOptions?.enabled) && outdated.length > 0) {
+        await enrichWithSecurity(outdated, entries, socketOptions);
     }
 
     const result = { failed, ignored, outdated };
@@ -1414,19 +1464,58 @@ const formatCatalogDisplayName = (catalogName: string): string => {
 const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void => {
     const byCatalog = groupByCatalog(outdated);
     const columns = process.stdout.columns || 80;
+    const hasSocketData = outdated.some((entry) => entry.socketReport);
 
     for (const [catalogName, entries] of byCatalog) {
         const tableData = entries.flatMap((entry) => {
             const hasSec = entry.vulnerabilities && entry.vulnerabilities.length > 0;
-            const displayName = hasSec ? `[SEC] ${entry.packageName}` : entry.packageName;
+            const hasSocketAlerts = entry.socketReport && entry.socketReport.alerts.length > 0;
+            const prefix = hasSec || hasSocketAlerts ? "[SEC] " : "";
+            const displayName = `${prefix}${entry.packageName}`;
 
-            const rows: { current: string; package: string; target: string; type: string }[] = [
-                { current: entry.currentRange, package: displayName, target: entry.newRange, type: entry.updateType },
-            ];
+            const scoreStr = entry.socketReport
+                ? `${String(Math.round(entry.socketReport.score.overall * 100))}%`
+                : "";
+
+            const row: Record<string, string> = {
+                current: entry.currentRange,
+                package: displayName,
+                target: entry.newRange,
+                type: entry.updateType,
+            };
+
+            if (hasSocketData) {
+                row.score = scoreStr;
+            }
+
+            const rows: Record<string, string>[] = [row];
 
             if (entry.vulnerabilities) {
                 for (const vuln of entry.vulnerabilities) {
-                    rows.push({ current: vuln.summary, package: `  ${vuln.severity} ${vuln.id}`, target: "", type: "" });
+                    const vulnRow: Record<string, string> = { current: vuln.summary, package: `  ${vuln.severity} ${vuln.id}`, target: "", type: "" };
+
+                    if (hasSocketData) {
+                        vulnRow.score = "";
+                    }
+
+                    rows.push(vulnRow);
+                }
+            }
+
+            if (entry.socketReport) {
+                for (const alert of entry.socketReport.alerts) {
+                    const alertRow: Record<string, string> = {
+                        current: alert.category,
+                        package: `  [${alert.severity.toUpperCase()}] ${alert.type}`,
+                        target: "",
+                        type: "",
+                    };
+
+                    if (hasSocketData) {
+                        alertRow.score = "";
+                    }
+
+                    rows.push(alertRow);
                 }
             }
 
@@ -1445,6 +1534,8 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     const minors = outdated.filter((entry) => entry.updateType === "minor").length;
     const patches = outdated.filter((entry) => entry.updateType === "patch").length;
     const securityCount = outdated.filter((entry) => entry.vulnerabilities && entry.vulnerabilities.length > 0).length;
+    const socketAlertCount = outdated.filter((entry) => entry.socketReport && entry.socketReport.alerts.length > 0).length;
+    const lowScoreCount = outdated.filter((entry) => entry.socketReport && entry.socketReport.score.overall < 0.4).length;
     const parts: string[] = [];
 
     if (majors) {
@@ -1463,15 +1554,29 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
         parts.push(`${String(securityCount)} with vulnerabilities`);
     }
 
+    if (socketAlertCount) {
+        parts.push(`${String(socketAlertCount)} with Socket.dev alerts`);
+    }
+
     const summary = `Found ${String(outdated.length)} outdated (${parts.join(", ")})`;
     const columns = process.stdout.columns || 80;
+
+    const children = [
+        React.createElement(Text, { bold: true }, "\u2500 Summary"),
+        React.createElement(Text, null, "  " + summary),
+    ];
+
+    if (lowScoreCount > 0) {
+        children.push(
+            React.createElement(Text, { color: "yellow" }, `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<40%)`),
+        );
+    }
 
     return renderToString(
         React.createElement(
             Box,
             { flexDirection: "column", paddingX: 1 },
-            React.createElement(Text, { bold: true }, "\u2500 Summary"),
-            React.createElement(Text, null, "  " + summary),
+            ...children,
         ),
         { columns },
     );
@@ -1793,6 +1898,7 @@ export type {
     ParsedVersion,
     ReadCatalogOptions,
     SecurityVulnerability,
+    SocketReport,
     UpdateTarget,
 };
 

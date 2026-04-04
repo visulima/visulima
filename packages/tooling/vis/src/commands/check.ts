@@ -126,7 +126,17 @@ const check: Command = {
             logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
         }
 
-        const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot);
+        // Build Socket.dev options from config
+        const socketOptions = visConfig?.security?.socket?.enabled
+            ? {
+                  apiToken: visConfig.security.socket.apiToken ?? process.env.VIS_SOCKET_TOKEN,
+                  cacheTtlMs: visConfig.security.socket.cacheTtlMs,
+                  enabled: true,
+                  timeoutMs: visConfig.security.socket.timeoutMs,
+              }
+            : undefined;
+
+        const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot, socketOptions);
 
         if (progressInstance) {
             progressInstance.clear();
@@ -176,8 +186,12 @@ const check: Command = {
             process.stdout.write("\n");
 
             for (const entry of outdated) {
-                const icon = entry.vulnerabilities?.length ? "\u26A0" : "\u2713";
+                const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
+                const icon = hasSecurityIssue ? "\u26A0" : "\u2713";
                 const iconColor = entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+                const scoreSuffix = entry.socketReport
+                    ? ` [${String(Math.round(entry.socketReport.score.overall * 100))}%]`
+                    : "";
 
                 process.stdout.write(
                     renderToString(
@@ -188,6 +202,7 @@ const check: Command = {
                             React.createElement(Text, { color: iconColor }, icon),
                             `  ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}`,
                             React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
+                            scoreSuffix ? React.createElement(Text, { color: entry.socketReport!.score.overall >= 0.6 ? "green" : entry.socketReport!.score.overall >= 0.4 ? "yellow" : "red" }, scoreSuffix) : null,
                         ),
                         { columns },
                     ) + "\n",

@@ -67,6 +67,35 @@ interface VisConfig {
         allowBuilds?: Record<string, boolean>;
 
         /**
+         * Socket.dev security intelligence configuration.
+         * When enabled, vis fetches package security scores, alerts, and report
+         * data from the Socket.dev API during install, update, and check commands.
+         * @see https://socket.dev
+         */
+        socket?: {
+            /**
+             * Custom Socket.dev API token. Falls back to the public API token.
+             * Set via VIS_SOCKET_TOKEN environment variable or here.
+             */
+            apiToken?: string;
+            /**
+             * Cache TTL in milliseconds for Socket.dev reports.
+             * @default 10_800_000 (3 hours)
+             */
+            cacheTtlMs?: number;
+            /**
+             * Enable Socket.dev security scanning on install/update/check commands.
+             * @default false
+             */
+            enabled?: boolean;
+            /**
+             * Request timeout in milliseconds for the Socket.dev API.
+             * @default 15_000 (15 seconds)
+             */
+            timeoutMs?: number;
+        };
+
+        /**
          * When true, prevents transitive dependencies from using exotic sources
          * (git repositories, direct tarball URLs). Only direct dependencies may
          * use such sources. Equivalent to pnpm's `blockExoticSubdeps`.
