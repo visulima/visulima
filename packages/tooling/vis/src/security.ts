@@ -124,6 +124,12 @@ const printSecurityReport = (config: VisConfig, packageManager: string): void =>
         info(`  strictDepBuilds:        ${security.strictDepBuilds ?? false}`);
         info(`  allowBuilds:            ${security.allowBuilds ? `${Object.keys(security.allowBuilds).length} entries` : "not configured"}`);
         info("");
+        info("Socket.dev integration:");
+        info(`  socket.enabled:         ${security.socket?.enabled ?? false}`);
+        info(`  socket.apiToken:        ${security.socket?.apiToken || process.env.VIS_SOCKET_TOKEN ? "configured" : "using public token"}`);
+        info(`  socket.cacheTtlMs:      ${security.socket?.cacheTtlMs ?? "default (1 hour)"}`);
+        info(`  socket.timeoutMs:       ${security.socket?.timeoutMs ?? "default (15s)"}`);
+        info("");
     }
 
     if (result.errors.length === 0 && result.warnings.length === 0) {

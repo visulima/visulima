@@ -6,6 +6,7 @@ import React from "react";
 import type { AiConfig } from "../ai-analysis";
 import { DEFAULT_PRIORITY, resolveProvider } from "../ai-analysis";
 import { clearCache, getCacheStats } from "../ai-cache";
+import { clearSocketCache } from "../socket-security";
 
 const handleCacheStats = (format: string, logger: Console): void => {
     const stats = getCacheStats();
@@ -113,9 +114,14 @@ const ai: Command = {
         }
 
         if (options["clear-cache"]) {
-            const deleted = clearCache();
+            const aiDeleted = clearCache();
+            const socketDeleted = clearSocketCache();
 
-            logger.info(`Cleared ${String(deleted)} cached AI response${deleted === 1 ? "" : "s"}.`);
+            logger.info(`Cleared ${String(aiDeleted)} cached AI response${aiDeleted === 1 ? "" : "s"}.`);
+
+            if (socketDeleted > 0) {
+                logger.info(`Cleared ${String(socketDeleted)} cached Socket.dev report${socketDeleted === 1 ? "" : "s"}.`);
+            }
 
             return;
         }

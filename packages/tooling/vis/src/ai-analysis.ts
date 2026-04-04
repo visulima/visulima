@@ -96,7 +96,29 @@ const buildPackageList = (outdated: OutdatedEntry[]): string =>
                     ? ` [VULNERABILITIES: ${entry.vulnerabilities.map((v) => `${v.severity} ${v.id}`).join(", ")}]`
                     : "";
 
-            return `- ${entry.packageName}: ${entry.currentRange} → ${entry.newRange} (${entry.updateType})${vulnInfo}`;
+            let socketInfo = "";
+
+            if (entry.socketReport) {
+                const score = Math.round(entry.socketReport.score.overall * 100);
+                const parts = [`score:${String(score)}%`];
+
+                if (entry.socketReport.alerts.length > 0) {
+                    const alertsByLevel = entry.socketReport.alerts.reduce<Record<string, number>>((acc, a) => {
+                        acc[a.severity] = (acc[a.severity] ?? 0) + 1;
+
+                        return acc;
+                    }, {});
+                    const alertSummary = Object.entries(alertsByLevel).map(([s, c]) => `${String(c)} ${s}`).join(", ");
+
+                    parts.push(`alerts: ${alertSummary}`);
+                }
+
+                parts.push(`supply-chain:${String(Math.round(entry.socketReport.score.supplyChain * 100))}%`);
+                parts.push(`quality:${String(Math.round(entry.socketReport.score.quality * 100))}%`);
+                socketInfo = ` [SOCKET.DEV: ${parts.join(", ")}]`;
+            }
+
+            return `- ${entry.packageName}: ${entry.currentRange} → ${entry.newRange} (${entry.updateType})${vulnInfo}${socketInfo}`;
         })
         .join("\n");
 
@@ -153,6 +175,7 @@ Consider:
 3. Best practices for the specific package ecosystem
 4. Risk vs. benefit analysis
 5. Suggested update order
+6. If Socket.dev scores are provided, prioritize packages with low supply chain or quality scores
 
 ${JSON_RESPONSE_SCHEMA}`,
 
@@ -166,6 +189,7 @@ For each package:
 3. Evaluate if this is a security-sensitive package (auth, crypto, session, etc.)
 4. Recommend urgency of the update based on vulnerability severity
 5. Flag any packages where skipping the update poses security risk
+6. If Socket.dev scores are provided, factor in supply chain and quality scores — low scores indicate higher risk
 
 ${JSON_RESPONSE_SCHEMA}`,
 };
