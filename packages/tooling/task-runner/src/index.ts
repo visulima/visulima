@@ -15,7 +15,7 @@ export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRes
 
 // Affected detection (git diff-based)
 export type { AffectedOptions, AffectedResult } from "./affected";
-export { filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
+export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
 
 // Cache
 export type { CachedResult, CacheOptions } from "./cache";
@@ -51,6 +51,9 @@ export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile
 // Native bindings (optional, for performance)
 export { isNativeAvailable, loadNativeBindings } from "./native-binding";
 
+// Project constraints
+export { enforceProjectConstraints } from "./project-constraints";
+
 // Remote cache (Turborepo-compatible HTTP protocol)
 export type { RemoteCacheOptions } from "./remote-cache";
 export { RemoteCache } from "./remote-cache";
@@ -80,7 +83,8 @@ export { computeTaskHash, InProcessTaskHasher } from "./task-hasher";
 export type { TaskOrchestratorOptions } from "./task-orchestrator";
 export { TaskOrchestrator } from "./task-orchestrator";
 // Task scheduler
-export { TaskScheduler } from "./task-scheduler";
+export type { PartitionOptions } from "./task-scheduler";
+export { parsePartition, TaskScheduler } from "./task-scheduler";
 
 // Tracked executor (for auto-fingerprint mode)
 export type { TrackedExecutionResult } from "./tracked-executor";
@@ -118,7 +122,14 @@ export type {
     TaskRunnerOptions,
     TasksRunner,
     TaskStatus,
+    AffectedScope,
+    ConstraintsConfig,
+    ConstraintViolation,
+    DependencyKindRules,
+    DependencyType,
+    TagRelationships,
     TaskTarget,
+    TypeBoundaries,
     WorkspaceConfiguration,
 } from "./types";
 

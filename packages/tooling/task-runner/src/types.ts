@@ -175,6 +175,90 @@ export interface ExternalDependencyInput {
     externalDependencies: string[];
 }
 
+// ─── Project Constraint Types ─────────────────────────────────────────
+
+/**
+ * Defines tag-based dependency rules.
+ * Each key is a tag name. The value is the list of tags that a dependency
+ * must have at least one of, when the source project has that tag.
+ *
+ * Example: `{ "frontend": ["shared", "frontend"] }` means a project tagged
+ * "frontend" can only depend on projects tagged "shared" or "frontend".
+ */
+export type TagRelationships = Record<string, string[]>;
+
+/**
+ * Defines project-type-based dependency rules.
+ */
+export interface TypeBoundaries {
+    /**
+     * Custom rules mapping project types to allowed dependency types.
+     * Example: `{ "application": ["library"] }` means applications can only
+     * depend on libraries.
+     */
+    allowedDependencyTypes?: Record<string, string[]>;
+    /**
+     * When true, no project may depend on an "application" type project.
+     * Applications are typically deployment targets, not libraries.
+     * @default true
+     */
+    enforceApplicationBoundary?: boolean;
+}
+
+/**
+ * Rules based on the dependency kind (dependencies vs devDependencies vs peerDependencies).
+ */
+export interface DependencyKindRules {
+    /**
+     * When true, a "library" project must not have workspace-internal devDependencies
+     * on other libraries that are also in its production dependencies.
+     * Prevents publishing libraries that silently rely on dev-only workspace packages.
+     * @default false
+     */
+    noDevDependencyOnProductionDep?: boolean;
+
+    /**
+     * When true, production `dependencies` must not point to "application" type projects.
+     * devDependencies on applications are allowed (e.g., for testing).
+     * @default false
+     */
+    noProductionDependencyOnApplication?: boolean;
+}
+
+/**
+ * Configuration for project constraint enforcement.
+ */
+export interface ConstraintsConfig {
+    /** Rules based on the dependency kind (static vs devDependency vs peerDependency) */
+    dependencyKindRules?: DependencyKindRules;
+    /** Tag-based dependency rules */
+    tagRelationships?: TagRelationships;
+    /** Project-type-based dependency rules */
+    typeBoundaries?: TypeBoundaries;
+}
+
+/**
+ * A single constraint violation detected in the project graph.
+ */
+export interface ConstraintViolation {
+    /** The project being depended on */
+    dependencyProject: string;
+    /** Human-readable description of the violation */
+    message: string;
+    /** The type of rule that was violated */
+    rule: "dependency-kind" | "tag-relationship" | "type-boundary";
+    /** The project that has the invalid dependency */
+    sourceProject: string;
+}
+
+/**
+ * Controls how far to traverse the dependency graph in a given direction.
+ * - "none": Don't traverse — only directly changed projects are included.
+ * - "direct": Include only immediate neighbors (one hop).
+ * - "deep": Include all transitive neighbors (full chain).
+ */
+export type AffectedScope = "deep" | "direct" | "none";
+
 /**
  * Workspace configuration containing all project configurations.
  */
@@ -182,6 +266,16 @@ export interface WorkspaceConfiguration {
     /** All projects in the workspace, keyed by project name */
     projects: Record<string, ProjectConfiguration>;
 }
+
+/**
+ * The kind of dependency relationship between projects.
+ * - "static": Production dependency (from `dependencies` in package.json)
+ * - "dynamic": Dynamically resolved dependency (e.g., lazy imports)
+ * - "implicit": Declared via `implicitDependencies` in project config
+ * - "devDependency": Development-only dependency (from `devDependencies`)
+ * - "peerDependency": Peer dependency (from `peerDependencies`)
+ */
+export type DependencyType = "devDependency" | "dynamic" | "implicit" | "peerDependency" | "static";
 
 /**
  * A dependency relationship in the project graph.
@@ -192,7 +286,7 @@ export interface ProjectGraphDependency {
     /** The target project */
     target: string;
     /** The type of dependency */
-    type: "static" | "dynamic" | "implicit";
+    type: DependencyType;
 }
 
 /**

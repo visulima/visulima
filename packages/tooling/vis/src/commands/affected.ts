@@ -1,5 +1,5 @@
 import type { Command } from "@visulima/cerebro";
-import type { AffectedOptions } from "@visulima/task-runner";
+import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
 import { getAffectedProjects } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace } from "../workspace";
@@ -30,11 +30,25 @@ const affected: Command = {
         const { workspace } = discoverWorkspace(workspaceRoot, visConfig);
         const projectGraph = buildProjectGraph(workspaceRoot, workspace);
 
+        const validScopes = new Set(["none", "direct", "deep"]);
+        const downstreamValue = (options.downstream as string) ?? "deep";
+        const upstreamValue = (options.upstream as string) ?? "none";
+
+        if (!validScopes.has(downstreamValue)) {
+            throw new Error(`Invalid --downstream value: "${downstreamValue}". Must be "none", "direct", or "deep".`);
+        }
+
+        if (!validScopes.has(upstreamValue)) {
+            throw new Error(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
+        }
+
         const affectedOptions: AffectedOptions = {
             base: options.base as string,
+            downstream: downstreamValue as AffectedScope,
             head: options.head as string,
             projectGraph,
             projects: workspace.projects,
+            upstream: upstreamValue as AffectedScope,
             workspaceRoot,
         };
 
@@ -69,6 +83,10 @@ const affected: Command = {
             argv.push("--dry-run");
         }
 
+        if (options.partition) {
+            argv.push(`--partition=${String(options.partition)}`);
+        }
+
         await runtime.runCommand("run", { argv });
     },
     name: "affected",
@@ -83,6 +101,18 @@ const affected: Command = {
             defaultValue: "HEAD",
             description: "Git head ref for comparison",
             name: "head",
+            type: String,
+        },
+        {
+            defaultValue: "deep",
+            description: 'Downstream scope: "none", "direct", or "deep" — controls how far to include dependents of changed projects',
+            name: "downstream",
+            type: String,
+        },
+        {
+            defaultValue: "none",
+            description: 'Upstream scope: "none", "direct", or "deep" — controls how far to include dependencies of changed projects',
+            name: "upstream",
             type: String,
         },
         {
@@ -102,6 +132,11 @@ const affected: Command = {
             description: "Show what would run without executing",
             name: "dry-run",
             type: Boolean,
+        },
+        {
+            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
+            name: "partition",
+            type: String,
         },
     ],
 };

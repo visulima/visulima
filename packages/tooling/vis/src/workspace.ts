@@ -1,6 +1,8 @@
 import { isAccessibleSync, readFileSync, readJsonSync, walkSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
 import type {
+    ConstraintsConfig,
+    DependencyType,
     ProjectConfiguration,
     ProjectGraph,
     ProjectGraphDependency,
@@ -11,6 +13,7 @@ import type {
 import type { Configuration as StagedConfig } from "lint-staged";
 
 interface PackageJson {
+    bin?: Record<string, string> | string;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
     name?: string;
@@ -29,6 +32,12 @@ interface VisConfig {
         /** Use a specific provider instead of auto-detecting (e.g., `"claude"`, `"gemini"`). */
         provider?: string;
     };
+
+    /**
+     * Project dependency constraints.
+     * Enforced after building the project graph, before running tasks.
+     */
+    constraints?: ConstraintsConfig;
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
 
@@ -365,8 +374,18 @@ const discoverWorkspace = (workspaceRoot: string, config: VisConfig = {}): { con
 
         const targets = pkg.scripts ? createTargetsFromScripts(pkg.scripts, config.targetDefaults) : {};
 
+        // Determine project type: explicit project.json > bin heuristic > default
+        let projectType: "application" | "library" = "library";
+
+        if (projectJson?.projectType) {
+            projectType = projectJson.projectType;
+        } else if (pkg.bin !== undefined) {
+            // Packages with bin entries are typically applications/CLIs
+            projectType = "application";
+        }
+
         projects[pkg.name] = {
-            projectType: projectJson?.projectType ?? "library",
+            projectType,
             root: projectDirectory,
             sourceRoot: projectJson?.sourceRoot ?? `${projectDirectory}/src`,
             tags: projectJson?.tags,
@@ -401,19 +420,30 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
             continue;
         }
 
-        const allDeps = {
-            ...pkg.dependencies,
-            ...pkg.devDependencies,
-            ...pkg.peerDependencies,
-        };
+        // Track each dependency source separately to preserve the relationship type
+        const depSources: [Record<string, string> | undefined, DependencyType][] = [
+            [pkg.dependencies, "static"],
+            [pkg.devDependencies, "devDependency"],
+            [pkg.peerDependencies, "peerDependency"],
+        ];
 
-        for (const depName of Object.keys(allDeps)) {
-            if (projectNames.has(depName)) {
-                dependencies[name]?.push({
-                    source: name,
-                    target: depName,
-                    type: "static",
-                });
+        const seen = new Set<string>();
+
+        for (const [deps, depType] of depSources) {
+            if (!deps) {
+                continue;
+            }
+
+            for (const depName of Object.keys(deps)) {
+                // Only include workspace-internal dependencies, skip duplicates across sources
+                if (projectNames.has(depName) && !seen.has(depName)) {
+                    seen.add(depName);
+                    dependencies[name]?.push({
+                        source: name,
+                        target: depName,
+                        type: depType,
+                    });
+                }
             }
         }
     }
