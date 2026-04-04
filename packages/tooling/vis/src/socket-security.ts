@@ -156,8 +156,6 @@ const getCachedReport = (name: string, version: string): PackageReportData | und
 };
 
 const setCachedReport = (name: string, version: string, report: PackageReportData, ttlMs: number): void => {
-    ensureCacheDirectory();
-
     const key = buildCacheKey(name, version);
     const entry: CacheEntry = {
         createdAt: Date.now(),
@@ -227,6 +225,13 @@ const fetchSocketReports = async (
         return results;
     }
 
+    // Pre-compute auth header and ensure cache dir exists before batch loop
+    const authHeader = `Basic ${Buffer.from(`${apiToken}:`).toString("base64url")}`;
+
+    if (uncached.length > 0) {
+        ensureCacheDirectory();
+    }
+
     // Batch uncached packages into groups of MAX_BATCH_SIZE
     const batches: { name: string; version: string }[][] = [];
 
@@ -249,7 +254,7 @@ const fetchSocketReports = async (
             const response = await fetch(SOCKET_API_V0_URL, {
                 body: JSON.stringify({ components }),
                 headers: {
-                    "Authorization": `Basic ${Buffer.from(`${apiToken}:`).toString("base64url")}`,
+                    "Authorization": authHeader,
                     "Content-Type": "application/json",
                     "User-Agent": "@visulima/vis",
                 },

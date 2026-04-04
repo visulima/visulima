@@ -1164,10 +1164,12 @@ const enrichWithSecurity = async (
             entry.vulnerabilities = vulns;
         }
 
+        // Parse version once for both socket report and accepted risk lookups
+        const parsed = parseVersion(entry.currentRange);
+        const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
+
         // Attach Socket.dev report data if available
         if (socketReports) {
-            const parsed = parseVersion(entry.currentRange);
-            const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
             const report = socketReports.get(`${entry.packageName}@${version}`);
 
             if (report) {
@@ -1181,8 +1183,6 @@ const enrichWithSecurity = async (
 
         // Cross-reference accepted risks
         if (acceptedRisks) {
-            const parsed = parseVersion(entry.currentRange);
-            const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
             const risk = findAcceptedRisk(entry.packageName, version, acceptedRisks);
 
             if (risk) {
@@ -1542,12 +1542,23 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
 };
 
 const formatSummary = (outdated: OutdatedEntry[]): string => {
-    const majors = outdated.filter((entry) => entry.updateType === "major").length;
-    const minors = outdated.filter((entry) => entry.updateType === "minor").length;
-    const patches = outdated.filter((entry) => entry.updateType === "patch").length;
-    const securityCount = outdated.filter((entry) => entry.vulnerabilities && entry.vulnerabilities.length > 0).length;
-    const socketAlertCount = outdated.filter((entry) => entry.socketReport && entry.socketReport.alerts.length > 0).length;
-    const lowScoreCount = outdated.filter((entry) => entry.socketReport && entry.socketReport.score.overall < 0.4).length;
+    let majors = 0;
+    let minors = 0;
+    let patches = 0;
+    let securityCount = 0;
+    let socketAlertCount = 0;
+    let lowScoreCount = 0;
+
+    for (const entry of outdated) {
+        if (entry.updateType === "major") majors++;
+        else if (entry.updateType === "minor") minors++;
+        else patches++;
+
+        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
+        if (entry.socketReport?.alerts.length) socketAlertCount++;
+        if (entry.socketReport && entry.socketReport.score.overall < 0.4) lowScoreCount++;
+    }
+
     const parts: string[] = [];
 
     if (majors) {

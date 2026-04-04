@@ -7,7 +7,7 @@ import type { NativeAuditExclusions } from "../audit-config";
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
 import { fetchVulnerabilities } from "../catalog";
-import { error as errorOutput, info, note, success, warn } from "../output";
+import { error as errorOutput, cyan, dim, info, note, red, success, warn, yellow } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, scoreLabel } from "../socket-security";
@@ -134,28 +134,26 @@ const severityPassesFilter = (severity: string, filter: SeverityFilter): boolean
 
 // ── Display helpers ─────────────────────────────────────────────────
 
-const SEVERITY_COLORS: Record<string, string> = {
-    CRITICAL: "\u001B[31m",
-    HIGH: "\u001B[35m",
-    LOW: "\u001B[36m",
-    MODERATE: "\u001B[33m",
-    UNKNOWN: "\u001B[90m",
+const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
+    CRITICAL: red,
+    HIGH: (s: string) => `\u001B[35m${s}\u001B[0m`, // magenta (not in output.ts)
+    LOW: cyan,
+    MODERATE: yellow,
+    UNKNOWN: dim,
 };
 
-const RESET = "\u001B[0m";
-
 const formatVulnLine = (name: string, version: string, vuln: SecurityVulnerability, isAccepted: boolean): string => {
-    const color = SEVERITY_COLORS[vuln.severity] ?? SEVERITY_COLORS.UNKNOWN;
-    const badge = isAccepted ? " \u001B[90m[acknowledged]\u001B[0m" : "";
+    const colorFn = SEVERITY_COLOR_FN[vuln.severity] ?? dim;
+    const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
     const fixed = vuln.fixedVersions.length > 0 ? ` (fix: ${vuln.fixedVersions.join(", ")})` : "";
 
-    return `  ${color ?? ""}${vuln.severity}${RESET} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
+    return `  ${colorFn(vuln.severity)} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
 };
 
 const formatSocketLine = (report: PackageReportData, isAccepted: boolean): string => {
     const name = report.namespace ? `${report.namespace}/${report.name}` : report.name;
     const pct = `${String(Math.round(report.score.overall * 100))}%`;
-    const badge = isAccepted ? " \u001B[90m[acknowledged]\u001B[0m" : "";
+    const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
     const alerts = report.alerts.length > 0
         ? `, ${String(report.alerts.length)} alert${report.alerts.length === 1 ? "" : "s"}`
         : "";
@@ -359,9 +357,9 @@ const executeAudit = async (
             info(formatSocketLine(entry.socketReport, isExcluded));
 
             for (const alert of entry.socketReport.alerts) {
-                const color = SOCKET_SEVERITY_ORDER[alert.severity] !== undefined && SOCKET_SEVERITY_ORDER[alert.severity] <= 1 ? "\u001B[31m" : "\u001B[33m";
+                const colorFn = SOCKET_SEVERITY_ORDER[alert.severity] !== undefined && SOCKET_SEVERITY_ORDER[alert.severity] <= 1 ? red : yellow;
 
-                info(`    ${color}[${alert.severity.toUpperCase()}]${RESET} ${alert.type} — ${alert.category}`);
+                info(`    ${colorFn(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
             }
         }
     }

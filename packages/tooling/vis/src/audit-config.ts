@@ -21,120 +21,97 @@ interface NativeAuditExclusions {
     excludedPackages: string[];
 }
 
+// ── Shared helpers ──────────────────────────────────────────────────
+
+const YAML_ENTRY_STRIP_RE = /^\s+-\s+['"]?/;
+const YAML_TRAILING_QUOTE_RE = /['"]?$/;
+
+/** Extracts values from a YAML list section like `key:\n  - value1\n  - value2`. */
+const parseYamlList = (content: string, keyRegex: RegExp): string[] => {
+    const match = keyRegex.exec(content);
+
+    if (!match?.[1]) {
+        return [];
+    }
+
+    const entries = match[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
+
+    if (!entries) {
+        return [];
+    }
+
+    const results: string[] = [];
+
+    for (const entry of entries) {
+        const value = entry.replace(YAML_ENTRY_STRIP_RE, "").replace(YAML_TRAILING_QUOTE_RE, "").trim();
+
+        if (value) {
+            results.push(value);
+        }
+    }
+
+    return results;
+};
+
+/** Checks if a value matches any pattern in a list (exact or trailing glob). */
+const matchesGlobList = (value: string, patterns: string[]): boolean => {
+    for (const pattern of patterns) {
+        if (pattern === value) {
+            return true;
+        }
+
+        if (pattern.endsWith("*") && value.startsWith(pattern.slice(0, -1))) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
 // ── Readers ─────────────────────────────────────────────────────────
 
-/**
- * Reads pnpm auditConfig from pnpm-workspace.yaml.
- * Parses ignoreCves and ignoreGhsas arrays.
- */
 const readPnpmAuditExclusions = (workspaceRoot: string): NativeAuditExclusions => {
-    const result: NativeAuditExclusions = { excludedPackages: [], ignoredAdvisories: [] };
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
     if (!existsSync(filePath)) {
-        return result;
+        return { excludedPackages: [], ignoredAdvisories: [] };
     }
 
     const content = readFileSync(filePath, "utf8");
 
-    // Parse ignoreCves
-    const cveSection = /^auditConfig:\s*\n([\s\S]*?)(?=^\S|\z)/m.exec(content);
+    // Extract the auditConfig block first
+    const sectionMatch = /^auditConfig:\s*\n([\s\S]*?)(?=^\S|\z)/m.exec(content);
 
-    if (cveSection) {
-        const block = cveSection[1];
-
-        // Extract ignoreCves entries
-        const cveMatch = /ignoreCves:\s*\n((?:\s+-\s+.+\n)*)/m.exec(block);
-
-        if (cveMatch) {
-            const entries = cveMatch[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
-
-            if (entries) {
-                for (const entry of entries) {
-                    const value = entry.replace(/^\s+-\s+['"]?/, "").replace(/['"]?$/, "").trim();
-
-                    if (value) {
-                        result.ignoredAdvisories.push(value);
-                    }
-                }
-            }
-        }
-
-        // Extract ignoreGhsas entries
-        const ghsaMatch = /ignoreGhsas:\s*\n((?:\s+-\s+.+\n)*)/m.exec(block);
-
-        if (ghsaMatch) {
-            const entries = ghsaMatch[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
-
-            if (entries) {
-                for (const entry of entries) {
-                    const value = entry.replace(/^\s+-\s+['"]?/, "").replace(/['"]?$/, "").trim();
-
-                    if (value) {
-                        result.ignoredAdvisories.push(value);
-                    }
-                }
-            }
-        }
+    if (!sectionMatch) {
+        return { excludedPackages: [], ignoredAdvisories: [] };
     }
 
-    return result;
+    const block = sectionMatch[1];
+
+    return {
+        excludedPackages: [],
+        ignoredAdvisories: [
+            ...parseYamlList(block, /ignoreCves:\s*\n((?:\s+-\s+.+\n)*)/m),
+            ...parseYamlList(block, /ignoreGhsas:\s*\n((?:\s+-\s+.+\n)*)/m),
+        ],
+    };
 };
 
-/**
- * Reads yarn berry audit exclusions from .yarnrc.yml.
- * Parses npmAuditIgnoreAdvisories and npmAuditExcludePackages arrays.
- */
 const readYarnAuditExclusions = (workspaceRoot: string): NativeAuditExclusions => {
-    const result: NativeAuditExclusions = { excludedPackages: [], ignoredAdvisories: [] };
     const filePath = join(workspaceRoot, ".yarnrc.yml");
 
     if (!existsSync(filePath)) {
-        return result;
+        return { excludedPackages: [], ignoredAdvisories: [] };
     }
 
     const content = readFileSync(filePath, "utf8");
 
-    // Parse npmAuditIgnoreAdvisories
-    const advisoryMatch = /npmAuditIgnoreAdvisories:\s*\n((?:\s+-\s+.+\n)*)/m.exec(content);
-
-    if (advisoryMatch) {
-        const entries = advisoryMatch[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
-
-        if (entries) {
-            for (const entry of entries) {
-                const value = entry.replace(/^\s+-\s+['"]?/, "").replace(/['"]?$/, "").trim();
-
-                if (value) {
-                    result.ignoredAdvisories.push(value);
-                }
-            }
-        }
-    }
-
-    // Parse npmAuditExcludePackages
-    const excludeMatch = /npmAuditExcludePackages:\s*\n((?:\s+-\s+.+\n)*)/m.exec(content);
-
-    if (excludeMatch) {
-        const entries = excludeMatch[1].match(/^\s+-\s+['"]?([^'"\s]+)['"]?/gm);
-
-        if (entries) {
-            for (const entry of entries) {
-                const value = entry.replace(/^\s+-\s+['"]?/, "").replace(/['"]?$/, "").trim();
-
-                if (value) {
-                    result.excludedPackages.push(value);
-                }
-            }
-        }
-    }
-
-    return result;
+    return {
+        excludedPackages: parseYamlList(content, /npmAuditExcludePackages:\s*\n((?:\s+-\s+.+\n)*)/m),
+        ignoredAdvisories: parseYamlList(content, /npmAuditIgnoreAdvisories:\s*\n((?:\s+-\s+.+\n)*)/m),
+    };
 };
 
-/**
- * Reads native audit exclusions for the detected package manager.
- */
 const readNativeAuditExclusions = (workspaceRoot: string, pm: string): NativeAuditExclusions => {
     switch (pm) {
         case "pnpm": {
@@ -146,55 +123,19 @@ const readNativeAuditExclusions = (workspaceRoot: string, pm: string): NativeAud
         }
 
         default: {
-            // npm and bun have no config-file-based exclusion mechanism
             return { excludedPackages: [], ignoredAdvisories: [] };
         }
     }
 };
 
-/**
- * Checks if a vulnerability ID (CVE-*, GHSA-*, or numeric) is in the
- * native PM exclusion list.
- */
-const isAdvisoryExcluded = (vulnId: string, exclusions: NativeAuditExclusions): boolean => {
-    for (const id of exclusions.ignoredAdvisories) {
-        if (id === vulnId) {
-            return true;
-        }
+const isAdvisoryExcluded = (vulnId: string, exclusions: NativeAuditExclusions): boolean =>
+    matchesGlobList(vulnId, exclusions.ignoredAdvisories);
 
-        // Glob support (yarn berry): "GHSA-*"
-        if (id.endsWith("*") && vulnId.startsWith(id.slice(0, -1))) {
-            return true;
-        }
-    }
-
-    return false;
-};
-
-/**
- * Checks if a package name is excluded from audit (yarn berry only).
- */
-const isPackageExcluded = (packageName: string, exclusions: NativeAuditExclusions): boolean => {
-    for (const pattern of exclusions.excludedPackages) {
-        if (pattern === packageName) {
-            return true;
-        }
-
-        // Glob: "@scope/*" or "lodash*"
-        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
-            return true;
-        }
-    }
-
-    return false;
-};
+const isPackageExcluded = (packageName: string, exclusions: NativeAuditExclusions): boolean =>
+    matchesGlobList(packageName, exclusions.excludedPackages);
 
 // ── Writers (sync vis → native PM config) ───────────────────────────
 
-/**
- * Syncs vis accepted risk CVE/GHSA IDs to native PM audit exclusion config.
- * Returns a description of actions taken.
- */
 const syncAcceptedRisksToNativeConfig = (
     pm: string,
     workspaceRoot: string,
@@ -225,17 +166,9 @@ const syncAcceptedRisksToNativeConfig = (
 
                 if (/auditConfig:/m.test(content)) {
                     if (/ignoreCves:/m.test(content)) {
-                        // Replace existing ignoreCves block
-                        content = content.replace(
-                            /ignoreCves:\s*\n(?:\s+-\s+.+\n)*/m,
-                            cveBlock,
-                        );
+                        content = content.replace(/ignoreCves:\s*\n(?:\s+-\s+.+\n)*/m, cveBlock);
                     } else {
-                        // Add ignoreCves to existing auditConfig
-                        content = content.replace(
-                            /auditConfig:\s*\n/m,
-                            `auditConfig:\n${cveBlock}`,
-                        );
+                        content = content.replace(/auditConfig:\s*\n/m, `auditConfig:\n${cveBlock}`);
                     }
                 } else {
                     content = `${content.trimEnd()}\n\nauditConfig:\n${cveBlock}`;
@@ -249,15 +182,9 @@ const syncAcceptedRisksToNativeConfig = (
 
                 if (/auditConfig:/m.test(content)) {
                     if (/ignoreGhsas:/m.test(content)) {
-                        content = content.replace(
-                            /ignoreGhsas:\s*\n(?:\s+-\s+.+\n)*/m,
-                            ghsaBlock,
-                        );
+                        content = content.replace(/ignoreGhsas:\s*\n(?:\s+-\s+.+\n)*/m, ghsaBlock);
                     } else {
-                        content = content.replace(
-                            /(auditConfig:[\s\S]*?)(\n\S|\n?$)/m,
-                            `$1${ghsaBlock}$2`,
-                        );
+                        content = content.replace(/(auditConfig:[\s\S]*?)(\n\S|\n?$)/m, `$1${ghsaBlock}$2`);
                     }
                 }
 
@@ -281,10 +208,7 @@ const syncAcceptedRisksToNativeConfig = (
             const advisoryBlock = `npmAuditIgnoreAdvisories:\n${advisoryIds.map((id) => `  - "${id}"`).join("\n")}\n`;
 
             if (/npmAuditIgnoreAdvisories:/m.test(content)) {
-                content = content.replace(
-                    /npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+.+\n)*/m,
-                    advisoryBlock,
-                );
+                content = content.replace(/npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+.+\n)*/m, advisoryBlock);
             } else {
                 content = `${content.trimEnd()}\n\n${advisoryBlock}`;
             }
@@ -316,6 +240,7 @@ export type { NativeAuditExclusions };
 export {
     isAdvisoryExcluded,
     isPackageExcluded,
+    matchesGlobList,
     readNativeAuditExclusions,
     syncAcceptedRisksToNativeConfig,
 };

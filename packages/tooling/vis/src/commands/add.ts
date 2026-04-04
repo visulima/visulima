@@ -2,7 +2,7 @@ import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
 
-import { info, note, warn } from "../output";
+import { dim, green, info, note, red, warn, yellow } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
 import { buildSocketOptions, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, scoreColor, scoreLabel } from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
@@ -111,13 +111,12 @@ const displaySecurityReports = (
         const fullName = report.namespace ? `${report.namespace}/${report.name}` : report.name;
         const accepted = findAcceptedRisk(fullName, report.version, acceptedRisks);
 
-        const colorFn = color === "red" ? "\u001B[31m" : color === "yellow" ? "\u001B[33m" : "\u001B[32m";
-        const reset = "\u001B[0m";
+        const colorFn = color === "red" ? red : color === "yellow" ? yellow : green;
 
         if (accepted) {
-            info(`  ${colorFn}${pct}${reset} ${formatReportSummary(report)} \u001B[90m[accepted: ${accepted.reason}]\u001B[0m`);
+            info(`  ${colorFn(pct)} ${formatReportSummary(report)} ${dim(`[accepted: ${accepted.reason}]`)}`);
         } else {
-            info(`  ${colorFn}${pct}${reset} ${formatReportSummary(report)}`);
+            info(`  ${colorFn(pct)} ${formatReportSummary(report)}`);
         }
 
         if (alertCount > 0) {
