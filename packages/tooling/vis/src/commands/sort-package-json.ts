@@ -80,10 +80,11 @@ const sortPackageJson: Command = {
         ["vis sort-package-json --check", "Check if files are already sorted (exit 1 if not)"],
         ["vis sort-package-json --sort-scripts", "Also sort the scripts field alphabetically"],
     ],
-    execute: async ({ options, workspaceRoot: wsRoot }) => {
+    execute: async ({ options, visConfig, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
+        const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as { sortScripts?: boolean } | undefined;
         const check = (options.check as boolean) || false;
-        const sortScripts = (options["sort-scripts"] as boolean) || false;
+        const sortScripts = (options["sort-scripts"] as boolean) || config?.sortScripts || false;
         const files = findPackageJsonFiles(cwd);
 
         if (files.length === 0) {
