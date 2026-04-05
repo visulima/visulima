@@ -70,7 +70,6 @@ const upgrade: Command = {
 
         logger.info(`\n\u2713 Updated @visulima/vis from ${currentVersion} \u2192 ${latestVersion}`);
     },
-    alias: "upgrade",
     name: "self-update",
     options: [
         { defaultValue: false, description: "Check for updates without installing", name: "check", type: Boolean },

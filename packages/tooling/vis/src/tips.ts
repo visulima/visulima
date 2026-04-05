@@ -171,7 +171,7 @@ const tips: Tip[] = [
     },
     {
         id: "upgrade-check",
-        matches: (context) => context.command !== "self-update" && context.command !== "upgrade" && context.success,
+        matches: (context) => context.command !== "self-update" && context.success,
         message: () => "Run 'vis self-update --check' to see if a newer version of vis is available.",
         probability: 0.05, // Very low probability - occasional reminder
     },
