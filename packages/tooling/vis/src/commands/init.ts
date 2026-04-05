@@ -176,27 +176,18 @@ const runStaticInit = (cwd: string, pm: { name: string; version: string }, optio
 
     writeFileSync(configPath, content);
     success(`Created ${configPath}`);
-
-    info("");
-    info("Secure defaults applied by defineConfig():");
-    info("  \u2713 minimumReleaseAge: 20160 (14-day cooldown)");
-    info("  \u2713 trustPolicy: no-downgrade");
-    info("  \u2713 blockExoticSubdeps: true");
-    info("  \u2713 strictDepBuilds: true");
-    info("  \u2713 update.security: true (OSV.dev)");
+    info("  Secure defaults applied automatically by defineConfig().");
 
     if (options["sync-native"]) {
-        info("");
         const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, {});
 
         for (const action of actions) {
-            success(action);
+            success(`  ${action}`);
         }
     }
 
     info("");
-    note("Run 'vis init --interactive' for guided setup with Socket.dev, build scripts, and git hooks.");
-    note("Run 'vis doctor' to see your project's full health status.");
+    note("Run 'vis doctor' for a full health check, or 'vis init' in a terminal for guided setup.");
 };
 
 // ── Command ─────────────────────────────────────────────────────────
