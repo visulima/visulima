@@ -17,12 +17,14 @@ import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspac
  * to discover project directories. Always includes the root package.json.
  */
 const findPackageJsonFiles = (root: string): string[] => {
+    const seen = new Set<string>();
     const results: string[] = [];
 
     const addFile = (filePath: string): void => {
         const resolved = resolve(filePath);
 
-        if (isAccessibleSync(resolved)) {
+        if (!seen.has(resolved) && isAccessibleSync(resolved)) {
+            seen.add(resolved);
             results.push(resolved);
         }
     };
@@ -67,14 +69,21 @@ const findPackageJsonFiles = (root: string): string[] => {
 /**
  * Sorts a package.json string using the native Rust binding.
  */
-const sortContents = (contents: string, sortScripts: boolean): string =>
-    loadNativeBindings()!.sortPackageJsonStringWithOptions(contents, {
+const sortContents = (contents: string, sortScripts: boolean): string => {
+    const native = loadNativeBindings();
+
+    if (!native) {
+        throw new Error("Native bindings unavailable: sort-package-json requires the native addon. Ensure the correct platform binary is installed.");
+    }
+
+    return native.sortPackageJsonStringWithOptions(contents, {
         pretty: true,
         sort_scripts: sortScripts,
     });
+};
 
 const sortPackageJson: Command = {
-    description: "Sort package.json files across the workspace using the oxc Rust sorter",
+    description: "Sort package.json files across the workspace using the sort-package-json Rust crate",
     examples: [
         ["vis sort-package-json", "Sort all package.json files in the workspace"],
         ["vis sort-package-json --check", "Check if files are already sorted (exit 1 if not)"],

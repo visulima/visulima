@@ -117,7 +117,15 @@ const clean: Command = {
             return;
         }
 
-        const result = loadNativeBindings()!.cleanWorkspace(cwd, shouldRemoveLockfile);
+        const native = loadNativeBindings();
+
+        if (!native) {
+            failure("Native bindings unavailable. Ensure the correct platform binary is installed.");
+            process.exitCode = 1;
+            return;
+        }
+
+        const result = native.cleanWorkspace(cwd, shouldRemoveLockfile);
 
         for (const dir of result.removed) {
             success(`Removed ${dir}`);

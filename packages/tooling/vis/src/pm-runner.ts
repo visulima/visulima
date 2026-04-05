@@ -10,8 +10,18 @@ interface PmInfo {
     version: string;
 }
 
+const requireNative = (): NonNullable<ReturnType<typeof loadNativeBindings>> => {
+    const native = loadNativeBindings();
+
+    if (!native) {
+        throw new Error("Native bindings for package manager operations failed to load. Ensure the correct platform binary is installed.");
+    }
+
+    return native;
+};
+
 const detectPm = (cwd: string): PmInfo => {
-    const detected = loadNativeBindings()!.detectPackageManager(cwd);
+    const detected = requireNative().detectPackageManager(cwd);
 
     return { name: detected.name as PmInfo["name"], version: detected.version || "latest" };
 };
@@ -21,7 +31,7 @@ const runResolved = (resolved: ResolvedCommand, cwd: string, logger: Console): n
         logger.warn(`warning: ${warning}`);
     }
 
-    return loadNativeBindings()!.execPmCommandInteractive(resolved.bin, resolved.args, cwd);
+    return requireNative().execPmCommandInteractive(resolved.bin, resolved.args, cwd);
 };
 
 const resolveAndRun = (
@@ -29,7 +39,7 @@ const resolveAndRun = (
     cwd: string,
     logger: Console,
 ): number => {
-    const resolved = nativeCall(loadNativeBindings()!);
+    const resolved = nativeCall(requireNative());
 
     return runResolved(resolved, cwd, logger);
 };
