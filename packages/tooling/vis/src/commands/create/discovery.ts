@@ -4,7 +4,8 @@
  * Supports:
  * - Built-in templates prefixed with `vis:` (app, library, monorepo, generator)
  * - npm `create-*` packages (with shorthand expansion)
- * - Git repositories from GitHub, GitLab, and Bitbucket (all URL formats)
+ * - Git repositories from GitHub, GitLab, Bitbucket, and Sourcehut (all URL formats)
+ * - Direct tarball/registry URLs via giget's http/https providers
  */
 
 import type { TemplateConfig, TemplateType } from "./templates/types";
@@ -34,8 +35,12 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
  * - Any of the above with /tree/branch/path or /blob/branch/path
  */
 
-const GIT_HOST_PREFIXES = [
-    // Full HTTPS URLs
+/**
+ * All prefixes that route to giget's `downloadTemplate` (remote:git).
+ * Covers every giget provider: github/gh, gitlab, bitbucket, sourcehut, git, http/https.
+ */
+const GIGET_PREFIXES = [
+    // Full HTTPS URLs for known hosts
     "https://github.com/",
     "https://gitlab.com/",
     "https://bitbucket.org/",
@@ -53,15 +58,17 @@ const GIT_HOST_PREFIXES = [
     "bitbucket:",
     "sourcehut:",
     "git:",
+    // Direct tarball / registry URLs (giget http/https provider)
+    "http://",
+    "https://",
 ];
 
 /**
- * Check if the input looks like a git repository reference.
- * Returns the raw input as the source for the git-download module to parse.
+ * Check if the input looks like a git/tarball URL that giget can handle.
  */
 export const isGitUrl = (input: string): boolean => {
-    // Explicit host prefix
-    for (const prefix of GIT_HOST_PREFIXES) {
+    // Explicit host or provider prefix
+    for (const prefix of GIGET_PREFIXES) {
         if (input.startsWith(prefix)) {
             return true;
         }

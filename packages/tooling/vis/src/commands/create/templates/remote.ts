@@ -134,6 +134,9 @@ export const executeRemoteGit = async (
         const result = await downloadTemplate(config.source, {
             auth: createConfig?.auth || process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
             dir: context.targetDir,
+            // force: true is safe here — the caller (index.ts) already validated
+            // the target directory is empty via canSafelyOverwrite() before reaching
+            // this point. We skip giget's own directory check to avoid a redundant prompt.
             force: true,
             preferOffline: createConfig?.preferOffline,
             provider: createConfig?.defaultProvider,

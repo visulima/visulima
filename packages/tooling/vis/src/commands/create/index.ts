@@ -2,7 +2,8 @@
  * `vis create` — full-featured project scaffolding command.
  *
  * Supports built-in templates (monorepo, app, library, generator),
- * remote npm create-* packages, and GitHub repository templates.
+ * remote npm create-* packages, and git repository templates
+ * (GitHub, GitLab, Bitbucket, Sourcehut) via giget.
  *
  * Interactive mode guides users through template selection, naming,
  * directory choice, and post-creation setup.
@@ -10,7 +11,7 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, sep } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -23,7 +24,7 @@ import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackag
 
 // ── Post-creation helpers ─────────────────────────────────────────
 
-const generateVscodeConfig = (projectDir: string, logger: Console): void => {
+const generateVscodeConfig = (projectDir: string): void => {
     const vscodeDir = join(projectDir, ".vscode");
 
     if (!existsSync(vscodeDir)) {
@@ -41,9 +42,9 @@ const generateVscodeConfig = (projectDir: string, logger: Console): void => {
             const existing = JSON.parse(readFileSync(settingsPath, "utf8"));
 
             writeFileSync(settingsPath, `${JSON.stringify({ ...defaultSettings, ...existing }, null, 4)}\n`);
-            logger.info("Merged .vscode/settings.json");
+            success("Merged .vscode/settings.json");
         } catch {
-            logger.warn("Could not merge .vscode/settings.json, skipping");
+            warn("Could not merge .vscode/settings.json, skipping");
         }
     } else {
         writeFileSync(settingsPath, `${JSON.stringify(defaultSettings, null, 4)}\n`);
@@ -78,7 +79,7 @@ const generateVscodeConfig = (projectDir: string, logger: Console): void => {
     }
 };
 
-const generateAiInstructions = (projectDir: string): void => {
+const generateAiInstructions = (projectDir: string, pmName: string): void => {
     const aiDir = join(projectDir, ".ai");
 
     mkdirSync(aiDir, { recursive: true });
@@ -90,10 +91,10 @@ This project was scaffolded with vis create.
 
 ## Development
 
-- Package manager: pnpm
-- Build: \`pnpm build\`
-- Test: \`pnpm test\`
-- Lint: \`pnpm lint\`
+- Package manager: ${pmName}
+- Build: \`${pmName} run build\`
+- Test: \`${pmName} run test\`
+- Lint: \`${pmName} run lint\`
 
 ## Conventions
 
@@ -143,6 +144,34 @@ const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pn
     } else {
         warn("Dependency installation failed (you can run install manually)");
     }
+};
+
+// ── Fallback name from git URLs ───────────────────────────────────
+
+/**
+ * Extract a sensible project name from a git URL or provider string.
+ * e.g., "https://github.com/user/repo" → "repo"
+ *       "github:user/repo/subdir#main" → "subdir"
+ *       "user/repo" → "repo"
+ */
+const extractRepoName = (input: string): string => {
+    // Strip fragment (#branch)
+    const withoutFragment = input.split("#")[0] as string;
+
+    // Strip query params
+    const withoutQuery = withoutFragment.split("?")[0] as string;
+
+    // Strip trailing slashes and .git
+    const cleaned = withoutQuery.replace(/\/+$/, "").replace(/\.git$/, "");
+
+    // Take the last path segment
+    const segments = cleaned.split("/").filter(Boolean);
+    const last = segments.at(-1) ?? "";
+
+    // Strip provider prefix (e.g., "github:" from "github:user")
+    const withoutPrefix = last.includes(":") ? last.split(":").pop() ?? last : last;
+
+    return toValidPackageName(withoutPrefix) || "my-project";
 };
 
 // ── List templates ────────────────────────────────────────────────
@@ -228,7 +257,7 @@ const create: Command = {
         const cwd = (options.cwd as string) || wsRoot || process.cwd();
         const inMonorepo = Boolean(wsRoot);
         const isTTY = Boolean(process.stdin.isTTY);
-        const pm = detectPm(cwd);
+        const detectedPm = detectPm(cwd);
 
         let templateInput: string | undefined;
         let projectName: string | undefined;
@@ -236,20 +265,27 @@ const create: Command = {
         let editor: "vscode" | undefined = createConfig?.defaultEditor;
         let gitInit = createConfig?.gitInit ?? false;
         let extraArgs: string[] = [];
+        // Use detected PM by default; interactive mode or config can override
+        let pm = detectedPm;
 
         if (args.length === 0 && isTTY && !options["no-interactive"]) {
             // ── Interactive mode ──────────────────────────────────
             const answers = await runInteractivePrompts({
                 cwd,
-                defaultPm: pm.name,
+                defaultPm: createConfig?.defaultPm ?? detectedPm.name,
                 inMonorepo,
             });
 
             templateInput = answers.template;
             projectName = answers.projectName;
             targetDir = resolve(cwd, answers.targetDir);
-            editor = answers.editor;
+            editor = answers.editor ?? editor;
             gitInit = answers.gitInit;
+
+            // Use the PM the user chose in interactive mode
+            if (answers.pm) {
+                pm = { name: answers.pm, version: detectedPm.version };
+            }
         } else if (args.length === 0) {
             throw new Error("No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.");
         } else {
@@ -264,19 +300,12 @@ const create: Command = {
             projectName = ownArgs[1] as string | undefined;
 
             if (!projectName) {
-                projectName = toValidPackageName(templateInput);
+                // Extract a sensible name: "user/repo" → "repo", URL → last path segment
+                projectName = extractRepoName(templateInput);
             }
 
-            editor = options.editor === "vscode" ? "vscode" : undefined;
-            gitInit = Boolean(options["git-init"]);
-
-            // Resolve target directory
-            const templateType = discoverTemplate(templateInput).type;
-            const parentDir = inMonorepo ? inferParentDir(templateType) : ".";
-            const resolved = resolveTargetDir(projectName, resolve(cwd, parentDir));
-
-            targetDir = resolved.targetDir;
-            projectName = resolved.packageName;
+            editor = options.editor === "vscode" ? "vscode" : editor;
+            gitInit = Boolean(options["git-init"]) || gitInit;
         }
 
         // Validate
@@ -284,18 +313,34 @@ const create: Command = {
             throw new Error("No template specified.");
         }
 
+        // Resolve config template aliases BEFORE discovery and parent dir inference
+        const resolvedInput = createConfig?.templates?.[templateInput] ?? templateInput;
+
+        // Discover template type from the resolved input
+        const config = discoverTemplate(resolvedInput, extraArgs);
+
+        // For non-interactive mode, resolve target directory with parent inference
+        if (!targetDir!) {
+            const parentDir = inMonorepo ? inferParentDir(config.type) : ".";
+            const resolved = resolveTargetDir(projectName!, resolve(cwd, parentDir));
+
+            targetDir = resolved.targetDir;
+            projectName = resolved.packageName;
+        }
+
         const sanitizedName = toValidPackageName(projectName ?? "");
 
         if (!isValidPackageName(sanitizedName)) {
-            throw new Error(`Invalid project name: "${projectName}". Must be a valid npm package name.`);
+            throw new Error(`Invalid project name: "${projectName}". Use lowercase alphanumeric characters and hyphens.`);
         }
 
         projectName = sanitizedName;
 
-        // Guard against path traversal — target must be within cwd
+        // Guard against path traversal — target must be within cwd or equal to it
         const resolvedCwd = resolve(cwd);
+        const resolvedTarget = resolve(targetDir);
 
-        if (!resolve(targetDir).startsWith(resolvedCwd)) {
+        if (resolvedTarget !== resolvedCwd && !resolvedTarget.startsWith(resolvedCwd + sep)) {
             throw new Error(`Target directory "${targetDir}" is outside the working directory. Use a name without "../" path segments.`);
         }
 
@@ -305,12 +350,6 @@ const create: Command = {
                 `Target directory "${targetDir}" is not empty.\nUse a different name or clear the directory first.`,
             );
         }
-
-        // Resolve config template aliases (e.g., "react" → "github:vitejs/vite/...")
-        const resolvedInput = createConfig?.templates?.[templateInput] ?? templateInput;
-
-        // Discover and execute template
-        const config = discoverTemplate(resolvedInput, extraArgs);
 
         if (resolvedInput !== templateInput) {
             info(`Alias:    ${bold(cyan(templateInput))} → ${dim(resolvedInput)}`);
@@ -340,12 +379,12 @@ const create: Command = {
 
         // VS Code config
         if (editor === "vscode") {
-            generateVscodeConfig(targetDir, logger);
+            generateVscodeConfig(targetDir);
         }
 
         // AI instructions
         if (existsSync(targetDir)) {
-            generateAiInstructions(targetDir);
+            generateAiInstructions(targetDir, pm.name);
         }
 
         // Git init (standalone projects only)

@@ -17,10 +17,14 @@ export interface TemplateConfig {
     type: TemplateType;
 }
 
-/** Create config from vis.config.ts (subset relevant to template execution). */
+/** Create config from vis.config.ts — full shape matching VisConfig.create. */
 export interface CreateConfig {
     auth?: string;
+    defaultEditor?: "vscode";
+    defaultPm?: "bun" | "npm" | "pnpm" | "yarn";
     defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
+    gitInit?: boolean;
+    install?: boolean;
     preferOffline?: boolean;
     registry?: false | string;
     templates?: Record<string, string>;
@@ -49,4 +53,3 @@ export interface ExecutionContext {
     /** Absolute path to the target directory. */
     targetDir: string;
 }
-

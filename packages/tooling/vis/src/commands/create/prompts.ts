@@ -137,18 +137,24 @@ export const runInteractivePrompts = async (options: {
             }
         }
 
-        // 5. Package manager
+        // 5. Package manager (skip if in monorepo — monorepo PM is already set)
         let pm: "bun" | "npm" | "pnpm" | "yarn" | undefined;
 
         if (!options.inMonorepo) {
-            const pmChoice = await select(rl, "Package manager:", [
-                { label: "pnpm", value: "pnpm" },
-                { label: "npm", value: "npm" },
-                { label: "yarn", value: "yarn" },
-                { label: "bun", value: "bun" },
-            ]);
+            if (options.defaultPm) {
+                // Config pre-selected a PM — use it without prompting
+                pm = options.defaultPm as "bun" | "npm" | "pnpm" | "yarn";
+                process.stderr.write(`  ${dim(`Package manager: ${pm} (from config)`)}\n`);
+            } else {
+                const pmChoice = await select(rl, "Package manager:", [
+                    { label: "pnpm", value: "pnpm" },
+                    { label: "npm", value: "npm" },
+                    { label: "yarn", value: "yarn" },
+                    { label: "bun", value: "bun" },
+                ]);
 
-            pm = pmChoice as "bun" | "npm" | "pnpm" | "yarn";
+                pm = pmChoice as "bun" | "npm" | "pnpm" | "yarn";
+            }
         }
 
         // 6. Git init (standalone only)

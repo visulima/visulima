@@ -75,6 +75,13 @@ describe("isGitUrl", () => {
         expect(isGitUrl("https://git.sr.ht/~user/repo")).toBe(true);
     });
 
+    it("should recognize direct tarball/registry URLs (giget http/https provider)", () => {
+        expect.assertions(2);
+
+        expect(isGitUrl("https://example.com/templates/my-template.tar.gz")).toBe(true);
+        expect(isGitUrl("http://internal.corp/archive/template.tar.gz")).toBe(true);
+    });
+
     it("should recognize owner/repo shorthand", () => {
         expect.assertions(1);
 

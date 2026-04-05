@@ -5,7 +5,7 @@
  * Uses @nkzw/safe-word-list for a curated set of ~2700 safe English words.
  */
 
-import words, { getRandomWord } from "@nkzw/safe-word-list";
+import { getRandomWord } from "@nkzw/safe-word-list";
 
 /**
  * Generate a random `word-word` project name from the safe word list.
@@ -17,6 +17,3 @@ import words, { getRandomWord } from "@nkzw/safe-word-list";
  * ```
  */
 export const randomName = (): string => `${getRandomWord()}-${getRandomWord()}`;
-
-/** Re-export the full word list for testing or custom usage. */
-export { words };
