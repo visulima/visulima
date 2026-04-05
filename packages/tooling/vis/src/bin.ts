@@ -27,6 +27,7 @@ import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
 import outdatedCommand from "./commands/outdated";
+import optimizeCommand from "./commands/optimize";
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
@@ -127,6 +128,7 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
+cli.addCommand(optimizeCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

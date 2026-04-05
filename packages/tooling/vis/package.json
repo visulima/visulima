@@ -128,9 +128,13 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
+        "@socketsecurity/registry": ">=2.0.0",
         "lint-staged": ">=15.0.0"
     },
     "peerDependenciesMeta": {
+        "@socketsecurity/registry": {
+            "optional": true
+        },
         "lint-staged": {
             "optional": true
         }
