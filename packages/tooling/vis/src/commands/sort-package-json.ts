@@ -3,36 +3,86 @@ import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 import { isAccessibleSync, walkSync } from "@visulima/fs";
+import { resolve } from "@visulima/path";
 
 import { loadNativeBindings } from "../native-binding";
 import { failure, info, success, warn } from "../output";
 import { errorMessage } from "../utils";
+import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspace";
 
 const NODE_MODULES_RE = /node_modules/;
 const DOT_GIT_RE = /\.git/;
 const FIXTURES_RE = /__fixtures__/;
 
 /**
- * Finds all package.json files in the workspace, excluding node_modules,
- * .git directories, and __fixtures__ directories.
+ * Finds all package.json files in the monorepo workspace.
+ *
+ * Uses workspace patterns (from pnpm-workspace.yaml or package.json workspaces)
+ * to discover project directories, then collects every package.json in those
+ * directories (including nested ones). Also includes the root package.json
+ * and walks apps/ and packages/ to catch any package.json files that workspace
+ * patterns might not cover (e.g. examples, shared configs).
  */
 const findPackageJsonFiles = (root: string): string[] => {
+    const seen = new Set<string>();
     const results: string[] = [];
 
-    // Always include the root package.json
-    const rootPkgPath = join(root, "package.json");
+    const addFile = (filePath: string): void => {
+        const resolved = resolve(filePath);
 
-    if (isAccessibleSync(rootPkgPath)) {
-        results.push(rootPkgPath);
+        if (!seen.has(resolved) && isAccessibleSync(resolved)) {
+            seen.add(resolved);
+            results.push(resolved);
+        }
+    };
+
+    // 1. Root package.json
+    addFile(join(root, "package.json"));
+
+    // 2. Use workspace patterns to discover project package.json files
+    try {
+        const pnpmPatterns = readPnpmWorkspacePatterns(root);
+
+        if (pnpmPatterns) {
+            const projectDirs = resolveWorkspacePatterns(root, pnpmPatterns);
+
+            for (const dir of projectDirs) {
+                addFile(join(root, dir, "package.json"));
+            }
+        } else {
+            // Fallback: read workspaces from root package.json
+            const rootPkgPath = join(root, "package.json");
+
+            if (isAccessibleSync(rootPkgPath)) {
+                const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+                    workspaces?: string[] | { packages?: string[] };
+                };
+                const patterns = Array.isArray(rootPkg.workspaces)
+                    ? rootPkg.workspaces
+                    : rootPkg.workspaces?.packages;
+
+                if (patterns) {
+                    const projectDirs = resolveWorkspacePatterns(root, patterns);
+
+                    for (const dir of projectDirs) {
+                        addFile(join(root, dir, "package.json"));
+                    }
+                }
+            }
+        }
+    } catch {
+        // Workspace detection failed, fall through to walk
     }
 
+    // 3. Walk the entire tree to catch anything the workspace patterns missed
+    //    (shared configs, examples, tooling dirs, etc.)
     for (const entry of walkSync(root, {
         includeDirs: false,
         includeSymlinks: false,
         skip: [NODE_MODULES_RE, DOT_GIT_RE, FIXTURES_RE],
     })) {
-        if (entry.name === "package.json" && entry.path !== rootPkgPath) {
-            results.push(entry.path);
+        if (entry.name === "package.json") {
+            addFile(entry.path);
         }
     }
 
