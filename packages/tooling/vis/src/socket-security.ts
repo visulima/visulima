@@ -300,6 +300,8 @@ const parseNdjsonResponse = (
         lookupMap.set(`${pkg.name}@${pkg.version}`, pkg);
     }
 
+    // Socket.dev returns NDJSON where each line is a JSON object ending with "}\n".
+    // Split on "}\n" and re-append the brace for parsing. Malformed lines are skipped.
     const lines = text.split("}\n");
 
     for (const line of lines) {

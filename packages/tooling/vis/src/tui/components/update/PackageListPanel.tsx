@@ -115,7 +115,7 @@ const PackageListPanel = ({
     const majors = entries.filter((e) => e.updateType === "major").length;
     const minors = entries.filter((e) => e.updateType === "minor").length;
     const patches = entries.filter((e) => e.updateType === "patch").length;
-    const secCount = entries.filter((e) => e.vulnerabilities && e.vulnerabilities.length > 0).length;
+    const secCount = entries.filter((e) => (e.vulnerabilities && e.vulnerabilities.length > 0) || (e.socketReport && e.socketReport.alerts.length > 0)).length;
 
     const summaryParts: string[] = [];
 
