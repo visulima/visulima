@@ -5,7 +5,7 @@ import { join, resolve } from "@visulima/path";
 import { coerce } from "semver";
 
 import { info, note, success, warn } from "../output";
-import type { OverrideEntry } from "../overrides";
+import type { OverrideEntry, PmInfo } from "../overrides";
 import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../overrides";
 import { detectPm, runInstall } from "../pm-runner";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspace";
@@ -128,7 +128,7 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
 const executeOptimize = (
     workspaceRoot: string,
     manifest: ManifestEntry[],
-    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string },
+    pm: PmInfo,
     options: OptimizeOptions,
 ): OptimizeResult => {
     // Collect deps from root
@@ -193,7 +193,7 @@ const executeOptimize = (
     }
 
     // Apply overrides at the root level (overrides/resolutions are root-level config)
-    const result = applyOverrides(rootPkgJsonPath, entries, pm.name);
+    const result = applyOverrides(workspaceRoot, rootPkgJsonPath, entries, pm);
 
     return { ...result, entries, skipped, workspaces: workspacesWithDeps };
 };
