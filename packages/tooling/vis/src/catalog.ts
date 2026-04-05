@@ -69,7 +69,7 @@ interface SecurityVulnerability {
 type SocketReport = Pick<PackageReportData, "alerts" | "license" | "score">;
 
 interface OutdatedEntry {
-    acceptedRisk?: { acceptedAt: string; reason: string };
+    acceptedRisk?: AcceptedRisk;
     catalogName: string;
     currentRange: string;
     newRange: string;
@@ -1115,6 +1115,10 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
+/** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
+const formatVersionString = (parsed: ParsedVersion | undefined): string =>
+    formatVersionString(parsed);
+
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
     entries: { catalogName: string; packageName: string; range: string }[],
@@ -1129,7 +1133,7 @@ const enrichWithSecurity = async (
 
                 return [
                     entry.packageName,
-                    { name: entry.packageName, version: parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "" },
+                    { name: entry.packageName, version: formatVersionString(parsed) },
                 ];
             }),
         ).values(),
@@ -1158,7 +1162,7 @@ const enrichWithSecurity = async (
 
         // Parse version once for both socket report and accepted risk lookups
         const parsed = parseVersion(entry.currentRange);
-        const version = parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
+        const version = formatVersionString(parsed);
 
         // Attach Socket.dev report data if available
         if (socketReports) {
@@ -1178,7 +1182,7 @@ const enrichWithSecurity = async (
             const risk = findAcceptedRisk(entry.packageName, version, acceptedRisks);
 
             if (risk) {
-                entry.acceptedRisk = { acceptedAt: risk.acceptedAt, reason: risk.reason };
+                entry.acceptedRisk = risk;
             }
         }
     }
