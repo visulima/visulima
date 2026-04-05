@@ -4,6 +4,7 @@ import { findPackageManagerSync } from "@visulima/package";
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { OutdatedEntry } from "../catalog";
 import { extractPrefix, fetchPackageVersions, fetchVulnerabilities, getUpdateType, parseVersion, readCatalogs } from "../catalog";
+import { buildSocketOptions, fetchSocketReports } from "../socket-security";
 
 const VERSION_PREFIX_REGEX = /^[\^~>=<]+/;
 
@@ -105,11 +106,28 @@ const analyze: Command = {
         if (analysisType === "security" || options.security) {
             logger.info("Checking for known vulnerabilities...\n");
 
-            const vulnMap = await fetchVulnerabilities([{ name: packageName, version: currentRange.replace(VERSION_PREFIX_REGEX, "") }]);
+            const version = currentRange.replace(VERSION_PREFIX_REGEX, "");
+            const vulnMap = await fetchVulnerabilities([{ name: packageName, version }]);
             const vulns = vulnMap.get(packageName);
 
             if (vulns && vulns.length > 0) {
                 entry.vulnerabilities = vulns;
+            }
+
+            // Also fetch Socket.dev report if enabled
+            const socketOpts = buildSocketOptions(visConfig?.security?.socket);
+
+            if (socketOpts) {
+                const reports = await fetchSocketReports([{ name: packageName, version }], socketOpts);
+                const report = reports.get(`${packageName}@${version}`);
+
+                if (report) {
+                    entry.socketReport = {
+                        alerts: report.alerts,
+                        license: report.license,
+                        score: report.score,
+                    };
+                }
             }
         }
 

@@ -107,6 +107,13 @@ const tips: Tip[] = [
         probability: 0.2,
     },
     {
+        cooldownMs: 24 * 60 * 60 * 1000, // 24 hours
+        id: "socket-security",
+        matches: (context) => (context.command === "install" || context.command === "update" || context.command === "check") && context.success,
+        message: () => "Enable Socket.dev in vis.config.ts for security scores and supply chain alerts: security.socket.enabled = true",
+        probability: 0.15,
+    },
+    {
         id: "dedupe-after-install",
         matches: (context) => context.command === "install" && context.success,
         message: () => "Run 'vis dedupe' periodically to remove duplicate dependencies.",

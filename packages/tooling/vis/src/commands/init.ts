@@ -50,6 +50,9 @@ export default defineConfig({
             // "@prisma/client": true,
         },
 
+        // Enable Socket.dev for package security scores and supply chain alerts:
+        // socket: { enabled: true },
+
         // Override any default if needed:
         // minimumReleaseAge: 1440,    // relax to 24 hours
         // strictDepBuilds: false,     // warn instead of fail
@@ -103,6 +106,11 @@ const init: Command = {
         info("  \u2713 strictDepBuilds: true (unapproved build scripts = hard error)");
         info("  \u2713 update.security: true (OSV.dev vulnerability checking)");
         info("  \u2713 allowBuilds: {} (run 'vis approve-builds' to add packages)");
+        info("");
+        info("Optional — Socket.dev integration:");
+        info("  \u25CB security.socket.enabled: false (opt-in: package scores, alerts, supply chain data)");
+        info("    Enable in vis.config.ts: security: { socket: { enabled: true } }");
+        info("    Or set VIS_SOCKET_TOKEN env var for a custom API token.");
 
         // Sync to native PM config if requested
         if (options["sync-native"]) {

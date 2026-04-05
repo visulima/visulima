@@ -3,14 +3,15 @@ import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync
 import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
+import type { SemVer } from "semver";
+import { coerce, diff, gt, parse, rcompare } from "semver";
 
+import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "./socket-security";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace";
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
 
-// sonarjs/slow-regex -- constrained by input format; not actually vulnerable
-// eslint-disable-next-line sonarjs/slow-regex
-const VERSION_REGEX = /(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.]+))?/i;
 const PREFIX_REGEX = /^([\^~]|>=|<=|[><=])/;
 // sonarjs/regex-complexity -- cannot simplify without breaking YAML key:value parsing
 // eslint-disable-next-line sonarjs/regex-complexity
@@ -47,14 +48,9 @@ const getBackupDir = (workspaceRoot: string): string => {
 
 type UpdateTarget = "latest" | "minor" | "patch";
 
-interface ParsedVersion {
-    major: number;
-    minor: number;
-    patch: number;
-    prerelease: string;
-}
-
 interface SecurityVulnerability {
+    /** Alternate identifiers (CVE-*, GHSA-*, etc.) from the OSV database. */
+    aliases?: string[];
     cvssScore?: number;
     fixedVersions: string[];
     id: string;
@@ -62,11 +58,15 @@ interface SecurityVulnerability {
     summary: string;
 }
 
+type SocketReport = Pick<PackageReportData, "alerts" | "license" | "score">;
+
 interface OutdatedEntry {
+    acceptedRisk?: AcceptedRisk;
     catalogName: string;
     currentRange: string;
     newRange: string;
     packageName: string;
+    socketReport?: SocketReport;
     targetVersion: string;
     updateType: "major" | "minor" | "patch";
     vulnerabilities?: SecurityVulnerability[];
@@ -86,21 +86,11 @@ interface ReadCatalogOptions {
     prod?: boolean;
 }
 
-// --- Version utilities ---
+// --- Version utilities (backed by `semver` package) ---
 
-const parseVersion = (input: string): ParsedVersion | undefined => {
-    const match = VERSION_REGEX.exec(input);
-
-    if (!match) {
-        return undefined;
-    }
-
-    return {
-        major: Number(match[1]),
-        minor: Number(match[2]),
-        patch: Number(match[3]),
-        prerelease: match[4] ?? "",
-    };
+const parseVersion = (input: string): SemVer | null => {
+    // coerce handles ranges like "^1.2.3" → "1.2.3", partial like "19" → "19.0.0"
+    return coerce(input) ?? parse(input);
 };
 
 const extractPrefix = (range: string): string => {
@@ -109,47 +99,25 @@ const extractPrefix = (range: string): string => {
     return match?.[1] ?? "";
 };
 
-const getUpdateType = (current: ParsedVersion, target: ParsedVersion): "major" | "minor" | "none" | "patch" => {
-    if (current.major !== target.major) {
+const getUpdateType = (current: SemVer, target: SemVer): "major" | "minor" | "none" | "patch" => {
+    const d = diff(current, target);
+
+    if (!d) {
+        return "none";
+    }
+
+    if (d.includes("major")) {
         return "major";
     }
 
-    if (current.minor !== target.minor) {
+    if (d.includes("minor")) {
         return "minor";
     }
 
-    if (current.patch !== target.patch) {
-        return "patch";
-    }
-
-    return "none";
+    return "patch";
 };
 
-const isNewer = (current: ParsedVersion, target: ParsedVersion): boolean => {
-    if (target.major !== current.major) {
-        return target.major > current.major;
-    }
-
-    if (target.minor !== current.minor) {
-        return target.minor > current.minor;
-    }
-
-    if (target.patch !== current.patch) {
-        return target.patch > current.patch;
-    }
-
-    // Equal versions: non-prerelease is "newer" than prerelease
-    if (current.prerelease && !target.prerelease) {
-        return true;
-    }
-
-    // Both prereleases of same version: compare lexicographically
-    if (current.prerelease && target.prerelease) {
-        return target.prerelease > current.prerelease;
-    }
-
-    return false;
-};
+const isNewer = (current: SemVer, target: SemVer): boolean => gt(target, current);
 
 // --- Glob matching ---
 
@@ -748,7 +716,9 @@ const fetchPackageVersions = async (
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -844,6 +814,7 @@ const mapOsvFixedVersions = (vuln: OsvVuln): string[] => {
 
 const mapOsvVuln = (vuln: OsvVuln): SecurityVulnerability => {
     return {
+        aliases: vuln.aliases?.length ? vuln.aliases : undefined,
         cvssScore: mapOsvCvss(vuln),
         fixedVersions: mapOsvFixedVersions(vuln),
         id: vuln.id,
@@ -868,7 +839,9 @@ const fetchVulnerabilities = async (
     });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -908,18 +881,6 @@ const fetchVulnerabilities = async (
 
 // --- Target version resolution ---
 
-const sortVersionCandidates = (a: { parsed: ParsedVersion; raw: string }, b: { parsed: ParsedVersion; raw: string }): number => {
-    if (a.parsed.major !== b.parsed.major) {
-        return b.parsed.major - a.parsed.major;
-    }
-
-    if (a.parsed.minor !== b.parsed.minor) {
-        return b.parsed.minor - a.parsed.minor;
-    }
-
-    return b.parsed.patch - a.parsed.patch;
-};
-
 const findTargetVersion = (versions: string[], latest: string, currentRange: string, target: UpdateTarget, includePrerelease: boolean): string | undefined => {
     const current = parseVersion(currentRange);
 
@@ -934,7 +895,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             return undefined;
         }
 
-        if (!includePrerelease && latestParsed.prerelease) {
+        if (!includePrerelease && latestParsed.prerelease.length > 0) {
             return undefined;
         }
 
@@ -950,12 +911,12 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
         .map((v) => {
             return { parsed: parseVersion(v), raw: v };
         })
-        .filter((v): v is { parsed: ParsedVersion; raw: string } => {
+        .filter((v): v is { parsed: SemVer; raw: string } => {
             if (!v.parsed) {
                 return false;
             }
 
-            if (!includePrerelease && v.parsed.prerelease) {
+            if (!includePrerelease && v.parsed.prerelease.length > 0) {
                 return false;
             }
 
@@ -970,7 +931,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             // target === "minor"
             return v.parsed.major === current.major;
         })
-        .toSorted(sortVersionCandidates);
+        .toSorted((a, b) => rcompare(a.raw, b.raw));
 
     return candidates[0]?.raw;
 };
@@ -1106,28 +1067,62 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
-const enrichWithSecurity = async (outdated: OutdatedEntry[], entries: { catalogName: string; packageName: string; range: string }[]): Promise<void> => {
+/** Formats a SemVer as "major.minor.patch", or "" if parsing failed. */
+const formatVersionString = (parsed: SemVer | null): string => (parsed ? parsed.version : "");
+
+const enrichWithSecurity = async (
+    outdated: OutdatedEntry[],
+    entries: { catalogName: string; packageName: string; range: string }[],
+    socketOptions?: SocketSecurityOptions,
+    acceptedRisks?: Record<string, AcceptedRisk>,
+): Promise<void> => {
     // Check current versions for known vulnerabilities
     const packagesToScan = [
         ...new Map(
             entries.map((entry) => {
                 const parsed = parseVersion(entry.range);
 
-                return [
-                    entry.packageName,
-                    { name: entry.packageName, version: parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "" },
-                ];
+                return [entry.packageName, { name: entry.packageName, version: formatVersionString(parsed) }];
             }),
         ).values(),
     ].filter((p) => p.version);
 
-    const vulnMap = await fetchVulnerabilities(packagesToScan);
+    // Fetch OSV vulnerabilities and Socket.dev reports in parallel
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : undefined;
+
+    const [vulnMap, socketReports] = await Promise.all([fetchVulnerabilities(packagesToScan), socketPromise]);
 
     for (const entry of outdated) {
         const vulns = vulnMap.get(entry.packageName);
 
         if (vulns && vulns.length > 0) {
             entry.vulnerabilities = vulns;
+        }
+
+        // Parse version once for both socket report and accepted risk lookups
+        const parsed = parseVersion(entry.currentRange);
+        const version = formatVersionString(parsed);
+
+        // Attach Socket.dev report data if available
+        if (socketReports) {
+            const report = socketReports.get(`${entry.packageName}@${version}`);
+
+            if (report) {
+                entry.socketReport = {
+                    alerts: report.alerts,
+                    license: report.license,
+                    score: report.score,
+                };
+            }
+        }
+
+        // Cross-reference accepted risks
+        if (acceptedRisks) {
+            const risk = findAcceptedRisk(entry.packageName, version, acceptedRisks);
+
+            if (risk) {
+                entry.acceptedRisk = risk;
+            }
         }
     }
 };
@@ -1142,7 +1137,12 @@ interface OutdatedCache {
     timestamp: number;
 }
 
-const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: CatalogCheckOptions): string => {
+const computeCacheHash = (
+    catalogs: Map<string, Map<string, string>>,
+    options: CatalogCheckOptions,
+    socketEnabled?: boolean,
+    acceptedRiskKeys?: string[],
+): string => {
     const parts: string[] = [];
 
     for (const [name, deps] of catalogs) {
@@ -1153,6 +1153,11 @@ const computeCacheHash = (catalogs: Map<string, Map<string, string>>, options: C
 
     parts.push(`target=${options.target},pre=${String(options.includePrerelease)},sec=${String(options.security ?? false)}`);
     parts.push(`in=${options.include.join(",")},ex=${options.exclude.join(",")},ig=${options.ignore.join(",")}`);
+    parts.push(`socket=${String(socketEnabled ?? false)}`);
+
+    if (acceptedRiskKeys && acceptedRiskKeys.length > 0) {
+        parts.push(`risks=${acceptedRiskKeys.toSorted().join(",")}`);
+    }
 
     let hash = 5381;
     const str = parts.join("|");
@@ -1211,8 +1216,10 @@ const checkOutdated = async (
     npmrcConfig?: NpmrcConfig,
     onProgress?: (current: number, total: number) => void,
     workspaceRoot?: string,
+    socketOptions?: SocketSecurityOptions,
+    acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
-    const hash = computeCacheHash(catalogs, options);
+    const hash = computeCacheHash(catalogs, options, Boolean(socketOptions), acceptedRisks ? Object.keys(acceptedRisks) : undefined);
 
     if (workspaceRoot) {
         const cached = readOutdatedCache(workspaceRoot, hash);
@@ -1228,8 +1235,8 @@ const checkOutdated = async (
     const { failed, versionCache } = await fetchVersionsBatched(uniquePackages, npmrcConfig, onProgress);
     const outdated = buildOutdatedEntries(entries, versionCache, options);
 
-    if (options.security && outdated.length > 0) {
-        await enrichWithSecurity(outdated, entries);
+    if ((options.security || socketOptions) && outdated.length > 0) {
+        await enrichWithSecurity(outdated, entries, socketOptions, acceptedRisks);
     }
 
     const result = { failed, ignored, outdated };
@@ -1414,19 +1421,56 @@ const formatCatalogDisplayName = (catalogName: string): string => {
 const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void => {
     const byCatalog = groupByCatalog(outdated);
     const columns = process.stdout.columns || 80;
+    const hasSocketData = outdated.some((entry) => entry.socketReport);
 
     for (const [catalogName, entries] of byCatalog) {
         const tableData = entries.flatMap((entry) => {
             const hasSec = entry.vulnerabilities && entry.vulnerabilities.length > 0;
-            const displayName = hasSec ? `[SEC] ${entry.packageName}` : entry.packageName;
+            const hasSocketAlerts = entry.socketReport && entry.socketReport.alerts.length > 0;
+            const prefix = hasSec || hasSocketAlerts ? "[SEC] " : "";
+            const displayName = `${prefix}${entry.packageName}`;
 
-            const rows: { current: string; package: string; target: string; type: string }[] = [
-                { current: entry.currentRange, package: displayName, target: entry.newRange, type: entry.updateType },
-            ];
+            const scoreStr = entry.socketReport ? `${String(Math.round(entry.socketReport.score.overall * 100))}%` : "";
+
+            const row: Record<string, string> = {
+                current: entry.currentRange,
+                package: displayName,
+                target: entry.newRange,
+                type: entry.updateType,
+            };
+
+            if (hasSocketData) {
+                row.score = scoreStr;
+            }
+
+            const rows: Record<string, string>[] = [row];
 
             if (entry.vulnerabilities) {
                 for (const vuln of entry.vulnerabilities) {
-                    rows.push({ current: vuln.summary, package: `  ${vuln.severity} ${vuln.id}`, target: "", type: "" });
+                    const vulnRow: Record<string, string> = { current: vuln.summary, package: `  ${vuln.severity} ${vuln.id}`, target: "", type: "" };
+
+                    if (hasSocketData) {
+                        vulnRow.score = "";
+                    }
+
+                    rows.push(vulnRow);
+                }
+            }
+
+            if (entry.socketReport) {
+                for (const alert of entry.socketReport.alerts) {
+                    const alertRow: Record<string, string> = {
+                        current: alert.category,
+                        package: `  [${alert.severity.toUpperCase()}] ${alert.type}`,
+                        target: "",
+                        type: "",
+                    };
+
+                    if (hasSocketData) {
+                        alertRow.score = "";
+                    }
+
+                    rows.push(alertRow);
                 }
             }
 
@@ -1441,10 +1485,23 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
 };
 
 const formatSummary = (outdated: OutdatedEntry[]): string => {
-    const majors = outdated.filter((entry) => entry.updateType === "major").length;
-    const minors = outdated.filter((entry) => entry.updateType === "minor").length;
-    const patches = outdated.filter((entry) => entry.updateType === "patch").length;
-    const securityCount = outdated.filter((entry) => entry.vulnerabilities && entry.vulnerabilities.length > 0).length;
+    let majors = 0;
+    let minors = 0;
+    let patches = 0;
+    let securityCount = 0;
+    let socketAlertCount = 0;
+    let lowScoreCount = 0;
+
+    for (const entry of outdated) {
+        if (entry.updateType === "major") majors++;
+        else if (entry.updateType === "minor") minors++;
+        else patches++;
+
+        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
+        if (entry.socketReport?.alerts.length) socketAlertCount++;
+        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) lowScoreCount++;
+    }
+
     const parts: string[] = [];
 
     if (majors) {
@@ -1463,18 +1520,26 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
         parts.push(`${String(securityCount)} with vulnerabilities`);
     }
 
+    if (socketAlertCount) {
+        parts.push(`${String(socketAlertCount)} with Socket.dev alerts`);
+    }
+
     const summary = `Found ${String(outdated.length)} outdated (${parts.join(", ")})`;
     const columns = process.stdout.columns || 80;
 
-    return renderToString(
-        React.createElement(
-            Box,
-            { flexDirection: "column", paddingX: 1 },
-            React.createElement(Text, { bold: true }, "\u2500 Summary"),
-            React.createElement(Text, null, "  " + summary),
-        ),
-        { columns },
-    );
+    const children = [React.createElement(Text, { bold: true }, "\u2500 Summary"), React.createElement(Text, null, "  " + summary)];
+
+    if (lowScoreCount > 0) {
+        children.push(
+            React.createElement(
+                Text,
+                { color: "yellow" },
+                `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(DEFAULT_LOW_SCORE_THRESHOLD * 100)}%)`,
+            ),
+        );
+    }
+
+    return renderToString(React.createElement(Box, { flexDirection: "column", paddingX: 1 }, ...children), { columns });
 };
 
 // --- Apply updates ---
@@ -1669,7 +1734,9 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
 
     const ask = (question: string): Promise<string> =>
         new Promise((resolve) => {
-            rl.question(question, (answer) => { resolve(answer.trim()); });
+            rl.question(question, (answer) => {
+                resolve(answer.trim());
+            });
         });
 
     process.stdout.write("\nOutdated catalog dependencies:\n");
@@ -1732,7 +1799,9 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
     const results: ChangelogInfo[] = [];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         const fetches = packages.map(async (entry): Promise<ChangelogInfo> => {
@@ -1772,7 +1841,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...await Promise.all(fetches));
+        results.push(...(await Promise.all(fetches)));
     } finally {
         clearTimeout(timeout);
     }
@@ -1790,9 +1859,9 @@ export type {
     NpmrcConfig,
     OutdatedEntry,
     OutputFormat,
-    ParsedVersion,
     ReadCatalogOptions,
     SecurityVulnerability,
+    SocketReport,
     UpdateTarget,
 };
 

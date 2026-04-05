@@ -60,7 +60,10 @@ const filterEntries = (entries: OutdatedEntry[], filterType: FilterType, filterT
 
     if (filterType !== "all") {
         if (filterType === "security") {
-            filtered = filtered.filter((e) => e.vulnerabilities && e.vulnerabilities.length > 0);
+            filtered = filtered.filter((e) =>
+                (e.vulnerabilities && e.vulnerabilities.length > 0)
+                || (e.socketReport && e.socketReport.alerts.length > 0),
+            );
         } else {
             filtered = filtered.filter((e) => e.updateType === filterType);
         }

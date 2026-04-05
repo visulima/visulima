@@ -91,12 +91,36 @@ const AI_TIMEOUT_MS = 120_000;
 const buildPackageList = (outdated: OutdatedEntry[]): string =>
     outdated
         .map((entry) => {
-            const vulnInfo
-                = entry.vulnerabilities && entry.vulnerabilities.length > 0
+            const vulnInfo =
+                entry.vulnerabilities && entry.vulnerabilities.length > 0
                     ? ` [VULNERABILITIES: ${entry.vulnerabilities.map((v) => `${v.severity} ${v.id}`).join(", ")}]`
                     : "";
 
-            return `- ${entry.packageName}: ${entry.currentRange} → ${entry.newRange} (${entry.updateType})${vulnInfo}`;
+            let socketInfo = "";
+
+            if (entry.socketReport) {
+                const score = Math.round(entry.socketReport.score.overall * 100);
+                const parts = [`score:${String(score)}%`];
+
+                if (entry.socketReport.alerts.length > 0) {
+                    const alertsByLevel = entry.socketReport.alerts.reduce<Record<string, number>>((acc, a) => {
+                        acc[a.severity] = (acc[a.severity] ?? 0) + 1;
+
+                        return acc;
+                    }, {});
+                    const alertSummary = Object.entries(alertsByLevel)
+                        .map(([s, c]) => `${String(c)} ${s}`)
+                        .join(", ");
+
+                    parts.push(`alerts: ${alertSummary}`);
+                }
+
+                parts.push(`supply-chain:${String(Math.round(entry.socketReport.score.supplyChain * 100))}%`);
+                parts.push(`quality:${String(Math.round(entry.socketReport.score.quality * 100))}%`);
+                socketInfo = ` [SOCKET.DEV: ${parts.join(", ")}]`;
+            }
+
+            return `- ${entry.packageName}: ${entry.currentRange} → ${entry.newRange} (${entry.updateType})${vulnInfo}${socketInfo}`;
         })
         .join("\n");
 
@@ -153,6 +177,7 @@ Consider:
 3. Best practices for the specific package ecosystem
 4. Risk vs. benefit analysis
 5. Suggested update order
+6. If Socket.dev scores are provided, prioritize packages with low supply chain or quality scores
 
 ${JSON_RESPONSE_SCHEMA}`,
 
@@ -166,6 +191,7 @@ For each package:
 3. Evaluate if this is a security-sensitive package (auth, crypto, session, etc.)
 4. Recommend urgency of the update based on vulnerability severity
 5. Flag any packages where skipping the update poses security risk
+6. If Socket.dev scores are provided, factor in supply chain and quality scores — low scores indicate higher risk
 
 ${JSON_RESPONSE_SCHEMA}`,
 };
@@ -282,8 +308,8 @@ const ruleBasedAnalysis = (outdated: OutdatedEntry[], analysisType: AnalysisType
             riskLevel = "high";
             action = breakingChanges.length > 0 ? "review" : "update";
             effort = "medium";
-            reason
-                = breakingChanges.length > 0
+            reason =
+                breakingChanges.length > 0
                     ? `Major update with known breaking changes: ${breakingChanges[0]}`
                     : "Major version update, review changelog before applying.";
         } else if (entry.updateType === "minor") {
@@ -377,7 +403,7 @@ const mergeResults = (results: AiAnalysisResult[], provider: string, analysisTyp
         analysisType,
         provider,
         recommendations,
-        summary: summaries.length === 1 ? summaries[0] ?? "" : `Analyzed ${String(recommendations.length)} packages in ${String(results.length)} batches.`,
+        summary: summaries.length === 1 ? (summaries[0] ?? "") : `Analyzed ${String(recommendations.length)} packages in ${String(results.length)} batches.`,
         warnings: [...new Set(warnings)],
     };
 };
@@ -418,12 +444,12 @@ const formatAiAnalysis = (result: AiAnalysisResult): string => {
             React.createElement(Text, null, result.summary),
             React.createElement(Text, null, ""),
             React.createElement(Table, { borderStyle: "none", data: tableData }),
-            ...result.warnings.length > 0
+            ...(result.warnings.length > 0
                 ? [
-                    React.createElement(Text, null, ""),
-                    ...result.warnings.map((warning, i) => React.createElement(Text, { dimColor: true, key: String(i) }, `  ${warning}`)),
-                ]
-                : [],
+                      React.createElement(Text, null, ""),
+                      ...result.warnings.map((warning, i) => React.createElement(Text, { dimColor: true, key: String(i) }, `  ${warning}`)),
+                  ]
+                : []),
         ),
         { columns },
     );
