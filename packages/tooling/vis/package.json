@@ -89,6 +89,7 @@
         "@visulima/tui": "workspace:*",
         "jiti": "catalog:dev",
         "@socketsecurity/registry": "^2.0.2",
+        "module-replacements": "^2.11.0",
         "react": "catalog:frontend",
         "semver": "^7.7.1"
     },
