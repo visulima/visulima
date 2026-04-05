@@ -380,14 +380,15 @@ const optimize: Command = {
             }
 
             // Apply selected optimizations
-            const selectedE18e = selected.filter((e) => e.category !== "socket" && e.hasCodemod);
+            const selectedE18eWithCodemod = selected.filter((e) => e.category !== "socket" && e.hasCodemod);
+            const selectedE18eManual = selected.filter((e) => e.category !== "socket" && !e.hasCodemod);
             const selectedSocket = selected.filter((e) => e.category === "socket");
 
             // Phase 1: Run codemods
-            if (selectedE18e.length > 0) {
-                info(`\nRunning ${String(selectedE18e.length)} codemod${selectedE18e.length === 1 ? "" : "s"}...\n`);
+            if (selectedE18eWithCodemod.length > 0) {
+                info(`\nRunning ${String(selectedE18eWithCodemod.length)} codemod${selectedE18eWithCodemod.length === 1 ? "" : "s"}...\n`);
 
-                for (const entry of selectedE18e) {
+                for (const entry of selectedE18eWithCodemod) {
                     const result = await runCodemod(wsRoot, entry.packageName);
 
                     if (result.filesChanged > 0) {
@@ -396,6 +397,17 @@ const optimize: Command = {
                         info(`  ${entry.packageName}: no files changed`);
                     }
                 }
+            }
+
+            // Report e18e entries that need manual migration
+            if (selectedE18eManual.length > 0) {
+                warn(`\n${String(selectedE18eManual.length)} selected replacement${selectedE18eManual.length === 1 ? "" : "s"} require manual migration (no codemod available):`);
+
+                for (const entry of selectedE18eManual) {
+                    info(`  ${entry.packageName} → ${entry.replacement}`);
+                }
+
+                note("  Replace usage in your source code, then remove from dependencies.");
             }
 
             // Phase 2: Write overrides
