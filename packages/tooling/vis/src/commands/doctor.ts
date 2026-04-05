@@ -286,8 +286,10 @@ const doctor: Command = {
     description: "Run a full project health check (outdated, security, duplicates, optimizations)",
     examples: [
         ["vis doctor", "Full project health check"],
+        ["vis doctor --fix", "Check and auto-apply safe fixes"],
         ["vis doctor --json", "Machine-readable output for CI"],
-        ["vis doctor --exit-code", "Exit with code 1 if issues found"],
+        ["vis doctor --exit-code", "Exit with code 1 if security issues found"],
+        ["vis doctor --exit-code --strict", "Fail on any issue (outdated, duplicates, security)"],
     ],
     execute: async ({ logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
@@ -347,16 +349,71 @@ const doctor: Command = {
         }
 
         displayResults(results);
-        displayActions(results);
 
-        if (options["exit-code"] && (results.vulnCount > 0 || results.socketIssues.alerts > 0)) {
-            process.exitCode = 1;
+        // --fix: auto-remediate by running optimize (codemods + overrides + install)
+        if (options.fix && results.optimizations.length > 0) {
+            info("");
+            info("Applying fixes...\n");
+
+            const socketEntries = results.optimizations
+                .filter((o) => o.category === "socket" && o.overrideSpec)
+                .map((o) => ({ original: o.packageName, spec: o.overrideSpec! }));
+
+            if (socketEntries.length > 0) {
+                const overrideResult = applyOverrides(wsRoot, join(wsRoot, "package.json"), socketEntries, pm);
+
+                if (overrideResult.added.length > 0) {
+                    success(`  Added ${String(overrideResult.added.length)} security override${overrideResult.added.length === 1 ? "" : "s"}.`);
+                }
+
+                if (overrideResult.updated.length > 0) {
+                    success(`  Updated ${String(overrideResult.updated.length)} override${overrideResult.updated.length === 1 ? "" : "s"}.`);
+                }
+            }
+
+            const codemodEntries = results.optimizations.filter((o) => o.category !== "socket" && o.hasCodemod);
+
+            for (const entry of codemodEntries) {
+                const codemodResult = await runCodemod(wsRoot, entry.packageName);
+
+                if (codemodResult.filesChanged > 0) {
+                    success(`  ${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);
+                }
+            }
+
+            if (socketEntries.length > 0) {
+                info(`\n  Running ${pm.name} install to update lockfile...`);
+
+                runInstall(
+                    pm,
+                    { dev: false, filter: [], force: false, frozenLockfile: false, ignoreScripts: false, lockfileOnly: false, noOptional: false, offline: false, prod: false, recursive: false, silent: false, workspaceRoot: false },
+                    wsRoot,
+                    logger,
+                );
+            }
+
+            info("");
+            success("Fixes applied.");
+        } else {
+            displayActions(results);
+        }
+
+        if (options["exit-code"]) {
+            const hasIssues = options.strict
+                ? results.vulnCount > 0 || results.socketIssues.alerts > 0 || results.outdated.length > 0 || results.duplicates.length > 0
+                : results.vulnCount > 0 || results.socketIssues.alerts > 0;
+
+            if (hasIssues) {
+                process.exitCode = 1;
+            }
         }
     },
     name: "doctor",
     options: [
         { defaultValue: false, description: "Output results as JSON", name: "json", type: Boolean },
-        { defaultValue: false, description: "Exit with code 1 if security issues found", name: "exit-code", type: Boolean },
+        { defaultValue: false, description: "Exit with code 1 if issues found", name: "exit-code", type: Boolean },
+        { defaultValue: false, description: "Auto-apply safe fixes (security overrides + codemods)", name: "fix", type: Boolean },
+        { defaultValue: false, description: "With --exit-code: also fail on outdated and duplicate deps", name: "strict", type: Boolean },
     ],
 };
 

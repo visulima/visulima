@@ -10,7 +10,7 @@
  * - Dimmed styling to avoid being intrusive
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -19,6 +19,7 @@ import isInCi from "is-in-ci";
 interface TipContext {
     args: string[];
     command: string;
+    hasVisConfig?: boolean;
     success: boolean;
 }
 
@@ -59,9 +60,8 @@ const writeState = (state: TipState): void => {
     try {
         const dir = join(homedir(), ".vis");
 
-        if (existsSync(dir)) {
-            writeFileSync(STATE_FILE, JSON.stringify(state));
-        }
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(STATE_FILE, JSON.stringify(state));
     } catch {
         // Non-critical, skip
     }
@@ -118,6 +118,20 @@ const tips: Tip[] = [
         matches: (context) => context.command === "install" && context.success,
         message: () => "Run 'vis dedupe' periodically to remove duplicate dependencies.",
         probability: 0.15,
+    },
+    {
+        cooldownMs: 12 * 60 * 60 * 1000,
+        id: "doctor-checkup",
+        matches: (context) => (context.command === "install" || context.command === "add" || context.command === "update") && context.success,
+        message: () => "Run 'vis doctor' for a full project health check — outdated, security, duplicates, and optimizations in one view.",
+        probability: 0.25,
+    },
+    {
+        cooldownMs: 7 * 24 * 60 * 60 * 1000,
+        id: "init-config",
+        matches: (context) => (context.command === "install" || context.command === "run") && context.success && !context.hasVisConfig,
+        message: () => "Run 'vis init' to create a vis.config.ts with secure defaults — supply chain protection enabled automatically.",
+        probability: 0.4,
     },
     {
         id: "why-command",
