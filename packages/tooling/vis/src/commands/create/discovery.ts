@@ -4,7 +4,7 @@
  * Supports:
  * - Built-in templates prefixed with `vis:` (app, library, monorepo, generator)
  * - npm `create-*` packages (with shorthand expansion)
- * - GitHub URLs (normalised to degit format)
+ * - Git repositories from GitHub, GitLab, and Bitbucket (all URL formats)
  */
 
 import type { TemplateConfig, TemplateType } from "./templates/types";
@@ -20,52 +20,51 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
     "vis:monorepo": "builtin:monorepo",
 };
 
-// ── GitHub URL detection ──────────────────────────────────────────
-
-const GITHUB_URL_RE = /^(?:https?:\/\/)?(?:www\.)?github\.com\/(?<owner>[^/]+)\/(?<repo>[^/#]+)(?:\/tree\/(?<branch>[^/]+)(?:\/(?<subdir>.+))?)?/;
-const GITHUB_SHORT_RE = /^(?<owner>[^/#@]+)\/(?<repo>[^/#@]+)(?:#(?<branch>.+))?$/;
+// ── Git URL detection ─────────────────────────────────────────────
 
 /**
- * Parse a GitHub URL or shorthand (`owner/repo`, `owner/repo#branch`)
- * into a degit-compatible source string.
+ * Patterns that identify a git repository URL.
  *
- * Returns `null` when the input is not a GitHub reference.
+ * Matches:
+ * - https://github.com/owner/repo (and gitlab.com, bitbucket.org)
+ * - git@github.com:owner/repo
+ * - github:owner/repo, gitlab:owner/repo, bitbucket:owner/repo
+ * - owner/repo (GitHub shorthand — but NOT scoped npm packages)
+ * - owner/repo#branch
+ * - Any of the above with /tree/branch/path or /blob/branch/path
  */
-export const parseGitHubUrl = (input: string): string | null => {
-    const full = GITHUB_URL_RE.exec(input);
 
-    if (full?.groups) {
-        const { branch, owner, repo, subdir } = full.groups;
-        let source = `${owner}/${repo}`;
+const GIT_HOST_PREFIXES = [
+    "https://github.com/",
+    "https://gitlab.com/",
+    "https://bitbucket.org/",
+    "https://raw.githubusercontent.com/",
+    "git@github.com:",
+    "git@gitlab.com:",
+    "git@bitbucket.org:",
+    "github:",
+    "gitlab:",
+    "bitbucket:",
+];
 
-        if (subdir) {
-            source += `/${subdir}`;
-        }
-
-        if (branch) {
-            source += `#${branch}`;
-        }
-
-        return source;
-    }
-
-    // owner/repo or owner/repo#branch — but not scoped npm packages (@scope/name)
-    if (!input.startsWith("@")) {
-        const short = GITHUB_SHORT_RE.exec(input);
-
-        if (short?.groups) {
-            const { branch, owner, repo } = short.groups;
-            let source = `${owner}/${repo}`;
-
-            if (branch) {
-                source += `#${branch}`;
-            }
-
-            return source;
+/**
+ * Check if the input looks like a git repository reference.
+ * Returns the raw input as the source for the git-download module to parse.
+ */
+export const isGitUrl = (input: string): boolean => {
+    // Explicit host prefix
+    for (const prefix of GIT_HOST_PREFIXES) {
+        if (input.startsWith(prefix)) {
+            return true;
         }
     }
 
-    return null;
+    // owner/repo shorthand (but NOT @scope/package — that's npm)
+    if (!input.startsWith("@") && /^[^/#@][^/#]*\/[^/#]+/.test(input)) {
+        return true;
+    }
+
+    return false;
 };
 
 // ── npm shorthand expansion ───────────────────────────────────────
@@ -121,11 +120,9 @@ export const discoverTemplate = (input: string, extraArgs: string[] = []): Templ
         return { args: extraArgs, source: lower, type: builtinType };
     }
 
-    // 2. GitHub URL or shorthand?
-    const ghSource = parseGitHubUrl(input);
-
-    if (ghSource) {
-        return { args: extraArgs, source: ghSource, type: "remote:github" };
+    // 2. Git repository URL? (GitHub, GitLab, Bitbucket)
+    if (isGitUrl(input)) {
+        return { args: extraArgs, source: input, type: "remote:git" };
     }
 
     // 3. Assume npm create package

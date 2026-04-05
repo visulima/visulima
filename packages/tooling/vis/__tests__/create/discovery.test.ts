@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { discoverTemplate, expandCreateShorthand, inferParentDir, parseGitHubUrl } from "../../src/commands/create/discovery";
+import { discoverTemplate, expandCreateShorthand, inferParentDir, isGitUrl } from "../../src/commands/create/discovery";
 
 describe("expandCreateShorthand", () => {
     it("should expand bare names to create-* packages", () => {
@@ -31,47 +31,63 @@ describe("expandCreateShorthand", () => {
     });
 });
 
-describe("parseGitHubUrl", () => {
-    it("should parse full GitHub URLs", () => {
+describe("isGitUrl", () => {
+    it("should recognize GitHub HTTPS URLs", () => {
         expect.assertions(1);
 
-        expect(parseGitHubUrl("https://github.com/user/repo")).toBe("user/repo");
+        expect(isGitUrl("https://github.com/user/repo")).toBe(true);
     });
 
-    it("should parse GitHub URLs with branches", () => {
+    it("should recognize GitLab HTTPS URLs", () => {
         expect.assertions(1);
 
-        expect(parseGitHubUrl("https://github.com/user/repo/tree/main")).toBe("user/repo#main");
+        expect(isGitUrl("https://gitlab.com/user/repo")).toBe(true);
     });
 
-    it("should parse GitHub URLs with subdirectories", () => {
+    it("should recognize Bitbucket HTTPS URLs", () => {
         expect.assertions(1);
 
-        expect(parseGitHubUrl("https://github.com/user/repo/tree/main/packages/cli")).toBe("user/repo/packages/cli#main");
+        expect(isGitUrl("https://bitbucket.org/user/repo")).toBe(true);
     });
 
-    it("should parse owner/repo shorthand", () => {
-        expect.assertions(1);
+    it("should recognize SSH URLs", () => {
+        expect.assertions(3);
 
-        expect(parseGitHubUrl("user/repo")).toBe("user/repo");
+        expect(isGitUrl("git@github.com:user/repo")).toBe(true);
+        expect(isGitUrl("git@gitlab.com:user/repo")).toBe(true);
+        expect(isGitUrl("git@bitbucket.org:user/repo")).toBe(true);
     });
 
-    it("should parse owner/repo#branch shorthand", () => {
-        expect.assertions(1);
+    it("should recognize platform prefix shorthands", () => {
+        expect.assertions(3);
 
-        expect(parseGitHubUrl("user/repo#dev")).toBe("user/repo#dev");
+        expect(isGitUrl("github:user/repo")).toBe(true);
+        expect(isGitUrl("gitlab:user/repo")).toBe(true);
+        expect(isGitUrl("bitbucket:user/repo")).toBe(true);
     });
 
-    it("should return null for scoped npm packages", () => {
+    it("should recognize owner/repo shorthand", () => {
         expect.assertions(1);
 
-        expect(parseGitHubUrl("@scope/package")).toBeNull();
+        expect(isGitUrl("user/repo")).toBe(true);
     });
 
-    it("should return null for bare package names", () => {
+    it("should NOT recognize scoped npm packages", () => {
         expect.assertions(1);
 
-        expect(parseGitHubUrl("vite")).toBeNull();
+        expect(isGitUrl("@scope/package")).toBe(false);
+    });
+
+    it("should NOT recognize bare package names", () => {
+        expect.assertions(1);
+
+        expect(isGitUrl("vite")).toBe(false);
+    });
+
+    it("should NOT recognize create-* packages", () => {
+        expect.assertions(1);
+
+        expect(isGitUrl("create-vite")).toBe(false);
     });
 });
 
@@ -115,22 +131,48 @@ describe("discoverTemplate", () => {
         expect(discoverTemplate("VIS:APP").type).toBe("builtin:app");
     });
 
-    it("should resolve GitHub URLs as remote:github", () => {
+    it("should resolve GitHub URLs as remote:git", () => {
         expect.assertions(2);
 
         const config = discoverTemplate("https://github.com/user/repo");
 
-        expect(config.type).toBe("remote:github");
-        expect(config.source).toBe("user/repo");
+        expect(config.type).toBe("remote:git");
+        expect(config.source).toBe("https://github.com/user/repo");
     });
 
-    it("should resolve owner/repo shorthand as remote:github", () => {
+    it("should resolve GitLab URLs as remote:git", () => {
+        expect.assertions(2);
+
+        const config = discoverTemplate("https://gitlab.com/user/repo");
+
+        expect(config.type).toBe("remote:git");
+        expect(config.source).toBe("https://gitlab.com/user/repo");
+    });
+
+    it("should resolve Bitbucket URLs as remote:git", () => {
+        expect.assertions(2);
+
+        const config = discoverTemplate("https://bitbucket.org/user/repo");
+
+        expect(config.type).toBe("remote:git");
+        expect(config.source).toBe("https://bitbucket.org/user/repo");
+    });
+
+    it("should resolve owner/repo shorthand as remote:git", () => {
         expect.assertions(2);
 
         const config = discoverTemplate("user/repo");
 
-        expect(config.type).toBe("remote:github");
+        expect(config.type).toBe("remote:git");
         expect(config.source).toBe("user/repo");
+    });
+
+    it("should resolve platform prefix shorthands as remote:git", () => {
+        expect.assertions(3);
+
+        expect(discoverTemplate("github:user/repo").type).toBe("remote:git");
+        expect(discoverTemplate("gitlab:user/repo").type).toBe("remote:git");
+        expect(discoverTemplate("bitbucket:user/repo").type).toBe("remote:git");
     });
 
     it("should resolve bare names as remote:npm with create- expansion", () => {
@@ -170,6 +212,14 @@ describe("discoverTemplate", () => {
 
         expect(config.args).toEqual(["--template", "react-ts"]);
     });
+
+    it("should preserve full URL as source for git-download to parse", () => {
+        expect.assertions(1);
+
+        const config = discoverTemplate("https://github.com/user/repo/tree/main/packages/cli");
+
+        expect(config.source).toBe("https://github.com/user/repo/tree/main/packages/cli");
+    });
 });
 
 describe("inferParentDir", () => {
@@ -195,7 +245,7 @@ describe("inferParentDir", () => {
         expect.assertions(3);
 
         expect(inferParentDir("remote:npm")).toBe(".");
-        expect(inferParentDir("remote:github")).toBe(".");
+        expect(inferParentDir("remote:git")).toBe(".");
         expect(inferParentDir("builtin:monorepo")).toBe(".");
     });
 });

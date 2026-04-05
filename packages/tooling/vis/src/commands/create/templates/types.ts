@@ -3,14 +3,14 @@
  */
 
 /** The kind of template being scaffolded. */
-export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:github" | "remote:npm";
+export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:git" | "remote:npm";
 
 /** Resolved information about a template after discovery. */
 export interface TemplateConfig {
     /** Extra CLI arguments forwarded to the template runner. */
     args: string[];
 
-    /** The npm package name (for remote:npm) or degit source (for remote:github). */
+    /** The npm package name (for remote:npm) or git URL (for remote:git). */
     source: string;
 
     /** What kind of template this is. */

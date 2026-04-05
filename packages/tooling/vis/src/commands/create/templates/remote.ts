@@ -1,26 +1,26 @@
 /**
- * Remote template executor — runs npm `create-*` packages via `dlx`
- * and clones GitHub repositories.
+ * Remote template executors:
+ *
+ * - `executeRemoteNpm` — runs npm `create-*` packages via `dlx`
+ * - `executeRemoteGit` — clones git repositories (GitHub, GitLab, Bitbucket)
+ *   using the native git-download module (no npx degit dependency)
  *
  * Includes auto-fix rules for popular tools that need extra flags
  * to play nicely with monorepo setups.
  */
 
-import { spawnSync } from "node:child_process";
-import { existsSync, rmSync } from "node:fs";
-import { join } from "node:path";
-
-import { info, warn } from "../../../output";
+import { info } from "../../../output";
 import { runDlx } from "../../../pm-runner";
+import { cloneRepo, parseGitUrl } from "../git-download";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
 // ── Auto-fix rules for popular create packages ────────────────────
 
 interface AutoFix {
-    /** Extra args to append when running inside a monorepo. */
-    monoArgs?: string[];
     /** Extra args to always append. */
     args?: string[];
+    /** Extra args to append when running inside a monorepo. */
+    monoArgs?: string[];
     /** Prepend a sub-command before the user's args. */
     prependCommand?: string;
 }
@@ -106,56 +106,22 @@ export const executeRemoteNpm = (
     return code;
 };
 
-// ── GitHub remote executor ────────────────────────────────────────
+// ── Git remote executor ───────────────────────────────────────────
 
-export const executeRemoteGitHub = (
+/**
+ * Clone a git repository template using the native git-download module.
+ *
+ * Supports GitHub, GitLab, and Bitbucket — full repos, subdirectories,
+ * and single files. Handles private repos via environment tokens
+ * (GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN).
+ */
+export const executeRemoteGit = (
     config: TemplateConfig,
     context: ExecutionContext,
 ): number => {
-    info(`Cloning ${config.source} into ${context.targetDir}...`);
+    const gitConfig = parseGitUrl(config.source);
 
-    // Use degit if available, otherwise fall back to git clone --depth 1
-    const degitResult = spawnSync("npx", ["--yes", "degit", config.source, context.targetDir], {
-        cwd: context.cwd,
-        stdio: "inherit",
-    });
+    info(`Cloning ${gitConfig.owner}/${gitConfig.repository} from ${gitConfig.host}...`);
 
-    if (degitResult.status === 0) {
-        return 0;
-    }
-
-    // Fallback: git clone --depth 1
-    warn("degit failed, falling back to git clone...");
-
-    // Parse owner/repo#branch format
-    const { source } = config;
-    const hashIndex = source.indexOf("#");
-    const repoPath = hashIndex === -1 ? source : source.slice(0, hashIndex);
-    const branch = hashIndex === -1 ? undefined : source.slice(hashIndex + 1);
-
-    const gitArgs = ["clone", "--depth", "1"];
-
-    if (branch) {
-        gitArgs.push("--branch", branch);
-    }
-
-    gitArgs.push(`https://github.com/${repoPath}.git`, context.targetDir);
-
-    const gitResult = spawnSync("git", gitArgs, {
-        cwd: context.cwd,
-        stdio: "inherit",
-    });
-
-    if (gitResult.status !== 0) {
-        return gitResult.status ?? 1;
-    }
-
-    // Remove .git directory from cloned template
-    const gitDir = join(context.targetDir, ".git");
-
-    if (existsSync(gitDir)) {
-        rmSync(gitDir, { force: true, recursive: true });
-    }
-
-    return 0;
+    return cloneRepo(gitConfig, context.targetDir, { verbose: true });
 };

@@ -7,7 +7,7 @@ import type { ExecutionContext, TemplateConfig } from "./types";
 import { executeBuiltin } from "./builtin";
 import { executeGeneratorTemplate } from "./generator";
 import { executeMonorepoTemplate } from "./monorepo";
-import { executeRemoteGitHub, executeRemoteNpm } from "./remote";
+import { executeRemoteGit, executeRemoteNpm } from "./remote";
 
 /**
  * Execute a template given its resolved configuration and runtime context.
@@ -29,8 +29,8 @@ export const executeTemplate = (config: TemplateConfig, context: ExecutionContex
         case "remote:npm": {
             return executeRemoteNpm(config, context);
         }
-        case "remote:github": {
-            return executeRemoteGitHub(config, context);
+        case "remote:git": {
+            return executeRemoteGit(config, context);
         }
         default: {
             throw new Error(`Unknown template type: ${(config as TemplateConfig).type}`);
