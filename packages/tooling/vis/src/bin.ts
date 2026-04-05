@@ -18,6 +18,7 @@ import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
 import dlxCommand from "./commands/dlx";
+import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
@@ -26,7 +27,8 @@ import initCommand from "./commands/init";
 import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
-import outdatedCommand from "./commands/outdated";
+import optimizeCommand from "./commands/optimize";
+// outdated is now an alias of check
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
@@ -110,7 +112,6 @@ cli.addCommand(addCommand);
 cli.addCommand(removeCommand);
 cli.addCommand(dedupeCommand);
 cli.addCommand(whyCommand);
-cli.addCommand(outdatedCommand);
 cli.addCommand(linkCommand);
 cli.addCommand(unlinkCommand);
 cli.addCommand(dlxCommand);
@@ -127,6 +128,8 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
+cli.addCommand(doctorCommand);
+cli.addCommand(optimizeCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

@@ -3,6 +3,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import type { Command } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
+import { parse as parseLockfile } from "lockparse";
 
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
@@ -30,6 +31,14 @@ interface AuditEntry {
 }
 
 type SeverityFilter = "critical" | "high" | "low" | "medium";
+
+/** A package installed in multiple versions. */
+interface DuplicatePackage {
+    /** The package name. */
+    name: string;
+    /** Each installed version. */
+    versions: string[];
+}
 
 // ── Package discovery ───────────────────────────────────────────────
 
@@ -114,6 +123,83 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
     return packages;
 };
 
+// ── Duplicate dependency detection ──────────────────────────────────
+
+const LOCKFILE_NAMES: Record<string, { file: string; type: string }> = {
+    bun: { file: "bun.lock", type: "bun" },
+    npm: { file: "package-lock.json", type: "npm" },
+    pnpm: { file: "pnpm-lock.yaml", type: "pnpm" },
+    yarn: { file: "yarn.lock", type: "yarn" },
+};
+
+/**
+ * Finds packages with multiple installed versions by parsing the lockfile
+ * via `lockparse`. Passes `package.json` for accuracy (especially yarn).
+ */
+const findDuplicateDependencies = async (workspaceRoot: string, pmName: string): Promise<DuplicatePackage[]> => {
+    const lockInfo = LOCKFILE_NAMES[pmName];
+
+    if (!lockInfo) {
+        return [];
+    }
+
+    let lockContent: string;
+    let packageJson: Record<string, unknown> | undefined;
+
+    try {
+        lockContent = readFileSync(join(workspaceRoot, lockInfo.file), "utf8");
+    } catch {
+        return [];
+    }
+
+    try {
+        packageJson = JSON.parse(readFileSync(join(workspaceRoot, "package.json"), "utf8")) as Record<string, unknown>;
+    } catch {
+        // package.json optional for lockfile parsing
+    }
+
+    let lockfile: { packages: { name: string; version: string }[] };
+
+    try {
+        lockfile = (await parseLockfile(lockContent, lockInfo.type, packageJson)) as typeof lockfile;
+    } catch {
+        return [];
+    }
+
+    if (!lockfile?.packages) {
+        return [];
+    }
+
+    const versionMap = new Map<string, Set<string>>();
+
+    for (const pkg of lockfile.packages) {
+        if (!pkg.name || !pkg.version) {
+            continue;
+        }
+
+        if (!versionMap.has(pkg.name)) {
+            versionMap.set(pkg.name, new Set());
+        }
+
+        versionMap.get(pkg.name)!.add(pkg.version);
+    }
+
+    const duplicates: DuplicatePackage[] = [];
+
+    for (const [name, versions] of versionMap) {
+        if (versions.size <= 1) {
+            continue;
+        }
+
+        duplicates.push({
+            name,
+            versions: [...versions],
+        });
+    }
+
+    return duplicates.sort((a, b) => a.name.localeCompare(b.name));
+};
+
 // ── Severity helpers ────────────────────────────────────────────────
 
 const SEVERITY_ORDER: Record<string, number> = {
@@ -171,7 +257,7 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 /* eslint-disable sonarjs/cognitive-complexity -- audit command with multiple output paths */
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
-    const isJson = Boolean(options.json);
+    const isJson = (options.format as string) === "json" || Boolean(options.json);
     const showFixes = Boolean(options.fix);
     const showAccepted = Boolean(options["show-accepted"]);
     const socketConfig = visConfig?.security?.socket;
@@ -205,9 +291,10 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
     const socketOpts = buildSocketOptions(socketConfig);
 
-    const [vulnMap, socketReports] = await Promise.all([
+    const [vulnMap, socketReports, duplicates] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
         socketOpts ? fetchSocketReports(packagesToScan, socketOpts) : Promise.resolve(new Map<string, PackageReportData>()),
+        findDuplicateDependencies(workspaceRoot, pm.name),
     ]);
 
     // 3. Build audit entries
@@ -252,17 +339,23 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // 5. JSON output
     if (isJson) {
         const jsonResult = {
+            duplicates: duplicates.map((d) => ({
+                name: d.name,
+                versionCount: d.versions.length,
+                versions: d.versions,
+            })),
             packages: installed.length,
             results: filtered.map((e) => ({
                 acceptedRisk: e.acceptedRisk ?? null,
                 name: e.name,
-                socketScore: e.socketReport?.score.overall ?? null,
                 socketAlerts: e.socketReport?.alerts ?? [],
+                socketScore: e.socketReport?.score.overall ?? null,
                 version: e.version,
                 vulnerabilities: e.vulnerabilities,
             })),
             summary: {
                 accepted: filtered.filter((e) => e.acceptedRisk).length,
+                duplicatePackages: duplicates.length,
                 issues: filtered.filter((e) => !e.acceptedRisk).length,
                 total: filtered.length,
             },
@@ -364,6 +457,17 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         }
     }
 
+    // Print duplicate dependencies
+    if (duplicates.length > 0) {
+        info(`\n\u2500\u2500 Duplicate Dependencies (${String(duplicates.length)}) \u2500\u2500`);
+
+        for (const dup of duplicates) {
+            const versionList = dup.versions.join(", ");
+
+            info(`  ${dup.name} — ${String(dup.versions.length)} versions: ${yellow(versionList)}`);
+        }
+    }
+
     // Summary
     const isEntryExcluded = (e: AuditEntry): boolean =>
         Boolean(e.acceptedRisk) || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
@@ -400,6 +504,11 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         const unacknowledgedSocket = socketIssues.filter((e) => !isEntryExcluded(e)).length;
 
         warn(`  ${String(unacknowledgedSocket)} package${unacknowledgedSocket === 1 ? "" : "s"} with Socket.dev supply chain issues`);
+    }
+
+    if (duplicates.length > 0) {
+        warn(`  ${String(duplicates.length)} package${duplicates.length === 1 ? "" : "s"} with duplicate versions`);
+        note("  Run 'vis dedupe' or your package manager's dedupe command to reduce duplicates.");
     }
 
     if (acknowledgedVulns > 0) {
@@ -465,7 +574,7 @@ const audit: Command = {
     examples: [
         ["vis audit", "Full audit of all installed packages"],
         ["vis audit --severity high", "Show only high/critical issues"],
-        ["vis audit --json", "Output as JSON for CI integration"],
+        ["vis audit --format json", "Output as JSON for CI integration"],
         ["vis audit --fix", "Show fix suggestions for vulnerabilities"],
         ["vis audit --exit-code", "Exit with code 1 if issues found (for CI)"],
         ["vis audit --show-accepted", "Include acknowledged risks in output"],
@@ -486,10 +595,9 @@ const audit: Command = {
             type: String,
         },
         {
-            defaultValue: false,
-            description: "Output results as JSON",
-            name: "json",
-            type: Boolean,
+            description: "Output format: table or json (default: table)",
+            name: "format",
+            type: String,
         },
         {
             defaultValue: false,
@@ -499,7 +607,7 @@ const audit: Command = {
         },
         {
             defaultValue: false,
-            description: "Exit with code 1 if unacknowledged issues found (for CI)",
+            description: "Exit with code 1 if any issues found (for CI)",
             name: "exit-code",
             type: Boolean,
         },
@@ -519,3 +627,5 @@ const audit: Command = {
 };
 
 export default audit;
+export type { DuplicatePackage, InstalledPackage };
+export { findDuplicateDependencies, scanInstalledPackages };
