@@ -32,6 +32,7 @@ import optimizeCommand from "./commands/optimize";
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
+import sortPackageJsonCommand from "./commands/sort-package-json";
 import stagedCommand from "./commands/staged";
 import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
@@ -104,6 +105,7 @@ cli.addCommand(checkCommand);
 cli.addCommand(aiCommand);
 cli.addCommand(analyzeCommand);
 cli.addCommand(migrateCommand);
+cli.addCommand(sortPackageJsonCommand);
 cli.addCommand(stagedCommand);
 
 // Package management commands

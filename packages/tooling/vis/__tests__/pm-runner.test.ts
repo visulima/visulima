@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { detectPm } from "../src/pm-runner";
 
@@ -20,12 +20,9 @@ describe("detectPm", () => {
         expect(pm.name).toBe("pnpm");
     });
 
-    it("should fall back gracefully for non-existent directories", () => {
+    it("should throw for non-existent directories", () => {
         expect.assertions(1);
 
-        // Should not throw, should return a default
-        const pm = detectPm("/tmp/nonexistent-dir-" + Date.now());
-
-        expect(["pnpm", "npm", "yarn", "bun"]).toContain(pm.name);
+        expect(() => detectPm("/tmp/nonexistent-dir-" + Date.now())).toThrow();
     });
 });
