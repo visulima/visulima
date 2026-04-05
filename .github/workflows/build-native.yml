@@ -29,6 +29,7 @@ jobs:
         runs-on: "ubuntu-24.04"
         timeout-minutes: 3
         outputs:
+            sort-package-json: "${{ steps.changes.outputs.sort-package-json }}"
             task-runner: "${{ steps.changes.outputs.task-runner }}"
             tui: "${{ steps.changes.outputs.tui }}"
             vis: "${{ steps.changes.outputs.vis }}"
@@ -48,6 +49,12 @@ jobs:
               id: "changes"
               with:
                   filters: |
+                      sort-package-json:
+                        - 'packages/tooling/sort-package-json/native/**'
+                        - 'packages/tooling/sort-package-json/npm/**'
+                        - 'packages/tooling/sort-package-json/package.json'
+                        - 'packages/tooling/sort-package-json/index.js'
+                        - '.github/workflows/build-native.yml'
                       task-runner:
                         - 'packages/tooling/task-runner/native/**'
                         - 'packages/tooling/task-runner/npm/**'
@@ -72,6 +79,7 @@ jobs:
         if: |
             github.event_name == 'push' ||
             github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.sort-package-json == 'true' ||
             needs.files-changed.outputs.task-runner == 'true' ||
             needs.files-changed.outputs.tui == 'true' ||
             needs.files-changed.outputs.vis == 'true'
@@ -79,6 +87,9 @@ jobs:
             fail-fast: false
             matrix:
                 package:
+                    - name: "sort-package-json"
+                      dir: "packages/tooling/sort-package-json"
+                      changed: "${{ needs.files-changed.outputs.sort-package-json }}"
                     - name: "task-runner"
                       dir: "packages/tooling/task-runner"
                       changed: "${{ needs.files-changed.outputs.task-runner }}"
@@ -182,6 +193,10 @@ jobs:
             fail-fast: false
             matrix:
                 package:
+                    - name: "sort-package-json"
+                      dir: "packages/tooling/sort-package-json"
+                      test_files: "__tests__/native-binding.test.ts __tests__/sort-package-json.test.ts"
+                      changed: "${{ needs.files-changed.outputs.sort-package-json }}"
                     - name: "task-runner"
                       dir: "packages/tooling/task-runner"
                       test_files: "__tests__/native-binding.test.ts __tests__/xxh3.test.ts"

@@ -1,0 +1,8 @@
+{
+    "name": "sort-package-json",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/sort-package-json/src",
+    "projectType": "library",
+    "tags": ["sort-package-json", "type:package", "category:dev-tools"],
+    "implicitDependencies": []
+}
