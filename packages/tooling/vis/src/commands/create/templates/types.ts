@@ -1,0 +1,60 @@
+/**
+ * Core type definitions for the `vis create` scaffolding system.
+ */
+
+/** The kind of template being scaffolded. */
+export type TemplateType = "builtin:app" | "builtin:generator" | "builtin:library" | "builtin:monorepo" | "remote:github" | "remote:npm";
+
+/** Resolved information about a template after discovery. */
+export interface TemplateConfig {
+    /** Extra CLI arguments forwarded to the template runner. */
+    args: string[];
+
+    /** The npm package name (for remote:npm) or degit source (for remote:github). */
+    source: string;
+
+    /** What kind of template this is. */
+    type: TemplateType;
+}
+
+/** Runtime context passed to every template executor. */
+export interface ExecutionContext {
+    /** Working directory (workspace root or cwd). */
+    cwd: string;
+
+    /** Whether we are inside an existing monorepo workspace. */
+    inMonorepo: boolean;
+
+    /** Console-compatible logger from Cerebro toolbox. */
+    logger: Console;
+
+    /** Detected package manager. */
+    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string };
+
+    /** The validated npm-safe project name. */
+    projectName: string;
+
+    /** Absolute path to the target directory. */
+    targetDir: string;
+}
+
+/** Options collected from CLI flags and interactive prompts. */
+export interface CreateOptions {
+    /** Generate editor configuration files. */
+    editor?: "vscode" | undefined;
+
+    /** Initialize a git repository after scaffolding. */
+    gitInit?: boolean;
+
+    /** Skip interactive prompts. */
+    noInteractive?: boolean;
+
+    /** Preferred package manager override. */
+    pm?: "bun" | "npm" | "pnpm" | "yarn" | undefined;
+
+    /** Template or generator name from the CLI argument. */
+    template?: string | undefined;
+}
+
+/** Post-creation tasks that can be performed after scaffolding. */
+export type PostCreateTask = "ai-instructions" | "deps-install" | "editor-config" | "format" | "git-init";
