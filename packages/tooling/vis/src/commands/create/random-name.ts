@@ -1,33 +1,14 @@
 /**
- * Random project name generator — produces friendly `adjective-noun` names
+ * Random project name generator — produces friendly `word-word` names
  * used as default project name suggestions in interactive mode.
+ *
+ * Uses @nkzw/safe-word-list for a curated set of ~2700 safe English words.
  */
 
-const ADJECTIVES = [
-    "agile", "bold", "bright", "calm", "clever",
-    "cool", "crisp", "daring", "eager", "fast",
-    "fierce", "fresh", "gentle", "grand", "happy",
-    "keen", "lively", "mighty", "nimble", "polite",
-    "proud", "quiet", "rapid", "sharp", "sleek",
-    "smart", "snappy", "steady", "swift", "vivid",
-    "warm", "witty", "zen",
-] as const;
-
-const NOUNS = [
-    "acorn", "arrow", "atlas", "beacon", "blade",
-    "bolt", "bridge", "cedar", "cloud", "comet",
-    "coral", "crest", "dawn", "delta", "ember",
-    "falcon", "flare", "forge", "frost", "grove",
-    "harbor", "heron", "jade", "lark", "maple",
-    "orbit", "pearl", "pine", "pixel", "prism",
-    "quartz", "raven", "ridge", "sage", "spark",
-    "spruce", "stone", "tide", "vale", "willow",
-] as const;
-
-const pick = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)] as T;
+import words, { getRandomWord } from "@nkzw/safe-word-list";
 
 /**
- * Generate a random `adjective-noun` project name.
+ * Generate a random `word-word` project name from the safe word list.
  *
  * @example
  * ```ts
@@ -35,4 +16,7 @@ const pick = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.len
  * randomName(); // "bold-prism"
  * ```
  */
-export const randomName = (): string => `${pick(ADJECTIVES)}-${pick(NOUNS)}`;
+export const randomName = (): string => `${getRandomWord()}-${getRandomWord()}`;
+
+/** Re-export the full word list for testing or custom usage. */
+export { words };

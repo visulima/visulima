@@ -47,6 +47,26 @@ describe("isValidPackageName", () => {
         expect(isValidPackageName("@scope/")).toBe(false);
         expect(isValidPackageName("@scope")).toBe(false);
     });
+
+    it("should reject names that conflict with Node.js core modules", () => {
+        expect.assertions(2);
+
+        expect(isValidPackageName("http")).toBe(false);
+        expect(isValidPackageName("node_modules")).toBe(false);
+    });
+
+    it("should reject names with special characters", () => {
+        expect.assertions(2);
+
+        expect(isValidPackageName("my package")).toBe(false);
+        expect(isValidPackageName("excited!")).toBe(false);
+    });
+
+    it("should reject names longer than 214 characters", () => {
+        expect.assertions(1);
+
+        expect(isValidPackageName("a".repeat(215))).toBe(false);
+    });
 });
 
 describe("toValidPackageName", () => {

@@ -1891,7 +1891,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 26.0.0(ddd27f9a09ac041107952f2d68ffadfc)
+        version: 26.0.0(d9d4768d8457a118223bc61cce27dce5)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -2210,7 +2210,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 26.0.0(c3d6cf594b08b187985138430fb2c26e)
+        version: 26.0.0(4387f4cd35a31b21c3a4f4d511b14b40)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 9.1.1(prettier@3.8.1)
@@ -9035,6 +9035,9 @@ importers:
 
   packages/tooling/vis:
     dependencies:
+      '@nkzw/safe-word-list':
+        specifier: ^3.1.2
+        version: 3.1.2
       '@socketsecurity/registry':
         specifier: ^2.0.2
         version: 2.0.2(typescript@6.0.2)
@@ -9092,6 +9095,9 @@ importers:
       semver:
         specifier: ^7.7.1
         version: 7.7.4
+      validate-npm-package-name:
+        specifier: ^7.0.2
+        version: 7.0.2
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
@@ -9132,6 +9138,9 @@ importers:
       '@types/semver':
         specifier: ^7.7.0
         version: 7.7.1
+      '@types/validate-npm-package-name':
+        specifier: ^4.0.2
+        version: 4.0.2
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.61(7467a412c455c783903466d9b3ca6ab3)
@@ -12652,6 +12661,9 @@ packages:
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
+
+  '@nkzw/safe-word-list@3.1.2':
+    resolution: {integrity: sha512-1LVorY12WHEZahlnYuZddJjyUMN3tFfN/DfdDgiHPEUnmaEbPW6kBuUYOrfvjfRqb2+qlV8aDmsENJIVzu8f9A==}
 
   '@noble/hashes@1.4.0':
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
@@ -17795,6 +17807,9 @@ packages:
 
   '@types/uuid@9.0.8':
     resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
+
+  '@types/validate-npm-package-name@4.0.2':
+    resolution: {integrity: sha512-lrpDziQipxCEeK5kWxvljWYhUvOiB2A9izZd9B2AFarYAkqZshb4lPbRs7zKEic6eGtH8V/2qJW+dPp9OtF6bw==}
 
   '@types/wait-on@5.3.4':
     resolution: {integrity: sha512-EBsPjFMrFlMbbUFf9D1Fp+PAB2TwmUn7a3YtHyD9RLuTIk1jDd8SxXVAoez2Ciy+8Jsceo2MYEYZzJ/DvorOKw==}
@@ -30877,6 +30892,10 @@ packages:
     resolution: {integrity: sha512-OljLrQ9SQdOUqTaQxqL5dEfZWrXExyyWsozYlAWFawPVNuD83igl7uJD2RTkNMbniIYgt8l81eCJGIdQF7avLQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  validate-npm-package-name@7.0.2:
+    resolution: {integrity: sha512-hVDIBwsRruT73PbK7uP5ebUt+ezEtCmzZz3F59BSr2F6OVFnJ/6h8liuvdLrQ88Xmnk6/+xGGuq+pG9WwTuy3A==}
+    engines: {node: ^20.17.0 || >=22.9.0}
+
   validator@13.15.23:
     resolution: {integrity: sha512-4yoz1kEWqUjzi5zsPbAS/903QXSYp0UOtHsPpp7p9rHAw/W+dkInskAE386Fat3oKRROwO98d9ZB0G4cObgUyw==}
     engines: {node: '>= 0.10'}
@@ -32449,7 +32468,7 @@ snapshots:
       - vitest
       - yaml
 
-  '@anolilab/eslint-config@26.0.0(c3d6cf594b08b187985138430fb2c26e)':
+  '@anolilab/eslint-config@26.0.0(d9d4768d8457a118223bc61cce27dce5)':
     dependencies:
       '@e18e/eslint-plugin': 0.3.0(eslint@10.1.0(jiti@2.6.1))
       '@eslint-community/eslint-plugin-eslint-comments': 4.7.1(eslint@10.1.0(jiti@2.6.1))
@@ -32506,92 +32525,6 @@ snapshots:
       yaml-eslint-parser: 2.0.0
     optionalDependencies:
       '@eslint-react/eslint-plugin': 4.2.1(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@eslint/css': 1.0.0
-      '@tanstack/eslint-plugin-query': 5.95.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@tanstack/eslint-plugin-router': 1.161.6(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-playwright: 2.10.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react: 7.37.5(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-compiler: 19.1.0-rc.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-hooks: 7.0.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-perf: 3.3.3(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-refresh: 0.5.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-react-you-might-not-need-an-effect: 0.9.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-storybook: 10.3.3(eslint@10.1.0(jiti@2.6.1))(storybook@10.3.3(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@6.0.2)
-      eslint-plugin-testing-library: 7.16.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 3.5.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(zod@4.3.6)
-      tailwind-csstree: 0.3.0(@eslint/css@1.0.0)
-      typescript: 6.0.2
-    transitivePeerDependencies:
-      - '@eslint/json'
-      - '@types/node'
-      - '@typescript-eslint/eslint-plugin'
-      - '@typescript-eslint/utils'
-      - eslint-plugin-import
-      - oxlint
-      - supports-color
-      - vitest
-      - yaml
-
-  '@anolilab/eslint-config@26.0.0(ddd27f9a09ac041107952f2d68ffadfc)':
-    dependencies:
-      '@e18e/eslint-plugin': 0.3.0(eslint@10.1.0(jiti@2.6.1))
-      '@eslint-community/eslint-plugin-eslint-comments': 4.7.1(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/compat': 2.0.3(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/js': 10.0.1(eslint@10.1.0(jiti@2.6.1))
-      '@eslint/markdown': 8.0.0
-      '@html-eslint/eslint-plugin': 0.58.1(eslint@10.1.0(jiti@2.6.1))
-      '@html-eslint/parser': 0.58.1
-      '@stylistic/eslint-plugin': 5.10.0(eslint@10.1.0(jiti@2.6.1))
-      '@stylistic/eslint-plugin-ts': 4.4.1(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@typescript-eslint/parser': 8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@typescript-eslint/types': 8.57.2
-      '@visulima/fs': 4.1.0(yaml@2.8.3)
-      '@visulima/package': 4.1.7(@types/node@25.5.0)
-      '@visulima/tsconfig': 2.1.3(yaml@2.8.3)
-      '@vitest/eslint-plugin': 1.6.13(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(vitest@4.1.2)
-      confusing-browser-globals: 1.0.11
-      eslint: 10.1.0(jiti@2.6.1)
-      eslint-config-flat-gitignore: 2.3.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-flat-config-utils: 3.0.2
-      eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 4.4.4(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@8.57.0))(eslint@10.1.0(jiti@2.6.1))
-      eslint-merge-processors: 2.0.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-antfu: 3.2.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-compat: 7.0.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-erasable-syntax-only: 0.4.0(@typescript-eslint/parser@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      eslint-plugin-es-x: 9.6.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-html: 8.1.4
-      eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint-import-resolver-node@0.3.9)(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-jsdoc: 62.8.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-jsonc: 3.1.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-n: 17.24.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      eslint-plugin-no-for-of-array: 0.1.0(eslint@10.1.0(jiti@2.6.1))(typescript-eslint@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(typescript@6.0.2)
-      eslint-plugin-no-only-tests: 3.3.0
-      eslint-plugin-no-secrets: 2.3.3(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-no-unsanitized: 4.1.5(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-perfectionist: 5.7.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      eslint-plugin-pnpm: 1.6.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-promise: 7.2.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-regexp: 3.1.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-security: 4.0.0
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-sonarjs: 4.0.2(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-toml: 1.3.1(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-unicorn: 63.0.0(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(eslint@10.1.0(jiti@2.6.1))
-      eslint-plugin-yml: 3.3.1(eslint@10.1.0(jiti@2.6.1))
-      globals: 17.4.0
-      jsonc-eslint-parser: 3.1.0
-      parse-gitignore: 2.0.0
-      semver: 7.7.4
-      toml-eslint-parser: 1.0.3
-      typescript-eslint: 8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      yaml-eslint-parser: 2.0.0
-    optionalDependencies:
-      '@eslint-react/eslint-plugin': 4.2.1(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@eslint/css': 1.1.0
       '@tanstack/eslint-plugin-query': 5.95.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@tanstack/eslint-plugin-router': 1.161.6(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
@@ -32607,7 +32540,7 @@ snapshots:
       eslint-plugin-testing-library: 7.16.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       eslint-plugin-validate-jsx-nesting: 0.1.1(eslint@10.1.0(jiti@2.6.1))
       eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-      eslint-plugin-zod: 3.5.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(zod@4.3.6)
+      eslint-plugin-zod: 3.5.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(zod@3.25.76)
       tailwind-csstree: 0.3.0(@eslint/css@1.1.0)
       typescript: 6.0.2
     transitivePeerDependencies:
@@ -36691,6 +36624,8 @@ snapshots:
 
   '@next/swc-win32-x64-msvc@16.2.2':
     optional: true
+
+  '@nkzw/safe-word-list@3.1.2': {}
 
   '@noble/hashes@1.4.0': {}
 
@@ -42685,6 +42620,8 @@ snapshots:
   '@types/use-sync-external-store@0.0.6': {}
 
   '@types/uuid@9.0.8': {}
+
+  '@types/validate-npm-package-name@4.0.2': {}
 
   '@types/wait-on@5.3.4':
     dependencies:
@@ -59607,6 +59544,8 @@ snapshots:
       spdx-expression-parse: 3.0.1
 
   validate-npm-package-name@5.0.1: {}
+
+  validate-npm-package-name@7.0.2: {}
 
   validator@13.15.23: {}
 

@@ -9,33 +9,23 @@
 import { existsSync, readdirSync } from "node:fs";
 import { basename, resolve } from "node:path";
 
+import validate from "validate-npm-package-name";
+
 // ── Package name helpers ──────────────────────────────────────────
 
 /**
- * Lightweight npm package name validation (covers the common cases).
- * Returns `true` when `name` is a valid, un-scoped or scoped npm name.
+ * Validate an npm package name using the official `validate-npm-package-name` library.
+ * Returns `true` when `name` is valid for new packages (handles blacklisted names,
+ * core module conflicts, length limits, etc.).
  */
 export const isValidPackageName = (name: string): boolean => {
-    // Must be non-empty, ≤214 chars, lowercase, no leading dot/underscore
-    if (!name || name.length > 214) {
+    if (!name) {
         return false;
     }
 
-    // Scoped packages: @scope/name
-    if (name.startsWith("@")) {
-        const slashIndex = name.indexOf("/");
+    const result = validate(name);
 
-        if (slashIndex === -1 || slashIndex === name.length - 1) {
-            return false;
-        }
-
-        const scope = name.slice(1, slashIndex);
-        const pkg = name.slice(slashIndex + 1);
-
-        return /^[a-z\d][\w.-]*$/.test(scope) && /^[a-z\d][\w.-]*$/.test(pkg);
-    }
-
-    return /^[a-z\d][\w.-]*$/.test(name);
+    return result.validForNewPackages;
 };
 
 /**

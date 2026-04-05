@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { randomName } from "../../src/commands/create/random-name";
+import { randomName, words } from "../../src/commands/create/random-name";
 
 describe("randomName", () => {
-    it("should return a string in adjective-noun format", () => {
+    it("should return a string in word-word format", () => {
         expect.assertions(2);
 
         const name = randomName();
@@ -17,7 +17,17 @@ describe("randomName", () => {
 
         const names = new Set(Array.from({ length: 20 }, () => randomName()));
 
-        // With 33 adjectives × 40 nouns = 1320 combos, 20 calls should produce at least 2 unique
+        // With ~2700 words, collisions are extremely unlikely in 20 calls
         expect(names.size).toBeGreaterThan(1);
+    });
+
+    it("should use words from the safe word list", () => {
+        expect.assertions(2);
+
+        const name = randomName();
+        const [first, second] = name.split("-");
+
+        expect(words).toContain(first);
+        expect(words).toContain(second);
     });
 });

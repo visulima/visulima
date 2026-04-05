@@ -86,6 +86,7 @@
         "@visulima/package": "5.0.0-alpha.6",
         "@visulima/path": "3.0.0-alpha.7",
         "@visulima/task-runner": "1.0.0-alpha.3",
+        "@nkzw/safe-word-list": "^3.1.2",
         "@socketsecurity/registry": "^2.0.2",
         "@visulima/tui": "workspace:*",
         "jiti": "catalog:dev",
@@ -93,7 +94,8 @@
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
-        "semver": "^7.7.1"
+        "semver": "^7.7.1",
+        "validate-npm-package-name": "^7.0.2"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -109,6 +111,7 @@
         "@types/node": "catalog:types",
         "@types/react": "catalog:types",
         "@types/semver": "^7.7.0",
+        "@types/validate-npm-package-name": "^4.0.2",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
