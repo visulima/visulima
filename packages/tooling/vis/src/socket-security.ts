@@ -14,6 +14,8 @@ import { homedir } from "node:os";
 
 import { join } from "@visulima/path";
 
+import { matchesGlobList } from "./audit-config";
+
 // ── Constants ───────────────────────────────────────────────────────
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
@@ -134,10 +136,6 @@ const getCachedReport = (name: string, version: string): PackageReportData | und
     const key = buildCacheKey(name, version);
     const filePath = join(getCacheDirectory(), `${key}.json`);
 
-    if (!existsSync(filePath)) {
-        return undefined;
-    }
-
     try {
         const raw = readFileSync(filePath, "utf8");
         const entry = JSON.parse(raw) as CacheEntry;
@@ -150,7 +148,7 @@ const getCachedReport = (name: string, version: string): PackageReportData | und
 
         return entry.report;
     } catch {
-        rmSync(filePath, { force: true });
+        // File doesn't exist, is corrupt, or was removed — ignore
 
         return undefined;
     }
@@ -233,9 +231,7 @@ const fetchSocketReports = async (
     // Pre-compute auth header and ensure cache dir exists before batch loop
     const authHeader = `Basic ${Buffer.from(`${apiToken}:`).toString("base64")}`;
 
-    if (uncached.length > 0) {
-        ensureCacheDirectory();
-    }
+    ensureCacheDirectory();
 
     // Batch uncached packages into groups of MAX_BATCH_SIZE
     const batches: { name: string; version: string }[][] = [];
@@ -611,22 +607,26 @@ const findAcceptedRisk = (
         return undefined;
     }
 
-    // Check exact name@version first
+    // Check exact name@version, then unversioned name
     const versionedKey = `${packageName}@${version}`;
 
     if (acceptedRisks[versionedKey]) {
         return acceptedRisks[versionedKey];
     }
 
-    // Check unversioned name
     if (acceptedRisks[packageName]) {
         return acceptedRisks[packageName];
     }
 
-    // Check glob patterns (e.g., "@myorg/*")
-    for (const [pattern, risk] of Object.entries(acceptedRisks)) {
-        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
-            return risk;
+    // Check glob patterns (e.g., "@myorg/*") via shared matcher
+    const patterns = Object.keys(acceptedRisks);
+
+    if (matchesGlobList(packageName, patterns)) {
+        // Find the matching pattern to return its risk
+        for (const [pattern, risk] of Object.entries(acceptedRisks)) {
+            if (pattern.endsWith("*") && matchesGlobList(packageName, [pattern])) {
+                return risk;
+            }
         }
     }
 

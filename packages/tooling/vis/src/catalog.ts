@@ -1141,11 +1141,7 @@ const enrichWithSecurity = async (
 
     // Fetch OSV vulnerabilities and Socket.dev reports in parallel
     const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions
-        ? fetchSocketReports(packagesToScan, {
-              apiToken: socketOptions.apiToken ?? process.env.VIS_SOCKET_TOKEN,
-              cacheTtlMs: socketOptions.cacheTtlMs,
-              timeoutMs: socketOptions.timeoutMs,
-          })
+        ? fetchSocketReports(packagesToScan, socketOptions)
         : undefined;
 
     const [vulnMap, socketReports] = await Promise.all([

@@ -13,7 +13,7 @@ import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import type { VisConfig } from "../workspace";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
+import { alertSeverityColor, buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -126,11 +126,11 @@ const SEVERITY_ORDER: Record<string, number> = {
     UNKNOWN: 4,
 };
 
-const SOCKET_SEVERITY_ORDER: Record<string, number> = {
-    critical: 0,
-    high: 1,
-    medium: 2,
-    low: 3,
+const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
+    critical: red,
+    high: magenta,
+    low: cyan,
+    medium: yellow,
 };
 
 const severityPassesFilter = (severity: string, filter: SeverityFilter): boolean => {
@@ -362,9 +362,9 @@ const executeAudit = async (
             info(formatSocketLine(entry.socketReport, isExcluded));
 
             for (const alert of entry.socketReport.alerts) {
-                const colorFn = SOCKET_SEVERITY_ORDER[alert.severity] !== undefined && SOCKET_SEVERITY_ORDER[alert.severity] <= 1 ? red : yellow;
+                const alertColorFn = SOCKET_ALERT_COLORS[alert.severity] ?? dim;
 
-                info(`    ${colorFn(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
+                info(`    ${alertColorFn(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
             }
         }
     }

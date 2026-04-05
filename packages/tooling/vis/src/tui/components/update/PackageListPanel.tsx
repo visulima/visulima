@@ -112,10 +112,18 @@ const PackageListPanel = ({
 }: PackageListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
 
-    const majors = entries.filter((e) => e.updateType === "major").length;
-    const minors = entries.filter((e) => e.updateType === "minor").length;
-    const patches = entries.filter((e) => e.updateType === "patch").length;
-    const secCount = entries.filter((e) => (e.vulnerabilities && e.vulnerabilities.length > 0) || (e.socketReport && e.socketReport.alerts.length > 0)).length;
+    let majors = 0;
+    let minors = 0;
+    let patches = 0;
+    let secCount = 0;
+
+    for (const e of entries) {
+        if (e.updateType === "major") majors++;
+        else if (e.updateType === "minor") minors++;
+        else patches++;
+
+        if ((e.vulnerabilities && e.vulnerabilities.length > 0) || (e.socketReport && e.socketReport.alerts.length > 0)) secCount++;
+    }
 
     const summaryParts: string[] = [];
 
