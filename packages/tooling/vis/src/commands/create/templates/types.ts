@@ -38,23 +38,3 @@ export interface ExecutionContext {
     targetDir: string;
 }
 
-/** Options collected from CLI flags and interactive prompts. */
-export interface CreateOptions {
-    /** Generate editor configuration files. */
-    editor?: "vscode" | undefined;
-
-    /** Initialize a git repository after scaffolding. */
-    gitInit?: boolean;
-
-    /** Skip interactive prompts. */
-    noInteractive?: boolean;
-
-    /** Preferred package manager override. */
-    pm?: "bun" | "npm" | "pnpm" | "yarn" | undefined;
-
-    /** Template or generator name from the CLI argument. */
-    template?: string | undefined;
-}
-
-/** Post-creation tasks that can be performed after scaffolding. */
-export type PostCreateTask = "ai-instructions" | "deps-install" | "editor-config" | "format" | "git-init";

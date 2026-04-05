@@ -166,7 +166,7 @@ const listTemplates = (logger: Console): void => {
 
 // ── Print next steps ──────────────────────────────────────────────
 
-const printNextSteps = (targetDir: string, cwd: string, pmName: string): void => {
+const printNextSteps = (targetDir: string, cwd: string, pmName: string, depsInstalled: boolean): void => {
     const relative = resolve(cwd) === resolve(targetDir) ? "" : targetDir;
 
     process.stderr.write("\n");
@@ -178,7 +178,10 @@ const printNextSteps = (targetDir: string, cwd: string, pmName: string): void =>
         info(`  cd ${relative}`);
     }
 
-    info(`  ${pmName} install`);
+    if (!depsInstalled) {
+        info(`  ${pmName} install`);
+    }
+
     info(`  ${pmName} run dev`);
     process.stderr.write("\n");
 };
@@ -202,7 +205,7 @@ const create: Command = {
         ["vis create --list", "Show available templates"],
     ],
     execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
-        const args: string[] = (argument as string[] | undefined) ?? [];
+        const args: string[] = Array.isArray(argument) ? argument : argument ? [argument] : [];
 
         // --list: show available templates
         if (options.list) {
@@ -239,22 +242,22 @@ const create: Command = {
             throw new Error("No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.");
         } else {
             // ── Non-interactive mode ─────────────────────────────
-            templateInput = args[0];
+            templateInput = args[0] as string;
             projectName = args[1] as string | undefined;
 
             // Remaining args after the name are forwarded to the template
             extraArgs = args.slice(2);
 
             if (!projectName) {
-                projectName = toValidPackageName(templateInput as string);
+                projectName = toValidPackageName(templateInput);
             }
 
-            editor = options.editor as "vscode" | undefined;
+            editor = options.editor === "vscode" ? "vscode" : undefined;
             gitInit = Boolean(options["git-init"]);
 
             // Resolve target directory
-            const config = discoverTemplate(templateInput as string);
-            const parentDir = inMonorepo ? inferParentDir(config.type, cwd) : ".";
+            const templateType = discoverTemplate(templateInput).type;
+            const parentDir = inMonorepo ? inferParentDir(templateType) : ".";
             const resolved = resolveTargetDir(projectName, resolve(cwd, parentDir));
 
             targetDir = resolved.targetDir;
@@ -266,8 +269,19 @@ const create: Command = {
             throw new Error("No template specified.");
         }
 
-        if (!isValidPackageName(toValidPackageName(projectName as string))) {
+        const sanitizedName = toValidPackageName(projectName ?? "");
+
+        if (!isValidPackageName(sanitizedName)) {
             throw new Error(`Invalid project name: "${projectName}". Must be a valid npm package name.`);
+        }
+
+        projectName = sanitizedName;
+
+        // Guard against path traversal — target must be within cwd
+        const resolvedCwd = resolve(cwd);
+
+        if (!resolve(targetDir).startsWith(resolvedCwd)) {
+            throw new Error(`Target directory "${targetDir}" is outside the working directory. Use a name without "../" path segments.`);
         }
 
         // Check target directory
@@ -281,7 +295,7 @@ const create: Command = {
         const config = discoverTemplate(templateInput, extraArgs);
 
         info(`Template: ${bold(cyan(templateInput))}`);
-        info(`Project:  ${bold(projectName as string)}`);
+        info(`Project:  ${bold(projectName)}`);
         info(`Target:   ${dim(targetDir)}`);
         process.stderr.write("\n");
 
@@ -290,7 +304,7 @@ const create: Command = {
             inMonorepo,
             logger,
             pm,
-            projectName: projectName as string,
+            projectName,
             targetDir,
         });
 
@@ -317,11 +331,14 @@ const create: Command = {
         }
 
         // Install dependencies
+        let depsInstalled = false;
+
         if (existsSync(join(targetDir, "package.json"))) {
             installDependencies(targetDir, pm, logger);
+            depsInstalled = true;
         }
 
-        printNextSteps(targetDir, cwd, pm.name);
+        printNextSteps(targetDir, cwd, pm.name, depsInstalled);
     },
     name: "create",
     options: [

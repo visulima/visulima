@@ -4,6 +4,7 @@
  * Uses `node:readline` (same pattern as `vis init`) to keep dependencies minimal.
  */
 
+import { resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 import { bold, cyan, dim } from "../../output";
@@ -126,7 +127,6 @@ export const runInteractivePrompts = async (options: {
         const targetDir = dirAnswer || defaultDir;
 
         // 4. Overwrite check
-        const { resolve } = await import("node:path");
         const fullPath = resolve(options.cwd, targetDir);
 
         if (!isEmptyDir(fullPath)) {

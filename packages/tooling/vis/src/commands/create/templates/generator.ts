@@ -8,7 +8,7 @@
 import { chmodSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { success } from "../../../output";
+import { info, success } from "../../../output";
 import type { ExecutionContext } from "./types";
 
 // ── Template files ────────────────────────────────────────────────
@@ -80,6 +80,8 @@ export const generate = (): void => {
 
 export const executeGeneratorTemplate = (context: ExecutionContext, description: string = ""): number => {
     const { projectName, targetDir } = context;
+
+    info("Scaffolding code generator...");
 
     // Create directory structure
     mkdirSync(targetDir, { recursive: true });

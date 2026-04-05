@@ -79,7 +79,7 @@ export const parseGitHubUrl = (input: string): string | null => {
  */
 export const expandCreateShorthand = (name: string): string => {
     // Already has the `create-` prefix
-    if (name.startsWith("create-") || name.startsWith("@") && name.includes("/create-")) {
+    if (name.startsWith("create-") || (name.startsWith("@") && name.includes("/create-"))) {
         return name;
     }
 
@@ -93,6 +93,9 @@ export const expandCreateShorthand = (name: string): string => {
 
             return `${scope}/create-${pkg}`;
         }
+
+        // Bare @scope without slash — invalid, return as-is
+        return name;
     }
 
     // Bare name: vite → create-vite
@@ -106,6 +109,10 @@ export const expandCreateShorthand = (name: string): string => {
  * template it is and return a resolved {@link TemplateConfig}.
  */
 export const discoverTemplate = (input: string, extraArgs: string[] = []): TemplateConfig => {
+    if (!input) {
+        throw new Error("No template specified.");
+    }
+
     // 1. Built-in?
     const lower = input.toLowerCase();
     const builtinType = BUILTIN_MAP[lower];
@@ -131,7 +138,7 @@ export const discoverTemplate = (input: string, extraArgs: string[] = []): Templ
  * Suggest the most appropriate parent directory for a new project based on
  * the template type and current workspace layout.
  */
-export const inferParentDir = (type: TemplateType, _cwd: string): string => {
+export const inferParentDir = (type: TemplateType): string => {
     switch (type) {
         case "builtin:app": {
             return "apps";

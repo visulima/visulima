@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { discoverTemplate, expandCreateShorthand, parseGitHubUrl } from "../../src/commands/create/discovery";
+import { discoverTemplate, expandCreateShorthand, inferParentDir, parseGitHubUrl } from "../../src/commands/create/discovery";
 
 describe("expandCreateShorthand", () => {
     it("should expand bare names to create-* packages", () => {
@@ -22,6 +22,12 @@ describe("expandCreateShorthand", () => {
 
         expect(expandCreateShorthand("create-vite")).toBe("create-vite");
         expect(expandCreateShorthand("@scope/create-foo")).toBe("@scope/create-foo");
+    });
+
+    it("should return bare @scope without slash as-is", () => {
+        expect.assertions(1);
+
+        expect(expandCreateShorthand("@scope")).toBe("@scope");
     });
 });
 
@@ -145,11 +151,51 @@ describe("discoverTemplate", () => {
         expect(config.source).toBe("@scope/create-foo");
     });
 
+    it("should resolve built-in vis:generator template", () => {
+        expect.assertions(1);
+
+        expect(discoverTemplate("vis:generator").type).toBe("builtin:generator");
+    });
+
+    it("should throw on empty string input", () => {
+        expect.assertions(1);
+
+        expect(() => discoverTemplate("")).toThrow("No template specified.");
+    });
+
     it("should forward extra args to config", () => {
         expect.assertions(1);
 
         const config = discoverTemplate("vite", ["--template", "react-ts"]);
 
         expect(config.args).toEqual(["--template", "react-ts"]);
+    });
+});
+
+describe("inferParentDir", () => {
+    it("should return 'apps' for builtin:app", () => {
+        expect.assertions(1);
+
+        expect(inferParentDir("builtin:app")).toBe("apps");
+    });
+
+    it("should return 'packages' for builtin:library", () => {
+        expect.assertions(1);
+
+        expect(inferParentDir("builtin:library")).toBe("packages");
+    });
+
+    it("should return 'packages' for builtin:generator", () => {
+        expect.assertions(1);
+
+        expect(inferParentDir("builtin:generator")).toBe("packages");
+    });
+
+    it("should return '.' for remote types and monorepo", () => {
+        expect.assertions(3);
+
+        expect(inferParentDir("remote:npm")).toBe(".");
+        expect(inferParentDir("remote:github")).toBe(".");
+        expect(inferParentDir("builtin:monorepo")).toBe(".");
     });
 });

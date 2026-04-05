@@ -45,8 +45,8 @@ describe("executeMonorepoTemplate", () => {
         expect(existsSync(join(targetDir, "packages"))).toBe(true);
     });
 
-    it("should create root package.json with workspace name", () => {
-        expect.assertions(3);
+    it("should create root package.json with workspace name and detected PM", () => {
+        expect.assertions(4);
 
         const targetDir = join(tmpDir, "my-workspace");
 
@@ -57,6 +57,7 @@ describe("executeMonorepoTemplate", () => {
         expect(pkg.name).toBe("my-workspace");
         expect(pkg.private).toBe(true);
         expect(pkg.type).toBe("module");
+        expect(pkg.packageManager).toBe("pnpm@latest");
     });
 
     it("should create pnpm-workspace.yaml", () => {

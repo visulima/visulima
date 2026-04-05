@@ -16,7 +16,7 @@ import type { ExecutionContext } from "./types";
 
 // ── Template files ────────────────────────────────────────────────
 
-const rootPackageJson = (name: string): string =>
+const rootPackageJson = (name: string, pmName: string): string =>
     JSON.stringify(
         {
             name,
@@ -32,7 +32,7 @@ const rootPackageJson = (name: string): string =>
             devDependencies: {
                 "@visulima/vis": "latest",
             },
-            packageManager: "pnpm@latest",
+            packageManager: `${pmName}@latest`,
         },
         null,
         4,
@@ -92,7 +92,7 @@ indent_size = 2
 trim_trailing_whitespace = false
 `;
 
-const readmeMd = (name: string): string => `# ${name}
+const readmeMd = (name: string, pmName: string): string => `# ${name}
 
 A monorepo powered by [vis](https://visulima.com/packages/vis).
 
@@ -100,16 +100,16 @@ A monorepo powered by [vis](https://visulima.com/packages/vis).
 
 \`\`\`bash
 # Install dependencies
-pnpm install
+${pmName} install
 
 # Run all apps in development mode
-pnpm dev
+${pmName} dev
 
 # Build all packages
-pnpm build
+${pmName} build
 
 # Run tests
-pnpm test
+${pmName} test
 \`\`\`
 
 ## Structure
@@ -125,7 +125,7 @@ pnpm test
 // ── Executor ──────────────────────────────────────────────────────
 
 export const executeMonorepoTemplate = (context: ExecutionContext): number => {
-    const { targetDir } = context;
+    const { pm, projectName, targetDir } = context;
 
     info("Scaffolding monorepo workspace...");
 
@@ -135,7 +135,7 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     mkdirSync(join(targetDir, "packages"), { recursive: true });
 
     // Write root files
-    writeFileSync(join(targetDir, "package.json"), rootPackageJson(context.projectName));
+    writeFileSync(join(targetDir, "package.json"), rootPackageJson(projectName, pm.name));
     success("Created package.json");
 
     writeFileSync(join(targetDir, "pnpm-workspace.yaml"), pnpmWorkspaceYaml());
@@ -147,7 +147,7 @@ export const executeMonorepoTemplate = (context: ExecutionContext): number => {
     writeFileSync(join(targetDir, ".editorconfig"), editorconfig());
     success("Created .editorconfig");
 
-    writeFileSync(join(targetDir, "README.md"), readmeMd(context.projectName));
+    writeFileSync(join(targetDir, "README.md"), readmeMd(projectName, pm.name));
     success("Created README.md");
 
     // Add .gitkeep files so empty directories are tracked
