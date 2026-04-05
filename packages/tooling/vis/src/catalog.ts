@@ -3,6 +3,7 @@ import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync
 import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
+import type { SemVer } from "semver";
 import { coerce, diff, gt, parse, rcompare } from "semver";
 
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
@@ -86,8 +87,6 @@ interface ReadCatalogOptions {
 }
 
 // --- Version utilities (backed by `semver` package) ---
-
-import type { SemVer } from "semver";
 
 const parseVersion = (input: string): SemVer | null => {
     // coerce handles ranges like "^1.2.3" → "1.2.3", partial like "19" → "19.0.0"

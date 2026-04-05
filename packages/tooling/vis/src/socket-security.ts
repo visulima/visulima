@@ -14,8 +14,6 @@ import { homedir } from "node:os";
 
 import { join } from "@visulima/path";
 
-import { matchesGlobList } from "./audit-config";
-
 // ── Constants ───────────────────────────────────────────────────────
 
 const SOCKET_API_V0_URL = "https://api.socket.dev/v0/purl?alerts=true";
@@ -595,15 +593,10 @@ const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: R
         return acceptedRisks[packageName];
     }
 
-    // Check glob patterns (e.g., "@myorg/*") via shared matcher
-    const patterns = Object.keys(acceptedRisks);
-
-    if (matchesGlobList(packageName, patterns)) {
-        // Find the matching pattern to return its risk
-        for (const [pattern, risk] of Object.entries(acceptedRisks)) {
-            if (pattern.endsWith("*") && matchesGlobList(packageName, [pattern])) {
-                return risk;
-            }
+    // Check glob patterns (e.g., "@myorg/*")
+    for (const [pattern, risk] of Object.entries(acceptedRisks)) {
+        if (pattern.endsWith("*") && packageName.startsWith(pattern.slice(0, -1))) {
+            return risk;
         }
     }
 
@@ -631,7 +624,6 @@ const formatAcceptedRiskSnippet = (packageName: string, version: string, score: 
 export type { AcceptedRisk, PackageAlert, PackageAlertProps, PackageReportData, PackageScore, SocketSecurityOptions };
 
 export {
-    alertSeverityColor,
     buildSocketOptions,
     calculateOverallScore,
     clearSocketCache,

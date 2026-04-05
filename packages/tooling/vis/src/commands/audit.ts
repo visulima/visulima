@@ -1,13 +1,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
+import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
 
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
 import { fetchVulnerabilities } from "../catalog";
-import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
-
 import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
