@@ -16,7 +16,7 @@ import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 
 const check: Command = {
-    alias: "c",
+    alias: ["c", "outdated"],
     argument: {
         description: "Specific packages to check (checks all if omitted)",
         name: "packages",
@@ -28,7 +28,7 @@ const check: Command = {
         ["vis check react", "Check specific packages"],
         ["vis check --target minor", "Only show minor/patch updates"],
         ["vis check --exclude '@types/*'", "Exclude packages by pattern"],
-        ["vis check --security", "Include OSV.dev vulnerability scan"],
+        ["vis check --no-security", "Skip vulnerability scanning"],
         ["vis check --security-config", "Audit supply chain security settings"],
         ["vis check --security-config --sync", "Sync security config to pnpm-workspace.yaml"],
     ],
@@ -95,7 +95,7 @@ const check: Command = {
             ignore: toFilterArray(configDefaults.ignore),
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...argument],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-            security: (options.security as boolean) || (options.ai as boolean) || configDefaults.security || false,
+            security: options["no-security"] ? false : true,
             target: target as UpdateTarget,
         };
 
@@ -265,8 +265,8 @@ const check: Command = {
         },
         {
             defaultValue: false,
-            description: "Check for known security vulnerabilities (via OSV.dev)",
-            name: "security",
+            description: "Skip security vulnerability scanning",
+            name: "no-security",
             type: Boolean,
         },
         {
