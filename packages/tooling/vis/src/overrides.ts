@@ -120,7 +120,7 @@ const readOverrides = (workspaceRoot: string, pkgJson: Record<string, unknown>, 
  * placing it near dependency-related fields for readability.
  */
 const findInsertIndex = (keys: string[], field: string): number => {
-    const simpleField = field === "pnpm" ? "pnpm" : field;
+    const simpleField = field;
 
     for (const f of OVERRIDE_FIELDS) {
         const idx = keys.indexOf(f);
@@ -315,7 +315,7 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
  */
 const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string => {
     const lockfileNames: Record<string, string[]> = {
-        bun: ["bun.lock", "bun.lockb"],
+        bun: ["bun.lock"],
         npm: ["package-lock.json"],
         pnpm: ["pnpm-lock.yaml"],
         yarn: ["yarn.lock"],

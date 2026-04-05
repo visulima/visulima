@@ -175,12 +175,31 @@ const buildSocketEntries = (allDeps: Set<string>, lockText: string, pm: PmInfo, 
     return entries;
 };
 
+type CodemodFactory = (options: Record<string, never>) => { transform: (opts: { file: { filename: string; source: string } }) => Promise<string> | string };
+
+/** Cached codemods map — loaded once on first use. */
+let cachedCodemods: Record<string, CodemodFactory> | undefined;
+
+const loadCodemods = async (): Promise<Record<string, CodemodFactory>> => {
+    if (cachedCodemods) {
+        return cachedCodemods;
+    }
+
+    try {
+        const mod = (await import("module-replacements-codemods")) as { codemods: Record<string, CodemodFactory> };
+
+        cachedCodemods = mod.codemods;
+
+        return cachedCodemods;
+    } catch {
+        return {};
+    }
+};
+
 /** Marks e18e entries that have codemods available. */
 const markCodemodAvailability = async (entries: OptimizeEntry[]): Promise<void> => {
     try {
-        const { codemods } = (await import("module-replacements-codemods")) as {
-            codemods: Record<string, unknown>;
-        };
+        const codemods = await loadCodemods();
 
         for (const entry of entries) {
             if (entry.category !== "socket" && codemods[entry.packageName]) {
@@ -207,10 +226,7 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
     let filesChanged = 0;
 
     try {
-        const { codemods } = (await import("module-replacements-codemods")) as {
-            codemods: Record<string, (options: Record<string, never>) => { transform: (opts: { file: { filename: string; source: string } }) => Promise<string> | string }>;
-        };
-
+        const codemods = await loadCodemods();
         const factory = codemods[packageName];
 
         if (!factory) {
@@ -254,7 +270,7 @@ const collectSourceFiles = (dir: string): string[] => {
     const walk = (current: string): void => {
         try {
             for (const entry of readdirSync(current, { withFileTypes: true })) {
-                if (entry.name.startsWith(".") && entry.name !== ".") {
+                if (entry.name.startsWith(".")) {
                     continue;
                 }
 
@@ -362,7 +378,7 @@ const optimize: Command = {
         if (isTTY && !isDryRun && !options.json) {
             const store = new OptimizeStore(allEntries);
 
-            const instance = render(React.createElement(VisOptimizeApp, { isDryRun, store }), {
+            const instance = render(React.createElement(VisOptimizeApp, { isDryRun: false, store }), {
                 alternateScreen: true,
                 exitOnCtrlC: false,
                 interactive: true,
@@ -431,7 +447,22 @@ const optimize: Command = {
             if (selectedSocket.length > 0 && !options["no-install"]) {
                 info(`\nRunning ${pm.name} install to update lockfile...`);
 
-                const code = runInstall(pm, { dev: false, filter: [], force: false, frozenLockfile: false, ignoreScripts: false, lockfileOnly: false, noOptional: false, offline: false, prod: false, recursive: false, silent: false, workspaceRoot: false }, wsRoot, logger);
+                const installOpts = {
+                    dev: false,
+                    filter: [],
+                    force: false,
+                    frozenLockfile: false,
+                    ignoreScripts: false,
+                    lockfileOnly: false,
+                    noOptional: false,
+                    offline: false,
+                    prod: false,
+                    recursive: false,
+                    silent: false,
+                    workspaceRoot: false,
+                };
+
+                const code = runInstall(pm, installOpts, wsRoot, logger);
 
                 if (code !== 0) {
                     warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);

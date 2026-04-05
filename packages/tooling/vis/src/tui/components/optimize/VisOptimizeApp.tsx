@@ -5,8 +5,7 @@ import React, { useCallback, useMemo, useRef, useState, useSyncExternalStore } f
 import QuitDialog from "../QuitDialog";
 import OptimizeDetailPanel from "./OptimizeDetailPanel";
 import OptimizeListPanel from "./OptimizeListPanel";
-import type { FilterType } from "./OptimizeStore";
-import { OptimizeStore } from "./OptimizeStore";
+import type { FilterType, OptimizeStore } from "./OptimizeStore";
 
 const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_HEIGHT = 10;

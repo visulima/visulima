@@ -36,8 +36,8 @@ type SeverityFilter = "critical" | "high" | "low" | "medium";
 interface DuplicatePackage {
     /** The package name. */
     name: string;
-    /** Each installed version and which packages depend on it. */
-    versions: { parents: string[]; version: string }[];
+    /** Each installed version. */
+    versions: string[];
 }
 
 // ── Package discovery ───────────────────────────────────────────────
@@ -193,7 +193,7 @@ const findDuplicateDependencies = async (workspaceRoot: string, pmName: string):
 
         duplicates.push({
             name,
-            versions: [...versions].map((version) => ({ parents: [], version })),
+            versions: [...versions],
         });
     }
 
@@ -342,7 +342,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             duplicates: duplicates.map((d) => ({
                 name: d.name,
                 versionCount: d.versions.length,
-                versions: d.versions.map((v) => v.version),
+                versions: d.versions,
             })),
             packages: installed.length,
             results: filtered.map((e) => ({
@@ -462,7 +462,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         info(`\n\u2500\u2500 Duplicate Dependencies (${String(duplicates.length)}) \u2500\u2500`);
 
         for (const dup of duplicates) {
-            const versionList = dup.versions.map((v) => v.version).join(", ");
+            const versionList = dup.versions.join(", ");
 
             info(`  ${dup.name} — ${String(dup.versions.length)} versions: ${yellow(versionList)}`);
         }
