@@ -3,7 +3,6 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import type { Command } from "@visulima/cerebro";
 import { join } from "@visulima/path";
 
-import type { NativeAuditExclusions } from "../audit-config";
 import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../audit-config";
 import type { SecurityVulnerability } from "../catalog";
 import { fetchVulnerabilities } from "../catalog";
@@ -13,7 +12,7 @@ import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
 import type { VisConfig } from "../workspace";
-import { alertSeverityColor, buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -163,9 +162,7 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
     const name = getFullPackageName(report);
     const pct = `${String(Math.round(report.score.overall * 100))}%`;
     const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
-    const alerts = report.alerts.length > 0
-        ? `, ${String(report.alerts.length)} alert${report.alerts.length === 1 ? "" : "s"}`
-        : "";
+    const alerts = report.alerts.length > 0 ? `, ${String(report.alerts.length)} alert${report.alerts.length === 1 ? "" : "s"}` : "";
 
     return `  ${pct} ${name}@${report.version} (${scoreLabel(report.score.overall)}${alerts})${badge}`;
 };
@@ -173,12 +170,7 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 // ── Main audit logic ────────────────────────────────────────────────
 
 /* eslint-disable sonarjs/cognitive-complexity -- audit command with multiple output paths */
-const executeAudit = async (
-    workspaceRoot: string,
-    options: Record<string, unknown>,
-    visConfig: VisConfig | undefined,
-    logger: Console,
-): Promise<void> => {
+const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const isJson = Boolean(options.json);
     const showFixes = Boolean(options.fix);
@@ -191,7 +183,9 @@ const executeAudit = async (
     const nativeExclusions = readNativeAuditExclusions(workspaceRoot, pm.name);
 
     if (nativeExclusions.ignoredAdvisories.length > 0 || nativeExclusions.excludedPackages.length > 0) {
-        info(`Loaded ${String(nativeExclusions.ignoredAdvisories.length)} ignored advisor${nativeExclusions.ignoredAdvisories.length === 1 ? "y" : "ies"} and ${String(nativeExclusions.excludedPackages.length)} excluded package${nativeExclusions.excludedPackages.length === 1 ? "" : "s"} from ${pm.name} config.`);
+        info(
+            `Loaded ${String(nativeExclusions.ignoredAdvisories.length)} ignored advisor${nativeExclusions.ignoredAdvisories.length === 1 ? "y" : "ies"} and ${String(nativeExclusions.excludedPackages.length)} excluded package${nativeExclusions.excludedPackages.length === 1 ? "" : "s"} from ${pm.name} config.`,
+        );
     }
 
     // 1. Discover installed packages
@@ -343,7 +337,9 @@ const executeAudit = async (
     }
 
     // Print Socket.dev supply chain issues
-    const socketIssues = filtered.filter((e) => e.socketReport && (e.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD || e.socketReport.alerts.length > 0));
+    const socketIssues = filtered.filter(
+        (e) => e.socketReport && (e.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD || e.socketReport.alerts.length > 0),
+    );
 
     if (socketIssues.length > 0) {
         info(`\n\u2500\u2500 Socket.dev Supply Chain (${String(socketIssues.length)}) \u2500\u2500`);
@@ -371,8 +367,7 @@ const executeAudit = async (
 
     // Summary
     const isEntryExcluded = (e: AuditEntry): boolean =>
-        Boolean(e.acceptedRisk)
-        || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
+        Boolean(e.acceptedRisk) || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
     const unacknowledgedCount = filtered.filter((e) => !isEntryExcluded(e)).length;
 
     info("");
@@ -380,7 +375,9 @@ const executeAudit = async (
     info(`  ${String(installed.length)} packages scanned`);
 
     if (nativeExclusions.ignoredAdvisories.length > 0) {
-        info(`  ${String(nativeExclusions.ignoredAdvisories.length)} ${pm.name} audit exclusion${nativeExclusions.ignoredAdvisories.length === 1 ? "" : "s"} applied`);
+        info(
+            `  ${String(nativeExclusions.ignoredAdvisories.length)} ${pm.name} audit exclusion${nativeExclusions.ignoredAdvisories.length === 1 ? "" : "s"} applied`,
+        );
     }
 
     if (totalVulns > 0) {

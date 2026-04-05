@@ -108,15 +108,15 @@ interface CacheEntry {
 // ── Type guards ─────────────────────────────────────────────────────
 
 const isPackageReportData = (o: unknown): o is PackageReportData =>
-    typeof o === "object"
-    && o != null
-    && "id" in o
-    && "type" in o
-    && "name" in o
-    && "version" in o
-    && "alerts" in o
-    && "score" in o
-    && (o as Record<string, unknown>).type === "npm";
+    typeof o === "object" &&
+    o != null &&
+    "id" in o &&
+    "type" in o &&
+    "name" in o &&
+    "version" in o &&
+    "alerts" in o &&
+    "score" in o &&
+    (o as Record<string, unknown>).type === "npm";
 
 // ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
@@ -168,17 +168,9 @@ const setCachedReport = (name: string, version: string, report: PackageReportDat
 // ── Score calculation ───────────────────────────────────────────────
 
 const calculateOverallScore = (score: Omit<PackageScore, "overall">): number => {
-    const components = [
-        score.license,
-        score.maintenance,
-        score.quality,
-        score.supplyChain,
-        score.vulnerability,
-    ];
+    const components = [score.license, score.maintenance, score.quality, score.supplyChain, score.vulnerability];
 
-    return Number(
-        (components.reduce((sum, s) => sum + s, 0) / components.length).toFixed(2),
-    );
+    return Number((components.reduce((sum, s) => sum + s, 0) / components.length).toFixed(2));
 };
 
 // ── API client ──────────────────────────────────────────────────────
@@ -195,11 +187,7 @@ const fetchSocketReports = async (
     packages: { name: string; version: string }[],
     options: SocketSecurityOptions = {},
 ): Promise<Map<string, PackageReportData>> => {
-    const {
-        apiToken,
-        cacheTtlMs = DEFAULT_TTL_MS,
-        timeoutMs = 15_000,
-    } = options;
+    const { apiToken, cacheTtlMs = DEFAULT_TTL_MS, timeoutMs = 15_000 } = options;
 
     const results = new Map<string, PackageReportData>();
 
@@ -255,7 +243,7 @@ const fetchSocketReports = async (
             const response = await fetch(SOCKET_API_V0_URL, {
                 body: JSON.stringify({ components }),
                 headers: {
-                    "Authorization": authHeader,
+                    Authorization: authHeader,
                     "Content-Type": "application/json",
                     "User-Agent": "@visulima/vis",
                 },
@@ -283,12 +271,7 @@ const fetchSocketReports = async (
 /**
  * Parses the NDJSON response from Socket.dev API and populates the results map.
  */
-const parseNdjsonResponse = (
-    text: string,
-    batch: { name: string; version: string }[],
-    results: Map<string, PackageReportData>,
-    cacheTtlMs: number,
-): void => {
+const parseNdjsonResponse = (text: string, batch: { name: string; version: string }[], results: Map<string, PackageReportData>, cacheTtlMs: number): void => {
     // Build lookup map for matching responses back to requests
     const lookupMap = new Map<string, { name: string; version: string }>();
 
@@ -415,9 +398,7 @@ const formatReportSummary = (report: PackageReportData): string => {
     const name = getFullPackageName(report);
     const score = `score: ${String(Math.round(report.score.overall * 100))}%`;
     const alertCount = report.alerts.length;
-    const alertSummary = alertCount > 0
-        ? `${String(alertCount)} alert${alertCount === 1 ? "" : "s"}`
-        : "no alerts";
+    const alertSummary = alertCount > 0 ? `${String(alertCount)} alert${alertCount === 1 ? "" : "s"}` : "no alerts";
 
     return `${name}@${report.version} (${score}, ${alertSummary})`;
 };
@@ -598,11 +579,7 @@ interface AcceptedRisk {
  * Matches by exact name@version, unversioned name, or trailing glob patterns.
  * Returns the matching AcceptedRisk if found, undefined otherwise.
  */
-const findAcceptedRisk = (
-    packageName: string,
-    version: string,
-    acceptedRisks: Record<string, AcceptedRisk> | undefined,
-): AcceptedRisk | undefined => {
+const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: Record<string, AcceptedRisk> | undefined): AcceptedRisk | undefined => {
     if (!acceptedRisks) {
         return undefined;
     }
@@ -637,12 +614,7 @@ const findAcceptedRisk = (
  * Formats a config snippet for the user to paste into vis.config.ts
  * to persist an accepted risk decision.
  */
-const formatAcceptedRiskSnippet = (
-    packageName: string,
-    version: string,
-    score: number,
-    reason: string,
-): string => {
+const formatAcceptedRiskSnippet = (packageName: string, version: string, score: number, reason: string): string => {
     const key = `"${packageName}@${version}"`;
     const lines = [
         `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
@@ -656,14 +628,7 @@ const formatAcceptedRiskSnippet = (
     return lines.join("\n");
 };
 
-export type {
-    AcceptedRisk,
-    PackageAlert,
-    PackageAlertProps,
-    PackageReportData,
-    PackageScore,
-    SocketSecurityOptions,
-};
+export type { AcceptedRisk, PackageAlert, PackageAlertProps, PackageReportData, PackageScore, SocketSecurityOptions };
 
 export {
     alertSeverityColor,

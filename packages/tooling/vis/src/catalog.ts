@@ -717,7 +717,9 @@ const fetchPackageVersions = async (
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -838,7 +840,9 @@ const fetchVulnerabilities = async (
     });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- fetch is available in Node 20.19+ via undici
@@ -1065,8 +1069,7 @@ const buildOutdatedEntries = (
 };
 
 /** Formats a SemVer as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: SemVer | null): string =>
-    parsed ? parsed.version : "";
+const formatVersionString = (parsed: SemVer | null): string => (parsed ? parsed.version : "");
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1080,23 +1083,15 @@ const enrichWithSecurity = async (
             entries.map((entry) => {
                 const parsed = parseVersion(entry.range);
 
-                return [
-                    entry.packageName,
-                    { name: entry.packageName, version: formatVersionString(parsed) },
-                ];
+                return [entry.packageName, { name: entry.packageName, version: formatVersionString(parsed) }];
             }),
         ).values(),
     ].filter((p) => p.version);
 
     // Fetch OSV vulnerabilities and Socket.dev reports in parallel
-    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions
-        ? fetchSocketReports(packagesToScan, socketOptions)
-        : undefined;
+    const socketPromise: Promise<Map<string, PackageReportData>> | undefined = socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : undefined;
 
-    const [vulnMap, socketReports] = await Promise.all([
-        fetchVulnerabilities(packagesToScan),
-        socketPromise,
-    ]);
+    const [vulnMap, socketReports] = await Promise.all([fetchVulnerabilities(packagesToScan), socketPromise]);
 
     for (const entry of outdated) {
         const vulns = vulnMap.get(entry.packageName);
@@ -1225,12 +1220,7 @@ const checkOutdated = async (
     socketOptions?: SocketSecurityOptions,
     acceptedRisks?: Record<string, AcceptedRisk>,
 ): Promise<CheckOutdatedResult> => {
-    const hash = computeCacheHash(
-        catalogs,
-        options,
-        Boolean(socketOptions),
-        acceptedRisks ? Object.keys(acceptedRisks) : undefined,
-    );
+    const hash = computeCacheHash(catalogs, options, Boolean(socketOptions), acceptedRisks ? Object.keys(acceptedRisks) : undefined);
 
     if (workspaceRoot) {
         const cached = readOutdatedCache(workspaceRoot, hash);
@@ -1441,9 +1431,7 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
             const prefix = hasSec || hasSocketAlerts ? "[SEC] " : "";
             const displayName = `${prefix}${entry.packageName}`;
 
-            const scoreStr = entry.socketReport
-                ? `${String(Math.round(entry.socketReport.score.overall * 100))}%`
-                : "";
+            const scoreStr = entry.socketReport ? `${String(Math.round(entry.socketReport.score.overall * 100))}%` : "";
 
             const row: Record<string, string> = {
                 current: entry.currentRange,
@@ -1540,25 +1528,19 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     const summary = `Found ${String(outdated.length)} outdated (${parts.join(", ")})`;
     const columns = process.stdout.columns || 80;
 
-    const children = [
-        React.createElement(Text, { bold: true }, "\u2500 Summary"),
-        React.createElement(Text, null, "  " + summary),
-    ];
+    const children = [React.createElement(Text, { bold: true }, "\u2500 Summary"), React.createElement(Text, null, "  " + summary)];
 
     if (lowScoreCount > 0) {
         children.push(
-            React.createElement(Text, { color: "yellow" }, `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(DEFAULT_LOW_SCORE_THRESHOLD * 100)}%)`),
+            React.createElement(
+                Text,
+                { color: "yellow" },
+                `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(DEFAULT_LOW_SCORE_THRESHOLD * 100)}%)`,
+            ),
         );
     }
 
-    return renderToString(
-        React.createElement(
-            Box,
-            { flexDirection: "column", paddingX: 1 },
-            ...children,
-        ),
-        { columns },
-    );
+    return renderToString(React.createElement(Box, { flexDirection: "column", paddingX: 1 }, ...children), { columns });
 };
 
 // --- Apply updates ---
@@ -1753,7 +1735,9 @@ const promptPackageSelection = async (outdated: OutdatedEntry[]): Promise<Outdat
 
     const ask = (question: string): Promise<string> =>
         new Promise((resolve) => {
-            rl.question(question, (answer) => { resolve(answer.trim()); });
+            rl.question(question, (answer) => {
+                resolve(answer.trim());
+            });
         });
 
     process.stdout.write("\nOutdated catalog dependencies:\n");
@@ -1816,7 +1800,9 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
     const results: ChangelogInfo[] = [];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => { controller.abort(); }, timeoutMs);
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, timeoutMs);
 
     try {
         const fetches = packages.map(async (entry): Promise<ChangelogInfo> => {
@@ -1856,7 +1842,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...await Promise.all(fetches));
+        results.push(...(await Promise.all(fetches)));
     } finally {
         clearTimeout(timeout);
     }

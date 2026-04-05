@@ -7,7 +7,17 @@ import { coerce } from "semver";
 
 import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, getFullPackageName, scoreColor, scoreLabel } from "../socket-security";
+import {
+    buildSocketOptions,
+    DEFAULT_LOW_SCORE_THRESHOLD,
+    fetchSocketReports,
+    findAcceptedRisk,
+    formatAcceptedRiskSnippet,
+    formatReportSummary,
+    getFullPackageName,
+    scoreColor,
+    scoreLabel,
+} from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import { toStringArray } from "../utils";
 
@@ -54,10 +64,7 @@ const parseAddArgument = (arg: string): { name: string; versionSpec: string | un
  * Resolves the latest version for each package from the npm registry.
  * Used to get a concrete version for Socket.dev lookup when only a name is given.
  */
-const resolveLatestVersions = async (
-    packageNames: string[],
-    timeoutMs: number = 10_000,
-): Promise<Map<string, string>> => {
+const resolveLatestVersions = async (packageNames: string[], timeoutMs: number = 10_000): Promise<Map<string, string>> => {
     const results = new Map<string, string>();
     const controller = new AbortController();
     const timeout = setTimeout(() => {
@@ -261,7 +268,9 @@ const runSocketPreCheck = async (
 
     // In non-interactive mode (CI, piped), fail instead of prompting
     if (!process.stdin.isTTY) {
-        warn(`Aborting: ${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} below minimum score. Use --no-socket-check to skip.`);
+        warn(
+            `Aborting: ${String(lowScorePackages.length)} package${lowScorePackages.length === 1 ? "" : "s"} below minimum score. Use --no-socket-check to skip.`,
+        );
 
         return false;
     }
@@ -300,12 +309,7 @@ const add: Command = {
             if (socketOpts) {
                 const minimumScore = socketOpts.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
-                const shouldContinue = await runSocketPreCheck(
-                    packages,
-                    socketOpts,
-                    minimumScore,
-                    visConfig?.security?.socket?.acceptedRisks,
-                );
+                const shouldContinue = await runSocketPreCheck(packages, socketOpts, minimumScore, visConfig?.security?.socket?.acceptedRisks);
 
                 if (!shouldContinue) {
                     process.exitCode = 1;

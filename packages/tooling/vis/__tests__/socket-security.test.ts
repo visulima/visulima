@@ -167,7 +167,13 @@ describe("formatReportDetailed", () => {
 
         const report = makeReport({
             alerts: [
-                { category: "security", key: "a1", props: { cveId: "CVE-2024-1234", lastPublish: "2024-01-01" }, severity: "critical", type: "prototype-pollution" },
+                {
+                    category: "security",
+                    key: "a1",
+                    props: { cveId: "CVE-2024-1234", lastPublish: "2024-01-01" },
+                    severity: "critical",
+                    type: "prototype-pollution",
+                },
             ],
         });
         const detailed = formatReportDetailed(report);
@@ -232,7 +238,7 @@ describe("buildSocketOptions", () => {
 
 describe("findAcceptedRisk", () => {
     const risks: Record<string, AcceptedRisk> = {
-        "lodash": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.3, reason: "reviewed" },
+        lodash: { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.3, reason: "reviewed" },
         "react@18.0.0": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.35, reason: "pinned" },
         "@myorg/*": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.2, reason: "internal" },
     };

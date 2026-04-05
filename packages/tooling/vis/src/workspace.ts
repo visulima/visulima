@@ -93,14 +93,17 @@ interface VisConfig {
              * }
              * ```
              */
-            acceptedRisks?: Record<string, {
-                /** ISO 8601 timestamp when the risk was accepted. */
-                acceptedAt: string;
-                /** The overall Socket.dev score at the time of acceptance. */
-                acceptedScore: number;
-                /** User-provided reason for accepting the risk. */
-                reason: string;
-            }>;
+            acceptedRisks?: Record<
+                string,
+                {
+                    /** ISO 8601 timestamp when the risk was accepted. */
+                    acceptedAt: string;
+                    /** The overall Socket.dev score at the time of acceptance. */
+                    acceptedScore: number;
+                    /** User-provided reason for accepting the risk. */
+                    reason: string;
+                }
+            >;
             /**
              * Custom Socket.dev API token. Falls back to the public API token.
              * Set via VIS_SOCKET_TOKEN environment variable or here.
