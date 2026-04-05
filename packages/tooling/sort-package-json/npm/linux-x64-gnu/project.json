@@ -1,7 +1,0 @@
-{
-    "name": "sort-package-json-binding-linux-x64-gnu",
-    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
-    "projectType": "library",
-    "tags": ["sort-package-json", "type:native-binding"],
-    "implicitDependencies": ["sort-package-json"]
-}
