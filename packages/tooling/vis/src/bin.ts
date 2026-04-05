@@ -28,7 +28,7 @@ import installCommand from "./commands/install";
 import linkCommand from "./commands/link";
 import migrateCommand from "./commands/migrate";
 import optimizeCommand from "./commands/optimize";
-import outdatedCommand from "./commands/outdated";
+// outdated is now an alias of check
 import pmCommand from "./commands/pm";
 import removeCommand from "./commands/remove";
 import runCommand from "./commands/run";
@@ -112,7 +112,6 @@ cli.addCommand(addCommand);
 cli.addCommand(removeCommand);
 cli.addCommand(dedupeCommand);
 cli.addCommand(whyCommand);
-cli.addCommand(outdatedCommand);
 cli.addCommand(linkCommand);
 cli.addCommand(unlinkCommand);
 cli.addCommand(dlxCommand);

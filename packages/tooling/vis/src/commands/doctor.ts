@@ -287,7 +287,7 @@ const doctor: Command = {
     examples: [
         ["vis doctor", "Full project health check"],
         ["vis doctor --fix", "Check and auto-apply safe fixes"],
-        ["vis doctor --json", "Machine-readable output for CI"],
+        ["vis doctor --format json", "Machine-readable output for CI"],
         ["vis doctor --exit-code", "Exit with code 1 if security issues found"],
         ["vis doctor --exit-code --strict", "Fail on any issue (outdated, duplicates, security)"],
     ],
@@ -312,7 +312,7 @@ const doctor: Command = {
         const results = await runAllScans(wsRoot, visConfig);
 
         // JSON output
-        if (options.json) {
+        if ((options.format as string) === "json" || options.json) {
             process.stdout.write(
                 JSON.stringify(
                     {
@@ -410,7 +410,7 @@ const doctor: Command = {
     },
     name: "doctor",
     options: [
-        { defaultValue: false, description: "Output results as JSON", name: "json", type: Boolean },
+        { description: "Output format: table or json (default: table)", name: "format", type: String },
         { defaultValue: false, description: "Exit with code 1 if issues found", name: "exit-code", type: Boolean },
         { defaultValue: false, description: "Auto-apply safe fixes (security overrides + codemods)", name: "fix", type: Boolean },
         { defaultValue: false, description: "With --exit-code: also fail on outdated and duplicate deps", name: "strict", type: Boolean },

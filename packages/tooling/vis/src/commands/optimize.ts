@@ -375,7 +375,9 @@ const optimize: Command = {
         // Interactive TUI mode
         const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
 
-        if (isTTY && !isDryRun && !options.json) {
+        const isJson = (options.format as string) === "json" || Boolean(options.json);
+
+        if (isTTY && !isDryRun && !isJson) {
             const store = new OptimizeStore(allEntries);
 
             const instance = render(React.createElement(VisOptimizeApp, { isDryRun: false, store }), {
@@ -476,7 +478,7 @@ const optimize: Command = {
         }
 
         // Static output (non-TTY, CI, dry-run, JSON)
-        if (options.json) {
+        if (isJson) {
             process.stdout.write(
                 JSON.stringify({
                     e18e: e18eEntries.map((e) => ({ category: e.category, hasCodemod: e.hasCodemod, packageName: e.packageName, replacement: e.replacement })),
@@ -539,7 +541,7 @@ const optimize: Command = {
         { defaultValue: false, description: "Pin Socket.dev overrides to exact versions", name: "pin", type: Boolean },
         { defaultValue: false, description: "Only optimize production dependencies", name: "prod", type: Boolean },
         { defaultValue: false, description: "Skip running install after applying overrides", name: "no-install", type: Boolean },
-        { defaultValue: false, description: "Output results as JSON", name: "json", type: Boolean },
+        { description: "Output format: table or json (default: table)", name: "format", type: String },
     ],
 };
 

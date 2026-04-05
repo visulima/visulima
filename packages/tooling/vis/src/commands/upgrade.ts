@@ -8,11 +8,11 @@ const upgrade: Command = {
         name: "version",
         type: String,
     },
-    description: "Update vis to the latest version",
+    description: "Update vis itself to the latest version",
     examples: [
-        ["vis upgrade", "Update to latest"],
-        ["vis upgrade 2.0.0", "Install specific version"],
-        ["vis upgrade --check", "Check for updates without installing"],
+        ["vis self-update", "Update to latest"],
+        ["vis self-update 2.0.0", "Install specific version"],
+        ["vis self-update --check", "Check for updates without installing"],
     ],
     execute: async ({ argument, logger, options }) => {
         const targetVersion = argument?.[0];
@@ -70,7 +70,8 @@ const upgrade: Command = {
 
         logger.info(`\n\u2713 Updated @visulima/vis from ${currentVersion} \u2192 ${latestVersion}`);
     },
-    name: "upgrade",
+    alias: "upgrade",
+    name: "self-update",
     options: [
         { defaultValue: false, description: "Check for updates without installing", name: "check", type: Boolean },
         { defaultValue: false, description: "Reinstall even if already current", name: "force", type: Boolean },

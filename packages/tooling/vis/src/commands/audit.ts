@@ -257,7 +257,7 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 /* eslint-disable sonarjs/cognitive-complexity -- audit command with multiple output paths */
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
-    const isJson = Boolean(options.json);
+    const isJson = (options.format as string) === "json" || Boolean(options.json);
     const showFixes = Boolean(options.fix);
     const showAccepted = Boolean(options["show-accepted"]);
     const socketConfig = visConfig?.security?.socket;
@@ -574,7 +574,7 @@ const audit: Command = {
     examples: [
         ["vis audit", "Full audit of all installed packages"],
         ["vis audit --severity high", "Show only high/critical issues"],
-        ["vis audit --json", "Output as JSON for CI integration"],
+        ["vis audit --format json", "Output as JSON for CI integration"],
         ["vis audit --fix", "Show fix suggestions for vulnerabilities"],
         ["vis audit --exit-code", "Exit with code 1 if issues found (for CI)"],
         ["vis audit --show-accepted", "Include acknowledged risks in output"],
@@ -595,10 +595,9 @@ const audit: Command = {
             type: String,
         },
         {
-            defaultValue: false,
-            description: "Output results as JSON",
-            name: "json",
-            type: Boolean,
+            description: "Output format: table or json (default: table)",
+            name: "format",
+            type: String,
         },
         {
             defaultValue: false,
@@ -608,7 +607,7 @@ const audit: Command = {
         },
         {
             defaultValue: false,
-            description: "Exit with code 1 if unacknowledged issues found (for CI)",
+            description: "Exit with code 1 if any issues found (for CI)",
             name: "exit-code",
             type: Boolean,
         },
