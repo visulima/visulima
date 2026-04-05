@@ -1,13 +1,14 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
-import { join } from "@visulima/path";
+import { join, resolve } from "@visulima/path";
 import { coerce } from "semver";
 
 import { info, note, success, warn } from "../output";
 import type { OverrideEntry } from "../overrides";
 import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../overrides";
 import { detectPm, runInstall } from "../pm-runner";
+import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspace";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -20,6 +21,21 @@ interface ManifestEntryData {
 }
 
 type ManifestEntry = [string, ManifestEntryData];
+
+interface OptimizeOptions {
+    dryRun: boolean;
+    pin: boolean;
+    prod: boolean;
+}
+
+interface OptimizeResult {
+    added: string[];
+    entries: OverrideEntry[];
+    skipped: number;
+    updated: string[];
+    /** Workspace directories that contributed overrides. */
+    workspaces: string[];
+}
 
 // ── Core logic ──────────────────────────────────────────────────────
 
@@ -35,8 +51,10 @@ const loadManifest = async (): Promise<ManifestEntry[]> => {
     }
 };
 
-const collectDirectDeps = (workspaceRoot: string): Set<string> => {
-    const pkgJsonPath = join(workspaceRoot, "package.json");
+/**
+ * Collects all dependency names from a package.json file.
+ */
+const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<string> => {
     const deps = new Set<string>();
 
     try {
@@ -47,7 +65,11 @@ const collectDirectDeps = (workspaceRoot: string): Set<string> => {
             peerDependencies?: Record<string, string>;
         };
 
-        for (const depMap of [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies, pkg.optionalDependencies]) {
+        const maps = prodOnly
+            ? [pkg.dependencies, pkg.optionalDependencies]
+            : [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies, pkg.optionalDependencies];
+
+        for (const depMap of maps) {
             if (depMap) {
                 for (const name of Object.keys(depMap)) {
                     deps.add(name);
@@ -61,11 +83,46 @@ const collectDirectDeps = (workspaceRoot: string): Set<string> => {
     return deps;
 };
 
-interface OptimizeOptions {
-    dryRun: boolean;
-    pin: boolean;
-    prod: boolean;
-}
+/**
+ * Discovers workspace package directories from the workspace root.
+ */
+const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
+    // Try pnpm-workspace.yaml first
+    const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
+
+    if (pnpmPatterns) {
+        return resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
+    }
+
+    // Try package.json workspaces field
+    const rootPkgPath = join(workspaceRoot, "package.json");
+
+    if (!existsSync(rootPkgPath)) {
+        return [];
+    }
+
+    try {
+        const pkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+            workspaces?: string[] | { packages?: string[] };
+        };
+
+        let patterns: string[] | undefined;
+
+        if (Array.isArray(pkg.workspaces)) {
+            patterns = pkg.workspaces;
+        } else if (pkg.workspaces?.packages) {
+            patterns = pkg.workspaces.packages;
+        }
+
+        if (patterns) {
+            return resolveWorkspacePatterns(workspaceRoot, patterns);
+        }
+    } catch {
+        // Non-critical
+    }
+
+    return [];
+};
 
 /* eslint-disable sonarjs/cognitive-complexity -- optimize command with multiple flows */
 const executeOptimize = (
@@ -73,10 +130,34 @@ const executeOptimize = (
     manifest: ManifestEntry[],
     pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string },
     options: OptimizeOptions,
-    logger: Console,
-): { added: string[]; entries: OverrideEntry[]; skipped: number; updated: string[] } => {
-    const directDeps = collectDirectDeps(workspaceRoot);
+): OptimizeResult => {
+    // Collect deps from root
+    const rootPkgJsonPath = join(workspaceRoot, "package.json");
+    const rootDeps = collectDepsFromPkgJson(rootPkgJsonPath, options.prod);
+
+    // Collect deps from all workspace packages
+    const workspaceDirs = discoverWorkspacePackages(workspaceRoot);
+    const allDeps = new Set(rootDeps);
+    const workspacesWithDeps: string[] = [];
+
+    for (const wsDir of workspaceDirs) {
+        const wsFullPath = resolve(workspaceRoot, wsDir);
+        const wsPkgJsonPath = join(wsFullPath, "package.json");
+        const wsDeps = collectDepsFromPkgJson(wsPkgJsonPath, options.prod);
+
+        if (wsDeps.size > 0) {
+            for (const dep of wsDeps) {
+                allDeps.add(dep);
+            }
+
+            workspacesWithDeps.push(wsDir);
+        }
+    }
+
+    // Read lockfile for transitive dep scanning
     const lockText = readLockfileText(workspaceRoot, pm.name);
+
+    // Build override entries from manifest
     const entries: OverrideEntry[] = [];
     let skipped = 0;
 
@@ -88,8 +169,7 @@ const executeOptimize = (
         const origPkg = data.package;
         const registryName = data.name;
 
-        // Skip if the original package isn't in deps or lockfile
-        const inDeps = directDeps.has(origPkg);
+        const inDeps = allDeps.has(origPkg);
         const inLockfile = lockText ? lockfileContainsPackage(lockText, origPkg, pm.name) : false;
 
         if (!inDeps && !inLockfile) {
@@ -97,13 +177,6 @@ const executeOptimize = (
             continue;
         }
 
-        // Skip dev-only deps in prod mode
-        if (options.prod && !inDeps) {
-            skipped++;
-            continue;
-        }
-
-        // Build the override spec
         const major = coerce(data.version)?.major;
 
         if (major === undefined) {
@@ -116,13 +189,13 @@ const executeOptimize = (
     }
 
     if (options.dryRun || entries.length === 0) {
-        return { added: [], entries, skipped, updated: [] };
+        return { added: [], entries, skipped, updated: [], workspaces: workspacesWithDeps };
     }
 
-    const pkgJsonPath = join(workspaceRoot, "package.json");
-    const result = applyOverrides(pkgJsonPath, entries, pm.name);
+    // Apply overrides at the root level (overrides/resolutions are root-level config)
+    const result = applyOverrides(rootPkgJsonPath, entries, pm.name);
 
-    return { ...result, entries, skipped };
+    return { ...result, entries, skipped, workspaces: workspacesWithDeps };
 };
 /* eslint-enable sonarjs/cognitive-complexity */
 
@@ -143,7 +216,6 @@ const optimize: Command = {
 
         const pm = detectPm(wsRoot);
 
-        // Load @socketregistry manifest
         info("Loading @socketregistry manifest...");
 
         const manifest = await loadManifest();
@@ -157,14 +229,19 @@ const optimize: Command = {
         }
 
         info(`Loaded ${String(manifest.length)} registry entries.`);
-        info(`Detected ${pm.name} v${pm.version}.\n`);
+        info(`Detected ${pm.name} v${pm.version}.`);
 
         const isDryRun = Boolean(options["dry-run"]);
         const isProd = Boolean(options.prod);
         const isPin = Boolean(options.pin);
 
-        // Run the optimization
-        const result = executeOptimize(wsRoot, manifest, pm, { dryRun: isDryRun, pin: isPin, prod: isProd }, logger);
+        const result = executeOptimize(wsRoot, manifest, pm, { dryRun: isDryRun, pin: isPin, prod: isProd });
+
+        if (result.workspaces.length > 0) {
+            info(`Scanned ${String(result.workspaces.length)} workspace package${result.workspaces.length === 1 ? "" : "s"}.\n`);
+        } else {
+            info("");
+        }
 
         if (result.entries.length === 0) {
             info("No packages found that can be optimized with @socketregistry overrides.");
@@ -181,6 +258,11 @@ const optimize: Command = {
             }
 
             info(`\n  ${String(result.skipped)} packages skipped (not in dependencies).`);
+
+            if (result.workspaces.length > 0) {
+                info(`  Scanned across ${String(result.workspaces.length)} workspace${result.workspaces.length === 1 ? "" : "s"}.`);
+            }
+
             note("\nRun without --dry-run to apply changes.");
 
             return;
@@ -196,6 +278,7 @@ const optimize: Command = {
                         packageManager: pm.name,
                         skipped: result.skipped,
                         updated: result.updated,
+                        workspaces: result.workspaces.length,
                     },
                     undefined,
                     2,
@@ -214,6 +297,10 @@ const optimize: Command = {
             success(`Updated ${String(result.updated.length)} override${result.updated.length === 1 ? "" : "s"}.`);
         }
 
+        if (result.workspaces.length > 0) {
+            info(`  Dependencies scanned across ${String(result.workspaces.length)} workspace${result.workspaces.length === 1 ? "" : "s"}.`);
+        }
+
         if (result.added.length === 0 && result.updated.length === 0) {
             info("All applicable overrides are already in place.");
 
@@ -224,7 +311,25 @@ const optimize: Command = {
         if (!options["no-install"]) {
             info(`\nRunning ${pm.name} install to update lockfile...`);
 
-            const code = runInstall(pm, { dev: false, filter: [], force: false, frozenLockfile: false, ignoreScripts: false, lockfileOnly: false, noOptional: false, offline: false, prod: false, recursive: false, silent: false, workspaceRoot: false }, wsRoot, logger);
+            const code = runInstall(
+                pm,
+                {
+                    dev: false,
+                    filter: [],
+                    force: false,
+                    frozenLockfile: false,
+                    ignoreScripts: false,
+                    lockfileOnly: false,
+                    noOptional: false,
+                    offline: false,
+                    prod: false,
+                    recursive: false,
+                    silent: false,
+                    workspaceRoot: false,
+                },
+                wsRoot,
+                logger,
+            );
 
             if (code !== 0) {
                 warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
