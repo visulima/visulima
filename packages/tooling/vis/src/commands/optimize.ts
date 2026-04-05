@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { join, resolve } from "@visulima/path";
+import { getManifestData } from "@socketsecurity/registry";
 import { coerce } from "semver";
 
 import { info, note, success, warn } from "../output";
@@ -10,13 +11,21 @@ import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../ov
 import { detectPm, runInstall } from "../pm-runner";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspace";
 
-// ── Types ───────────────────────────────────────────────────────────
-
+/**
+ * A single entry from the `@socketsecurity/registry` manifest.
+ *
+ * @see https://www.npmjs.com/package/@socketsecurity/registry
+ */
 interface ManifestEntryData {
+    /** Category tags (e.g., `"cleanup"`, `"speedup"`). */
     categories?: string[];
+    /** Whether this registry package is deprecated. */
     deprecated?: boolean;
+    /** The `@socketregistry/<name>` package name. */
     name: string;
+    /** The original npm package being replaced. */
     package: string;
+    /** The safe version of the replacement package. */
     version: string;
 }
 
@@ -28,31 +37,25 @@ interface OptimizeOptions {
     prod: boolean;
 }
 
+/** Aggregate result of the optimize operation across all workspaces. */
 interface OptimizeResult {
+    /** Package names that were newly added as overrides. */
     added: string[];
+    /** All computed override entries (used for dry-run display). */
     entries: OverrideEntry[];
+    /** Number of manifest entries skipped (not found in deps or lockfile). */
     skipped: number;
+    /** Package names whose override specs were updated. */
     updated: string[];
-    /** Workspace directories that contributed overrides. */
+    /** Workspace directories that contributed dependencies. */
     workspaces: string[];
 }
 
-// ── Core logic ──────────────────────────────────────────────────────
-
-const loadManifest = async (): Promise<ManifestEntry[]> => {
-    try {
-        const { getManifestData } = (await import("@socketsecurity/registry")) as {
-            getManifestData: (ecosystem: string) => ManifestEntry[] | undefined;
-        };
-
-        return getManifestData("npm") ?? [];
-    } catch {
-        return [];
-    }
-};
-
 /**
- * Collects all dependency names from a package.json file.
+ * Collects all dependency names from a `package.json` file.
+ *
+ * @param pkgJsonPath - Absolute path to the `package.json`.
+ * @param prodOnly - When `true`, skips `devDependencies` and `peerDependencies`.
  */
 const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<string> => {
     const deps = new Set<string>();
@@ -77,24 +80,26 @@ const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<str
             }
         }
     } catch {
-        // Non-critical
+        // package.json may not exist for all workspace dirs
     }
 
     return deps;
 };
 
 /**
- * Discovers workspace package directories from the workspace root.
+ * Discovers workspace package directories by reading `pnpm-workspace.yaml`
+ * or the `workspaces` field in the root `package.json`.
+ *
+ * @param workspaceRoot - Absolute path to the workspace root.
+ * @returns Relative directory paths to each workspace package.
  */
 const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
-    // Try pnpm-workspace.yaml first
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
 
     if (pnpmPatterns) {
         return resolveWorkspacePatterns(workspaceRoot, pnpmPatterns);
     }
 
-    // Try package.json workspaces field
     const rootPkgPath = join(workspaceRoot, "package.json");
 
     if (!existsSync(rootPkgPath)) {
@@ -106,44 +111,32 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
             workspaces?: string[] | { packages?: string[] };
         };
 
-        let patterns: string[] | undefined;
+        const patterns = Array.isArray(pkg.workspaces) ? pkg.workspaces : pkg.workspaces?.packages;
 
-        if (Array.isArray(pkg.workspaces)) {
-            patterns = pkg.workspaces;
-        } else if (pkg.workspaces?.packages) {
-            patterns = pkg.workspaces.packages;
-        }
-
-        if (patterns) {
-            return resolveWorkspacePatterns(workspaceRoot, patterns);
-        }
+        return patterns ? resolveWorkspacePatterns(workspaceRoot, patterns) : [];
     } catch {
-        // Non-critical
+        return [];
     }
-
-    return [];
 };
 
-/* eslint-disable sonarjs/cognitive-complexity -- optimize command with multiple flows */
-const executeOptimize = (
-    workspaceRoot: string,
-    manifest: ManifestEntry[],
-    pm: PmInfo,
-    options: OptimizeOptions,
-): OptimizeResult => {
-    // Collect deps from root
+/**
+ * Core optimization logic.
+ *
+ * Scans root and workspace deps + lockfile against the `@socketregistry`
+ * manifest, builds override entries for matched packages, and applies
+ * them to the correct config file for the detected package manager.
+ */
+/* eslint-disable sonarjs/cognitive-complexity */
+const executeOptimize = (workspaceRoot: string, manifest: ManifestEntry[], pm: PmInfo, options: OptimizeOptions): OptimizeResult => {
     const rootPkgJsonPath = join(workspaceRoot, "package.json");
     const rootDeps = collectDepsFromPkgJson(rootPkgJsonPath, options.prod);
 
-    // Collect deps from all workspace packages
     const workspaceDirs = discoverWorkspacePackages(workspaceRoot);
     const allDeps = new Set(rootDeps);
     const workspacesWithDeps: string[] = [];
 
     for (const wsDir of workspaceDirs) {
-        const wsFullPath = resolve(workspaceRoot, wsDir);
-        const wsPkgJsonPath = join(wsFullPath, "package.json");
-        const wsDeps = collectDepsFromPkgJson(wsPkgJsonPath, options.prod);
+        const wsDeps = collectDepsFromPkgJson(join(resolve(workspaceRoot, wsDir), "package.json"), options.prod);
 
         if (wsDeps.size > 0) {
             for (const dep of wsDeps) {
@@ -154,10 +147,7 @@ const executeOptimize = (
         }
     }
 
-    // Read lockfile for transitive dep scanning
     const lockText = readLockfileText(workspaceRoot, pm.name);
-
-    // Build override entries from manifest
     const entries: OverrideEntry[] = [];
     let skipped = 0;
 
@@ -166,11 +156,8 @@ const executeOptimize = (
             continue;
         }
 
-        const origPkg = data.package;
-        const registryName = data.name;
-
-        const inDeps = allDeps.has(origPkg);
-        const inLockfile = lockText ? lockfileContainsPackage(lockText, origPkg, pm.name) : false;
+        const inDeps = allDeps.has(data.package);
+        const inLockfile = lockText ? lockfileContainsPackage(lockText, data.package, pm.name) : false;
 
         if (!inDeps && !inLockfile) {
             skipped++;
@@ -183,24 +170,37 @@ const executeOptimize = (
             continue;
         }
 
-        const spec = options.pin ? `npm:${registryName}@${data.version}` : `npm:${registryName}@^${String(major)}`;
-
-        entries.push({ original: origPkg, spec });
+        entries.push({
+            original: data.package,
+            spec: options.pin ? `npm:${data.name}@${data.version}` : `npm:${data.name}@^${String(major)}`,
+        });
     }
 
     if (options.dryRun || entries.length === 0) {
         return { added: [], entries, skipped, updated: [], workspaces: workspacesWithDeps };
     }
 
-    // Apply overrides at the root level (overrides/resolutions are root-level config)
     const result = applyOverrides(workspaceRoot, rootPkgJsonPath, entries, pm);
 
     return { ...result, entries, skipped, workspaces: workspacesWithDeps };
 };
 /* eslint-enable sonarjs/cognitive-complexity */
 
-// ── Command ─────────────────────────────────────────────────────────
-
+/**
+ * `vis optimize` — replace dependencies with security-hardened `@socketregistry` alternatives.
+ *
+ * Loads the curated {@link https://www.npmjs.com/package/@socketsecurity/registry | @socketsecurity/registry}
+ * manifest, identifies packages in the dependency tree that have hardened replacements,
+ * and writes the appropriate override/resolution entries for the detected package manager.
+ *
+ * @example
+ * ```sh
+ * vis optimize              # apply overrides and run install
+ * vis optimize --dry-run    # preview without changes
+ * vis optimize --pin        # exact versions instead of ^ranges
+ * vis optimize --prod       # production deps only
+ * ```
+ */
 const optimize: Command = {
     description: "Optimize dependencies with @socketregistry security-hardened overrides",
     examples: [
@@ -218,11 +218,10 @@ const optimize: Command = {
 
         info("Loading @socketregistry manifest...");
 
-        const manifest = await loadManifest();
+        const manifest = (getManifestData("npm") ?? []) as ManifestEntry[];
 
         if (manifest.length === 0) {
-            warn("Could not load @socketregistry manifest. Install @socketsecurity/registry:");
-            note("  pnpm add -D @socketsecurity/registry");
+            warn("No registry entries found in @socketsecurity/registry.");
             process.exitCode = 1;
 
             return;
@@ -231,11 +230,11 @@ const optimize: Command = {
         info(`Loaded ${String(manifest.length)} registry entries.`);
         info(`Detected ${pm.name} v${pm.version}.`);
 
-        const isDryRun = Boolean(options["dry-run"]);
-        const isProd = Boolean(options.prod);
-        const isPin = Boolean(options.pin);
-
-        const result = executeOptimize(wsRoot, manifest, pm, { dryRun: isDryRun, pin: isPin, prod: isProd });
+        const result = executeOptimize(wsRoot, manifest, pm, {
+            dryRun: Boolean(options["dry-run"]),
+            pin: Boolean(options.pin),
+            prod: Boolean(options.prod),
+        });
 
         if (result.workspaces.length > 0) {
             info(`Scanned ${String(result.workspaces.length)} workspace package${result.workspaces.length === 1 ? "" : "s"}.\n`);
@@ -249,8 +248,7 @@ const optimize: Command = {
             return;
         }
 
-        // Dry-run output
-        if (isDryRun) {
+        if (Boolean(options["dry-run"])) {
             info(`Would apply ${String(result.entries.length)} overrides:\n`);
 
             for (const entry of result.entries) {
@@ -268,7 +266,6 @@ const optimize: Command = {
             return;
         }
 
-        // JSON output
         if (options.json) {
             process.stdout.write(
                 JSON.stringify(
@@ -288,7 +285,6 @@ const optimize: Command = {
             return;
         }
 
-        // Summary output
         if (result.added.length > 0) {
             success(`Added ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);
         }
@@ -307,7 +303,6 @@ const optimize: Command = {
             return;
         }
 
-        // Run install to regenerate lockfile
         if (!options["no-install"]) {
             info(`\nRunning ${pm.name} install to update lockfile...`);
 
@@ -341,37 +336,11 @@ const optimize: Command = {
     },
     name: "optimize",
     options: [
-        {
-            alias: "d",
-            defaultValue: false,
-            description: "Preview changes without modifying files",
-            name: "dry-run",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Pin overrides to exact versions instead of ranges",
-            name: "pin",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Only optimize production dependencies",
-            name: "prod",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Skip running install after applying overrides",
-            name: "no-install",
-            type: Boolean,
-        },
-        {
-            defaultValue: false,
-            description: "Output results as JSON",
-            name: "json",
-            type: Boolean,
-        },
+        { alias: "d", defaultValue: false, description: "Preview changes without modifying files", name: "dry-run", type: Boolean },
+        { defaultValue: false, description: "Pin overrides to exact versions instead of ranges", name: "pin", type: Boolean },
+        { defaultValue: false, description: "Only optimize production dependencies", name: "prod", type: Boolean },
+        { defaultValue: false, description: "Skip running install after applying overrides", name: "no-install", type: Boolean },
+        { defaultValue: false, description: "Output results as JSON", name: "json", type: Boolean },
     ],
 };
 

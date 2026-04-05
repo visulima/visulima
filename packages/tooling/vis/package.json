@@ -88,6 +88,7 @@
         "@visulima/task-runner": "1.0.0-alpha.3",
         "@visulima/tui": "workspace:*",
         "jiti": "catalog:dev",
+        "@socketsecurity/registry": "^2.0.2",
         "react": "catalog:frontend",
         "semver": "^7.7.1"
     },
@@ -128,13 +129,9 @@
         "vitest": "catalog:test"
     },
     "peerDependencies": {
-        "@socketsecurity/registry": ">=2.0.0",
         "lint-staged": ">=15.0.0"
     },
     "peerDependenciesMeta": {
-        "@socketsecurity/registry": {
-            "optional": true
-        },
         "lint-staged": {
             "optional": true
         }

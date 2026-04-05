@@ -1,14 +1,19 @@
 /**
- * Package manager override/resolution management.
+ * Package manager override and resolution management.
  *
- * Reads and writes the correct override field for each package manager:
- * - pnpm v10+: `overrides` in pnpm-workspace.yaml
- * - pnpm v9-: `pnpm.overrides` in package.json
- * - npm: `overrides` in package.json
- * - yarn/bun: `resolutions` in package.json
+ * Handles the correct override location for each package manager:
+ * - **pnpm v10+**: top-level `overrides` in `pnpm-workspace.yaml`
+ * - **pnpm v9-**: `pnpm.overrides` in `package.json`
+ * - **npm**: `overrides` in `package.json` (uses `$<name>` references
+ *   for direct dependencies to avoid EOVERRIDE errors)
+ * - **yarn / bun**: `resolutions` in `package.json`
  *
- * Handles npm's `$<name>` reference syntax for direct dependencies
- * to avoid EOVERRIDE errors.
+ * All overrides are root-level — no PM supports per-workspace overrides.
+ *
+ * @see https://pnpm.io/settings — pnpm v10+ workspace settings
+ * @see https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides
+ * @see https://yarnpkg.com/configuration/manifest#resolutions
+ * @see https://bun.sh/docs/pm/overrides
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -17,55 +22,53 @@ import { isAccessibleSync, readYamlSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 import { coerce } from "semver";
 
-// ── Types ───────────────────────────────────────────────────────────
-
+/** Supported package manager names. */
 type PackageManagerName = "bun" | "npm" | "pnpm" | "yarn";
 
+/** Package manager identity with version for PM-specific behavior. */
 interface PmInfo {
     name: PackageManagerName;
     version: string;
 }
 
+/** A single override entry mapping an original package to its replacement spec. */
 interface OverrideEntry {
-    /** The original package name being overridden. */
+    /** The original package name being overridden (e.g., `"is-regex"`). */
     original: string;
-    /** The override spec (e.g., "npm:@socketregistry/is-regex@^1"). */
+    /** The npm alias spec (e.g., `"npm:@socketregistry/is-regex@^1"`). */
     spec: string;
 }
 
+/** Result of reading existing overrides from the project. */
 interface OverridesResult {
-    /** Current overrides as a flat map. */
+    /** Current overrides as a flat `{ packageName: spec }` map. */
     overrides: Record<string, string>;
-    /** Where the overrides are stored. */
+    /** The file where overrides are stored. */
     source: "package.json" | "pnpm-workspace.yaml";
 }
 
+/** Result of applying override entries. */
 interface ApplyOverridesResult {
+    /** Package names that were newly added. */
     added: string[];
+    /** Package names whose specs were changed. */
     updated: string[];
 }
-
-// ── Dep field ordering for smart placement ──────────────────────────
 
 const DEP_FIELDS = ["dependencies", "devDependencies", "peerDependencies", "peerDependenciesMeta", "optionalDependencies", "bundleDependencies"];
 const OVERRIDE_FIELDS = ["overrides", "pnpm", "resolutions"];
 const AFTER_FIELDS = ["engines", "files"];
 
-// ── pnpm version helpers ────────────────────────────────────────────
-
-/**
- * Returns true if pnpm version is 10+ (overrides go in pnpm-workspace.yaml).
- */
+/** Returns `true` when the pnpm major version is >= 10 (overrides moved to `pnpm-workspace.yaml`). */
 const isPnpmV10Plus = (version: string): boolean => {
     const major = coerce(version)?.major;
 
     return major !== undefined && major >= 10;
 };
 
-// ── Readers ─────────────────────────────────────────────────────────
-
 /**
- * Reads existing overrides from pnpm-workspace.yaml (pnpm v10+).
+ * Reads existing overrides from `pnpm-workspace.yaml`.
+ * Used for pnpm v10+ where the `overrides` key is a top-level YAML field.
  */
 const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
@@ -77,25 +80,20 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
     try {
         const data = readYamlSync<{ overrides?: Record<string, string> }>(filePath);
 
-        return {
-            overrides: data?.overrides ?? {},
-            source: "pnpm-workspace.yaml",
-        };
+        return { overrides: data?.overrides ?? {}, source: "pnpm-workspace.yaml" };
     } catch {
         return { overrides: {}, source: "pnpm-workspace.yaml" };
     }
 };
 
 /**
- * Reads existing overrides from package.json.
+ * Reads existing overrides from `package.json` for npm, pnpm v9-, yarn, or bun.
  */
 const readPkgJsonOverrides = (pkgJson: Record<string, unknown>, pm: PackageManagerName): OverridesResult => {
     let overrides: Record<string, string> = {};
 
     if (pm === "pnpm") {
-        const pnpmObj = pkgJson.pnpm as Record<string, unknown> | undefined;
-
-        overrides = (pnpmObj?.overrides as Record<string, string>) ?? {};
+        overrides = ((pkgJson.pnpm as Record<string, unknown> | undefined)?.overrides as Record<string, string>) ?? {};
     } else if (pm === "yarn" || pm === "bun") {
         overrides = (pkgJson.resolutions as Record<string, string>) ?? {};
     } else {
@@ -106,7 +104,8 @@ const readPkgJsonOverrides = (pkgJson: Record<string, unknown>, pm: PackageManag
 };
 
 /**
- * Reads existing overrides for the detected package manager.
+ * Reads existing overrides for the detected package manager, choosing
+ * `pnpm-workspace.yaml` for pnpm v10+ and `package.json` for everything else.
  */
 const readOverrides = (workspaceRoot: string, pkgJson: Record<string, unknown>, pm: PmInfo): OverridesResult => {
     if (pm.name === "pnpm" && isPnpmV10Plus(pm.version)) {
@@ -116,8 +115,10 @@ const readOverrides = (workspaceRoot: string, pkgJson: Record<string, unknown>, 
     return readPkgJsonOverrides(pkgJson, pm.name);
 };
 
-// ── Writers ─────────────────────────────────────────────────────────
-
+/**
+ * Finds the best insert position for a new field in `package.json`,
+ * placing it near dependency-related fields for readability.
+ */
 const findInsertIndex = (keys: string[], field: string): number => {
     const simpleField = field === "pnpm" ? "pnpm" : field;
 
@@ -154,6 +155,7 @@ const findInsertIndex = (keys: string[], field: string): number => {
     return keys.length;
 };
 
+/** Detects the indent style used in a JSON string. */
 const detectIndent = (content: string): string => {
     const match = /\n(\s+)/.exec(content);
 
@@ -161,8 +163,10 @@ const detectIndent = (content: string): string => {
 };
 
 /**
- * Writes overrides to pnpm-workspace.yaml (pnpm v10+).
- * Uses regex-based insertion/replacement to preserve comments and formatting.
+ * Writes overrides to `pnpm-workspace.yaml` (pnpm v10+).
+ *
+ * Uses regex-based insertion/replacement instead of full YAML
+ * serialization to preserve comments and custom formatting.
  */
 const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<string, string>): void => {
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
@@ -173,18 +177,14 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
 
     let content = readFileSync(filePath, "utf8");
 
-    // Build YAML block for overrides
     const overrideLines = Object.entries(sorted)
         .map(([key, value]) => `  '${key}': '${value}'`)
         .join("\n");
-
     const overridesBlock = `overrides:\n${overrideLines}\n`;
 
     if (/^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)) {
-        // Replace existing overrides block (everything until next top-level key or EOF)
         content = content.replace(/^overrides:\s*\n(?:(?:[ \t]+.*)?\n)*/m, overridesBlock);
     } else {
-        // Append after catalogs/packages sections or at end
         content = `${content.trimEnd()}\n\n${overridesBlock}`;
     }
 
@@ -192,7 +192,10 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
 };
 
 /**
- * Writes overrides to package.json with smart field placement.
+ * Writes overrides to `package.json` with smart field placement.
+ *
+ * When adding a new field, it is positioned near existing dependency fields
+ * rather than appended to the end of the file.
  */
 const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unknown>, sorted: Record<string, string>, pm: PackageManagerName): void => {
     const raw = readFileSync(pkgJsonPath, "utf8");
@@ -232,12 +235,16 @@ const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unkn
 };
 
 /**
- * Applies override entries and writes to the correct file for the PM.
+ * Applies override entries to the correct config file for the package manager.
  *
- * - pnpm v10+: writes to pnpm-workspace.yaml
- * - pnpm v9-: writes to package.json pnpm.overrides
- * - npm: writes to package.json overrides (with $-ref for direct deps)
- * - yarn/bun: writes to package.json resolutions
+ * For npm, direct dependencies use `$<name>` reference syntax to avoid
+ * npm's EOVERRIDE error when an override conflicts with a direct dep range.
+ *
+ * @param workspaceRoot - Absolute path to the workspace root directory.
+ * @param pkgJsonPath - Absolute path to the root `package.json`.
+ * @param entries - Override entries to apply.
+ * @param pm - Package manager name and version.
+ * @returns Lists of added and updated package names.
  */
 const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo): ApplyOverridesResult => {
     const raw = readFileSync(pkgJsonPath, "utf8");
@@ -247,7 +254,6 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
     const added: string[] = [];
     const updated: string[] = [];
 
-    // Collect direct dependency names for npm $-reference
     const directDeps = new Set<string>();
 
     if (pm.name === "npm") {
@@ -298,8 +304,15 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
     return { added, updated };
 };
 
-// ── Lockfile scanning ───────────────────────────────────────────────
-
+/**
+ * Reads the lockfile text for a workspace root.
+ *
+ * Returns the raw text content for regex-based package name scanning.
+ * Falls back to an empty string if the lockfile is missing or unreadable.
+ *
+ * @param workspaceRoot - Absolute path to the workspace root.
+ * @param pm - Package manager name (determines lockfile name).
+ */
 const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string => {
     const lockfileNames: Record<string, string[]> = {
         bun: ["bun.lock", "bun.lockb"],
@@ -311,18 +324,26 @@ const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string
     for (const name of lockfileNames[pm] ?? []) {
         const filePath = join(workspaceRoot, name);
 
-        if (existsSync(filePath)) {
-            try {
-                return readFileSync(filePath, "utf8");
-            } catch {
-                return "";
-            }
+        try {
+            return readFileSync(filePath, "utf8");
+        } catch {
+            continue;
         }
     }
 
     return "";
 };
 
+/**
+ * Checks if a package name appears in the lockfile text using PM-specific string patterns.
+ *
+ * This avoids parsing the entire lockfile — a single `string.includes()` is
+ * sufficient for presence checks.
+ *
+ * @param lockText - Raw lockfile content.
+ * @param packageName - Package name to search for.
+ * @param pm - Package manager name (determines the search pattern).
+ */
 const lockfileContainsPackage = (lockText: string, packageName: string, pm: PackageManagerName): boolean => {
     if (!lockText) {
         return false;
