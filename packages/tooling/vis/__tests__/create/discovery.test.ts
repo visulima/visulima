@@ -225,7 +225,7 @@ describe("discoverTemplate", () => {
         expect(config.args).toEqual(["--template", "react-ts"]);
     });
 
-    it("should preserve full URL as source for git-download to parse", () => {
+    it("should preserve full URL as source for giget to parse", () => {
         expect.assertions(1);
 
         const config = discoverTemplate("https://github.com/user/repo/tree/main/packages/cli");
