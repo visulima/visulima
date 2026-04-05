@@ -1,12 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { resolve } from "@visulima/path";
 
-import type { NativeBindings } from "../native-binding";
 import { loadNativeBindings } from "../native-binding";
 import { failure, info, success, warn } from "../output";
 import { errorMessage } from "../utils";
@@ -67,25 +65,16 @@ const findPackageJsonFiles = (root: string): string[] => {
 };
 
 /**
- * Sorts a package.json string using the native Rust binding when available,
- * falling back to the JavaScript sort-package-json package otherwise.
+ * Sorts a package.json string using the native Rust binding
+ * (oxc-project/sort-package-json crate).
  */
-const sortContents = (contents: string, sortScripts: boolean, native: NativeBindings | undefined): string => {
-    if (native) {
-        return native.sortPackageJsonStringWithOptions(contents, {
-            pretty: true,
-            sort_scripts: sortScripts,
-        });
-    }
+const sortContents = (contents: string, sortScripts: boolean): string => {
+    const native = loadNativeBindings();
 
-    // JS fallback using the sort-package-json npm package
-    const esmRequire = createRequire(import.meta.url);
-    const sortPackageJsonJs = esmRequire("sort-package-json") as (obj: Record<string, unknown>) => Record<string, unknown>;
-
-    const parsed = JSON.parse(contents) as Record<string, unknown>;
-    const sorted = sortPackageJsonJs(parsed);
-
-    return JSON.stringify(sorted, null, 2) + "\n";
+    return native!.sortPackageJsonStringWithOptions(contents, {
+        pretty: true,
+        sort_scripts: sortScripts,
+    });
 };
 
 const sortPackageJson: Command = {
@@ -106,7 +95,6 @@ const sortPackageJson: Command = {
             return;
         }
 
-        const native = loadNativeBindings();
         let unsortedCount = 0;
         let sortedCount = 0;
         let errorCount = 0;
@@ -118,7 +106,7 @@ const sortPackageJson: Command = {
                 let sorted: string;
 
                 try {
-                    sorted = sortContents(contents, sortScripts, native);
+                    sorted = sortContents(contents, sortScripts);
                 } catch (error: unknown) {
                     failure(`${filePath}: ${errorMessage(error)}`);
                     errorCount++;
