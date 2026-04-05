@@ -89,21 +89,12 @@ const sortPackageJson: Command = {
         ["vis sort-package-json", "Sort all package.json files in the workspace"],
         ["vis sort-package-json --check", "Check if files are already sorted (exit 1 if not)"],
         ["vis sort-package-json --sort-scripts", "Also sort the scripts field alphabetically"],
-        ["vis sort-package-json src/package.json", "Sort specific file(s)"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const check = (options.check as boolean) || false;
         const sortScripts = (options["sort-scripts"] as boolean) || false;
-
-        let files: string[];
-
-        if (argument && argument.length > 0) {
-            // Sort specific files passed as arguments
-            files = argument.map((f: string) => (f.startsWith("/") ? f : join(cwd, f)));
-        } else {
-            files = findPackageJsonFiles(cwd);
-        }
+        const files = findPackageJsonFiles(cwd);
 
         if (files.length === 0) {
             info("No package.json files found.");
