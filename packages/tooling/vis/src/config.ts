@@ -1,6 +1,9 @@
-import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync as fsReadFileSync } from "node:fs";
 
-import { join } from "@visulima/path";
+import { findCacheDirSync } from "@visulima/find-cache-dir";
+import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
+import { dirname, join } from "@visulima/path";
 import { createJiti } from "jiti";
 
 import type { VisConfig } from "./workspace";
@@ -74,10 +77,55 @@ const findVisConfigFile = (directory: string): string | undefined => {
     return undefined;
 };
 
+// ── Config cache ────────────────────────────────────────────────────
+
+interface ConfigCache {
+    config: VisConfig;
+    hash: string;
+}
+
+const hashFileContents = (filePath: string): string =>
+    createHash("sha256").update(fsReadFileSync(filePath)).digest("hex");
+
+const getConfigCachePath = (workspaceRoot: string): string | undefined => {
+    const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
+
+    return cacheDir ? join(cacheDir, "vis-config-cache.json") : undefined;
+};
+
+const readConfigCache = (cachePath: string, hash: string): VisConfig | undefined => {
+    if (!isAccessibleSync(cachePath)) {
+        return undefined;
+    }
+
+    try {
+        const cache = readJsonSync(cachePath) as ConfigCache;
+
+        if (cache.hash === hash) {
+            return cache.config;
+        }
+    } catch {
+        // Corrupt cache — ignore
+    }
+
+    return undefined;
+};
+
+const writeConfigCache = (cachePath: string, hash: string, config: VisConfig): void => {
+    try {
+        ensureDirSync(dirname(cachePath));
+        writeJsonSync(cachePath, { config, hash } satisfies ConfigCache);
+    } catch {
+        // Non-critical
+    }
+};
+
+// ── Config loader ───────────────────────────────────────────────────
+
 /**
  * Load the vis configuration from a `vis.config.ts` (or `.js`, `.mjs`, `.cjs`, `.mts`, `.cts`) file.
  *
- * Uses jiti for runtime TypeScript support — no build step needed for config files.
+ * Uses a file-hash based cache to avoid repeated jiti compilations.
  * Falls back to secure defaults if no config file is found.
  * @param workspaceRoot The workspace root directory to search for the config file.
  * @returns The loaded and resolved configuration with secure defaults applied.
@@ -89,15 +137,36 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
         return applyDefaults({});
     }
 
+    // Check cache: hash the config file and compare
+    const hash = hashFileContents(configPath);
+    const cachePath = getConfigCachePath(workspaceRoot);
+
+    if (cachePath) {
+        const cached = readConfigCache(cachePath, hash);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
+    // Cache miss — compile via jiti
     const jiti = createJiti(workspaceRoot);
 
     const loaded = await jiti.import(configPath, { default: true, try: true }) ?? {};
 
+    let config: VisConfig;
+
     if (typeof loaded === "function") {
-        return applyDefaults(await loaded() ?? {});
+        config = applyDefaults(await loaded() ?? {});
+    } else {
+        config = applyDefaults(loaded);
     }
 
-    return applyDefaults(loaded);
+    if (cachePath) {
+        writeConfigCache(cachePath, hash, config);
+    }
+
+    return config;
 };
 
 /**

@@ -204,6 +204,11 @@ interface VisConfig {
      * - A top-level generate-task function
      */
     staged?: StagedConfig;
+    /** sort-package-json command defaults */
+    sortPackageJson?: {
+        /** Alphabetize script commands (default: false) */
+        sortScripts?: boolean;
+    };
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
