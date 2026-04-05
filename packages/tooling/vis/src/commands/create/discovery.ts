@@ -35,16 +35,24 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
  */
 
 const GIT_HOST_PREFIXES = [
+    // Full HTTPS URLs
     "https://github.com/",
     "https://gitlab.com/",
     "https://bitbucket.org/",
     "https://raw.githubusercontent.com/",
+    "https://git.sr.ht/",
+    // SSH URLs
     "git@github.com:",
     "git@gitlab.com:",
     "git@bitbucket.org:",
+    "git@git.sr.ht:",
+    // Provider prefixes (giget-compatible)
     "github:",
+    "gh:",
     "gitlab:",
     "bitbucket:",
+    "sourcehut:",
+    "git:",
 ];
 
 /**

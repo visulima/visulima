@@ -14,7 +14,7 @@ import { executeRemoteGit, executeRemoteNpm } from "./remote";
  *
  * Returns the exit code (0 = success).
  */
-export const executeTemplate = (config: TemplateConfig, context: ExecutionContext): number => {
+export const executeTemplate = async (config: TemplateConfig, context: ExecutionContext): Promise<number> => {
     switch (config.type) {
         case "builtin:app":
         case "builtin:library": {

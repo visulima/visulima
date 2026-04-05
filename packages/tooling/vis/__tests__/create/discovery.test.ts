@@ -59,11 +59,20 @@ describe("isGitUrl", () => {
     });
 
     it("should recognize platform prefix shorthands", () => {
-        expect.assertions(3);
+        expect.assertions(6);
 
         expect(isGitUrl("github:user/repo")).toBe(true);
+        expect(isGitUrl("gh:user/repo")).toBe(true);
         expect(isGitUrl("gitlab:user/repo")).toBe(true);
         expect(isGitUrl("bitbucket:user/repo")).toBe(true);
+        expect(isGitUrl("sourcehut:user/repo")).toBe(true);
+        expect(isGitUrl("git:user/repo")).toBe(true);
+    });
+
+    it("should recognize Sourcehut URLs", () => {
+        expect.assertions(1);
+
+        expect(isGitUrl("https://git.sr.ht/~user/repo")).toBe(true);
     });
 
     it("should recognize owner/repo shorthand", () => {
@@ -168,11 +177,14 @@ describe("discoverTemplate", () => {
     });
 
     it("should resolve platform prefix shorthands as remote:git", () => {
-        expect.assertions(3);
+        expect.assertions(6);
 
         expect(discoverTemplate("github:user/repo").type).toBe("remote:git");
+        expect(discoverTemplate("gh:user/repo").type).toBe("remote:git");
         expect(discoverTemplate("gitlab:user/repo").type).toBe("remote:git");
         expect(discoverTemplate("bitbucket:user/repo").type).toBe("remote:git");
+        expect(discoverTemplate("sourcehut:user/repo").type).toBe("remote:git");
+        expect(discoverTemplate("git:user/repo").type).toBe("remote:git");
     });
 
     it("should resolve bare names as remote:npm with create- expansion", () => {

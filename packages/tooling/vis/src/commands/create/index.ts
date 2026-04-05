@@ -302,7 +302,7 @@ const create: Command = {
         info(`Target:   ${dim(targetDir)}`);
         process.stderr.write("\n");
 
-        const code = executeTemplate(config, {
+        const code = await executeTemplate(config, {
             cwd,
             inMonorepo,
             logger,

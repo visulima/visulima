@@ -6759,7 +6759,7 @@ importers:
         version: link:../..
       nitro:
         specifier: catalog:prod
-        version: 3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.4.1)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.2)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.0)(giget@3.1.2)(jiti@2.6.1)(lru-cache@11.2.7)(miniflare@4.20260329.0)(mysql2@3.15.3)(rollup@4.60.1)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))
+        version: 3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.4.1)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.2)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.0)(giget@3.2.0)(jiti@2.6.1)(lru-cache@11.2.7)(miniflare@4.20260329.0)(mysql2@3.15.3)(rollup@4.60.1)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3))
       react:
         specifier: catalog:frontend
         version: 19.2.4
@@ -9074,6 +9074,9 @@ importers:
       '@visulima/tui':
         specifier: workspace:*
         version: link:../../terminal/tui
+      giget:
+        specifier: ^3.2.0
+        version: 3.2.0
       jiti:
         specifier: catalog:dev
         version: 2.6.1
@@ -22882,8 +22885,8 @@ packages:
     resolution: {integrity: sha512-L5bGsVkxJbJgdnwyuheIunkGatUF/zssUoxxjACCseZYAVbaqdh9Tsmmlkl8vYan09H7sbvKt4pS8GqKLBrEzA==}
     hasBin: true
 
-  giget@3.1.2:
-    resolution: {integrity: sha512-T2qUpKBHeUTwHcIhydgnJzhL0Hj785ms+JkxaaWQH9SDM/llXeewnOkfJcFShAHjWI+26hOChwUfCoupaXLm8g==}
+  giget@3.2.0:
+    resolution: {integrity: sha512-GvHTWcykIR/fP8cj8dMpuMMkvaeJfPvYnhq0oW+chSeIr+ldX21ifU2Ms6KBoyKZQZmVaUAAhQ2EZ68KJF8a7A==}
     hasBin: true
 
   git-diff-tree@1.1.0:
@@ -36676,7 +36679,7 @@ snapshots:
       exsolve: 1.0.8
       fuse.js: 7.1.0
       fzf: 0.5.2
-      giget: 3.1.2
+      giget: 3.2.0
       jiti: 2.6.1
       listhen: 1.9.0
       nypm: 0.6.5
@@ -49060,7 +49063,7 @@ snapshots:
       nypm: 0.6.5
       pathe: 2.0.3
 
-  giget@3.1.2: {}
+  giget@3.2.0: {}
 
   git-diff-tree@1.1.0:
     dependencies:
@@ -53554,7 +53557,7 @@ snapshots:
       just-extend: 6.2.0
       path-to-regexp: 8.4.2
 
-  nitro@3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.4.1)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.2)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.0)(giget@3.1.2)(jiti@2.6.1)(lru-cache@11.2.7)(miniflare@4.20260329.0)(mysql2@3.15.3)(rollup@4.60.1)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)):
+  nitro@3.0.260311-beta(@azure/storage-blob@12.31.0)(@electric-sql/pglite@0.4.1)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.2)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.0)(giget@3.2.0)(jiti@2.6.1)(lru-cache@11.2.7)(miniflare@4.20260329.0)(mysql2@3.15.3)(rollup@4.60.1)(vite@8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.4(srvx@0.11.13)
@@ -53572,7 +53575,7 @@ snapshots:
       unstorage: 2.0.0-alpha.6(@azure/storage-blob@12.31.0)(@netlify/blobs@10.7.4)(@vercel/blob@2.3.2)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.4.1)(mysql2@3.15.3))(lru-cache@11.2.7)(ofetch@2.0.0-alpha.3)
     optionalDependencies:
       dotenv: 17.4.0
-      giget: 3.1.2
+      giget: 3.2.0
       jiti: 2.6.1
       rollup: 4.60.1
       vite: 8.0.3(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(less@4.4.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)

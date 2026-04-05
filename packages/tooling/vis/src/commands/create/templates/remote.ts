@@ -2,16 +2,17 @@
  * Remote template executors:
  *
  * - `executeRemoteNpm` — runs npm `create-*` packages via `dlx`
- * - `executeRemoteGit` — clones git repositories (GitHub, GitLab, Bitbucket)
- *   using the native git-download module (no npx degit dependency)
+ * - `executeRemoteGit` — downloads git repositories using giget
+ *   (GitHub, GitLab, Bitbucket, Sourcehut — tarballs with caching)
  *
  * Includes auto-fix rules for popular tools that need extra flags
  * to play nicely with monorepo setups.
  */
 
-import { info } from "../../../output";
+import { downloadTemplate } from "giget";
+
+import { info, warn } from "../../../output";
 import { runDlx } from "../../../pm-runner";
-import { cloneRepo, parseGitUrl } from "../git-download";
 import type { ExecutionContext, TemplateConfig } from "./types";
 
 // ── Auto-fix rules for popular create packages ────────────────────
@@ -106,22 +107,42 @@ export const executeRemoteNpm = (
     return code;
 };
 
-// ── Git remote executor ───────────────────────────────────────────
+// ── Git remote executor (via giget) ───────────────────────────────
 
 /**
- * Clone a git repository template using the native git-download module.
+ * Download a git repository template using giget.
  *
- * Supports GitHub, GitLab, and Bitbucket — full repos, subdirectories,
- * and single files. Handles private repos via environment tokens
- * (GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_TOKEN).
+ * Supports GitHub, GitLab, Bitbucket, and Sourcehut — with tarball
+ * downloads, disk caching, offline support, subdirectory extraction,
+ * and private repo auth via tokens.
+ *
+ * Source format follows giget conventions:
+ * - `provider:owner/repo[/subpath][#ref]`
+ * - `owner/repo` (defaults to GitHub)
+ * - Full HTTPS URLs
+ * - `git:` prefix for raw git clone
  */
-export const executeRemoteGit = (
+export const executeRemoteGit = async (
     config: TemplateConfig,
     context: ExecutionContext,
-): number => {
-    const gitConfig = parseGitUrl(config.source);
+): Promise<number> => {
+    info(`Downloading template from ${config.source}...`);
 
-    info(`Cloning ${gitConfig.owner}/${gitConfig.repository} from ${gitConfig.host}...`);
+    try {
+        const result = await downloadTemplate(config.source, {
+            dir: context.targetDir,
+            force: true,
+            auth: process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
+        });
 
-    return cloneRepo(gitConfig, context.targetDir, { verbose: true });
+        info(`Downloaded to ${result.dir}`);
+
+        return 0;
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        warn(`Failed to download template: ${message}`);
+
+        return 1;
+    }
 };

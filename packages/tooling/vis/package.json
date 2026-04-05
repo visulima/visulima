@@ -86,6 +86,7 @@
         "@visulima/package": "5.0.0-alpha.6",
         "@visulima/path": "3.0.0-alpha.7",
         "@visulima/task-runner": "1.0.0-alpha.3",
+        "giget": "^3.2.0",
         "@nkzw/safe-word-list": "^3.1.2",
         "@socketsecurity/registry": "^2.0.2",
         "@visulima/tui": "workspace:*",
