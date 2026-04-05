@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
-import { join, resolve } from "@visulima/path";
 import { getManifestData } from "@socketsecurity/registry";
+import { join, resolve } from "@visulima/path";
 import { coerce } from "semver";
 
 import { info, note, success, warn } from "../output";
@@ -230,8 +230,10 @@ const optimize: Command = {
         info(`Loaded ${String(manifest.length)} registry entries.`);
         info(`Detected ${pm.name} v${pm.version}.`);
 
+        const isDryRun = Boolean(options["dry-run"]);
+
         const result = executeOptimize(wsRoot, manifest, pm, {
-            dryRun: Boolean(options["dry-run"]),
+            dryRun: isDryRun,
             pin: Boolean(options.pin),
             prod: Boolean(options.prod),
         });
@@ -248,7 +250,7 @@ const optimize: Command = {
             return;
         }
 
-        if (Boolean(options["dry-run"])) {
+        if (isDryRun) {
             info(`Would apply ${String(result.entries.length)} overrides:\n`);
 
             for (const entry of result.entries) {
