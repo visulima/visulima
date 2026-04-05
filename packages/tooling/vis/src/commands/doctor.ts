@@ -9,7 +9,7 @@ import isInCi from "is-in-ci";
 import React from "react";
 
 import type { CatalogCheckOptions, OutdatedEntry } from "../catalog";
-import { checkOutdated, formatSummary, loadNpmrc, readCatalogs } from "../catalog";
+import { checkOutdated, fetchVulnerabilities, formatSummary, loadNpmrc, readCatalogs } from "../catalog";
 import { error as errorOutput, info, note, success, warn } from "../output";
 import type { OverrideEntry } from "../overrides";
 import { applyOverrides, readLockfileText } from "../overrides";
@@ -39,10 +39,16 @@ interface DoctorResults {
 
 /**
  * Runs all diagnostic scans in parallel and returns a unified result.
+ *
+ * @param workspaceRoot - Absolute path to the workspace root.
+ * @param visConfig - Loaded vis configuration (may be undefined if no config file).
+ * @param resolveCodemods - When true, checks which e18e entries have codemods available (adds latency).
+ * @returns Aggregated results including outdated, vulns, duplicates, and optimization counts.
  */
 const runAllScans = async (
     workspaceRoot: string,
     visConfig: VisConfig | undefined,
+    resolveCodemods: boolean = false,
 ): Promise<DoctorResults> => {
     const pm = detectPm(workspaceRoot);
     const { packageManager } = findPackageManagerSync(workspaceRoot);
@@ -90,7 +96,9 @@ const runAllScans = async (
     const dedupedSocket = socketEntries.filter((e) => !e18eNames.has(e.packageName));
     const allOptimizations = [...e18eEntries, ...dedupedSocket];
 
-    await markCodemodAvailability(allOptimizations);
+    if (resolveCodemods) {
+        await markCodemodAvailability(allOptimizations);
+    }
 
     // Count Socket.dev issues from installed packages
     let socketAlerts = 0;
@@ -113,12 +121,21 @@ const runAllScans = async (
         }
     }
 
-    // Count vulnerabilities
+    // Count vulnerabilities from both outdated entries and installed packages
     let vulnCount = 0;
 
     for (const entry of outdatedResult.outdated) {
         if (entry.vulnerabilities && entry.vulnerabilities.length > 0) {
             vulnCount += entry.vulnerabilities.length;
+        }
+    }
+
+    // Also scan installed packages for known vulnerabilities (catches advisory-only CVEs)
+    if (installed.length > 0) {
+        const vulnMap = await fetchVulnerabilities(installed.map((p) => ({ name: p.name, version: p.version })));
+
+        for (const vulns of vulnMap.values()) {
+            vulnCount += vulns.length;
         }
     }
 
@@ -135,6 +152,7 @@ const runAllScans = async (
 
 // ── Display ─────────────────────────────────────────────────────────
 
+/** Returns a colored checkmark (ok) or cross (not ok). */
 const icon = (ok: boolean): string => (ok ? green("\u2713") : red("\u2717"));
 const warnIcon = yellow("\u26A0");
 
@@ -202,10 +220,17 @@ const displayResults = (results: DoctorResults): void => {
     info("");
     info(dim("\u2500\u2500 Optimization \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
 
-    const natives = optimizations.filter((o) => o.category === "native").length;
-    const preferred = optimizations.filter((o) => o.category === "preferred").length;
-    const micros = optimizations.filter((o) => o.category === "micro-utility").length;
-    const socketOverrides = optimizations.filter((o) => o.category === "socket").length;
+    let natives = 0;
+    let preferred = 0;
+    let micros = 0;
+    let socketOverrides = 0;
+
+    for (const o of optimizations) {
+        if (o.category === "native") natives++;
+        else if (o.category === "preferred") preferred++;
+        else if (o.category === "micro-utility") micros++;
+        else if (o.category === "socket") socketOverrides++;
+    }
 
     if (optimizations.length > 0) {
         if (natives > 0) info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
@@ -309,7 +334,20 @@ const doctor: Command = {
 
         info(`\n  Scanning...`);
 
-        const results = await runAllScans(wsRoot, visConfig);
+        const results = await runAllScans(wsRoot, visConfig, Boolean(options.fix));
+
+        // Pre-compute optimization counts (used by both JSON and display)
+        let optNative = 0;
+        let optPreferred = 0;
+        let optMicro = 0;
+        let optSocket = 0;
+
+        for (const o of results.optimizations) {
+            if (o.category === "native") optNative++;
+            else if (o.category === "preferred") optPreferred++;
+            else if (o.category === "micro-utility") optMicro++;
+            else if (o.category === "socket") optSocket++;
+        }
 
         // JSON output
         if ((options.format as string) === "json" || options.json) {
@@ -322,10 +360,10 @@ const doctor: Command = {
                             outdated: results.outdated.length,
                         },
                         optimizations: {
-                            microUtilities: results.optimizations.filter((o) => o.category === "micro-utility").length,
-                            native: results.optimizations.filter((o) => o.category === "native").length,
-                            preferred: results.optimizations.filter((o) => o.category === "preferred").length,
-                            socket: results.optimizations.filter((o) => o.category === "socket").length,
+                            microUtilities: optMicro,
+                            native: optNative,
+                            preferred: optPreferred,
+                            socket: optSocket,
                             total: results.optimizations.length,
                         },
                         packageManager: pm.name,
@@ -384,12 +422,14 @@ const doctor: Command = {
             if (socketEntries.length > 0) {
                 info(`\n  Running ${pm.name} install to update lockfile...`);
 
-                runInstall(
-                    pm,
-                    { dev: false, filter: [], force: false, frozenLockfile: false, ignoreScripts: false, lockfileOnly: false, noOptional: false, offline: false, prod: false, recursive: false, silent: false, workspaceRoot: false },
-                    wsRoot,
-                    logger,
-                );
+                const installOpts = {
+                    dev: false, filter: [], force: false, frozenLockfile: false,
+                    ignoreScripts: false, lockfileOnly: false, noOptional: false,
+                    offline: false, prod: false, recursive: false, silent: false,
+                    workspaceRoot: false,
+                };
+
+                runInstall(pm, installOpts, wsRoot, logger);
             }
 
             info("");

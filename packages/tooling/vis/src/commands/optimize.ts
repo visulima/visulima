@@ -250,8 +250,8 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
                     writeFileSync(filePath, result, "utf8");
                     filesChanged++;
                 }
-            } catch {
-                // Skip files that fail to transform
+            } catch (error) {
+                process.stderr.write(`warn: codemod transform failed for ${filePath}: ${error instanceof Error ? error.message : String(error)}\n`);
             }
         }
     } catch {

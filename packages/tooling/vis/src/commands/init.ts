@@ -11,6 +11,7 @@ import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../se
 
 // ── Interactive prompt helpers ──────────────────────────────────────
 
+/** Prompts the user with a question and returns the trimmed answer. */
 const ask = (rl: ReturnType<typeof createInterface>, question: string): Promise<string> =>
     new Promise((resolve) => {
         rl.question(question, (answer) => {
@@ -18,6 +19,7 @@ const ask = (rl: ReturnType<typeof createInterface>, question: string): Promise<
         });
     });
 
+/** Prompts a yes/no question and returns the boolean result. */
 const confirm = async (rl: ReturnType<typeof createInterface>, question: string, defaultYes: boolean = true): Promise<boolean> => {
     const hint = defaultYes ? "[Y/n]" : "[y/N]";
     const answer = await ask(rl, `${question} ${hint} `);
@@ -76,7 +78,8 @@ ${sections.join("\n\n")}
 
 // ── Interactive wizard ──────────────────────────────────────────────
 
-const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }): Promise<void> => {
+/** Runs the interactive setup wizard, prompting for each configuration option. */
+const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }, configPath: string): Promise<void> => {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
     info("\n  vis init — interactive setup\n");
@@ -129,7 +132,7 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Step 4: Sync to native PM config
     let syncNative = false;
 
-    if (pm.name === "pnpm" || pm.name === "yarn" || pm.name === "npm") {
+    if (pm.name === "pnpm" || pm.name === "yarn" || pm.name === "npm" || pm.name === "bun") {
         info("");
         syncNative = await confirm(rl, `  Sync security settings to ${pm.name} config?`);
     }
@@ -139,7 +142,6 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
     // Generate and write config
     info("");
 
-    const configPath = join(cwd, "vis.config.ts");
     const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
 
     writeFileSync(configPath, content);
@@ -170,8 +172,8 @@ const runInteractiveInit = async (cwd: string, pm: { name: string; version: stri
 
 // ── Non-interactive init ────────────────────────────────────────────
 
-const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>): void => {
-    const configPath = join(cwd, "vis.config.ts");
+/** Creates a minimal config file with secure defaults (no prompts). */
+const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>, configPath: string): void => {
     const content = generateConfigContent(pm.name, { allowBuilds: {}, enableSocket: false, staged: false });
 
     writeFileSync(configPath, content);
@@ -224,12 +226,13 @@ const init: Command = {
             return;
         }
 
+        const configPath = existingConfig ?? join(cwd, "vis.config.ts");
         const isTTY = Boolean(process.stdin.isTTY) && options.interactive !== false;
 
         if (isTTY && !options["no-interactive"]) {
-            await runInteractiveInit(cwd, pm);
+            await runInteractiveInit(cwd, pm, configPath);
         } else {
-            runStaticInit(cwd, pm, options);
+            runStaticInit(cwd, pm, options, configPath);
         }
     },
     name: "init",

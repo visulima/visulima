@@ -41,8 +41,8 @@ interface OverrideEntry {
 
 /** Result of reading existing overrides from the project. */
 interface OverridesResult {
-    /** Current overrides as a flat `{ packageName: spec }` map. */
-    overrides: Record<string, string>;
+    /** Current overrides — values may be strings or nested objects (npm supports nested overrides). */
+    overrides: Record<string, string | Record<string, string>>;
     /** The file where overrides are stored. */
     source: "package.json" | "pnpm-workspace.yaml";
 }
@@ -90,14 +90,14 @@ const readPnpmWorkspaceOverrides = (workspaceRoot: string): OverridesResult => {
  * Reads existing overrides from `package.json` for npm, pnpm v9-, yarn, or bun.
  */
 const readPkgJsonOverrides = (pkgJson: Record<string, unknown>, pm: PackageManagerName): OverridesResult => {
-    let overrides: Record<string, string> = {};
+    let overrides: Record<string, string | Record<string, string>> = {};
 
     if (pm === "pnpm") {
-        overrides = ((pkgJson.pnpm as Record<string, unknown> | undefined)?.overrides as Record<string, string>) ?? {};
+        overrides = ((pkgJson.pnpm as Record<string, unknown> | undefined)?.overrides as typeof overrides) ?? {};
     } else if (pm === "yarn" || pm === "bun") {
-        overrides = (pkgJson.resolutions as Record<string, string>) ?? {};
+        overrides = (pkgJson.resolutions as typeof overrides) ?? {};
     } else {
-        overrides = (pkgJson.overrides as Record<string, string>) ?? {};
+        overrides = (pkgJson.overrides as typeof overrides) ?? {};
     }
 
     return { overrides, source: "package.json" };
@@ -172,7 +172,7 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
     const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
     if (!existsSync(filePath)) {
-        return;
+        throw new Error(`pnpm-workspace.yaml not found at ${filePath}. Cannot write overrides for pnpm v10+.`);
     }
 
     let content = readFileSync(filePath, "utf8");
@@ -270,6 +270,12 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
 
     for (const entry of entries) {
         const oldSpec = existing[entry.original];
+
+        // Preserve nested override objects (npm supports { "pkg": { "dep": "ver" } })
+        if (typeof oldSpec === "object") {
+            continue;
+        }
+
         let newSpec = entry.spec;
 
         if (pm.name === "npm" && directDeps.has(entry.original)) {
@@ -316,7 +322,7 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
 const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string => {
     const lockfileNames: Record<string, string[]> = {
         bun: ["bun.lock"],
-        npm: ["package-lock.json"],
+        npm: ["npm-shrinkwrap.json", "package-lock.json"],
         pnpm: ["pnpm-lock.yaml"],
         yarn: ["yarn.lock"],
     };
@@ -349,21 +355,23 @@ const lockfileContainsPackage = (lockText: string, packageName: string, pm: Pack
         return false;
     }
 
+    const escaped = packageName.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+
     switch (pm) {
         case "npm": {
-            return lockText.includes(`"${packageName}":`);
+            return lockText.includes(`"${packageName}":`) || lockText.includes(`"node_modules/${packageName}":`);
         }
 
         case "pnpm": {
-            return lockText.includes(`${packageName}@`) || lockText.includes(`'${packageName}'`);
+            return new RegExp(`(^|\\s|['"/])${escaped}@`, "m").test(lockText);
         }
 
         case "yarn": {
-            return lockText.includes(`${packageName}@`);
+            return new RegExp(`(^|\\s|[",])${escaped}@`, "m").test(lockText);
         }
 
         case "bun": {
-            return lockText.includes(`"${packageName}":`) || lockText.includes(`${packageName}@`);
+            return lockText.includes(`"${packageName}":`) || new RegExp(`(^|\\s|[",])${escaped}@`, "m").test(lockText);
         }
 
         default: {

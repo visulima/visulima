@@ -1,14 +1,8 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, ScrollView, Text } from "@visulima/tui";
 
+import { CATEGORY_COLORS, CATEGORY_DESCRIPTIONS } from "./constants";
 import type { OptimizeEntry } from "./OptimizeStore";
-
-const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-    "micro-utility": "Trivial utility package that can be replaced with inline code.",
-    native: "Polyfill for a native JS/Node.js API. Use the built-in instead.",
-    preferred: "A lighter or faster alternative package exists.",
-    socket: "Security-hardened replacement from Socket.dev's @socketregistry.",
-};
 
 interface OptimizeDetailPanelProps {
     entry: OptimizeEntry | null;
@@ -27,7 +21,7 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
         );
     }
 
-    const categoryColor = entry.category === "native" ? "green" : entry.category === "socket" ? "cyan" : entry.category === "preferred" ? "yellow" : "gray";
+    const categoryColor = CATEGORY_COLORS[entry.category] ?? "gray";
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>

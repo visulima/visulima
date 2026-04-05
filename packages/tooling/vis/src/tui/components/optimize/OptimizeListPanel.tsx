@@ -2,19 +2,7 @@ import { Box, ScrollBar, Text } from "@visulima/tui";
 
 import type { FilterType, OptimizeEntry } from "./OptimizeStore";
 
-const CATEGORY_COLORS: Record<string, string> = {
-    "micro-utility": "gray",
-    native: "green",
-    preferred: "yellow",
-    socket: "cyan",
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-    "micro-utility": "MICRO",
-    native: "NATIVE",
-    preferred: "PREF",
-    socket: "SOCKET",
-};
+import { CATEGORY_COLORS, CATEGORY_LABELS } from "./constants";
 
 const FILTER_LABELS: { key: FilterType; label: string; shortcut: string }[] = [
     { key: "all", label: "All", shortcut: "1" },
@@ -91,7 +79,7 @@ const OptimizeListPanel = ({
         if (e.category === "native") nativeCount++;
         else if (e.category === "preferred") preferredCount++;
         else if (e.category === "micro-utility") microCount++;
-        else socketCount++;
+        else if (e.category === "socket") socketCount++;
     }
 
     const summaryParts: string[] = [];

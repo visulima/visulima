@@ -1,6 +1,6 @@
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
-import React, { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import React, { useCallback, useRef, useState, useSyncExternalStore } from "react";
 
 import QuitDialog from "../QuitDialog";
 import OptimizeDetailPanel from "./OptimizeDetailPanel";
@@ -32,7 +32,7 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
     const [listScrollOffset, setListScrollOffset] = useState(0);
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
-    const filteredEntries = useMemo(() => store.getFilteredEntries(), [state.entries, state.filterType, state.filterText]);
+    const filteredEntries = store.getFilteredEntries();
     const selectedEntry = filteredEntries[state.selectedIndex] ?? null;
 
     const isHorizontal = columns >= MIN_HORIZONTAL_WIDTH;

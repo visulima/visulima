@@ -88,7 +88,7 @@ class OptimizeStore {
     select(index: number): void {
         const filtered = this.getFilteredEntries();
 
-        this.#state.selectedIndex = Math.max(0, Math.min(index, filtered.length - 1));
+        this.#state.selectedIndex = filtered.length === 0 ? -1 : Math.max(0, Math.min(index, filtered.length - 1));
         this.#notify();
     }
 
