@@ -6,7 +6,7 @@
 
 import { createInterface } from "node:readline";
 
-import { bold, cyan, dim, green } from "../../output";
+import { bold, cyan, dim } from "../../output";
 import { randomName } from "./random-name";
 import { isEmptyDir, isValidPackageName, toValidPackageName } from "./utils";
 

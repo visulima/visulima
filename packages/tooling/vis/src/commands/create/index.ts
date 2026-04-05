@@ -14,7 +14,7 @@ import { join, resolve } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 
-import { bold, cyan, dim, green, info, note, success, warn } from "../../output";
+import { bold, cyan, dim, info, note, success, warn } from "../../output";
 import { detectPm, runInstall } from "../../pm-runner";
 import { discoverTemplate, inferParentDir } from "./discovery";
 import { runInteractivePrompts } from "./prompts";
