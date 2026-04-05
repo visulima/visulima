@@ -10,6 +10,8 @@ import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, fi
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import { toStringArray } from "../utils";
 
+const SEMVER_RE = /^\d+\.\d+\.\d+/;
+
 // ── Helpers ─────────────────────────────────────────────────────────
 
 const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
@@ -207,15 +209,28 @@ const runSocketPreCheck = async (
 ): Promise<boolean> => {
     const parsed = packages.map(parseAddArgument);
 
-    // Resolve versions for packages without an explicit version
-    const needsResolution = parsed.filter((p) => !p.versionSpec).map((p) => p.name);
+    // Strip semver operators and check if result is a concrete version
+    const strippedSpecs = new Map<string, string>();
+
+    for (const p of parsed) {
+        if (p.versionSpec) {
+            const stripped = p.versionSpec.replace(/^[\^~>=<]+/, "");
+
+            if (SEMVER_RE.test(stripped)) {
+                strippedSpecs.set(p.name, stripped);
+            }
+        }
+    }
+
+    // Resolve packages without a concrete semver (dist-tags, partial versions, no spec)
+    const needsResolution = parsed.filter((p) => !strippedSpecs.has(p.name)).map((p) => p.name);
     const resolvedVersions = needsResolution.length > 0 ? await resolveLatestVersions(needsResolution) : new Map<string, string>();
 
-    // Build lookup list
+    // Build lookup list with concrete semver only
     const lookupPackages: { name: string; version: string }[] = [];
 
     for (const p of parsed) {
-        const version = p.versionSpec?.replace(/^[\^~>=<]+/, "") ?? resolvedVersions.get(p.name);
+        const version = strippedSpecs.get(p.name) ?? resolvedVersions.get(p.name);
 
         if (version) {
             lookupPackages.push({ name: p.name, version });

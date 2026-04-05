@@ -1117,7 +1117,7 @@ const buildOutdatedEntries = (
 
 /** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
 const formatVersionString = (parsed: ParsedVersion | undefined): string =>
-    formatVersionString(parsed);
+    parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1602,7 +1602,7 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
 
     if (lowScoreCount > 0) {
         children.push(
-            React.createElement(Text, { color: "yellow" }, `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<40%)`),
+            React.createElement(Text, { color: "yellow" }, `  ${String(lowScoreCount)} package${lowScoreCount === 1 ? "" : "s"} with low Socket.dev score (<${String(DEFAULT_LOW_SCORE_THRESHOLD * 100)}%)`),
         );
     }
 

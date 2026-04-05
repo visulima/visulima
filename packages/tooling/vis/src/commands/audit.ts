@@ -153,7 +153,8 @@ const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
 const formatVulnLine = (name: string, version: string, vuln: SecurityVulnerability, isAccepted: boolean): string => {
     const colorFn = SEVERITY_COLOR_FN[vuln.severity] ?? dim;
     const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
-    const fixed = vuln.fixedVersions.length > 0 ? ` (fix: ${vuln.fixedVersions.join(", ")})` : "";
+    const fixedVersions = vuln.fixedVersions ?? [];
+    const fixed = fixedVersions.length > 0 ? ` (fix: ${fixedVersions.join(", ")})` : "";
 
     return `  ${colorFn(vuln.severity)} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
 };
@@ -322,7 +323,7 @@ const executeAudit = async (
         info(`\n\u2500\u2500 ${severity} (${String(items.length)}) \u2500\u2500`);
 
         for (const { entry, vuln } of items) {
-            const isExcluded = Boolean(entry.acceptedRisk) || entry.nativeExcluded || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases);
+            const isExcluded = Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases);
 
             if (isExcluded) {
                 acknowledgedVulns++;
@@ -335,7 +336,7 @@ const executeAudit = async (
             totalVulns++;
             info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
 
-            if (showFixes && vuln.fixedVersions.length > 0) {
+            if (showFixes && (vuln.fixedVersions ?? []).length > 0) {
                 note(`    Fix: update to ${vuln.fixedVersions[vuln.fixedVersions.length - 1]}`);
             }
         }
