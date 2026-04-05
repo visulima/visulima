@@ -126,6 +126,13 @@ interface CleanResult {
     removed: string[];
 }
 
+interface SortPackageJsonOptions {
+    /** Enable formatted output with newlines (default: true) */
+    pretty?: boolean;
+    /** Alphabetize script commands (default: false) */
+    sort_scripts?: boolean;
+}
+
 interface NativeBindings {
     cleanWorkspace: (root: string, removeLockfile: boolean) => CleanResult;
     detectPackageManager: (cwd: string) => DetectedPackageManager;
@@ -142,6 +149,8 @@ interface NativeBindings {
     resolveRemove: (pm: string, version: string, options: RemoveOptions) => ResolvedCommand;
     resolveUnlink: (pm: string, version: string, packages: string[], recursive: boolean) => ResolvedCommand;
     resolveWhy: (pm: string, version: string, options: WhyOptions) => ResolvedCommand;
+    sortPackageJsonString: (contents: string) => string;
+    sortPackageJsonStringWithOptions: (contents: string, options: SortPackageJsonOptions) => string;
     whichBin: (name: string) => string | null;
 }
 
@@ -194,6 +203,7 @@ export type {
     OutdatedOptions,
     RemoveOptions,
     ResolvedCommand,
+    SortPackageJsonOptions,
     WhyOptions,
 };
 export { isNativeAvailable, loadNativeBindings };
