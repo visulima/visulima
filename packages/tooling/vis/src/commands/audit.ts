@@ -98,6 +98,13 @@ const scanInstalledPackages = (workspaceRoot: string): InstalledPackage[] => {
                         version: pkg.version,
                     });
                 }
+
+                // Recurse into nested node_modules (npm non-flat installs)
+                const nestedNm = join(fullPath, "node_modules");
+
+                if (existsSync(nestedNm)) {
+                    scanDir(nestedNm, "");
+                }
             } catch {
                 // Skip unreadable packages
             }
