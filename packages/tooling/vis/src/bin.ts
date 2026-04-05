@@ -12,6 +12,7 @@ import affectedCommand from "./commands/affected";
 import aiCommand from "./commands/ai";
 import analyzeCommand from "./commands/analyze";
 import approveBuildsCommand from "./commands/approve-builds";
+import auditCommand from "./commands/audit";
 import checkCommand from "./commands/check";
 import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
@@ -125,6 +126,7 @@ cli.addCommand(implodeCommand);
 
 // Security commands
 cli.addCommand(approveBuildsCommand);
+cli.addCommand(auditCommand);
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

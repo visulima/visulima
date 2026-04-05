@@ -1,6 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 
 import type { OutdatedEntry } from "../../../catalog";
+import { scoreColor } from "../../../socket-security";
 import type { FilterType } from "./UpdateStore";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
@@ -30,18 +31,29 @@ interface PackageRowProps {
 const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.Element => {
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasSecurity = entry.vulnerabilities && entry.vulnerabilities.length > 0;
+    const hasSocketAlerts = entry.socketReport && entry.socketReport.alerts.length > 0;
+    const isAcknowledged = Boolean(entry.acceptedRisk);
     const checkbox = checked ? "\u2611" : "\u2610";
+
+    // Socket.dev score badge
+    const scoreText = entry.socketReport
+        ? `${String(Math.round(entry.socketReport.score.overall * 100))}%`
+        : "";
+    const scoreColorName = entry.socketReport
+        ? scoreColor(entry.socketReport.score.overall)
+        : "gray" as const;
 
     return (
         <Box height={1} flexShrink={0}>
             <Text>{isSelected ? ">" : " "}</Text>
             <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
-            {hasSecurity ? <Text color="red">{"\u26A0 "}</Text> : <Text>{"  "}</Text>}
+            {hasSecurity || hasSocketAlerts ? <Text color={isAcknowledged ? "gray" : "red"}>{isAcknowledged ? "\u2713 " : "\u26A0 "}</Text> : <Text>{"  "}</Text>}
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
-                    {entry.packageName}
+                    {entry.packageName}{isAcknowledged ? " [ack]" : ""}
                 </Text>
             </Box>
+            {scoreText && <Text color={scoreColorName}> {scoreText}</Text>}
             <Text dimColor> {entry.currentRange}</Text>
             <Text dimColor> {"\u2192"} </Text>
             <Text>{entry.newRange} </Text>
@@ -100,10 +112,18 @@ const PackageListPanel = ({
 }: PackageListPanelProps): React.JSX.Element => {
     const borderColor = focused ? "white" : "gray";
 
-    const majors = entries.filter((e) => e.updateType === "major").length;
-    const minors = entries.filter((e) => e.updateType === "minor").length;
-    const patches = entries.filter((e) => e.updateType === "patch").length;
-    const secCount = entries.filter((e) => e.vulnerabilities && e.vulnerabilities.length > 0).length;
+    let majors = 0;
+    let minors = 0;
+    let patches = 0;
+    let secCount = 0;
+
+    for (const e of entries) {
+        if (e.updateType === "major") majors++;
+        else if (e.updateType === "minor") minors++;
+        else patches++;
+
+        if ((e.vulnerabilities && e.vulnerabilities.length > 0) || (e.socketReport && e.socketReport.alerts.length > 0)) secCount++;
+    }
 
     const summaryParts: string[] = [];
 

@@ -10,6 +10,7 @@ import { checkOutdated, formatOutdatedMinimal, formatOutdatedTable, formatSummar
 import { info, success } from "../output";
 import { detectPm } from "../pm-runner";
 import { previewPnpmSync, printSecurityReport } from "../security";
+import { buildSocketOptions, scoreColor } from "../socket-security";
 import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
@@ -126,7 +127,17 @@ const check: Command = {
             logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
         }
 
-        const { failed, outdated } = await checkOutdated(catalogs, checkOptions, npmrcConfig, onProgress, workspaceRoot);
+        const socketOptions = buildSocketOptions(visConfig?.security?.socket);
+
+        const { failed, outdated } = await checkOutdated(
+            catalogs,
+            checkOptions,
+            npmrcConfig,
+            onProgress,
+            workspaceRoot,
+            socketOptions,
+            visConfig?.security?.socket?.acceptedRisks,
+        );
 
         if (progressInstance) {
             progressInstance.clear();
@@ -176,8 +187,13 @@ const check: Command = {
             process.stdout.write("\n");
 
             for (const entry of outdated) {
-                const icon = entry.vulnerabilities?.length ? "\u26A0" : "\u2713";
-                const iconColor = entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+                const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
+                const isAck = Boolean(entry.acceptedRisk);
+                const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
+                const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
+                const socketOverall = entry.socketReport?.score.overall;
+                const scoreSuffix = socketOverall !== undefined ? ` [${String(Math.round(socketOverall * 100))}%]` : "";
+                const socketColorName = socketOverall !== undefined ? scoreColor(socketOverall) : undefined;
 
                 process.stdout.write(
                     renderToString(
@@ -188,6 +204,7 @@ const check: Command = {
                             React.createElement(Text, { color: iconColor }, icon),
                             `  ${entry.packageName}  ${entry.currentRange} \u2192 ${entry.newRange}`,
                             React.createElement(Text, { dimColor: true }, `  ${entry.updateType}`),
+                            socketColorName ? React.createElement(Text, { color: socketColorName }, scoreSuffix) : null,
                         ),
                         { columns },
                     ) + "\n",

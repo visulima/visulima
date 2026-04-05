@@ -3,6 +3,7 @@ import { Box, ScrollView, Text } from "@visulima/tui";
 
 import type { AiRecommendation } from "../../../ai-analysis";
 import type { OutdatedEntry } from "../../../catalog";
+import { scoreColor } from "../../../socket-security";
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
@@ -18,6 +19,13 @@ const SEVERITY_COLORS: Record<string, string> = {
     LOW: "gray",
     MODERATE: "yellow",
     UNKNOWN: "gray",
+};
+
+const SOCKET_SEVERITY_COLORS: Record<string, string> = {
+    critical: "red",
+    high: "red",
+    low: "gray",
+    medium: "yellow",
 };
 
 const RISK_COLORS: Record<string, string> = {
@@ -57,6 +65,8 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
 
     const typeColor = UPDATE_TYPE_COLORS[entry.updateType] ?? "white";
     const hasVulnerabilities = entry.vulnerabilities && entry.vulnerabilities.length > 0;
+    const socketScore = entry.socketReport?.score.overall ?? 0;
+    const socketScoreColor = entry.socketReport ? scoreColor(socketScore) : "gray" as const;
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
@@ -88,6 +98,23 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                 <Text>{entry.catalogName}</Text>
             </Box>
 
+            {/* Accepted risk notice */}
+            {entry.acceptedRisk && (
+                <Box marginTop={1} flexDirection="column">
+                    <Text color="gray">{"\u2500\u2500 "}</Text><Text bold color="gray">ACKNOWLEDGED RISK</Text>
+                    <Box paddingLeft={2} flexDirection="column">
+                        <Box>
+                            <Text dimColor>Reason: </Text>
+                            <Text>{entry.acceptedRisk.reason}</Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>Accepted: </Text>
+                            <Text>{entry.acceptedRisk.acceptedAt.slice(0, 10)}</Text>
+                        </Box>
+                    </Box>
+                </Box>
+            )}
+
             {/* Security section */}
             {hasVulnerabilities && (
                 <Box flexDirection="column" marginTop={1}>
@@ -114,6 +141,58 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                             </Box>
                         </Box>
                     ))}
+                </Box>
+            )}
+
+            {/* Socket.dev section */}
+            {entry.socketReport && (
+                <Box flexDirection="column" marginTop={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="cyan">SOCKET.DEV</Text>
+                    <Text>{""}</Text>
+                    <Box gap={2}>
+                        <Box>
+                            <Text dimColor>Overall: </Text>
+                            <Text bold color={socketScoreColor}>
+                                {String(Math.round(socketScore * 100))}%
+                            </Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>Supply Chain: </Text>
+                            <Text>{String(Math.round(entry.socketReport.score.supplyChain * 100))}%</Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>Quality: </Text>
+                            <Text>{String(Math.round(entry.socketReport.score.quality * 100))}%</Text>
+                        </Box>
+                    </Box>
+                    <Box gap={2}>
+                        <Box>
+                            <Text dimColor>Maintenance: </Text>
+                            <Text>{String(Math.round(entry.socketReport.score.maintenance * 100))}%</Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>Vulnerability: </Text>
+                            <Text>{String(Math.round(entry.socketReport.score.vulnerability * 100))}%</Text>
+                        </Box>
+                        <Box>
+                            <Text dimColor>License: </Text>
+                            <Text>{entry.socketReport.license || "unknown"} ({String(Math.round(entry.socketReport.score.license * 100))}%)</Text>
+                        </Box>
+                    </Box>
+                    {entry.socketReport.alerts.length > 0 && (
+                        <Box flexDirection="column" marginTop={1}>
+                            <Text bold color="yellow">{"\u26A0"} {String(entry.socketReport.alerts.length)} alert{entry.socketReport.alerts.length === 1 ? "" : "s"}:</Text>
+                            {entry.socketReport.alerts.map((alert) => (
+                                <Box key={alert.key} paddingLeft={2} gap={1}>
+                                    <Text color={SOCKET_SEVERITY_COLORS[alert.severity] ?? "gray"} bold>
+                                        [{alert.severity.toUpperCase()}]
+                                    </Text>
+                                    <Text>{alert.type}</Text>
+                                    <Text dimColor>({alert.category})</Text>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
                 </Box>
             )}
 
