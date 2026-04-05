@@ -93,7 +93,8 @@
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
-        "semver": "^7.7.1"
+        "semver": "^7.7.1",
+        "sort-package-json": "catalog:dev"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
