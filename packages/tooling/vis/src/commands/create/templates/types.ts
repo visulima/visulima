@@ -17,8 +17,20 @@ export interface TemplateConfig {
     type: TemplateType;
 }
 
+/** Create config from vis.config.ts (subset relevant to template execution). */
+export interface CreateConfig {
+    auth?: string;
+    defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
+    preferOffline?: boolean;
+    registry?: false | string;
+    templates?: Record<string, string>;
+}
+
 /** Runtime context passed to every template executor. */
 export interface ExecutionContext {
+    /** Create config from vis.config.ts. */
+    createConfig?: CreateConfig;
+
     /** Working directory (workspace root or cwd). */
     cwd: string;
 

@@ -147,18 +147,29 @@ const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pn
 
 // ── List templates ────────────────────────────────────────────────
 
-const listTemplates = (): void => {
+const listTemplates = (aliases?: Record<string, string>): void => {
     info("");
     info("  Built-in templates:");
     info(`    ${bold(cyan("vis:monorepo"))}     ${dim("Full pnpm workspace setup")}`);
     info(`    ${bold(cyan("vis:app"))}          ${dim("Application scaffold via create-vite")}`);
     info(`    ${bold(cyan("vis:library"))}      ${dim("Reusable TypeScript library package")}`);
     info(`    ${bold(cyan("vis:generator"))}    ${dim("Code generator scaffold with bin entry")}`);
+
+    if (aliases && Object.keys(aliases).length > 0) {
+        info("");
+        info("  Config aliases (vis.config.ts → create.templates):");
+
+        for (const [name, source] of Object.entries(aliases)) {
+            info(`    ${bold(cyan(name))}${" ".repeat(Math.max(1, 16 - name.length))}${dim(source)}`);
+        }
+    }
+
     info("");
     info("  Remote templates:");
     info(`    ${dim("Any npm create-* package:")}  vis create vite`);
     info(`    ${dim("GitHub repository:")}         vis create user/repo`);
-    info(`    ${dim("GitHub URL:")}                vis create https://github.com/user/repo`);
+    info(`    ${dim("GitLab / Bitbucket:")}        vis create gitlab:user/repo`);
+    info(`    ${dim("Full URL:")}                  vis create https://github.com/user/repo`);
     info("");
     info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
     info("");
@@ -204,12 +215,13 @@ const create: Command = {
         ["vis create user/repo my-project", "Clone a GitHub template"],
         ["vis create --list", "Show available templates"],
     ],
-    execute: async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         const args: string[] = Array.isArray(argument) ? argument : argument ? [argument] : [];
+        const createConfig = visConfig?.create;
 
-        // --list: show available templates
+        // --list: show available templates (including config aliases)
         if (options.list) {
-            listTemplates();
+            listTemplates(createConfig?.templates);
             return;
         }
 
@@ -221,8 +233,8 @@ const create: Command = {
         let templateInput: string | undefined;
         let projectName: string | undefined;
         let targetDir: string;
-        let editor: "vscode" | undefined;
-        let gitInit = false;
+        let editor: "vscode" | undefined = createConfig?.defaultEditor;
+        let gitInit = createConfig?.gitInit ?? false;
         let extraArgs: string[] = [];
 
         if (args.length === 0 && isTTY && !options["no-interactive"]) {
@@ -294,15 +306,23 @@ const create: Command = {
             );
         }
 
-        // Discover and execute template
-        const config = discoverTemplate(templateInput, extraArgs);
+        // Resolve config template aliases (e.g., "react" → "github:vitejs/vite/...")
+        const resolvedInput = createConfig?.templates?.[templateInput] ?? templateInput;
 
-        info(`Template: ${bold(cyan(templateInput))}`);
+        // Discover and execute template
+        const config = discoverTemplate(resolvedInput, extraArgs);
+
+        if (resolvedInput !== templateInput) {
+            info(`Alias:    ${bold(cyan(templateInput))} → ${dim(resolvedInput)}`);
+        }
+
+        info(`Template: ${bold(cyan(resolvedInput))}`);
         info(`Project:  ${bold(projectName)}`);
         info(`Target:   ${dim(targetDir)}`);
         process.stderr.write("\n");
 
         const code = await executeTemplate(config, {
+            createConfig,
             cwd,
             inMonorepo,
             logger,
@@ -333,10 +353,11 @@ const create: Command = {
             initGitRepo(targetDir);
         }
 
-        // Install dependencies
+        // Install dependencies (unless disabled in config)
         let depsInstalled = false;
+        const shouldInstall = createConfig?.install !== false;
 
-        if (existsSync(join(targetDir, "package.json"))) {
+        if (shouldInstall && existsSync(join(targetDir, "package.json"))) {
             installDependencies(targetDir, pm, logger);
             depsInstalled = true;
         }

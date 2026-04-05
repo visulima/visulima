@@ -126,13 +126,18 @@ export const executeRemoteGit = async (
     config: TemplateConfig,
     context: ExecutionContext,
 ): Promise<number> => {
+    const { createConfig } = context;
+
     info(`Downloading template from ${config.source}...`);
 
     try {
         const result = await downloadTemplate(config.source, {
+            auth: createConfig?.auth || process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
             dir: context.targetDir,
             force: true,
-            auth: process.env.GIGET_AUTH || process.env.GITHUB_TOKEN || process.env.GH_TOKEN || undefined,
+            preferOffline: createConfig?.preferOffline,
+            provider: createConfig?.defaultProvider,
+            registry: createConfig?.registry,
         });
 
         info(`Downloaded to ${result.dir}`);
