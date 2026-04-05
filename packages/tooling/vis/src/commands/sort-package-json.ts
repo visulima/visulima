@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
@@ -64,17 +65,28 @@ const findPackageJsonFiles = (root: string): string[] => {
     return results;
 };
 
+const esmRequire = createRequire(import.meta.url);
+
 /**
- * Sorts a package.json string using the native Rust binding
- * (oxc-project/sort-package-json crate).
+ * Sorts a package.json string. Tries native Rust binding first,
+ * falls back to the JS sort-package-json package.
  */
 const sortContents = (contents: string, sortScripts: boolean): string => {
     const native = loadNativeBindings();
 
-    return native!.sortPackageJsonStringWithOptions(contents, {
-        pretty: true,
-        sort_scripts: sortScripts,
-    });
+    if (native) {
+        return native.sortPackageJsonStringWithOptions(contents, {
+            pretty: true,
+            sort_scripts: sortScripts,
+        });
+    }
+
+    // Fallback: JS sort-package-json package
+    const sortPackageJsonJs = esmRequire("sort-package-json") as (obj: Record<string, unknown>) => Record<string, unknown>;
+    const parsed = JSON.parse(contents) as Record<string, unknown>;
+    const sorted = sortPackageJsonJs(parsed);
+
+    return JSON.stringify(sorted, null, 2) + "\n";
 };
 
 const sortPackageJson: Command = {
