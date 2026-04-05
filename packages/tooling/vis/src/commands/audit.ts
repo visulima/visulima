@@ -628,3 +628,5 @@ const audit: Command = {
 };
 
 export default audit;
+export type { DuplicatePackage, InstalledPackage };
+export { findDuplicateDependencies, scanInstalledPackages };

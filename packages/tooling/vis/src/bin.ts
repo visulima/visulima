@@ -18,6 +18,7 @@ import cleanCommand from "./commands/clean";
 import createCommand from "./commands/create";
 import dedupeCommand from "./commands/dedupe";
 import dlxCommand from "./commands/dlx";
+import doctorCommand from "./commands/doctor";
 import execCommand from "./commands/exec";
 import graphCommand from "./commands/graph";
 import hookCommand from "./commands/hook";
@@ -128,6 +129,7 @@ cli.addCommand(implodeCommand);
 // Security commands
 cli.addCommand(approveBuildsCommand);
 cli.addCommand(auditCommand);
+cli.addCommand(doctorCommand);
 cli.addCommand(optimizeCommand);
 
 // Post-command: upgrade notice + tips

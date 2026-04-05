@@ -544,3 +544,4 @@ const optimize: Command = {
 };
 
 export default optimize;
+export { buildE18eEntries, buildSocketEntries, collectDepsFromPkgJson, discoverWorkspacePackages, markCodemodAvailability, runCodemod };
