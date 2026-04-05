@@ -147,21 +147,21 @@ const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pn
 
 // ── List templates ────────────────────────────────────────────────
 
-const listTemplates = (logger: Console): void => {
-    logger.info("");
-    logger.info("  Built-in templates:");
-    logger.info(`    ${bold(cyan("vis:monorepo"))}     ${dim("Full pnpm workspace setup")}`);
-    logger.info(`    ${bold(cyan("vis:app"))}          ${dim("Application scaffold via create-vite")}`);
-    logger.info(`    ${bold(cyan("vis:library"))}      ${dim("Reusable TypeScript library package")}`);
-    logger.info(`    ${bold(cyan("vis:generator"))}    ${dim("Code generator scaffold with bin entry")}`);
-    logger.info("");
-    logger.info("  Remote templates:");
-    logger.info(`    ${dim("Any npm create-* package:")}  vis create vite`);
-    logger.info(`    ${dim("GitHub repository:")}         vis create user/repo`);
-    logger.info(`    ${dim("GitHub URL:")}                vis create https://github.com/user/repo`);
-    logger.info("");
-    logger.info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
-    logger.info("");
+const listTemplates = (): void => {
+    info("");
+    info("  Built-in templates:");
+    info(`    ${bold(cyan("vis:monorepo"))}     ${dim("Full pnpm workspace setup")}`);
+    info(`    ${bold(cyan("vis:app"))}          ${dim("Application scaffold via create-vite")}`);
+    info(`    ${bold(cyan("vis:library"))}      ${dim("Reusable TypeScript library package")}`);
+    info(`    ${bold(cyan("vis:generator"))}    ${dim("Code generator scaffold with bin entry")}`);
+    info("");
+    info("  Remote templates:");
+    info(`    ${dim("Any npm create-* package:")}  vis create vite`);
+    info(`    ${dim("GitHub repository:")}         vis create user/repo`);
+    info(`    ${dim("GitHub URL:")}                vis create https://github.com/user/repo`);
+    info("");
+    info(`  ${dim("Template args after --:")}      vis create vite -- --template react-ts`);
+    info("");
 };
 
 // ── Print next steps ──────────────────────────────────────────────
@@ -209,7 +209,7 @@ const create: Command = {
 
         // --list: show available templates
         if (options.list) {
-            listTemplates(logger);
+            listTemplates();
             return;
         }
 
@@ -242,11 +242,14 @@ const create: Command = {
             throw new Error("No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.");
         } else {
             // ── Non-interactive mode ─────────────────────────────
-            templateInput = args[0] as string;
-            projectName = args[1] as string | undefined;
+            // Split args on "--" separator — everything after it is forwarded to the template.
+            const dashIndex = args.indexOf("--");
+            const ownArgs = dashIndex === -1 ? args : args.slice(0, dashIndex);
 
-            // Remaining args after the name are forwarded to the template
-            extraArgs = args.slice(2);
+            extraArgs = dashIndex === -1 ? [] : args.slice(dashIndex + 1);
+
+            templateInput = ownArgs[0] as string;
+            projectName = ownArgs[1] as string | undefined;
 
             if (!projectName) {
                 projectName = toValidPackageName(templateInput);
