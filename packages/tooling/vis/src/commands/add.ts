@@ -3,14 +3,13 @@ import { createInterface } from "node:readline";
 import type { Command } from "@visulima/cerebro";
 
 import { dim, green, red, yellow } from "@visulima/colorize";
+import { coerce } from "semver";
 
 import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, formatAcceptedRiskSnippet, formatReportSummary, getFullPackageName, scoreColor, scoreLabel } from "../socket-security";
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import { toStringArray } from "../utils";
-
-const SEMVER_RE = /^\d+\.\d+\.\d+/;
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -209,28 +208,28 @@ const runSocketPreCheck = async (
 ): Promise<boolean> => {
     const parsed = packages.map(parseAddArgument);
 
-    // Strip semver operators and check if result is a concrete version
-    const strippedSpecs = new Map<string, string>();
+    // Coerce version specs to concrete semver (handles "^1.2.3", "19", "latest" etc.)
+    const coercedSpecs = new Map<string, string>();
 
     for (const p of parsed) {
         if (p.versionSpec) {
-            const stripped = p.versionSpec.replace(/^[\^~>=<]+/, "");
+            const coerced = coerce(p.versionSpec);
 
-            if (SEMVER_RE.test(stripped)) {
-                strippedSpecs.set(p.name, stripped);
+            if (coerced) {
+                coercedSpecs.set(p.name, coerced.version);
             }
         }
     }
 
-    // Resolve packages without a concrete semver (dist-tags, partial versions, no spec)
-    const needsResolution = parsed.filter((p) => !strippedSpecs.has(p.name)).map((p) => p.name);
+    // Resolve packages that couldn't be coerced (dist-tags like "latest", "next")
+    const needsResolution = parsed.filter((p) => !coercedSpecs.has(p.name)).map((p) => p.name);
     const resolvedVersions = needsResolution.length > 0 ? await resolveLatestVersions(needsResolution) : new Map<string, string>();
 
     // Build lookup list with concrete semver only
     const lookupPackages: { name: string; version: string }[] = [];
 
     for (const p of parsed) {
-        const version = strippedSpecs.get(p.name) ?? resolvedVersions.get(p.name);
+        const version = coercedSpecs.get(p.name) ?? resolvedVersions.get(p.name);
 
         if (version) {
             lookupPackages.push({ name: p.name, version });

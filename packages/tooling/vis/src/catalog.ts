@@ -3,6 +3,7 @@ import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync
 import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
+import { coerce, diff, gt, parse, rcompare } from "semver";
 
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
 import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "./socket-security";
@@ -10,9 +11,6 @@ import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "./workspace
 
 // --- Module-level regex constants (e18e/prefer-static-regex) ---
 
-// sonarjs/slow-regex -- constrained by input format; not actually vulnerable
-// eslint-disable-next-line sonarjs/slow-regex
-const VERSION_REGEX = /(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.]+))?/i;
 const PREFIX_REGEX = /^([\^~]|>=|<=|[><=])/;
 // sonarjs/regex-complexity -- cannot simplify without breaking YAML key:value parsing
 // eslint-disable-next-line sonarjs/regex-complexity
@@ -48,13 +46,6 @@ const getBackupDir = (workspaceRoot: string): string => {
 // --- Types ---
 
 type UpdateTarget = "latest" | "minor" | "patch";
-
-interface ParsedVersion {
-    major: number;
-    minor: number;
-    patch: number;
-    prerelease: string;
-}
 
 interface SecurityVulnerability {
     /** Alternate identifiers (CVE-*, GHSA-*, etc.) from the OSV database. */
@@ -94,21 +85,13 @@ interface ReadCatalogOptions {
     prod?: boolean;
 }
 
-// --- Version utilities ---
+// --- Version utilities (backed by `semver` package) ---
 
-const parseVersion = (input: string): ParsedVersion | undefined => {
-    const match = VERSION_REGEX.exec(input);
+import type { SemVer } from "semver";
 
-    if (!match) {
-        return undefined;
-    }
-
-    return {
-        major: Number(match[1]),
-        minor: Number(match[2]),
-        patch: Number(match[3]),
-        prerelease: match[4] ?? "",
-    };
+const parseVersion = (input: string): SemVer | null => {
+    // coerce handles ranges like "^1.2.3" → "1.2.3", partial like "19" → "19.0.0"
+    return coerce(input) ?? parse(input);
 };
 
 const extractPrefix = (range: string): string => {
@@ -117,47 +100,25 @@ const extractPrefix = (range: string): string => {
     return match?.[1] ?? "";
 };
 
-const getUpdateType = (current: ParsedVersion, target: ParsedVersion): "major" | "minor" | "none" | "patch" => {
-    if (current.major !== target.major) {
+const getUpdateType = (current: SemVer, target: SemVer): "major" | "minor" | "none" | "patch" => {
+    const d = diff(current, target);
+
+    if (!d) {
+        return "none";
+    }
+
+    if (d.includes("major")) {
         return "major";
     }
 
-    if (current.minor !== target.minor) {
+    if (d.includes("minor")) {
         return "minor";
     }
 
-    if (current.patch !== target.patch) {
-        return "patch";
-    }
-
-    return "none";
+    return "patch";
 };
 
-const isNewer = (current: ParsedVersion, target: ParsedVersion): boolean => {
-    if (target.major !== current.major) {
-        return target.major > current.major;
-    }
-
-    if (target.minor !== current.minor) {
-        return target.minor > current.minor;
-    }
-
-    if (target.patch !== current.patch) {
-        return target.patch > current.patch;
-    }
-
-    // Equal versions: non-prerelease is "newer" than prerelease
-    if (current.prerelease && !target.prerelease) {
-        return true;
-    }
-
-    // Both prereleases of same version: compare lexicographically
-    if (current.prerelease && target.prerelease) {
-        return target.prerelease > current.prerelease;
-    }
-
-    return false;
-};
+const isNewer = (current: SemVer, target: SemVer): boolean => gt(target, current);
 
 // --- Glob matching ---
 
@@ -917,18 +878,6 @@ const fetchVulnerabilities = async (
 
 // --- Target version resolution ---
 
-const sortVersionCandidates = (a: { parsed: ParsedVersion; raw: string }, b: { parsed: ParsedVersion; raw: string }): number => {
-    if (a.parsed.major !== b.parsed.major) {
-        return b.parsed.major - a.parsed.major;
-    }
-
-    if (a.parsed.minor !== b.parsed.minor) {
-        return b.parsed.minor - a.parsed.minor;
-    }
-
-    return b.parsed.patch - a.parsed.patch;
-};
-
 const findTargetVersion = (versions: string[], latest: string, currentRange: string, target: UpdateTarget, includePrerelease: boolean): string | undefined => {
     const current = parseVersion(currentRange);
 
@@ -943,7 +892,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             return undefined;
         }
 
-        if (!includePrerelease && latestParsed.prerelease) {
+        if (!includePrerelease && latestParsed.prerelease.length > 0) {
             return undefined;
         }
 
@@ -959,12 +908,12 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
         .map((v) => {
             return { parsed: parseVersion(v), raw: v };
         })
-        .filter((v): v is { parsed: ParsedVersion; raw: string } => {
+        .filter((v): v is { parsed: SemVer; raw: string } => {
             if (!v.parsed) {
                 return false;
             }
 
-            if (!includePrerelease && v.parsed.prerelease) {
+            if (!includePrerelease && v.parsed.prerelease.length > 0) {
                 return false;
             }
 
@@ -979,7 +928,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             // target === "minor"
             return v.parsed.major === current.major;
         })
-        .toSorted(sortVersionCandidates);
+        .toSorted((a, b) => rcompare(a.raw, b.raw));
 
     return candidates[0]?.raw;
 };
@@ -1115,9 +1064,9 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
-/** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: ParsedVersion | undefined): string =>
-    parsed ? `${String(parsed.major)}.${String(parsed.minor)}.${String(parsed.patch)}` : "";
+/** Formats a SemVer as "major.minor.patch", or "" if parsing failed. */
+const formatVersionString = (parsed: SemVer | null): string =>
+    parsed ? parsed.version : "";
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1925,7 +1874,6 @@ export type {
     NpmrcConfig,
     OutdatedEntry,
     OutputFormat,
-    ParsedVersion,
     ReadCatalogOptions,
     SecurityVulnerability,
     SocketReport,
