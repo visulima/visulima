@@ -1,3 +1,4 @@
+import { createInterface } from "node:readline";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -6,81 +7,223 @@ import type { Command } from "@visulima/cerebro";
 import { findVisConfigFile } from "../config";
 import { info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
-import { syncAllowBuildsToNativeConfig } from "../security";
+import { scanUnapprovedBuildScripts, syncAllowBuildsToNativeConfig } from "../security";
 
-/**
- * Best-practice default configuration template.
- *
- * defineConfig() applies secure defaults automatically:
- * - minimumReleaseAge: 20160 (14-day cooldown)
- * - trustPolicy: "no-downgrade"
- * - trustPolicyIgnoreAfter: 43200 (30 days)
- * - blockExoticSubdeps: true
- * - strictDepBuilds: true
- * - update.security: true
- * - update.target: "minor"
- */
-const generateConfigContent = (pm: string): string => `import { defineConfig } from "@visulima/vis/config";
+// ── Interactive prompt helpers ──────────────────────────────────────
 
-/**
- * Vis configuration — secure by default.
- *
- * defineConfig() applies npm supply chain security best practices automatically:
- *   - minimumReleaseAge: 20160 (14-day cooldown on new package versions)
- *   - trustPolicy: "no-downgrade" (block packages that lost trust evidence)
- *   - trustPolicyIgnoreAfter: 43200 (skip check for packages older than 30 days)
- *   - blockExoticSubdeps: true (block git/tarball transitive dependencies)
- *   - strictDepBuilds: true (fail on unapproved build scripts)
- *
- * You only need to configure allowBuilds and any overrides.
- * Run 'vis check --security-config' to see all active settings.
- *
- * @see https://github.com/lirantal/awesome-npm-security-best-practices
- */
+const ask = (rl: ReturnType<typeof createInterface>, question: string): Promise<string> =>
+    new Promise((resolve) => {
+        rl.question(question, (answer) => {
+            resolve(answer.trim());
+        });
+    });
+
+const confirm = async (rl: ReturnType<typeof createInterface>, question: string, defaultYes: boolean = true): Promise<boolean> => {
+    const hint = defaultYes ? "[Y/n]" : "[y/N]";
+    const answer = await ask(rl, `${question} ${hint} `);
+
+    if (answer === "") {
+        return defaultYes;
+    }
+
+    return answer.toLowerCase() === "y" || answer.toLowerCase() === "yes";
+};
+
+// ── Config template ─────────────────────────────────────────────────
+
+interface InitOptions {
+    allowBuilds: Record<string, boolean>;
+    enableSocket: boolean;
+    staged: boolean;
+}
+
+const generateConfigContent = (pm: string, options: InitOptions): string => {
+    const sections: string[] = [];
+
+    // Security section
+    const allowBuildsEntries = Object.entries(options.allowBuilds)
+        .filter(([, v]) => v)
+        .map(([k]) => `            "${k}": true,`)
+        .join("\n");
+
+    const allowBuildsBlock = allowBuildsEntries
+        ? `{\n${allowBuildsEntries}\n        }`
+        : "{}";
+
+    let securityBlock = `        allowBuilds: ${allowBuildsBlock},`;
+
+    if (options.enableSocket) {
+        securityBlock += `\n        socket: { enabled: true },`;
+    }
+
+    sections.push(`    security: {\n${securityBlock}\n    },`);
+
+    // Staged section
+    if (options.staged) {
+        sections.push(`    staged: {
+        "*.{ts,tsx}": "eslint --fix",
+        "*.{ts,tsx,js,jsx,json,md}": "prettier --write",
+    },`);
+    }
+
+    return `import { defineConfig } from "@visulima/vis/config";
+
 export default defineConfig({
-    security: {
-        /**
-         * Packages allowed to run install/postinstall scripts.
-         * All other packages are blocked by default.${pm === "pnpm" ? "" : `\n         * For ${pm}: vis enforces this since ${pm} lacks native allowlist support.`}
-         * Run 'vis approve-builds' to scan and add packages.
-         */
-        allowBuilds: {
-            // Add packages that need build scripts here:
-            // "esbuild": true,
-            // "@prisma/client": true,
-        },
-
-        // Enable Socket.dev for package security scores and supply chain alerts:
-        // socket: { enabled: true },
-
-        // Override any default if needed:
-        // minimumReleaseAge: 1440,    // relax to 24 hours
-        // strictDepBuilds: false,     // warn instead of fail
-    },
-
-    /**
-     * Staged file patterns for pre-commit hooks.
-     * Run 'vis hook install' to set up git hooks.
-     */
-    // staged: {
-    //     "*.ts": "eslint --fix",
-    //     "*.md": "prettier --write",
-    // },
+${sections.join("\n\n")}
 });
 `;
+};
 
+// ── Interactive wizard ──────────────────────────────────────────────
+
+const runInteractiveInit = async (cwd: string, pm: { name: string; version: string }): Promise<void> => {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    info("\n  vis init — interactive setup\n");
+
+    // Step 1: Socket.dev
+    const enableSocket = await confirm(rl, "  Enable Socket.dev security scanning?");
+
+    if (enableSocket) {
+        success("    Socket.dev enabled — scores, alerts, and supply chain data active.");
+
+        if (!process.env.VIS_SOCKET_TOKEN) {
+            note("    Set VIS_SOCKET_TOKEN for a custom API token (optional).");
+        }
+    }
+
+    // Step 2: Build script approval
+    info("");
+    const scanBuilds = await confirm(rl, "  Scan for packages with build scripts?");
+
+    const allowBuilds: Record<string, boolean> = {};
+
+    if (scanBuilds) {
+        info("    Scanning node_modules...");
+
+        const unapproved = scanUnapprovedBuildScripts(cwd, {});
+
+        if (unapproved.length > 0) {
+            info(`    Found ${String(unapproved.length)} package${unapproved.length === 1 ? "" : "s"} with build scripts:\n`);
+
+            for (const pkg of unapproved) {
+                const answer = await confirm(rl, `    Allow ${pkg}?`, false);
+
+                const pkgName = pkg.split(" (")[0];
+
+                allowBuilds[pkgName] = answer;
+
+                if (answer) {
+                    success(`      ✓ ${pkgName} approved`);
+                }
+            }
+        } else {
+            info("    No packages with build scripts found.");
+        }
+    }
+
+    // Step 3: Git hooks
+    info("");
+    const setupStaged = await confirm(rl, "  Set up pre-commit hooks (lint-staged)?", false);
+
+    // Step 4: Sync to native PM config
+    let syncNative = false;
+
+    if (pm.name === "pnpm" || pm.name === "yarn" || pm.name === "npm") {
+        info("");
+        syncNative = await confirm(rl, `  Sync security settings to ${pm.name} config?`);
+    }
+
+    rl.close();
+
+    // Generate and write config
+    info("");
+
+    const configPath = join(cwd, "vis.config.ts");
+    const content = generateConfigContent(pm.name, { allowBuilds, enableSocket, staged: setupStaged });
+
+    writeFileSync(configPath, content);
+    success(`Created ${configPath}`);
+
+    // Sync to native PM config
+    if (syncNative) {
+        const approvedBuilds = Object.fromEntries(Object.entries(allowBuilds).filter(([, v]) => v));
+        const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, approvedBuilds);
+
+        for (const action of actions) {
+            success(`  ${action}`);
+        }
+    }
+
+    // Summary
+    info("");
+    info("  Setup complete. Your config:");
+    info(`    Security:     ${enableSocket ? "Socket.dev enabled" : "defaults only"}`);
+    info(`    Build scripts: ${Object.values(allowBuilds).filter(Boolean).length} approved`);
+    info(`    Git hooks:    ${setupStaged ? "lint-staged configured" : "not configured"}`);
+    info(`    PM sync:      ${syncNative ? "done" : "skipped"}`);
+
+    info("");
+    note("  Run 'vis doctor' to see your project's full health status.");
+    info("");
+};
+
+// ── Non-interactive init ────────────────────────────────────────────
+
+const runStaticInit = (cwd: string, pm: { name: string; version: string }, options: Record<string, unknown>): void => {
+    const configPath = join(cwd, "vis.config.ts");
+    const content = generateConfigContent(pm.name, { allowBuilds: {}, enableSocket: false, staged: false });
+
+    writeFileSync(configPath, content);
+    success(`Created ${configPath}`);
+
+    info("");
+    info("Secure defaults applied by defineConfig():");
+    info("  \u2713 minimumReleaseAge: 20160 (14-day cooldown)");
+    info("  \u2713 trustPolicy: no-downgrade");
+    info("  \u2713 blockExoticSubdeps: true");
+    info("  \u2713 strictDepBuilds: true");
+    info("  \u2713 update.security: true (OSV.dev)");
+
+    if (options["sync-native"]) {
+        info("");
+        const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, {});
+
+        for (const action of actions) {
+            success(action);
+        }
+    }
+
+    info("");
+    note("Run 'vis init --interactive' for guided setup with Socket.dev, build scripts, and git hooks.");
+    note("Run 'vis doctor' to see your project's full health status.");
+};
+
+// ── Command ─────────────────────────────────────────────────────────
+
+/**
+ * `vis init` — initialize vis configuration with secure defaults.
+ *
+ * In interactive mode (`--interactive` or TTY default), guides the user through:
+ * 1. Socket.dev security scanning (opt-in)
+ * 2. Build script approval (scans node_modules)
+ * 3. Git hooks / lint-staged setup
+ * 4. Native PM config sync
+ *
+ * In non-interactive mode (CI, piped), creates a minimal config with secure defaults.
+ */
 const init: Command = {
     description: "Initialize vis.config.ts with best-practice security defaults",
     examples: [
-        ["vis init", "Create vis.config.ts with recommended settings"],
+        ["vis init", "Interactive setup wizard"],
+        ["vis init --no-interactive", "Create minimal config without prompts"],
         ["vis init --force", "Overwrite existing config"],
-        ["vis init --sync-native", "Also sync settings to native PM config files"],
+        ["vis init --sync-native", "Also sync to native PM config files"],
     ],
     execute: async ({ options, workspaceRoot: wsRoot }) => {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        // Check if config already exists
         const existingConfig = findVisConfigFile(cwd);
 
         if (existingConfig && !options.force) {
@@ -90,54 +233,19 @@ const init: Command = {
             return;
         }
 
-        // Generate and write config
-        const configPath = join(cwd, "vis.config.ts");
-        const content = generateConfigContent(pm.name);
+        const isTTY = Boolean(process.stdin.isTTY) && options.interactive !== false;
 
-        writeFileSync(configPath, content);
-        success(`Created ${configPath}`);
-
-        info("");
-        info("Secure defaults applied by defineConfig():");
-        info("  \u2713 minimumReleaseAge: 20160 (14-day cooldown on new packages)");
-        info("  \u2713 trustPolicy: no-downgrade");
-        info("  \u2713 trustPolicyIgnoreAfter: 43200 (skip for packages >30 days old)");
-        info("  \u2713 blockExoticSubdeps: true");
-        info("  \u2713 strictDepBuilds: true (unapproved build scripts = hard error)");
-        info("  \u2713 update.security: true (OSV.dev vulnerability checking)");
-        info("  \u2713 allowBuilds: {} (run 'vis approve-builds' to add packages)");
-        info("");
-        info("Optional — Socket.dev integration:");
-        info("  \u25CB security.socket.enabled: false (opt-in: package scores, alerts, supply chain data)");
-        info("    Enable in vis.config.ts: security: { socket: { enabled: true } }");
-        info("    Or set VIS_SOCKET_TOKEN env var for a custom API token.");
-
-        // Sync to native PM config if requested
-        if (options["sync-native"]) {
-            info("");
-            const allowBuilds = {}; // Empty for initial setup
-            const actions = syncAllowBuildsToNativeConfig(pm.name, cwd, allowBuilds);
-
-            for (const action of actions) {
-                success(action);
-            }
-        }
-
-        info("");
-        note("Next steps:");
-        note("  1. Run 'vis approve-builds' to review packages with build scripts");
-        note("  2. Run 'vis check --security-config' to verify your settings");
-
-        if (pm.name === "npm") {
-            note("  3. Ensure .npmrc has 'ignore-scripts=true' (vis will auto-inject for now)");
-        } else if (pm.name === "yarn") {
-            note("  3. Ensure .yarnrc.yml has 'enableScripts: false'");
+        if (isTTY && !options["no-interactive"]) {
+            await runInteractiveInit(cwd, pm);
+        } else {
+            runStaticInit(cwd, pm, options);
         }
     },
     name: "init",
     options: [
         { defaultValue: false, description: "Overwrite existing config file", name: "force", type: Boolean },
-        { defaultValue: false, description: "Also sync settings to native PM config files (.npmrc, .yarnrc.yml, etc.)", name: "sync-native", type: Boolean },
+        { defaultValue: false, description: "Skip interactive prompts", name: "no-interactive", type: Boolean },
+        { defaultValue: false, description: "Sync settings to native PM config files", name: "sync-native", type: Boolean },
     ],
 };
 
