@@ -1,128 +1,48 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 
 import type { Command } from "@visulima/cerebro";
 import { getManifestData } from "@socketsecurity/registry";
 import { join, resolve } from "@visulima/path";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment -- module-replacements ships JSON manifests
-// @ts-expect-error -- JSON import with assertion
+import { render } from "@visulima/tui";
+import isInCi from "is-in-ci";
+// @ts-expect-error -- JSON import
 import nativeManifest from "module-replacements/manifests/native.json" with { type: "json" };
-// @ts-expect-error -- JSON import with assertion
+// @ts-expect-error -- JSON import
 import preferredManifest from "module-replacements/manifests/preferred.json" with { type: "json" };
-// @ts-expect-error -- JSON import with assertion
+// @ts-expect-error -- JSON import
 import microUtilitiesManifest from "module-replacements/manifests/micro-utilities.json" with { type: "json" };
+import React from "react";
 import { coerce } from "semver";
 
 import { info, note, success, warn } from "../output";
 import type { OverrideEntry, PmInfo } from "../overrides";
 import { applyOverrides, lockfileContainsPackage, readLockfileText } from "../overrides";
 import { detectPm, runInstall } from "../pm-runner";
+import type { OptimizeEntry } from "../tui/components/optimize/OptimizeStore";
+import { OptimizeStore } from "../tui/components/optimize/OptimizeStore";
+import VisOptimizeApp from "../tui/components/optimize/VisOptimizeApp";
 import { readPnpmWorkspacePatterns, resolveWorkspacePatterns } from "../workspace";
 
-/**
- * A single entry from the `@socketsecurity/registry` manifest.
- *
- * @see https://www.npmjs.com/package/@socketsecurity/registry
- */
+// ── Types ───────────────────────────────────────────────────────────
+
 interface ManifestEntryData {
-    /** Category tags (e.g., `"cleanup"`, `"speedup"`). */
     categories?: string[];
-    /** Whether this registry package is deprecated. */
     deprecated?: boolean;
-    /** The `@socketregistry/<name>` package name. */
     name: string;
-    /** The original npm package being replaced. */
     package: string;
-    /** The safe version of the replacement package. */
     version: string;
 }
 
 type ManifestEntry = [string, ManifestEntryData];
-
-interface OptimizeOptions {
-    dryRun: boolean;
-    pin: boolean;
-    prod: boolean;
-}
-
-/** Aggregate result of the optimize operation across all workspaces. */
-interface OptimizeResult {
-    /** Package names that were newly added as overrides. */
-    added: string[];
-    /** All computed override entries (used for dry-run display). */
-    entries: OverrideEntry[];
-    /** Number of manifest entries skipped (not found in deps or lockfile). */
-    skipped: number;
-    /** Package names whose override specs were updated. */
-    updated: string[];
-    /** Workspace directories that contributed dependencies. */
-    workspaces: string[];
-}
-
-// ── e18e module-replacements analysis ───────────────────────────────
 
 interface E18eManifest {
     mappings: Record<string, { moduleName: string; replacements: string[] }>;
     replacements: Record<string, { description?: string; id: string; type: string }>;
 }
 
-/** A package that can be replaced with a native builtin, lighter alternative, or removed. */
-interface E18eSuggestion {
-    /** Category: native builtin, preferred alternative, or micro-utility. */
-    category: "micro-utility" | "native" | "preferred";
-    /** The original package name. */
-    packageName: string;
-    /** Human-readable replacement description. */
-    replacement: string;
-}
+// ── Dep collection ──────────────────────────────────────────────────
 
-/**
- * Scans dependencies against the `module-replacements` manifests to find
- * packages replaceable with native builtins, lighter alternatives, or inline code.
- *
- * @param allDeps - Set of all dependency names across root and workspaces.
- * @returns Suggestions grouped by category.
- */
-const analyzeE18eReplacements = (allDeps: Set<string>): E18eSuggestion[] => {
-    const suggestions: E18eSuggestion[] = [];
-
-    const scanManifest = (manifest: E18eManifest, category: E18eSuggestion["category"]): void => {
-        for (const [, mapping] of Object.entries(manifest.mappings)) {
-            if (!allDeps.has(mapping.moduleName)) {
-                continue;
-            }
-
-            const replacementIds = mapping.replacements;
-            const descriptions: string[] = [];
-
-            for (const rid of replacementIds) {
-                const rep = manifest.replacements[rid];
-
-                if (rep) {
-                    descriptions.push(rep.description ?? rep.id);
-                }
-            }
-
-            suggestions.push({
-                category,
-                packageName: mapping.moduleName,
-                replacement: descriptions.join(", ") || replacementIds.join(", "),
-            });
-        }
-    };
-
-    scanManifest(nativeManifest as E18eManifest, "native");
-    scanManifest(preferredManifest as E18eManifest, "preferred");
-    scanManifest(microUtilitiesManifest as E18eManifest, "micro-utility");
-
-    return suggestions;
-};
-
-/**
- * Collects all dependency names from a `package.json` file.
- *
- * @param pkgJsonPath - Absolute path to the `package.json`.
- * @param prodOnly - When `true`, skips `devDependencies` and `peerDependencies`.
- */
+/** Collects dependency names from a `package.json`. */
 const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<string> => {
     const deps = new Set<string>();
 
@@ -146,19 +66,13 @@ const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<str
             }
         }
     } catch {
-        // package.json may not exist for all workspace dirs
+        // package.json may not exist
     }
 
     return deps;
 };
 
-/**
- * Discovers workspace package directories by reading `pnpm-workspace.yaml`
- * or the `workspaces` field in the root `package.json`.
- *
- * @param workspaceRoot - Absolute path to the workspace root.
- * @returns Relative directory paths to each workspace package.
- */
+/** Discovers workspace package directories. */
 const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
     const pnpmPatterns = readPnpmWorkspacePatterns(workspaceRoot);
 
@@ -185,26 +99,49 @@ const discoverWorkspacePackages = (workspaceRoot: string): string[] => {
     }
 };
 
-/**
- * Core optimization logic.
- *
- * Scans root and workspace deps + lockfile against the `@socketregistry`
- * manifest, builds override entries for matched packages, and applies
- * them to the correct config file for the detected package manager.
- */
-/* eslint-disable sonarjs/cognitive-complexity */
-const executeOptimize = (
-    workspaceRoot: string,
-    manifest: ManifestEntry[],
-    pm: PmInfo,
-    allDeps: Set<string>,
-    workspacesWithDeps: string[],
-    options: OptimizeOptions,
-): OptimizeResult => {
-    const rootPkgJsonPath = join(workspaceRoot, "package.json");
-    const lockText = readLockfileText(workspaceRoot, pm.name);
-    const entries: OverrideEntry[] = [];
-    let skipped = 0;
+// ── Entry builders ──────────────────────────────────────────────────
+
+/** Scans deps against e18e module-replacements manifests. */
+const buildE18eEntries = (allDeps: Set<string>): OptimizeEntry[] => {
+    const entries: OptimizeEntry[] = [];
+
+    const scanManifest = (manifest: E18eManifest, category: "micro-utility" | "native" | "preferred"): void => {
+        for (const [, mapping] of Object.entries(manifest.mappings)) {
+            if (!allDeps.has(mapping.moduleName)) {
+                continue;
+            }
+
+            const descriptions: string[] = [];
+
+            for (const rid of mapping.replacements) {
+                const rep = manifest.replacements[rid];
+
+                if (rep) {
+                    descriptions.push(rep.description ?? rep.id);
+                }
+            }
+
+            entries.push({
+                category,
+                hasCodemod: false, // filled in below
+                overrideSpec: undefined,
+                packageName: mapping.moduleName,
+                replacement: descriptions.join(", ") || mapping.replacements.join(", "),
+            });
+        }
+    };
+
+    scanManifest(nativeManifest as E18eManifest, "native");
+    scanManifest(preferredManifest as E18eManifest, "preferred");
+    scanManifest(microUtilitiesManifest as E18eManifest, "micro-utility");
+
+    return entries;
+};
+
+/** Scans deps against @socketregistry manifest. */
+const buildSocketEntries = (allDeps: Set<string>, lockText: string, pm: PmInfo, pin: boolean): OptimizeEntry[] => {
+    const manifest = (getManifestData("npm") ?? []) as ManifestEntry[];
+    const entries: OptimizeEntry[] = [];
 
     for (const [, data] of manifest) {
         if (data.deprecated) {
@@ -215,7 +152,6 @@ const executeOptimize = (
         const inLockfile = lockText ? lockfileContainsPackage(lockText, data.package, pm.name) : false;
 
         if (!inDeps && !inLockfile) {
-            skipped++;
             continue;
         }
 
@@ -225,251 +161,339 @@ const executeOptimize = (
             continue;
         }
 
+        const spec = pin ? `npm:${data.name}@${data.version}` : `npm:${data.name}@^${String(major)}`;
+
         entries.push({
-            original: data.package,
-            spec: options.pin ? `npm:${data.name}@${data.version}` : `npm:${data.name}@^${String(major)}`,
+            category: "socket",
+            hasCodemod: false,
+            overrideSpec: spec,
+            packageName: data.package,
+            replacement: data.name,
         });
     }
 
-    if (options.dryRun || entries.length === 0) {
-        return { added: [], entries, skipped, updated: [], workspaces: workspacesWithDeps };
-    }
-
-    const result = applyOverrides(workspaceRoot, rootPkgJsonPath, entries, pm);
-
-    return { ...result, entries, skipped, workspaces: workspacesWithDeps };
+    return entries;
 };
-/* eslint-enable sonarjs/cognitive-complexity */
+
+/** Marks e18e entries that have codemods available. */
+const markCodemodAvailability = async (entries: OptimizeEntry[]): Promise<void> => {
+    try {
+        const { codemods } = (await import("module-replacements-codemods")) as {
+            codemods: Record<string, unknown>;
+        };
+
+        for (const entry of entries) {
+            if (entry.category !== "socket" && codemods[entry.packageName]) {
+                entry.hasCodemod = true;
+            }
+        }
+    } catch {
+        // module-replacements-codemods not installed or failed
+    }
+};
+
+// ── Codemod execution ───────────────────────────────────────────────
+
+interface CodemodResult {
+    filesChanged: number;
+    packageName: string;
+}
 
 /**
- * `vis optimize` — two-phase dependency optimization.
+ * Runs a codemod for a single package across all source files in the project.
+ * Returns the number of files modified.
+ */
+const runCodemod = async (workspaceRoot: string, packageName: string): Promise<CodemodResult> => {
+    let filesChanged = 0;
+
+    try {
+        const { codemods } = (await import("module-replacements-codemods")) as {
+            codemods: Record<string, (options: Record<string, never>) => { transform: (opts: { file: { filename: string; source: string } }) => Promise<string> | string }>;
+        };
+
+        const factory = codemods[packageName];
+
+        if (!factory) {
+            return { filesChanged: 0, packageName };
+        }
+
+        const codemod = factory({});
+        const sourceFiles = collectSourceFiles(workspaceRoot);
+
+        for (const filePath of sourceFiles) {
+            const source = readFileSync(filePath, "utf8");
+
+            if (!source.includes(packageName)) {
+                continue;
+            }
+
+            try {
+                const result = await codemod.transform({ file: { filename: filePath, source } });
+
+                if (result !== source) {
+                    writeFileSync(filePath, result, "utf8");
+                    filesChanged++;
+                }
+            } catch {
+                // Skip files that fail to transform
+            }
+        }
+    } catch {
+        // Codemod package not available
+    }
+
+    return { filesChanged, packageName };
+};
+
+/** Collects .ts/.js/.tsx/.jsx source files, excluding node_modules and dist. */
+const collectSourceFiles = (dir: string): string[] => {
+    const files: string[] = [];
+    const SKIP = new Set(["node_modules", "dist", ".git", "coverage", ".next", ".nuxt"]);
+    const EXTENSIONS = new Set([".ts", ".js", ".tsx", ".jsx", ".mts", ".mjs", ".cts", ".cjs"]);
+
+    const walk = (current: string): void => {
+        try {
+            for (const entry of readdirSync(current, { withFileTypes: true })) {
+                if (entry.name.startsWith(".") && entry.name !== ".") {
+                    continue;
+                }
+
+                const fullPath = join(current, entry.name);
+
+                if (entry.isDirectory()) {
+                    if (!SKIP.has(entry.name)) {
+                        walk(fullPath);
+                    }
+                } else {
+                    const ext = entry.name.slice(entry.name.lastIndexOf("."));
+
+                    if (EXTENSIONS.has(ext)) {
+                        files.push(fullPath);
+                    }
+                }
+            }
+        } catch {
+            // Skip inaccessible dirs
+        }
+    };
+
+    walk(dir);
+
+    return files;
+};
+
+// ── Command ─────────────────────────────────────────────────────────
+
+/**
+ * `vis optimize` — two-phase dependency optimization with interactive TUI.
  *
- * **Phase 1 (e18e):** Scans dependencies against the
- * {@link https://www.npmjs.com/package/module-replacements | module-replacements}
- * manifests to identify packages replaceable with native JS builtins, lighter
- * alternatives, or inline code. Reports suggestions for the user to apply via
- * `npx @e18e/cli migrate`.
+ * **Phase 1 (e18e):** Identifies packages replaceable with native builtins or lighter
+ * alternatives using `module-replacements` manifests. Runs source code codemods via
+ * `module-replacements-codemods` for selected entries.
  *
- * **Phase 2 (Socket.dev):** Loads the curated
- * {@link https://www.npmjs.com/package/@socketsecurity/registry | @socketsecurity/registry}
- * manifest and writes override/resolution entries for packages that have
- * security-hardened `@socketregistry/*` alternatives.
+ * **Phase 2 (Socket.dev):** Writes override/resolution entries for packages that have
+ * security-hardened `@socketregistry` alternatives.
  *
- * @example
- * ```sh
- * vis optimize              # analyze + apply overrides + install
- * vis optimize --dry-run    # preview without changes
- * vis optimize --pin        # exact override versions instead of ^ranges
- * vis optimize --prod       # production deps only
- * ```
+ * In TTY mode, presents an interactive TUI (like `vis update`) where users select
+ * which optimizations to apply. In non-TTY/CI mode, outputs a static report.
  */
 const optimize: Command = {
     description: "Analyze and optimize dependencies using e18e replacements and @socketregistry overrides",
     examples: [
-        ["vis optimize", "Analyze with e18e and apply Socket.dev overrides"],
-        ["vis optimize --dry-run", "Preview changes without modifying files"],
-        ["vis optimize --pin", "Pin overrides to exact versions"],
+        ["vis optimize", "Interactive TUI to select and apply optimizations"],
+        ["vis optimize --dry-run", "Preview available optimizations"],
+        ["vis optimize --pin", "Pin Socket.dev overrides to exact versions"],
         ["vis optimize --prod", "Only optimize production dependencies"],
     ],
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
         const pm = detectPm(wsRoot);
+        const isDryRun = Boolean(options["dry-run"]);
+        const isProd = Boolean(options.prod);
+        const isPin = Boolean(options.pin);
 
         info(`Detected ${pm.name} v${pm.version}.`);
 
-        const isDryRun = Boolean(options["dry-run"]);
-        const isProd = Boolean(options.prod);
-
-        // Collect all deps across root + workspaces (shared by e18e and socket)
-        const rootPkgJsonPath = join(wsRoot, "package.json");
-        const rootDeps = collectDepsFromPkgJson(rootPkgJsonPath, isProd);
+        // Collect all deps
+        const rootDeps = collectDepsFromPkgJson(join(wsRoot, "package.json"), isProd);
         const workspaceDirs = discoverWorkspacePackages(wsRoot);
         const allDeps = new Set(rootDeps);
-        const workspacesWithDeps: string[] = [];
 
         for (const wsDir of workspaceDirs) {
             const wsDeps = collectDepsFromPkgJson(join(resolve(wsRoot, wsDir), "package.json"), isProd);
 
-            if (wsDeps.size > 0) {
-                for (const dep of wsDeps) {
-                    allDeps.add(dep);
-                }
-
-                workspacesWithDeps.push(wsDir);
+            for (const dep of wsDeps) {
+                allDeps.add(dep);
             }
         }
 
-        if (workspacesWithDeps.length > 0) {
-            info(`Scanned ${String(workspacesWithDeps.length)} workspace package${workspacesWithDeps.length === 1 ? "" : "s"}.`);
+        if (workspaceDirs.length > 0) {
+            info(`Scanned ${String(workspaceDirs.length)} workspace package${workspaceDirs.length === 1 ? "" : "s"}.`);
         }
 
-        // ── Phase 1: e18e module-replacements analysis ──────────────
-        info("\nAnalyzing dependencies for module replacements (e18e)...");
+        // Build entries from both sources
+        info("Scanning dependencies...\n");
 
-        const e18eSuggestions = analyzeE18eReplacements(allDeps);
+        const lockText = readLockfileText(wsRoot, pm.name);
+        const e18eEntries = buildE18eEntries(allDeps);
+        const socketEntries = buildSocketEntries(allDeps, lockText, pm, isPin);
 
-        if (e18eSuggestions.length > 0) {
-            const natives = e18eSuggestions.filter((s) => s.category === "native");
-            const preferred = e18eSuggestions.filter((s) => s.category === "preferred");
-            const micros = e18eSuggestions.filter((s) => s.category === "micro-utility");
+        // Deduplicate: if a package appears in both, prefer e18e (source-level fix is better than override)
+        const e18ePackages = new Set(e18eEntries.map((e) => e.packageName));
+        const dedupedSocketEntries = socketEntries.filter((e) => !e18ePackages.has(e.packageName));
 
-            if (natives.length > 0) {
-                info(`\n  Native replacements (${String(natives.length)}):`);
+        const allEntries = [...e18eEntries, ...dedupedSocketEntries];
 
-                for (const s of natives) {
-                    info(`    ${s.packageName} → ${s.replacement}`);
-                }
-            }
+        await markCodemodAvailability(allEntries);
 
-            if (preferred.length > 0) {
-                info(`\n  Preferred alternatives (${String(preferred.length)}):`);
-
-                for (const s of preferred) {
-                    info(`    ${s.packageName} → ${s.replacement}`);
-                }
-            }
-
-            if (micros.length > 0) {
-                info(`\n  Micro-utilities (${String(micros.length)}):`);
-
-                for (const s of micros) {
-                    info(`    ${s.packageName} → ${s.replacement}`);
-                }
-            }
-
-            note(`\n  Run 'npx @e18e/cli migrate' to apply source code codemods for these replacements.`);
-        } else {
-            info("  No module replacement suggestions found.");
-        }
-
-        // ── Phase 2: Socket.dev security-hardened overrides ─────────
-        info("\nLoading @socketregistry manifest...");
-
-        const manifest = (getManifestData("npm") ?? []) as ManifestEntry[];
-
-        if (manifest.length === 0) {
-            warn("No registry entries found in @socketsecurity/registry.");
-            process.exitCode = 1;
+        if (allEntries.length === 0) {
+            info("No optimizations found for your dependencies.");
 
             return;
         }
 
-        info(`Loaded ${String(manifest.length)} registry entries.`);
+        // Interactive TUI mode
+        const isTTY = Boolean(process.stdout.isTTY) && !isInCi;
 
-        const result = executeOptimize(wsRoot, manifest, pm, allDeps, workspacesWithDeps, {
-            dryRun: isDryRun,
-            pin: Boolean(options.pin),
-            prod: isProd,
-        });
+        if (isTTY && !isDryRun && !options.json) {
+            const store = new OptimizeStore(allEntries);
 
-        if (result.entries.length === 0) {
-            info("No additional packages found for @socketregistry overrides.\n");
+            const instance = render(React.createElement(VisOptimizeApp, { isDryRun, store }), {
+                alternateScreen: true,
+                exitOnCtrlC: false,
+                interactive: true,
+                patchConsole: true,
+            });
+
+            const exitResult = await instance.waitUntilExit();
+
+            const selected = Array.isArray(exitResult) ? (exitResult as OptimizeEntry[]) : [];
+
+            if (selected.length === 0) {
+                info("No optimizations selected.");
+
+                return;
+            }
+
+            // Apply selected optimizations
+            const selectedE18e = selected.filter((e) => e.category !== "socket" && e.hasCodemod);
+            const selectedSocket = selected.filter((e) => e.category === "socket");
+
+            // Phase 1: Run codemods
+            if (selectedE18e.length > 0) {
+                info(`\nRunning ${String(selectedE18e.length)} codemod${selectedE18e.length === 1 ? "" : "s"}...\n`);
+
+                for (const entry of selectedE18e) {
+                    const result = await runCodemod(wsRoot, entry.packageName);
+
+                    if (result.filesChanged > 0) {
+                        success(`  ${entry.packageName}: ${String(result.filesChanged)} file${result.filesChanged === 1 ? "" : "s"} updated`);
+                    } else {
+                        info(`  ${entry.packageName}: no files changed`);
+                    }
+                }
+            }
+
+            // Phase 2: Write overrides
+            if (selectedSocket.length > 0) {
+                const overrideEntries: OverrideEntry[] = selectedSocket
+                    .filter((e) => e.overrideSpec)
+                    .map((e) => ({ original: e.packageName, spec: e.overrideSpec! }));
+
+                const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm);
+
+                if (result.added.length > 0) {
+                    success(`\nAdded ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);
+                }
+
+                if (result.updated.length > 0) {
+                    success(`Updated ${String(result.updated.length)} override${result.updated.length === 1 ? "" : "s"}.`);
+                }
+            }
+
+            // Run install
+            if (selectedSocket.length > 0 && !options["no-install"]) {
+                info(`\nRunning ${pm.name} install to update lockfile...`);
+
+                const code = runInstall(pm, { dev: false, filter: [], force: false, frozenLockfile: false, ignoreScripts: false, lockfileOnly: false, noOptional: false, offline: false, prod: false, recursive: false, silent: false, workspaceRoot: false }, wsRoot, logger);
+
+                if (code !== 0) {
+                    warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
+                }
+            }
+
+            info("");
+            success("Optimization complete.");
 
             return;
         }
 
-        if (isDryRun) {
-            info(`Would apply ${String(result.entries.length)} overrides:\n`);
-
-            for (const entry of result.entries) {
-                info(`  ${entry.original} → ${entry.spec}`);
-            }
-
-            info(`\n  ${String(result.skipped)} packages skipped (not in dependencies).`);
-
-            if (result.workspaces.length > 0) {
-                info(`  Scanned across ${String(result.workspaces.length)} workspace${result.workspaces.length === 1 ? "" : "s"}.`);
-            }
-
-            note("\nRun without --dry-run to apply changes.");
-
-            return;
-        }
-
+        // Static output (non-TTY, CI, dry-run, JSON)
         if (options.json) {
             process.stdout.write(
-                JSON.stringify(
-                    {
-                        e18e: {
-                            microUtilities: e18eSuggestions.filter((s) => s.category === "micro-utility").length,
-                            native: e18eSuggestions.filter((s) => s.category === "native").length,
-                            preferred: e18eSuggestions.filter((s) => s.category === "preferred").length,
-                            suggestions: e18eSuggestions,
-                            total: e18eSuggestions.length,
-                        },
-                        socket: {
-                            added: result.added,
-                            entries: result.entries.length,
-                            skipped: result.skipped,
-                            updated: result.updated,
-                        },
-                        packageManager: pm.name,
-                        workspaces: workspacesWithDeps.length,
-                    },
-                    undefined,
-                    2,
-                ) + "\n",
+                JSON.stringify({
+                    e18e: e18eEntries.map((e) => ({ category: e.category, hasCodemod: e.hasCodemod, packageName: e.packageName, replacement: e.replacement })),
+                    packageManager: pm.name,
+                    socket: dedupedSocketEntries.map((e) => ({ overrideSpec: e.overrideSpec, packageName: e.packageName, replacement: e.replacement })),
+                    total: allEntries.length,
+                    workspaces: workspaceDirs.length,
+                }, undefined, 2) + "\n",
             );
 
             return;
         }
 
-        if (result.added.length > 0) {
-            success(`Added ${String(result.added.length)} override${result.added.length === 1 ? "" : "s"}.`);
-        }
+        // Static text output
+        const natives = e18eEntries.filter((e) => e.category === "native");
+        const preferred = e18eEntries.filter((e) => e.category === "preferred");
+        const micros = e18eEntries.filter((e) => e.category === "micro-utility");
 
-        if (result.updated.length > 0) {
-            success(`Updated ${String(result.updated.length)} override${result.updated.length === 1 ? "" : "s"}.`);
-        }
+        if (natives.length > 0) {
+            info(`Native replacements (${String(natives.length)}):`);
 
-        if (result.workspaces.length > 0) {
-            info(`  Dependencies scanned across ${String(result.workspaces.length)} workspace${result.workspaces.length === 1 ? "" : "s"}.`);
-        }
-
-        if (result.added.length === 0 && result.updated.length === 0) {
-            info("All applicable overrides are already in place.");
-
-            return;
-        }
-
-        if (!options["no-install"]) {
-            info(`\nRunning ${pm.name} install to update lockfile...`);
-
-            const code = runInstall(
-                pm,
-                {
-                    dev: false,
-                    filter: [],
-                    force: false,
-                    frozenLockfile: false,
-                    ignoreScripts: false,
-                    lockfileOnly: false,
-                    noOptional: false,
-                    offline: false,
-                    prod: false,
-                    recursive: false,
-                    silent: false,
-                    workspaceRoot: false,
-                },
-                wsRoot,
-                logger,
-            );
-
-            if (code !== 0) {
-                warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
+            for (const s of natives) {
+                info(`  ${s.hasCodemod ? "\u2699" : " "} ${s.packageName} → ${s.replacement}`);
             }
         }
 
-        info("");
-        success("Optimization complete.");
+        if (preferred.length > 0) {
+            info(`\nPreferred alternatives (${String(preferred.length)}):`);
+
+            for (const s of preferred) {
+                info(`  ${s.hasCodemod ? "\u2699" : " "} ${s.packageName} → ${s.replacement}`);
+            }
+        }
+
+        if (micros.length > 0) {
+            info(`\nMicro-utilities (${String(micros.length)}):`);
+
+            for (const s of micros) {
+                info(`  ${s.hasCodemod ? "\u2699" : " "} ${s.packageName} → ${s.replacement}`);
+            }
+        }
+
+        if (dedupedSocketEntries.length > 0) {
+            info(`\nSocket.dev overrides (${String(dedupedSocketEntries.length)}):`);
+
+            for (const s of dedupedSocketEntries) {
+                info(`  ${s.packageName} → ${s.overrideSpec}`);
+            }
+        }
+
+        info(`\nTotal: ${String(allEntries.length)} optimizations available (\u2699 = codemod available).`);
+
+        if (isDryRun) {
+            note("Run without --dry-run for interactive selection.");
+        }
     },
     name: "optimize",
     options: [
-        { alias: "d", defaultValue: false, description: "Preview changes without modifying files", name: "dry-run", type: Boolean },
-        { defaultValue: false, description: "Pin overrides to exact versions instead of ranges", name: "pin", type: Boolean },
+        { alias: "d", defaultValue: false, description: "Preview available optimizations without applying", name: "dry-run", type: Boolean },
+        { defaultValue: false, description: "Pin Socket.dev overrides to exact versions", name: "pin", type: Boolean },
         { defaultValue: false, description: "Only optimize production dependencies", name: "prod", type: Boolean },
         { defaultValue: false, description: "Skip running install after applying overrides", name: "no-install", type: Boolean },
         { defaultValue: false, description: "Output results as JSON", name: "json", type: Boolean },
