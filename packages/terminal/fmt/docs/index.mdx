@@ -10,17 +10,20 @@ Fast, flexible string formatting utility inspired by Node.js's `util.format`. Fo
 ## Key Features
 
 **printf-Style Formatting**
+
 - Familiar %s, %d, %i, %f placeholders
 - JSON serialization with %j
 - Object inspection with %o and %O
 - Automatic type conversion
 
 **CSS Styling Support**
+
 - Apply terminal colors with CSS syntax
 - %c placeholder for inline styles
 - Supports color, background, text decoration
 
 **Customizable**
+
 - Build custom format functions
 - Add your own format specifiers
 - Custom stringify functions
@@ -53,8 +56,8 @@ Create structured log messages with dynamic values:
 import { format } from "@visulima/fmt";
 
 function log(level: string, message: string, ...args: unknown[]) {
-  const formatted = format(message, args);
-  console.log(`[${level}] ${formatted}`);
+    const formatted = format(message, args);
+    console.log(`[${level}] ${formatted}`);
 }
 
 log("INFO", "User %s logged in from %s", "alice", "192.168.1.1");
@@ -71,10 +74,7 @@ Add colors and styles using CSS syntax:
 ```typescript
 import { format } from "@visulima/fmt";
 
-const styled = format(
-  "%cSuccess!%c Operation completed in %dms",
-  ["color: green; font-weight: bold", "", 127]
-);
+const styled = format("%cSuccess!%c Operation completed in %dms", ["color: green; font-weight: bold", "", 127]);
 
 console.log(styled);
 // Outputs "Success!" in bold green, then normal text
@@ -88,10 +88,10 @@ Build a formatter with custom placeholders:
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    t: (time) => new Date(time).toLocaleString(),
-    T: (time) => new Date(time).toISOString(),
-  }
+    formatters: {
+        t: (time) => new Date(time).toLocaleString(),
+        T: (time) => new Date(time).toISOString(),
+    },
 });
 
 const message = format("Event occurred at %t (ISO: %T)", [Date.now(), Date.now()]);
@@ -102,20 +102,21 @@ console.log(message);
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Learn how to install and import the package
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Explore all format specifiers and options
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all format specifiers and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>
 
 ## Browser and Server Support
 
 This package works in both Node.js and browser environments:
+
 - **Node.js:** ≥22.13 ≤25.x (full support)
 - **Browsers:** Compatible with ES6+ browsers
 - **Deno/Bun:** Fully compatible

@@ -29,10 +29,10 @@ The %s specifier converts most values to strings:
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("Number: %s", [42]));          // "Number: 42"
-console.log(format("Boolean: %s", [true]));       // "Boolean: true"
-console.log(format("Array: %s", [[1, 2, 3]]));    // "Array: 1,2,3"
-console.log(format("Null: %s", [null]));          // "Null: null"
+console.log(format("Number: %s", [42])); // "Number: 42"
+console.log(format("Boolean: %s", [true])); // "Boolean: true"
+console.log(format("Array: %s", [[1, 2, 3]])); // "Array: 1,2,3"
+console.log(format("Null: %s", [null])); // "Null: null"
 console.log(format("Undefined: %s", [undefined])); // "Undefined: undefined"
 ```
 
@@ -43,11 +43,11 @@ Use %d for decimal numbers:
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("Count: %d", [42]));      // "Count: 42"
-console.log(format("Count: %d", ["123"]));   // "Count: 123" (converted)
-console.log(format("Count: %d", [true]));    // "Count: 1"
-console.log(format("Count: %d", [false]));   // "Count: 0"
-console.log(format("Count: %d", ["abc"]));   // "Count: NaN"
+console.log(format("Count: %d", [42])); // "Count: 42"
+console.log(format("Count: %d", ["123"])); // "Count: 123" (converted)
+console.log(format("Count: %d", [true])); // "Count: 1"
+console.log(format("Count: %d", [false])); // "Count: 0"
+console.log(format("Count: %d", ["abc"])); // "Count: NaN"
 ```
 
 Use %i for integers:
@@ -55,8 +55,8 @@ Use %i for integers:
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("Integer: %i", [42.7]));   // "Integer: 42" (truncated)
-console.log(format("Integer: %i", [42]));     // "Integer: 42"
+console.log(format("Integer: %i", [42.7])); // "Integer: 42" (truncated)
+console.log(format("Integer: %i", [42])); // "Integer: 42"
 ```
 
 Use %f for floating-point numbers:
@@ -64,8 +64,8 @@ Use %f for floating-point numbers:
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("Float: %f", [3.14159]));  // "Float: 3.14159"
-console.log(format("Float: %f", [42]));       // "Float: 42"
+console.log(format("Float: %f", [3.14159])); // "Float: 3.14159"
+console.log(format("Float: %f", [42])); // "Float: 42"
 ```
 
 ### JSON Formatting
@@ -115,8 +115,8 @@ import { format } from "@visulima/fmt";
 
 const obj = { visible: "yes" };
 Object.defineProperty(obj, "hidden", {
-  value: "secret",
-  enumerable: false
+    value: "secret",
+    enumerable: false,
 });
 
 console.log(format("Basic: %o", [obj]));
@@ -136,8 +136,8 @@ Use %c to apply CSS-like styles to terminal output:
 import { format } from "@visulima/fmt";
 
 const styled = format("%cError:%c Something went wrong", [
-  "color: red; font-weight: bold",
-  "" // Reset styles
+    "color: red; font-weight: bold",
+    "", // Reset styles
 ]);
 
 console.log(styled);
@@ -149,16 +149,7 @@ Multiple styled segments:
 ```typescript
 import { format } from "@visulima/fmt";
 
-const message = format(
-  "%cSuccess%c The operation %ccompleted%c in %d ms",
-  [
-    "color: green; font-weight: bold",
-    "",
-    "font-style: italic",
-    "",
-    127
-  ]
-);
+const message = format("%cSuccess%c The operation %ccompleted%c in %d ms", ["color: green; font-weight: bold", "", "font-style: italic", "", 127]);
 
 console.log(message);
 ```
@@ -179,14 +170,14 @@ The %c formatter supports these CSS properties:
 import { format } from "@visulima/fmt";
 
 const examples = [
-  format("%cRed text%c", ["color: red", ""]),
-  format("%cBold text%c", ["font-weight: bold", ""]),
-  format("%cItalic text%c", ["font-style: italic", ""]),
-  format("%cUnderline%c", ["text-decoration: underline", ""]),
-  format("%cBackground%c", ["background-color: yellow", ""])
+    format("%cRed text%c", ["color: red", ""]),
+    format("%cBold text%c", ["font-weight: bold", ""]),
+    format("%cItalic text%c", ["font-style: italic", ""]),
+    format("%cUnderline%c", ["text-decoration: underline", ""]),
+    format("%cBackground%c", ["background-color: yellow", ""]),
 ];
 
-examples.forEach(ex => console.log(ex));
+examples.forEach((ex) => console.log(ex));
 ```
 
 ## Custom Formatters
@@ -199,11 +190,11 @@ Create a format function with your own placeholders:
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    t: (time) => new Date(time).toLocaleString(),
-    h: (hex) => `0x${hex.toString(16)}`,
-    p: (percent) => `${(percent * 100).toFixed(2)}%`
-  }
+    formatters: {
+        t: (time) => new Date(time).toLocaleString(),
+        h: (hex) => `0x${hex.toString(16)}`,
+        p: (percent) => `${(percent * 100).toFixed(2)}%`,
+    },
 });
 
 console.log(format("Event at %t", [Date.now()]));
@@ -224,15 +215,12 @@ Custom formatters work alongside standard ones:
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    u: (url) => new URL(url).hostname
-  }
+    formatters: {
+        u: (url) => new URL(url).hostname,
+    },
 });
 
-const message = format(
-  "Connecting to %u on port %d",
-  ["https://example.com:8080/path", 8080]
-);
+const message = format("Connecting to %u on port %d", ["https://example.com:8080/path", 8080]);
 
 console.log(message);
 // Connecting to example.com on port 8080
@@ -248,12 +236,12 @@ Replace the default JSON serializer:
 import { format } from "@visulima/fmt";
 
 const options = {
-  stringify: (obj: unknown) => {
-    if (typeof obj === "object" && obj !== null) {
-      return `<Object with ${Object.keys(obj).length} keys>`;
-    }
-    return String(obj);
-  }
+    stringify: (obj: unknown) => {
+        if (typeof obj === "object" && obj !== null) {
+            return `<Object with ${Object.keys(obj).length} keys>`;
+        }
+        return String(obj);
+    },
 };
 
 const data = { name: "Alice", age: 30, email: "alice@example.com" };
@@ -329,19 +317,19 @@ Create a logger with formatted output:
 import { format } from "@visulima/fmt";
 
 class Logger {
-  log(level: string, message: string, ...args: unknown[]) {
-    const timestamp = new Date().toISOString();
-    const formatted = format(message, args);
-    console.log(`[${timestamp}] [${level}] ${formatted}`);
-  }
+    log(level: string, message: string, ...args: unknown[]) {
+        const timestamp = new Date().toISOString();
+        const formatted = format(message, args);
+        console.log(`[${timestamp}] [${level}] ${formatted}`);
+    }
 
-  info(message: string, ...args: unknown[]) {
-    this.log("INFO", message, ...args);
-  }
+    info(message: string, ...args: unknown[]) {
+        this.log("INFO", message, ...args);
+    }
 
-  error(message: string, ...args: unknown[]) {
-    this.log("ERROR", message, ...args);
-  }
+    error(message: string, ...args: unknown[]) {
+        this.log("ERROR", message, ...args);
+    }
 }
 
 const logger = new Logger();
@@ -357,10 +345,10 @@ Format debug output with context:
 import { format } from "@visulima/fmt";
 
 function debug(component: string, message: string, ...args: unknown[]) {
-  if (process.env.DEBUG) {
-    const formatted = format(message, args);
-    console.debug(`[${component}] ${formatted}`);
-  }
+    if (process.env.DEBUG) {
+        const formatted = format(message, args);
+        console.debug(`[${component}] ${formatted}`);
+    }
 }
 
 debug("Database", "Executing query: %s with params %j", "SELECT * FROM users", { limit: 10 });
@@ -375,14 +363,11 @@ Create detailed error messages:
 import { format } from "@visulima/fmt";
 
 class ValidationError extends Error {
-  constructor(field: string, value: unknown, constraint: string) {
-    const message = format(
-      "Validation failed for field '%s': value %j does not satisfy constraint '%s'",
-      [field, value, constraint]
-    );
-    super(message);
-    this.name = "ValidationError";
-  }
+    constructor(field: string, value: unknown, constraint: string) {
+        const message = format("Validation failed for field '%s': value %j does not satisfy constraint '%s'", [field, value, constraint]);
+        super(message);
+        this.name = "ValidationError";
+    }
 }
 
 throw new ValidationError("email", "invalid-email", "must be valid email address");
@@ -396,19 +381,15 @@ Build a simple template system:
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    user: (u: { name: string; email: string }) => `${u.name} <${u.email}>`,
-    date: (d: number) => new Date(d).toLocaleDateString(),
-    money: (amount: number) => `$${amount.toFixed(2)}`
-  }
+    formatters: {
+        user: (u: { name: string; email: string }) => `${u.name} <${u.email}>`,
+        date: (d: number) => new Date(d).toLocaleDateString(),
+        money: (amount: number) => `$${amount.toFixed(2)}`,
+    },
 });
 
 const template = "Invoice for %user\nDate: %date\nAmount: %money";
-const invoice = format(template, [
-  { name: "Alice", email: "alice@example.com" },
-  Date.now(),
-  99.95
-]);
+const invoice = format(template, [{ name: "Alice", email: "alice@example.com" }, Date.now(), 99.95]);
 
 console.log(invoice);
 ```
@@ -416,10 +397,10 @@ console.log(invoice);
 ## Next Steps
 
 <Cards>
-  <Card title="API Reference" href="/api">
-    Complete API documentation with all parameters
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>
