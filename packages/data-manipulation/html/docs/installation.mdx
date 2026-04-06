@@ -13,14 +13,7 @@ npm install @visulima/html
 ### Main Functions
 
 ```typescript
-import {
-    escapeHtml,
-    escapeCss,
-    escapeJs,
-    html,
-    css,
-    isValidCustomElementName,
-} from "@visulima/html";
+import { escapeHtml, escapeCss, escapeJs, html, css, isValidCustomElementName } from "@visulima/html";
 ```
 
 ### Entity Encoding
@@ -56,6 +49,7 @@ import type { Properties } from "@visulima/html"; // CSS properties type
 ## Dependencies
 
 The package includes:
+
 - **sanitize-html** - HTML sanitization
 - **csstype** - CSS property types for TypeScript autocomplete
 
@@ -67,11 +61,11 @@ Verify installation by running a simple example:
 import { escapeHtml, sanitizeHtml } from "@visulima/html";
 
 // Test escaping
-console.log(escapeHtml('<script>test</script>'));
+console.log(escapeHtml("<script>test</script>"));
 // => '&lt;script>test&lt;/script>'
 
 // Test sanitization
-console.log(sanitizeHtml('<p>Hello <script>bad</script>World</p>'));
+console.log(sanitizeHtml("<p>Hello <script>bad</script>World</p>"));
 // => '<p>Hello World</p>'
 ```
 

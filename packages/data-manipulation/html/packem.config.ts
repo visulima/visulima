@@ -28,8 +28,8 @@ export default defineConfig({
                 exclude: ["@jsr/std__html"],
             },
             unused: {
-                exclude: ["csstype"]
-            }
+                exclude: ["csstype"],
+            },
         },
     },
     transformer,
