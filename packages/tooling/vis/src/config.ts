@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync as fsReadFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
@@ -84,10 +85,23 @@ interface ConfigCache {
     hash: string;
 }
 
-const hashFileContents = (filePath: string): string =>
-    createHash("sha256").update(fsReadFileSync(filePath)).digest("hex");
+const hashFileContents = (filePath: string): string => createHash("sha256").update(fsReadFileSync(filePath)).digest("hex");
 
 const getConfigCachePath = (workspaceRoot: string): string | undefined => {
+    // First try: use node_modules/.cache/vis directly if node_modules exists
+    // in the workspace root. This avoids findCacheDirSync traversing to a
+    // parent project's node_modules when the workspace root lacks package.json.
+    const nodeModulesDir = join(workspaceRoot, "node_modules");
+
+    if (existsSync(nodeModulesDir)) {
+        const directCacheDir = join(nodeModulesDir, ".cache", "vis");
+
+        ensureDirSync(directCacheDir);
+
+        return join(directCacheDir, "vis-config-cache.json");
+    }
+
+    // Fallback: standard cache dir resolution
     const cacheDir = findCacheDirSync("vis", { create: true, cwd: workspaceRoot });
 
     return cacheDir ? join(cacheDir, "vis-config-cache.json") : undefined;
@@ -150,17 +164,30 @@ const loadVisConfig = async (workspaceRoot: string): Promise<VisConfig> => {
     }
 
     // Cache miss — compile via jiti
-    const jiti = createJiti(workspaceRoot);
+    // Copy to a unique temp file to bypass jiti's internal module cache
+    // (jiti caches by file path and ignores moduleCache: false for ESM)
+    const extension = configPath.slice(configPath.lastIndexOf("."));
+    const temporaryConfigPath = join(tmpdir(), `vis-config-${hash}${extension}`);
 
-    const loaded = await jiti.import(configPath, { default: true, try: true }) ?? {};
+    copyFileSync(configPath, temporaryConfigPath);
+
+    let loaded: unknown;
+
+    try {
+        const jiti = createJiti(workspaceRoot, { fsCache: false, moduleCache: false });
+
+        loaded = await jiti.import(temporaryConfigPath, { default: true, try: true }) ?? {};
+    } finally {
+        try {
+            unlinkSync(temporaryConfigPath);
+        } catch {
+            // Non-critical cleanup
+        }
+    }
 
     let config: VisConfig;
 
-    if (typeof loaded === "function") {
-        config = applyDefaults(await loaded() ?? {});
-    } else {
-        config = applyDefaults(loaded);
-    }
+    config = typeof loaded === "function" ? applyDefaults(await loaded() ?? {}) : applyDefaults(loaded as VisConfig);
 
     if (cachePath) {
         writeConfigCache(cachePath, hash, config);

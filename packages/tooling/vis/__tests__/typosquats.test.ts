@@ -1,8 +1,27 @@
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createInterface as originalCreateInterface } from "node:readline";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock node:readline so we can control createInterface in interactive tests
+let mockCreateInterface: ReturnType<typeof vi.fn> | undefined;
+
+vi.mock(import("node:readline"), async (importOriginal) => {
+    const original = await importOriginal();
+
+    return {
+        ...original,
+        createInterface: (...args: unknown[]) => {
+            if (mockCreateInterface) {
+                return mockCreateInterface(...args);
+            }
+
+            return original.createInterface(...(args as Parameters<typeof original.createInterface>));
+        },
+    };
+});
 
 import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/typosquats";
 import { parsePackageArgument } from "../src/utils";
@@ -385,8 +404,17 @@ describe("runTyposquatCheck", () => {
 
     afterEach(() => {
         Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, writable: true });
-        vi.restoreAllMocks();
+        mockCreateInterface = undefined;
     });
+
+    const mockRl = (answer: string) => {
+        mockCreateInterface = vi.fn().mockReturnValue({
+            close: vi.fn(),
+            question: (_prompt: string, cb: (answer: string) => void) => {
+                cb(answer);
+            },
+        });
+    };
 
     it("should return ok=true with unchanged packages when no typosquats found", async () => {
         const result = await runTyposquatCheck(["react", "express"]);
@@ -406,13 +434,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=false when user answers N (abort)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("N");
-            },
-        } as any);
+        mockRl("N");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -422,13 +444,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=false when user presses enter (default N)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("");
-            },
-        } as any);
+        mockRl("");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -437,13 +453,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=true with original packages when user answers y (keep)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("y");
-            },
-        } as any);
+        mockRl("y");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -453,13 +463,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=true with 'yes' answer (keep original)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("yes");
-            },
-        } as any);
+        mockRl("yes");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -469,13 +473,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=true with corrected packages when user answers S (suggested)", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("S");
-            },
-        } as any);
+        mockRl("S");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -485,13 +483,7 @@ describe("runTyposquatCheck", () => {
 
     it("should return ok=true with 'suggested' answer", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("suggested");
-            },
-        } as any);
+        mockRl("suggested");
 
         const result = await runTyposquatCheck(["axois"]);
 
@@ -501,13 +493,7 @@ describe("runTyposquatCheck", () => {
 
     it("should only replace typosquat names while keeping safe names untouched", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("s");
-            },
-        } as any);
+        mockRl("s");
 
         const result = await runTyposquatCheck(["react", "axois", "lodash"]);
 
@@ -517,13 +503,7 @@ describe("runTyposquatCheck", () => {
 
     it("should replace multiple typosquats when user answers S", async () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
-
-        vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-            close: vi.fn(),
-            question: (_prompt: string, cb: (answer: string) => void) => {
-                cb("s");
-            },
-        } as any);
+        mockRl("s");
 
         const result = await runTyposquatCheck(["axois", "halk"]);
 
@@ -535,19 +515,12 @@ describe("runTyposquatCheck", () => {
         Object.defineProperty(process.stdin, "isTTY", { value: true, writable: true });
 
         for (const answer of ["s", "S", "SUGGESTED", "Suggested"]) {
-            vi.spyOn(await import("node:readline"), "createInterface").mockReturnValue({
-                close: vi.fn(),
-                question: (_prompt: string, cb: (answer: string) => void) => {
-                    cb(answer);
-                },
-            } as any);
+            mockRl(answer);
 
             const result = await runTyposquatCheck(["axois"]);
 
             expect(result.ok, `answer "${answer}" should result in ok=true`).toBe(true);
             expect(result.packages).toEqual(["axios"]);
-
-            vi.restoreAllMocks();
         }
     });
 });

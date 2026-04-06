@@ -4,12 +4,11 @@
  * Handles the correct override location for each package manager:
  * - **pnpm v10+**: top-level `overrides` in `pnpm-workspace.yaml`
  * - **pnpm v9-**: `pnpm.overrides` in `package.json`
- * - **npm**: `overrides` in `package.json` (uses `$<name>` references
+ * - **npm**: `overrides` in `package.json` (uses `$&lt;name>` references
  *   for direct dependencies to avoid EOVERRIDE errors)
  * - **yarn / bun**: `resolutions` in `package.json`
  *
  * All overrides are root-level — no PM supports per-workspace overrides.
- *
  * @see https://pnpm.io/settings — pnpm v10+ workspace settings
  * @see https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides
  * @see https://yarnpkg.com/configuration/manifest#resolutions
@@ -18,7 +17,8 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-import { isAccessibleSync, readYamlSync } from "@visulima/fs";
+import { isAccessibleSync } from "@visulima/fs";
+import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 import { coerce } from "semver";
 
@@ -123,20 +123,20 @@ const findInsertIndex = (keys: string[], field: string): number => {
     const simpleField = field;
 
     for (const f of OVERRIDE_FIELDS) {
-        const idx = keys.indexOf(f);
+        const index = keys.indexOf(f);
 
-        if (idx !== -1 && f !== simpleField) {
-            return simpleField === "overrides" ? idx : idx + 1;
+        if (index !== -1 && f !== simpleField) {
+            return simpleField === "overrides" ? index : index + 1;
         }
     }
 
     let highest = -1;
 
     for (const f of DEP_FIELDS) {
-        const idx = keys.indexOf(f);
+        const index = keys.indexOf(f);
 
-        if (idx > highest) {
-            highest = idx;
+        if (index > highest) {
+            highest = index;
         }
     }
 
@@ -145,10 +145,10 @@ const findInsertIndex = (keys: string[], field: string): number => {
     }
 
     for (const f of AFTER_FIELDS) {
-        const idx = keys.indexOf(f);
+        const index = keys.indexOf(f);
 
-        if (idx !== -1) {
-            return idx;
+        if (index !== -1) {
+            return index;
         }
     }
 
@@ -182,11 +182,7 @@ const writePnpmWorkspaceOverrides = (workspaceRoot: string, sorted: Record<strin
         .join("\n");
     const overridesBlock = `overrides:\n${overrideLines}\n`;
 
-    if (/^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content)) {
-        content = content.replace(/^overrides:\s*\n(?:(?:[ \t]+.*)?\n)*/m, overridesBlock);
-    } else {
-        content = `${content.trimEnd()}\n\n${overridesBlock}`;
-    }
+    content = /^overrides:\s*$/m.test(content) || /^overrides:\s*\n/m.test(content) ? content.replace(/^overrides:\s*\n(?:(?:[ \t].*)?\n)*/m, overridesBlock) : `${content.trimEnd()}\n\n${overridesBlock}`;
 
     writeFileSync(filePath, content);
 };
@@ -202,34 +198,34 @@ const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unkn
     const indent = detectIndent(raw);
 
     if (pm === "pnpm") {
-        const pnpmObj = (pkgJson.pnpm as Record<string, unknown>) ?? {};
+        const pnpmObject = (pkgJson.pnpm as Record<string, unknown>) ?? {};
 
-        pnpmObj.overrides = sorted;
+        pnpmObject.overrides = sorted;
 
-        if (!pkgJson.pnpm) {
+        if (pkgJson.pnpm) {
+            pkgJson.pnpm = pnpmObject;
+            writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, indent)}\n`);
+        } else {
             const keys = Object.keys(pkgJson);
-            const idx = findInsertIndex(keys, "pnpm");
+            const index = findInsertIndex(keys, "pnpm");
             const jsonEntries = Object.entries(pkgJson);
 
-            jsonEntries.splice(idx, 0, ["pnpm", pnpmObj]);
-            writeFileSync(pkgJsonPath, JSON.stringify(Object.fromEntries(jsonEntries), null, indent) + "\n");
-        } else {
-            pkgJson.pnpm = pnpmObj;
-            writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
+            jsonEntries.splice(index, 0, ["pnpm", pnpmObject]);
+            writeFileSync(pkgJsonPath, `${JSON.stringify(Object.fromEntries(jsonEntries), null, indent)}\n`);
         }
     } else {
         const field = pm === "yarn" || pm === "bun" ? "resolutions" : "overrides";
 
-        if (!pkgJson[field]) {
+        if (pkgJson[field]) {
+            pkgJson[field] = sorted;
+            writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, indent)}\n`);
+        } else {
             const keys = Object.keys(pkgJson);
-            const idx = findInsertIndex(keys, field);
+            const index = findInsertIndex(keys, field);
             const jsonEntries = Object.entries(pkgJson);
 
-            jsonEntries.splice(idx, 0, [field, sorted]);
-            writeFileSync(pkgJsonPath, JSON.stringify(Object.fromEntries(jsonEntries), null, indent) + "\n");
-        } else {
-            pkgJson[field] = sorted;
-            writeFileSync(pkgJsonPath, JSON.stringify(pkgJson, null, indent) + "\n");
+            jsonEntries.splice(index, 0, [field, sorted]);
+            writeFileSync(pkgJsonPath, `${JSON.stringify(Object.fromEntries(jsonEntries), null, indent)}\n`);
         }
     }
 };
@@ -237,13 +233,12 @@ const writePkgJsonOverrides = (pkgJsonPath: string, pkgJson: Record<string, unkn
 /**
  * Applies override entries to the correct config file for the package manager.
  *
- * For npm, direct dependencies use `$<name>` reference syntax to avoid
+ * For npm, direct dependencies use `$&lt;name>` reference syntax to avoid
  * npm's EOVERRIDE error when an override conflicts with a direct dep range.
- *
- * @param workspaceRoot - Absolute path to the workspace root directory.
- * @param pkgJsonPath - Absolute path to the root `package.json`.
- * @param entries - Override entries to apply.
- * @param pm - Package manager name and version.
+ * @param workspaceRoot Absolute path to the workspace root directory.
+ * @param pkgJsonPath Absolute path to the root `package.json`.
+ * @param entries Override entries to apply.
+ * @param pm Package manager name and version.
  * @returns Lists of added and updated package names.
  */
 const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: OverrideEntry[], pm: PmInfo): ApplyOverridesResult => {
@@ -302,9 +297,9 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
     const sorted = Object.fromEntries(Object.entries(existing).sort(([a], [b]) => a.localeCompare(b)));
 
     if (source === "pnpm-workspace.yaml") {
-        writePnpmWorkspaceOverrides(workspaceRoot, sorted);
+        writePnpmWorkspaceOverrides(workspaceRoot, sorted as Record<string, string>);
     } else {
-        writePkgJsonOverrides(pkgJsonPath, pkgJson, sorted, pm.name);
+        writePkgJsonOverrides(pkgJsonPath, pkgJson, sorted as Record<string, string>, pm.name);
     }
 
     return { added, updated };
@@ -315,9 +310,8 @@ const applyOverrides = (workspaceRoot: string, pkgJsonPath: string, entries: Ove
  *
  * Returns the raw text content for regex-based package name scanning.
  * Falls back to an empty string if the lockfile is missing or unreadable.
- *
- * @param workspaceRoot - Absolute path to the workspace root.
- * @param pm - Package manager name (determines lockfile name).
+ * @param workspaceRoot Absolute path to the workspace root.
+ * @param pm Package manager name (determines lockfile name).
  */
 const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string => {
     const lockfileNames: Record<string, string[]> = {
@@ -345,33 +339,33 @@ const readLockfileText = (workspaceRoot: string, pm: PackageManagerName): string
  *
  * This avoids parsing the entire lockfile — a single `string.includes()` is
  * sufficient for presence checks.
- *
- * @param lockText - Raw lockfile content.
- * @param packageName - Package name to search for.
- * @param pm - Package manager name (determines the search pattern).
+ * @param lockText Raw lockfile content.
+ * @param packageName Package name to search for.
+ * @param pm Package manager name (determines the search pattern).
  */
 const lockfileContainsPackage = (lockText: string, packageName: string, pm: PackageManagerName): boolean => {
     if (!lockText) {
         return false;
     }
 
-    const escaped = packageName.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+    const escaped = packageName.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
     switch (pm) {
+        case "bun": {
+            return lockText.includes(`"${packageName}":`) || new RegExp(String.raw`(^|\s|[",])${escaped}@`, "m").test(lockText);
+        }
+
         case "npm": {
             return lockText.includes(`"${packageName}":`) || lockText.includes(`"node_modules/${packageName}":`);
         }
 
         case "pnpm": {
-            return new RegExp(`(^|\\s|['"/])${escaped}@`, "m").test(lockText);
+            // Match both resolved entries (package@version:) and dependency entries ('package':)
+            return new RegExp(String.raw`(^|\s|['"/])${escaped}(@|['"]?:)`, "m").test(lockText);
         }
 
         case "yarn": {
-            return new RegExp(`(^|\\s|[",])${escaped}@`, "m").test(lockText);
-        }
-
-        case "bun": {
-            return lockText.includes(`"${packageName}":`) || new RegExp(`(^|\\s|[",])${escaped}@`, "m").test(lockText);
+            return new RegExp(String.raw`(^|\s|[",])${escaped}@`, "m").test(lockText);
         }
 
         default: {

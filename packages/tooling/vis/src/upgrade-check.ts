@@ -33,7 +33,7 @@ interface UpgradeCheckCache {
 }
 
 /** Commands that should NOT trigger upgrade checks. */
-const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "-h", "-V", "help", "implode", "self-update"]);
+const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "-h", "-V", "help", "implode", "self-update", "upgrade"]);
 
 const readCache = (): UpgradeCheckCache | undefined => {
     try {
@@ -66,7 +66,9 @@ const writeCache = (cache: UpgradeCheckCache): void => {
 const fetchLatestVersion = async (packageName: string): Promise<string | undefined> => {
     try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => { controller.abort(); }, REGISTRY_TIMEOUT_MS);
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, REGISTRY_TIMEOUT_MS);
 
         const response = await fetch(`https://registry.npmjs.org/${packageName}/latest`, {
             headers: { accept: "application/json" },
@@ -193,7 +195,9 @@ const startUpgradeCheck = (currentVersion: string, command: string): (() => void
 
     // If cache is fresh, just return the notice callback
     if (cache && now - cache.lastQueryAt < CHECK_INTERVAL_MS) {
-        return () => { showUpgradeNotice(currentVersion, cache); };
+        return () => {
+            showUpgradeNotice(currentVersion, cache);
+        };
     }
 
     // Need to query registry - fire async, don't await

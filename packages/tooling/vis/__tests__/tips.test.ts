@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { TipContext } from "../src/tips";
-import { showTip, tips } from "../src/tips";
+
+vi.mock("is-in-ci", () => ({ default: false }));
+
+// eslint-disable-next-line import/first -- must come after vi.mock
+const { showTip, tips } = await import("../src/tips");
 
 describe("showTip", () => {
     let stderrSpy: ReturnType<typeof vi.spyOn>;
@@ -9,7 +13,6 @@ describe("showTip", () => {
     beforeEach(() => {
         stderrSpy = vi.spyOn(process.stderr, "write").mockReturnValue(true);
         delete process.env.VIS_CLI_TEST;
-        delete process.env.CI;
     });
 
     afterEach(() => {
@@ -25,13 +28,18 @@ describe("showTip", () => {
         expect(stderrSpy).not.toHaveBeenCalled();
     });
 
-    it("should not show tips when CI is set", () => {
+    it("should not show tips when CI is set", async () => {
         expect.assertions(1);
 
-        process.env.CI = "true";
-        showTip({ args: ["install"], command: "install", success: true });
+        // is-in-ci evaluates at import time, so we re-mock it as true and re-import
+        vi.doMock("is-in-ci", () => ({ default: true }));
+        const { showTip: showTipCi } = await import("../src/tips");
+
+        showTipCi({ args: ["install"], command: "install", success: true });
 
         expect(stderrSpy).not.toHaveBeenCalled();
+
+        vi.doMock("is-in-ci", () => ({ default: false }));
     });
 });
 
