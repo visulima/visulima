@@ -129,8 +129,8 @@ const findBestErrorConstructor = (line: string) => {
         const match = line.match(pattern);
 
         if (
-            match // Prefer "throw new" over just "new" for better accuracy
-            && (!bestMatch || (pattern.source.includes("throw") && !bestPattern?.source.includes("throw")))
+            match && // Prefer "throw new" over just "new" for better accuracy
+            (!bestMatch || (pattern.source.includes("throw") && !bestPattern?.source.includes("throw")))
         ) {
             bestMatch = match;
             bestPattern = pattern;
@@ -336,7 +336,7 @@ const findErrorInSourceCode = (sourceCode: string, errorMessage: string, occurre
             const importPath = dynMatch[1];
 
             if (sourceLine.includes(`"${importPath}"`) || sourceLine.includes(`'${importPath}'`)) {
-                const quoteChar = sourceLine.includes(`"${importPath}"`) ? "\"" : "'";
+                const quoteChar = sourceLine.includes(`"${importPath}"`) ? '"' : "'";
 
                 return sourceLine.indexOf(`${quoteChar}${importPath}${quoteChar}`) + 1;
             }

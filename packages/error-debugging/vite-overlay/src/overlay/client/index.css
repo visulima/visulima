@@ -49,10 +49,10 @@
 
 /* ─── Brand palette ─────────────────────────────────────────────────────── */
 :host {
-    --brand-accent: #D71921;
+    --brand-accent: #d71921;
     --brand-white: #ffffff;
-    --brand-bg: #F5F5F5;
-    --brand-border-visible: #CCCCCC;
+    --brand-bg: #f5f5f5;
+    --brand-border-visible: #cccccc;
     --brand-text-secondary: #666666;
     --brand-surface-dark: #111111;
     --brand-black: #000000;
@@ -60,21 +60,21 @@
 
 /* ─── Design tokens — light mode ─────────────────────────────────────────── */
 :host {
-    --color-background: #F5F5F5;
-    --color-foreground: #1A1A1A;
-    --color-card: #FFFFFF;
-    --color-accent: #F0F0F0;
-    --color-muted: #E8E8E8;
+    --color-background: #f5f5f5;
+    --color-foreground: #1a1a1a;
+    --color-card: #ffffff;
+    --color-accent: #f0f0f0;
+    --color-muted: #e8e8e8;
     --color-muted-foreground: #666666;
-    --color-primary: #D71921;
-    --color-primary-foreground: #FFFFFF;
-    --color-border: #E8E8E8;
-    --color-ring: #CCCCCC;
-    --color-destructive: #D71921;
-    --color-destructive-foreground: #FFFFFF;
-    --color-success: #4A9E5C;
-    --color-success-foreground: #4A9E5C;
-    --color-warning: #D4A843;
+    --color-primary: #d71921;
+    --color-primary-foreground: #ffffff;
+    --color-border: #e8e8e8;
+    --color-ring: #cccccc;
+    --color-destructive: #d71921;
+    --color-destructive-foreground: #ffffff;
+    --color-success: #4a9e5c;
+    --color-success-foreground: #4a9e5c;
+    --color-warning: #d4a843;
     --color-info: #666666;
 
     /* Semantic aliases */
@@ -100,20 +100,20 @@
 /* ─── Dark mode ──────────────────────────────────────────────────────────── */
 .dark {
     --color-background: #000000;
-    --color-foreground: #E8E8E8;
+    --color-foreground: #e8e8e8;
     --color-card: #111111;
-    --color-accent: #1A1A1A;
+    --color-accent: #1a1a1a;
     --color-muted: #222222;
     --color-muted-foreground: #999999;
-    --color-primary: #D71921;
-    --color-primary-foreground: #FFFFFF;
+    --color-primary: #d71921;
+    --color-primary-foreground: #ffffff;
     --color-border: #222222;
     --color-ring: #333333;
-    --color-destructive: #D71921;
-    --color-destructive-foreground: #FFFFFF;
-    --color-success: #4A9E5C;
-    --color-success-foreground: #4A9E5C;
-    --color-warning: #D4A843;
+    --color-destructive: #d71921;
+    --color-destructive-foreground: #ffffff;
+    --color-success: #4a9e5c;
+    --color-success-foreground: #4a9e5c;
+    --color-warning: #d4a843;
     --color-info: #999999;
 
     /* Resolve --ono-v-* aliases directly in dark context */
@@ -128,7 +128,7 @@
     --ono-v-link: var(--color-foreground);
     --ono-v-chip-bg: var(--color-muted);
     --ono-v-chip-text: var(--color-foreground);
-    --ono-v-hover-overlay: color-mix(in srgb, #FFF 5%, transparent);
+    --ono-v-hover-overlay: color-mix(in srgb, #fff 5%, transparent);
     --ono-v-on-accent: var(--color-primary-foreground);
     --ono-v-neutral: var(--color-muted-foreground);
     --ono-v-neutral-bg: var(--color-muted);
@@ -159,7 +159,11 @@
     :host {
         background-color: transparent;
         color: var(--ono-v-text);
-        font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        font-family:
+            "Space Grotesk",
+            system-ui,
+            -apple-system,
+            sans-serif;
         font-feature-settings: "kern" 1;
         font-size: 14px;
         line-height: 1.5;
@@ -171,7 +175,9 @@
     pre,
     code {
         font-family: "Space Mono", ui-monospace, "Cascadia Code", monospace;
-        font-feature-settings: "kern" 1, "zero" 1;
+        font-feature-settings:
+            "kern" 1,
+            "zero" 1;
     }
 
     a {
