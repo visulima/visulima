@@ -14,17 +14,20 @@ Complete reference for all functions in the `@visulima/find-cache-dir` package.
 Find the cache directory asynchronously.
 
 **Signature:**
+
 ```typescript
-function findCacheDir(name: string, options?: Options): Promise<string | undefined>
+function findCacheDir(name: string, options?: Options): Promise<string | undefined>;
 ```
 
 **Parameters:**
+
 - `name` (`string`, required) - Application name (should match your package name)
 - `options` (`Options`, optional) - Configuration options
 
 **Returns:** `Promise<string | undefined>` - Path to cache directory, or `undefined` if not found
 
 **Example:**
+
 ```typescript
 import { findCacheDir } from "@visulima/find-cache-dir";
 
@@ -42,17 +45,20 @@ console.log(cacheDir);
 Find the cache directory synchronously.
 
 **Signature:**
+
 ```typescript
-function findCacheDirSync(name: string, options?: Options): string | undefined
+function findCacheDirSync(name: string, options?: Options): string | undefined;
 ```
 
 **Parameters:**
+
 - `name` (`string`, required) - Application name (should match your package name)
 - `options` (`Options`, optional) - Configuration options
 
 **Returns:** `string | undefined` - Path to cache directory, or `undefined` if not found
 
 **Example:**
+
 ```typescript
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 
@@ -69,11 +75,12 @@ console.log(cacheDir);
 Configuration options for cache directory lookup.
 
 **Type Definition:**
+
 ```typescript
 interface Options {
-  cwd?: string;
-  create?: boolean;
-  throwError?: boolean;
+    cwd?: string;
+    create?: boolean;
+    throwError?: boolean;
 }
 ```
 
@@ -88,11 +95,12 @@ Starting directory for searching.
 - **Description:** Directory to start searching for `package.json`
 
 **Example:**
+
 ```typescript
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 const cacheDir = await findCacheDir("my-app", {
-  cwd: "/path/to/project"
+    cwd: "/path/to/project",
 });
 ```
 
@@ -107,11 +115,12 @@ Create the directory if it doesn't exist.
 - **Description:** Automatically create the cache directory
 
 **Example:**
+
 ```typescript
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 const cacheDir = await findCacheDir("my-app", {
-  create: true
+    create: true,
 });
 // Directory is guaranteed to exist
 ```
@@ -127,16 +136,17 @@ Throw an error if cache directory not found.
 - **Description:** Throw error instead of returning `undefined`
 
 **Example:**
+
 ```typescript
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 try {
-  const cacheDir = await findCacheDir("my-app", {
-    throwError: true
-  });
-  console.log("Found:", cacheDir);
+    const cacheDir = await findCacheDir("my-app", {
+        throwError: true,
+    });
+    console.log("Found:", cacheDir);
 } catch (error) {
-  console.error("Cache directory not found");
+    console.error("Cache directory not found");
 }
 ```
 
@@ -149,12 +159,14 @@ try {
 The package finds platform-specific cache directories:
 
 **macOS:**
+
 ```
 ~/Library/Caches/<name>
 /Users/username/Library/Caches/my-app
 ```
 
 **Linux:**
+
 ```
 ~/.cache/<name>
 /home/username/.cache/my-app
@@ -164,6 +176,7 @@ $XDG_CACHE_HOME/<name>
 ```
 
 **Windows:**
+
 ```
 %LOCALAPPDATA%\<name>
 C:\Users\username\AppData\Local\my-app
@@ -200,6 +213,7 @@ const cacheDir = await findCacheDir("my-app");
 ```
 
 **Use Cases:**
+
 - Testing environments
 - CI/CD pipelines
 - Docker containers
@@ -229,7 +243,7 @@ import { findCacheDir } from "@visulima/find-cache-dir";
 
 const cacheDir = await findCacheDir("my-app");
 if (cacheDir === undefined) {
-  console.log("No cache directory available");
+    console.log("No cache directory available");
 }
 ```
 
@@ -241,10 +255,10 @@ Throws error if cache directory not found:
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 try {
-  const cacheDir = await findCacheDir("my-app", { throwError: true });
+    const cacheDir = await findCacheDir("my-app", { throwError: true });
 } catch (error) {
-  console.error(error.message);
-  // "Could not find cache directory"
+    console.error(error.message);
+    // "Could not find cache directory"
 }
 ```
 
@@ -258,9 +272,9 @@ try {
 import type { Options } from "@visulima/find-cache-dir";
 
 const options: Options = {
-  cwd: process.cwd(),
-  create: true,
-  throwError: false
+    cwd: process.cwd(),
+    create: true,
+    throwError: false,
 };
 ```
 
@@ -268,21 +282,15 @@ const options: Options = {
 
 ```typescript
 // Function signatures
-type FindCacheDir = (
-  name: string,
-  options?: Options
-) => Promise<string | undefined>;
+type FindCacheDir = (name: string, options?: Options) => Promise<string | undefined>;
 
-type FindCacheDirSync = (
-  name: string,
-  options?: Options
-) => string | undefined;
+type FindCacheDirSync = (name: string, options?: Options) => string | undefined;
 
 // Options
 interface Options {
-  cwd?: string;
-  create?: boolean;
-  throwError?: boolean;
+    cwd?: string;
+    create?: boolean;
+    throwError?: boolean;
 }
 ```
 
@@ -293,18 +301,21 @@ interface Options {
 ### Common Error Scenarios
 
 **No package.json found:**
+
 ```typescript
 const cacheDir = await findCacheDir("my-app", { throwError: true });
 // Error: Could not find package.json
 ```
 
 **No cache directory available:**
+
 ```typescript
 const cacheDir = await findCacheDir("my-app", { throwError: true });
 // Error: Could not determine cache directory
 ```
 
 **Permission denied:**
+
 ```typescript
 const cacheDir = await findCacheDir("my-app", { create: true });
 // Error: EACCES: permission denied
@@ -320,15 +331,15 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 async function getCacheDir(name: string): Promise<string> {
-  try {
-    const cacheDir = await findCacheDir(name, { create: true });
-    if (cacheDir) return cacheDir;
-  } catch (error) {
-    console.warn("Failed to find cache directory:", error);
-  }
+    try {
+        const cacheDir = await findCacheDir(name, { create: true });
+        if (cacheDir) return cacheDir;
+    } catch (error) {
+        console.warn("Failed to find cache directory:", error);
+    }
 
-  // Fallback to temp directory
-  return join(tmpdir(), name);
+    // Fallback to temp directory
+    return join(tmpdir(), name);
 }
 ```
 
@@ -338,36 +349,37 @@ async function getCacheDir(name: string): Promise<string> {
 
 ### Async vs Sync
 
-| Feature | `findCacheDir` | `findCacheDirSync` |
-|---------|----------------|-------------------|
-| **Execution** | Async (Promise) | Sync (blocking) |
-| **Use Case** | Modern async code | Legacy sync code |
-| **Performance** | Non-blocking | Blocking |
-| **Error Handling** | try/catch or .catch() | try/catch |
+| Feature            | `findCacheDir`        | `findCacheDirSync` |
+| ------------------ | --------------------- | ------------------ |
+| **Execution**      | Async (Promise)       | Sync (blocking)    |
+| **Use Case**       | Modern async code     | Legacy sync code   |
+| **Performance**    | Non-blocking          | Blocking           |
+| **Error Handling** | try/catch or .catch() | try/catch          |
 
 **When to use async:**
+
 ```typescript
 // In async functions
 async function build() {
-  const cache = await findCacheDir("builder");
-  // ...
+    const cache = await findCacheDir("builder");
+    // ...
 }
 
 // In Promise chains
-findCacheDir("app")
-  .then(cache => {
+findCacheDir("app").then((cache) => {
     // Use cache
-  });
+});
 ```
 
 **When to use sync:**
+
 ```typescript
 // In synchronous initialization
 const cache = findCacheDirSync("app");
 
 // In scripts without async context
 function setupCache() {
-  return findCacheDirSync("tool", { create: true });
+    return findCacheDirSync("tool", { create: true });
 }
 ```
 
@@ -376,10 +388,10 @@ function setupCache() {
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use the package with examples
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use the package with examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>

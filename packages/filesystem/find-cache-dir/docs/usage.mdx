@@ -55,7 +55,7 @@ Specify where to start searching for `package.json`:
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 const cacheDir = await findCacheDir("my-app", {
-  cwd: "/path/to/project"
+    cwd: "/path/to/project",
 });
 ```
 
@@ -67,11 +67,11 @@ Control error throwing behavior:
 import { findCacheDir } from "@visulima/find-cache-dir";
 
 try {
-  const cacheDir = await findCacheDir("my-app", {
-    throwError: true
-  });
+    const cacheDir = await findCacheDir("my-app", {
+        throwError: true,
+    });
 } catch (error) {
-  console.error("Cache directory not found:", error);
+    console.error("Cache directory not found:", error);
 }
 ```
 
@@ -82,9 +82,9 @@ import { findCacheDir } from "@visulima/find-cache-dir";
 
 const cacheDir = await findCacheDir("my-app");
 if (cacheDir) {
-  console.log("Found:", cacheDir);
+    console.log("Found:", cacheDir);
 } else {
-  console.log("No cache directory found");
+    console.log("No cache directory found");
 }
 ```
 
@@ -101,21 +101,21 @@ import { join } from "path";
 import { createHash } from "crypto";
 
 async function compileWithCache(sourceFile: string): Promise<string> {
-  const cacheDir = await findCacheDir("my-compiler", { create: true });
-  const source = readFileSync(sourceFile, "utf-8");
-  const hash = createHash("md5").update(source).digest("hex");
-  const cachePath = join(cacheDir, `${hash}.js`);
+    const cacheDir = await findCacheDir("my-compiler", { create: true });
+    const source = readFileSync(sourceFile, "utf-8");
+    const hash = createHash("md5").update(source).digest("hex");
+    const cachePath = join(cacheDir, `${hash}.js`);
 
-  if (existsSync(cachePath)) {
-    console.log("Using cached compilation");
-    return readFileSync(cachePath, "utf-8");
-  }
+    if (existsSync(cachePath)) {
+        console.log("Using cached compilation");
+        return readFileSync(cachePath, "utf-8");
+    }
 
-  console.log("Compiling...");
-  const compiled = await compile(source);
+    console.log("Compiling...");
+    const compiled = await compile(source);
 
-  writeFileSync(cachePath, compiled);
-  return compiled;
+    writeFileSync(cachePath, compiled);
+    return compiled;
 }
 ```
 
@@ -130,31 +130,31 @@ import { createWriteStream, createReadStream } from "fs";
 import { pipeline } from "stream/promises";
 
 class PackageCache {
-  private cacheDir: string | undefined;
+    private cacheDir: string | undefined;
 
-  async init() {
-    this.cacheDir = await findCacheDir("my-package-manager", {
-      create: true
-    });
-  }
-
-  async cachePackage(name: string, version: string, stream: NodeJS.ReadableStream) {
-    if (!this.cacheDir) throw new Error("Cache not initialized");
-
-    const cachePath = join(this.cacheDir, `${name}@${version}.tgz`);
-    await pipeline(stream, createWriteStream(cachePath));
-  }
-
-  getCachedPackage(name: string, version: string): NodeJS.ReadableStream | null {
-    if (!this.cacheDir) return null;
-
-    const cachePath = join(this.cacheDir, `${name}@${version}.tgz`);
-    try {
-      return createReadStream(cachePath);
-    } catch {
-      return null;
+    async init() {
+        this.cacheDir = await findCacheDir("my-package-manager", {
+            create: true,
+        });
     }
-  }
+
+    async cachePackage(name: string, version: string, stream: NodeJS.ReadableStream) {
+        if (!this.cacheDir) throw new Error("Cache not initialized");
+
+        const cachePath = join(this.cacheDir, `${name}@${version}.tgz`);
+        await pipeline(stream, createWriteStream(cachePath));
+    }
+
+    getCachedPackage(name: string, version: string): NodeJS.ReadableStream | null {
+        if (!this.cacheDir) return null;
+
+        const cachePath = join(this.cacheDir, `${name}@${version}.tgz`);
+        try {
+            return createReadStream(cachePath);
+        } catch {
+            return null;
+        }
+    }
 }
 ```
 
@@ -168,22 +168,22 @@ import { writeFileSync, readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 class DevServerState {
-  private stateFile: string;
+    private stateFile: string;
 
-  constructor(projectName: string) {
-    const cacheDir = findCacheDirSync(projectName, { create: true });
-    if (!cacheDir) throw new Error("Could not create cache directory");
-    this.stateFile = join(cacheDir, "dev-server-state.json");
-  }
+    constructor(projectName: string) {
+        const cacheDir = findCacheDirSync(projectName, { create: true });
+        if (!cacheDir) throw new Error("Could not create cache directory");
+        this.stateFile = join(cacheDir, "dev-server-state.json");
+    }
 
-  save(state: Record<string, unknown>) {
-    writeFileSync(this.stateFile, JSON.stringify(state, null, 2));
-  }
+    save(state: Record<string, unknown>) {
+        writeFileSync(this.stateFile, JSON.stringify(state, null, 2));
+    }
 
-  load(): Record<string, unknown> | null {
-    if (!existsSync(this.stateFile)) return null;
-    return JSON.parse(readFileSync(this.stateFile, "utf-8"));
-  }
+    load(): Record<string, unknown> | null {
+        if (!existsSync(this.stateFile)) return null;
+        return JSON.parse(readFileSync(this.stateFile, "utf-8"));
+    }
 }
 
 // Usage
@@ -261,8 +261,8 @@ import { findCacheDir } from "@visulima/find-cache-dir";
 const cacheDir = await findCacheDir("my-app");
 
 if (!cacheDir) {
-  console.warn("No cache directory available, using temp directory");
-  // Fallback logic
+    console.warn("No cache directory available, using temp directory");
+    // Fallback logic
 }
 ```
 
@@ -276,31 +276,31 @@ import { readdirSync, statSync, unlinkSync } from "fs";
 import { join } from "path";
 
 async function cleanOldCache(maxAgeDays: number = 30) {
-  const cacheDir = await findCacheDir("my-app");
-  if (!cacheDir) return;
+    const cacheDir = await findCacheDir("my-app");
+    if (!cacheDir) return;
 
-  const now = Date.now();
-  const maxAge = maxAgeDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const maxAge = maxAgeDays * 24 * 60 * 60 * 1000;
 
-  for (const file of readdirSync(cacheDir)) {
-    const filePath = join(cacheDir, file);
-    const stats = statSync(filePath);
+    for (const file of readdirSync(cacheDir)) {
+        const filePath = join(cacheDir, file);
+        const stats = statSync(filePath);
 
-    if (now - stats.mtimeMs > maxAge) {
-      unlinkSync(filePath);
-      console.log(`Removed old cache file: ${file}`);
+        if (now - stats.mtimeMs > maxAge) {
+            unlinkSync(filePath);
+            console.log(`Removed old cache file: ${file}`);
+        }
     }
-  }
 }
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>

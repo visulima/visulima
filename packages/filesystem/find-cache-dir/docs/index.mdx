@@ -10,17 +10,20 @@ Find the standard cache directory for your application across different operatin
 ## Key Features
 
 **Platform-Aware**
+
 - macOS: `~/Library/Caches/`
 - Windows: `%LOCALAPPDATA%` or `%USERPROFILE%\AppData\Local\`
 - Linux: `~/.cache/` or `$XDG_CACHE_HOME`
 
 **Flexible Options**
+
 - Async and sync versions
 - Automatic directory creation
 - Custom starting directory
 - Error handling controls
 
 **Project-Scoped**
+
 - Creates `node_modules/.cache/your-app` structure
 - Follows Node.js caching conventions
 - Isolated per-project caching
@@ -73,20 +76,20 @@ import { createWriteStream, existsSync } from "fs";
 import { join } from "path";
 
 async function downloadWithCache(url: string, filename: string) {
-  const cacheDir = await findCacheDir("my-downloader", { create: true });
-  const cachePath = join(cacheDir, filename);
+    const cacheDir = await findCacheDir("my-downloader", { create: true });
+    const cachePath = join(cacheDir, filename);
 
-  if (existsSync(cachePath)) {
-    console.log("Using cached file");
+    if (existsSync(cachePath)) {
+        console.log("Using cached file");
+        return cachePath;
+    }
+
+    // Download and cache
+    const response = await fetch(url);
+    const fileStream = createWriteStream(cachePath);
+    // ... pipe response to file ...
+
     return cachePath;
-  }
-
-  // Download and cache
-  const response = await fetch(url);
-  const fileStream = createWriteStream(cachePath);
-  // ... pipe response to file ...
-
-  return cachePath;
 }
 ```
 
@@ -109,20 +112,21 @@ console.log(buildCache === testCache); // true
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Learn how to install and import the package
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Explore async/sync usage and options
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore async/sync usage and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>
 
 ## Browser and Server Support
 
 This package is designed for Node.js environments:
+
 - **Node.js:** ≥22.13 ≤25.x
 - **Browsers:** Not applicable (filesystem operations)
 - **Deno/Bun:** Compatible with filesystem APIs
