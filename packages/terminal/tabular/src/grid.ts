@@ -563,7 +563,7 @@ export class Grid {
         }
 
         const numberColumns = columnWidths.length;
-        const borderJoinWidth = this.#options.showBorders ? borderStyle?.bodyJoin.width ?? 0 : 0;
+        const borderJoinWidth = this.#options.showBorders ? (borderStyle?.bodyJoin.width ?? 0) : 0;
         const gapWidth = this.#options.gap;
 
         for (let colIndex = 0; colIndex < numberColumns; colIndex += 1) {
@@ -797,7 +797,7 @@ export class Grid {
         const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
         const growableColumns: number[] = [];
         const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
-        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0);
+        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? (this.#options.border?.bodyJoin.width ?? 0) : 0);
 
         // Calculate minimum width needed for non-spanning cells
         for (let colIndex = 0; colIndex < this.#options.columns; colIndex += 1) {
@@ -806,9 +806,9 @@ export class Grid {
 
                 // Skip if not a cell start position
                 if (
-                    !cell
-                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell ||
+                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
+                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
                 }
@@ -848,9 +848,9 @@ export class Grid {
 
                 // Skip if not a cell start position
                 if (
-                    !cell
-                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell ||
+                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
+                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
                 }
@@ -924,8 +924,8 @@ export class Grid {
             // If holes exist and balancing is enabled, fill only the holes
             if (this.#options.balancedWidths) {
                 const seed = Array.from<number>({ length: fixed.length }).fill(0);
-                const effectiveMax
-                    = typeof this.#options.maxWidth === "number" && this.#options.maxWidth > 0
+                const effectiveMax =
+                    typeof this.#options.maxWidth === "number" && this.#options.maxWidth > 0
                         ? Math.min(this.#options.maxWidth, this.#terminalWidth)
                         : this.#terminalWidth;
 
@@ -978,7 +978,7 @@ export class Grid {
 
         const columnWidths: number[] = Array.from<number>({ length: this.#options.columns }).fill(0);
         const totalPadding = this.#options.paddingLeft + this.#options.paddingRight;
-        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0);
+        const singleInternalJoinWidth = this.#options.gap + (this.#options.showBorders ? (this.#options.border?.bodyJoin.width ?? 0) : 0);
 
         // Calculate minimum width needed for non-spanning cells
         // and track the maximum content width for each column
@@ -988,9 +988,9 @@ export class Grid {
 
                 // Skip if not a cell start position
                 if (
-                    !cell
-                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell ||
+                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
+                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
                 }
@@ -1018,9 +1018,9 @@ export class Grid {
 
                 // Skip if not a cell start position
                 if (
-                    !cell
-                    || findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex
-                    || (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
+                    !cell ||
+                    findFirstOccurrenceRow(gridLayout, rowIndex, colIndex, cell) !== rowIndex ||
+                    (colIndex > 0 && gridLayout[rowIndex]?.[colIndex - 1] === cell)
                 ) {
                     continue;
                 }
@@ -1209,8 +1209,8 @@ export class Grid {
                             visualLineWithinSpan += rowHeights[index] ?? 1;
                         }
 
-                        targetContentIndex
-                            = visualLineWithinSpan >= paddingTop && visualLineWithinSpan < paddingTop + actualContentHeight
+                        targetContentIndex =
+                            visualLineWithinSpan >= paddingTop && visualLineWithinSpan < paddingTop + actualContentHeight
                                 ? visualLineWithinSpan - paddingTop
                                 : -1;
 
@@ -1438,7 +1438,7 @@ export class Grid {
         for (let col = 0; col < this.#options.columns; col += 1) {
             const cellAbove: GridItem | null = gridLayout[rowIndex]?.[col] ?? null;
 
-            const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? gridLayout[nextRowIndex]?.[col] ?? null : null;
+            const cellBelow: GridItem | null = borderType === "middle" && nextRowIndex !== -1 ? (gridLayout[nextRowIndex]?.[col] ?? null) : null;
 
             let definingCell: GridItem | null = null;
             let isStartCol = false;
@@ -1523,9 +1523,9 @@ export class Grid {
                         segment = applyColor(processedLines[targetContentLineIndex] ?? "", this.#options.foregroundColor); // Use the already padded line directly
                     } else {
                         // No content line falls here, render spaces covering the full width including internal structure
-                        const segmentWidth
-                            = columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0)
-                                + (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
+                        const segmentWidth =
+                            columnWidths.slice(col, col + colSpan).reduce((sum, w) => sum + w, 0) +
+                            (colSpan - 1) * (this.#options.gap + (this.#options.showBorders ? this.#options.border.bodyJoin.width : 0));
 
                         segment = applyColor(" ".repeat(segmentWidth), this.#options.borderColor);
                     }

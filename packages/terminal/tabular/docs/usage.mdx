@@ -23,11 +23,7 @@ const table = createTable({
 table.setHeaders(["Col1", "Col2", "Col3"]);
 
 // With alignment
-table.setHeaders([
-    "Name",
-    { content: "Age", hAlign: "center" },
-    { content: "Score", hAlign: "right" },
-]);
+table.setHeaders(["Name", { content: "Age", hAlign: "center" }, { content: "Score", hAlign: "right" }]);
 ```
 
 ## Adding Rows
@@ -46,10 +42,7 @@ table.addRows([
 ## Column Spanning
 
 ```typescript
-table.addRow([
-    { colSpan: 2, content: "Spans 2 columns" },
-    "Normal cell",
-]);
+table.addRow([{ colSpan: 2, content: "Spans 2 columns" }, "Normal cell"]);
 ```
 
 ## Styling
