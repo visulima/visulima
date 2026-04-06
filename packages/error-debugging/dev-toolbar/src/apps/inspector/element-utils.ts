@@ -378,7 +378,6 @@ export const generateSelector = (element: Element): string => {
 
         for (let i = 0; i < classes.length; i++) {
             for (let j = i + 1; j < classes.length; j++) {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const selector = `${tag}.${CSS.escape(classes[i]!)}.${CSS.escape(classes[j]!)}`;
 
                 if (document.querySelectorAll(selector).length === 1) {
@@ -608,7 +607,6 @@ const detectReact = (element: Element): FrameworkContext | undefined => {
         return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let fiber = (element as any)[fiberKey];
     let componentName: string | undefined;
     let sourceFile: string | undefined;
@@ -650,14 +648,12 @@ const detectReact = (element: Element): FrameworkContext | undefined => {
 };
 
 const detectVue = (element: Element): FrameworkContext | undefined => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let instance = (element as any).__vueParentComponent;
 
     if (!instance) {
         let current: Element | null = element;
 
         while (current) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             instance = (current as any).__vueParentComponent;
 
             if (instance) {
@@ -704,7 +700,6 @@ const detectSvelte = (element: Element): FrameworkContext | undefined => {
     let current: Element | null = element;
 
     while (current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const meta = (current as any).__svelte_meta;
 
         if (meta) {
@@ -835,9 +830,9 @@ const querySelectorAllWithIframes = (selector: string): Element[] => {
         }
 
         for (const iframe of document_.querySelectorAll("iframe")) {
-            if (isSameOriginIframe(iframe as HTMLIFrameElement)) {
+            if (isSameOriginIframe(iframe)) {
                 try {
-                    searchDocument((iframe as HTMLIFrameElement).contentDocument!);
+                    searchDocument((iframe).contentDocument!);
                 } catch {
                     /* ignore */
                 }
@@ -870,10 +865,10 @@ export const getElementsInRect = (rect: DOMRect): Element[] => {
                 const elementRect = getViewportRect(element);
 
                 if (
-                    elementRect.left >= rect.x - 5 &&
-                    elementRect.top >= rect.y - 5 &&
-                    elementRect.right <= rect.x + rect.width + 5 &&
-                    elementRect.bottom <= rect.y + rect.height + 5
+                    elementRect.left >= rect.x - 5
+                    && elementRect.top >= rect.y - 5
+                    && elementRect.right <= rect.x + rect.width + 5
+                    && elementRect.bottom <= rect.y + rect.height + 5
                 ) {
                     seen.add(element);
                     elements.push(element);

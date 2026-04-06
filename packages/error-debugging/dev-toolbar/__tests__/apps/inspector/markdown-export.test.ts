@@ -3,17 +3,19 @@ import { describe, expect, it } from "vitest";
 
 import { annotationsToMarkdown } from "../../../src/apps/inspector/element-utils";
 
-const makeAnnotation = (overrides = {}) => ({
-    comment: "Fix the padding",
-    elementTag: "button",
-    intent: "fix",
-    severity: "important",
-    status: "pending",
-    url: "/page",
-    ...overrides,
-});
+const makeAnnotation = (overrides = {}) => {
+    return {
+        comment: "Fix the padding",
+        elementTag: "button",
+        intent: "fix",
+        severity: "important",
+        status: "pending",
+        url: "/page",
+        ...overrides,
+    };
+};
 
-describe("annotationsToMarkdown", () => {
+describe(annotationsToMarkdown, () => {
     it("returns 'no annotations' message for empty array", () => {
         const md = annotationsToMarkdown([]);
 
@@ -34,9 +36,9 @@ describe("annotationsToMarkdown", () => {
         });
 
         it("uses elementLabel when available", () => {
-            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: 'button "Submit"' })], "compact");
+            const md = annotationsToMarkdown([makeAnnotation({ elementLabel: "button \"Submit\"" })], "compact");
 
-            expect(md).toContain('**button "Submit":**');
+            expect(md).toContain("**button \"Submit\":**");
         });
     });
 

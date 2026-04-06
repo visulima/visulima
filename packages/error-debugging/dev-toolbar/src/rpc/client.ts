@@ -20,12 +20,11 @@ const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): Cli
     } as ClientFunctions;
 
     // Pending RPC requests map
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const pendingRequests = new Map<string, { reject: (error: any) => void; resolve: (value: any) => void }>();
 
     // Setup HMR listener for RPC responses
     if (globalThis.window !== undefined && import.meta.hot) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         import.meta.hot.on("dev-toolbar:rpc:response", (data: { id: string; result: any }) => {
             const request = pendingRequests.get(data.id);
 
@@ -45,7 +44,7 @@ const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): Cli
         });
 
         // Listen for server-initiated client function calls
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         import.meta.hot.on("dev-toolbar:client", (data: { args: any[]; method: string }) => {
             const { args, method } = data;
             const handler = functions[method];
@@ -81,7 +80,7 @@ const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): Cli
                 }, 30_000); // 30 second timeout
 
                 // Send RPC request
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
                 import.meta.hot!.send("dev-toolbar:rpc", {
                     args,
                     id,

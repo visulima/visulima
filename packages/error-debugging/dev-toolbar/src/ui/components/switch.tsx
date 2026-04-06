@@ -4,7 +4,7 @@ import { clsx } from "clsx";
 import type { JSX } from "preact";
 import { useState } from "preact/hooks";
 
-interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "onChange"> {
+interface SwitchProps extends Omit<JSX.ButtonHTMLAttributes, "onChange"> {
     checked?: boolean;
     class?: string;
     defaultChecked?: boolean;

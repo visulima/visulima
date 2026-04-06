@@ -71,7 +71,7 @@ export const loadSettings = (): AnnotationSettings => {
 
             cachedSettings = { ...DEFAULT_SETTINGS, ...parsed };
 
-            return cachedSettings as AnnotationSettings;
+            return cachedSettings;
         }
     } catch {
         /* ignore */

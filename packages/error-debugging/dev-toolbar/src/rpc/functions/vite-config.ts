@@ -78,12 +78,11 @@ type ViteConfigSnapshot = {
 // Convert them to their string representation "/pattern/flags".
 const normalizeAlias = (rawAlias: unknown): AliasEntry[] | Record<string, string> | undefined => {
     if (Array.isArray(rawAlias)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (
             (rawAlias as any[])
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 .filter((entry: any) => entry !== null && entry !== undefined && (entry.find !== undefined || entry.replacement !== undefined))
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 .map((entry: any) => {
                     return {
                         find: entry.find instanceof RegExp ? entry.find.toString() : String(entry.find ?? ""),
@@ -131,10 +130,8 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
     // Collect plugin info safely (filter out falsy entries and entries without a name)
     const plugins: PluginInfo[] = [];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const p of (config.plugins as any[]).filter((entry: any) => Boolean(entry?.name))) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        plugins.push({ enforce: (p as any)?.enforce, name: (p as any).name as string });
+        plugins.push({ enforce: p?.enforce, name: p.name as string });
     }
 
     const aliasNormalized = normalizeAlias(config.resolve?.alias);
@@ -145,7 +142,7 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
     // HMR settings
     const hmrRaw = config.server?.hmr;
     const hmrEnabled = hmrRaw !== false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const hmrPort = typeof hmrRaw === "object" && hmrRaw !== null ? (hmrRaw as any).port : undefined;
 
     const ssrNoExternalNormalized = normalizeSsrNoExternal(config.ssr?.noExternal);
@@ -175,12 +172,12 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
         envPrefix: config.envPrefix,
         esbuild: config.esbuild
             ? {
-                  jsx: config.esbuild.jsx as string | undefined,
-                  jsxFactory: config.esbuild.jsxFactory,
-                  jsxFragment: config.esbuild.jsxFragment,
-                  jsxImportSource: config.esbuild.jsxImportSource,
-                  target: config.esbuild.target as string | string[] | undefined,
-              }
+                jsx: config.esbuild.jsx as string | undefined,
+                jsxFactory: config.esbuild.jsxFactory,
+                jsxFragment: config.esbuild.jsxFragment,
+                jsxImportSource: config.esbuild.jsxImportSource,
+                target: config.esbuild.target,
+            }
             : undefined,
         mode: config.mode,
         optimizeDeps: {
@@ -226,11 +223,11 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
             config.ssr === undefined
                 ? undefined
                 : {
-                      // external can be string[] | true — normalise to string[] only
-                      external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
-                      noExternal: ssrNoExternalNormalized,
-                      target: config.ssr?.target,
-                  },
+                    // external can be string[] | true — normalise to string[] only
+                    external: Array.isArray(config.ssr?.external) ? config.ssr.external : undefined,
+                    noExternal: ssrNoExternalNormalized,
+                    target: config.ssr?.target,
+                },
     };
 };
 

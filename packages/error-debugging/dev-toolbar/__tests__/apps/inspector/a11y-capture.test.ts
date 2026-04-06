@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { captureA11yInfo, formatA11yText } from "../../../src/apps/inspector/a11y-capture";
 
-describe("captureA11yInfo", () => {
+describe(captureA11yInfo, () => {
     describe("role", () => {
         it("returns role when present", () => {
             const element = document.createElement("div");
@@ -49,7 +49,7 @@ describe("captureA11yInfo", () => {
         it("ignores non-aria attributes", () => {
             const element = document.createElement("div");
 
-            element.setAttribute("data-aria-test", "value");
+            element.dataset.ariaTest = "value";
             element.setAttribute("aria-hidden", "true");
 
             expect(captureA11yInfo(element).ariaAttributes).toStrictEqual({
@@ -210,7 +210,7 @@ describe("captureA11yInfo", () => {
     });
 });
 
-describe("formatA11yText", () => {
+describe(formatA11yText, () => {
     it("formats role and focusable", () => {
         const text = formatA11yText({
             ariaAttributes: {},

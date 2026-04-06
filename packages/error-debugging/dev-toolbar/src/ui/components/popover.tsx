@@ -31,7 +31,7 @@ interface PopoverProps {
     open?: boolean;
 }
 
-interface PopoverTriggerProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PopoverTriggerProps extends JSX.ButtonHTMLAttributes {
     children: ComponentChildren;
     class?: string;
 }
@@ -44,7 +44,7 @@ interface PopoverContentProps extends JSX.HTMLAttributes<HTMLDivElement> {
     sideOffset?: number;
 }
 
-interface PopoverCloseProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PopoverCloseProps extends JSX.ButtonHTMLAttributes {
     children?: ComponentChildren;
     class?: string;
 }
@@ -114,7 +114,7 @@ const PopoverContent = ({
 
         const placement = align === "center" ? side : (`${side}-${align}` as const);
 
-        computePosition(triggerRef.current as Element, contentRef.current as HTMLElement, {
+        computePosition(triggerRef.current, contentRef.current as HTMLElement, {
             middleware: [offset(sideOffset), flip(), shift({ padding: 4 })],
             placement,
         })
@@ -176,7 +176,7 @@ const PopoverClose = ({ children, class: className, ...rest }: PopoverCloseProps
     const { setOpen } = usePopoverContext();
 
     return (
-        <button class={clsx("", className)} onClick={() => setOpen(false)} type="button" {...rest}>
+        <button class={clsx("", className)} onClick={() => { setOpen(false); }} type="button" {...rest}>
             {children}
         </button>
     );

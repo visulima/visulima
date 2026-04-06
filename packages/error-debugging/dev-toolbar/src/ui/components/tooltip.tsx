@@ -60,7 +60,7 @@ const TooltipTrigger = ({ children, class: className, ...rest }: TooltipTriggerP
     };
 
     return (
-        <span class={className} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} ref={handleRef} {...rest}>
+        <span class={className} onMouseEnter={() => { setOpen(true); }} onMouseLeave={() => { setOpen(false); }} ref={handleRef} {...rest}>
             {children}
         </span>
     );
@@ -76,7 +76,7 @@ const TooltipContent = ({ children, class: className, side = "top", sideOffset =
             return;
         }
 
-        computePosition(triggerRef.current as Element, contentRef.current as HTMLElement, {
+        computePosition(triggerRef.current, contentRef.current as HTMLElement, {
             middleware: [offset(sideOffset), flip(), shift({ padding: 4 })],
             placement: side,
         })

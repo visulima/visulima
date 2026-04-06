@@ -139,7 +139,6 @@ const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn =>
     // Keep toolbar visible while the @visulima/vite-overlay dialog is open
     useEffect(() => {
         const check = (): void => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const overlay = (globalThis as any).__v_o__current as { parentNode?: Node; shadowRoot?: ShadowRoot } | undefined;
 
             if (overlay?.parentNode) {
@@ -155,7 +154,7 @@ const usePosition = (panelElement: RefObject<HTMLElement>): UsePositionReturn =>
 
         check();
 
-        return () => clearInterval(id);
+        return () => { clearInterval(id); };
     }, []);
 
     /**

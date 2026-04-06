@@ -4,7 +4,6 @@ import path from "node:path";
 import type { ViteDevServer } from "vite";
 import { normalizePath } from "vite";
 
-// eslint-disable-next-line import/exports-last
 export interface StaticAsset {
     /** Last-modified timestamp (ms since epoch) */
     mtime: number;
@@ -100,7 +99,7 @@ const walkDirectory = async (
     }
 
     await Promise.all(
-        // eslint-disable-next-line sonarjs/cognitive-complexity
+
         entries.map(async (entry) => {
             if (collected.length >= MAX_ASSETS) {
                 return;

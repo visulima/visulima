@@ -27,7 +27,7 @@ describe("annotation-store", () => {
         await fs.rm(tmpDir, { force: true, recursive: true });
     });
 
-    describe("resolvePaths", () => {
+    describe(resolvePaths, () => {
         it("returns correct paths", () => {
             const paths = resolvePaths("/root");
 
@@ -37,7 +37,7 @@ describe("annotation-store", () => {
         });
     });
 
-    describe("isPathInsideBase", () => {
+    describe(isPathInsideBase, () => {
         it("returns true for paths inside base", () => {
             expect(isPathInsideBase("/base/sub/file.txt", "/base")).toBe(true);
         });
@@ -63,7 +63,7 @@ describe("annotation-store", () => {
         });
     });
 
-    describe("sanitizeId", () => {
+    describe(sanitizeId, () => {
         it("keeps alphanumeric and hyphens", () => {
             expect(sanitizeId("abc-123")).toBe("abc-123");
         });
@@ -89,7 +89,7 @@ describe("annotation-store", () => {
         });
     });
 
-    describe("ensureStoreDir", () => {
+    describe(ensureStoreDir, () => {
         it("creates directories recursively", async () => {
             await ensureStoreDir(tmpDir);
 
@@ -156,7 +156,7 @@ describe("annotation-store", () => {
             await ensureStoreDir(tmpDir);
             const { annotationsFile } = resolvePaths(tmpDir);
 
-            await fs.writeFile(annotationsFile, '{"not": "an array"}', "utf8");
+            await fs.writeFile(annotationsFile, "{\"not\": \"an array\"}", "utf8");
 
             const result = await readAnnotations(tmpDir);
 
@@ -164,7 +164,7 @@ describe("annotation-store", () => {
         });
     });
 
-    describe("withLock", () => {
+    describe(withLock, () => {
         it("releases lock even when function throws", async () => {
             // First operation throws
             await expect(
@@ -205,7 +205,7 @@ describe("annotation-store", () => {
         });
     });
 
-    describe("deleteScreenshotFile", () => {
+    describe(deleteScreenshotFile, () => {
         it("deletes a screenshot file", async () => {
             await ensureStoreDir(tmpDir);
 

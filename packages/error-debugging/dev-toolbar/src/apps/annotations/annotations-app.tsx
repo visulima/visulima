@@ -407,7 +407,6 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                 await load();
             } catch (error_) {
-                // eslint-disable-next-line no-console
                 console.error(`[annotations] ${action} failed for ${id}:`, error_);
                 setError(error_ instanceof Error ? error_.message : `Failed to ${action} annotation`);
             }
@@ -465,7 +464,7 @@ const AnnotationsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                             </p>
                             <p class="mt-1 text-[0.7rem] text-muted-foreground">
                                 {annotations.length === 0
-                                    ? 'Use the Inspector to click an element and select "Annotate".'
+                                    ? "Use the Inspector to click an element and select \"Annotate\"."
                                     : "Try changing the status or intent filter."}
                             </p>
                         </div>

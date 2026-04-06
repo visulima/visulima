@@ -62,7 +62,6 @@ type Palette = AnnotationPalette;
 
 const getPalette = getAnnotationPalette;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getRpc = (): any => (globalThis as any).__VISULIMA_DEVTOOLS__?.rpc;
 
 /** Safe querySelector — returns null for invalid selectors (e.g. area selection paths like "region at (x, y)"). */
@@ -179,7 +178,6 @@ const makeCloseButton = (c: Palette, onClick: () => void): HTMLButtonElement => 
  * Returns true when the Annotations panel app is registered in the toolbar.
  */
 export const isAnnotationsAppEnabled = (): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
     return api?.getApps?.().some((app: { id: string }) => app.id === "dev-toolbar:annotations") ?? false;
@@ -1057,7 +1055,7 @@ export const showAnnotationForm = (
         }
 
         submitButton.textContent = editAnnotation ? "Saving..." : "Creating...";
-        (submitButton as HTMLButtonElement).disabled = true;
+        (submitButton).disabled = true;
 
         try {
             if (editAnnotation) {
@@ -1129,7 +1127,7 @@ export const showAnnotationForm = (
             showToast(editAnnotation ? "Annotation saved" : "Annotation created");
         } catch {
             submitButton.textContent = "Error \u2014 retry";
-            (submitButton as HTMLButtonElement).disabled = false;
+            (submitButton).disabled = false;
         }
     });
 
@@ -1347,8 +1345,8 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
     // "+" badge in top-right corner
     const badge = document.createElement("div");
 
-    badge.style.cssText =
-        "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
+    badge.style.cssText
+        = "position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:50%;background:#22c55e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;line-height:1;pointer-events:none;";
     badge.textContent = "+";
     outline.append(badge);
     document.body.append(outline);
@@ -1470,7 +1468,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
             }
 
             submitButton.textContent = "Adding...";
-            (submitButton as HTMLButtonElement).disabled = true;
+            (submitButton).disabled = true;
 
             try {
                 const pageCoords = toPageCoords(selectionRect.x + selectionRect.width / 2, selectionRect.y + selectionRect.height / 2);
@@ -1500,7 +1498,7 @@ export const showAreaSelectionForm = (selectionRect: DOMRect): void => {
                 showToast("Annotation created");
             } catch {
                 submitButton.textContent = "Error — retry";
-                (submitButton as HTMLButtonElement).disabled = false;
+                (submitButton).disabled = false;
             }
         },
         "#22c55e",
@@ -1678,9 +1676,7 @@ const parseInlineStyle = (css: string): Record<string, string> => {
 // ─── Annotation detail popup ─────────────────────────────────────────────────
 
 const removeAnnotationDetail = (): void => {
-    const element = document.querySelector(`#${DETAIL_ID}`) as
-        | (HTMLElement & { __cleanup?: () => void; __resizeObserver?: ResizeObserver; annotationId?: string })
-        | null;
+    const element = document.querySelector(`#${DETAIL_ID}`);
 
     // Unmark the marker
     if (element?.annotationId) {
@@ -1876,7 +1872,7 @@ const showAnnotationDetail = (annotation: Annotation): void => {
         const threadLabel = document.createElement("div");
 
         threadLabel.style.cssText = `font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:${c.muted};margin-bottom:6px;`;
-        threadLabel.textContent = `Thread \u00b7 ${annotation.thread.length}`;
+        threadLabel.textContent = `Thread \u00B7 ${annotation.thread.length}`;
         body.append(threadLabel);
 
         const threadScroll = document.createElement("div");

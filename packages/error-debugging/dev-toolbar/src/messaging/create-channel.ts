@@ -39,7 +39,6 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
                 handlers.set(eventName, new Set());
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             handlers.get(eventName)!.add(handler as MessageHandler);
 
             // Return unsubscribe function
@@ -59,7 +58,7 @@ export const createMessageChannel = <TEvents extends Record<string, (...args: an
         once<K extends keyof TEvents>(event: K, handler: TEvents[K]): void {
             const onceHandler = ((...args: Parameters<TEvents[K]>) => {
                 handler(...args);
-                this.off(event, onceHandler as TEvents[K]);
+                this.off(event, onceHandler);
             }) as TEvents[K];
 
             this.on(event, onceHandler);

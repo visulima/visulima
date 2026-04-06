@@ -129,7 +129,6 @@ const DEFAULT_STATE: DevToolsFrameState = {
  * Plugin options act as project-level defaults; localStorage values override them.
  */
 const buildEffectiveDefaults = (): DevToolsFrameState => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const pluginOptions = (globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ as Record<string, any> | undefined;
 
     if (!pluginOptions) {

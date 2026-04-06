@@ -200,7 +200,6 @@ class PerformanceMonitor {
         let count = 0;
 
         for (let i = 1; i < samples.length; i += 1) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const delta = samples[i]! - samples[i - 1]!;
 
             if (delta > 0 && delta < 500) {
@@ -226,7 +225,7 @@ class PerformanceMonitor {
 
     private loadTtfb(): void {
         // Try from NavigationTiming (already available at page load)
-        const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+        const entries = performance.getEntriesByType("navigation");
 
         if (entries.length > 0 && entries[0]) {
             this.vitals.ttfb = Math.round(entries[0].responseStart - entries[0].requestStart);

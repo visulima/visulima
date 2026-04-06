@@ -10,7 +10,7 @@ export interface TimelineEvent {
     /**
      * Optional event data
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     data?: Record<string, any>;
 
     /**

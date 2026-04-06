@@ -51,7 +51,7 @@ const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial
     } as ServerFunctions;
 
     // Setup WebSocket handler for RPC calls
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     server.ws.on("dev-toolbar:rpc", async (data: { args: any[]; id: string; method: string }, client: WebSocketClient) => {
         const { args, id, method } = data;
         const handler = functions[method];

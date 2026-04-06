@@ -83,13 +83,13 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
             setIsRendered(true);
             const t = setTimeout(setIsVisible, 16, true);
 
-            return () => clearTimeout(t);
+            return () => { clearTimeout(t); };
         }
 
         setIsVisible(false);
         const t = setTimeout(setIsRendered, 200, false);
 
-        return () => clearTimeout(t);
+        return () => { clearTimeout(t); };
     }, [isActive]);
 
     if (!isRendered || !hoveredApp?.tooltip || !hoveredAppRect) {
@@ -123,14 +123,14 @@ const AppTooltipOverlay = ({ position }: AppTooltipOverlayProps): ComponentChild
                 isVisible
                     ? "opacity-100 translate-y-0 scale-100"
                     : clsx(
-                          "opacity-0 scale-[0.97]",
-                          position === "bottom" && "translate-y-1",
-                          position === "top" && "-translate-y-1",
-                          isVertical && "translate-x-[-2px]",
-                      ),
+                        "opacity-0 scale-[0.97]",
+                        position === "bottom" && "translate-y-1",
+                        position === "top" && "-translate-y-1",
+                        isVertical && "translate-x-[-2px]",
+                    ),
             )}
-            onMouseEnter={() => setHoveredApp(hoveredApp, hoveredAppRect)}
-            onMouseLeave={() => setHoveredApp(undefined)}
+            onMouseEnter={() => { setHoveredApp(hoveredApp, hoveredAppRect); }}
+            onMouseLeave={() => { setHoveredApp(undefined); }}
             ref={overlayRef}
             role="tooltip"
             style={tooltipStyle}

@@ -24,7 +24,7 @@ describe("rpc/functions/annotations", () => {
         await fs.rm(tmpDir, { force: true, recursive: true });
     });
 
-    describe("getAnnotations", () => {
+    describe(getAnnotations, () => {
         it("returns empty array when no file exists", async () => {
             const result = await getAnnotations(server);
 
@@ -55,7 +55,7 @@ describe("rpc/functions/annotations", () => {
         });
     });
 
-    describe("createAnnotation", () => {
+    describe(createAnnotation, () => {
         it("generates id, status, timestamps", async () => {
             const result = await createAnnotation(server, {
                 comment: "Fix this",
@@ -67,11 +67,11 @@ describe("rpc/functions/annotations", () => {
                 y: 100,
             } as Parameters<typeof createAnnotation>[1]);
 
-            expect(result.id).toBeTruthy();
+            expect(result.id).toBe(true);
             expect(result.id.length).toBeGreaterThan(10); // UUID
             expect(result.status).toBe("pending");
-            expect(result.createdAt).toBeTruthy();
-            expect(result.updatedAt).toBeTruthy();
+            expect(result.createdAt).toBe(true);
+            expect(result.updatedAt).toBe(true);
         });
 
         it("does NOT allow client to inject server fields", async () => {
@@ -111,7 +111,7 @@ describe("rpc/functions/annotations", () => {
         });
     });
 
-    describe("updateAnnotation", () => {
+    describe(updateAnnotation, () => {
         let annotationId: string;
 
         beforeEach(async () => {
@@ -152,7 +152,7 @@ describe("rpc/functions/annotations", () => {
 
             expect(result?.status).toBe("resolved");
             expect(result?.resolvedBy).toBe("human");
-            expect(result?.resolvedAt).toBeTruthy();
+            expect(result?.resolvedAt).toBe(true);
         });
 
         it("sets resolvedBy to agent when specified", async () => {
@@ -182,7 +182,7 @@ describe("rpc/functions/annotations", () => {
         });
     });
 
-    describe("deleteAnnotation", () => {
+    describe(deleteAnnotation, () => {
         it("returns false for non-existent id", async () => {
             const result = await deleteAnnotation(server, "nonexistent");
 
@@ -210,7 +210,7 @@ describe("rpc/functions/annotations", () => {
         });
     });
 
-    describe("saveScreenshot", () => {
+    describe(saveScreenshot, () => {
         it("saves PNG data URL", async () => {
             const a = await createAnnotation(server, {
                 comment: "test",
@@ -242,7 +242,7 @@ describe("rpc/functions/annotations", () => {
             await expect(saveScreenshot(server, "test-id", "data:image/bmp;base64,abc")).rejects.toThrow("Unsupported screenshot format");
         });
 
-        it("SECURITY: rejects traversal in annotation ID", async () => {
+        it("sECURITY: rejects traversal in annotation ID", async () => {
             const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==";
             const dataUrl = `data:image/png;base64,${pngBase64}`;
 
@@ -258,7 +258,7 @@ describe("rpc/functions/annotations", () => {
         });
     });
 
-    describe("getScreenshot", () => {
+    describe(getScreenshot, () => {
         it("returns null for non-existent annotation", async () => {
             const result = await getScreenshot(server, "nonexistent");
 
@@ -281,7 +281,7 @@ describe("rpc/functions/annotations", () => {
             expect(result).toBeNull();
         });
 
-        it("SECURITY: returns null for traversal paths in screenshot field", async () => {
+        it("sECURITY: returns null for traversal paths in screenshot field", async () => {
             // Manually write annotation with malicious screenshot path
             await writeAnnotations(tmpDir, [
                 {

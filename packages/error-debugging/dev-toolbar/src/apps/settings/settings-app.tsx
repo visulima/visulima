@@ -16,8 +16,8 @@ import { useTheme } from "../../toolbar/hooks/use-theme";
 import type { AppComponentProps } from "../../types/app";
 import { Button } from "../../ui";
 import Icon from "../../ui/components/icon";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../ui/components/select";
 import type { SelectOption } from "../../ui/components/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../ui/components/select";
 
 // ─── Reusable primitives ─────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ const Toggle = ({ checked, onChange }: { checked: boolean; onChange: (v: boolean
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             checked ? "bg-primary" : "bg-foreground/15",
         )}
-        onClick={() => onChange(!checked)}
+        onClick={() => { onChange(!checked); }}
         role="switch"
         type="button"
     >
@@ -104,7 +104,7 @@ const ThemeControl = ({ onChange, value }: { onChange: (v: Theme) => void; value
                         value === opt.value ? "bg-background text-foreground shadow-sm" : "bg-transparent text-muted-foreground hover:text-foreground",
                     )}
                     key={opt.value}
-                    onClick={() => onChange(opt.value)}
+                    onClick={() => { onChange(opt.value); }}
                     type="button"
                 >
                     {opt.icon}
@@ -126,7 +126,7 @@ const HIDE_OPTIONS: SelectOption[] = [
 ];
 
 const HideDelayControl = ({ onChange, value }: { onChange: (v: number) => void; value: number }): ComponentChildren => (
-    <Select onValueChange={(v) => onChange(Number(v))} value={String(value)}>
+    <Select onValueChange={(v) => { onChange(Number(v)); }} value={String(value)}>
         <SelectTrigger>
             <SelectValue options={HIDE_OPTIONS} />
         </SelectTrigger>
@@ -233,13 +233,17 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
 
             const parts: string[] = [];
 
-            if (event.altKey) parts.push("Alt");
+            if (event.altKey)
+                parts.push("Alt");
 
-            if (event.ctrlKey) parts.push("Control");
+            if (event.ctrlKey)
+                parts.push("Control");
 
-            if (event.metaKey) parts.push("Meta");
+            if (event.metaKey)
+                parts.push("Meta");
 
-            if (event.shiftKey) parts.push("Shift");
+            if (event.shiftKey)
+                parts.push("Shift");
 
             parts.push(event.key);
 
@@ -249,7 +253,7 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
 
         globalThis.addEventListener("keydown", handleKeyDown, true);
 
-        return () => globalThis.removeEventListener("keydown", handleKeyDown, true);
+        return () => { globalThis.removeEventListener("keydown", handleKeyDown, true); };
     }, [capturing, onChange]);
 
     return (
@@ -264,7 +268,7 @@ const KeyCapture = ({ onChange, value }: { onChange: (v: string) => void; value:
             </div>
             <Button
                 class={clsx("text-[0.7rem]", capturing ? "border-primary text-primary bg-primary/8 animate-pulse" : "")}
-                onClick={() => setCapturing((c) => !c)}
+                onClick={() => { setCapturing((c) => !c); }}
                 ref={buttonRef}
                 size="sm"
                 variant="outline"
@@ -298,7 +302,7 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
             <Section title="Appearance">
                 <SettingRow control={<ThemeControl onChange={setTheme} value={theme} />} description="Color scheme for the DevTools panel." label="Theme" />
                 <SettingRow
-                    control={<Toggle checked={state.reduceMotion} onChange={(v) => updateState({ reduceMotion: v })} />}
+                    control={<Toggle checked={state.reduceMotion} onChange={(v) => { updateState({ reduceMotion: v }); }} />}
                     description="Disable animations and transitions throughout the toolbar."
                     label="Reduce motion"
                 />
@@ -307,12 +311,12 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Toolbar */}
             <Section title="Toolbar">
                 <SettingRow
-                    control={<HideDelayControl onChange={(v) => updateState({ minimizePanelInactive: v })} value={state.minimizePanelInactive} />}
+                    control={<HideDelayControl onChange={(v) => { updateState({ minimizePanelInactive: v }); }} value={state.minimizePanelInactive} />}
                     description="Collapse the toolbar pill after a period of inactivity. Set 'Never' to always keep it visible."
                     label="Auto-hide when inactive"
                 />
                 <SettingRow
-                    control={<Toggle checked={state.preferShowFloatingPanel} onChange={(v) => updateState({ preferShowFloatingPanel: v })} />}
+                    control={<Toggle checked={state.preferShowFloatingPanel} onChange={(v) => { updateState({ preferShowFloatingPanel: v }); }} />}
                     description="Keep the toolbar pill visible even when the DevTools panel is not open."
                     label="Show toolbar when panel is closed"
                 />
@@ -321,7 +325,7 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Panel */}
             <Section title="Panel">
                 <SettingRow
-                    control={<Toggle checked={state.closeOnOutsideClick} onChange={(v) => updateState({ closeOnOutsideClick: v })} />}
+                    control={<Toggle checked={state.closeOnOutsideClick} onChange={(v) => { updateState({ closeOnOutsideClick: v }); }} />}
                     description="Close the DevTools panel when clicking outside of it."
                     label="Close on outside click"
                 />
@@ -330,7 +334,7 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Editor */}
             <Section title="Editor">
                 <SettingRow
-                    control={<EditorControl onChange={(v) => updateState({ editor: v })} value={state.editor} />}
+                    control={<EditorControl onChange={(v) => { updateState({ editor: v }); }} value={state.editor} />}
                     description="Editor to open when clicking 'Open in editor'. Select Auto-detected to use the running IDE or EDITOR environment variable."
                     label="Preferred editor"
                 />
@@ -342,14 +346,13 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: v } })}
+                                onChange={(v) => { updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: v } }); }}
                                 value={state.keybindings?.toggle ?? DEFAULT_KEYBINDINGS.toggle}
                             />
                             {state.keybindings?.toggle !== DEFAULT_KEYBINDINGS.toggle && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
-                                    onClick={() =>
-                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), toggle: DEFAULT_KEYBINDINGS.toggle } })
+                                    onClick={() => { updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, toggle: DEFAULT_KEYBINDINGS.toggle } }); }
                                     }
                                     variant="link"
                                 >
@@ -365,14 +368,13 @@ const SettingsApp = (_props: AppComponentProps): ComponentChildren => {
                     control={
                         <div class="flex items-center gap-2">
                             <KeyCapture
-                                onChange={(v) => updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: v } })}
+                                onChange={(v) => { updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: v } }); }}
                                 value={state.keybindings?.close ?? DEFAULT_KEYBINDINGS.close}
                             />
                             {state.keybindings?.close !== DEFAULT_KEYBINDINGS.close && (
                                 <Button
                                     class="h-auto p-0 text-[0.65rem]"
-                                    onClick={() =>
-                                        updateState({ keybindings: { ...(state.keybindings ?? DEFAULT_KEYBINDINGS), close: DEFAULT_KEYBINDINGS.close } })
+                                    onClick={() => { updateState({ keybindings: { ...state.keybindings ?? DEFAULT_KEYBINDINGS, close: DEFAULT_KEYBINDINGS.close } }); }
                                     }
                                     variant="link"
                                 >

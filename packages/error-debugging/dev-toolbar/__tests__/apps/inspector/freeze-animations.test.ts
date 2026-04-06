@@ -11,13 +11,13 @@ describe("freeze-animations", () => {
         }
     });
 
-    describe("isFrozen", () => {
+    describe(isFrozen, () => {
         it("returns false initially", () => {
             expect(isFrozen()).toBe(false);
         });
     });
 
-    describe("freezeAll", () => {
+    describe(freezeAll, () => {
         it("sets frozen state to true", () => {
             freezeAll();
 
@@ -29,9 +29,9 @@ describe("freeze-animations", () => {
         it("injects freeze CSS into head", () => {
             freezeAll();
 
-            const style = document.getElementById("__vdt_freeze_styles");
+            const style = document.querySelector("#__vdt_freeze_styles");
 
-            expect(style).toBeTruthy();
+            expect(style).toBe(true);
             expect(style?.textContent).toContain("animation-play-state: paused");
             expect(style?.textContent).toContain("transition: none");
 
@@ -52,7 +52,7 @@ describe("freeze-animations", () => {
         });
     });
 
-    describe("unfreezeAll", () => {
+    describe(unfreezeAll, () => {
         it("sets frozen state to false", () => {
             freezeAll();
             unfreezeAll();
@@ -64,7 +64,7 @@ describe("freeze-animations", () => {
             freezeAll();
             unfreezeAll();
 
-            const style = document.getElementById("__vdt_freeze_styles");
+            const style = document.querySelector("#__vdt_freeze_styles");
 
             expect(style).toBeNull();
         });
@@ -76,7 +76,7 @@ describe("freeze-animations", () => {
         });
     });
 
-    describe("toggleFreeze", () => {
+    describe(toggleFreeze, () => {
         it("freezes when not frozen", () => {
             const result = toggleFreeze();
 

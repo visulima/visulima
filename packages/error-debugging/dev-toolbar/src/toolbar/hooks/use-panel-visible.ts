@@ -53,7 +53,7 @@ const usePanelVisible = (): UsePanelVisibleReturn => {
         updateState({
             open: willOpen,
             // Exit fullscreen when closing so the panel re-opens in normal mode
-            ...(willOpen ? {} : { viewMode: "default" }),
+            ...willOpen ? {} : { viewMode: "default" },
         });
     };
 

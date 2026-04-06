@@ -5,8 +5,8 @@ import "../../setup";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../../src/ui/components/select";
 import type { SelectOption } from "../../../src/ui/components/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useSelectContext } from "../../../src/ui/components/select";
 
 vi.mock(import("@floating-ui/dom"), () => {
     return {
@@ -277,7 +277,7 @@ describe("select", () => {
             const options = screen.getAllByRole("option");
 
             for (const option of options) {
-                expect(option.id).toBeTruthy();
+                expect(option.id).toBe(true);
             }
         });
     });
@@ -333,7 +333,7 @@ describe("select", () => {
             });
 
             const options = screen.getAllByRole("option");
-            const appleOption = options.find((o) => o.getAttribute("data-value") === "apple");
+            const appleOption = options.find((o) => o.dataset.value === "apple");
 
             await act(async () => {
                 fireEvent.click(appleOption!);
@@ -386,7 +386,7 @@ describe("select", () => {
     // ─── Keyboard navigation ────────────────────────────────────────────────────
 
     describe("keyboard navigation", () => {
-        it("ArrowDown highlights next option", async () => {
+        it("arrowDown highlights next option", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -404,7 +404,7 @@ describe("select", () => {
             expect(options[0]?.className).toContain("bg-accent");
         });
 
-        it("ArrowDown wraps from last to first", async () => {
+        it("arrowDown wraps from last to first", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -426,7 +426,7 @@ describe("select", () => {
             expect(options[0]?.className).toContain("bg-accent");
         });
 
-        it("ArrowUp wraps from first to last", async () => {
+        it("arrowUp wraps from first to last", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -448,7 +448,7 @@ describe("select", () => {
             expect(options[2]?.className).toContain("bg-accent");
         });
 
-        it("Enter selects the highlighted option", async () => {
+        it("enter selects the highlighted option", async () => {
             expect.hasAssertions();
 
             const onValueChange = vi.fn();
@@ -470,7 +470,7 @@ describe("select", () => {
             expect(onValueChange).toHaveBeenCalledWith("apple");
         });
 
-        it("Enter on second option selects it", async () => {
+        it("enter on second option selects it", async () => {
             expect.hasAssertions();
 
             const onValueChange = vi.fn();
@@ -495,7 +495,7 @@ describe("select", () => {
             expect(onValueChange).toHaveBeenCalledWith("banana");
         });
 
-        it("Escape closes the dropdown", async () => {
+        it("escape closes the dropdown", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -513,7 +513,7 @@ describe("select", () => {
             expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
         });
 
-        it("Tab closes the dropdown", async () => {
+        it("tab closes the dropdown", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -531,7 +531,7 @@ describe("select", () => {
             expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
         });
 
-        it("Home highlights first option", async () => {
+        it("home highlights first option", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -555,7 +555,7 @@ describe("select", () => {
             expect(options[0]?.className).toContain("bg-accent");
         });
 
-        it("End highlights last option", async () => {
+        it("end highlights last option", async () => {
             expect.hasAssertions();
 
             render(<BasicSelect />);
@@ -573,7 +573,7 @@ describe("select", () => {
             expect(options[2]?.className).toContain("bg-accent");
         });
 
-        it("Enter without highlight does nothing", async () => {
+        it("enter without highlight does nothing", async () => {
             expect.hasAssertions();
 
             const onValueChange = vi.fn();
@@ -820,7 +820,7 @@ describe("select", () => {
             const listbox = screen.getByRole("listbox");
 
             // No highlight initially
-            expect(listbox.getAttribute("aria-activedescendant")).toBeFalsy();
+            expect(listbox.getAttribute("aria-activedescendant")).toBe(false);
 
             // Highlight first
             await act(async () => {
@@ -829,7 +829,7 @@ describe("select", () => {
 
             const activedescendant = listbox.getAttribute("aria-activedescendant");
 
-            expect(activedescendant).toBeTruthy();
+            expect(activedescendant).toBe(true);
 
             // The id should match the first option's id
             const options = screen.getAllByRole("option");
@@ -868,7 +868,7 @@ describe("select", () => {
                 await Promise.resolve();
             });
 
-            expect(computePosition).toHaveBeenCalled();
+            expect(computePosition).toHaveBeenCalledWith();
         });
 
         it("passes correct placement for align=end side=top", async () => {

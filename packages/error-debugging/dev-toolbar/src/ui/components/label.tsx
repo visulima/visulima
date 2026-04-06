@@ -3,7 +3,7 @@
 import { clsx } from "clsx";
 import type { ComponentChildren, JSX } from "preact";
 
-interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
+interface LabelProps extends JSX.LabelHTMLAttributes {
     children?: ComponentChildren;
     class?: string;
 }

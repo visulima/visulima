@@ -11,7 +11,7 @@ type TestEvents = {
 
 const makeHandlers = (): MessageHandlers => new Map();
 
-describe("createMessageChannel", () => {
+describe(createMessageChannel, () => {
     let handlers: MessageHandlers;
     let sendFunction: ReturnType<typeof vi.fn>;
 
@@ -134,7 +134,7 @@ describe("createMessageChannel", () => {
 
             const channel = makeChannel();
 
-            expect(() => channel.off("user:login")).not.toThrowError();
+            expect(() => { channel.off("user:login"); }).not.toThrow();
         });
 
         it("does not remove the entry when the handler set is still non-empty", () => {
@@ -200,7 +200,7 @@ describe("createMessageChannel", () => {
     });
 });
 
-describe("handleMessage", () => {
+describe(handleMessage, () => {
     let handlers: MessageHandlers;
 
     beforeEach(() => {
@@ -240,7 +240,7 @@ describe("handleMessage", () => {
 
         const envelope: MessageEnvelope = { event: "unknown" };
 
-        expect(() => handleMessage(handlers, envelope)).not.toThrowError();
+        expect(() => { handleMessage(handlers, envelope); }).not.toThrow();
     });
 
     it("is a no-op when handler set is empty", () => {
@@ -250,7 +250,7 @@ describe("handleMessage", () => {
 
         const envelope: MessageEnvelope = { event: "empty" };
 
-        expect(() => handleMessage(handlers, envelope)).not.toThrowError();
+        expect(() => { handleMessage(handlers, envelope); }).not.toThrow();
     });
 
     it("continues calling remaining handlers when one throws", () => {

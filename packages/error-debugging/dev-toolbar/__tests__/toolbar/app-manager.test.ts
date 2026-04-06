@@ -507,13 +507,13 @@ describe("appManager", () => {
         it("setNotification is a no-op for unknown app id", () => {
             expect.hasAssertions();
 
-            expect(() => manager.setNotification("ghost", true)).not.toThrowError();
+            expect(() => { manager.setNotification("ghost", true); }).not.toThrow();
         });
 
         it("clearNotification is a no-op for unknown app id", () => {
             expect.hasAssertions();
 
-            expect(() => manager.clearNotification("ghost")).not.toThrowError();
+            expect(() => { manager.clearNotification("ghost"); }).not.toThrow();
         });
     });
 

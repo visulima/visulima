@@ -147,7 +147,6 @@ export const startMcpServer = async (): Promise<void> => {
                     };
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const annotation = annotations[index]!;
 
                 annotation.status = "resolved";
@@ -195,7 +194,6 @@ export const startMcpServer = async (): Promise<void> => {
                     };
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const annotation = annotations[index]!;
 
                 if (!annotation.thread) {
@@ -244,7 +242,6 @@ export const startMcpServer = async (): Promise<void> => {
                     };
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const annotation = annotations[index]!;
 
                 annotation.status = "acknowledged";
@@ -288,10 +285,10 @@ export const startMcpServer = async (): Promise<void> => {
             const result = await Promise.race([
                 // Timeout promise
                 new Promise<{ timedOut: true }>((resolve) => {
-                    timeoutTimer = setTimeout(() => resolve({ timedOut: true }), timeout);
+                    timeoutTimer = setTimeout(resolve, timeout, { timedOut: true });
                 }),
                 // Polling promise using setInterval
-                new Promise<{ annotations: Array<Record<string, unknown>>; newIds: string[] }>((resolve, reject) => {
+                new Promise<{ annotations: Record<string, unknown>[]; newIds: string[] }>((resolve, reject) => {
                     pollInterval = setInterval(() => {
                         readAnnotations(root)
                             .then((current) => {

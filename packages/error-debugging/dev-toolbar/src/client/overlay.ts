@@ -7,7 +7,7 @@
 import devToolbarOptions from "virtual:visulima-dev-toolbar-options";
 
 // Set up globals for dev toolbar
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+
 (globalThis as any).__VISULIMA_DEV_TOOLBAR_OPTIONS__ = devToolbarOptions;
 
 /**
@@ -47,7 +47,7 @@ const loadAppModules = (appConfig: (typeof devToolbarOptions)["apps"]) =>
 /**
  * Registers all loaded app modules with the toolbar element.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const registerApps = (toolbar: any, modules: Awaited<ReturnType<typeof loadAppModules>>) => {
     const [
         settingsModule,
@@ -107,15 +107,13 @@ const initToolbar = async (): Promise<void> => {
 
     // Prevent double initialization (race condition protection)
     // Set flag immediately before async operations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+
     if ((globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__) {
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = true;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let toolbar: any;
 
     try {
@@ -153,7 +151,7 @@ const initToolbar = async (): Promise<void> => {
         }
 
         // Reset flag on error so retry is possible
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
+
         (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
         console.error("[dev-toolbar] Failed to initialize:", error);
     }
@@ -164,7 +162,6 @@ if (typeof document !== "undefined") {
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initToolbar);
     } else {
-        // eslint-disable-next-line unicorn/prefer-top-level-await
         initToolbar().catch(() => {
             /* ignore */
         });
@@ -182,7 +179,6 @@ if (import.meta.hot) {
             existingToolbar.remove();
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         (globalThis as any).__VISULIMA_DEVTOOLS_INITIALIZED__ = false;
         initToolbar().catch(() => {
             /* ignore */

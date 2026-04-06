@@ -52,7 +52,7 @@ describe("cWV_THRESHOLDS", () => {
     });
 });
 
-describe("getCwvRating", () => {
+describe(getCwvRating, () => {
     describe("lcp", () => {
         it("rates value at or below good threshold as 'good'", () => {
             expect.hasAssertions();
@@ -315,7 +315,7 @@ describe("performanceMonitor", () => {
         it("does not throw even when there are no long tasks", () => {
             expect.hasAssertions();
 
-            expect(() => monitor.clearLongTasks()).not.toThrowError();
+            expect(() => { monitor.clearLongTasks(); }).not.toThrow();
         });
 
         it("results in an empty longTasks array in the snapshot", () => {
@@ -342,13 +342,13 @@ describe("performanceMonitor", () => {
         it("start() is safe to call when window is undefined (no-op in node)", () => {
             expect.hasAssertions();
 
-            expect(() => monitor.start()).not.toThrowError();
+            expect(() => { monitor.start(); }).not.toThrow();
         });
 
         it("stop() is safe to call before start()", () => {
             expect.hasAssertions();
 
-            expect(() => monitor.stop()).not.toThrowError();
+            expect(() => { monitor.stop(); }).not.toThrow();
         });
 
         it("start() can be called multiple times without error", () => {
@@ -357,7 +357,7 @@ describe("performanceMonitor", () => {
             expect(() => {
                 monitor.start();
                 monitor.start();
-            }).not.toThrowError();
+            }).not.toThrow();
         });
 
         it("stop() after start() does not throw", () => {
@@ -365,7 +365,7 @@ describe("performanceMonitor", () => {
 
             monitor.start();
 
-            expect(() => monitor.stop()).not.toThrowError();
+            expect(() => { monitor.stop(); }).not.toThrow();
         });
     });
 });

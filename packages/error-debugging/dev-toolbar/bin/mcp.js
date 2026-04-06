@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * MCP server for @visulima/dev-toolbar annotations.
+ * MCP server for `@visulima/dev-toolbar` annotations.
  *
  * Usage:
  *   npx visulima-dev-toolbar-mcp

@@ -17,14 +17,14 @@ const useToolbar = (): {
     const context = useToolbarContext();
 
     return {
-        hide: () => context.setVisible(false),
+        hide: () => { context.setVisible(false); },
         isDragging: context.isDragging,
         isVisible: context.isVisible,
         placement: context.placement,
         setDragging: context.setDragging,
         setPlacement: context.setPlacement,
-        show: () => context.setVisible(true),
-        toggle: () => context.setVisible(!context.isVisible),
+        show: () => { context.setVisible(true); },
+        toggle: () => { context.setVisible(!context.isVisible); },
     };
 };
 

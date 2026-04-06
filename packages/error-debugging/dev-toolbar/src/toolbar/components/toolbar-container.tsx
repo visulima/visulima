@@ -157,7 +157,7 @@ const ToolbarContainer = ({
     // ─── Pinned tooltips + localStorage persistence ───────────────────────────
     // Latest dragged positions per pin id — updated by card on drag-end.
     // Using a ref avoids stale closures without re-renders.
-    const pinPositionsRef = useRef<Map<string, { x: number; y: number }>>(new Map());
+    const pinPositionsRef = useRef(new Map());
 
     const savePins = useCallback((pins: PinnedTooltip[]): void => {
         try {
@@ -379,7 +379,7 @@ const ToolbarContainer = ({
         setPlacement: () => {
             /* managed internally by usePosition */
         },
-        setVisible: (visible) => updateState({ open: visible }),
+        setVisible: (visible) => { updateState({ open: visible }); },
         toggleApp,
         unpinTooltip,
         unregisterApp: onUnregisterApp,
@@ -481,7 +481,7 @@ const ToolbarContainer = ({
                     </div>
 
                     {/* First-visit onboarding hint — sibling of pill so it escapes overflow:hidden */}
-                    {state.isFirstVisit && <FirstVisitHint onDismiss={() => updateState({ isFirstVisit: false })} position={state.position} />}
+                    {state.isFirstVisit && <FirstVisitHint onDismiss={() => { updateState({ isFirstVisit: false }); }} position={state.position} />}
                 </div>
 
                 {/* DevPanel is outside the anchor div to avoid the CSS transform

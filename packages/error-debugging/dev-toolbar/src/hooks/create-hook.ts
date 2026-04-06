@@ -69,7 +69,6 @@ const createDevToolbarHook = (
                 handlers.set(event, new Set());
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             handlers.get(event)!.add(handler);
 
             // Return unsubscribe function
@@ -89,7 +88,7 @@ const createDevToolbarHook = (
         once<T extends keyof HookEvents>(event: T, handler: HookEvents[T]): void {
             const onceHandler = ((...args: Parameters<HookEvents[T]>) => {
                 handler(...args);
-                this.off(event, onceHandler as HookEvents[T]);
+                this.off(event, onceHandler);
             }) as HookEvents[T];
 
             this.on(event, onceHandler);
