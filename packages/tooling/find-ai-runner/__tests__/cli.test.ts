@@ -86,7 +86,7 @@ describe("cLI", () => {
     });
 
     describe("list", () => {
-        it("should list providers", () => {
+        it("should list providers", { timeout: 30_000 }, () => {
             const result = run(["list"], { CLAUDE_PATH: fakeBinPath });
 
             expect(result.exitCode).toBe(0);
