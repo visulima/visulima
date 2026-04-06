@@ -19,6 +19,9 @@ export default createConfig(
             "README.md",
             "MIGRATION-GUIDE.md",
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
     },
     {
         files: ["**/*.test.ts", "**/*.mock.ts"],
