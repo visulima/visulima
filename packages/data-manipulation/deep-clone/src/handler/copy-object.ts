@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment */
 import type { State } from "../types";
 import copyOwnProperties from "../utils/copy-own-properties";
 import getCleanClone from "../utils/get-clean-clone";
@@ -24,7 +25,7 @@ export const copyObjectLoose = <Value extends Record<PropertyKey, unknown>>(obje
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);
 
-    // eslint-disable-next-line no-loops/no-loops,no-restricted-syntax
+    // eslint-disable-next-line no-restricted-syntax
     for (const key in object) {
         if (Object.hasOwnProperty.call(object, key)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,7 +35,7 @@ export const copyObjectLoose = <Value extends Record<PropertyKey, unknown>>(obje
 
     const symbols = Object.getOwnPropertySymbols(object);
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0, symbol, { length } = symbols; index < length; ++index) {
         symbol = symbols[index] as symbol;
 
@@ -59,7 +60,7 @@ export const copyObjectStrict = <Value extends Record<PropertyKey, unknown>>(obj
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(object, clone);
 
-    const clonedObject = copyOwnProperties<Value>(object, clone as Value, state);
+    const clonedObject = copyOwnProperties(object, clone as Value, state);
 
     const objectPrototype: object | null = Object.getPrototypeOf(object);
 
@@ -69,5 +70,5 @@ export const copyObjectStrict = <Value extends Record<PropertyKey, unknown>>(obj
 
     copyObjectIsFunctions(object, clone as Value);
 
-    return clonedObject as Value;
+    return clonedObject;
 };

@@ -69,14 +69,14 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
 
     const cloner = {
         ...handlers,
-        ...(options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {}),
+        ...options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {},
         ...options?.handler,
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let cache: WeakMap<any, any> | null = new WeakMap();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
     const clone = (value: any, state: State): any => {
         if (!canValueHaveProperties(value)) {
             return value as DeepReadwrite<T>;
@@ -124,15 +124,15 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (
-            value instanceof Uint8Array ||
-            value instanceof Uint8ClampedArray ||
-            value instanceof Int8Array ||
-            value instanceof Uint16Array ||
-            value instanceof Int16Array ||
-            value instanceof Uint32Array ||
-            value instanceof Int32Array ||
-            value instanceof Float32Array ||
-            value instanceof Float64Array
+            value instanceof Uint8Array
+            || value instanceof Uint8ClampedArray
+            || value instanceof Int8Array
+            || value instanceof Uint16Array
+            || value instanceof Int16Array
+            || value instanceof Uint32Array
+            || value instanceof Int32Array
+            || value instanceof Float32Array
+            || value instanceof Float64Array
         ) {
             const { buffer } = value;
 
@@ -181,9 +181,11 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         throw new TypeError(`Type of ${typeof value} cannot be cloned`, value);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const cloned = clone(originalData, { cache, clone });
 
     // Reset the cache to free up memory
+    // eslint-disable-next-line no-useless-assignment,unicorn/no-null
     cache = null;
 
     return cloned as DeepReadwrite<T>;

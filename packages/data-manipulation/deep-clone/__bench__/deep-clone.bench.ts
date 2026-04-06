@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports,e18e/ban-dependencies,import/no-extraneous-dependencies,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call */
 import { deepCopy as mfederczukClone } from "@mfederczuk/deeptools";
 import ungapStructuredClone from "@ungap/structured-clone";
 import data from "@visulima/deep-clone/__fixtures__/data.json";

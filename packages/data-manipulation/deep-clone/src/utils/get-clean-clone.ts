@@ -13,10 +13,10 @@ const getCleanClone = (input: unknown): any => {
         return input === Object.prototype ? {} : Object.create(input);
     }
 
-    // eslint-disable-next-line no-bitwise
-    if (~Function.prototype.toString.call(Constructor).indexOf("[native code]")) {
+    if (Function.prototype.toString.call(Constructor).includes("[native code]")) {
         try {
             // @ts-expect-error - We don't know the type of the object, can be a function
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             return new Constructor();
         } catch {
             /* empty */

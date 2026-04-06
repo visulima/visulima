@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment */
 import type { State } from "../types";
 
 const getStrictProperties = (object: unknown): (string | symbol)[] => [
@@ -11,7 +12,7 @@ const getStrictProperties = (object: unknown): (string | symbol)[] => [
 const copyOwnProperties = <Value>(value: Value, clone: Value, state: State): Value => {
     const properties = getStrictProperties(value);
 
-    // eslint-disable-next-line no-loops/no-loops
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const property of properties) {
         if (property === "callee" || property === "caller") {
             continue;
