@@ -1,0 +1,47 @@
+---
+title: "vis init"
+description: "Initialize vis.config.ts with best-practice security defaults"
+---
+
+# vis init
+
+Initialize a `vis.config.ts` configuration file with best-practice security defaults. In interactive mode, guides you through setting up Socket.dev, build script approval, git hooks, and PM config sync.
+
+## Usage
+
+```bash
+vis init [options]
+```
+
+## Examples
+
+```bash
+# Interactive setup wizard
+vis init
+
+# Create minimal config without prompts
+vis init --no-interactive
+
+# Overwrite existing config
+vis init --force
+
+# Also sync to native PM config files
+vis init --sync-native
+```
+
+## Options
+
+| Option             | Default | Description                             |
+| ------------------ | ------- | --------------------------------------- |
+| `--force`          | `false` | Overwrite existing config file          |
+| `--no-interactive` | `false` | Skip interactive prompts                |
+| `--sync-native`    | `false` | Sync settings to native PM config files |
+
+## Interactive Wizard
+
+The wizard walks through:
+
+1. **Socket.dev** — Enable supply-chain security scanning
+2. **Build scripts** — Scan and approve packages with build scripts
+3. **Git hooks** — Set up pre-commit hooks with lint-staged
+4. **PM sync** — Sync security settings to pnpm/npm/yarn config
