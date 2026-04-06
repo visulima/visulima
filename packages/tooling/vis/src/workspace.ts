@@ -34,6 +34,81 @@ interface VisConfig {
     };
 
     /**
+     * Configuration for the `vis create` scaffolding command.
+     * Controls template downloads (via giget), default options, and
+     * post-creation behavior.
+     */
+    create?: {
+        /**
+         * Authorization token for downloading private repository templates.
+         * Passed as Bearer token to the git host API.
+         * Can also be set via GIGET_AUTH, GITHUB_TOKEN, or GH_TOKEN environment variables.
+         */
+        auth?: string;
+
+        /**
+         * Default editor to configure after scaffolding.
+         * When set, `vis create` automatically generates editor config files.
+         * @example "vscode"
+         */
+        defaultEditor?: "vscode";
+
+        /**
+         * Default package manager for new standalone projects.
+         * When set, skips the PM selection prompt in interactive mode.
+         */
+        defaultPm?: "bun" | "npm" | "pnpm" | "yarn";
+
+        /**
+         * Default giget provider for `owner/repo` shorthand inputs.
+         * @default "github"
+         */
+        defaultProvider?: "bitbucket" | "github" | "gitlab" | "sourcehut";
+
+        /**
+         * Initialize a git repository after scaffolding standalone projects.
+         * @default false
+         */
+        gitInit?: boolean;
+
+        /**
+         * Install dependencies automatically after scaffolding.
+         * @default true
+         */
+        install?: boolean;
+
+        /**
+         * Prefer locally cached templates over re-downloading.
+         * Useful for offline development or slow connections.
+         * @default false
+         */
+        preferOffline?: boolean;
+
+        /**
+         * Custom template registry URL.
+         * When set, giget checks this registry for template metadata
+         * before falling back to direct provider resolution.
+         * Set to `false` to disable registry lookup entirely.
+         * @see https://github.com/unjs/giget#custom-registry
+         */
+        registry?: false | string;
+
+        /**
+         * Named template aliases for quick access.
+         * Maps short names to full giget source strings.
+         * @example
+         * ```
+         * templates: {
+         *   "react": "github:vitejs/vite/packages/create-vite/template-react-ts",
+         *   "lib": "github:my-org/lib-template",
+         *   "internal": "gitlab:company/templates/node-service",
+         * }
+         * ```
+         */
+        templates?: Record<string, string>;
+    };
+
+    /**
      * Project dependency constraints.
      * Enforced after building the project graph, before running tasks.
      */

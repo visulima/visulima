@@ -1,0 +1,38 @@
+---
+title: "vis clean"
+description: "Remove build artifacts, caches, and node_modules from workspace"
+---
+
+# vis clean
+
+Remove build artifacts, caches, and optionally `node_modules` from workspace projects.
+
+## Usage
+
+```bash
+vis clean [options]
+```
+
+## Examples
+
+```bash
+# Clean build outputs (dist/)
+vis clean
+
+# Also remove node_modules
+vis clean --node-modules
+
+# Clean everything including caches
+vis clean --all
+
+# Dry run — show what would be removed
+vis clean --dry-run
+```
+
+## Options
+
+| Option           | Default | Description                               |
+| ---------------- | ------- | ----------------------------------------- |
+| `--node-modules` | `false` | Also remove `node_modules/` directories   |
+| `--all`          | `false` | Remove all artifacts including caches     |
+| `--dry-run`      | `false` | Show what would be removed without acting |

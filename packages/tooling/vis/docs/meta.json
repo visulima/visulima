@@ -5,7 +5,20 @@
         "quick-start",
         {
             "title": "Commands",
-            "pages": ["commands/run", "commands/affected", "commands/graph", "commands/check", "commands/update", "commands/hook"]
+            "pages": [
+                "commands/create",
+                "commands/init",
+                "commands/run",
+                "commands/affected",
+                "commands/graph",
+                "commands/check",
+                "commands/update",
+                "commands/install",
+                "commands/dlx",
+                "commands/audit",
+                "commands/clean",
+                "commands/hook"
+            ]
         },
         "configuration",
         {

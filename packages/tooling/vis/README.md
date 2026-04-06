@@ -88,14 +88,20 @@ vis hook install
 
 ## Commands
 
-| Command                 | Alias | Description                                           |
-| ----------------------- | ----- | ----------------------------------------------------- |
-| `vis run <target>`      |       | Run a target across workspace projects with caching   |
-| `vis affected <target>` |       | Run tasks only on projects affected by git changes    |
-| `vis graph`             |       | Visualize the project dependency graph                |
-| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs |
-| `vis update [packages]` | `up`  | Update packages to their latest versions              |
-| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)        |
+| Command                 | Alias | Description                                                      |
+| ----------------------- | ----- | ---------------------------------------------------------------- |
+| `vis create [template]` |       | Scaffold a new project from templates, npm packages, or git repos |
+| `vis init`              |       | Initialize vis.config.ts with security defaults                   |
+| `vis run <target>`      |       | Run a target across workspace projects with caching               |
+| `vis affected <target>` |       | Run tasks only on projects affected by git changes                |
+| `vis graph`             |       | Visualize the project dependency graph                            |
+| `vis check [packages]`  | `c`   | Check for outdated dependencies in workspace catalogs             |
+| `vis update [packages]` | `up`  | Update packages to their latest versions                          |
+| `vis install`           | `i`   | Install dependencies via the detected package manager             |
+| `vis dlx <package>`     |       | Execute a remote package without permanent installation           |
+| `vis audit`             |       | Audit dependencies for security vulnerabilities                   |
+| `vis clean`             |       | Remove build artifacts, caches, and node_modules                  |
+| `vis hook <action>`     |       | Manage git hooks (install, uninstall, migrate)                    |
 
 ## Documentation
 
