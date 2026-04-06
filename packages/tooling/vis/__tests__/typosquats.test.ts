@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { checkTyposquat, checkTyposquats, generateVariants } from "../src/typosquats";
-import type { TyposquatMatch } from "../src/typosquats";
 
 describe("typosquats", () => {
     describe("generateVariants", () => {
@@ -135,7 +134,7 @@ describe("typosquats", () => {
 
             expect(result.length).toBeGreaterThanOrEqual(2);
 
-            const inputs = result.map((r: TyposquatMatch) => r.input);
+            const inputs = result.map((r) => r.input);
 
             expect(inputs).toContain("axois");
         });

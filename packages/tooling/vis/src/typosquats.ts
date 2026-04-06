@@ -7,56 +7,39 @@
  */
 
 import { createInterface } from "node:readline";
-import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { red, yellow } from "@visulima/colorize";
 
 import { warn } from "./output";
 
-// ── Blocklist loading ───────────────────────────────────────────────
+// ── Types ───────────────────────────────────────────────────────────
 
-type Blocklist = Record<string, string[]>;
+export type Blocklist = Record<string, string[]>;
 
-let cachedBlocklist: Blocklist | undefined;
-let cachedReverseLookup: Map<string, string> | undefined;
+export interface TyposquatMatch {
+    /** The package name that was checked. */
+    input: string;
+    /** The legitimate package this appears to be a typosquat of. */
+    legitimate: string;
+    /** How the match was detected: "blocklist" (exact match in JSON) or "heuristic" (generated variant). */
+    method: "blocklist" | "heuristic";
+}
 
-const loadBlocklist = (): Blocklist => {
-    if (cachedBlocklist) {
-        return cachedBlocklist;
-    }
+export interface TyposquatCheckResult {
+    /** Whether the operation should proceed. */
+    ok: boolean;
+    /**
+     * The (possibly corrected) package names to use.
+     * When the user chooses "use suggested name", the typosquat names are
+     * replaced with their legitimate counterparts.
+     */
+    packages: string[];
+}
 
-    const dataPath = resolve(dirname(fileURLToPath(import.meta.url)), "../data/typosquats.json");
-
-    cachedBlocklist = JSON.parse(readFileSync(dataPath, "utf8")) as Blocklist;
-
-    return cachedBlocklist;
-};
-
-/**
- * Builds a reverse lookup: typosquat name → legitimate package name.
- * This is the primary check — O(1) per package name.
- */
-const getReverseLookup = (): Map<string, string> => {
-    if (cachedReverseLookup) {
-        return cachedReverseLookup;
-    }
-
-    const blocklist = loadBlocklist();
-
-    cachedReverseLookup = new Map<string, string>();
-
-    for (const [legitimate, typosquats] of Object.entries(blocklist)) {
-        for (const typo of typosquats) {
-            cachedReverseLookup.set(typo, legitimate);
-        }
-    }
-
-    return cachedReverseLookup;
-};
-
-// ── Heuristic similarity detection ─────────────────────────────────
+// ── Homoglyph / keyboard-proximity substitutions ────────────────────
 
 const SUBSTITUTIONS: Record<string, string[]> = {
     a: ["4", "e"],
@@ -75,6 +58,8 @@ const SUBSTITUTIONS: Record<string, string[]> = {
     v: ["u"],
 };
 
+// ── Variant generation ─────────────────────────────────────────────
+
 /**
  * Generates typosquat variants of a package name using common attack patterns:
  * - Character omission (dropping one character)
@@ -84,49 +69,40 @@ const SUBSTITUTIONS: Record<string, string[]> = {
  * - Separator manipulation (dash/dot/underscore swaps)
  * - Common suffixes (-js, -node)
  */
-const generateVariants = (name: string): Set<string> => {
+export const generateVariants = (name: string): Set<string> => {
     const variants = new Set<string>();
 
     if (name.length < 3) {
         return variants;
     }
 
-    // Character omission
     for (let i = 0; i < name.length; i++) {
-        if (name[i] === "-" || name[i] === ".") {
-            continue;
+        const isSeparator = name[i] === "-" || name[i] === ".";
+
+        // Character omission (skip separators)
+        if (!isSeparator) {
+            variants.add(name.slice(0, i) + name.slice(i + 1));
         }
 
-        variants.add(name.slice(0, i) + name.slice(i + 1));
-    }
-
-    // Adjacent transposition
-    for (let i = 0; i < name.length - 1; i++) {
-        if (name[i] === name[i + 1]) {
-            continue;
+        // Character duplication (skip separators)
+        if (!isSeparator) {
+            variants.add(name.slice(0, i) + name[i] + name.slice(i));
         }
 
-        const chars = name.split("");
+        // Adjacent transposition
+        if (i < name.length - 1 && name[i] !== name[i + 1]) {
+            const chars = name.split("");
 
-        [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
-        variants.add(chars.join(""));
-    }
-
-    // Character duplication
-    for (let i = 0; i < name.length; i++) {
-        if (name[i] === "-" || name[i] === ".") {
-            continue;
+            [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
+            variants.add(chars.join(""));
         }
 
-        variants.add(name.slice(0, i) + name[i] + name.slice(i));
-    }
-
-    // Homoglyph substitution
-    for (let i = 0; i < name.length; i++) {
+        // Homoglyph substitution
         const ch = name[i].toLowerCase();
+        const subs = SUBSTITUTIONS[ch];
 
-        if (SUBSTITUTIONS[ch]) {
-            for (const replacement of SUBSTITUTIONS[ch]) {
+        if (subs) {
+            for (const replacement of subs) {
                 variants.add(name.slice(0, i) + replacement + name.slice(i + 1));
             }
         }
@@ -155,40 +131,59 @@ const generateVariants = (name: string): Set<string> => {
     return variants;
 };
 
-// ── Public API ──────────────────────────────────────────────────────
+// ── Blocklist loading ───────────────────────────────────────────────
 
-export interface TyposquatMatch {
-    /** The package name that was checked. */
-    input: string;
-    /** The legitimate package this appears to be a typosquat of. */
-    legitimate: string;
-    /** How the match was detected: "blocklist" (exact match in JSON) or "heuristic" (generated variant). */
-    method: "blocklist" | "heuristic";
-}
+let cachedBlocklist: Blocklist | undefined;
+let cachedReverseLookup: Map<string, string> | undefined;
+
+const loadBlocklist = (): Blocklist => {
+    if (!cachedBlocklist) {
+        const dataPath = resolve(dirname(fileURLToPath(import.meta.url)), "../data/typosquats.json");
+
+        cachedBlocklist = JSON.parse(readFileSync(dataPath, "utf8")) as Blocklist;
+    }
+
+    return cachedBlocklist;
+};
+
+/** Reverse lookup: typosquat name -> legitimate package name (O(1) per check). */
+const getReverseLookup = (): Map<string, string> => {
+    if (!cachedReverseLookup) {
+        cachedReverseLookup = new Map<string, string>();
+
+        for (const [legitimate, typosquats] of Object.entries(loadBlocklist())) {
+            for (const typo of typosquats) {
+                cachedReverseLookup.set(typo, legitimate);
+            }
+        }
+    }
+
+    return cachedReverseLookup;
+};
+
+// ── Detection ──────────────────────────────────────────────────────
+
+/** Strip scope from a package name (e.g. "@scope/foo" -> "foo"). */
+const bareName = (packageName: string): string =>
+    packageName.startsWith("@") ? packageName.split("/")[1] ?? packageName : packageName;
 
 /**
  * Check a single package name against the typosquat blocklist.
- * Returns a match if the name is a known typosquat, or `undefined` if it's safe.
+ * Returns a match if the name is a known typosquat, or `undefined` if safe.
  */
 export const checkTyposquat = (packageName: string): TyposquatMatch | undefined => {
-    // Strip scope for the check (e.g. "@types/react" → "react")
-    const bare = packageName.startsWith("@") ? packageName.split("/")[1] ?? packageName : packageName;
+    const bare = bareName(packageName);
 
     // 1. Direct blocklist lookup (fast path)
-    const reverseLookup = getReverseLookup();
-    const blocklisted = reverseLookup.get(bare);
+    const blocklisted = getReverseLookup().get(bare);
 
     if (blocklisted) {
         return { input: packageName, legitimate: blocklisted, method: "blocklist" };
     }
 
     // 2. Heuristic: check if this name is a generated variant of any known package
-    const blocklist = loadBlocklist();
-
-    for (const legitimate of Object.keys(blocklist)) {
-        const variants = generateVariants(legitimate);
-
-        if (variants.has(bare)) {
+    for (const legitimate of Object.keys(loadBlocklist())) {
+        if (generateVariants(legitimate).has(bare)) {
             return { input: packageName, legitimate, method: "heuristic" };
         }
     }
@@ -196,10 +191,7 @@ export const checkTyposquat = (packageName: string): TyposquatMatch | undefined 
     return undefined;
 };
 
-/**
- * Check multiple package names at once.
- * Returns an array of matches (empty if all names are safe).
- */
+/** Check multiple package names. Returns only the matches (empty if all safe). */
 export const checkTyposquats = (packageNames: string[]): TyposquatMatch[] => {
     const matches: TyposquatMatch[] = [];
 
@@ -214,26 +206,17 @@ export const checkTyposquats = (packageNames: string[]): TyposquatMatch[] => {
     return matches;
 };
 
-export interface TyposquatCheckResult {
-    /** Whether the operation should proceed. */
-    ok: boolean;
-    /**
-     * The (possibly corrected) package names to use.
-     * When the user chooses "use suggested name", the typosquat names are
-     * replaced with their legitimate counterparts.
-     */
-    packages: string[];
-}
+// ── Interactive prompt ─────────────────────────────────────────────
 
 /**
  * Display typosquat warnings and prompt the user.
  *
- * The user gets three choices:
+ * Choices:
  * - **S** (suggested): replace the typosquat names with the correct packages and continue
  * - **y** (yes): continue with the original (potentially dangerous) names
  * - **N** (no, default): abort the operation
  *
- * In non-interactive mode the operation is always aborted.
+ * Non-interactive mode always aborts.
  */
 export const runTyposquatCheck = async (packageNames: string[]): Promise<TyposquatCheckResult> => {
     const matches = checkTyposquats(packageNames);
@@ -262,27 +245,19 @@ export const runTyposquatCheck = async (packageNames: string[]): Promise<Typosqu
 
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-    const ask = (question: string): Promise<string> =>
-        new Promise((resolve) => {
-            rl.question(question, (a) => {
+    const answer = await new Promise<string>((resolve) => {
+        rl.question(
+            `Use suggested package${matches.length === 1 ? "" : "s"} instead? [S]uggested / [y]es, keep original / [N]o, abort (default: N) `,
+            (a) => {
                 resolve(a.trim().toLowerCase());
-            });
-        });
-
-    const answer = await ask(
-        `Use suggested package${matches.length === 1 ? "" : "s"} instead? [S]uggested / [y]es, keep original / [N]o, abort (default: N) `,
-    );
+            },
+        );
+    });
 
     rl.close();
 
     if (answer === "s" || answer === "suggested") {
-        // Build a replacement map: typosquat → legitimate
-        const replacements = new Map<string, string>();
-
-        for (const match of matches) {
-            replacements.set(match.input, match.legitimate);
-        }
-
+        const replacements = new Map(matches.map((m) => [m.input, m.legitimate]));
         const corrected = packageNames.map((name) => replacements.get(name) ?? name);
 
         return { ok: true, packages: corrected };
@@ -294,6 +269,3 @@ export const runTyposquatCheck = async (packageNames: string[]): Promise<Typosqu
 
     return { ok: false, packages: packageNames };
 };
-
-export { generateVariants };
-export type { Blocklist };

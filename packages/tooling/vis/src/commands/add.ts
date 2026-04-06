@@ -306,9 +306,8 @@ const add: Command = {
 
         // Typosquat check (unless disabled)
         if (!options["no-typosquat-check"]) {
-            const packageNames = packages.map((p: string) => parseAddArgument(p).name);
-
-            const result = await runTyposquatCheck(packageNames);
+            const parsed = packages.map((p: string) => parseAddArgument(p));
+            const result = await runTyposquatCheck(parsed.map((p) => p.name));
 
             if (!result.ok) {
                 process.exitCode = 1;
@@ -316,19 +315,16 @@ const add: Command = {
                 return;
             }
 
-            // If user chose the suggested names, rebuild the packages array
-            // preserving any version specifiers from the original arguments.
-            if (result.packages !== packageNames) {
-                packages = packages.map((original: string, index: number) => {
-                    const parsed = parseAddArgument(original);
+            // Rebuild args with corrected names, preserving version specifiers
+            packages = parsed.map((p, i) => {
+                const corrected = result.packages[i];
 
-                    if (parsed.name !== result.packages[index]) {
-                        return parsed.versionSpec ? `${result.packages[index]}@${parsed.versionSpec}` : result.packages[index];
-                    }
+                if (corrected !== p.name) {
+                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                }
 
-                    return original;
-                });
-            }
+                return packages[i];
+            });
         }
 
         // Socket.dev pre-add check (unless disabled)
