@@ -10,41 +10,16 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 ## Installation
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/object
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/object
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/object
-    ```
-  </Tab>
-  <Tab value="bun">
-    ```bash
-    bun add @visulima/object
-    ```
-  </Tab>
+    <Tab value="npm">```bash npm install @visulima/object ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/object ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/object ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/object ```</Tab>
 </Tabs>
 
 ## Import
 
 ```typescript
-import {
-  getProperty,
-  setProperty,
-  deleteProperty,
-  hasProperty,
-  pick,
-  omit,
-  deepKeys,
-  isPlainObject
-} from "@visulima/object";
+import { getProperty, setProperty, deleteProperty, hasProperty, pick, omit, deepKeys, isPlainObject } from "@visulima/object";
 ```
 
 ## Quick Start Examples
@@ -85,7 +60,7 @@ import { hasProperty } from "@visulima/object";
 const config = { api: { key: "abc123" } };
 
 if (hasProperty(config, "api.key")) {
-  console.log("API key configured");
+    console.log("API key configured");
 }
 ```
 
@@ -97,16 +72,18 @@ Full TypeScript support with type inference:
 import { getProperty, pick } from "@visulima/object";
 
 interface User {
-  id: number;
-  profile: {
-    name: string;
-    settings: {
-      theme: "light" | "dark";
+    id: number;
+    profile: {
+        name: string;
+        settings: {
+            theme: "light" | "dark";
+        };
     };
-  };
 }
 
-const user: User = { /* ... */ };
+const user: User = {
+    /* ... */
+};
 
 // Type-safe access
 const theme = getProperty(user, "profile.settings.theme");
@@ -119,10 +96,10 @@ const filtered = pick(user, ["id", "profile.name"]);
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Explore all functions with detailed examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>

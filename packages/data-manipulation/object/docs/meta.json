@@ -1,10 +1,4 @@
 {
     "title": "Object",
-    "pages": [
-        "index",
-        "installation",
-        "---Documentation---",
-        "usage",
-        "api"
-    ]
+    "pages": ["index", "installation", "---Documentation---", "usage", "api"]
 }
