@@ -42,15 +42,11 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
         }
 
         if (statusValue === "success" || isCacheStatus(statusValue)) {
-
             return focused ? "green" : "gray";
-
         }
 
         if (statusValue === "running") {
-
             return focused ? "white" : "cyan";
-
         }
 
         return focused ? "white" : "gray";

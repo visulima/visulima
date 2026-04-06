@@ -31,7 +31,8 @@ describe("showTip", () => {
     it("should not show tips when CI is set", async () => {
         expect.assertions(1);
 
-        // is-in-ci evaluates at import time, so we re-mock it as true and re-import
+        // is-in-ci evaluates at import time, so we reset modules, re-mock, and re-import
+        vi.resetModules();
         vi.doMock("is-in-ci", () => ({ default: true }));
         const { showTip: showTipCi } = await import("../src/tips");
 
@@ -39,6 +40,7 @@ describe("showTip", () => {
 
         expect(stderrSpy).not.toHaveBeenCalled();
 
+        vi.resetModules();
         vi.doMock("is-in-ci", () => ({ default: false }));
     });
 });
