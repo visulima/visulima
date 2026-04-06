@@ -9,7 +9,7 @@ title: "API Reference"
 Create health check instance.
 
 ```typescript
-function createHealthCheck(options?: Options): HealthCheck
+function createHealthCheck(options?: Options): HealthCheck;
 ```
 
 ## HealthCheck.handler()
@@ -27,5 +27,5 @@ Kubernetes readiness probe handler.
 ## Check Function
 
 ```typescript
-type Check = () => Promise<{ status: "ok" | "error"; message?: string }>
+type Check = () => Promise<{ status: "ok" | "error"; message?: string }>;
 ```
