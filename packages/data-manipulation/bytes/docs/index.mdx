@@ -10,17 +10,20 @@ Utility functions to make dealing with Uint8Arrays easier. Work with binary data
 ## Key Features
 
 **Array Operations**
+
 - Concatenate multiple byte arrays into one
 - Copy bytes between arrays with offset support
 - Repeat byte sequences any number of times
 - Compare byte arrays for equality
 
 **Search and Pattern Matching**
+
 - Find sequences within byte arrays (first/last occurrence)
 - Check if arrays start or end with specific patterns
 - Determine if byte sequences contain specific needles
 
 **Type Conversion**
+
 - Convert between Node.js Buffers and Uint8Arrays
 - Transform ASCII/UTF-8 strings to byte arrays
 - Universal converter for multiple data types
@@ -56,13 +59,13 @@ Handle binary data from HTTP requests or file uploads:
 import { concat, toUint8Array } from "@visulima/bytes";
 
 async function processBinaryUpload(chunks: unknown[]) {
-  // Convert all chunks to Uint8Arrays
-  const arrays = chunks.map(chunk => toUint8Array(chunk));
+    // Convert all chunks to Uint8Arrays
+    const arrays = chunks.map((chunk) => toUint8Array(chunk));
 
-  // Combine into single array
-  const combined = concat(arrays);
+    // Combine into single array
+    const combined = concat(arrays);
 
-  return combined;
+    return combined;
 }
 ```
 
@@ -73,13 +76,13 @@ Find specific byte sequences in protocol data:
 ```typescript
 import { indexOfNeedle, startsWith } from "@visulima/bytes";
 
-const data = new Uint8Array([0x00, 0x01, 0xFF, 0xAA, 0xBB, 0x01, 0xFF]);
+const data = new Uint8Array([0x00, 0x01, 0xff, 0xaa, 0xbb, 0x01, 0xff]);
 const header = new Uint8Array([0x00, 0x01]);
-const pattern = new Uint8Array([0x01, 0xFF]);
+const pattern = new Uint8Array([0x01, 0xff]);
 
 // Check protocol header
 if (startsWith(data, header)) {
-  console.log("Valid protocol header");
+    console.log("Valid protocol header");
 }
 
 // Find pattern position
@@ -107,20 +110,21 @@ console.log(asciiData); // Uint8Array([72, 101, 108, 108, 111, ...])
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Learn how to install and import the package
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Explore all functions with detailed examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation with parameters and types
-  </Card>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with parameters and types
+    </Card>
 </Cards>
 
 ## Browser and Server Support
 
 This package works in both Node.js and browser environments:
+
 - **Node.js:** Full support including Buffer conversion utilities
 - **Browsers:** Core Uint8Array operations (Buffer-specific functions require polyfills)
 - **Deno/Bun:** Compatible with all modern JavaScript runtimes
