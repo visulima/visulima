@@ -26,6 +26,8 @@ import {
 } from "../../src/path";
 import { runTest } from "../helpers";
 
+const WIN_PLATFORM_RE = /^win/i;
+
 runTest("normalizeWindowsPath", normalizeWindowsPath, {
     ".\\foo\\bar": "./foo/bar",
 
@@ -333,7 +335,7 @@ describe("resolve with catastrophic process.cwd() failure", () => {
     it("still works", () => {
         expect.assertions(2);
 
-        const originalCwd = process.cwd;
+        const originalCwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method
 
         process.cwd = () => "";
 
@@ -357,7 +359,7 @@ describe("constants", () => {
     it("delimiter should equal : on linux and ; on windows", () => {
         expect.assertions(1);
 
-        expect(delimiter).toBe(/^win/i.test(globalThis.process.platform) ? ";" : ":");
+        expect(delimiter).toBe(WIN_PLATFORM_RE.test(globalThis.process.platform) ? ";" : ":");
     });
 
     it("sep should equal /", () => {

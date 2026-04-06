@@ -4,6 +4,7 @@
  * MIT License
  * Copyright (c) Pooya Parsa &lt;pooya@pi0.io> - Daniel Roe &lt;daniel@roe.dev>
  */
+/* eslint-disable import/exports-last */
 import { fileURLToPath } from "node:url";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -37,7 +38,7 @@ const hasTrailingSlash = (path = "/"): boolean => {
  * @returns a set of normalised alias mappings.
  */
 export const normalizeAliases = (_aliases: Record<string, string>): Record<string, string> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if ((_aliases as any)[normalizedAliasSymbol]) {
         return _aliases;
     }
@@ -56,7 +57,7 @@ export const normalizeAliases = (_aliases: Record<string, string>): Record<strin
             }
 
             if ((aliases[key] as string).startsWith(alias) && pathSeparators.has((aliases[key] as string)[alias.length])) {
-                aliases[key] = aliases[alias] + (aliases[key] as string).slice(alias.length);
+                aliases[key] = (aliases[alias] as string) + (aliases[key] as string).slice(alias.length);
             }
         }
     }
@@ -82,6 +83,7 @@ export const resolveAlias = (path: string, aliases: Record<string, string>): str
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [alias, to] of Object.entries(aliases)) {
         if (!path.startsWith(alias)) {
             continue;
@@ -117,6 +119,7 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
     // eslint-disable-next-line no-param-reassign
     aliases = normalizeAliases(aliases);
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [to, alias] of Object.entries(aliases).toReversed()) {
         if (!path.startsWith(alias)) {
             continue;
@@ -138,7 +141,11 @@ export const reverseResolveAlias = (path: string, aliases: Record<string, string
  * @param path The path to check.
  * @returns `true` if the path is relative, otherwise `false`.
  */
-export const isRelative = (path: string): boolean => /^(?:\.?\.[/\\]|\.\.\B)/.test(path) || path === "..";
+const IS_RELATIVE_RE = /^(?:\.?\.[/\\]|\.\.\B)/;
+
+const MSYS_CYGWIN_RE = /^(?:msys|cygwin)$/;
+
+export const isRelative = (path: string): boolean => IS_RELATIVE_RE.test(path) || path === "..";
 
 /**
  * Determines whether a given path is a binary file.
@@ -156,19 +163,20 @@ export const toPath = (urlOrPath: URL | string): string => normalizeWindowsPath(
  * This used automatically in functions prefixed by `sys` to get system-dependent behavior.
  */
 export const isWindows = (): boolean => {
-    if (!globalThis?.process) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!globalThis.process) {
         return false;
     }
 
-    if (globalThis?.process?.platform === "win32" || globalThis?.process?.platform === "cygwin") {
+    if (globalThis.process.platform === "win32" || globalThis.process.platform === "cygwin") {
         return true;
     }
 
-    const osType = globalThis?.process?.env.OSTYPE;
+    const osType = globalThis.process.env.OSTYPE;
 
     if (typeof osType !== "string") {
         return false;
     }
 
-    return /^(?:msys|cygwin)$/.test(osType);
+    return MSYS_CYGWIN_RE.test(osType);
 };

@@ -7,7 +7,9 @@ type ItemValue = boolean | string | (() => string) | null | undefined;
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-underscore-dangle, @stylistic/no-extra-parens
 const _r = (item: ItemValue): boolean | string | null | undefined => (typeof item === "function" ? item() : item);
 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
-const _s = (item: ItemValue): string => (JSON.stringify(_r(item)) || "undefined").replaceAll('"', "'");
+const _s = (item: ItemValue): string => (JSON.stringify(_r(item)) || "undefined").replaceAll("\"", "'");
+
+const TRAILING_NEWLINE_RE = /\n$/;
 
 /**
  * Return output of javascript file.
@@ -20,7 +22,7 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     const result = execSync(cmd);
 
     // replace last newline in result
-    return result.toString().replace(/\n$/, "");
+    return result.toString().replace(TRAILING_NEWLINE_RE, "");
 };
 
 /**
@@ -43,7 +45,7 @@ export const runTest = (
     describe(name, () => {
         let cwd;
 
-        // eslint-disable-next-line vitest/prefer-each
+        // eslint-disable-next-line vitest/prefer-each, no-for-of-array/no-for-of-array
         for (const item of items) {
             const expected = item.pop();
             // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -59,7 +61,7 @@ export const runTest = (
             it(`${name}(${arguments_.map((index) => _s(index)).join(",")}) should be ${_s(expected as boolean | string)} on Windows`, () => {
                 expect.assertions(1);
 
-                cwd = process.cwd;
+                cwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method
 
                 vi.spyOn(process, "cwd").mockImplementation(() => String.raw`C:\Windows\path\only`);
 
