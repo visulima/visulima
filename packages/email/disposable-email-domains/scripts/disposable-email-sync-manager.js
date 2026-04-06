@@ -6,6 +6,16 @@ import Semaphore from "./semaphore.js";
 
 const require = createRequire(import.meta.url);
 
+// Module-level regex constants to avoid re-compilation on every call
+const GITHUB_URL_REGEX = /github\.com\/([^/]+)\/([^/]+)/;
+const REFS_HEADS_REGEX = /^refs\/heads\//;
+const HOST_FILE_REGEX = /^(?:0\.0\.0\.0\s+|127\.0\.0\.1\s+|localhost\s+)/u;
+const WILDCARD_REGEX = /^\*\./u;
+const TRAILING_CONTENT_REGEX = /\s\S*$/u;
+const TRAILING_SEPARATOR_REGEX = /[,;][^,;]*$/u;
+const EMAIL_DOMAIN_REGEX = /@([^\s@]+)$/u;
+const DOMAIN_VALIDATION_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/iu;
+
 /**
  * DisposableEmailSyncManager - A manager for downloading and synchronizing
  * disposable email domains from multiple sources with detailed statistics and deduplication.
@@ -75,9 +85,7 @@ class DisposableEmailSyncManager {
 
 ## Repository Details
 
-${[...stats.repositoryStats.values()]
-    .map(
-        (repo) => `
+${Array.from(stats.repositoryStats.values(), (repo) => `
 ### ${repo.url}
 
 - **Status**: ${repo.success ? "✅ Success" : "❌ Failed"}
@@ -86,8 +94,7 @@ ${[...stats.repositoryStats.values()]
 - **File Size**: ${repo.fileSize.toLocaleString()} bytes
 
 ${repo.error ? `- **Error**: ${repo.error}` : ""}
-`,
-    )
+`)
     .join("\n")}
 
 ---
@@ -128,7 +135,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      */
     // eslint-disable-next-line class-methods-use-this -- Utility method, doesn't need instance state
     convertToRawGitHubUrl(repoUrl, filePath) {
-        const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+        const match = repoUrl.match(GITHUB_URL_REGEX);
 
         if (!match) {
             throw new Error(`Invalid GitHub URL: ${repoUrl}`);
@@ -141,7 +148,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         // Handle /refs/heads/ prefix - convert to branch name
         // e.g., /refs/heads/main/file.txt -> main/file.txt
         if (cleanFilePath.startsWith("refs/heads/")) {
-            cleanFilePath = cleanFilePath.replace(/^refs\/heads\//, "");
+            cleanFilePath = cleanFilePath.replace(REFS_HEADS_REGEX, "");
         }
 
         return `https://raw.githubusercontent.com/${owner}/${repo}/${cleanFilePath}`;
@@ -249,14 +256,14 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         // Remove common prefixes and suffixes
         // Using safer regex patterns to avoid backtracking issues
         const cleanedLine = line
-            .replace(/^(?:0\.0\.0\.0\s+|127\.0\.0\.1\s+|localhost\s+)/u, "") // Host file format
-            .replace(/^\*\./u, "") // Wildcard format
-            .replace(/\s\S*$/u, "") // Remove trailing content (safer pattern)
-            .replace(/[,;][^,;]*$/u, "") // Remove trailing separators (safer pattern)
+            .replace(HOST_FILE_REGEX, "") // Host file format
+            .replace(WILDCARD_REGEX, "") // Wildcard format
+            .replace(TRAILING_CONTENT_REGEX, "") // Remove trailing content (safer pattern)
+            .replace(TRAILING_SEPARATOR_REGEX, "") // Remove trailing separators (safer pattern)
             .trim();
 
         // Extract email domain from email format
-        const emailMatch = cleanedLine.match(/@([^\s@]+)$/u);
+        const emailMatch = cleanedLine.match(EMAIL_DOMAIN_REGEX);
 
         if (emailMatch) {
             return emailMatch[1];
@@ -481,10 +488,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             return false;
         }
 
-        // Simplified domain regex without unused capturing groups
-        const domainRegex = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/iu;
-
-        return domainRegex.test(domain) && !domain.includes("..") && domain.includes(".");
+        return DOMAIN_VALIDATION_REGEX.test(domain) && !domain.includes("..") && domain.includes(".");
     }
 
     /**
