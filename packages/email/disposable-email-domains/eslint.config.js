@@ -16,6 +16,9 @@ export default createConfig(
             "README.md",
             "prettier.config.js",
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
     },
     {
         files: ["./scripts/**/*.js"],
