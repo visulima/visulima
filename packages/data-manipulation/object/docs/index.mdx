@@ -10,24 +10,28 @@ Powerful utilities for manipulating objects and arrays. Access nested properties
 ## Key Features
 
 **Dot Notation Access**
+
 - Get, set, and delete nested properties
 - Safe property access with fallbacks
 - Support for arrays and complex paths
 - Path escaping for special characters
 
 **Object Filtering**
+
 - Pick specific properties to keep
 - Omit unwanted properties
 - Works with nested paths
 - Preserves object structure
 
 **Deep Operations**
+
 - Extract all nested keys
 - Generate deep key lists
 - Traverse complex objects
 - Type-safe operations
 
 **Type Safety**
+
 - Full TypeScript support
 - Type guards for plain objects
 - Preserves nested types
@@ -47,11 +51,11 @@ Access nested properties:
 import { getProperty, setProperty } from "@visulima/object";
 
 const user = {
-  profile: {
-    settings: {
-      theme: "dark"
-    }
-  }
+    profile: {
+        settings: {
+            theme: "dark",
+        },
+    },
 };
 
 // Get nested value
@@ -86,18 +90,18 @@ Safely access and modify nested configuration:
 import { getProperty, setProperty, hasProperty } from "@visulima/object";
 
 const config = {
-  database: {
-    host: "localhost",
-    port: 5432
-  },
-  cache: {
-    enabled: true
-  }
+    database: {
+        host: "localhost",
+        port: 5432,
+    },
+    cache: {
+        enabled: true,
+    },
 };
 
 // Check if property exists
 if (!hasProperty(config, "database.password")) {
-  setProperty(config, "database.password", process.env.DB_PASSWORD);
+    setProperty(config, "database.password", process.env.DB_PASSWORD);
 }
 
 // Get with fallback
@@ -112,17 +116,11 @@ Extract only needed fields from API responses:
 import { pick } from "@visulima/object";
 
 async function fetchUser(id: string) {
-  const response = await fetch(`/api/users/${id}`);
-  const fullData = await response.json();
+    const response = await fetch(`/api/users/${id}`);
+    const fullData = await response.json();
 
-  // Return only public fields
-  return pick(fullData, [
-    "id",
-    "name",
-    "email",
-    "profile.avatar",
-    "profile.bio"
-  ]);
+    // Return only public fields
+    return pick(fullData, ["id", "name", "email", "profile.avatar", "profile.bio"]);
 }
 ```
 
@@ -134,39 +132,37 @@ Clean sensitive data from form submissions:
 import { omit } from "@visulima/object";
 
 function sanitizeFormData(data: Record<string, unknown>) {
-  // Remove sensitive fields before logging
-  return omit(data, [
-    "password",
-    "creditCard",
-    "ssn",
-    "payment.cardNumber"
-  ]);
+    // Remove sensitive fields before logging
+    return omit(data, ["password", "creditCard", "ssn", "payment.cardNumber"]);
 }
 
-const formData = { /* user input */ };
+const formData = {
+    /* user input */
+};
 logger.info("Form submitted:", sanitizeFormData(formData));
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Learn how to install and import the package
-  </Card>
-  <Card title="Quick Start" href="/quick-start">
-    Get started with common use cases
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Explore all functions with detailed examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with common use cases
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>
 
 ## Browser and Server Support
 
 This package works in both Node.js and browser environments:
+
 - **Node.js:** ≥22.13 ≤25.x
 - **Browsers:** Modern browsers with ES6 support
 - **Deno/Bun:** Fully compatible

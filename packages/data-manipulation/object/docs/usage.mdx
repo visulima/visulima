@@ -13,16 +13,13 @@ description: "Complete guide to using @visulima/object"
 import { getProperty } from "@visulima/object";
 
 const obj = {
-  user: {
-    profile: {
-      name: "Alice",
-      age: 30
+    user: {
+        profile: {
+            name: "Alice",
+            age: 30,
+        },
+        posts: [{ title: "First Post" }, { title: "Second Post" }],
     },
-    posts: [
-      { title: "First Post" },
-      { title: "Second Post" }
-    ]
-  }
 };
 
 // Get nested property
@@ -62,11 +59,11 @@ setProperty(obj, "user.tags.0", "developer");
 import { deleteProperty } from "@visulima/object";
 
 const obj = {
-  user: {
-    name: "Alice",
-    password: "secret",
-    profile: { age: 30 }
-  }
+    user: {
+        name: "Alice",
+        password: "secret",
+        profile: { age: 30 },
+    },
 };
 
 // Delete nested property
@@ -84,10 +81,10 @@ console.log(obj); // { user: { name: "Alice", profile: {} } }
 import { hasProperty } from "@visulima/object";
 
 const config = {
-  database: {
-    host: "localhost",
-    port: 5432
-  }
+    database: {
+        host: "localhost",
+        port: 5432,
+    },
 };
 
 console.log(hasProperty(config, "database.host")); // true
@@ -113,12 +110,12 @@ const path = escapePath("user.settings['theme.color']");
 import { pick } from "@visulima/object";
 
 const pokemon = {
-  id: "007",
-  name: "Squirtle",
-  type: "water",
-  hp: 44,
-  attack: 48,
-  defense: 65
+    id: "007",
+    name: "Squirtle",
+    type: "water",
+    hp: 44,
+    attack: 48,
+    defense: 65,
 };
 
 // Pick specific properties
@@ -127,11 +124,11 @@ const basic = pick(pokemon, ["name", "type"]);
 
 // Pick nested properties
 const doc = {
-  items: {
-    keep: "📌",
-    discard: "✂️",
-    archive: "📦"
-  }
+    items: {
+        keep: "📌",
+        discard: "✂️",
+        archive: "📦",
+    },
 };
 
 const filtered = pick(doc, ["items.keep", "items.archive"]);
@@ -144,11 +141,11 @@ const filtered = pick(doc, ["items.keep", "items.archive"]);
 import { omit } from "@visulima/object";
 
 const user = {
-  id: 1,
-  name: "Alice",
-  email: "alice@example.com",
-  password: "secret",
-  creditCard: "1234-5678"
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com",
+    password: "secret",
+    creditCard: "1234-5678",
 };
 
 // Remove sensitive data
@@ -157,10 +154,10 @@ const safe = omit(user, ["password", "creditCard"]);
 
 // Omit nested properties
 const doc = {
-  items: {
-    keep: "📌",
-    discard: "✂️"
-  }
+    items: {
+        keep: "📌",
+        discard: "✂️",
+    },
 };
 
 const cleaned = omit(doc, ["items.discard"]);
@@ -175,16 +172,16 @@ const cleaned = omit(doc, ["items.discard"]);
 import { deepKeys } from "@visulima/object";
 
 const obj = {
-  user: {
-    name: "Alice",
-    profile: {
-      age: 30,
-      location: "NYC"
-    }
-  },
-  settings: {
-    theme: "dark"
-  }
+    user: {
+        name: "Alice",
+        profile: {
+            age: 30,
+            location: "NYC",
+        },
+    },
+    settings: {
+        theme: "dark",
+    },
 };
 
 const keys = deepKeys(obj);
@@ -198,8 +195,8 @@ console.log(keys);
 import { deepKeysFromList } from "@visulima/object";
 
 const items = [
-  { id: 1, name: "Item 1", meta: { price: 10 } },
-  { id: 2, name: "Item 2", meta: { price: 20 } }
+    { id: 1, name: "Item 1", meta: { price: 10 } },
+    { id: 2, name: "Item 2", meta: { price: 20 } },
 ];
 
 const keys = deepKeysFromList(items);
@@ -234,15 +231,15 @@ console.log(isPlainObject(new CustomClass())); // false
 import { getProperty, setProperty, hasProperty } from "@visulima/object";
 
 function mergeConfig(base: Record<string, unknown>, overrides: Record<string, unknown>) {
-  const merged = { ...base };
+    const merged = { ...base };
 
-  for (const [key, value] of Object.entries(overrides)) {
-    if (hasProperty(merged, key)) {
-      setProperty(merged, key, value);
+    for (const [key, value] of Object.entries(overrides)) {
+        if (hasProperty(merged, key)) {
+            setProperty(merged, key, value);
+        }
     }
-  }
 
-  return merged;
+    return merged;
 }
 ```
 
@@ -252,30 +249,17 @@ function mergeConfig(base: Record<string, unknown>, overrides: Record<string, un
 import { pick, omit } from "@visulima/object";
 
 class UserService {
-  async getPublicProfile(userId: string) {
-    const user = await this.db.findUser(userId);
+    async getPublicProfile(userId: string) {
+        const user = await this.db.findUser(userId);
 
-    // Return only public fields
-    return pick(user, [
-      "id",
-      "username",
-      "profile.avatar",
-      "profile.bio",
-      "stats.followers",
-      "stats.following"
-    ]);
-  }
+        // Return only public fields
+        return pick(user, ["id", "username", "profile.avatar", "profile.bio", "stats.followers", "stats.following"]);
+    }
 
-  async sanitizeForLogs(data: Record<string, unknown>) {
-    // Remove sensitive fields before logging
-    return omit(data, [
-      "password",
-      "token",
-      "creditCard",
-      "ssn",
-      "api.secret"
-    ]);
-  }
+    async sanitizeForLogs(data: Record<string, unknown>) {
+        // Remove sensitive fields before logging
+        return omit(data, ["password", "token", "creditCard", "ssn", "api.secret"]);
+    }
 }
 ```
 
@@ -285,19 +269,19 @@ class UserService {
 import { getProperty, setProperty } from "@visulima/object";
 
 class FormState {
-  private data: Record<string, unknown> = {};
+    private data: Record<string, unknown> = {};
 
-  getValue(path: string, defaultValue?: unknown) {
-    return getProperty(this.data, path, defaultValue);
-  }
+    getValue(path: string, defaultValue?: unknown) {
+        return getProperty(this.data, path, defaultValue);
+    }
 
-  setValue(path: string, value: unknown) {
-    setProperty(this.data, path, value);
-  }
+    setValue(path: string, value: unknown) {
+        setProperty(this.data, path, value);
+    }
 
-  getErrors(path: string): string[] {
-    return getProperty(this.data, `errors.${path}`, []);
-  }
+    getErrors(path: string): string[] {
+        return getProperty(this.data, `errors.${path}`, []);
+    }
 }
 
 const form = new FormState();
@@ -308,10 +292,10 @@ form.setValue("user.profile.age", 30);
 ## Next Steps
 
 <Cards>
-  <Card title="API Reference" href="/api">
-    Complete API documentation with all parameters
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>

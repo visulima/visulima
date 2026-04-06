@@ -10,16 +10,13 @@ description: "Complete API documentation for @visulima/object"
 ### getProperty
 
 ```typescript
-function getProperty<T>(
-  object: Record<string, unknown>,
-  path: string,
-  defaultValue?: T
-): T | undefined
+function getProperty<T>(object: Record<string, unknown>, path: string, defaultValue?: T): T | undefined;
 ```
 
 Get a nested property value using dot notation.
 
 **Parameters:**
+
 - `object` - The source object
 - `path` - Dot notation path (e.g., "user.profile.name")
 - `defaultValue` - Value to return if property doesn't exist
@@ -31,11 +28,7 @@ Get a nested property value using dot notation.
 ### setProperty
 
 ```typescript
-function setProperty(
-  object: Record<string, unknown>,
-  path: string,
-  value: unknown
-): void
+function setProperty(object: Record<string, unknown>, path: string, value: unknown): void;
 ```
 
 Set a nested property value using dot notation.
@@ -45,10 +38,7 @@ Set a nested property value using dot notation.
 ### deleteProperty
 
 ```typescript
-function deleteProperty(
-  object: Record<string, unknown>,
-  path: string
-): boolean
+function deleteProperty(object: Record<string, unknown>, path: string): boolean;
 ```
 
 Delete a nested property using dot notation.
@@ -60,10 +50,7 @@ Delete a nested property using dot notation.
 ### hasProperty
 
 ```typescript
-function hasProperty(
-  object: Record<string, unknown>,
-  path: string
-): boolean
+function hasProperty(object: Record<string, unknown>, path: string): boolean;
 ```
 
 Check if a nested property exists.
@@ -73,7 +60,7 @@ Check if a nested property exists.
 ### escapePath
 
 ```typescript
-function escapePath(path: string): string
+function escapePath(path: string): string;
 ```
 
 Escape special characters in a property path.
@@ -85,21 +72,20 @@ Escape special characters in a property path.
 ### pick
 
 ```typescript
-function pick<T extends Record<string, unknown>>(
-  object: T,
-  paths: string[]
-): Partial<T>
+function pick<T extends Record<string, unknown>>(object: T, paths: string[]): Partial<T>;
 ```
 
 Create a new object with only specified properties.
 
 **Parameters:**
+
 - `object` - Source object
 - `paths` - Array of property paths to keep
 
 **Example:**
+
 ```typescript
-pick({ a: 1, b: 2, c: 3 }, ["a", "c"])
+pick({ a: 1, b: 2, c: 3 }, ["a", "c"]);
 // { a: 1, c: 3 }
 ```
 
@@ -108,10 +94,7 @@ pick({ a: 1, b: 2, c: 3 }, ["a", "c"])
 ### omit
 
 ```typescript
-function omit<T extends Record<string, unknown>>(
-  object: T,
-  paths: string[]
-): Partial<T>
+function omit<T extends Record<string, unknown>>(object: T, paths: string[]): Partial<T>;
 ```
 
 Create a new object without specified properties.
@@ -123,7 +106,7 @@ Create a new object without specified properties.
 ### deepKeys
 
 ```typescript
-function deepKeys(object: Record<string, unknown>): string[]
+function deepKeys(object: Record<string, unknown>): string[];
 ```
 
 Extract all nested keys from an object.
@@ -133,7 +116,7 @@ Extract all nested keys from an object.
 ### deepKeysFromList
 
 ```typescript
-function deepKeysFromList(list: Array<Record<string, unknown>>): string[]
+function deepKeysFromList(list: Array<Record<string, unknown>>): string[];
 ```
 
 Extract all possible keys from an array of objects.
@@ -145,7 +128,7 @@ Extract all possible keys from an array of objects.
 ### isPlainObject
 
 ```typescript
-function isPlainObject(value: unknown): value is Record<string, unknown>
+function isPlainObject(value: unknown): value is Record<string, unknown>;
 ```
 
 Check if a value is a plain object.
@@ -156,26 +139,26 @@ Check if a value is a plain object.
 
 ## Function Summary
 
-| Function | Category | Description |
-|----------|----------|-------------|
-| `getProperty` | Access | Get nested property value |
-| `setProperty` | Access | Set nested property value |
-| `deleteProperty` | Access | Delete nested property |
-| `hasProperty` | Access | Check if property exists |
-| `escapePath` | Access | Escape special characters |
-| `pick` | Filtering | Keep specified properties |
-| `omit` | Filtering | Remove specified properties |
-| `deepKeys` | Deep Ops | Extract all nested keys |
-| `deepKeysFromList` | Deep Ops | Extract keys from array |
-| `isPlainObject` | Type Check | Check if plain object |
+| Function           | Category   | Description                 |
+| ------------------ | ---------- | --------------------------- |
+| `getProperty`      | Access     | Get nested property value   |
+| `setProperty`      | Access     | Set nested property value   |
+| `deleteProperty`   | Access     | Delete nested property      |
+| `hasProperty`      | Access     | Check if property exists    |
+| `escapePath`       | Access     | Escape special characters   |
+| `pick`             | Filtering  | Keep specified properties   |
+| `omit`             | Filtering  | Remove specified properties |
+| `deepKeys`         | Deep Ops   | Extract all nested keys     |
+| `deepKeysFromList` | Deep Ops   | Extract keys from array     |
+| `isPlainObject`    | Type Check | Check if plain object       |
 
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use these functions
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use these functions
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>
