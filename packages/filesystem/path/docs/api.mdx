@@ -38,16 +38,7 @@ import {
 ### Utilities
 
 ```typescript
-import {
-    filename,
-    normalizeAliases,
-    resolveAlias,
-    reverseResolveAlias,
-    isRelative,
-    isBinaryPath,
-    toPath,
-    isWindows,
-} from "@visulima/path/utils";
+import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } from "@visulima/path/utils";
 ```
 
 ## Standard Path Methods
@@ -57,12 +48,14 @@ import {
 Get the last portion of a path.
 
 **Parameters:**
+
 - `path` (string): The file path
 - `suffix` (string, optional): Extension to remove
 
 **Returns:** The filename
 
 **Example:**
+
 ```typescript
 basename("/home/user/file.txt");
 // Returns: 'file.txt'
@@ -78,6 +71,7 @@ basename("/home/user/file.txt", ".txt");
 The platform-specific path delimiter (always `:` for consistency).
 
 **Example:**
+
 ```typescript
 console.log(delimiter);
 // Returns: ':'
@@ -90,11 +84,13 @@ console.log(delimiter);
 Get the directory name of a path.
 
 **Parameters:**
+
 - `path` (string): The file path
 
 **Returns:** The directory portion
 
 **Example:**
+
 ```typescript
 dirname("/home/user/documents/file.txt");
 // Returns: '/home/user/documents'
@@ -107,11 +103,13 @@ dirname("/home/user/documents/file.txt");
 Get the file extension.
 
 **Parameters:**
+
 - `path` (string): The file path
 
 **Returns:** The extension (including the dot)
 
 **Example:**
+
 ```typescript
 extname("file.txt");
 // Returns: '.txt'
@@ -127,9 +125,11 @@ extname("archive.tar.gz");
 Create a path string from an object.
 
 **Parameters:**
+
 - `pathObject` (ParsedPath): Path components
 
 **ParsedPath Interface:**
+
 ```typescript
 interface ParsedPath {
     root?: string;
@@ -143,6 +143,7 @@ interface ParsedPath {
 **Returns:** The formatted path string
 
 **Example:**
+
 ```typescript
 format({
     dir: "/home/user",
@@ -166,11 +167,13 @@ format({
 Determine if a path is absolute.
 
 **Parameters:**
+
 - `path` (string): The path to check
 
 **Returns:** `true` if absolute, `false` otherwise
 
 **Example:**
+
 ```typescript
 isAbsolute("/home/user");
 // Returns: true
@@ -186,11 +189,13 @@ isAbsolute("src/index.ts");
 Join path segments.
 
 **Parameters:**
+
 - `...paths` (string[]): Path segments to join
 
 **Returns:** The joined path
 
 **Example:**
+
 ```typescript
 join("src", "components", "Button.tsx");
 // Returns: 'src/components/Button.tsx'
@@ -206,12 +211,14 @@ join("/home", "user", "documents");
 Check if a path matches a glob pattern.
 
 **Parameters:**
+
 - `path` (string): The path to test
 - `pattern` (string): The glob pattern
 
 **Returns:** `true` if matches, `false` otherwise
 
 **Example:**
+
 ```typescript
 matchesGlob("src/index.ts", "src/**/*.ts");
 // Returns: true
@@ -227,11 +234,13 @@ matchesGlob("test.js", "**/*.test.js");
 Normalize a path by resolving `.` and `..`.
 
 **Parameters:**
+
 - `path` (string): The path to normalize
 
 **Returns:** The normalized path
 
 **Example:**
+
 ```typescript
 normalize("/foo/bar//baz/asdf/quux/..");
 // Returns: '/foo/bar/baz/asdf'
@@ -247,6 +256,7 @@ normalize("src/../dist/./index.js");
 Low-level path normalization (internal use).
 
 **Parameters:**
+
 - `path` (string): The path to normalize
 
 **Returns:** The normalized path string
@@ -258,22 +268,25 @@ Low-level path normalization (internal use).
 Parse a path into its components.
 
 **Parameters:**
+
 - `path` (string): The path to parse
 
 **Returns:** ParsedPath object
 
 **ParsedPath Type:**
+
 ```typescript
 type ParsedPath = {
-    root: string;    // Root (e.g., '/', 'C:/')
-    dir: string;     // Directory path
-    base: string;    // Filename with extension
-    ext: string;     // Extension (including dot)
-    name: string;    // Filename without extension
+    root: string; // Root (e.g., '/', 'C:/')
+    dir: string; // Directory path
+    base: string; // Filename with extension
+    ext: string; // Extension (including dot)
+    name: string; // Filename without extension
 };
 ```
 
 **Example:**
+
 ```typescript
 parse("/home/user/file.txt");
 // Returns: {
@@ -292,12 +305,14 @@ parse("/home/user/file.txt");
 Get the relative path from one location to another.
 
 **Parameters:**
+
 - `from` (string): The starting path
 - `to` (string): The destination path
 
 **Returns:** The relative path
 
 **Example:**
+
 ```typescript
 relative("/home/user/docs", "/home/user/pictures");
 // Returns: '../pictures'
@@ -313,11 +328,13 @@ relative("/src", "/dist");
 Resolve path segments into an absolute path.
 
 **Parameters:**
+
 - `...paths` (string[]): Path segments to resolve
 
 **Returns:** The absolute path
 
 **Example:**
+
 ```typescript
 resolve("src", "index.ts");
 // Returns: '/current/working/directory/src/index.ts'
@@ -333,6 +350,7 @@ resolve("/home", "user", "documents");
 The platform-specific path segment separator (always `/` for consistency).
 
 **Example:**
+
 ```typescript
 console.log(sep);
 // Returns: '/'
@@ -348,11 +366,13 @@ console.log(sep);
 Convert path to namespaced path (Windows UNC path support).
 
 **Parameters:**
+
 - `path` (string): The path to convert
 
 **Returns:** The namespaced path
 
 **Example:**
+
 ```typescript
 toNamespacedPath("C:/Users/file.txt");
 // Returns: 'C:/Users/file.txt' (normalized)
@@ -367,11 +387,13 @@ toNamespacedPath("C:/Users/file.txt");
 Get filename without extension.
 
 **Parameters:**
+
 - `path` (string): The file path
 
 **Returns:** Filename without extension
 
 **Example:**
+
 ```typescript
 filename("/home/user/document.pdf");
 // Returns: 'document'
@@ -387,11 +409,13 @@ filename("archive.tar.gz");
 Normalize alias mappings for resolution.
 
 **Parameters:**
+
 - `aliases` (Record<string, string>): Alias mappings
 
 **Returns:** Normalized aliases
 
 **Example:**
+
 ```typescript
 normalizeAliases({
     "@/*": "./src/*",
@@ -407,12 +431,14 @@ normalizeAliases({
 Resolve a path using alias mappings.
 
 **Parameters:**
+
 - `path` (string): The path to resolve
 - `aliases` (Record<string, string>): Alias mappings
 
 **Returns:** The resolved path
 
 **Example:**
+
 ```typescript
 const aliases = { "@/*": "./src/*" };
 resolveAlias("@/config/app", aliases);
@@ -426,12 +452,14 @@ resolveAlias("@/config/app", aliases);
 Convert absolute path back to alias format.
 
 **Parameters:**
+
 - `path` (string): The absolute path
 - `aliases` (Record<string, string>): Alias mappings
 
 **Returns:** The aliased path or original if no match
 
 **Example:**
+
 ```typescript
 const aliases = { "@/*": "./src/*" };
 reverseResolveAlias("./src/config/app", aliases);
@@ -445,11 +473,13 @@ reverseResolveAlias("./src/config/app", aliases);
 Check if a path is relative.
 
 **Parameters:**
+
 - `path` (string): The path to check
 
 **Returns:** `true` if relative, `false` otherwise
 
 **Example:**
+
 ```typescript
 isRelative("./src/index.ts");
 // Returns: true
@@ -465,11 +495,13 @@ isRelative("/home/user/file.txt");
 Check if a file path points to a binary file.
 
 **Parameters:**
+
 - `path` (string): The file path
 
 **Returns:** `true` if binary file, `false` otherwise
 
 **Example:**
+
 ```typescript
 isBinaryPath("image.png");
 // Returns: true
@@ -485,11 +517,13 @@ isBinaryPath("document.json");
 Convert file URL to path or return path as-is.
 
 **Parameters:**
+
 - `urlOrPath` (string): File URL or path string
 
 **Returns:** The path string
 
 **Example:**
+
 ```typescript
 toPath("file:///home/user/file.txt");
 // Returns: '/home/user/file.txt'
@@ -507,6 +541,7 @@ Check if running on Windows platform.
 **Returns:** `true` if Windows, `false` otherwise
 
 **Example:**
+
 ```typescript
 if (isWindows()) {
     console.log("Running on Windows");
@@ -571,14 +606,14 @@ All methods are compatible with Node.js `path` API:
 
 Methods not in Node.js `path`:
 
-| Method                | Description                 |
-| --------------------- | --------------------------- |
-| `matchesGlob()`       | Glob pattern matching       |
-| `filename()`          | Get name without extension  |
-| `normalizeAliases()`  | Prepare alias mappings      |
-| `resolveAlias()`      | Resolve path aliases        |
-| `reverseResolveAlias()`| Convert back to alias      |
-| `isRelative()`        | Check if path is relative   |
-| `isBinaryPath()`      | Check if file is binary     |
-| `toPath()`            | Convert file URL to path    |
-| `isWindows()`         | Check if on Windows         |
+| Method                  | Description                |
+| ----------------------- | -------------------------- |
+| `matchesGlob()`         | Glob pattern matching      |
+| `filename()`            | Get name without extension |
+| `normalizeAliases()`    | Prepare alias mappings     |
+| `resolveAlias()`        | Resolve path aliases       |
+| `reverseResolveAlias()` | Convert back to alias      |
+| `isRelative()`          | Check if path is relative  |
+| `isBinaryPath()`        | Check if file is binary    |
+| `toPath()`              | Convert file URL to path   |
+| `isWindows()`           | Check if on Windows        |

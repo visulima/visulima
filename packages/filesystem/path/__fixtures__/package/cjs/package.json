@@ -1,10 +1,10 @@
 {
-  "name": "path-cjs",
-  "private": true,
-  "description": "CommonJS version",
-  "type": "commonjs",
-  "dependencies": {
-    "@visulima/path": "workspace:*"
-  },
-  "devDependencies": {}
+    "name": "path-cjs",
+    "private": true,
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/path": "workspace:*"
+    },
+    "devDependencies": {}
 }
