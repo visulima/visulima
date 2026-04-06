@@ -104,7 +104,6 @@ export interface ParameterObject {
     content?: Map<MediaTypeObject>;
     deprecated?: boolean;
     description?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     explode?: string;
@@ -126,7 +125,6 @@ export interface RequestBodyObject {
 
 export interface MediaTypeObject {
     encoding?: Map<EncodingObject>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     schema?: ReferenceObject | SchemaObject;
@@ -155,7 +153,6 @@ export interface ExampleObject {
     description?: string;
     externalValue?: string;
     summary?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any;
 }
 
@@ -163,9 +160,7 @@ export interface LinkObject {
     description?: string;
     operationId?: string;
     operationRef?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parameters?: Map<any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     requestBody?: any;
     server?: ServerObject;
 }
@@ -177,7 +172,6 @@ export interface HeaderObject {
     content?: Map<MediaTypeObject>;
     deprecated?: boolean;
     description?: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     example?: any;
     examples?: Map<ExampleObject | ReferenceObject>;
     explode?: string;
@@ -200,7 +194,6 @@ export interface ReferenceObject {
 }
 
 // TODO: this could be expanded on.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SchemaObject = Record<string, any>;
 
 export interface ApiKeySecuritySchemeObject {

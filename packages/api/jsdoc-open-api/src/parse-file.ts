@@ -17,13 +17,12 @@ const parseFile = (
     commentsToOpenApi: (fileContent: string, verbose?: boolean) => { loc: number; spec: OpenApiObject }[],
     verbose?: boolean,
 ): { loc: number; spec: OpenApiObject }[] => {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(file, { encoding: "utf8" });
     const extension = path.extname(file);
 
     if (extension === ".yaml" || extension === ".yml") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const spec = yaml.parse(fileContent);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         const invalidKeys = Object.keys(spec).filter((key) => !ALLOWED_KEYS.has(key));
 
         if (invalidKeys.length > 0) {
@@ -34,11 +33,9 @@ const parseFile = (
             throw error;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         if (Object.keys(spec).some((key) => ALLOWED_KEYS.has(key))) {
             const loc = yamlLoc(fileContent);
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return [{ loc, spec }];
         }
 
@@ -47,8 +44,8 @@ const parseFile = (
 
     try {
         return commentsToOpenApi(fileContent, verbose);
-    } catch (error: unknown) {
-        (error as ParseError).filePath = file;
+    } catch (error: any) {
+        error.filePath = file;
 
         throw error;
     }
