@@ -122,7 +122,9 @@ const PackagesListing: FC = () => {
     }, [fetchStats]);
 
     const totalWeeklyDownloads = useMemo(() => {
-        if (!stats?.weeklyDownloads) return 0;
+        if (!stats?.weeklyDownloads) {
+            return 0;
+        }
         return Object.values(stats.weeklyDownloads).reduce((sum, v) => sum + v, 0);
     }, [stats]);
 

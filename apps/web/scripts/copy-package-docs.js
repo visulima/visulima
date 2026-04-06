@@ -123,7 +123,9 @@ async function sanitizeMdx(filePath) {
 
     content = parts
         .map((part, i) => {
-            if (i % 2 === 1) return part; // code block - don't modify
+            if (i % 2 === 1) {
+                return part;
+            } // code block - don't modify
             // Escape non-HTML angle brackets
             let result = part.replace(safeTagRegex, "\\<");
             // Strip .mdx/.md extensions from markdown links (they break URL routing)
