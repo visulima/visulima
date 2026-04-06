@@ -69,9 +69,11 @@ Then use colors in your boxes:
 import { boxen } from "@visulima/boxen";
 import { green, blue } from "@visulima/colorize";
 
-console.log(boxen(green("Success!"), {
-    borderColor: () => green("─"),
-}));
+console.log(
+    boxen(green("Success!"), {
+        borderColor: () => green("─"),
+    }),
+);
 ```
 
 ## Verification
@@ -81,10 +83,12 @@ Verify your installation works correctly:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Installation successful!", {
-    padding: 1,
-    borderStyle: "double",
-}));
+console.log(
+    boxen("Installation successful!", {
+        padding: 1,
+        borderStyle: "double",
+    }),
+);
 // Output:
 // ╔═══════════════════════════╗
 // ║                           ║
@@ -102,6 +106,7 @@ If you see a box similar to above, installation is successful!
 For best results, use a terminal with full Unicode support:
 
 **Recommended Terminals:**
+
 - ✅ Windows Terminal (Windows 10+)
 - ✅ iTerm2 (macOS)
 - ✅ Terminal.app (macOS)
@@ -111,6 +116,7 @@ For best results, use a terminal with full Unicode support:
 - ✅ Alacritty
 
 **Limited Support:**
+
 - ⚠️ Windows Command Prompt (Windows 10+ with Unicode enabled)
 - ⚠️ PowerShell (works with PowerShell 7+)
 
@@ -122,18 +128,20 @@ If your terminal doesn't support Unicode box-drawing characters, use ASCII-only 
 import { boxen } from "@visulima/boxen";
 
 // Custom ASCII border
-console.log(boxen("ASCII only", {
-    borderStyle: {
-        topLeft: "+",
-        topRight: "+",
-        bottomLeft: "+",
-        bottomRight: "+",
-        top: "-",
-        bottom: "-",
-        left: "|",
-        right: "|",
-    },
-}));
+console.log(
+    boxen("ASCII only", {
+        borderStyle: {
+            topLeft: "+",
+            topRight: "+",
+            bottomLeft: "+",
+            bottomRight: "+",
+            top: "-",
+            bottom: "-",
+            left: "|",
+            right: "|",
+        },
+    }),
+);
 // Output:
 // +----------+
 // |ASCII only|
@@ -147,16 +155,18 @@ console.log(boxen("ASCII only", {
 If box characters appear as question marks or squares:
 
 1. **Check terminal encoding:**
-   ```bash
-   echo $LANG
-   # Should show UTF-8 (e.g., en_US.UTF-8)
-   ```
+
+    ```bash
+    echo $LANG
+    # Should show UTF-8 (e.g., en_US.UTF-8)
+    ```
 
 2. **Set UTF-8 encoding:**
-   ```bash
-   export LANG=en_US.UTF-8
-   export LC_ALL=en_US.UTF-8
-   ```
+
+    ```bash
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    ```
 
 3. **Use a different terminal** with better Unicode support
 

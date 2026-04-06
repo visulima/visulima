@@ -24,6 +24,7 @@ console.log(boxen("Hello, World!"));
 ```
 
 Output:
+
 ```
 ┌─────────────┐
 │Hello, World!│
@@ -41,6 +42,7 @@ console.log(boxen("Padded", { padding: 1 }));
 ```
 
 Output:
+
 ```
 ┌────────┐
 │        │
@@ -94,16 +96,20 @@ import { green, red, blue } from "@visulima/colorize";
 console.log(boxen(green("Success!"), { padding: 1 }));
 
 // Colored border
-console.log(boxen("Important", {
-    borderColor: () => red("─"),
-    padding: 1,
-}));
+console.log(
+    boxen("Important", {
+        borderColor: () => red("─"),
+        padding: 1,
+    }),
+);
 
 // Both colored
-console.log(boxen(blue("Information"), {
-    borderColor: () => blue("─"),
-    padding: 1,
-}));
+console.log(
+    boxen(blue("Information"), {
+        borderColor: () => blue("─"),
+        padding: 1,
+    }),
+);
 ```
 
 ## Add Margins
@@ -117,6 +123,7 @@ console.log(boxen("With margin", { margin: 1 }));
 ```
 
 Output:
+
 ```
 
    ┌───────────┐
@@ -133,16 +140,20 @@ Control text alignment inside the box:
 import { boxen } from "@visulima/boxen";
 
 // Center aligned
-console.log(boxen("Center\nAligned", {
-    textAlignment: "center",
-    padding: 1
-}));
+console.log(
+    boxen("Center\nAligned", {
+        textAlignment: "center",
+        padding: 1,
+    }),
+);
 
 // Right aligned
-console.log(boxen("Right\nAligned", {
-    textAlignment: "right",
-    padding: 1
-}));
+console.log(
+    boxen("Right\nAligned", {
+        textAlignment: "right",
+        padding: 1,
+    }),
+);
 ```
 
 ## Add Headers
@@ -152,14 +163,17 @@ Add a labeled header to your box:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Important message here", {
-    headerText: "Alert",
-    headerAlignment: "center",
-    padding: 1,
-}));
+console.log(
+    boxen("Important message here", {
+        headerText: "Alert",
+        headerAlignment: "center",
+        padding: 1,
+    }),
+);
 ```
 
 Output:
+
 ```
 ┌───── Alert ─────┐
 │                 │
@@ -176,12 +190,14 @@ Add a footer with additional information:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Build completed successfully", {
-    headerText: "Status",
-    footerText: "Press any key to continue",
-    footerAlignment: "center",
-    padding: 1,
-}));
+console.log(
+    boxen("Build completed successfully", {
+        headerText: "Status",
+        footerText: "Press any key to continue",
+        footerAlignment: "center",
+        padding: 1,
+    }),
+);
 ```
 
 ## Multi-line Content
@@ -199,6 +215,7 @@ console.log(boxen(message, { padding: 1 }));
 ```
 
 Output:
+
 ```
 ┌────────┐
 │        │
@@ -216,10 +233,12 @@ Control the box width:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("This text will wrap to fit within the width", {
-    width: 20,
-    padding: 1,
-}));
+console.log(
+    boxen("This text will wrap to fit within the width", {
+        width: 20,
+        padding: 1,
+    }),
+);
 ```
 
 ## Common Patterns
@@ -230,11 +249,13 @@ console.log(boxen("This text will wrap to fit within the width", {
 import { boxen } from "@visulima/boxen";
 import { green } from "@visulima/colorize";
 
-console.log(boxen(green("✓ Build completed successfully!"), {
-    padding: 1,
-    borderStyle: "round",
-    borderColor: () => green("─"),
-}));
+console.log(
+    boxen(green("✓ Build completed successfully!"), {
+        padding: 1,
+        borderStyle: "round",
+        borderColor: () => green("─"),
+    }),
+);
 ```
 
 ### Error Message
@@ -243,11 +264,13 @@ console.log(boxen(green("✓ Build completed successfully!"), {
 import { boxen } from "@visulima/boxen";
 import { red } from "@visulima/colorize";
 
-console.log(boxen(red("✗ Build failed: Missing dependencies"), {
-    padding: 1,
-    borderStyle: "double",
-    borderColor: () => red("═"),
-}));
+console.log(
+    boxen(red("✗ Build failed: Missing dependencies"), {
+        padding: 1,
+        borderStyle: "double",
+        borderColor: () => red("═"),
+    }),
+);
 ```
 
 ### Warning Message
@@ -256,11 +279,13 @@ console.log(boxen(red("✗ Build failed: Missing dependencies"), {
 import { boxen } from "@visulima/boxen";
 import { yellow } from "@visulima/colorize";
 
-console.log(boxen(yellow("⚠ Deprecation warning"), {
-    padding: 1,
-    borderStyle: "bold",
-    borderColor: () => yellow("━"),
-}));
+console.log(
+    boxen(yellow("⚠ Deprecation warning"), {
+        padding: 1,
+        borderStyle: "bold",
+        borderColor: () => yellow("━"),
+    }),
+);
 ```
 
 ### Application Banner
@@ -272,12 +297,14 @@ import { cyan, bold } from "@visulima/colorize";
 const banner = bold(cyan("MyApp CLI v1.0.0"));
 const tagline = "Build amazing applications";
 
-console.log(boxen(`${banner}\n${tagline}`, {
-    padding: 1,
-    margin: 1,
-    borderStyle: "double",
-    textAlignment: "center",
-}));
+console.log(
+    boxen(`${banner}\n${tagline}`, {
+        padding: 1,
+        margin: 1,
+        borderStyle: "double",
+        textAlignment: "center",
+    }),
+);
 ```
 
 ### Status Display
@@ -286,17 +313,15 @@ console.log(boxen(`${banner}\n${tagline}`, {
 import { boxen } from "@visulima/boxen";
 import { green, gray } from "@visulima/colorize";
 
-const status = [
-    `${gray("Server:")} ${green("Running")}`,
-    `${gray("Port:")} ${green("3000")}`,
-    `${gray("Environment:")} ${green("production")}`,
-].join("\n");
+const status = [`${gray("Server:")} ${green("Running")}`, `${gray("Port:")} ${green("3000")}`, `${gray("Environment:")} ${green("production")}`].join("\n");
 
-console.log(boxen(status, {
-    padding: 1,
-    headerText: "Server Status",
-    headerAlignment: "center",
-}));
+console.log(
+    boxen(status, {
+        padding: 1,
+        headerText: "Server Status",
+        headerAlignment: "center",
+    }),
+);
 ```
 
 ### Update Notification
@@ -305,17 +330,15 @@ console.log(boxen(status, {
 import { boxen } from "@visulima/boxen";
 import { yellow, green } from "@visulima/colorize";
 
-console.log(boxen(
-    `${yellow("Update available:")} v1.0.0 → ${green("v1.1.0")}\n` +
-    `Run ${green("npm update")} to upgrade`,
-    {
+console.log(
+    boxen(`${yellow("Update available:")} v1.0.0 → ${green("v1.1.0")}\n` + `Run ${green("npm update")} to upgrade`, {
         padding: 1,
         margin: 1,
         borderStyle: "round",
         headerText: "Update",
         headerAlignment: "center",
-    }
-));
+    }),
+);
 ```
 
 ## Next Steps
