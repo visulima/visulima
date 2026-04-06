@@ -11,6 +11,7 @@ import type { Paths } from "type-fest";
 
 import pathsAreEqual from "./paths-are-equal";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys extends Paths<T>[]>(object: T, omittedKeys: OmittedKeys, pathUntilNow = ""): T => {
     if (!isPlainObject(object)) {
         return object;
@@ -38,8 +39,8 @@ const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys exten
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
-        carry[key] = recursiveOmit<T, OmittedKeys>(object[key] as any, omittedKeys, path);
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+        carry[key] = recursiveOmit<T>(object[key] as any, omittedKeys, path);
 
         return carry;
     }, {}) as T;
