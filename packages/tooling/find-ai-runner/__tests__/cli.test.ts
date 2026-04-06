@@ -10,18 +10,18 @@ const VERSION_PATTERN = /^\d+\.\d+\.\d+/;
 const PROVIDER_NAMES_PATTERN = /claude|gemini|codex|copilot|cursor|crush|amp|kimi|qwen|opencode|droid/i;
 
 // Create a fake "claude" binary so detection works on CI (no real providers installed).
-let fakeBinDir: string;
+let fakeBinDirectory: string;
 let fakeBinPath: string;
 
 beforeAll(() => {
-    fakeBinDir = mkdtempSync(join(tmpdir(), "find-ai-runner-test-"));
-    fakeBinPath = join(fakeBinDir, "claude");
-    writeFileSync(fakeBinPath, '#!/bin/sh\necho "claude-code 1.0.0"', { mode: 0o755 });
+    fakeBinDirectory = mkdtempSync(join(tmpdir(), "find-ai-runner-test-"));
+    fakeBinPath = join(fakeBinDirectory, "claude");
+    writeFileSync(fakeBinPath, "#!/bin/sh\necho \"claude-code 1.0.0\"", { mode: 0o755 });
     chmodSync(fakeBinPath, 0o755);
 });
 
 afterAll(() => {
-    rmSync(fakeBinDir, { force: true, recursive: true });
+    rmSync(fakeBinDirectory, { force: true, recursive: true });
 });
 
 const run = (args: string[] = [], env?: Record<string, string>): { exitCode: number; stderr: string; stdout: string } => {
@@ -37,6 +37,7 @@ const run = (args: string[] = [], env?: Record<string, string>): { exitCode: num
     } catch (caughtError: unknown) {
         const execError = caughtError as { status: number; stderr: string; stdout: string };
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return { exitCode: execError.status ?? 1, stderr: execError.stderr ?? "", stdout: execError.stdout ?? "" };
     }
 };
@@ -103,6 +104,7 @@ describe("cLI", () => {
             expect(Array.isArray(parsed)).toBe(true);
             expect(parsed).toHaveLength(11);
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const provider of parsed) {
                 expect(provider).toHaveProperty("name");
                 expect(provider).toHaveProperty("available");

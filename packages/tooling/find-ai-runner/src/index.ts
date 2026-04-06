@@ -130,6 +130,7 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
 
     const allCommands = [config.command, ...config.alternateCommands];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const cmd of allCommands) {
         const found = whichCommand(cmd);
 
@@ -138,7 +139,9 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
         }
     }
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const cmd of allCommands) {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const knownPath of getKnownPaths(cmd)) {
             if (existsSync(knownPath)) {
                 return { ...base, available: true, detectionMethod: "known-path", path: knownPath, version: detectVersion(knownPath) };
@@ -204,7 +207,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 
         const child = spawn(provider.path as string, cliArguments, spawnOptions);
 
-        child.stdin?.end();
+        child.stdin.end();
 
         let stdout = "";
         let stderr = "";
@@ -216,11 +219,11 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
             reject(new Error(`${provider.name} CLI timed out after ${String(timeoutMs)}ms`));
         }, timeoutMs);
 
-        child.stdout?.on("data", (data: Buffer) => {
+        child.stdout.on("data", (data: Buffer) => {
             stdout += data.toString("utf8");
         });
 
-        child.stderr?.on("data", (data: Buffer) => {
+        child.stderr.on("data", (data: Buffer) => {
             stderr += data.toString("utf8");
         });
 
