@@ -262,7 +262,9 @@ class ErrorOverlay extends HTMLElement {
      * @param {object} options - Event listener options
      */
     _addEventListener(element, event, handler, options = {}) {
-        if (!element) return;
+        if (!element) {
+            return;
+        }
 
         element.addEventListener(event, handler, options);
         const key = `${element.id || element.className || "unknown"}_${event}`;
@@ -347,7 +349,9 @@ class ErrorOverlay extends HTMLElement {
      * @returns {string} Relative path
      */
     _getRelativePath(filePath) {
-        if (!filePath) return "";
+        if (!filePath) {
+            return "";
+        }
 
         const rootPath = this.__v_oPayload?.rootPath || "";
 
@@ -541,15 +545,25 @@ class ErrorOverlay extends HTMLElement {
             'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
         this._addEventListener(this.root, "keydown", (event) => {
-            if (event.key !== "Tab") return;
+            if (event.key !== "Tab") {
+                return;
+            }
 
             const root = this.__elements?.root;
 
-            if (!root || root.classList.contains("hidden")) return;
+            if (!root || root.classList.contains("hidden")) {
+
+                return;
+
+            }
 
             const focusable = [...this.root.querySelectorAll(FOCUSABLE_SELECTORS)];
 
-            if (focusable.length === 0) return;
+            if (focusable.length === 0) {
+
+                return;
+
+            }
 
             const first = focusable[0];
             const last = focusable.at(-1);
@@ -958,18 +972,26 @@ class ErrorOverlay extends HTMLElement {
     _initializeScrollNavigation() {
         const rootElement = this.__elements?.root;
 
-        if (!rootElement) return;
+        if (!rootElement) {
+
+            return;
+
+        }
 
         const handleWheel = (event) => {
             // Only handle scroll events when history is enabled and we have multiple errors
-            if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1) return;
+            if (!this.__v_oHistoryEnabled || this.__v_oHistory.length <= 1) {
+                return;
+            }
 
             // Prevent default scrolling behavior
             event.preventDefault();
             event.stopPropagation();
 
             // Ignore very small scroll movements
-            if (Math.abs(event.deltaY) < ErrorOverlay.DRAG_THRESHOLD) return;
+            if (Math.abs(event.deltaY) < ErrorOverlay.DRAG_THRESHOLD) {
+                return;
+            }
 
             const scrollDirection = event.deltaY > 0 ? 1 : -1;
 
@@ -1124,7 +1146,9 @@ class ErrorOverlay extends HTMLElement {
         };
 
         const handleMouseMove = (event) => {
-            if (!isDragging) return;
+            if (!isDragging) {
+                return;
+            }
 
             const viewport = getViewportDimensions();
             const balloonWidth = balloonRect.width;
@@ -1161,7 +1185,9 @@ class ErrorOverlay extends HTMLElement {
         };
 
         const handleMouseUp = () => {
-            if (!isDragging) return;
+            if (!isDragging) {
+                return;
+            }
 
             isDragging = false;
             document.removeEventListener("mousemove", handleMouseMove);
@@ -1464,7 +1490,11 @@ class ErrorOverlay extends HTMLElement {
         const countElement = indicator.querySelector("#__v_o__history_count");
         const totalElement = indicator.querySelector("#__v_o__history_total");
 
-        if (!countElement || !totalElement) return;
+        if (!countElement || !totalElement) {
+
+            return;
+
+        }
 
         if (this.__v_oHistory.length <= 1) {
             indicator.classList.add("hidden");
@@ -1556,7 +1586,11 @@ class ErrorOverlay extends HTMLElement {
     updateOverlay() {
         const currentError = this.__v_oPayload?.errors?.[0];
 
-        if (!currentError) return;
+        if (!currentError) {
+
+            return;
+
+        }
 
         // Reopen overlay if it's hidden when new errors occur
         if (this.root && this.root.classList.contains("hidden")) {
