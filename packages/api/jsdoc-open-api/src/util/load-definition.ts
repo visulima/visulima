@@ -12,7 +12,6 @@ const parseFile = (file: string): BaseDefinition => {
         throw new Error("OpenAPI definition path must be YAML or JSON.");
     }
 
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     const fileContent = readFileSync(file, { encoding: "utf8" });
 
     if (extension === ".yaml" || extension === ".yml") {

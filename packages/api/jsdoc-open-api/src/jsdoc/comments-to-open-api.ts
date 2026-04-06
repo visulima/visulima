@@ -1,17 +1,26 @@
 import type { Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
-// eslint-disable-next-line no-restricted-imports
+// eslint-disable-next-line no-restricted-imports,e18e/ban-dependencies
 import mergeWith from "lodash.mergewith";
 
 import type { OpenApiObject, PathsObject } from "../exported";
 import customizer from "../util/customizer";
 
+// eslint-disable-next-line regexp/strict
+const ARRAY_SUFFIX_REGEX = /\[]$/;
+const DESCRIPTION_DASH_REGEX = /^- /u;
+const PARAM_SUFFIX_REGEX = /Param$/u;
+// eslint-disable-next-line regexp/no-unused-capturing-group
+const OPEN_API_REGEX = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
+
 // The security object has a bizare setup...
-const fixSecurityObject = (thing: any) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fixSecurityObject = (thing: Record<string, any>) => {
     if (thing.security) {
-        // eslint-disable-next-line no-param-reassign
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-unsafe-argument
         thing.security = Object.keys(thing.security).map((s) => {
             return {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
                 [s]: thing.security[s],
             };
         });
@@ -35,8 +44,7 @@ const formatMap: Record<string, string> = {
 const parseDescription = (tag: Spec): { description: string | undefined; name: string; rawType: string; required: boolean; schema: object | undefined } => {
     const rawType = tag.type;
     const isArray = rawType.endsWith("[]");
-    // eslint-disable-next-line regexp/strict
-    const parsedType = rawType.replace(/\[]$/, "");
+    const parsedType = rawType.replace(ARRAY_SUFFIX_REGEX, "");
 
     const isPrimitive = primitiveTypes.has(parsedType);
     const isFormat = Object.keys(formatMap).includes(parsedType);
@@ -75,26 +83,26 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
             type: formatMap[parsedType],
         };
     } else {
-        rootType = { $ref: `#/components/schemas/${parsedType as string}` };
+        rootType = { $ref: `#/components/schemas/${parsedType}` };
     }
 
     let schema: object | undefined = isArray
         ? {
-              items: {
-                  ...rootType,
-              },
-              type: "array",
-          }
+            items: {
+                ...rootType,
+            },
+            type: "array",
+        }
         : {
-              ...rootType,
-          };
+            ...rootType,
+        };
 
     if (parsedType === "") {
         schema = undefined;
     }
 
     // remove the optional dash from the description.
-    let description: string | undefined = tag.description.trim().replace(/^- /u, "");
+    let description: string | undefined = tag.description.trim().replace(DESCRIPTION_DASH_REGEX, "");
 
     if (description === "") {
         description = undefined;
@@ -109,9 +117,8 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
     };
 };
 
-// @ts-expect-error
-
-const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
+// @ts-expect-error -- mergeWith returns any due to lodash types
+const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
     tags.map((tag) => {
         const parsedResponse = parseDescription(tag);
 
@@ -183,7 +190,7 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
             }
 
             case "cookieParam":
-
+            // falls through
             case "headerParam":
             case "pathParam":
             case "queryParam": {
@@ -191,7 +198,7 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
                     parameters: [
                         {
                             description: parsedResponse.description,
-                            in: tag.tag.replace(/Param$/u, ""),
+                            in: tag.tag.replace(PARAM_SUFFIX_REGEX, ""),
                             name: parsedResponse.name,
                             required: parsedResponse.required,
                             schema: parsedResponse.schema,
@@ -204,9 +211,9 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
             }
 
             case "description":
-
+            // falls through
             case "operationId":
-
+            // falls through
             case "summary": {
                 return { [tag.tag]: nameAndDescription };
             }
@@ -366,28 +373,28 @@ const tagsToObjects = (tags: Spec[], verbose?: boolean) =>
         }
     });
 
-const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    // eslint-disable-next-line regexp/no-unused-capturing-group
-    const openAPIRegex = /^(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE) \/.*$/;
-
+const commentsToOpenApi = (fileContents: string, _verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
     const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
 
     return jsDocumentComments
-        .filter((comment) => openAPIRegex.test(comment.description.trim()))
+        .filter((comment) => OPEN_API_REGEX.test(comment.description.trim()))
         .map((comment) => {
             // Line count, number of tags + 1 for description.
             // - Don't count line-breaking due to long descriptions
             // - Don't count empty lines
-            const loc = (comment.tags.length as number) + 1;
+            const loc = comment.tags.length + 1;
 
-            const result = mergeWith({}, ...tagsToObjects(comment.tags, verbose), customizer);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const result = mergeWith({}, ...tagsToObjects(comment.tags, _verbose), customizer);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             fixSecurityObject(result);
 
             const [method, path]: string[] = comment.description.split(" ");
 
             const pathsObject: PathsObject = {
                 [(path as string).trim()]: {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     [(method as string).toLowerCase().trim()]: {
                         ...result,
                     },
@@ -395,7 +402,7 @@ const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: numb
             };
 
             // Purge all undefined objects/arrays.
-            const spec = JSON.parse(JSON.stringify({ paths: pathsObject }));
+            const spec = structuredClone({ paths: pathsObject });
 
             return {
                 loc,

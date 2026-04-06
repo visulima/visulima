@@ -13,6 +13,7 @@ import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
 import validate from "../validate";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const errorHandler = (error: any) => {
     if (error) {
         // eslint-disable-next-line no-console
@@ -52,14 +53,16 @@ class SwaggerCompilerPlugin {
     public apply(compiler: Compiler): void {
         const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...this.ignore]);
 
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
             // eslint-disable-next-line no-console
             console.log("Build paused, switching to swagger build");
 
             const spec = new SpecBuilder(this.swaggerDefinition);
 
-            // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
-            for await (const dir of this.sources) {
+            // eslint-disable-next-line unicorn/prevent-abbreviations,no-for-of-array/no-for-of-array
+            for (const dir of this.sources) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,no-await-in-loop,@typescript-eslint/no-unsafe-call
                 const files: string[] = await collect(dir, {
                     extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
                     includeDirs: false,
@@ -100,27 +103,26 @@ class SwaggerCompilerPlugin {
                 if (this.verbose) {
                     // eslint-disable-next-line no-console
                     console.log("Validating swagger spec");
-                    // eslint-disable-next-line no-console
+                    // eslint-disable-next-line no-console,unicorn/no-null
                     console.log(JSON.stringify(spec, null, 2));
                 }
 
-                await validate(JSON.parse(JSON.stringify(spec)));
-            } catch (error: any) {
-                // eslint-disable-next-line no-console
-                console.error(error.toJSON());
+                await validate(structuredClone(spec) as Record<string, unknown>);
+            } catch (error: unknown) {
+                // eslint-disable-next-line no-console,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-explicit-any
+                console.error((error as any).toJSON());
 
                 exit(1);
             }
 
             const { assetsPath } = this;
 
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
             mkdir(dirname(assetsPath), { recursive: true }, (error) => {
                 if (error) {
                     errorHandler(error);
                 }
 
-                // eslint-disable-next-line security/detect-non-literal-fs-filename
+                // eslint-disable-next-line unicorn/no-null
                 writeFile(assetsPath, JSON.stringify(spec, null, 2), errorHandler);
             });
 

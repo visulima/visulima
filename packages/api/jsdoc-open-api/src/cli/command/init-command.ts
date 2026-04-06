@@ -7,6 +7,7 @@ const initCommand = (configName: string, packageJsonPath: string = process.cwd()
         throw new Error("Config file already exists");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
     const packagePath = findUpSync("package.json", {
         cwd: realpathSync(packageJsonPath),
     });
@@ -14,10 +15,11 @@ const initCommand = (configName: string, packageJsonPath: string = process.cwd()
     let exportTemplate = "module.exports =";
 
     if (packagePath) {
-        const packageJson = readJsonSync(packagePath) as { type?: string };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const packageJson = readJsonSync(packagePath as string) as { type?: string };
 
         // eslint-disable-next-line no-console
-        console.info(`Found package.json at "${packagePath}"`);
+        console.info(`Found package.json at "${String(packagePath)}"`);
 
         if (packageJson.type === "module") {
             // eslint-disable-next-line no-console
