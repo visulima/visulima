@@ -66,7 +66,7 @@ const defaults = {
 const httpHeaderNormalizerMiddleware = (options_?: {
     canonical?: boolean;
     normalizeHeaderKey?: (key: string, canonical: boolean) => string;
-}): (request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void> => {
+}): ((request: IncomingMessage, response: ServerResponse, next: NextHandler) => ValueOrPromise<void>) => {
     const options = { ...defaults, ...options_ };
 
     return async <Request extends IncomingMessage>(request: Request, _: any, next: NextHandler) => {

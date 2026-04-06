@@ -345,7 +345,7 @@ describe("edge", () => {
                 await expect(response.text()).resolves.toBe("Internal Server Error");
 
                 // eslint-disable-next-line security/detect-object-injection
-                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             });
     });
 
