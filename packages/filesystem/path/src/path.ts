@@ -29,6 +29,8 @@ const DRIVE_LETTER_RE = /^[A-Z]:$/i;
 const ROOT_FOLDER_RE = /^\/([A-Z]:)?$/i;
 const EXTNAME_RE = /.(\.[^./]+)$/;
 const PATH_ROOT_RE = /^[/\\]|^[a-z]:[/\\]/i;
+const TRAILING_SLASH_RE = /\/$/;
+const WIN_PLATFORM_RE = /^win/i;
 
 const cwd = () => {
     if (typeof process !== "undefined" && typeof process.cwd === "function") {
@@ -48,7 +50,8 @@ export const sep = "/";
  * Path delimiter constant, used to separate paths in environment variables.
  */
 
-export const delimiter: string = /^win/i.test(globalThis.process?.platform) ? ";" : ":";
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+export const delimiter: string = WIN_PLATFORM_RE.test(globalThis.process?.platform ?? "") ? ";" : ":";
 
 /**
  * Resolves a string path, resolving '.' and '.' segments and allowing paths above the root.
@@ -198,13 +201,14 @@ export const normalize: typeof path.normalize = function (path: string) {
 export const join: typeof path.join = (...segments): string => {
     let path = "";
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const seg of segments) {
         if (!seg) {
             continue;
         }
 
         if (path.length > 0) {
-            const pathTrailing = path[path.length - 1] === "/";
+            const pathTrailing = path.at(-1) === "/";
 
             const segLeading = seg[0] === "/";
             const both = pathTrailing && segLeading;
@@ -299,6 +303,7 @@ export const relative: typeof path.relative = function (from: string, to: string
 
     const fromCopy = [...splitFrom];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const segment of fromCopy) {
         if (splitTo[0] !== segment) {
             break;
@@ -318,10 +323,10 @@ export const relative: typeof path.relative = function (from: string, to: string
  * @returns the directory portion of the path.
  */
 export const dirname: typeof path.dirname = (path: string) => {
-    const segments = normalizeWindowsPath(path).replace(/\/$/, "").split("/").slice(0, -1);
+    const segments = normalizeWindowsPath(path).replace(TRAILING_SLASH_RE, "").split("/").slice(0, -1);
 
     if (segments.length === 1 && DRIVE_LETTER_RE.test(segments[0] as string)) {
-        segments[0] += "/";
+        segments[0] = `${segments[0] as string}/`;
     }
 
     return segments.join("/") || (isAbsolute(path) ? "/" : ".");
