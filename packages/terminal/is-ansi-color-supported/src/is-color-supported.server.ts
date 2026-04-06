@@ -38,7 +38,7 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
     try {
         // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
 
-        environment = isDeno ? proc.env.toObject() : proc.env ?? {};
+        environment = isDeno ? proc.env.toObject() : (proc.env ?? {});
     } catch {
         // Deno: if interactive permission is not granted, do nothing, no colors
     }
@@ -64,9 +64,9 @@ const isColorSupportedFactory = (stdName: "err" | "out"): ColorSupportLevel => {
         return forceColor;
     }
 
-    const isForceDisabled
+    const isForceDisabled =
         // eslint-disable-next-line regexp/no-unused-capturing-group
-        = "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(/^-{1,2}(no-color|no-colors|color=false|color=never)$/);
+        "NO_COLOR" in environment || (hasForceColor && forceColor === 0) || oneOfFlags(/^-{1,2}(no-color|no-colors|color=false|color=never)$/);
 
     if (isForceDisabled) {
         return SPACE_MONO;
