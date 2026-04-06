@@ -283,10 +283,10 @@ export function redact<V, R>(input: V, rules: Rules, options?: RedactOptions): R
 
     for (const modifier of rules) {
         if (
-            options?.exclude
-            && ((typeof modifier === "string" && options.exclude.includes(modifier))
-                || (typeof modifier === "number" && options.exclude.includes(modifier))
-                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude &&
+            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             continue;
         }

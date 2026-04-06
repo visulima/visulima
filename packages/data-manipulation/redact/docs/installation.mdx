@@ -10,26 +10,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 ## Installation
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/redact
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/redact
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/redact
-    ```
-  </Tab>
-  <Tab value="bun">
-    ```bash
-    bun add @visulima/redact
-    ```
-  </Tab>
+    <Tab value="npm">```bash npm install @visulima/redact ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/redact ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/redact ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/redact ```</Tab>
 </Tabs>
 
 ## Import
@@ -46,9 +30,9 @@ import { redact, stringAnonymize } from "@visulima/redact";
 import { redact } from "@visulima/redact";
 
 const data = {
-  username: "alice",
-  password: "secret123",
-  email: "alice@example.com"
+    username: "alice",
+    password: "secret123",
+    email: "alice@example.com",
 };
 
 const safe = redact(data, ["password"]);
@@ -71,17 +55,17 @@ const anonymous = stringAnonymize(text);
 import { redact } from "@visulima/redact";
 
 const safe = redact(data, ["ssn"], {
-  replacement: "[REDACTED]"
+    replacement: "[REDACTED]",
 });
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Detailed usage examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Detailed usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>

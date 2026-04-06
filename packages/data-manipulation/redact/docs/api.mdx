@@ -10,16 +10,13 @@ description: "Complete API for @visulima/redact"
 ### redact
 
 ```typescript
-function redact<T>(
-  input: T,
-  rules?: string[],
-  options?: RedactOptions
-): T
+function redact<T>(input: T, rules?: string[], options?: RedactOptions): T;
 ```
 
 Redact sensitive properties from objects.
 
 **Parameters:**
+
 - `input` - Object to redact
 - `rules` - Array of property paths to redact
 - `options` - Redaction options
@@ -31,15 +28,13 @@ Redact sensitive properties from objects.
 ### stringAnonymize
 
 ```typescript
-function stringAnonymize(
-  text: string,
-  options?: AnonymizeOptions
-): string
+function stringAnonymize(text: string, options?: AnonymizeOptions): string;
 ```
 
 Anonymize sensitive information in text using NLP.
 
 **Parameters:**
+
 - `text` - Text to anonymize
 - `options` - Anonymization options
 
@@ -53,12 +48,13 @@ Anonymize sensitive information in text using NLP.
 
 ```typescript
 interface RedactOptions {
-  replacement?: string;
-  caseSensitive?: boolean;
+    replacement?: string;
+    caseSensitive?: boolean;
 }
 ```
 
 **Properties:**
+
 - `replacement` - Custom replacement text. Default: `"<FIELD_NAME>"`
 - `caseSensitive` - Case-sensitive matching. Default: `true`
 
@@ -68,13 +64,14 @@ interface RedactOptions {
 
 ```typescript
 interface AnonymizeOptions {
-  include?: string[];
-  exclude?: string[];
-  replacement?: string;
+    include?: string[];
+    exclude?: string[];
+    replacement?: string;
 }
 ```
 
 **Properties:**
+
 - `include` - Entity types to anonymize
 - `exclude` - Entity types to skip
 - `replacement` - Custom replacement pattern
@@ -152,25 +149,25 @@ import { redact, stringAnonymize } from "@visulima/redact";
 
 // Object redaction with options
 const safe = redact(data, ["password", "ssn"], {
-  replacement: "[REDACTED]",
-  caseSensitive: false
+    replacement: "[REDACTED]",
+    caseSensitive: false,
 });
 
 // Text anonymization with options
 const anonymous = stringAnonymize(text, {
-  include: ["Person", "Email"],
-  exclude: ["Organization"],
-  replacement: "<HIDDEN>"
+    include: ["Person", "Email"],
+    exclude: ["Organization"],
+    replacement: "<HIDDEN>",
 });
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Detailed usage examples
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to overview
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Detailed usage examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to overview
+    </Card>
 </Cards>
