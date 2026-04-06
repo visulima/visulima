@@ -20,6 +20,9 @@ export default createConfig(
             "__bench__/fixtures",
             "__bench__/scripts",
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
     },
     {
         files: ["**/*.test.ts"],
