@@ -18,7 +18,7 @@ const result = add(1, "2");
 `.trim();
 
 const frame = codeFrame(source, {
-    start: { line: 5, column: 20 }
+    start: { line: 5, column: 20 },
 });
 
 console.log(frame);
@@ -29,18 +29,22 @@ console.log(frame);
 ```typescript
 const frame = codeFrame(source, {
     start: { line: 5, column: 16 },
-    end: { line: 5, column: 19 }
+    end: { line: 5, column: 19 },
 });
 ```
 
 ## Custom Options
 
 ```typescript
-const frame = codeFrame(source, {
-    start: { line: 5, column: 16 }
-}, {
-    linesAbove: 3,
-    linesBelow: 2,
-    message: "Type mismatch"
-});
+const frame = codeFrame(
+    source,
+    {
+        start: { line: 5, column: 16 },
+    },
+    {
+        linesAbove: 3,
+        linesBelow: 2,
+        message: "Type mismatch",
+    },
+);
 ```
