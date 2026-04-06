@@ -3,13 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/filesystem/fs/src",
     "projectType": "library",
-    "tags": [
-        "type:package",
-        "fs",
-        "category:file-system"
-    ],
-    "implicitDependencies": [
-        "error-debugging/error",
-        "filesystem/path"
-    ]
+    "tags": ["type:package", "fs", "category:file-system"],
+    "implicitDependencies": ["error-debugging/error", "filesystem/path"]
 }

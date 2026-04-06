@@ -342,12 +342,12 @@ export type YamlReviver = (key: unknown, value: unknown) => unknown;
  * Options for writing YAML files.
  * Extends {@link WriteFileOptions} and includes options from the `yaml` library for stringification.
  */
-export type WriteYamlOptions = CreateNodeOptions
-    & DocumentOptions
-    & ParseOptions
-    & SchemaOptions
-    & ToStringOptions
-    & WriteFileOptions & {
+export type WriteYamlOptions = CreateNodeOptions &
+    DocumentOptions &
+    ParseOptions &
+    SchemaOptions &
+    ToStringOptions &
+    WriteFileOptions & {
         /**
          * Passed into `yaml.stringify` as the replacer argument.
          */

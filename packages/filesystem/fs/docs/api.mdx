@@ -33,28 +33,13 @@ import {
 } from "@visulima/fs";
 
 // YAML (requires 'yaml' peer dependency)
-import {
-    readYaml,
-    readYamlSync,
-    writeYaml,
-    writeYamlSync,
-} from "@visulima/fs/yaml";
+import { readYaml, readYamlSync, writeYaml, writeYamlSync } from "@visulima/fs/yaml";
 
 // Size utilities
-import {
-    getFileSize,
-    getFileSizeSync,
-    getCompressedSize,
-    getCompressedSizeSync,
-} from "@visulima/fs/size";
+import { getFileSize, getFileSizeSync, getCompressedSize, getCompressedSizeSync } from "@visulima/fs/size";
 
 // EOL utilities
-import {
-    detectEOL,
-    detectEOLSync,
-    normalizeEOL,
-    normalizeEOLSync,
-} from "@visulima/fs/eol";
+import { detectEOL, detectEOLSync, normalizeEOL, normalizeEOLSync } from "@visulima/fs/eol";
 ```
 
 ## JSON Functions
@@ -64,11 +49,13 @@ import {
 Read and parse a JSON file.
 
 **Parameters:**
+
 - `path` (string): Path to JSON file
 
 **Returns:** Promise resolving to parsed JSON data
 
 **Example:**
+
 ```typescript
 const config = await readJson("config.json");
 ```
@@ -80,11 +67,13 @@ const config = await readJson("config.json");
 Synchronously read and parse a JSON file.
 
 **Parameters:**
+
 - `path` (string): Path to JSON file
 
 **Returns:** Parsed JSON data
 
 **Example:**
+
 ```typescript
 const packageJson = readJsonSync("package.json");
 ```
@@ -96,14 +85,16 @@ const packageJson = readJsonSync("package.json");
 Write data to a JSON file with formatting.
 
 **Parameters:**
+
 - `path` (string): Output file path
 - `data` (any): Data to write
 - `options` (WriteJsonOptions, optional): Formatting options
-  - `spaces` (number): Indentation spaces (default: 2)
+    - `spaces` (number): Indentation spaces (default: 2)
 
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await writeJson("output.json", { key: "value" }, { spaces: 2 });
 ```
@@ -115,11 +106,13 @@ await writeJson("output.json", { key: "value" }, { spaces: 2 });
 Synchronously write data to a JSON file.
 
 **Parameters:**
+
 - `path` (string): Output file path
 - `data` (any): Data to write
 - `options` (WriteJsonOptions, optional): Formatting options
 
 **Example:**
+
 ```typescript
 writeJsonSync("data.json", { items: [1, 2, 3] });
 ```
@@ -135,11 +128,13 @@ Read and parse a YAML file.
 **Requires:** `yaml` peer dependency
 
 **Parameters:**
+
 - `path` (string): Path to YAML file
 
 **Returns:** Promise resolving to parsed YAML data
 
 **Example:**
+
 ```typescript
 const config = await readYaml("config.yml");
 ```
@@ -151,11 +146,13 @@ const config = await readYaml("config.yml");
 Synchronously read and parse a YAML file.
 
 **Parameters:**
+
 - `path` (string): Path to YAML file
 
 **Returns:** Parsed YAML data
 
 **Example:**
+
 ```typescript
 const data = readYamlSync("data.yaml");
 ```
@@ -167,12 +164,14 @@ const data = readYamlSync("data.yaml");
 Write data to a YAML file.
 
 **Parameters:**
+
 - `path` (string): Output file path
 - `data` (any): Data to write
 
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await writeYaml("output.yml", { name: "project" });
 ```
@@ -184,10 +183,12 @@ await writeYaml("output.yml", { name: "project" });
 Synchronously write data to a YAML file.
 
 **Parameters:**
+
 - `path` (string): Output file path
 - `data` (any): Data to write
 
 **Example:**
+
 ```typescript
 writeYamlSync("config.yaml", configuration);
 ```
@@ -201,20 +202,22 @@ writeYamlSync("config.yaml", configuration);
 Recursively walk a directory tree.
 
 **Parameters:**
+
 - `path` (string): Directory to walk
 - `options` (WalkOptions, optional):
-  - `maxDepth` (number): Maximum depth (default: Infinity)
-  - `includeFiles` (boolean): Include files (default: true)
-  - `includeDirs` (boolean): Include directories (default: true)
-  - `includeSymlinks` (boolean): Include symlinks (default: true)
-  - `followSymlinks` (boolean): Follow symlinks (default: false)
-  - `extensions` (string[]): Filter by extensions
-  - `match` (string[] | RegExp[]): Include patterns
-  - `skip` (string[] | RegExp[]): Exclude patterns
+    - `maxDepth` (number): Maximum depth (default: Infinity)
+    - `includeFiles` (boolean): Include files (default: true)
+    - `includeDirs` (boolean): Include directories (default: true)
+    - `includeSymlinks` (boolean): Include symlinks (default: true)
+    - `followSymlinks` (boolean): Follow symlinks (default: false)
+    - `extensions` (string[]): Filter by extensions
+    - `match` (string[] | RegExp[]): Include patterns
+    - `skip` (string[] | RegExp[]): Exclude patterns
 
 **Returns:** Async iterable of WalkEntry objects
 
 **WalkEntry Type:**
+
 ```typescript
 interface WalkEntry {
     path: string;
@@ -225,6 +228,7 @@ interface WalkEntry {
 ```
 
 **Example:**
+
 ```typescript
 for await (const entry of walk("src", {
     extensions: [".ts", ".tsx"],
@@ -241,11 +245,13 @@ for await (const entry of walk("src", {
 Synchronously walk a directory tree.
 
 **Parameters:**
+
 - Same as `walk()`
 
 **Returns:** Iterable of WalkEntry objects
 
 **Example:**
+
 ```typescript
 for (const entry of walkSync("src")) {
     console.log(entry.path);
@@ -261,18 +267,20 @@ for (const entry of walkSync("src")) {
 Find a file or directory by walking up parent directories.
 
 **Parameters:**
+
 - `matcher` (string | string[] | Function):
-  - String: Filename to find
-  - Array: Multiple possible filenames
-  - Function: Custom matcher `(dir: string, file: string) => boolean | Promise<boolean>`
+    - String: Filename to find
+    - Array: Multiple possible filenames
+    - Function: Custom matcher `(dir: string, file: string) => boolean | Promise<boolean>`
 - `options` (FindUpOptions, optional):
-  - `cwd` (string): Starting directory (default: process.cwd())
-  - `stopAt` (string): Stop searching at this directory
-  - `type` (string): 'file' or 'directory'
+    - `cwd` (string): Starting directory (default: process.cwd())
+    - `stopAt` (string): Stop searching at this directory
+    - `type` (string): 'file' or 'directory'
 
 **Returns:** Promise resolving to found path or undefined
 
 **Example:**
+
 ```typescript
 // Find by name
 const pkg = await findUp("package.json");
@@ -293,11 +301,13 @@ const found = await findUp((dir, file) => {
 Synchronously find a file or directory.
 
 **Parameters:**
+
 - Same as `findUp()`
 
 **Returns:** Found path or undefined
 
 **Example:**
+
 ```typescript
 const gitRoot = findUpSync(".git", { type: "directory" });
 ```
@@ -311,11 +321,13 @@ const gitRoot = findUpSync(".git", { type: "directory" });
 Ensure directory exists, create if necessary.
 
 **Parameters:**
+
 - `path` (string): Directory path
 
 **Returns:** Promise resolving to directory path
 
 **Example:**
+
 ```typescript
 await ensureDir("src/components/ui");
 ```
@@ -327,11 +339,13 @@ await ensureDir("src/components/ui");
 Synchronously ensure directory exists.
 
 **Parameters:**
+
 - `path` (string): Directory path
 
 **Returns:** Directory path
 
 **Example:**
+
 ```typescript
 ensureDirSync("dist/assets");
 ```
@@ -343,11 +357,13 @@ ensureDirSync("dist/assets");
 Ensure file exists, create if necessary.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await ensureFile("logs/app.log");
 ```
@@ -359,9 +375,11 @@ await ensureFile("logs/app.log");
 Synchronously ensure file exists.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Example:**
+
 ```typescript
 ensureFileSync("cache/data.txt");
 ```
@@ -373,12 +391,14 @@ ensureFileSync("cache/data.txt");
 Ensure hard link exists.
 
 **Parameters:**
+
 - `srcPath` (string): Source file path
 - `destPath` (string): Destination link path
 
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await ensureLink("source.txt", "link.txt");
 ```
@@ -390,10 +410,12 @@ await ensureLink("source.txt", "link.txt");
 Synchronously ensure hard link exists.
 
 **Parameters:**
+
 - `srcPath` (string): Source file path
 - `destPath` (string): Destination link path
 
 **Example:**
+
 ```typescript
 ensureLinkSync("original.dat", "link.dat");
 ```
@@ -405,6 +427,7 @@ ensureLinkSync("original.dat", "link.dat");
 Ensure symbolic link exists.
 
 **Parameters:**
+
 - `target` (string): Target path
 - `path` (string): Symlink path
 - `type` (string, optional): 'file' or 'dir'
@@ -412,6 +435,7 @@ Ensure symbolic link exists.
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await ensureSymlink("target/file.txt", "link.txt", "file");
 await ensureSymlink("target/directory", "link-dir", "dir");
@@ -424,9 +448,11 @@ await ensureSymlink("target/directory", "link-dir", "dir");
 Synchronously ensure symbolic link exists.
 
 **Parameters:**
+
 - Same as `ensureSymlink()`
 
 **Example:**
+
 ```typescript
 ensureSymlinkSync("source.txt", "link.txt", "file");
 ```
@@ -440,11 +466,13 @@ ensureSymlinkSync("source.txt", "link.txt", "file");
 Check if directory is empty.
 
 **Parameters:**
+
 - `path` (string): Directory path
 
 **Returns:** Promise resolving to true if empty or doesn't exist
 
 **Example:**
+
 ```typescript
 const isEmpty = await emptyDir("temp");
 ```
@@ -456,11 +484,13 @@ const isEmpty = await emptyDir("temp");
 Synchronously check if directory is empty.
 
 **Parameters:**
+
 - `path` (string): Directory path
 
 **Returns:** True if empty or doesn't exist
 
 **Example:**
+
 ```typescript
 if (emptyDirSync("cache")) {
     console.log("Cache is empty");
@@ -476,11 +506,13 @@ if (emptyDirSync("cache")) {
 Get file size in bytes.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Returns:** Promise resolving to size in bytes
 
 **Example:**
+
 ```typescript
 const bytes = await getFileSize("large-file.json");
 console.log(`${bytes} bytes`);
@@ -493,11 +525,13 @@ console.log(`${bytes} bytes`);
 Synchronously get file size.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Returns:** Size in bytes
 
 **Example:**
+
 ```typescript
 const size = getFileSizeSync("image.png");
 ```
@@ -509,12 +543,14 @@ const size = getFileSizeSync("image.png");
 Get compressed file size.
 
 **Parameters:**
+
 - `path` (string): File path
 - `compression` (string): Compression type ('gzip' or 'brotli')
 
 **Returns:** Promise resolving to compressed size in bytes
 
 **Example:**
+
 ```typescript
 const gzipSize = await getCompressedSize("bundle.js", "gzip");
 const brotliSize = await getCompressedSize("bundle.js", "brotli");
@@ -527,11 +563,13 @@ const brotliSize = await getCompressedSize("bundle.js", "brotli");
 Synchronously get compressed file size.
 
 **Parameters:**
+
 - Same as `getCompressedSize()`
 
 **Returns:** Compressed size in bytes
 
 **Example:**
+
 ```typescript
 const size = getCompressedSizeSync("file.txt", "gzip");
 ```
@@ -545,11 +583,13 @@ const size = getCompressedSizeSync("file.txt", "gzip");
 Detect line ending style in a file.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Returns:** Promise resolving to EOL character(s): '\n', '\r\n', or '\r'
 
 **Example:**
+
 ```typescript
 const eol = await detectEOL("source.txt");
 if (eol === "\r\n") {
@@ -564,11 +604,13 @@ if (eol === "\r\n") {
 Synchronously detect line ending style.
 
 **Parameters:**
+
 - `path` (string): File path
 
 **Returns:** EOL character(s)
 
 **Example:**
+
 ```typescript
 const lineEnding = detectEOLSync("file.txt");
 ```
@@ -580,12 +622,14 @@ const lineEnding = detectEOLSync("file.txt");
 Normalize line endings in a file.
 
 **Parameters:**
+
 - `path` (string): File path
 - `eol` (string): Target EOL ('\n' or '\r\n')
 
 **Returns:** Promise that resolves when complete
 
 **Example:**
+
 ```typescript
 await normalizeEOL("source.txt", "\n"); // Convert to Unix
 await normalizeEOL("source.txt", "\r\n"); // Convert to Windows
@@ -598,10 +642,12 @@ await normalizeEOL("source.txt", "\r\n"); // Convert to Windows
 Synchronously normalize line endings.
 
 **Parameters:**
+
 - `path` (string): File path
 - `eol` (string): Target EOL
 
 **Example:**
+
 ```typescript
 normalizeEOLSync("file.txt", "\n");
 ```
@@ -639,10 +685,7 @@ interface FindUpOptions {
 }
 
 // Find up matcher
-type FindUpMatcher = (
-    directory: string,
-    file: string
-) => boolean | Promise<boolean>;
+type FindUpMatcher = (directory: string, file: string) => boolean | Promise<boolean>;
 
 // Write JSON options
 interface WriteJsonOptions {

@@ -21,28 +21,33 @@ Node.js's built-in `fs` module is powerful but low-level. **@visulima/fs** provi
 ## Key Features
 
 **Directory Walking**
+
 - **Recursive traversal** - Walk directory trees with filtering
 - **Configurable depth** - Control how deep to traverse
 - **Pattern matching** - Include/exclude files by glob patterns
 - **Symlink handling** - Follow or ignore symbolic links
 
 **File Finding**
+
 - **Find upward** - Search parent directories for files
 - **Stop conditions** - Flexible search control
 - **Multiple matchers** - Search by name, extension, or pattern
 
 **Safe File Operations**
+
 - **Ensure files** - Create files with parent directories
 - **Ensure directories** - Safely create directory trees
 - **Ensure links** - Create symbolic and hard links safely
 - **Atomic writes** - Write files safely without corruption risk
 
 **Format Support**
+
 - **JSON handling** - Read and write JSON with formatting
 - **YAML support** - Parse and write YAML files (optional peer dependency)
 - **Automatic formatting** - Preserve indentation and style
 
 **Utilities**
+
 - **Empty directory check** - Determine if directory is empty
 - **File size calculation** - Get size with compression support
 - **EOL detection** - Detect line ending styles
@@ -160,15 +165,15 @@ for await (const entry of walk("src", {
 
 ### vs. Node.js `fs`
 
-| Feature                    | @visulima/fs | Node.js fs |
-| -------------------------- | ------------ | ---------- |
-| Ensure directories         | ✅           | ❌         |
-| Safe atomic writes         | ✅           | ❌         |
-| JSON read/write            | ✅           | ❌         |
-| YAML support               | ✅           | ❌         |
-| Directory walking          | ✅           | ❌         |
-| Find up directories        | ✅           | ❌         |
-| Empty directory check      | ✅           | ❌         |
+| Feature               | @visulima/fs | Node.js fs |
+| --------------------- | ------------ | ---------- |
+| Ensure directories    | ✅           | ❌         |
+| Safe atomic writes    | ✅           | ❌         |
+| JSON read/write       | ✅           | ❌         |
+| YAML support          | ✅           | ❌         |
+| Directory walking     | ✅           | ❌         |
+| Find up directories   | ✅           | ❌         |
+| Empty directory check | ✅           | ❌         |
 
 ### vs. fs-extra
 
@@ -202,10 +207,12 @@ for await (const entry of walk("src", {
 ## Browser and Server Support
 
 ### Node.js
+
 - ✅ Node.js 22.13 - 25.x
 - ✅ ESM and CommonJS support
 
 ### Operating Systems
+
 - ✅ Windows
 - ✅ macOS
 - ✅ Linux
