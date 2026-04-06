@@ -1216,7 +1216,9 @@ class MediaTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     // eslint-disable-next-line class-methods-use-this
     private parseBooleanParameter(value: string | null): boolean | undefined {
-        if (value === null) return undefined;
+        if (value === null) {
+            return undefined;
+        }
 
         return value === "true" || value === "1";
     }

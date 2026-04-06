@@ -25,7 +25,9 @@ const getTransformationParameters = (
     transform?: TransformType,
     format: string[] = ["jpeg", "png", "webp", "avif", "tiff", "gif", "mp4", "webm", "mkv", "ogg", "mp3", "wav", "aac", "flac"],
 ): OpenAPIV3.ParameterObject[] => {
-    if (!transform) return [];
+    if (!transform) {
+        return [];
+    }
 
     // Common parameters supported by all media types
     const commonParameters: OpenAPIV3.ParameterObject[] = createParameterGroup(
