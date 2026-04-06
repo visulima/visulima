@@ -7,7 +7,7 @@ import { sanitizeCspNonce } from "./utils/sanitize";
 const escapeHtml = (value: string): string =>
     value.replaceAll(/[&<>"']/g, (char) => {
         const entities: Record<string, string> = {
-            "\"": "&quot;",
+            '"': "&quot;",
             "&": "&amp;",
             "'": "&#39;",
             "<": "&lt;",
