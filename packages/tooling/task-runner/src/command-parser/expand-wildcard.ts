@@ -37,9 +37,7 @@ const readDenoTasks = (cwd: string): Record<string, string> => {
                 // Strip single-line comments for .jsonc.
                 // Only strips // comments that are NOT inside quoted strings.
                 if (filename.endsWith("c")) {
-                    raw = raw.replaceAll(/"(?:[^"\\]|\\.)*"|\/\/[^\n]*/g, (match) =>
-                        match.startsWith('"') ? match : "",
-                    );
+                    raw = raw.replaceAll(/"(?:[^"\\]|\\.)*"|\/\/[^\n]*/g, (match) => (match.startsWith('"') ? match : ""));
                 }
 
                 const config = JSON.parse(raw) as { tasks?: Record<string, string> };

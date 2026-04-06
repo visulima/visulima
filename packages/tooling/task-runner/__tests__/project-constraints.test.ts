@@ -126,9 +126,7 @@ describe(enforceProjectConstraints, () => {
                 type: "library",
             };
             // frontend project depends on untagged project
-            graph.dependencies.app = [
-                { source: "app", target: "lib-notags", type: "static" },
-            ];
+            graph.dependencies.app = [{ source: "app", target: "lib-notags", type: "static" }];
 
             const constraints: ConstraintsConfig = {
                 tagRelationships: {
@@ -175,10 +173,7 @@ describe(enforceProjectConstraints, () => {
             const graph = makeGraph();
 
             // Make lib-ui depend on app (which is an application)
-            graph.dependencies["lib-ui"] = [
-                ...graph.dependencies["lib-ui"]!,
-                { source: "lib-ui", target: "app", type: "static" },
-            ];
+            graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
 
             const constraints: ConstraintsConfig = {
                 typeBoundaries: {
@@ -197,10 +192,7 @@ describe(enforceProjectConstraints, () => {
         it("should enforce application boundary by default", () => {
             const graph = makeGraph();
 
-            graph.dependencies["lib-ui"] = [
-                ...graph.dependencies["lib-ui"]!,
-                { source: "lib-ui", target: "app", type: "static" },
-            ];
+            graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
 
             // typeBoundaries present but enforceApplicationBoundary not explicitly set
             const violations = enforceProjectConstraints(graph, {
@@ -214,10 +206,7 @@ describe(enforceProjectConstraints, () => {
         it("should skip application boundary when disabled", () => {
             const graph = makeGraph();
 
-            graph.dependencies["lib-ui"] = [
-                ...graph.dependencies["lib-ui"]!,
-                { source: "lib-ui", target: "app", type: "static" },
-            ];
+            graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
 
             const violations = enforceProjectConstraints(graph, {
                 typeBoundaries: {
@@ -279,10 +268,7 @@ describe(enforceProjectConstraints, () => {
             const graph = makeGraph();
 
             // lib-ui depends on app (application boundary violation)
-            graph.dependencies["lib-ui"] = [
-                ...graph.dependencies["lib-ui"]!,
-                { source: "lib-ui", target: "app", type: "static" },
-            ];
+            graph.dependencies["lib-ui"] = [...graph.dependencies["lib-ui"]!, { source: "lib-ui", target: "app", type: "static" }];
 
             // Remove "shared" from lib-api (tag violation)
             graph.nodes["lib-api"] = {

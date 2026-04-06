@@ -32,12 +32,16 @@ description: High-performance monorepo task runner with intelligent caching
 ```typescript
 import { defaultTaskRunner } from "@visulima/task-runner";
 
-const results = await defaultTaskRunner(tasks, {
-    smartLockfileHashing: true,
-    frameworkInference: true,
-    globalInputs: ["pnpm-lock.yaml", "tsconfig.base.json"],
-    globalEnv: ["NODE_ENV"],
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        smartLockfileHashing: true,
+        frameworkInference: true,
+        globalInputs: ["pnpm-lock.yaml", "tsconfig.base.json"],
+        globalEnv: ["NODE_ENV"],
+    },
+    context,
+);
 ```
 
 ## How It Works
@@ -50,15 +54,15 @@ const results = await defaultTaskRunner(tasks, {
 
 ## Comparison
 
-| Feature | Task Runner | Nx | Turborepo | Vite Task |
-|---------|------------|-----|-----------|-----------|
-| Input detection | Both modes | Explicit | Explicit | Automatic |
-| Output caching | Yes | Yes | Yes | Terminal only |
-| Remote cache | Yes | Yes | Yes | No |
-| Smart lockfile hash | Yes | No | Yes | No |
-| Framework inference | Yes | No | Yes | No |
-| Auto-fingerprinting | Yes | No | No | Yes |
-| Cache diagnostics | Yes | Partial | No | Yes |
-| LRU cache eviction | Yes | No | No | No |
-| Graph visualization | Yes | Yes | No | No |
-| Run summaries | Yes | No | Yes | No |
+| Feature             | Task Runner | Nx       | Turborepo | Vite Task     |
+| ------------------- | ----------- | -------- | --------- | ------------- |
+| Input detection     | Both modes  | Explicit | Explicit  | Automatic     |
+| Output caching      | Yes         | Yes      | Yes       | Terminal only |
+| Remote cache        | Yes         | Yes      | Yes       | No            |
+| Smart lockfile hash | Yes         | No       | Yes       | No            |
+| Framework inference | Yes         | No       | Yes       | No            |
+| Auto-fingerprinting | Yes         | No       | No        | Yes           |
+| Cache diagnostics   | Yes         | Partial  | No        | Yes           |
+| LRU cache eviction  | Yes         | No       | No        | No            |
+| Graph visualization | Yes         | Yes      | No        | No            |
+| Run summaries       | Yes         | No       | Yes       | No            |

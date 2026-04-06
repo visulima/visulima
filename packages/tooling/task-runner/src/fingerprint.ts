@@ -300,7 +300,7 @@ export class FingerprintManager {
             return cached;
         }
 
-        const hash = await hashFile(filePath) ?? undefined;
+        const hash = (await hashFile(filePath)) ?? undefined;
 
         this.#fileHashCache.set(filePath, hash);
 

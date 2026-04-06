@@ -67,30 +67,34 @@ pnpm add @visulima/task-runner
 ```typescript
 import { defaultTaskRunner } from "@visulima/task-runner";
 
-const results = await defaultTaskRunner(tasks, {
-    // Nx-style: explicit inputs
-    namedInputs: {
-        production: ["{projectRoot}/src/**/*"],
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        // Nx-style: explicit inputs
+        namedInputs: {
+            production: ["{projectRoot}/src/**/*"],
+        },
+        globalInputs: ["pnpm-lock.yaml", "tsconfig.base.json"],
+        globalEnv: ["NODE_ENV"],
+
+        // Or: auto-fingerprinting (Vite Task-style)
+        // autoFingerprint: true,
+
+        // Smart lockfile hashing (only bust cache for affected packages)
+        smartLockfileHashing: true,
+
+        // Auto-detect framework env vars (NEXT_PUBLIC_*, VITE_*, etc.)
+        frameworkInference: true,
+
+        // Remote cache (Turborepo-compatible)
+        remoteCache: {
+            url: "https://cache.example.com",
+            token: process.env.CACHE_TOKEN,
+            teamId: "my-team",
+        },
     },
-    globalInputs: ["pnpm-lock.yaml", "tsconfig.base.json"],
-    globalEnv: ["NODE_ENV"],
-
-    // Or: auto-fingerprinting (Vite Task-style)
-    // autoFingerprint: true,
-
-    // Smart lockfile hashing (only bust cache for affected packages)
-    smartLockfileHashing: true,
-
-    // Auto-detect framework env vars (NEXT_PUBLIC_*, VITE_*, etc.)
-    frameworkInference: true,
-
-    // Remote cache (Turborepo-compatible)
-    remoteCache: {
-        url: "https://cache.example.com",
-        token: process.env.CACHE_TOKEN,
-        teamId: "my-team",
-    },
-}, context);
+    context,
+);
 ```
 
 ## Concurrent Process Runner
@@ -112,9 +116,10 @@ const result = await runConcurrently(
     ],
     {
         maxProcesses: 4,
-        killOthers: ["failure"],     // Kill all if one fails
-        successCondition: "all",     // All must exit 0
-        onEvent: (event) => {        // Real-time streaming
+        killOthers: ["failure"], // Kill all if one fails
+        successCondition: "all", // All must exit 0
+        onEvent: (event) => {
+            // Real-time streaming
             if (event.kind === "stdout") {
                 console.log(`[${event.index}] ${event.text}`);
             }
@@ -131,11 +136,11 @@ Use `parseCommands` to expand shortcuts and wildcards before passing to `runConc
 import { parseCommands, runConcurrently } from "@visulima/task-runner";
 
 const commands = parseCommands([
-    "npm:build",           // -> npm run build
-    "pnpm:test",           // -> pnpm run test
-    '"quoted command"',    // -> quoted command (quotes stripped)
-    "npm run watch-*",     // -> expands to all matching scripts in package.json
-    "deno task dev-*",     // -> expands from deno.json/deno.jsonc tasks
+    "npm:build", // -> npm run build
+    "pnpm:test", // -> pnpm run test
+    '"quoted command"', // -> quoted command (quotes stripped)
+    "npm run watch-*", // -> expands to all matching scripts in package.json
+    "deno task dev-*", // -> expands from deno.json/deno.jsonc tasks
 ]);
 
 await runConcurrently(commands);
@@ -184,15 +189,16 @@ For long-running processes like dev servers:
 
 ```typescript
 await runConcurrently([
-    { command: "vite dev", stdin: "inherit" },  // Child reads terminal directly
+    { command: "vite dev", stdin: "inherit" }, // Child reads terminal directly
     { command: "node worker.js", stdin: "null" }, // No stdin (default)
-    { command: "node repl.js", stdin: "pipe" },   // Programmatic stdin access
+    { command: "node repl.js", stdin: "pipe" }, // Programmatic stdin access
 ]);
 ```
 
 ### Native vs Fallback
 
 The runner automatically uses the Rust NAPI addon when available for:
+
 - Process tree killing via setsid/killpg (Unix) and Job Objects (Windows)
 - Async I/O multiplexing via tokio
 - Signal propagation (SIGINT/SIGTERM/SIGHUP)
@@ -206,19 +212,19 @@ Falls back to a pure JavaScript implementation when the native addon is not comp
 Declare which files, env vars, and runtime values should be included in the cache hash:
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    namedInputs: {
-        production: [
-            "{projectRoot}/src/**/*",
-            { env: "NODE_ENV" },
-            { runtime: "node --version" },
-        ],
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        namedInputs: {
+            production: ["{projectRoot}/src/**/*", { env: "NODE_ENV" }, { runtime: "node --version" }],
+        },
+        targetDefaults: {
+            build: { inputs: ["production"] },
+            test: { inputs: ["production", "{projectRoot}/**/*.test.ts"] },
+        },
     },
-    targetDefaults: {
-        build: { inputs: ["production"] },
-        test: { inputs: ["production", "{projectRoot}/**/*.test.ts"] },
-    },
-}, context);
+    context,
+);
 ```
 
 ### Auto-fingerprint (Vite Task-style)
@@ -226,11 +232,15 @@ const results = await defaultTaskRunner(tasks, {
 Automatically tracks which files a task accesses during execution:
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    autoFingerprint: true,
-    fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
-    cacheDiagnostics: true, // Shows why cache misses occur
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        autoFingerprint: true,
+        fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
+        cacheDiagnostics: true, // Shows why cache misses occur
+    },
+    context,
+);
 ```
 
 ## API
@@ -243,35 +253,35 @@ The main entry point. Runs tasks with caching, scheduling, and lifecycle support
 
 Run commands concurrently with process management and output streaming.
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `maxProcesses` | `number` | Max simultaneous processes (0 = unlimited) |
-| `killOthers` | `("failure" \| "success")[]` | Kill others when a process exits |
-| `killSignal` | `string` | Signal for killing (default: "SIGTERM") |
-| `killTimeout` | `number` | Ms before SIGKILL after kill signal (default: 5000) |
-| `successCondition` | `string` | "all", "first", "last", "command-\<name\>" |
-| `shellPath` | `string` | Custom shell path (auto-detected from npm config) |
-| `restart` | `{ tries, delay }` | Restart failed commands with backoff |
-| `teardown` | `string[]` | Cleanup commands to run after completion |
-| `timings` | `boolean` | Print timing summary table |
-| `onEvent` | `(event) => void` | Real-time stdout/stderr/close/error events |
+| Option             | Type                         | Description                                         |
+| ------------------ | ---------------------------- | --------------------------------------------------- |
+| `maxProcesses`     | `number`                     | Max simultaneous processes (0 = unlimited)          |
+| `killOthers`       | `("failure" \| "success")[]` | Kill others when a process exits                    |
+| `killSignal`       | `string`                     | Signal for killing (default: "SIGTERM")             |
+| `killTimeout`      | `number`                     | Ms before SIGKILL after kill signal (default: 5000) |
+| `successCondition` | `string`                     | "all", "first", "last", "command-\<name\>"          |
+| `shellPath`        | `string`                     | Custom shell path (auto-detected from npm config)   |
+| `restart`          | `{ tries, delay }`           | Restart failed commands with backoff                |
+| `teardown`         | `string[]`                   | Cleanup commands to run after completion            |
+| `timings`          | `boolean`                    | Print timing summary table                          |
+| `onEvent`          | `(event) => void`            | Real-time stdout/stderr/close/error events          |
 
 ### Key Options
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `parallel` | `number \| boolean` | Max parallel tasks (default: 3) |
-| `smartLockfileHashing` | `boolean` | Hash only relevant lockfile entries per package |
-| `frameworkInference` | `boolean` | Auto-detect framework env var prefixes |
-| `autoFingerprint` | `boolean` | Enable Vite Task-style auto-fingerprinting |
-| `globalInputs` | `string[]` | Files that invalidate all caches when changed |
-| `globalEnv` | `string[]` | Env vars that invalidate all caches |
-| `remoteCache` | `object` | Remote cache server configuration |
-| `dryRun` | `boolean` | Compute hashes without executing |
-| `summarize` | `boolean` | Generate JSON run summary |
-| `cacheDiagnostics` | `boolean` | Log cache miss reasons |
-| `maxCacheSize` | `string` | Max cache size (e.g., "1GB") |
-| `maxCacheAge` | `number` | Max cache entry age in ms |
+| Option                 | Type                | Description                                     |
+| ---------------------- | ------------------- | ----------------------------------------------- |
+| `parallel`             | `number \| boolean` | Max parallel tasks (default: 3)                 |
+| `smartLockfileHashing` | `boolean`           | Hash only relevant lockfile entries per package |
+| `frameworkInference`   | `boolean`           | Auto-detect framework env var prefixes          |
+| `autoFingerprint`      | `boolean`           | Enable Vite Task-style auto-fingerprinting      |
+| `globalInputs`         | `string[]`          | Files that invalidate all caches when changed   |
+| `globalEnv`            | `string[]`          | Env vars that invalidate all caches             |
+| `remoteCache`          | `object`            | Remote cache server configuration               |
+| `dryRun`               | `boolean`           | Compute hashes without executing                |
+| `summarize`            | `boolean`           | Generate JSON run summary                       |
+| `cacheDiagnostics`     | `boolean`           | Log cache miss reasons                          |
+| `maxCacheSize`         | `string`            | Max cache size (e.g., "1GB")                    |
+| `maxCacheAge`          | `number`            | Max cache entry age in ms                       |
 
 ### Exports
 

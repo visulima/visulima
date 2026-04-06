@@ -10,9 +10,13 @@ Run summaries generate a detailed JSON report after execution, capturing task in
 ## Enable
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    summarize: true,
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        summarize: true,
+    },
+    context,
+);
 ```
 
 ## Output
@@ -21,46 +25,46 @@ Summary files are written to `.task-runner/runs/{run-id}.json`:
 
 ```json
 {
-  "id": "2026-03-21T18-00-00-000Z_abc123",
-  "startTime": "2026-03-21T18:00:00.000Z",
-  "endTime": "2026-03-21T18:00:05.000Z",
-  "duration": 5000,
-  "tasks": [
-    {
-      "taskId": "app:build",
-      "target": { "project": "app", "target": "build" },
-      "hash": "a1b2c3d4...",
-      "hashDetails": {
-        "command": "...",
-        "nodes": { "src/index.ts": "..." },
-        "runtime": { "env:NODE_ENV": "..." }
-      },
-      "cacheStatus": "MISS",
-      "exitCode": 0,
-      "duration": 3000,
-      "dependencies": ["lib:build"],
-      "cacheable": true
-    }
-  ],
-  "taskGraph": {
-    "dependencies": {
-      "app:build": ["lib:build"],
-      "lib:build": []
+    "id": "2026-03-21T18-00-00-000Z_abc123",
+    "startTime": "2026-03-21T18:00:00.000Z",
+    "endTime": "2026-03-21T18:00:05.000Z",
+    "duration": 5000,
+    "tasks": [
+        {
+            "taskId": "app:build",
+            "target": { "project": "app", "target": "build" },
+            "hash": "a1b2c3d4...",
+            "hashDetails": {
+                "command": "...",
+                "nodes": { "src/index.ts": "..." },
+                "runtime": { "env:NODE_ENV": "..." }
+            },
+            "cacheStatus": "MISS",
+            "exitCode": 0,
+            "duration": 3000,
+            "dependencies": ["lib:build"],
+            "cacheable": true
+        }
+    ],
+    "taskGraph": {
+        "dependencies": {
+            "app:build": ["lib:build"],
+            "lib:build": []
+        },
+        "roots": ["lib:build"]
     },
-    "roots": ["lib:build"]
-  },
-  "stats": {
-    "total": 5,
-    "succeeded": 3,
-    "failed": 0,
-    "cached": 2,
-    "skipped": 0
-  },
-  "environment": {
-    "nodeVersion": "v22.0.0",
-    "platform": "linux",
-    "arch": "x64"
-  }
+    "stats": {
+        "total": 5,
+        "succeeded": 3,
+        "failed": 0,
+        "cached": 2,
+        "skipped": 0
+    },
+    "environment": {
+        "nodeVersion": "v22.0.0",
+        "platform": "linux",
+        "arch": "x64"
+    }
 }
 ```
 

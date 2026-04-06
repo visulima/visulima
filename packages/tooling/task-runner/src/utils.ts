@@ -43,8 +43,8 @@ const sortObjectKeys = (object: Record<string, unknown>): Record<string, unknown
     for (const key of Object.keys(object).toSorted()) {
         const value = object[key];
 
-        sorted[key]
-            = value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
+        sorted[key] =
+            value !== undefined && value !== null && typeof value === "object" && !Array.isArray(value)
                 ? sortObjectKeys(value as Record<string, unknown>)
                 : value;
     }
@@ -132,7 +132,7 @@ const collectFiles = async (directory: string, ignoredDirectories: Set<string>, 
  */
 
 // eslint-disable-next-line no-confusing-arrow
-const resolveTaskCwd = (workspaceRoot: string, task: Task): string => task.projectRoot ? join(workspaceRoot, task.projectRoot) : workspaceRoot;
+const resolveTaskCwd = (workspaceRoot: string, task: Task): string => (task.projectRoot ? join(workspaceRoot, task.projectRoot) : workspaceRoot);
 
 /**
  * Creates a failure TaskResult from an error.

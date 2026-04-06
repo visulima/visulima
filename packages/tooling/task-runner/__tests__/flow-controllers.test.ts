@@ -10,12 +10,7 @@ import { runConcurrentFallback } from "../src/concurrent-fallback";
 import type { ConcurrentCloseEvent } from "../src/types";
 
 describe("formatTimingTable", () => {
-    const makeEvent = (
-        index: number,
-        name: string,
-        exitCode: number,
-        durationMs: number,
-    ): ConcurrentCloseEvent => ({
+    const makeEvent = (index: number, name: string, exitCode: number, durationMs: number): ConcurrentCloseEvent => ({
         index,
         command: `echo ${name}`,
         name,
@@ -33,11 +28,7 @@ describe("formatTimingTable", () => {
     });
 
     it("should sort by duration descending", () => {
-        const events = [
-            makeEvent(0, "fast", 0, 100),
-            makeEvent(1, "slow", 0, 5000),
-            makeEvent(2, "medium", 0, 1000),
-        ];
+        const events = [makeEvent(0, "fast", 0, 100), makeEvent(1, "slow", 0, 5000), makeEvent(2, "medium", 0, 1000)];
 
         const table = formatTimingTable(events);
         const lines = table.split("\n");
@@ -94,10 +85,7 @@ describe("createInputHandler", () => {
 
         stdin0.on("data", (data: Buffer) => chunks.push(data.toString()));
 
-        const cleanup = createInputHandler(
-            [{ index: 0, name: "server", stdin: stdin0 }],
-            { inputStream, defaultTarget: 0 },
-        );
+        const cleanup = createInputHandler([{ index: 0, name: "server", stdin: stdin0 }], { inputStream, defaultTarget: 0 });
 
         inputStream.write("hello\n");
 

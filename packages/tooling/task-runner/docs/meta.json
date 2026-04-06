@@ -4,13 +4,7 @@
         "installation",
         {
             "title": "Concepts",
-            "pages": [
-                "concepts/concurrent-runner",
-                "concepts/task-graph",
-                "concepts/caching",
-                "concepts/auto-fingerprinting",
-                "concepts/remote-caching"
-            ]
+            "pages": ["concepts/concurrent-runner", "concepts/task-graph", "concepts/caching", "concepts/auto-fingerprinting", "concepts/remote-caching"]
         },
         {
             "title": "Guides",

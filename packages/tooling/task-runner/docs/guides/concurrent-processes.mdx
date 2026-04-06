@@ -12,11 +12,7 @@ This guide covers common patterns for running multiple processes concurrently.
 ```typescript
 import { runConcurrently } from "@visulima/task-runner";
 
-const result = await runConcurrently([
-    "npm run build",
-    "npm run test",
-    "npm run lint",
-]);
+const result = await runConcurrently(["npm run build", "npm run test", "npm run lint"]);
 
 if (!result.success) {
     console.error("Some commands failed:");
@@ -36,12 +32,12 @@ Use `parseCommands` to expand package manager shorthand before passing to `runCo
 import { parseCommands, runConcurrently } from "@visulima/task-runner";
 
 const commands = parseCommands([
-    "npm:build",     // npm run build
-    "pnpm:test",     // pnpm run test
-    "yarn:lint",     // yarn run lint
-    "bun:dev",       // bun run dev
-    "node:script",   // node --run script
-    "deno:check",    // deno task check
+    "npm:build", // npm run build
+    "pnpm:test", // pnpm run test
+    "yarn:lint", // yarn run lint
+    "bun:dev", // bun run dev
+    "node:script", // node --run script
+    "deno:check", // deno task check
 ]);
 
 await runConcurrently(commands);
@@ -71,27 +67,24 @@ const denoCommands = parseCommands(["deno:dev-*"]);
 Stream stdout/stderr as lines arrive:
 
 ```typescript
-await runConcurrently(
-    ["npm run build", "npm run test"],
-    {
-        onEvent: (event) => {
-            switch (event.kind) {
-                case "stdout":
-                    console.log(`[${event.index}] ${event.text}`);
-                    break;
-                case "stderr":
-                    console.error(`[${event.index}] ${event.text}`);
-                    break;
-                case "close":
-                    console.log(`[${event.index}] exited with ${event.exitCode}`);
-                    break;
-                case "error":
-                    console.error(`[${event.index}] ${event.message}`);
-                    break;
-            }
-        },
+await runConcurrently(["npm run build", "npm run test"], {
+    onEvent: (event) => {
+        switch (event.kind) {
+            case "stdout":
+                console.log(`[${event.index}] ${event.text}`);
+                break;
+            case "stderr":
+                console.error(`[${event.index}] ${event.text}`);
+                break;
+            case "close":
+                console.log(`[${event.index}] exited with ${event.exitCode}`);
+                break;
+            case "error":
+                console.error(`[${event.index}] ${event.message}`);
+                break;
+        }
     },
-);
+});
 ```
 
 ## Controlling Parallelism
@@ -100,10 +93,7 @@ Limit the number of simultaneous processes:
 
 ```typescript
 // Run at most 2 processes at a time
-await runConcurrently(
-    ["build-a", "build-b", "build-c", "build-d"],
-    { maxProcesses: 2 },
-);
+await runConcurrently(["build-a", "build-b", "build-c", "build-d"], { maxProcesses: 2 });
 ```
 
 ## Kill Others on Failure
@@ -111,13 +101,10 @@ await runConcurrently(
 Stop all processes when one fails:
 
 ```typescript
-await runConcurrently(
-    ["npm run typecheck", "npm run lint", "npm run test"],
-    {
-        killOthers: ["failure"],  // Kill all if any exits non-zero
-        killTimeout: 3000,        // Wait 3s, then SIGKILL
-    },
-);
+await runConcurrently(["npm run typecheck", "npm run lint", "npm run test"], {
+    killOthers: ["failure"], // Kill all if any exits non-zero
+    killTimeout: 3000, // Wait 3s, then SIGKILL
+});
 ```
 
 ## Running Dev Servers
@@ -141,7 +128,7 @@ Automatically restart failed commands with configurable delay:
 ```typescript
 // Fixed delay
 await runConcurrently(["flaky-build"], {
-    restart: { tries: 3, delay: 1000 },  // 3 retries, 1s between each
+    restart: { tries: 3, delay: 1000 }, // 3 retries, 1s between each
 });
 
 // Exponential backoff (1s, 2s, 4s, 8s, ...)
@@ -155,15 +142,9 @@ await runConcurrently(["flaky-build"], {
 Run teardown commands sequentially after all processes finish:
 
 ```typescript
-await runConcurrently(
-    ["npm run dev", "docker compose up"],
-    {
-        teardown: [
-            "docker compose down",
-            "rm -rf .cache",
-        ],
-    },
-);
+await runConcurrently(["npm run dev", "docker compose up"], {
+    teardown: ["docker compose down", "rm -rf .cache"],
+});
 ```
 
 ## Timing Summary
@@ -171,10 +152,7 @@ await runConcurrently(
 Print a timing table after all commands complete:
 
 ```typescript
-await runConcurrently(
-    ["npm run build", "npm run test", "npm run lint"],
-    { timings: true },
-);
+await runConcurrently(["npm run build", "npm run test", "npm run lint"], { timings: true });
 
 // Output:
 // ── Timing Summary ───────────────────────────────────
@@ -200,9 +178,7 @@ await runConcurrently(["echo hello"], {
 });
 
 // Direct execution (no shell)
-await runConcurrently([
-    { command: "node build.js", shell: false },
-]);
+await runConcurrently([{ command: "node build.js", shell: false }]);
 ```
 
 ## Argument Placeholders
@@ -212,10 +188,7 @@ Pass arguments to commands via placeholders:
 ```typescript
 import { parseCommands } from "@visulima/task-runner";
 
-const commands = parseCommands(
-    ["echo {1} {2}", "echo {@}", "echo {*}"],
-    { additionalArguments: ["hello", "world"] },
-);
+const commands = parseCommands(["echo {1} {2}", "echo {@}", "echo {*}"], { additionalArguments: ["hello", "world"] });
 
 // Results:
 // echo 'hello' 'world'    ← {1} and {2} replaced individually

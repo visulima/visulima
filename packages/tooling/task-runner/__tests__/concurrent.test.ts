@@ -102,20 +102,14 @@ describe("runConcurrently (public API)", () => {
     it("should pass environment variables", async () => {
         const events: ProcessEvent[] = [];
 
-        await runConcurrently(
-            [{ command: "echo $CONCURRENT_TEST_VAR", env: { CONCURRENT_TEST_VAR: "it_works" } }],
-            { onEvent: (event) => events.push(event) },
-        );
+        await runConcurrently([{ command: "echo $CONCURRENT_TEST_VAR", env: { CONCURRENT_TEST_VAR: "it_works" } }], { onEvent: (event) => events.push(event) });
 
         const stdout = events.filter((e) => e.kind === "stdout");
         expect(stdout.some((e) => e.text === "it_works")).toBe(true);
     });
 
     it("should handle mixed string and object inputs", async () => {
-        const result = await runConcurrently([
-            "echo plain",
-            { command: "echo named", name: "obj" },
-        ]);
+        const result = await runConcurrently(["echo plain", { command: "echo named", name: "obj" }]);
 
         expect(result.success).toBe(true);
         expect(result.closeEvents).toHaveLength(2);
@@ -155,10 +149,7 @@ describe("runConcurrently (public API)", () => {
     it("should execute without shell when shell is false", async () => {
         const events: ProcessEvent[] = [];
 
-        const result = await runConcurrently(
-            [{ command: "echo direct", shell: false }],
-            { onEvent: (event) => events.push(event) },
-        );
+        const result = await runConcurrently([{ command: "echo direct", shell: false }], { onEvent: (event) => events.push(event) });
 
         expect(result.success).toBe(true);
         expect(events.filter((e) => e.kind === "stdout").some((e) => e.text === "direct")).toBe(true);

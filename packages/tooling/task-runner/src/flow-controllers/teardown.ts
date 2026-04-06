@@ -44,9 +44,7 @@ export const runTeardown = async (options: TeardownOptions): Promise<number[]> =
 const runTeardownCommand = (command: string, cwd?: string): Promise<number> => {
     return new Promise((resolve) => {
         const shellProgram = process.platform === "win32" ? "cmd.exe" : "/bin/sh";
-        const shellArgs = process.platform === "win32"
-            ? ["/s", "/c", `"${command}"`]
-            : ["-c", command];
+        const shellArgs = process.platform === "win32" ? ["/s", "/c", `"${command}"`] : ["-c", command];
 
         const child = spawn(shellProgram, shellArgs, {
             cwd,

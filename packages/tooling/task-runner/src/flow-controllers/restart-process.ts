@@ -68,9 +68,7 @@ export const withRestart = async (
                 const shouldRestart = tries === -1 || cmdState.attempts <= tries;
 
                 if (shouldRestart) {
-                    const delayMs = delay === "exponential"
-                        ? Math.min(2 ** (cmdState.attempts - 1) * 1000, 30_000)
-                        : delay;
+                    const delayMs = delay === "exponential" ? Math.min(2 ** (cmdState.attempts - 1) * 1000, 30_000) : delay;
 
                     if (delayMs > 0) {
                         // eslint-disable-next-line no-await-in-loop -- intentional delay
@@ -98,6 +96,7 @@ export const withRestart = async (
     return { closeEvents: allCloseEvents, success };
 };
 
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });

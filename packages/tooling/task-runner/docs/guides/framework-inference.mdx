@@ -10,25 +10,29 @@ Framework inference automatically detects frontend frameworks in your projects a
 ## Enable
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    frameworkInference: true,
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        frameworkInference: true,
+    },
+    context,
+);
 ```
 
 ## Detected Frameworks
 
-| Framework | Package | Env Prefix |
-|-----------|---------|------------|
-| Next.js | `next` | `NEXT_PUBLIC_*` |
-| Vite | `vite` | `VITE_*` |
-| Create React App | `react-scripts` | `REACT_APP_*` |
-| Gatsby | `gatsby` | `GATSBY_*` |
-| Nuxt | `nuxt`, `nuxt3` | `NUXT_PUBLIC_*` |
-| Expo | `expo` | `EXPO_PUBLIC_*` |
-| Remix | `@remix-run/react`, `@remix-run/node` | `REMIX_PUBLIC_*` |
-| Astro | `astro` | `PUBLIC_*` |
-| SvelteKit | `@sveltejs/kit` | `PUBLIC_*` |
-| Solid Start | `@solidjs/start`, `solid-start` | `VITE_*` |
+| Framework        | Package                               | Env Prefix       |
+| ---------------- | ------------------------------------- | ---------------- |
+| Next.js          | `next`                                | `NEXT_PUBLIC_*`  |
+| Vite             | `vite`                                | `VITE_*`         |
+| Create React App | `react-scripts`                       | `REACT_APP_*`    |
+| Gatsby           | `gatsby`                              | `GATSBY_*`       |
+| Nuxt             | `nuxt`, `nuxt3`                       | `NUXT_PUBLIC_*`  |
+| Expo             | `expo`                                | `EXPO_PUBLIC_*`  |
+| Remix            | `@remix-run/react`, `@remix-run/node` | `REMIX_PUBLIC_*` |
+| Astro            | `astro`                               | `PUBLIC_*`       |
+| SvelteKit        | `@sveltejs/kit`                       | `PUBLIC_*`       |
+| Solid Start      | `@solidjs/start`, `solid-start`       | `VITE_*`         |
 
 ## How It Works
 
