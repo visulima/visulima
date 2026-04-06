@@ -283,21 +283,21 @@ import type { DurationUnitMeasures } from "@visulima/humanizer";
 
 // Standard measures
 const standard: DurationUnitMeasures = {
-    y: 31556952000,  // 365.2425 days
-    mo: 2629746000,  // 30.436875 days
-    w: 604800000,    // 7 days
-    d: 86400000,     // 24 hours
-    h: 3600000,      // 60 minutes
-    m: 60000,        // 60 seconds
-    s: 1000,         // 1000 ms
+    y: 31556952000, // 365.2425 days
+    mo: 2629746000, // 30.436875 days
+    w: 604800000, // 7 days
+    d: 86400000, // 24 hours
+    h: 3600000, // 60 minutes
+    m: 60000, // 60 seconds
+    s: 1000, // 1000 ms
     ms: 1,
 };
 
 // Simplified (30-day months, 365-day years)
 const simplified: DurationUnitMeasures = {
-    y: 365 * 86400000,   // 365 days
-    mo: 30 * 86400000,   // 30 days
-    w: 7 * 86400000,     // 7 days
+    y: 365 * 86400000, // 365 days
+    mo: 30 * 86400000, // 30 days
+    w: 7 * 86400000, // 7 days
     d: 86400000,
     h: 3600000,
     m: 60000,
@@ -307,10 +307,10 @@ const simplified: DurationUnitMeasures = {
 
 // Business time (8-hour days, 5-day weeks)
 const businessTime: DurationUnitMeasures = {
-    y: 260 * 8 * 3600000,  // 260 business days
-    mo: 22 * 8 * 3600000,  // 22 business days
-    w: 5 * 8 * 3600000,    // 5 business days
-    d: 8 * 3600000,        // 8 hours
+    y: 260 * 8 * 3600000, // 260 business days
+    mo: 22 * 8 * 3600000, // 22 business days
+    w: 5 * 8 * 3600000, // 5 business days
+    d: 8 * 3600000, // 8 hours
     h: 3600000,
     m: 60000,
     s: 1000,
@@ -375,9 +375,7 @@ export const technicalDurationConfig: DurationOptions = {
 ```typescript
 import type { DurationOptions } from "@visulima/humanizer";
 
-async function createLocalizedDurationConfig(
-    locale: string,
-): Promise<DurationOptions> {
+async function createLocalizedDurationConfig(locale: string): Promise<DurationOptions> {
     const langCode = locale.split("-")[0];
     const languageModule = await import(`@visulima/humanizer/language/${langCode}`);
 
@@ -485,9 +483,7 @@ class HumanizerService {
 
     async formatDuration(ms: number) {
         const langCode = this.userLocale.split("-")[0];
-        const { durationLanguage } = await import(
-            `@visulima/humanizer/language/${langCode}`
-        );
+        const { durationLanguage } = await import(`@visulima/humanizer/language/${langCode}`);
 
         return duration(ms, {
             language: durationLanguage,
@@ -507,7 +503,7 @@ import type { FormateByteOptions } from "@visulima/humanizer";
 const config: FormateByteOptions = {
     decimals: 2,
     units: "iec", // Type-checked
-    base: 2,      // Type-checked
+    base: 2, // Type-checked
     // @ts-expect-error - Invalid unit system
     units: "invalid",
 };

@@ -10,18 +10,21 @@ Transform data into human-readable formats with extensive localization support. 
 ## Key Features
 
 ### Bytes Conversion
+
 - **Bidirectional conversion** - Format bytes to strings and parse strings to bytes
 - **700+ locale support** - Localized number formatting (117,70 MB in German)
 - **Multiple unit systems** - Metric, IEC, and octet variants
 - **Flexible units** - KB, KiB, MB, MiB, GB, GiB, and beyond
 
 ### Duration Formatting
+
 - **Time humanization** - 97320000ms → "1 day, 3 hours, 2 minutes"
 - **50+ languages** - Full localization for unit names and formatting
 - **Bidirectional parsing** - Parse "2h 30min", "1:25:05", or "PT2H30M5S"
 - **Customizable output** - Control units, rounding, delimiters, and more
 
 ### Localization & Internationalization
+
 - **CLDR-based formatting** - Uses Intl.NumberFormat for accurate localization
 - **Custom language objects** - Create your own translations and unit maps
 - **RTL support** - Handles right-to-left languages correctly
@@ -51,6 +54,7 @@ parseDuration("1 day, 3 hours, 2 minutes");
 ## Use Cases
 
 ### Log File Size Display
+
 ```typescript
 import { formatBytes } from "@visulima/humanizer";
 
@@ -70,6 +74,7 @@ displayLogStats([
 ```
 
 ### API Rate Limit Messages
+
 ```typescript
 import { duration } from "@visulima/humanizer";
 
@@ -88,6 +93,7 @@ console.log(getRateLimitMessage(Date.now() + 3723000, "en"));
 ```
 
 ### User Input Processing
+
 ```typescript
 import { parseBytes, parseDuration } from "@visulima/humanizer";
 

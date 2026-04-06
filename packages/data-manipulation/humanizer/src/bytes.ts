@@ -155,16 +155,16 @@ const BYTE_SIZES = {
     ],
 } as const;
 
-type ByteSize
-    = | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
-        | (typeof BYTE_SIZES)["iec"][number]["short"]
-        | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
-        | (typeof BYTE_SIZES)["metric"][number]["short"];
-type LongByteSize
-    = | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["iec"][number]["long"]
-        | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
-        | (typeof BYTE_SIZES)["metric"][number]["long"];
+type ByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["iec"][number]["short"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["short"]
+    | (typeof BYTE_SIZES)["metric"][number]["short"];
+type LongByteSize =
+    | (typeof BYTE_SIZES)["iec_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["iec"][number]["long"]
+    | (typeof BYTE_SIZES)["metric_octet"][number]["long"]
+    | (typeof BYTE_SIZES)["metric"][number]["long"];
 
 type Unit = ByteSize | LongByteSize;
 
@@ -214,9 +214,9 @@ export const parseBytes = (value: string, options?: ParseByteOptions): number =>
         throw new TypeError("Value exceeds the maximum length of 100 characters.");
     }
 
-    const match
+    const match =
         // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/no-unused-capturing-group,regexp/no-misleading-capturing-group,sonarjs/slow-regex,sonarjs/regex-complexity
-        = /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
+        /^(?<value>-?(?:\d+(([.,])\d+)*)?[.,]?\d+) *(?<type>bytes?|b|kb|kib|mb|mib|gb|gib|tb|tib|pb|pib|eb|eib|zb|zib|yb|yib|(kilo|kibi|mega|mebi|giga|gibi|tera|tebi|peta|pebi|exa|exbi|zetta|zebi|yotta|yobi)?bytes)?$/i.exec(
             value,
         );
     // Named capture groups need to be manually typed today.
@@ -276,7 +276,7 @@ export const formatBytes = (bytes: number, options?: FormateByteOptions<ByteSize
     const base = fromBase(givenBase as 2 | 10);
 
     const absoluteBytes = Math.abs(bytes);
-    const space = options?.space ?? true ? " " : "";
+    const space = (options?.space ?? true) ? " " : "";
     const referenceTable = BYTE_SIZES[units];
 
     const requestedUnitIndex = referenceTable.findIndex((unit) => unit.short === requestedUnit);
