@@ -24,6 +24,15 @@ import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackag
 
 // ── Post-creation helpers ─────────────────────────────────────────
 
+/**
+ * Create or merge `.vscode/settings.json` and `.vscode/extensions.json`
+ * with vis defaults (oxc formatter, format-on-save).
+ *
+ * If files exist, existing values take precedence over defaults.
+ * Creates the `.vscode` directory if missing.
+ *
+ * @param projectDir Absolute path to the scaffolded project.
+ */
 const generateVscodeConfig = (projectDir: string): void => {
     const vscodeDir = join(projectDir, ".vscode");
 
@@ -120,7 +129,12 @@ const initGitRepo = (projectDir: string): void => {
     }
 };
 
-const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string }, logger: Console): void => {
+/**
+ * Install project dependencies using the detected package manager's native bindings.
+ *
+ * @returns `true` if installation succeeded, `false` otherwise.
+ */
+const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string }, logger: Console): boolean => {
     info("Installing dependencies...");
 
     const code = runInstall(
@@ -141,9 +155,13 @@ const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pn
 
     if (code === 0) {
         success("Dependencies installed");
-    } else {
-        warn("Dependency installation failed (you can run install manually)");
+
+        return true;
     }
+
+    warn("Dependency installation failed (you can run install manually)");
+
+    return false;
 };
 
 // ── Fallback name from git URLs ───────────────────────────────────
@@ -267,6 +285,8 @@ const create: Command = {
         let extraArgs: string[] = [];
         // Use detected PM by default; interactive mode or config can override
         let pm = detectedPm;
+        // Tracks whether the user already confirmed overwriting a non-empty directory
+        let userConfirmedOverwrite = false;
 
         if (args.length === 0 && isTTY && !options["no-interactive"]) {
             // ── Interactive mode ──────────────────────────────────
@@ -281,6 +301,7 @@ const create: Command = {
             targetDir = resolve(cwd, answers.targetDir);
             editor = answers.editor ?? editor;
             gitInit = answers.gitInit;
+            userConfirmedOverwrite = answers.overwrite;
 
             // Use the PM the user chose in interactive mode
             if (answers.pm) {
@@ -344,8 +365,8 @@ const create: Command = {
             throw new Error(`Target directory "${targetDir}" is outside the working directory. Use a name without "../" path segments.`);
         }
 
-        // Check target directory
-        if (!canSafelyOverwrite(targetDir)) {
+        // Check target directory (skip if the user already confirmed overwrite in interactive mode)
+        if (!userConfirmedOverwrite && !canSafelyOverwrite(targetDir)) {
             throw new Error(
                 `Target directory "${targetDir}" is not empty.\nUse a different name or clear the directory first.`,
             );
@@ -397,8 +418,7 @@ const create: Command = {
         const shouldInstall = createConfig?.install !== false;
 
         if (shouldInstall && existsSync(join(targetDir, "package.json"))) {
-            installDependencies(targetDir, pm, logger);
-            depsInstalled = true;
+            depsInstalled = installDependencies(targetDir, pm, logger);
         }
 
         printNextSteps(targetDir, cwd, pm.name, depsInstalled);

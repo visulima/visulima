@@ -38,9 +38,18 @@ const BUILTIN_MAP: Record<string, TemplateType> = {
 /**
  * All prefixes that route to giget's `downloadTemplate` (remote:git).
  * Covers every giget provider: github/gh, gitlab, bitbucket, sourcehut, git, http/https.
+ *
+ * Note: `http://` and `https://` are intentionally included as catch-all entries
+ * so giget's HTTP provider can handle direct tarball or registry URLs
+ * (e.g., `https://example.com/templates/my-template.tar.gz`).
+ * They must be listed AFTER the more specific host prefixes (github.com, etc.)
+ * so those match first. Invalid URLs are rejected later by giget in remote.ts.
+ *
+ * The `isGitUrl()` function below also handles `owner/repo` shorthand
+ * detection separately — bare names without a prefix are routed to npm instead.
  */
 const GIGET_PREFIXES = [
-    // Full HTTPS URLs for known hosts
+    // Full HTTPS URLs for known hosts (must come before generic https://)
     "https://github.com/",
     "https://gitlab.com/",
     "https://bitbucket.org/",
@@ -58,7 +67,7 @@ const GIGET_PREFIXES = [
     "bitbucket:",
     "sourcehut:",
     "git:",
-    // Direct tarball / registry URLs (giget http/https provider)
+    // Catch-all: direct tarball / registry URLs (giget http/https provider)
     "http://",
     "https://",
 ];

@@ -68,6 +68,8 @@ const select = async (rl: RL, question: string, choices: { hint?: string; label:
 export interface PromptResult {
     editor?: "vscode" | undefined;
     gitInit: boolean;
+    /** Whether the user confirmed overwriting an existing non-empty directory. */
+    overwrite: boolean;
     pm?: "bun" | "npm" | "pnpm" | "yarn" | undefined;
     projectName: string;
     targetDir: string;
@@ -99,6 +101,7 @@ export const runInteractivePrompts = async (options: {
                   { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
                   { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
                   { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                  { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
                   { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
               ];
 
@@ -127,10 +130,11 @@ export const runInteractivePrompts = async (options: {
         const targetDir = dirAnswer || defaultDir;
 
         // 4. Overwrite check
+        let overwrite = false;
         const fullPath = resolve(options.cwd, targetDir);
 
         if (!isEmptyDir(fullPath)) {
-            const overwrite = await confirm(rl, `Directory "${targetDir}" is not empty. Overwrite?`, false);
+            overwrite = await confirm(rl, `Directory "${targetDir}" is not empty. Overwrite?`, false);
 
             if (!overwrite) {
                 throw new Error("Aborted — directory not empty.");
@@ -171,7 +175,7 @@ export const runInteractivePrompts = async (options: {
 
         process.stderr.write("\n");
 
-        return { editor, gitInit, pm, projectName, targetDir, template };
+        return { editor, gitInit, overwrite, pm, projectName, targetDir, template };
     } finally {
         rl.close();
     }

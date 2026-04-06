@@ -77,15 +77,24 @@ const applyAutoFixes = (
 
 // ── npm remote executor ───────────────────────────────────────────
 
+/**
+ * Execute an npm `create-*` package via the package manager's `dlx` command.
+ *
+ * Injects the target directory as the first positional argument if not
+ * already present, since most `create-*` packages expect the output
+ * directory as the first arg (e.g., `create-vite my-app`).
+ *
+ * Auto-fix rules are applied for known tools that need extra flags.
+ */
 export const executeRemoteNpm = (
     config: TemplateConfig,
     context: ExecutionContext,
 ): number => {
     const args = applyAutoFixes(config.source, [...config.args], context.inMonorepo);
 
-    // Inject project name as first positional arg if not already present
-    // (many create-* packages expect the directory name as the first arg)
-    if (context.projectName && !args.some((a) => a === context.projectName || a === context.targetDir)) {
+    // Inject target directory as first positional arg if not already present
+    // (most create-* packages expect the output directory as their first arg)
+    if (context.targetDir && !args.includes(context.targetDir)) {
         args.unshift(context.targetDir);
     }
 
