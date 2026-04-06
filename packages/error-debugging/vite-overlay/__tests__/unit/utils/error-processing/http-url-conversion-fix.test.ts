@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/prefer-nullish-coalescing,@typescript-eslint/no-unsafe-argument */
+
 /**
  * Integration test demonstrating the HTTP URL conversion fix
  * This test verifies that both primary and cause errors resolve to the same module
@@ -47,11 +49,11 @@ describe("hTTP URL Conversion Fix - Integration Test", () => {
         const mockModule = {
             id: "http://localhost:5173/src/App.tsx?tsr-split=component",
             transformResult: {
-                code: 'console.log("compiled with query param");',
+                code: "console.log(\"compiled with query param\");",
                 map: {
                     mappings: "AAAA",
                     sources: ["src/App.tsx"],
-                    sourcesContent: ['console.log("original source");'],
+                    sourcesContent: ["console.log(\"original source\");"],
                     version: 3,
                 },
             },

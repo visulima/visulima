@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-base-to-string, @typescript-eslint/await-thenable, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-misused-promises, @typescript-eslint/prefer-optional-chain, no-for-of-array/no-for-of-array, sonarjs/prefer-regexp-exec */
 import { styleText } from "node:util";
 
 import { codeToANSI } from "@shikijs/cli";
@@ -54,12 +55,13 @@ const logError = (server: ViteDevServer, prefix: string, error: unknown): void =
  */
 const createDevelopmentLogger = (server: ViteDevServer): DevelopmentLogger => {
     return {
-        error: (message: unknown) =>
+        error: (message: unknown) => {
             server.config.logger.error(String(message ?? ""), {
                 clear: true,
                 timestamp: true,
-            }),
-        log: (message: unknown) => server.config.logger.info(String(message ?? "")),
+            });
+        },
+        log: (message: unknown) => { server.config.logger.info(String(message ?? "")); },
     };
 };
 
@@ -109,7 +111,7 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
     const runtimeError = reason instanceof Error ? reason : new Error(String((reason as { stack?: string })?.stack || reason));
 
     try {
-        server.ssrFixStacktrace(runtimeError as Error);
+        server.ssrFixStacktrace(runtimeError);
     } catch (error) {
         logError(server, "[visulima:vite-overlay:server] ssrFixStacktrace failed", error);
     }
@@ -178,8 +180,8 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
                 continue;
             }
 
-            const parsedHeader = (await parse(result.header ?? "")) as string;
-            const parsedBody = (await parse(result.body ?? "")) as string;
+            const parsedHeader = await parse(result.header ?? "");
+            const parsedBody = await parse(result.body ?? "");
 
             hint = {
                 body: parsedBody,
@@ -247,12 +249,11 @@ const buildExtendedError = async (
 
             let enhancedViteErrorData = causeViteErrorData;
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (index === 0 && (error as any)?.sourceFile) {
+            if (index === 0 && error?.sourceFile) {
                 enhancedViteErrorData = {
                     ...causeViteErrorData,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    file: (error as any).sourceFile,
+
+                    file: error.sourceFile,
                 };
             }
 
@@ -382,11 +383,11 @@ const setupWebSocketInterception = (
 
                     const viteErrorData = err.sourceFile
                         ? {
-                              column: err.column,
-                              file: err.sourceFile,
-                              line: err.line,
-                              plugin: err.plugin,
-                          }
+                            column: err.column,
+                            file: err.sourceFile,
+                            line: err.line,
+                            plugin: err.plugin,
+                        }
                         : undefined;
 
                     const extensionPayload = await buildExtendedError(syntheticError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
@@ -437,13 +438,13 @@ const setupHMRHandler = (
             return;
         }
 
-        const raw =
-            data && typeof data === "object"
+        const raw
+            = data && typeof data === "object"
                 ? (data as RawErrorData)
                 : ({
-                      message: DEFAULT_ERROR_MESSAGE,
-                      stack: "",
-                  } as RawErrorData);
+                    message: DEFAULT_ERROR_MESSAGE,
+                    stack: "",
+                } as RawErrorData);
 
         const rawSig = createErrorSignature(raw);
 
@@ -501,19 +502,19 @@ const setupHMRHandler = (
 
             const consoleMessage = [
                 `${styleText("red", "[client]")} ${mainError.name}: ${mainError.message}`,
-                ...(mainError.originalFilePath.includes("-extension://")
+                ...mainError.originalFilePath.includes("-extension://")
                     ? []
                     : [
-                          "",
-                          styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
-                          "",
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath) as any, "nord"),
-                          "",
-                          "Raw stack trace:",
-                          "",
-                          mainError.originalStack,
-                      ]),
+                        "",
+                        styleText("blue", `${mainError.originalFilePath}:${mainError.originalFileLine}:${mainError.originalFileColumn}`),
+                        "",
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        await codeToANSI(mainError.originalSnippet, findLanguageBasedOnExtension(mainError.originalFilePath) as any, "nord"),
+                        "",
+                        "Raw stack trace:",
+                        "",
+                        mainError.originalStack,
+                    ],
             ];
 
             // add error cause
@@ -560,14 +561,14 @@ const hasReactPlugin = (plugins: PluginOption[], reactPluginName?: string): bool
         .flat()
         .some(
             (plugin) =>
-                plugin &&
-                ((reactPluginName && (plugin as Plugin).name === reactPluginName) ||
-                    (plugin as Plugin).name === "vite:react-swc" ||
-                    (plugin as Plugin).name === "vite:react-refresh" ||
-                    (plugin as Plugin).name === "vite:react-babel" ||
-                    (plugin as Plugin).name === "@vitejs/plugin-react" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("react")) ||
-                    ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
+                plugin
+                && ((reactPluginName && (plugin as Plugin).name === reactPluginName)
+                    || (plugin as Plugin).name === "vite:react-swc"
+                    || (plugin as Plugin).name === "vite:react-refresh"
+                    || (plugin as Plugin).name === "vite:react-babel"
+                    || (plugin as Plugin).name === "@vitejs/plugin-react"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("react"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("React"))),
         );
 
 /**
@@ -581,12 +582,12 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
         .flat()
         .some(
             (plugin) =>
-                plugin &&
-                ((vuePluginName && (plugin as Plugin).name === vuePluginName) ||
-                    (plugin as Plugin).name === "vite:vue" ||
-                    (plugin as Plugin).name === "@vitejs/plugin-vue" ||
-                    (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue")) ||
-                    ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
+                plugin
+                && ((vuePluginName && (plugin as Plugin).name === vuePluginName)
+                    || (plugin as Plugin).name === "vite:vue"
+                    || (plugin as Plugin).name === "@vitejs/plugin-vue"
+                    || (typeof plugin === "function" && (plugin as Plugin).name?.includes("vue"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Vue"))),
         );
 
 /**
@@ -711,7 +712,7 @@ const errorOverlayPlugin = (
             }
 
             // Backward compatibility: showBallonButton takes precedence over overlay.balloon.enabled
-            const balloonEnabled = options?.showBallonButton === undefined ? (options?.overlay?.balloon?.enabled ?? true) : options.showBallonButton;
+            const balloonEnabled = options?.showBallonButton === undefined ? options?.overlay?.balloon?.enabled ?? true : options.showBallonButton;
 
             return patchOverlay(code, balloonEnabled, options?.overlay?.balloon, options?.overlay?.customCSS);
         },

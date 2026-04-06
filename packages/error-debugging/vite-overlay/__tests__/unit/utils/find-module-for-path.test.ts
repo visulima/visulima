@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call,@typescript-eslint/unbound-method,@typescript-eslint/no-unsafe-argument,@typescript-eslint/no-unsafe-member-access */
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -86,9 +87,9 @@ describe(findModuleForPath, () => {
 
         // These should throw because we can't access moduleGraph on null/undefined
 
-        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrowError(ANY_CHAR_REGEX);
+        expect(() => findModuleForPath(null as any, ["/src/App.tsx"])).toThrow(ANY_CHAR_REGEX);
 
-        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrowError(ANY_CHAR_REGEX);
+        expect(() => findModuleForPath(undefined as any, ["/src/App.tsx"])).toThrow(ANY_CHAR_REGEX);
     });
 
     describe("module scoring and prioritization", () => {

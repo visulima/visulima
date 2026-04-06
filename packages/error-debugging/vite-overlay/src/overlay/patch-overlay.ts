@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-conversion, no-secrets/no-secrets, @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition */
 import type { Properties as CSSProperties } from "csstype";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import chevronLeftIcon from "lucide-static/icons/chevron-left.svg?data-uri&encoding=css";
@@ -23,7 +24,7 @@ import FlameErrorOverlay from "./client/runtime.js?raw";
 
 const CAMEL_CASE_UPPER_RE = /([A-Z])/g;
 
-const AUTO_DETECT_EDITOR_OPTION = '<option value="">Auto-detected Editor</option>';
+const AUTO_DETECT_EDITOR_OPTION = "<option value=\"\">Auto-detected Editor</option>";
 const VITE_CLIENT_CLASS = "class ErrorOverlay";
 const VITE_ERROR_OVERLAY_CLASS = "var ErrorOverlay = ";
 const WINDOW_ERROR_OVERLAY_GLOBAL = "window.ErrorOverlay = ErrorOverlay;";

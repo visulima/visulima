@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { patchOverlay } from "../../../src/overlay/patch-overlay";
@@ -76,12 +77,12 @@ class ErrorOverlay {
     it("should handle empty or invalid input", () => {
         expect.assertions(3);
 
-        expect(() => patchOverlay("", true)).not.toThrowError();
+        expect(() => patchOverlay("", true)).not.toThrow();
         // patchOverlay expects a string, so null/undefined should cause an error
 
-        expect(() => patchOverlay(null as any, true)).toThrowError(ANY_CHAR_REGEX);
+        expect(() => patchOverlay(null as any, true)).toThrow(ANY_CHAR_REGEX);
 
-        expect(() => patchOverlay(undefined as any, true)).toThrowError(ANY_CHAR_REGEX);
+        expect(() => patchOverlay(undefined as any, true)).toThrow(ANY_CHAR_REGEX);
     });
 
     it("should preserve existing code structure when replacing", () => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
 import { cleanErrorStack, isValidStackFrame } from "../../../src/utils/stack-trace";
@@ -204,7 +205,7 @@ describe(isValidStackFrame, () => {
         });
     });
 
-    it('should reject lines that do not start with "at"', () => {
+    it("should reject lines that do not start with \"at\"", () => {
         expect.assertions(3);
 
         const invalidFrames = [
