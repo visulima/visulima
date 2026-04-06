@@ -69,14 +69,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/boxen artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## @visulima/string
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -102,6 +99,8 @@ Repository: git+https://github.com/visulima/visulima.git
 > LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
+>
+>
 >
 > # Licenses of bundled dependencies
 >
@@ -626,6 +625,10 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
+>
+>
+>
+>
 > # Licenses of bundled types
 >
 > The published @visulima/string artifact additionally contains code with the following licenses:
@@ -661,10 +664,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 
----
+---------------------------------------
 
 ## terminal-size
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/terminal-size
