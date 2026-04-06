@@ -26,19 +26,11 @@ const EntryRow = ({ checked, entry, isSelected }: EntryRowProps): React.JSX.Elem
     return (
         <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "white" : "gray"}>
-                {" "}
-                {checkbox}
-                {" "}
-            </Text>
+            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
             <Text bold color={catColor}>
                 {`[${catLabel}]`.padEnd(9)}
             </Text>
-            <Text>
-                {" "}
-                {codemodBadge}
-                {" "}
-            </Text>
+            <Text> {codemodBadge} </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
@@ -98,28 +90,25 @@ const OptimizeListPanel = ({
                 preferredCount++;
                 break;
             }
-            case "socket": { {
-                socketCount++;
-                // No default
-            }
-            break;
+            case "socket": {
+                {
+                    socketCount++;
+                    // No default
+                }
+                break;
             }
         }
     }
 
     const summaryParts: string[] = [];
 
-    if (nativeCount > 0)
-        summaryParts.push(`${nativeCount} native`);
+    if (nativeCount > 0) summaryParts.push(`${nativeCount} native`);
 
-    if (preferredCount > 0)
-        summaryParts.push(`${preferredCount} preferred`);
+    if (preferredCount > 0) summaryParts.push(`${preferredCount} preferred`);
 
-    if (microCount > 0)
-        summaryParts.push(`${microCount} micro`);
+    if (microCount > 0) summaryParts.push(`${microCount} micro`);
 
-    if (socketCount > 0)
-        summaryParts.push(`${socketCount} socket`);
+    if (socketCount > 0) summaryParts.push(`${socketCount} socket`);
 
     const summaryText = summaryParts.length > 0 ? ` (${summaryParts.join(", ")})` : "";
     const checkedCount = checkedEntries.size;
@@ -140,20 +129,10 @@ const OptimizeListPanel = ({
                     {" VIS OPTIMIZE "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
-                    {" "}
-                    optimizations
+                    {totalEntries} optimizations
                     {summaryText}
                 </Text>
-                {!isDryRun && checkedCount > 0 && (
-                    <Text dimColor>
-                        {" "}
-                        —
-                        {checkedCount}
-                        {" "}
-                        selected
-                    </Text>
-                )}
+                {!isDryRun && checkedCount > 0 && <Text dimColor> —{checkedCount} selected</Text>}
             </Box>
 
             <Box flexShrink={0} gap={1} paddingX={1} paddingY={1}>
@@ -167,10 +146,7 @@ const OptimizeListPanel = ({
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}>
-                                {" "}
-                                {f.label}
-                            </Text>
+                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
                         </Box>
                     );
                 })}

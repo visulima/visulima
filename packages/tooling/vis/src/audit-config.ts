@@ -190,7 +190,9 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
                 const cveBlock = `  ignoreCves:\n${mergedCves.map((id) => `    - ${id}`).join("\n")}\n`;
 
                 if (/auditConfig:/.test(content)) {
-                    content = /ignoreCves:/.test(content) ? content.replace(/ignoreCves:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, cveBlock) : content.replace(/auditConfig:\s*\n/, `auditConfig:\n${cveBlock}`);
+                    content = /ignoreCves:/.test(content)
+                        ? content.replace(/ignoreCves:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, cveBlock)
+                        : content.replace(/auditConfig:\s*\n/, `auditConfig:\n${cveBlock}`);
                 } else {
                     content = `${content.trimEnd()}\n\nauditConfig:\n${cveBlock}`;
                 }
@@ -204,7 +206,9 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
                 const ghsaBlock = `  ignoreGhsas:\n${mergedGhsas.map((id) => `    - ${id}`).join("\n")}\n`;
 
                 if (/auditConfig:/.test(content)) {
-                    content = /ignoreGhsas:/.test(content) ? content.replace(/ignoreGhsas:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, ghsaBlock) : content.replace(/(auditConfig:[\s\S]*?)(\n\S|\n?$)/m, `$1${ghsaBlock}$2`);
+                    content = /ignoreGhsas:/.test(content)
+                        ? content.replace(/ignoreGhsas:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, ghsaBlock)
+                        : content.replace(/(auditConfig:[\s\S]*?)(\n\S|\n?$)/m, `$1${ghsaBlock}$2`);
                 }
 
                 if (addedGhsas > 0) {
@@ -241,7 +245,12 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
 
             const advisoryBlock = `npmAuditIgnoreAdvisories:\n${merged.map((id) => `  - "${id}"`).join("\n")}\n`;
 
-            content = /npmAuditIgnoreAdvisories:/.test(content) ? content.replace(/npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, advisoryBlock) : `${content.trimEnd()}\n\n${advisoryBlock}`;
+            content = /npmAuditIgnoreAdvisories:/.test(content)
+                ? content.replace(
+                      /npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/,
+                      advisoryBlock,
+                  )
+                : `${content.trimEnd()}\n\n${advisoryBlock}`;
 
             writeFileSync(filePath, content);
             actions.push(`Synced ${String(added)} advisor${added === 1 ? "y" : "ies"} to .yarnrc.yml (${String(merged.length)} total)`);

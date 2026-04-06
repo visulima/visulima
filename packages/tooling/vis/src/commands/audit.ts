@@ -287,7 +287,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     info(`Found ${String(installed.length)} packages.\n`);
 
     // 2. Fetch vulnerability and security data in parallel
-    const packagesToScan = installed.map((p) => { return { name: p.name, version: p.version }; });
+    const packagesToScan = installed.map((p) => {
+        return { name: p.name, version: p.version };
+    });
 
     const socketOptions = buildSocketOptions(socketConfig);
 

@@ -110,18 +110,18 @@ const check: Command = {
 
         const onProgress = isTTY
             ? (current: number, total: number): void => {
-                if (progressInstance) {
-                    progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-                } else {
-                    progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                        interactive: true,
-                        patchConsole: false,
-                    });
-                }
-            }
+                  if (progressInstance) {
+                      progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+                  } else {
+                      progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                          interactive: true,
+                          patchConsole: false,
+                      });
+                  }
+              }
             : (current: number, total: number): void => {
-                logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-            };
+                  logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+              };
 
         if (!isTTY) {
             logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
@@ -189,7 +189,7 @@ const check: Command = {
             for (const entry of outdated) {
                 const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
                 const isAck = Boolean(entry.acceptedRisk);
-                const icon = hasSecurityIssue ? isAck ? "\u2713" : "\u26A0" : "\u2713";
+                const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
                 const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
                 const socketOverall = entry.socketReport?.score.overall;
                 const scoreSuffix = socketOverall === undefined ? "" : ` [${String(Math.round(socketOverall * 100))}%]`;

@@ -434,7 +434,9 @@ const optimize: Command = {
             if (selectedSocket.length > 0) {
                 const overrideEntries: OverrideEntry[] = selectedSocket
                     .filter((e) => e.overrideSpec)
-                    .map((e) => { return { original: e.packageName, spec: e.overrideSpec! }; });
+                    .map((e) => {
+                        return { original: e.packageName, spec: e.overrideSpec! };
+                    });
 
                 const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm);
 
@@ -493,7 +495,9 @@ const optimize: Command = {
                             };
                         }),
                         packageManager: pm.name,
-                        socket: dedupedSocketEntries.map((e) => { return { overrideSpec: e.overrideSpec, packageName: e.packageName, replacement: e.replacement }; }),
+                        socket: dedupedSocketEntries.map((e) => {
+                            return { overrideSpec: e.overrideSpec, packageName: e.packageName, replacement: e.replacement };
+                        }),
                         total: allEntries.length,
                         workspaces: workspaceDirectories.length,
                     },

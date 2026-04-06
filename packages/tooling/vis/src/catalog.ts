@@ -1137,7 +1137,7 @@ const buildOutdatedEntries = (
 };
 
 /** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: ParsedVersion | undefined): string => parsed ? versionToString(parsed) : "";
+const formatVersionString = (parsed: ParsedVersion | undefined): string => (parsed ? versionToString(parsed) : "");
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1562,20 +1562,15 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     let lowScoreCount = 0;
 
     for (const entry of outdated) {
-        if (entry.updateType === "major")
-            majors++;
-        else if (entry.updateType === "minor")
-            minors++;
+        if (entry.updateType === "major") majors++;
+        else if (entry.updateType === "minor") minors++;
         else patches++;
 
-        if (entry.vulnerabilities && entry.vulnerabilities.length > 0)
-            securityCount++;
+        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
 
-        if (entry.socketReport?.alerts.length)
-            socketAlertCount++;
+        if (entry.socketReport?.alerts.length) socketAlertCount++;
 
-        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD)
-            lowScoreCount++;
+        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) lowScoreCount++;
     }
 
     const parts: string[] = [];
@@ -1917,7 +1912,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...await Promise.all(fetches));
+        results.push(...(await Promise.all(fetches)));
     } finally {
         clearTimeout(timeout);
     }

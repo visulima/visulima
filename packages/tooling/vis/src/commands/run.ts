@@ -389,7 +389,7 @@ const run: Command = {
             type: Boolean,
         },
         {
-            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
+            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
             name: "partition",
             type: String,
         },
