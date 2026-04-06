@@ -145,9 +145,7 @@ const TaskListPanel = ({
         }
 
         if (headerStatus === "success") {
-
             return "green";
-
         }
 
         return focused ? "white" : "gray";

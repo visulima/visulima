@@ -282,15 +282,11 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
                     }
 
                     if (pattern === pkgName) {
-
                         return true;
-
                     }
 
                     if (pattern.endsWith("*")) {
-
                         return pkgName.startsWith(pattern.slice(0, -1));
-
                     }
 
                     return false;
@@ -561,9 +557,7 @@ const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => 
     const packages = expandPatterns(workspaceRoot, patterns);
 
     if (packages.length === 0) {
-
         return;
-
     }
 
     const nodeModulesPath = join(workspaceRoot, "node_modules");
