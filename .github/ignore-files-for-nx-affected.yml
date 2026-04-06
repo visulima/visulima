@@ -11,7 +11,7 @@ plop/**
 .npmignore
 .nxignore
 .prettierignore
-.prettierrc.cjs
+prettier.config.js
 .secretlintignore
 .secretlintrc.cjs
 .textlintignore

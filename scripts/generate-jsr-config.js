@@ -377,7 +377,7 @@ async function generateJsrConfig(packageDir) {
 
     // Format the generated file with prettier
     try {
-        const prettierConfigPath = join(__dirname, "..", ".prettierrc.cjs");
+        const prettierConfigPath = join(__dirname, "..", "prettier.config.js");
         const prettierConfig = await prettier.resolveConfig(prettierConfigPath);
         const fileContent = readFileSync(jsrJsonPath, "utf-8");
         const formatted = await prettier.format(fileContent, {
