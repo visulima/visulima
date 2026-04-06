@@ -28,7 +28,7 @@ describe(getStringWidth, () => {
         expect(getStringWidth("葛󠄀")).toBe(2);
         expect(getStringWidth("ปฏัก")).toBe(3);
         expect(getStringWidth("_\u0E34")).toBe(1);
-        expect(getStringWidth("\"", { ambiguousIsNarrow: false })).toBe(1);
+        expect(getStringWidth('"', { ambiguousIsNarrow: false })).toBe(1);
         expect(getStringWidth(" ")).toBe(1);
         expect(getStringWidth("🔀")).toBe(2);
         expect(getStringWidth("🇪")).toBe(2);

@@ -79,8 +79,8 @@ describe(excerpt, () => {
         it("should handle tags with attributes", () => {
             expect.assertions(2);
 
-            expect(excerpt("<p class=\"test\">Content</p>", 7)).toBe("Content");
-            expect(excerpt("<div id=\"main\" data-value=\"123\">Text</div>", 4)).toBe("Text");
+            expect(excerpt('<p class="test">Content</p>', 7)).toBe("Content");
+            expect(excerpt('<div id="main" data-value="123">Text</div>', 4)).toBe("Text");
         });
 
         it("should preserve whitespace", () => {
