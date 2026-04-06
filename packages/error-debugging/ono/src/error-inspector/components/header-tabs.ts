@@ -56,10 +56,14 @@ export const headerTabs = (tabs: HeaderTab[]): { html: string; script: string } 
 
   function activateTab(tabTrigger) {
     const targetId = tabTrigger.getAttribute('data-ono-tab') || tabTrigger.getAttribute('data-stack-tab');
-    if (!targetId) return;
+    if (!targetId) {
+        return;
+    }
 
     const container = tabTrigger.closest('[role="tablist"]')?.parentElement;
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     // Find all tabs and panels globally (not just within container)
     const allTabs = $$('[role="tab"]');
@@ -99,10 +103,14 @@ export const headerTabs = (tabs: HeaderTab[]): { html: string; script: string } 
 
   document.addEventListener('keydown', function(e) {
     const tab = e.target.closest('[role="tab"]');
-    if (!tab) return;
+    if (!tab) {
+        return;
+    }
 
     const container = tab.closest('[role="tablist"]');
-    if (!container) return;
+    if (!container) {
+        return;
+    }
 
     // Find all tabs in the same tablist (not globally)
     const tabs = $$('[role="tab"]:not([disabled])', container);

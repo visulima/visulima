@@ -58,7 +58,9 @@ const shortcutsModalHtml = `
 const bindShortcutsModalScript = `
 const bindShortcutsModal = () => {
     const modal = document.getElementById('ono-shortcuts-modal');
-    if (!modal) return;
+    if (!modal) {
+        return;
+    }
 
     const openButtons = document.querySelectorAll('[data-ono-action="open-shortcuts-modal"]');
     const closeButtons = document.querySelectorAll('[data-ono-action="close-shortcuts-modal"]');

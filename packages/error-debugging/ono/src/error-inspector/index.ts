@@ -47,7 +47,9 @@ const copyDropdownScript = `
 
 // Clipboard functionality
 function copyToClipboard(text, successCallback) {
-  if (!text) return;
+  if (!text) {
+      return;
+  }
 
   navigator.clipboard.writeText(text).then(function() {
     if (successCallback) successCallback();
@@ -254,7 +256,9 @@ ready(function() {
 const copyButtonScript = `
 // Clipboard functionality for copy buttons
 function copyToClipboard(text, successCallback) {
-  if (!text) return;
+  if (!text) {
+      return;
+  }
 
   navigator.clipboard.writeText(text).then(function() {
     if (successCallback) successCallback();
