@@ -23,10 +23,10 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
             const cssKey = key.startsWith("--")
                 ? key
                 : (() => {
-                      const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+                    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
 
-                      return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
-                  })();
+                    return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+                })();
 
             styles.push(`${cssKey}: ${String(value)};`);
         }
@@ -70,6 +70,7 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
         let result = strings[0] ?? "";
 
         for (const [i, element] of valuesOrEscape.entries()) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             result += escapeCss(String(element ?? ""));
             result += strings[i + 1] ?? "";
         }
