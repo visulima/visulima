@@ -40,8 +40,12 @@ const makePropertiesEnumerable = (object: any): void => {
             }
 
             // Recursively process nested objects (but not arrays or special types)
-            if (descriptor.value && typeof descriptor.value === "object" && !Array.isArray(descriptor.value) // Check if it's a plain object (not Error, Date, etc.)
-                && (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)) {
+            if (
+                descriptor.value &&
+                typeof descriptor.value === "object" &&
+                !Array.isArray(descriptor.value) && // Check if it's a plain object (not Error, Date, etc.)
+                (Object.getPrototypeOf(descriptor.value) === Object.prototype || Object.getPrototypeOf(descriptor.value) === null)
+            ) {
                 makePropertiesEnumerable(descriptor.value);
             }
         }
@@ -59,9 +63,12 @@ const toJSON = (from: JsonError) => {
     // so they can be used in object spreads and JSON.stringify
     // However, if the object is non-extensible (like when toJSON returns 'this'),
     // preserve the original enumerability to match Error prototype behavior
-    if (json && typeof json === "object" // Only make properties enumerable if the object is extensible
+    if (
+        json &&
+        typeof json === "object" && // Only make properties enumerable if the object is extensible
         // Non-extensible objects (like when toJSON returns 'this') should preserve original enumerability
-        && Object.isExtensible(json)) {
+        Object.isExtensible(json)
+    ) {
         makePropertiesEnumerable(json);
     }
 
