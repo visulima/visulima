@@ -36,9 +36,13 @@ try {
 import { writeJson, writeJsonSync } from "@visulima/fs";
 
 // Async with formatting
-await writeJson("output.json", { key: "value" }, {
-    spaces: 2, // 2-space indentation
-});
+await writeJson(
+    "output.json",
+    { key: "value" },
+    {
+        spaces: 2, // 2-space indentation
+    },
+);
 
 // Sync
 writeJsonSync("data.json", { items: [1, 2, 3] });
@@ -141,12 +145,7 @@ for await (const entry of walk("src", {
 
 // Exclude patterns
 for await (const entry of walk("src", {
-    skip: [
-        "**/*.test.ts",
-        "**/*.spec.ts",
-        "**/node_modules/**",
-        "**/dist/**",
-    ],
+    skip: ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**", "**/dist/**"],
 })) {
     console.log(entry.path);
 }
@@ -249,12 +248,7 @@ const gitPath = findUpSync(".git");
 import { findUp } from "@visulima/fs";
 
 // Try multiple filenames in order
-const configPath = await findUp([
-    ".config.json",
-    ".config.yml",
-    "config.json",
-    "config.yml",
-]);
+const configPath = await findUp([".config.json", ".config.yml", "config.json", "config.yml"]);
 ```
 
 ### Find with Custom Matcher

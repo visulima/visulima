@@ -43,14 +43,7 @@ await writeYaml("output.yml", data);
 
 ```typescript
 // Main module - common file operations
-import {
-    readJson,
-    writeJson,
-    emptyDir,
-    ensureDir,
-    walk,
-    findUp,
-} from "@visulima/fs";
+import { readJson, writeJson, emptyDir, ensureDir, walk, findUp } from "@visulima/fs";
 
 // YAML support
 import { readYaml, writeYaml } from "@visulima/fs/yaml";
@@ -65,19 +58,14 @@ import { detectEOL, normalizeEOL } from "@visulima/fs/eol";
 import { FileSystemError } from "@visulima/fs/error";
 
 // Additional utilities
-import { /* ... */ } from "@visulima/fs/utils";
+import {} from /* ... */ "@visulima/fs/utils";
 ```
 
 ### Node.js (CommonJS)
 
 ```javascript
 // Main module
-const {
-    readJson,
-    writeJson,
-    emptyDir,
-    ensureDir,
-} = require("@visulima/fs");
+const { readJson, writeJson, emptyDir, ensureDir } = require("@visulima/fs");
 
 // YAML support
 const { readYaml, writeYaml } = require("@visulima/fs/yaml");
@@ -107,14 +95,14 @@ for await (const entry of walk("src")) {
 
 The package provides several subpath exports for different functionality:
 
-| Export             | Purpose                       |
-| ------------------ | ----------------------------- |
-| `@visulima/fs`     | Core file system operations   |
-| `@visulima/fs/yaml`| YAML parsing and writing      |
-| `@visulima/fs/size`| File size calculations        |
-| `@visulima/fs/eol` | End-of-line detection         |
-| `@visulima/fs/error`| Error types                  |
-| `@visulima/fs/utils`| Additional utilities         |
+| Export               | Purpose                     |
+| -------------------- | --------------------------- |
+| `@visulima/fs`       | Core file system operations |
+| `@visulima/fs/yaml`  | YAML parsing and writing    |
+| `@visulima/fs/size`  | File size calculations      |
+| `@visulima/fs/eol`   | End-of-line detection       |
+| `@visulima/fs/error` | Error types                 |
+| `@visulima/fs/utils` | Additional utilities        |
 
 ## Verification
 

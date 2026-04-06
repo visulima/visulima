@@ -1,22 +1,22 @@
 {
-  "name": "fs-bench",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "postinstall": "node ./scripts/create-fixtures.mjs",
-    "test:bench": "vitest bench"
-  },
-  "dependencies": {
-    "@visulima/fs": "workspace:*",
-    "empathic": "catalog:prod",
-    "find-up": "catalog:prod",
-    "find-up-simple": "catalog:prod",
-    "fs-extra": "catalog:prod",
-    "walk": "catalog:prod"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "catalog:types",
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test"
-  }
+    "name": "fs-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "postinstall": "node ./scripts/create-fixtures.mjs",
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/fs": "workspace:*",
+        "empathic": "catalog:prod",
+        "find-up": "catalog:prod",
+        "find-up-simple": "catalog:prod",
+        "fs-extra": "catalog:prod",
+        "walk": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
 }
