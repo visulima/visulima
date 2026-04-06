@@ -19,6 +19,9 @@ export default createConfig(
             "README.md",
             "src/overlay/client/index.css", // ignore till eslint fix
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
     },
     {
         files: ["./__tests__/e2e/**"],
