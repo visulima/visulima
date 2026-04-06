@@ -135,9 +135,17 @@ function faceKeyFromNormal(n: Vec3): FaceKey {
     const ay = Math.abs(n.y);
     const az = Math.abs(n.z);
 
-    if (ax >= ay && ax >= az) return n.x >= 0 ? "px" : "nx";
+    if (ax >= ay && ax >= az) {
 
-    if (ay >= ax && ay >= az) return n.y >= 0 ? "py" : "ny";
+        return n.x >= 0 ? "px" : "nx";
+
+    }
+
+    if (ay >= ax && ay >= az) {
+
+        return n.y >= 0 ? "py" : "ny";
+
+    }
 
     return n.z >= 0 ? "pz" : "nz";
 }
@@ -145,13 +153,21 @@ function faceKeyFromNormal(n: Vec3): FaceKey {
 function projectPoint(p: Vec3, cols: number, rows: number, cameraZ: number, fov: number, xScale: number, yScale: number): ProjectedPoint | null {
     const zc = p.z + cameraZ;
 
-    if (zc <= 0.05) return null;
+    if (zc <= 0.05) {
+
+        return null;
+
+    }
 
     const inv = fov / zc;
     const sx = Math.floor(cols * 0.5 + p.x * inv * xScale);
     const sy = Math.floor(rows * 0.5 - p.y * inv * yScale);
 
-    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1) return null;
+    if (sx < 0 || sx >= cols || sy < 1 || sy >= rows - 1) {
+
+        return null;
+
+    }
 
     return { depth: 1 / zc, sx, sy };
 }

@@ -135,7 +135,11 @@ const LogoApp = () => {
     useEffect(() => {
         const app = (globalThis as any).__ratatatApp;
 
-        if (!app) return;
+        if (!app) {
+
+            return;
+
+        }
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             paintLogo(buffer, w, h, logoRowRef.current, logoColRef.current, frameRef.current);

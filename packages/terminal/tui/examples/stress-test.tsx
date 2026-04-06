@@ -126,7 +126,9 @@ const StressTest = () => {
         let loopFrame = 0;
 
         function loop() {
-            if (!running) return;
+            if (!running) {
+                return;
+            }
 
             loopFrame++;
             setFrame((f) => {
@@ -160,7 +162,11 @@ const StressTest = () => {
     useEffect(() => {
         const app = (globalThis as any).__ratatatApp;
 
-        if (!app) return;
+        if (!app) {
+
+            return;
+
+        }
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             paintGrid(buffer, w, h, HEADER_ROWS, (globalThis as any).__ratatatFrame ?? 0);

@@ -198,7 +198,9 @@ export const ControlledScrollView = ({
         const childArray = toChildArray(children);
 
         childArray.forEach((child: ReactNode, index: number) => {
-            if (!child) return;
+            if (!child) {
+                return;
+            }
 
             const key = isValidElement(child) ? child.key : null;
             const effectiveKey = key ?? index;
@@ -384,7 +386,9 @@ export const ControlledScrollView = ({
                     <Box flexDirection="column" marginTop={-scrollOffset} width="100%">
                         {shouldVirtualize && aboveSpacerHeight > 0 && <Box height={aboveSpacerHeight} />}
                         {childArray.map((child: ReactNode, index: number) => {
-                            if (!child) return null;
+                            if (!child) {
+                                return null;
+                            }
 
                             if (shouldVirtualize && (index < firstRenderIndex || index > lastRenderIndex)) {
                                 return null;

@@ -23,9 +23,15 @@ export function getStringWidth(text: string): number {
  * - Empty lines still occupy one visual row.
  */
 export function countWrappedRowsForLine(line: string, width: number): number {
-    if (width <= 0) return 0;
+    if (width <= 0) {
+        return 0;
+    }
 
-    if (line.length === 0) return 1;
+    if (line.length === 0) {
+
+        return 1;
+
+    }
 
     let rows = 1;
     let col = 0;

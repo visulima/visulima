@@ -246,10 +246,16 @@ const hostConfig: ReactReconciler.HostConfig<
         const oldKeys = Object.keys(oldProps).filter((k) => k !== "children");
         const newKeys = Object.keys(newProps).filter((k) => k !== "children");
 
-        if (oldKeys.length !== newKeys.length) return true;
+        if (oldKeys.length !== newKeys.length) {
+
+            return true;
+
+        }
 
         for (const key of newKeys) {
-            if (oldProps[key] !== newProps[key]) return true;
+            if (oldProps[key] !== newProps[key]) {
+                return true;
+            }
         }
 
         return null;
@@ -269,7 +275,9 @@ const hostConfig: ReactReconciler.HostConfig<
     resolveEventTimeStamp: () => -1.1,
     resolveEventType: () => null,
     resolveUpdatePriority() {
-        if (currentUpdatePriority !== NoEventPriority) return currentUpdatePriority;
+        if (currentUpdatePriority !== NoEventPriority) {
+            return currentUpdatePriority;
+        }
 
         return DefaultEventPriority;
     },

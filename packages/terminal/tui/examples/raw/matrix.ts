@@ -49,7 +49,9 @@ function initScreen(cols: number, rows: number) {
 }
 
 function writeCell(x: number, y: number, char: string, isHead: boolean) {
-    if (x < 0 || x >= screenCols || y < 0 || y >= screenRows) return;
+    if (x < 0 || x >= screenCols || y < 0 || y >= screenRows) {
+        return;
+    }
 
     const cell = screen[y * screenCols + x]!;
 

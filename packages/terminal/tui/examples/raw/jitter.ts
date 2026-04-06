@@ -41,11 +41,21 @@ function getSample(i: number): number {
 
 // Value → color: green (fast) → yellow → red (slow)
 function valueColor(normalized: number): number {
-    if (normalized < 0.5) return 46; // green
+    if (normalized < 0.5) {
+        return 46;
+    } // green
 
-    if (normalized < 0.75) return 226; // yellow
+    if (normalized < 0.75) {
 
-    if (normalized < 0.9) return 208; // orange
+        return 226;
+
+    } // yellow
+
+    if (normalized < 0.9) {
+
+        return 208;
+
+    } // orange
 
     return 196; // red
 }
