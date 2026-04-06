@@ -112,7 +112,7 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
     let lastCharWasChinese = false;
     let currentIgnoreRangeIndex = 0;
 
-    for (let index = 0; index < input.length;) {
+    for (let index = 0; index < input.length; ) {
         let char: string;
         let charLength = 1;
         let s: string | null | undefined;
@@ -183,9 +183,9 @@ const transliterate = (source: string, options?: OptionsTransliterate): string =
             const sIsDefinedAndNotEmpty = typeof s === "string" && s.length > 0;
 
             if (
-                lastCharWasChinese // If the previous character successfully processed was Chinese
-                && ((determinedCharWasChinese && sIsDefinedAndNotEmpty)
-                    || (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)))
+                lastCharWasChinese && // If the previous character successfully processed was Chinese
+                ((determinedCharWasChinese && sIsDefinedAndNotEmpty) ||
+                    (!determinedCharWasChinese && sIsDefinedAndNotEmpty && s[0] && !hasPunctuationOrSpace(s[0] as string)))
             ) {
                 // Prev Chinese, Current Chinese: "CN CN" -> Add space before current `s`
                 result += " ";
