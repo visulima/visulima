@@ -3,10 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/data-manipulation/deep-clone/src",
     "projectType": "library",
-    "tags": [
-        "deep-clone",
-        "type:package",
-        "category:data"
-    ],
+    "tags": ["deep-clone", "type:package", "category:data"],
     "implicitDependencies": []
 }
