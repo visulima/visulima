@@ -552,17 +552,13 @@ class ErrorOverlay extends HTMLElement {
             const root = this.__elements?.root;
 
             if (!root || root.classList.contains("hidden")) {
-
                 return;
-
             }
 
             const focusable = [...this.root.querySelectorAll(FOCUSABLE_SELECTORS)];
 
             if (focusable.length === 0) {
-
                 return;
-
             }
 
             const first = focusable[0];
@@ -973,9 +969,7 @@ class ErrorOverlay extends HTMLElement {
         const rootElement = this.__elements?.root;
 
         if (!rootElement) {
-
             return;
-
         }
 
         const handleWheel = (event) => {
@@ -1491,9 +1485,7 @@ class ErrorOverlay extends HTMLElement {
         const totalElement = indicator.querySelector("#__v_o__history_total");
 
         if (!countElement || !totalElement) {
-
             return;
-
         }
 
         if (this.__v_oHistory.length <= 1) {
@@ -1587,9 +1579,7 @@ class ErrorOverlay extends HTMLElement {
         const currentError = this.__v_oPayload?.errors?.[0];
 
         if (!currentError) {
-
             return;
-
         }
 
         // Reopen overlay if it's hidden when new errors occur
