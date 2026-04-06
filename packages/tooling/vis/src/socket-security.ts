@@ -4,7 +4,6 @@
  * Ported from @vltpkg/security-archive and adapted to use the Socket.dev
  * public API for fetching package security scores, alerts, and report data.
  * Uses a file-based cache (following the ai-cache.ts pattern) with a 1-hour TTL.
- *
  * @see https://socket.dev
  * @see https://github.com/vltpkg/vltpkg/tree/main/src/security-archive
  */
@@ -43,12 +42,12 @@ interface PackageAlert {
 
 /** Security scores for a given package (each 0–1). */
 interface PackageScore {
-    /** Average of all score factors. */
-    overall: number;
     /** Score factors relating to package licensing. */
     license: number;
     /** Score factors relating to package maintenance. */
     maintenance: number;
+    /** Average of all score factors. */
+    overall: number;
     /** Score factors relating to code quality. */
     quality: number;
     /** Score factors relating to supply chain security. */
@@ -106,15 +105,15 @@ interface CacheEntry {
 // ── Type guards ─────────────────────────────────────────────────────
 
 const isPackageReportData = (o: unknown): o is PackageReportData =>
-    typeof o === "object" &&
-    o != null &&
-    "id" in o &&
-    "type" in o &&
-    "name" in o &&
-    "version" in o &&
-    "alerts" in o &&
-    "score" in o &&
-    (o as Record<string, unknown>).type === "npm";
+    typeof o === "object"
+    && o != undefined
+    && "id" in o
+    && "type" in o
+    && "name" in o
+    && "version" in o
+    && "alerts" in o
+    && "score" in o
+    && (o as Record<string, unknown>).type === "npm";
 
 // ── Cache helpers (file-based, matching ai-cache.ts pattern) ────────
 
@@ -126,9 +125,7 @@ const ensureCacheDirectory = (): void => {
     }
 };
 
-const buildCacheKey = (name: string, version: string): string => {
-    return `${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
-};
+const buildCacheKey = (name: string, version: string): string => `${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
 
 const getCachedReport = (name: string, version: string): PackageReportData | undefined => {
     const key = buildCacheKey(name, version);
@@ -176,9 +173,8 @@ const calculateOverallScore = (score: Omit<PackageScore, "overall">): number => 
 /**
  * Fetches security report data from the Socket.dev API for the given packages.
  * Batches requests to stay within API limits.
- *
- * @param packages - Array of { name, version } to look up.
- * @param options - Optional configuration.
+ * @param packages Array of { name, version } to look up.
+ * @param options Optional configuration.
  * @returns Map of "name@version" to PackageReportData.
  */
 const fetchSocketReports = async (
@@ -227,9 +223,11 @@ const fetchSocketReports = async (
     }
 
     for (const batch of batches) {
-        const components = batch.map((pkg) => ({
-            purl: `pkg:npm/${pkg.name}@${pkg.version}`,
-        }));
+        const components = batch.map((pkg) => {
+            return {
+                purl: `pkg:npm/${pkg.name}@${pkg.version}`,
+            };
+        });
 
         const controller = new AbortController();
         const timeout = setTimeout(() => {
@@ -289,7 +287,7 @@ const parseNdjsonResponse = (text: string, batch: { name: string; version: strin
         }
 
         try {
-            const data = JSON.parse(trimmed.endsWith("}") ? trimmed : trimmed + "}") as SocketApiItem;
+            const data = JSON.parse(trimmed.endsWith("}") ? trimmed : `${trimmed}}`) as SocketApiItem;
 
             const scope = data.namespace ? `${data.namespace}/` : "";
             const fullName = `${scope}${data.name}`;
@@ -404,10 +402,8 @@ const formatReportSummary = (report: PackageReportData): string => {
 /** Formats a detailed multi-line report for a single package. */
 const formatReportDetailed = (report: PackageReportData): string => {
     const name = getFullPackageName(report);
-    const lines: string[] = [];
+    const lines: string[] = [`${name}@${report.version}`, `  License: ${report.license || "unknown"}`];
 
-    lines.push(`${name}@${report.version}`);
-    lines.push(`  License: ${report.license || "unknown"}`);
     lines.push(`  Overall Score: ${String(Math.round(report.score.overall * 100))}% (${scoreLabel(report.score.overall)})`);
     lines.push(`    Supply Chain: ${String(Math.round(report.score.supplyChain * 100))}%`);
     lines.push(`    Quality:      ${String(Math.round(report.score.quality * 100))}%`);
@@ -548,10 +544,6 @@ const buildSocketOptions = (socketConfig: SocketConfigLike | undefined): SocketS
 
     const apiToken = socketConfig.apiToken ?? process.env.VIS_SOCKET_TOKEN;
 
-    if (!apiToken) {
-        return undefined;
-    }
-
     return {
         apiToken,
         cacheTtlMs: socketConfig.cacheTtlMs,
@@ -607,8 +599,8 @@ const findAcceptedRisk = (packageName: string, version: string, acceptedRisks: R
  * Formats a config snippet for the user to paste into vis.config.ts
  * to persist an accepted risk decision.
  */
-const formatAcceptedRiskSnippet = (packageName: string, version: string, score: number, reason: string): string => {
-    const key = `"${packageName}@${version}"`;
+const formatAcceptedRiskSnippet = (packageName: string, _version: string, score: number, reason: string): string => {
+    const key = `"${packageName}"`;
     const lines = [
         `    // Add to security.socket.acceptedRisks in vis.config.ts:`,
         `    ${key}: {`,
@@ -631,10 +623,10 @@ export {
     fetchSocketReports,
     findAcceptedRisk,
     formatAcceptedRiskSnippet,
-    getFullPackageName,
     formatReportDetailed,
     formatReportSummary,
     formatSecurityOverview,
+    getFullPackageName,
     isPackageReportData,
     scoreColor,
     scoreLabel,

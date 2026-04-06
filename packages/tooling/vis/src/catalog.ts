@@ -3,8 +3,7 @@ import { ensureDirSync, isAccessibleSync, readFileSync, readJsonSync, removeSync
 import { dirname, join } from "@visulima/path";
 import { Box, renderToString, Table, Text } from "@visulima/tui";
 import React from "react";
-import type { SemVer } from "semver";
-import { coerce, diff, gt, parse, rcompare } from "semver";
+import { coerce, parse, rcompare } from "semver";
 
 import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "./socket-security";
 import { DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "./socket-security";
@@ -88,9 +87,42 @@ interface ReadCatalogOptions {
 
 // --- Version utilities (backed by `semver` package) ---
 
-const parseVersion = (input: string): SemVer | null => {
-    // coerce handles ranges like "^1.2.3" → "1.2.3", partial like "19" → "19.0.0"
-    return coerce(input) ?? parse(input);
+interface ParsedVersion {
+    major: number;
+    minor: number;
+    patch: number;
+    prerelease: string;
+}
+
+const parseVersion = (input: string): ParsedVersion | undefined => {
+    // Strip range prefixes (^, ~, >=, <=, >, <) before parsing
+    const stripped = input.replace(/^[\^~]|^>=|^<=|^[><]/, "");
+
+    // Try parse first (handles exact semver like "5.3.0-beta.1")
+    const parsed = parse(stripped);
+
+    if (parsed) {
+        return {
+            major: parsed.major,
+            minor: parsed.minor,
+            patch: parsed.patch,
+            prerelease: Array.isArray(parsed.prerelease) ? parsed.prerelease.join(".") : String(parsed.prerelease ?? ""),
+        };
+    }
+
+    // coerce handles partial versions like "19" -> "19.0.0"
+    const coerced = coerce(input);
+
+    if (coerced) {
+        return {
+            major: coerced.major,
+            minor: coerced.minor,
+            patch: coerced.patch,
+            prerelease: "",
+        };
+    }
+
+    return undefined;
 };
 
 const extractPrefix = (range: string): string => {
@@ -99,25 +131,62 @@ const extractPrefix = (range: string): string => {
     return match?.[1] ?? "";
 };
 
-const getUpdateType = (current: SemVer, target: SemVer): "major" | "minor" | "none" | "patch" => {
-    const d = diff(current, target);
+const versionToString = (v: ParsedVersion): string => {
+    const base = `${String(v.major)}.${String(v.minor)}.${String(v.patch)}`;
 
-    if (!d) {
-        return "none";
-    }
+    return v.prerelease ? `${base}-${v.prerelease}` : base;
+};
 
-    if (d.includes("major")) {
+const getUpdateType = (current: ParsedVersion, target: ParsedVersion): "major" | "minor" | "none" | "patch" => {
+    if (current.major !== target.major) {
         return "major";
     }
 
-    if (d.includes("minor")) {
+    if (current.minor !== target.minor) {
         return "minor";
     }
 
-    return "patch";
+    if (current.patch !== target.patch) {
+        return "patch";
+    }
+
+    if (current.prerelease !== target.prerelease) {
+        return "patch";
+    }
+
+    return "none";
 };
 
-const isNewer = (current: SemVer, target: SemVer): boolean => gt(target, current);
+const compareVersions = (a: ParsedVersion, b: ParsedVersion): number => {
+    if (a.major !== b.major) {
+        return a.major - b.major;
+    }
+
+    if (a.minor !== b.minor) {
+        return a.minor - b.minor;
+    }
+
+    if (a.patch !== b.patch) {
+        return a.patch - b.patch;
+    }
+
+    // No prerelease is greater than any prerelease
+    if (!a.prerelease && b.prerelease) {
+        return 1;
+    }
+
+    if (a.prerelease && !b.prerelease) {
+        return -1;
+    }
+
+    if (a.prerelease && b.prerelease) {
+        return a.prerelease < b.prerelease ? -1 : a.prerelease > b.prerelease ? 1 : 0;
+    }
+
+    return 0;
+};
+
+const isNewer = (current: ParsedVersion, target: ParsedVersion): boolean => compareVersions(target, current) > 0;
 
 // --- Glob matching ---
 
@@ -895,7 +964,7 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
             return undefined;
         }
 
-        if (!includePrerelease && latestParsed.prerelease.length > 0) {
+        if (!includePrerelease && latestParsed.prerelease !== "") {
             return undefined;
         }
 
@@ -911,12 +980,12 @@ const findTargetVersion = (versions: string[], latest: string, currentRange: str
         .map((v) => {
             return { parsed: parseVersion(v), raw: v };
         })
-        .filter((v): v is { parsed: SemVer; raw: string } => {
+        .filter((v): v is { parsed: ParsedVersion; raw: string } => {
             if (!v.parsed) {
                 return false;
             }
 
-            if (!includePrerelease && v.parsed.prerelease.length > 0) {
+            if (!includePrerelease && v.parsed.prerelease !== "") {
                 return false;
             }
 
@@ -961,7 +1030,7 @@ const collectEntries = (
             }
 
             // Check ignore list before other filters
-            if (options.ignore.length > 0 && options.ignore.some((p) => matchesPattern(packageName, p))) {
+            if (options.ignore.some((p) => matchesPattern(packageName, p))) {
                 ignoredSet.add(packageName);
                 continue;
             }
@@ -1067,8 +1136,8 @@ const buildOutdatedEntries = (
     return outdated;
 };
 
-/** Formats a SemVer as "major.minor.patch", or "" if parsing failed. */
-const formatVersionString = (parsed: SemVer | null): string => (parsed ? parsed.version : "");
+/** Formats a ParsedVersion as "major.minor.patch", or "" if parsing failed. */
+const formatVersionString = (parsed: ParsedVersion | undefined): string => parsed ? versionToString(parsed) : "";
 
 const enrichWithSecurity = async (
     outdated: OutdatedEntry[],
@@ -1160,10 +1229,10 @@ const computeCacheHash = (
     }
 
     let hash = 5381;
-    const str = parts.join("|");
+    const string_ = parts.join("|");
 
-    for (let i = 0; i < str.length; i++) {
-        hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0; // eslint-disable-line no-bitwise
+    for (let i = 0; i < string_.length; i++) {
+        hash = ((hash << 5) + hash + string_.charCodeAt(i)) | 0; // eslint-disable-line no-bitwise
     }
 
     return String(hash);
@@ -1430,7 +1499,7 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
             const prefix = hasSec || hasSocketAlerts ? "[SEC] " : "";
             const displayName = `${prefix}${entry.packageName}`;
 
-            const scoreStr = entry.socketReport ? `${String(Math.round(entry.socketReport.score.overall * 100))}%` : "";
+            const scoreString = entry.socketReport ? `${String(Math.round(entry.socketReport.score.overall * 100))}%` : "";
 
             const row: Record<string, string> = {
                 current: entry.currentRange,
@@ -1440,7 +1509,7 @@ const formatOutdatedTable = (outdated: OutdatedEntry[], logger: Console): void =
             };
 
             if (hasSocketData) {
-                row.score = scoreStr;
+                row.score = scoreString;
             }
 
             const rows: Record<string, string>[] = [row];
@@ -1493,13 +1562,20 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     let lowScoreCount = 0;
 
     for (const entry of outdated) {
-        if (entry.updateType === "major") majors++;
-        else if (entry.updateType === "minor") minors++;
+        if (entry.updateType === "major")
+            majors++;
+        else if (entry.updateType === "minor")
+            minors++;
         else patches++;
 
-        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
-        if (entry.socketReport?.alerts.length) socketAlertCount++;
-        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) lowScoreCount++;
+        if (entry.vulnerabilities && entry.vulnerabilities.length > 0)
+            securityCount++;
+
+        if (entry.socketReport?.alerts.length)
+            socketAlertCount++;
+
+        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD)
+            lowScoreCount++;
     }
 
     const parts: string[] = [];
@@ -1527,7 +1603,7 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     const summary = `Found ${String(outdated.length)} outdated (${parts.join(", ")})`;
     const columns = process.stdout.columns || 80;
 
-    const children = [React.createElement(Text, { bold: true }, "\u2500 Summary"), React.createElement(Text, null, "  " + summary)];
+    const children = [React.createElement(Text, { bold: true }, "\u2500 Summary"), React.createElement(Text, null, `  ${summary}`)];
 
     if (lowScoreCount > 0) {
         children.push(
@@ -1841,7 +1917,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...(await Promise.all(fetches)));
+        results.push(...await Promise.all(fetches));
     } finally {
         clearTimeout(timeout);
     }

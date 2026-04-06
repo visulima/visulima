@@ -10,16 +10,17 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-import { isAccessibleSync, readYamlSync } from "@visulima/fs";
+import { isAccessibleSync } from "@visulima/fs";
+import { readYamlSync } from "@visulima/fs/yaml";
 import { join } from "@visulima/path";
 
 // ── Types ───────────────────────────────────────────────────────────
 
 interface NativeAuditExclusions {
-    /** Advisory IDs to ignore (CVE-*, GHSA-*, or numeric IDs). */
-    ignoredAdvisories: string[];
     /** Package names to exclude from audit (yarn berry only). */
     excludedPackages: string[];
+    /** Advisory IDs to ignore (CVE-*, GHSA-*, or numeric IDs). */
+    ignoredAdvisories: string[];
 }
 
 // ── Shared helpers ──────────────────────────────────────────────────
@@ -145,6 +146,16 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
     const actions: string[] = [];
 
     switch (pm) {
+        case "bun": {
+            actions.push(`bun has no audit config file. Use CLI flags: bun audit ${advisoryIds.map((id) => `--ignore ${id}`).join(" ")}`);
+            break;
+        }
+
+        case "npm": {
+            actions.push("npm has no native audit exclusion config. vis accepted risks are the only layer.");
+            break;
+        }
+
         case "pnpm": {
             const filePath = join(workspaceRoot, "pnpm-workspace.yaml");
 
@@ -178,12 +189,8 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
             if (mergedCves.length > 0) {
                 const cveBlock = `  ignoreCves:\n${mergedCves.map((id) => `    - ${id}`).join("\n")}\n`;
 
-                if (/auditConfig:/m.test(content)) {
-                    if (/ignoreCves:/m.test(content)) {
-                        content = content.replace(/ignoreCves:\s*\n(?:\s+-\s+.+\n)*/m, cveBlock);
-                    } else {
-                        content = content.replace(/auditConfig:\s*\n/m, `auditConfig:\n${cveBlock}`);
-                    }
+                if (/auditConfig:/.test(content)) {
+                    content = /ignoreCves:/.test(content) ? content.replace(/ignoreCves:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, cveBlock) : content.replace(/auditConfig:\s*\n/, `auditConfig:\n${cveBlock}`);
                 } else {
                     content = `${content.trimEnd()}\n\nauditConfig:\n${cveBlock}`;
                 }
@@ -196,12 +203,8 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
             if (mergedGhsas.length > 0) {
                 const ghsaBlock = `  ignoreGhsas:\n${mergedGhsas.map((id) => `    - ${id}`).join("\n")}\n`;
 
-                if (/auditConfig:/m.test(content)) {
-                    if (/ignoreGhsas:/m.test(content)) {
-                        content = content.replace(/ignoreGhsas:\s*\n(?:\s+-\s+.+\n)*/m, ghsaBlock);
-                    } else {
-                        content = content.replace(/(auditConfig:[\s\S]*?)(\n\S|\n?$)/m, `$1${ghsaBlock}$2`);
-                    }
+                if (/auditConfig:/.test(content)) {
+                    content = /ignoreGhsas:/.test(content) ? content.replace(/ignoreGhsas:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, ghsaBlock) : content.replace(/(auditConfig:[\s\S]*?)(\n\S|\n?$)/m, `$1${ghsaBlock}$2`);
                 }
 
                 if (addedGhsas > 0) {
@@ -238,24 +241,10 @@ const syncAcceptedRisksToNativeConfig = (pm: string, workspaceRoot: string, advi
 
             const advisoryBlock = `npmAuditIgnoreAdvisories:\n${merged.map((id) => `  - "${id}"`).join("\n")}\n`;
 
-            if (/npmAuditIgnoreAdvisories:/m.test(content)) {
-                content = content.replace(/npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+.+\n)*/m, advisoryBlock);
-            } else {
-                content = `${content.trimEnd()}\n\n${advisoryBlock}`;
-            }
+            content = /npmAuditIgnoreAdvisories:/.test(content) ? content.replace(/npmAuditIgnoreAdvisories:\s*\n(?:\s+-\s+(?:\S.*|[\t\v\f \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF])\n)*/, advisoryBlock) : `${content.trimEnd()}\n\n${advisoryBlock}`;
 
             writeFileSync(filePath, content);
-            actions.push(`Added ${String(added)} new advisor${added === 1 ? "y" : "ies"} to .yarnrc.yml (${String(merged.length)} total)`);
-            break;
-        }
-
-        case "npm": {
-            actions.push("npm has no native audit exclusion config. vis accepted risks are the only layer.");
-            break;
-        }
-
-        case "bun": {
-            actions.push("bun has no audit config file. Use CLI flags: bun audit " + advisoryIds.map((id) => `--ignore ${id}`).join(" "));
+            actions.push(`Synced ${String(added)} advisor${added === 1 ? "y" : "ies"} to .yarnrc.yml (${String(merged.length)} total)`);
             break;
         }
 
