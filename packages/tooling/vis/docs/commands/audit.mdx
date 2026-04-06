@@ -1,0 +1,45 @@
+---
+title: "vis audit"
+description: "Audit dependencies for known security vulnerabilities"
+---
+
+# vis audit
+
+Audit project dependencies for known security vulnerabilities using OSV.dev and optionally Socket.dev.
+
+## Usage
+
+```bash
+vis audit [options]
+```
+
+## Examples
+
+```bash
+# Run security audit
+vis audit
+
+# Audit with Socket.dev intelligence
+vis audit --socket
+```
+
+## Options
+
+| Option     | Default | Description                            |
+| ---------- | ------- | -------------------------------------- |
+| `--socket` | `false` | Include Socket.dev security analysis   |
+| `--json`   | `false` | Output results as JSON                 |
+
+## Configuration
+
+Enable Socket.dev in `vis.config.ts`:
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    security: {
+        socket: { enabled: true },
+    },
+});
+```
