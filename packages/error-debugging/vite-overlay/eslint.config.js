@@ -15,7 +15,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             "package.json",
             "playwright-setup.js",
-            ".prettierrc.cjs",
+            "prettier.config.js",
             "README.md",
             "src/overlay/client/index.css", // ignore till eslint fix
         ],
