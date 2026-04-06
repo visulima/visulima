@@ -42,6 +42,22 @@ vis install --force
 | `--dev`              |       | `false` | Install devDependencies only       |
 | `--filter`           |       |         | Filter to specific workspace packages |
 
+## How It Works
+
+```mermaid
+flowchart TD
+    A["vis install [options]"] --> B["Detect package manager\n(pnpm, npm, yarn, bun)"]
+    B --> C["Build install command\nfrom options"]
+    C --> D{Frozen\nlockfile?}
+    D -- yes --> E["Map to CI mode\n(npm ci / pnpm --frozen-lockfile)"]
+    D -- no --> F["Standard install"]
+    E --> G["Run native\ninstall command"]
+    F --> G
+    G --> H{Exit code\n= 0?}
+    H -- yes --> I["Done"]
+    H -- no --> J["Report failure"]
+```
+
 ## Aliases
 
 ```bash
