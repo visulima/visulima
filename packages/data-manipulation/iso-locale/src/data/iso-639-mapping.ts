@@ -147,4 +147,5 @@ export const iso6393To6391 = (iso6393: string): string | undefined => iso6393To6
  * @param iso6393Codes Array of ISO 639-3 codes
  * @returns Array of ISO 639-1 codes (filtered to only valid mappings)
  */
-export const convert6393To6391 = (iso6393Codes: string[]): string[] => iso6393Codes.map((code) => iso6393To6391(code)).filter((code): code is string => code !== undefined);
+export const convert6393To6391 = (iso6393Codes: string[]): string[] =>
+    iso6393Codes.map((code) => iso6393To6391(code)).filter((code): code is string => code !== undefined);

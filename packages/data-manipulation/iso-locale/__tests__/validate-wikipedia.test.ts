@@ -51,7 +51,7 @@ const extractTextFromHtml = (html: string): string =>
         .replaceAll("&amp;", "&")
         .replaceAll("&lt;", "<")
         .replaceAll("&gt;", ">")
-        .replaceAll("&quot;", "\"")
+        .replaceAll("&quot;", '"')
         .replaceAll("&#91;", "[")
         .replaceAll("&#93;", "]")
         .replaceAll("&#160;", " ")
@@ -127,9 +127,9 @@ const parseISO4217Table = (html: string): { code: string; name: string; number: 
 
     // Look for the table with class "wikitable" that contains "Active ISO 4217 currency codes"
     // The table structure: Code | Num | D | Currency | Locations
-    const tableMatch
-        = html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active codes[\s\S]*?<\/table>/i)
-            || html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active ISO 4217[\s\S]*?<\/table>/i);
+    const tableMatch =
+        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active codes[\s\S]*?<\/table>/i) ||
+        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Active ISO 4217[\s\S]*?<\/table>/i);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain currency data
@@ -215,9 +215,9 @@ const parseCurrencySymbolTable = (html: string): { code: string; name: string; s
     const result: { code: string; name: string; symbol: string }[] = [];
 
     // Look for currency symbol tables - Wikipedia uses wikitable class
-    const tableMatch
-        = html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i)
-            || html.match(/<table[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i);
+    const tableMatch =
+        html.match(/<table[^>]*class="[^"]*wikitable[^"]*"[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i) ||
+        html.match(/<table[^>]*>[\s\S]*?Currency symbols[\s\S]*?<\/table>/i);
 
     if (!tableMatch) {
         // Try to find any wikitable that might contain symbol data
@@ -363,10 +363,10 @@ describe("wikipedia Validation", () => {
             const ourFirstWord = ourName.split(/\s+/)[0] || "";
 
             // Check if names are similar (either contains the other's first word, or they share common terms)
-            const namesSimilar
-                = ourName.includes(wikiFirstWord)
-                    || wikiName.includes(ourFirstWord)
-                    || (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
+            const namesSimilar =
+                ourName.includes(wikiFirstWord) ||
+                wikiName.includes(ourFirstWord) ||
+                (wikiFirstWord.length > 3 && ourFirstWord.length > 3 && (ourName.includes(wikiFirstWord) || wikiName.includes(ourFirstWord)));
 
             if (!namesSimilar && wikiFirstWord !== ourFirstWord) {
                 issues.push(`Currency ${code}: name mismatch - Wikipedia: "${wikiCurrency.name}", ours: "${ourCurrency.name}"`);
