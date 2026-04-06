@@ -1,7 +1,7 @@
 {
-  "name": "cli-esm",
-  "private": true,
-  "description": "ESM version",
-  "type": "module",
-  "devDependencies": {}
+    "name": "cli-esm",
+    "private": true,
+    "description": "ESM version",
+    "type": "module",
+    "devDependencies": {}
 }

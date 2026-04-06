@@ -84,8 +84,7 @@ class Bench {
         showResult = showResult.bind(this);
 
         return (suiteName) => {
-            if (suiteName)
-                this.name = suiteName;
+            if (suiteName) this.name = suiteName;
 
             this.suite = new Benchmark.Suite(suiteName);
 

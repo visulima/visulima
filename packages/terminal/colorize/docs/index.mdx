@@ -14,29 +14,34 @@ Terminal and console string styling done right. A high-performance, feature-rich
 ### Key Features
 
 **Compatibility & Performance**
+
 - **Chalk-compatible API** - Drop-in replacement with the same syntax
 - **Up to 3x faster** than Chalk in benchmarks
 - **Named imports** - `import { red, green } from '@visulima/colorize'`
 - **Zero dependencies** (except for color detection)
 
 **Multiple Runtimes**
+
 - **Node.js** 22.13+ support (ESM and CommonJS)
 - **Browser support** - Works in Chrome, Safari, Edge, and more
 - **Deno** and **Next.js** runtime compatibility
 
 **Rich Color Support**
+
 - **Base ANSI 16 colors** - Standard terminal colors (red, green, blue, etc.)
 - **ANSI 256 colors** - Extended color palette with `ansi256()` or `fg()`/`bg()`
 - **TrueColor (16M colors)** - RGB and HEX colors with `rgb()` and `hex()`
 - **Automatic fallback** - TrueColor → 256 → 16 → no colors
 
 **Developer Experience**
+
 - **Chained syntax** - `` red.bold.underline`text` ``
 - **Template literals** - `` red`Hello ${green`World`}` ``
 - **Nested templates** - Deep nesting support (unique among color libraries)
 - **TypeScript** - Full type definitions with IDE autocomplete
 
 **Advanced Features**
+
 - **Color gradients** - Single and multi-line gradient support
 - **Tagged templates** - String interpolation with `@visulima/colorize/template`
 - **Strip ANSI codes** - Remove colors with `strip()` method
@@ -148,10 +153,12 @@ DISK: ${orange`${((disk.used / disk.total) * 100).toFixed(1)}%`}
 ## Browser and Server Support
 
 ### Node.js
+
 - ✅ Node.js 22.13 - 25.x
 - ✅ ESM and CommonJS support
 
 ### Browsers
+
 - ✅ Chrome 69+ (TrueColor)
 - ✅ Safari 10+ (TrueColor)
 - ✅ Edge 79+ (TrueColor)
@@ -159,5 +166,6 @@ DISK: ${orange`${((disk.used / disk.total) * 100).toFixed(1)}%`}
 - ⚠️ Firefox (fallback to `%c` syntax)
 
 ### Runtimes
+
 - ✅ Deno
 - ✅ Next.js (edge runtime)

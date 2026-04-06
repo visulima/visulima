@@ -250,12 +250,14 @@ const benchNestedCalls = bench("Nested calls")
     .add(packages.colors, () => baseColors.forEach((style) => colorsJs[style](colorsJs.bold(colorsJs.underline(colorsJs.italic("foo"))))))
     .add(packages.kleur, () => baseColors.forEach((style) => kleur[style](kleur.bold(kleur.underline(kleur.italic("foo"))))))
     .add(`${packages.kleur}/colors`, () =>
-        baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))))
+        baseColors.forEach((style) => kleurColors[style](kleurColors.bold(kleurColors.underline(kleurColors.italic("foo"))))),
+    )
     .add(packages.picocolors, () => baseColors.forEach((style) => picocolors[style](picocolors.bold(picocolors.underline(picocolors.italic("foo"))))));
 
 if (isNode22Plus && styleText) {
     benchNestedCalls.add("node:util/styleText", () =>
-        baseColors.forEach((style) => styleText[style](styleText.bold(styleText.underline(styleText.italic("foo"))))));
+        baseColors.forEach((style) => styleText[style](styleText.bold(styleText.underline(styleText.italic("foo"))))),
+    );
 }
 
 benchNestedCalls.run();

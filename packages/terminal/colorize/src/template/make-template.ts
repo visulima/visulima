@@ -11,9 +11,9 @@ import type { ColorizeType, ColorValueHex } from "../types";
 import { convertHexToRgb } from "../util/convert-hex-to-rgb";
 import { unescape } from "../util/unescape";
 
-const TEMPLATE_REGEX
+const TEMPLATE_REGEX =
     // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-lazy-ends,regexp/no-dupe-disjunctions
-    = /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
+    /\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.)|\{(~)?(#?[\w:]+(?:\([^)]*\))?(?:\.#?[\w:]+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n))|(\})|((?:.|[\r\n\f])+?)/gi;
 // eslint-disable-next-line security/detect-unsafe-regex,regexp/optimal-lookaround-quantifier
 const STYLE_REGEX = /(?:^|\.)(?:(\w+)(?:\(([^)]*)\))?|#(?=[:a-f\d]{2,})([a-f\d]{6})?(?::([a-f\d]{6}))?)/gi;
 const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
@@ -32,9 +32,9 @@ const parseArguments = (name: string, value: string): (number | string)[] => {
         if (!Number.isNaN(number)) {
             results.push(number);
             // eslint-disable-next-line no-cond-assign
-        } else if (matches = STRING_REGEX.exec(chunk)) {
+        } else if ((matches = STRING_REGEX.exec(chunk))) {
             // eslint-disable-next-line unicorn/prefer-string-replace-all
-            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => escape ? unescape(escape as string) : character));
+            results.push((matches[2] as string).replace(ESCAPE_REGEX, (_, escape, character) => (escape ? unescape(escape as string) : character)));
         } else {
             throw new Error(`Invalid template style argument: ${chunk} (in style '${name}')`);
         }
@@ -108,57 +108,57 @@ const buildStyle = (
     return current;
 };
 
-export const makeTemplate
-    = (colorize: ColorizeType): (string: string) => string =>
-        (string: string) => {
-            const styles: {
-                inverse: string | undefined;
-                styles: (number | string | undefined)[][];
-            }[] = [];
-            const chunks = [];
+export const makeTemplate =
+    (colorize: ColorizeType): ((string: string) => string) =>
+    (string: string) => {
+        const styles: {
+            inverse: string | undefined;
+            styles: (number | string | undefined)[][];
+        }[] = [];
+        const chunks = [];
 
-            let chunk: string[] = [];
+        let chunk: string[] = [];
 
-            string.replaceAll(
-                TEMPLATE_REGEX,
-                // @ts-expect-error - TS doesn't understand that the regex args are defined
-                (
-                    _: string,
-                    escapeCharacter: string | undefined,
-                    inverse: string | undefined,
-                    style: string | undefined,
-                    close: string | undefined,
-                    character: string | undefined,
-                ) => {
-                    if (escapeCharacter) {
-                        chunk.push(unescape(escapeCharacter) as string);
-                    } else if (style) {
-                        const joinedChunk = chunk.join("");
+        string.replaceAll(
+            TEMPLATE_REGEX,
+            // @ts-expect-error - TS doesn't understand that the regex args are defined
+            (
+                _: string,
+                escapeCharacter: string | undefined,
+                inverse: string | undefined,
+                style: string | undefined,
+                close: string | undefined,
+                character: string | undefined,
+            ) => {
+                if (escapeCharacter) {
+                    chunk.push(unescape(escapeCharacter) as string);
+                } else if (style) {
+                    const joinedChunk = chunk.join("");
 
-                        chunk = [];
-                        chunks.push(styles.length === 0 ? joinedChunk : buildStyle(colorize, styles)(joinedChunk));
+                    chunk = [];
+                    chunks.push(styles.length === 0 ? joinedChunk : buildStyle(colorize, styles)(joinedChunk));
 
-                        styles.push({ inverse, styles: parseStyle(style) });
-                    } else if (close) {
-                        if (styles.length === 0) {
-                            throw new Error("Found extraneous } in template literal");
-                        }
-
-                        chunks.push(buildStyle(colorize, styles)(chunk.join("")));
-                        chunk = [];
-
-                        styles.pop();
-                    } else {
-                        chunk.push(character as string);
+                    styles.push({ inverse, styles: parseStyle(style) });
+                } else if (close) {
+                    if (styles.length === 0) {
+                        throw new Error("Found extraneous } in template literal");
                     }
-                },
-            );
 
-            chunks.push(chunk.join(""));
+                    chunks.push(buildStyle(colorize, styles)(chunk.join("")));
+                    chunk = [];
 
-            if (styles.length > 0) {
-                throw new Error(`template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
-            }
+                    styles.pop();
+                } else {
+                    chunk.push(character as string);
+                }
+            },
+        );
 
-            return chunks.join("");
-        };
+        chunks.push(chunk.join(""));
+
+        if (styles.length > 0) {
+            throw new Error(`template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`);
+        }
+
+        return chunks.join("");
+    };

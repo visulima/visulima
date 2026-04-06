@@ -146,22 +146,18 @@ interface RequestLog {
 }
 
 function logRequest({ method, path, status, duration }: RequestLog) {
-    const methodColor = {
-        GET: cyan,
-        POST: green,
-        PUT: yellow,
-        DELETE: red,
-        PATCH: yellow,
-    }[method] || gray;
+    const methodColor =
+        {
+            GET: cyan,
+            POST: green,
+            PUT: yellow,
+            DELETE: red,
+            PATCH: yellow,
+        }[method] || gray;
 
     const statusColor = status >= 500 ? red : status >= 400 ? yellow : status >= 300 ? cyan : green;
 
-    console.log(
-        methodColor.bold(method.padEnd(6)) +
-            gray(path.padEnd(30)) +
-            statusColor(status.toString().padEnd(5)) +
-            gray(`${duration}ms`),
-    );
+    console.log(methodColor.bold(method.padEnd(6)) + gray(path.padEnd(30)) + statusColor(status.toString().padEnd(5)) + gray(`${duration}ms`));
 }
 
 // Usage
@@ -194,14 +190,8 @@ function displaySystemStats(stats: SystemStats) {
     console.log(inverse(bold(" SYSTEM MONITOR ")));
     console.log();
     console.log(`CPU:  ${cpuColor`${stats.cpu.toFixed(1)}%`}`.padEnd(20) + createProgressBar(stats.cpu, 100));
-    console.log(
-        `RAM:  ${memColor`${memPercent.toFixed(1)}%`}`.padEnd(20) +
-            createProgressBar(stats.memory.used, stats.memory.total),
-    );
-    console.log(
-        `DISK: ${diskColor`${diskPercent.toFixed(1)}%`}`.padEnd(20) +
-            createProgressBar(stats.disk.used, stats.disk.total),
-    );
+    console.log(`RAM:  ${memColor`${memPercent.toFixed(1)}%`}`.padEnd(20) + createProgressBar(stats.memory.used, stats.memory.total));
+    console.log(`DISK: ${diskColor`${diskPercent.toFixed(1)}%`}`.padEnd(20) + createProgressBar(stats.disk.used, stats.disk.total));
 }
 
 function createProgressBar(current: number, total: number, width: number = 20): string {

@@ -119,16 +119,7 @@ console.log(gray`Gray text`); // or grey
 Brighter variants of standard colors:
 
 ```typescript
-import {
-    blackBright,
-    redBright,
-    greenBright,
-    yellowBright,
-    blueBright,
-    magentaBright,
-    cyanBright,
-    whiteBright,
-} from "@visulima/colorize";
+import { blackBright, redBright, greenBright, yellowBright, blueBright, magentaBright, cyanBright, whiteBright } from "@visulima/colorize";
 
 console.log(redBright`Bright red`);
 console.log(greenBright`Bright green`);
@@ -160,16 +151,7 @@ console.log(bgGreen`Green background`);
 ### Bright Background Colors
 
 ```typescript
-import {
-    bgBlackBright,
-    bgRedBright,
-    bgGreenBright,
-    bgYellowBright,
-    bgBlueBright,
-    bgMagentaBright,
-    bgCyanBright,
-    bgWhiteBright,
-} from "@visulima/colorize";
+import { bgBlackBright, bgRedBright, bgGreenBright, bgYellowBright, bgBlueBright, bgMagentaBright, bgCyanBright, bgWhiteBright } from "@visulima/colorize";
 
 console.log(bgRedBright`Bright red background`);
 console.log(bgGreenBright`Bright green background`);
@@ -264,9 +246,7 @@ console.log(red`Error: ${blue`file.js`} not found`);
 ```typescript
 import { green, yellow, magenta, cyan, red } from "@visulima/colorize";
 
-console.log(
-    green`Level 1 ${yellow`Level 2 ${magenta`Level 3 ${cyan`Level 4 ${red`Level 5`}`}`}`} back to Level 1`,
-);
+console.log(green`Level 1 ${yellow`Level 2 ${magenta`Level 3 ${cyan`Level 4 ${red`Level 5`}`}`}`} back to Level 1`);
 ```
 
 ### Nested with Styles
