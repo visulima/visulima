@@ -321,7 +321,9 @@ function simulate() {
     }
     // Attraction (edges)
     edges.forEach(e => {
-      if (!e.source || !e.target) return;
+      if (!e.source || !e.target) {
+          return;
+      }
       let dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
       let d = Math.sqrt(dx*dx + dy*dy) || 1;
       let f = (d - 150) * 0.01;
@@ -343,7 +345,9 @@ simulate();
 
 // Render
 edges.forEach(e => {
-  if (!e.source || !e.target) return;
+  if (!e.source || !e.target) {
+      return;
+  }
   const line = document.createElementNS('http://www.w3.org/2000/svg','line');
   line.setAttribute('x1', e.source.x); line.setAttribute('y1', e.source.y);
   line.setAttribute('x2', e.target.x); line.setAttribute('y2', e.target.y);
