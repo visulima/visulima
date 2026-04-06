@@ -87,7 +87,7 @@ const packageDemos: PackageDemo[] = [
     },
     {
         code: [
-            'import { isDisposableEmail }',
+            "import { isDisposableEmail }",
             '  from "@visulima/disposable-email-domains";',
             "",
             'const a = isDisposableEmail("hi@mailinator.com");',
@@ -128,7 +128,11 @@ const CodeLine: FC<{ content: string }> = ({ content }) => {
                 else if (isPunctuation) colorClass = "text-white/20";
                 else if (isNumber || isBoolean) colorClass = "text-sky-sapphire/60";
 
-                return <span className={colorClass} key={index}>{segment}</span>;
+                return (
+                    <span className={colorClass} key={index}>
+                        {segment}
+                    </span>
+                );
             })}
         </span>
     );
@@ -158,13 +162,17 @@ const PackageShowcase: FC = () => {
                     setVisibleLines(lineIdx);
                     if (lineIdx < d.output.length) {
                         const delay = d.output[lineIdx].delay ?? 100;
-                        const id = setTimeout(() => { reveal(lineIdx + 1); }, delay);
+                        const id = setTimeout(() => {
+                            reveal(lineIdx + 1);
+                        }, delay);
                         timeoutsRef.current.push(id);
                     }
                 }
             };
 
-            const id = setTimeout(() => { reveal(0); }, 400);
+            const id = setTimeout(() => {
+                reveal(0);
+            }, 400);
             timeoutsRef.current.push(id);
         },
         [clearTimeouts],
@@ -196,9 +204,7 @@ const PackageShowcase: FC = () => {
                                     key={demo.pkg}
                                     transition={{ duration: 0.15 }}
                                 >
-                                    <span className="font-mono text-xs font-medium text-white/40">
-                                        {demo.pkg}
-                                    </span>
+                                    <span className="font-mono text-xs font-medium text-white/40">{demo.pkg}</span>
                                 </motion.div>
                             </AnimatePresence>
                         </div>
@@ -214,9 +220,7 @@ const PackageShowcase: FC = () => {
                             >
                                 {demo.code.map((line, index) => (
                                     <div className="flex" key={index}>
-                                        <span className="mr-4 w-4 shrink-0 text-right text-white/[0.08] select-none">
-                                            {index + 1}
-                                        </span>
+                                        <span className="mr-4 w-4 shrink-0 text-right text-white/[0.08] select-none">{index + 1}</span>
                                         <CodeLine content={line} />
                                     </div>
                                 ))}
@@ -227,9 +231,7 @@ const PackageShowcase: FC = () => {
                     <div className="mx-3 mb-3 overflow-hidden bg-black/30">
                         <div className="flex items-center gap-2 px-4 pt-3 pb-1">
                             <Play className="h-2.5 w-2.5 fill-emerald-400/60 text-emerald-400/60" />
-                            <span className="font-mono text-[10px] font-medium tracking-wider text-emerald-400/40 uppercase">
-                                Output
-                            </span>
+                            <span className="font-mono text-[10px] font-medium tracking-wider text-emerald-400/40 uppercase">Output</span>
                         </div>
 
                         <div className="min-h-[90px] px-4 pt-1 pb-3 font-mono text-[13px] leading-relaxed">
@@ -245,9 +247,7 @@ const PackageShowcase: FC = () => {
                                         if (index >= visibleLines) return null;
                                         return (
                                             <div key={`${activeIndex}-${index}`}>
-                                                <span className={line.color ?? "text-white/30"}>
-                                                    {line.text || "\u00A0"}
-                                                </span>
+                                                <span className={line.color ?? "text-white/30"}>{line.text || "\u00A0"}</span>
                                             </div>
                                         );
                                     })}
@@ -264,12 +264,12 @@ const PackageShowcase: FC = () => {
                         <button
                             className={cn(
                                 "px-4 py-1.5 font-mono text-xs transition-all duration-200 cursor-pointer",
-                                index === activeIndex
-                                    ? "bg-white/10 text-white/70"
-                                    : "text-white hover:text-white/80",
+                                index === activeIndex ? "bg-white/10 text-white/70" : "text-white hover:text-white/80",
                             )}
                             key={d.label}
-                            onClick={() => { setActiveIndex(index); }}
+                            onClick={() => {
+                                setActiveIndex(index);
+                            }}
                             type="button"
                         >
                             {d.label}
@@ -282,10 +282,20 @@ const PackageShowcase: FC = () => {
 };
 
 const packageTicker = [
-    { name: "packem" }, { name: "pail" }, { name: "cerebro" }, { name: "fs" },
-    { name: "path" }, { name: "redact" }, { name: "colorize" }, { name: "boxen" },
-    { name: "fmt" }, { name: "deep-clone" }, { name: "humanizer" }, { name: "error" },
-    { name: "crud" }, { name: "inspector" },
+    { name: "packem" },
+    { name: "pail" },
+    { name: "cerebro" },
+    { name: "fs" },
+    { name: "path" },
+    { name: "redact" },
+    { name: "colorize" },
+    { name: "boxen" },
+    { name: "fmt" },
+    { name: "deep-clone" },
+    { name: "humanizer" },
+    { name: "error" },
+    { name: "crud" },
+    { name: "inspector" },
 ];
 
 const PackageTicker: FC = () => {
@@ -315,70 +325,70 @@ const PackageTicker: FC = () => {
 
 const MainHero: FC = () => (
     <div className="relative bg-background">
-    <Section
-        classes={{
-            root: "h-screen",
-            childrenWrapper: "!grid-cols-1 lg:!grid-cols-2 items-center gap-12 md:gap-0",
-        }}
-        gridLength={2}
-        mode="dark"
-    >
-        <div>
-            <p className="sr-only">
-                Visulima is a collection of 40+ production-ready, MIT-licensed TypeScript packages for Node.js, Bun, Deno, and edge runtimes.
-                It includes Packem for bundling, Pail for logging, Cerebro for CLI tools, and utilities for file systems, error handling, APIs, data manipulation, and more.
-            </p>
+        <Section
+            classes={{
+                root: "h-screen",
+                childrenWrapper: "!grid-cols-1 lg:!grid-cols-2 items-center gap-12 md:gap-0",
+            }}
+            gridLength={2}
+            mode="dark"
+        >
+            <div>
+                <p className="sr-only">
+                    Visulima is a collection of 40+ production-ready, MIT-licensed TypeScript packages for Node.js, Bun, Deno, and edge runtimes. It includes
+                    Packem for bundling, Pail for logging, Cerebro for CLI tools, and utilities for file systems, error handling, APIs, data manipulation, and
+                    more.
+                </p>
 
-            <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-8 flex items-center gap-5"
-                initial={{ opacity: 0, y: 10 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-            >
-                {[
-                    { label: "Packages", value: "40+" },
-                    { label: "License", value: "MIT" },
-                    { label: "TypeScript", value: "100%" },
-                ].map((stat, index) => (
-                    <div className="flex items-center gap-2" key={stat.label}>
-                        {index > 0 && <span className="mr-3 h-3 w-px bg-white/[0.08]" />}
-                        <span className="font-mono text-sm font-semibold text-white/70">{stat.value}</span>
-                        <span className="font-mono text-xs text-white/25">{stat.label}</span>
-                    </div>
-                ))}
-            </motion.div>
+                <motion.div
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8 flex items-center gap-5"
+                    initial={{ opacity: 0, y: 10 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                    {[
+                        { label: "Packages", value: "40+" },
+                        { label: "License", value: "MIT" },
+                        { label: "TypeScript", value: "100%" },
+                    ].map((stat, index) => (
+                        <div className="flex items-center gap-2" key={stat.label}>
+                            {index > 0 && <span className="mr-3 h-3 w-px bg-white/[0.08]" />}
+                            <span className="font-mono text-sm font-semibold text-white/70">{stat.value}</span>
+                            <span className="font-mono text-xs text-white/25">{stat.label}</span>
+                        </div>
+                    ))}
+                </motion.div>
 
-            <motion.h1
-                animate={{ opacity: 1, y: 0 }}
-                className="text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
-                initial={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
-            >
-                <span className="flex items-baseline gap-3">
-                    <WordRotate
-                        className="inline-block bg-gradient-to-r from-sky-sapphire via-royal-amethyst to-crimson-energy bg-clip-text text-transparent"
-                        duration={2800}
-                        framerProps={{
-                            animate: { opacity: 1, y: 0 },
-                            exit: { opacity: 0, y: -20 },
-                            initial: { opacity: 0, y: 20 },
-                            transition: { duration: 0.3, ease: "easeOut" },
-                        }}
-                        words={["Bundle.", "Log.", "Parse.", "Build.", "Ship."]}
-                    />
-                </span>
-                <span className="mt-1 block text-white/90">One ecosystem,</span>
-                <span className="block text-white/90">zero friction.</span>
-            </motion.h1>
+                <motion.h1
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-[4rem]"
+                    initial={{ opacity: 0, y: 20 }}
+                    transition={{ delay: 0.5, duration: 0.7, ease: "easeOut" }}
+                >
+                    <span className="flex items-baseline gap-3">
+                        <WordRotate
+                            className="inline-block bg-gradient-to-r from-sky-sapphire via-royal-amethyst to-crimson-energy bg-clip-text text-transparent"
+                            duration={2800}
+                            framerProps={{
+                                animate: { opacity: 1, y: 0 },
+                                exit: { opacity: 0, y: -20 },
+                                initial: { opacity: 0, y: 20 },
+                                transition: { duration: 0.3, ease: "easeOut" },
+                            }}
+                            words={["Bundle.", "Log.", "Parse.", "Build.", "Ship."]}
+                        />
+                    </span>
+                    <span className="mt-1 block text-white/90">One ecosystem,</span>
+                    <span className="block text-white/90">zero friction.</span>
+                </motion.h1>
 
-            <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-8 flex flex-wrap gap-2"
-                initial={{ opacity: 0, y: 10 }}
-                transition={{ delay: 0.9, duration: 0.5, ease: "easeOut" }}
-            >
-                {["Bundling", "Logging", "CLI", "File System", "Error Handling", "API", "Data Utils", "Storage"].map(
-                    (cat, index) => (
+                <motion.div
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-8 flex flex-wrap gap-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    transition={{ delay: 0.9, duration: 0.5, ease: "easeOut" }}
+                >
+                    {["Bundling", "Logging", "CLI", "File System", "Error Handling", "API", "Data Utils", "Storage"].map((cat, index) => (
                         <motion.span
                             animate={{ opacity: 1, scale: 1 }}
                             className="border border-white/[0.06] bg-white/[0.02] px-3 py-1 font-mono text-xs text-white/30 transition-colors hover:border-white/[0.12] hover:text-white/50"
@@ -388,44 +398,43 @@ const MainHero: FC = () => (
                         >
                             {cat}
                         </motion.span>
-                    ),
-                )}
-            </motion.div>
+                    ))}
+                </motion.div>
 
-            <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-10 flex flex-wrap items-center gap-5"
-                initial={{ opacity: 0, y: 15 }}
-                transition={{ delay: 1.2, duration: 0.6, ease: "easeOut" }}
-            >
-                <Link
-                    className="group relative inline-flex items-center gap-3 overflow-hidden border border-white/[0.15] bg-white px-7 py-3.5 text-sm font-semibold text-coal transition-all duration-300 hover:bg-white/90"
-                    to="/docs/$"
+                <motion.div
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-10 flex flex-wrap items-center gap-5"
+                    initial={{ opacity: 0, y: 15 }}
+                    transition={{ delay: 1.2, duration: 0.6, ease: "easeOut" }}
                 >
-                    <span>Get started</span>
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    <span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                        style={{
-                            background: "linear-gradient(135deg, transparent 40%, hsla(210,100%,45%,0.08), hsla(282,44%,47%,0.08))",
-                        }}
-                    />
-                </Link>
-                <Link
-                    className="group inline-flex items-center gap-2 border border-white/[0.08] bg-white/[0.03] px-6 py-3.5 text-sm font-medium text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white/80"
-                    to="/packages"
-                >
-                    <span>Browse packages</span>
-                    <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </Link>
-            </motion.div>
-        </div>
+                    <Link
+                        className="group relative inline-flex items-center gap-3 overflow-hidden border border-white/[0.15] bg-white px-7 py-3.5 text-sm font-semibold text-coal transition-all duration-300 hover:bg-white/90"
+                        to="/docs/$"
+                    >
+                        <span>Get started</span>
+                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                        <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                            style={{
+                                background: "linear-gradient(135deg, transparent 40%, hsla(210,100%,45%,0.08), hsla(282,44%,47%,0.08))",
+                            }}
+                        />
+                    </Link>
+                    <Link
+                        className="group inline-flex items-center gap-2 border border-white/[0.08] bg-white/[0.03] px-6 py-3.5 text-sm font-medium text-white/50 backdrop-blur-sm transition-all duration-300 hover:border-white/[0.15] hover:bg-white/[0.06] hover:text-white/80"
+                        to="/packages"
+                    >
+                        <span>Browse packages</span>
+                        <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                    </Link>
+                </motion.div>
+            </div>
 
-        <PackageShowcase />
-    </Section>
-    <PackageTicker />
-</div>
+            <PackageShowcase />
+        </Section>
+        <PackageTicker />
+    </div>
 );
 
 export default MainHero;

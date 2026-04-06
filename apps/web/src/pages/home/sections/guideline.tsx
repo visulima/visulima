@@ -39,20 +39,20 @@ const GuidelineSection: FC = () => (
             </div>
             <div className="col-span-1 mt-20 flex flex-col gap-16 md:mt-0">
                 <GuidelineItem color="border-sky-sapphire" title="Craft clear documentation">
-                    Great tools deserve great documentation. We invest in creating clear, detailed guides so you can quickly understand how to use our packages and
-                    unlock their full potential.
+                    Great tools deserve great documentation. We invest in creating clear, detailed guides so you can quickly understand how to use our packages
+                    and unlock their full potential.
                 </GuidelineItem>
                 <GuidelineItem color="border-crimson-energy" title="Write clean and readable code">
                     Code should speak for itself. We write clean, readable code with thoughtfully named variables and functions, making collaboration easier and
                     maintenance a breeze.
                 </GuidelineItem>
                 <GuidelineItem color="border-royal-amethyst" title="Focus on a small, polished scope">
-                    Less is more. Our packages are intentionally focused on delivering one polished feature, ensuring simplicity, efficiency, and reliability for your
-                    projects without unnecessary complexity.
+                    Less is more. Our packages are intentionally focused on delivering one polished feature, ensuring simplicity, efficiency, and reliability
+                    for your projects without unnecessary complexity.
                 </GuidelineItem>
                 <GuidelineItem color="border-sky-sapphire" title="Stay current">
-                    The Node.js ecosystem evolves fast, and so do we. Our team ensures every package stays compatible with the latest updates and frameworks, so your
-                    projects always remain cutting-edge.
+                    The Node.js ecosystem evolves fast, and so do we. Our team ensures every package stays compatible with the latest updates and frameworks, so
+                    your projects always remain cutting-edge.
                 </GuidelineItem>
             </div>
         </Section>

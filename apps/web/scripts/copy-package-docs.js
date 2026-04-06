@@ -34,13 +34,16 @@ const EXTERNAL_DOCS = [
  * Category display names and order for the packages sidebar.
  */
 const CATEGORY_CONFIG = {
-    "bundler": { title: "Bundler", packages: ["packem"] },
-    "cli-terminal": { title: "CLI & Terminal", packages: ["cerebro", "pail", "command-line-args", "boxen", "tabular", "ansi", "colorize", "is-ansi-color-supported", "fmt"] },
+    bundler: { title: "Bundler", packages: ["packem"] },
+    "cli-terminal": {
+        title: "CLI & Terminal",
+        packages: ["cerebro", "pail", "command-line-args", "boxen", "tabular", "ansi", "colorize", "is-ansi-color-supported", "fmt"],
+    },
     "data-manipulation": { title: "Data & Utilities", packages: ["string", "object", "deep-clone", "bytes", "humanizer", "redact", "content-safety"] },
-    "filesystem": { title: "File System", packages: ["fs", "path", "find-cache-dir", "package", "tsconfig", "storage", "storage-client"] },
-    "api": { title: "API & Web", packages: ["api-platform", "crud", "html", "pagination", "health-check", "jsdoc-open-api"] },
+    filesystem: { title: "File System", packages: ["fs", "path", "find-cache-dir", "package", "tsconfig", "storage", "storage-client"] },
+    api: { title: "API & Web", packages: ["api-platform", "crud", "html", "pagination", "health-check", "jsdoc-open-api"] },
     "error-debugging": { title: "Error Handling", packages: ["error", "error-handler", "ono", "source-map", "inspector", "vite-overlay"] },
-    "email": { title: "Internationalization & Communication", packages: ["iso-locale", "disposable-email-domains", "email"] },
+    email: { title: "Internationalization & Communication", packages: ["iso-locale", "disposable-email-domains", "email"] },
     "dev-tools": { title: "Dev Tools", packages: ["dev-toolbar", "prisma-dmmf-transformer"] },
 };
 
@@ -113,7 +116,8 @@ async function sanitizeMdx(filePath) {
     const codeBlockRegex = /(```[\s\S]*?```|`[^`]+`)/g;
     const parts = content.split(codeBlockRegex);
 
-    const fumadocsComponents = "Callout|Tab|Tabs|Cards|Card|Steps|Step|Files|Folder|File|DocsCategory|CodeBlockTabs|CodeBlockTabsList|CodeBlockTabsTrigger|CodeBlockTab|Accordions|Accordion|TypeTable|AutoTypeTable|ImageZoom";
+    const fumadocsComponents =
+        "Callout|Tab|Tabs|Cards|Card|Steps|Step|Files|Folder|File|DocsCategory|CodeBlockTabs|CodeBlockTabsList|CodeBlockTabsTrigger|CodeBlockTab|Accordions|Accordion|TypeTable|AutoTypeTable|ImageZoom";
     const safeHtmlTags = `div|span|a|p|ul|ol|li|h[1-6]|br|hr|img|code|pre|em|strong|b|i|u|table|thead|tbody|tfoot|tr|td|th|details|summary|blockquote|section|nav|footer|header|main|aside|figure|figcaption|dl|dt|dd|sup|sub|del|ins|mark|small|abbr|cite|dfn|kbd|samp|var|wbr|!--|${fumadocsComponents}`;
     const safeTagRegex = new RegExp(`<(?!\\/?(?:${safeHtmlTags})[\\s>/])`, "g");
 
@@ -148,9 +152,7 @@ async function sanitizeMdx(filePath) {
     // 6. Add frontmatter if missing
     if (!content.startsWith("---")) {
         const basename = path.basename(filePath, path.extname(filePath));
-        const title = basename
-            .replace(/[-_]/g, " ")
-            .replace(/\b\w/g, (c) => c.toUpperCase());
+        const title = basename.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
         content = `---\ntitle: "${title}"\n---\n\n` + content;
     }
@@ -260,27 +262,24 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
             let changed = false;
 
             // Fix broken markdown-style /docs/ links
-            const updated = content.replace(
-                /\[([^\]]*)\]\(\/docs\/(.*?)\)/g,
-                (match, label, docPath) => {
-                    // Strip hash fragments and trailing slashes for resolution
-                    const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
-                    const resolved = path.join(contentRoot, cleanPath);
+            const updated = content.replace(/\[([^\]]*)\]\(\/docs\/(.*?)\)/g, (match, label, docPath) => {
+                // Strip hash fragments and trailing slashes for resolution
+                const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
+                const resolved = path.join(contentRoot, cleanPath);
 
-                    // Check if the target exists as a file or directory with index
-                    const exists =
-                        existsSync(resolved + ".mdx") ||
-                        existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) ||
-                        existsSync(path.join(resolved, "index.md"));
+                // Check if the target exists as a file or directory with index
+                const exists =
+                    existsSync(resolved + ".mdx") ||
+                    existsSync(resolved + ".md") ||
+                    existsSync(path.join(resolved, "index.mdx")) ||
+                    existsSync(path.join(resolved, "index.md"));
 
-                    if (!exists) {
-                        changed = true;
-                        return label; // Convert to plain text
-                    }
-                    return match;
+                if (!exists) {
+                    changed = true;
+                    return label; // Convert to plain text
                 }
-            );
+                return match;
+            });
 
             // Strip absolute markdown links to non-existent non-docs routes (e.g. /examples, /usage)
             let final = updated.replace(
@@ -292,42 +291,36 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                     }
                     changed = true;
                     return label;
-                }
+                },
             );
 
             // Fix broken JSX href="/docs/..." links — remove the href to make it a plain element
-            final = final.replace(
-                /href="\/docs\/(.*?)"/g,
-                (match, docPath) => {
-                    const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
-                    const resolved = path.join(contentRoot, cleanPath);
+            final = final.replace(/href="\/docs\/(.*?)"/g, (match, docPath) => {
+                const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
+                const resolved = path.join(contentRoot, cleanPath);
 
-                    const exists =
-                        existsSync(resolved + ".mdx") ||
-                        existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) ||
-                        existsSync(path.join(resolved, "index.md"));
+                const exists =
+                    existsSync(resolved + ".mdx") ||
+                    existsSync(resolved + ".md") ||
+                    existsSync(path.join(resolved, "index.mdx")) ||
+                    existsSync(path.join(resolved, "index.md"));
 
-                    if (!exists) {
-                        changed = true;
-                        return ""; // Remove broken href
-                    }
-                    return match;
-                }
-            );
-
-            // Fix broken JSX root-relative href links (e.g. href="/installation")
-            final = final.replace(
-                new RegExp(`href="\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|docs)\\/|https?:)[^"]*)"`, "g"),
-                (match, linkPath) => {
-                    const firstSegment = linkPath.split(/[/#]/)[0];
-                    if (KNOWN_ROUTES.has(firstSegment)) {
-                        return match;
-                    }
+                if (!exists) {
                     changed = true;
                     return ""; // Remove broken href
                 }
-            );
+                return match;
+            });
+
+            // Fix broken JSX root-relative href links (e.g. href="/installation")
+            final = final.replace(new RegExp(`href="\\/((?!(?:${KNOWN_ROUTES_PATTERN}|assets|docs)\\/|https?:)[^"]*)"`, "g"), (match, linkPath) => {
+                const firstSegment = linkPath.split(/[/#]/)[0];
+                if (KNOWN_ROUTES.has(firstSegment)) {
+                    return match;
+                }
+                changed = true;
+                return ""; // Remove broken href
+            });
 
             if (changed) {
                 await fs.writeFile(fullPath, final);
@@ -355,26 +348,20 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
             let content = original;
 
             // Rewrite /docs/ links (markdown syntax)
-            content = content.replace(
-                /(\[.*?\]\()\/docs\/(?!packages\/)(.*?\))/g,
-                (match, prefix, restPath) => {
-                    if (restPath.startsWith(`${pkgName}/`) || restPath.startsWith(`${pkgName})`)) {
-                        return `${prefix}/docs/packages/${restPath}`;
-                    }
-                    return `${prefix}/docs/packages/${pkgName}/${restPath}`;
+            content = content.replace(/(\[.*?\]\()\/docs\/(?!packages\/)(.*?\))/g, (match, prefix, restPath) => {
+                if (restPath.startsWith(`${pkgName}/`) || restPath.startsWith(`${pkgName})`)) {
+                    return `${prefix}/docs/packages/${restPath}`;
                 }
-            );
+                return `${prefix}/docs/packages/${pkgName}/${restPath}`;
+            });
 
             // Rewrite /docs/ links (JSX href syntax)
-            content = content.replace(
-                /href="\/docs\/(?!packages\/)(.*?)"/g,
-                (match, restPath) => {
-                    if (restPath.startsWith(`${pkgName}/`) || restPath === pkgName) {
-                        return `href="/docs/packages/${restPath}"`;
-                    }
-                    return `href="/docs/packages/${pkgName}/${restPath}"`;
+            content = content.replace(/href="\/docs\/(?!packages\/)(.*?)"/g, (match, restPath) => {
+                if (restPath.startsWith(`${pkgName}/`) || restPath === pkgName) {
+                    return `href="/docs/packages/${restPath}"`;
                 }
-            );
+                return `href="/docs/packages/${pkgName}/${restPath}"`;
+            });
 
             // Rewrite root-relative links (e.g. /usage/foo, /usage#anchor) that match existing package docs (markdown syntax)
             content = content.replace(
@@ -383,12 +370,16 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
                     const resolved = path.join(pkgRoot, cleanPath);
 
-                    if (existsSync(resolved + ".mdx") || existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) || existsSync(path.join(resolved, "index.md"))) {
+                    if (
+                        existsSync(resolved + ".mdx") ||
+                        existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) ||
+                        existsSync(path.join(resolved, "index.md"))
+                    ) {
                         return `${prefix}/docs/packages/${pkgName}/${linkPath})`;
                     }
                     return match;
-                }
+                },
             );
 
             // Rewrite root-relative links (JSX href syntax)
@@ -398,25 +389,26 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
                     const resolved = path.join(pkgRoot, cleanPath);
 
-                    if (existsSync(resolved + ".mdx") || existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) || existsSync(path.join(resolved, "index.md"))) {
+                    if (
+                        existsSync(resolved + ".mdx") ||
+                        existsSync(resolved + ".md") ||
+                        existsSync(path.join(resolved, "index.mdx")) ||
+                        existsSync(path.join(resolved, "index.md"))
+                    ) {
                         return `href="/docs/packages/${pkgName}/${linkPath}"`;
                     }
                     return match;
-                }
+                },
             );
 
             // Convert relative ./path links to absolute /docs/packages/{pkgName}/... paths
             const fileDir = path.dirname(fullPath);
-            content = content.replace(
-                /(\[.*?\]\()\.\/([^)]+)\)/g,
-                (match, prefix, relPath) => {
-                    // Compute the absolute docs path from the file's directory
-                    const relToRoot = path.relative(pkgRoot, fileDir);
-                    const absPath = relToRoot ? `${relToRoot}/${relPath}` : relPath;
-                    return `${prefix}/docs/packages/${pkgName}/${absPath})`;
-                }
-            );
+            content = content.replace(/(\[.*?\]\()\.\/([^)]+)\)/g, (match, prefix, relPath) => {
+                // Compute the absolute docs path from the file's directory
+                const relToRoot = path.relative(pkgRoot, fileDir);
+                const absPath = relToRoot ? `${relToRoot}/${relPath}` : relPath;
+                return `${prefix}/docs/packages/${pkgName}/${absPath})`;
+            });
 
             if (content !== original) {
                 await fs.writeFile(fullPath, content);
@@ -444,7 +436,8 @@ async function generateMetaJson(destPath) {
         }
     }
 
-    const title = path.basename(destPath)
+    const title = path
+        .basename(destPath)
         .replace(/[-_]/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase());
 
@@ -684,9 +677,7 @@ async function copyRootMarkdown() {
     const contentDir = path.join(__dirname, "..", "src", "content");
     await fs.mkdir(contentDir, { recursive: true });
 
-    const files = [
-        { src: path.join(ROOT_DIR, ".github", "CODE_OF_CONDUCT.md"), dest: path.join(contentDir, "code-of-conduct.md") },
-    ];
+    const files = [{ src: path.join(ROOT_DIR, ".github", "CODE_OF_CONDUCT.md"), dest: path.join(contentDir, "code-of-conduct.md") }];
 
     for (const { src, dest } of files) {
         try {

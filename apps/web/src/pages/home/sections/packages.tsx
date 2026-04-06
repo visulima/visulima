@@ -10,7 +10,6 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 import HighlightLink from "@/components/ui/highlight-link";
 
-
 const FeatureCard = ({ accentColor, children, title, className }: { accentColor: string; children: React.ReactNode; title: string; className?: string }) => (
     <div className={cn("group/feature relative flex w-full flex-col gap-4 px-8 pt-8 pb-10 transition-all duration-300 hover:bg-white/[0.02]", className)}>
         <div className={`absolute top-0 left-8 right-8 h-px ${accentColor} opacity-0 transition-opacity duration-500 group-hover/feature:opacity-100`} />
@@ -20,7 +19,6 @@ const FeatureCard = ({ accentColor, children, title, className }: { accentColor:
         </span>
     </div>
 );
-
 
 interface BuildStep {
     type: "cmd" | "info" | "entry" | "chunk" | "total" | "done";
@@ -114,7 +112,6 @@ const PackemTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -174,11 +171,9 @@ const PackemSection = () => (
             <div className="relative overflow-hidden border-b border-white/6 bg-gradient-to-br from-sky-sapphire/[0.08] via-transparent to-transparent">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-sky-sapphire/60 to-transparent" />
                 <div className="grid grid-cols-2">
-
                     <div className="min-h-120 bg-sky-sapphire/[0.04]">
                         <PackemTerminal />
                     </div>
-
 
                     <div className="z-10 flex w-full flex-col gap-4 px-8 pt-8 pb-14 border-l border-white/6">
                         <div className="flex items-center gap-3">
@@ -230,7 +225,6 @@ const PackemSection = () => (
     </Section>
 );
 
-
 const LOG_LINES = [
     { level: "success", prefix: "  ✔", text: "Operation successful", color: "text-emerald-400" },
     { level: "debug", prefix: "  ●", text: "Hello from L59", color: "text-sky-sapphire" },
@@ -262,7 +256,6 @@ const PailTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -356,7 +349,6 @@ const PailSection = () => (
     </Section>
 );
 
-
 const CLI_SEQUENCE = [
     {
         command: "my-cli deploy",
@@ -441,7 +433,6 @@ const CerebroTerminal = () => {
 
     return (
         <div className="flex h-full flex-col">
-
             <div className="flex items-center gap-3 border-b border-white/6 px-4 py-2.5">
                 <div className="flex gap-1.5">
                     <div className="h-2 w-2 bg-white/10" />
@@ -452,7 +443,6 @@ const CerebroTerminal = () => {
             </div>
 
             <div className="flex-1 overflow-hidden px-4 py-3 font-mono text-xs leading-6">
-
                 <div className="flex flex-wrap">
                     <span className="text-royal-amethyst/60">$</span>
                     <span className="ml-2 text-white/80">{typedCommand}</span>
@@ -465,7 +455,6 @@ const CerebroTerminal = () => {
                         />
                     )}
                 </div>
-
 
                 <AnimatePresence>
                     {(phase === "output" || phase === "done") &&
@@ -493,7 +482,6 @@ const CerebroSection = () => (
             <div className="relative overflow-hidden border border-white/6 bg-gradient-to-br from-royal-amethyst/[0.08] via-transparent to-transparent">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-royal-amethyst/60 to-transparent" />
                 <div className="grid grid-cols-2">
-
                     <div className="min-h-80 w-full bg-royal-amethyst/[0.04]">
                         <CerebroTerminal />
                     </div>
@@ -542,7 +530,6 @@ const CerebroSection = () => (
         </div>
     </Section>
 );
-
 
 const Packages: FC = () => (
     <div className="bg-background">

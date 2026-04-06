@@ -39,9 +39,7 @@ const RouteComponent = () => (
                     .<br />
                     Unsere E-Mail-Adresse finden Sie oben im Impressum.
                 </p>
-                <p>
-                    Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
-                </p>
+                <p>Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
                 <h2>Haftung für Inhalte</h2>
                 <p>
@@ -63,8 +61,8 @@ const RouteComponent = () => (
                     zum Zeitpunkt der Verlinkung nicht erkennbar.
                 </p>
                 <p>
-                    Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei
-                    Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
+                    Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar.
+                    Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
                 </p>
 
                 <h2>Urheberrecht</h2>

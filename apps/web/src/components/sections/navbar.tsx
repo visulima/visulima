@@ -6,7 +6,28 @@ import TwitterLogoIcon from "@icons-pack/react-simple-icons/icons/SiX.mjs";
 import { Link, useLocation } from "@tanstack/react-router";
 import type { ClassValue } from "clsx";
 import { useSearchContext } from "fumadocs-ui/contexts/search";
-import { AlertTriangle, Book, Bug, FileCode, FolderOpen, Handshake, Home, Layers, Logs, Menu, Moon, Package, Palette, ScrollText, Search, Shield, Signature, Sun, Terminal, Wrench } from "lucide-react";
+import {
+    AlertTriangle,
+    Book,
+    Bug,
+    FileCode,
+    FolderOpen,
+    Handshake,
+    Home,
+    Layers,
+    Logs,
+    Menu,
+    Moon,
+    Package,
+    Palette,
+    ScrollText,
+    Search,
+    Shield,
+    Signature,
+    Sun,
+    Terminal,
+    Wrench,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import type { ComponentPropsWithoutRef, ElementRef, MouseEvent as ReactMouseEvent, ReactNode } from "react";
 import { forwardRef, useEffect, useRef, useState } from "react";
@@ -306,9 +327,7 @@ const SearchButton = () => {
         >
             <Search className="size-3.5" />
             <span>Search...</span>
-            <kbd className="ml-auto rounded border border-[var(--nav-text-color)]/10 px-1.5 py-0.5 text-xs text-[var(--nav-text-color)]/30">
-                /
-            </kbd>
+            <kbd className="ml-auto rounded border border-[var(--nav-text-color)]/10 px-1.5 py-0.5 text-xs text-[var(--nav-text-color)]/30">/</kbd>
         </button>
     );
 };
@@ -387,11 +406,7 @@ const Navbar = () => {
     }, [navReference]);
 
     return (
-        <div
-            className={cn("flex fixed top-0 z-20 w-full gap-8 transition-all duration-300", { "top-5": scrolled })}
-            data-theme="dark"
-            ref={navReference}
-        >
+        <div className={cn("flex fixed top-0 z-20 w-full gap-8 transition-all duration-300", { "top-5": scrolled })} data-theme="dark" ref={navReference}>
             <NavigationMenu className="bg-opacity-25 mx-auto flex gap-5 rounded-t-md px-4 py-2 shadow-sm backdrop-blur-lg backdrop-filter">
                 <div className="flex items-center gap-4">
                     <Logo pathname={pathname} />

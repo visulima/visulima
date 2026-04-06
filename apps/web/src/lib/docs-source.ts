@@ -9,8 +9,7 @@ export const source = loader({
             return;
         }
 
-        if (icon in icons)
-            return icons[icon as keyof typeof icons];
+        if (icon in icons) return icons[icon as keyof typeof icons];
     },
     source: docs.toFumadocsSource(),
 });

@@ -18,8 +18,8 @@ const OpenSource = () => (
                 description={
                     <span className="flex flex-col gap-6">
                         <span>
-                            At Visulima, we believe every line of code tells a story. By combining elegant syntax with intuitive design, we empower developers to
-                            create with confidence and joy.
+                            At Visulima, we believe every line of code tells a story. By combining elegant syntax with intuitive design, we empower developers
+                            to create with confidence and joy.
                         </span>
                         <span className="text-gray-400">
                             Our philosophy is simple: great tools lead to great creations, and development should always inspire — not frustrate.

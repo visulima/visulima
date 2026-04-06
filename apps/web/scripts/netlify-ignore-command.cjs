@@ -28,11 +28,7 @@ if (commitMessage.startsWith("[skip ci]")) {
 }
 
 // Only build when changes happen in relevant directories or files
-const requiredChanges = [
-    "apps/web/",
-    "/docs/",
-    "pnpm-lock.yaml",
-];
+const requiredChanges = ["apps/web/", "/docs/", "pnpm-lock.yaml"];
 
 const changedFiles = getChangedFiles();
 

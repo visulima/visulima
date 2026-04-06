@@ -20,27 +20,27 @@ const repoRoot = resolve(webRoot, "..", "..");
 // Category tag slug → display name
 const categoryMap = {
     "api-web": "API & Web",
-    "bundling": "Bundling",
+    bundling: "Bundling",
     "cli-terminal": "CLI & Terminal",
-    "communication": "Communication",
-    "data": "Data",
+    communication: "Communication",
+    data: "Data",
     "dev-tools": "Dev Tools",
     "error-handling": "Error Handling",
     "file-system": "File System",
-    "internationalization": "Internationalization",
+    internationalization: "Internationalization",
 };
 
 // Category → accent color
 const categoryColors = {
     "API & Web": "royal-amethyst",
-    "Bundling": "sky-sapphire",
+    Bundling: "sky-sapphire",
     "CLI & Terminal": "royal-amethyst",
-    "Communication": "crimson-energy",
-    "Data": "crimson-energy",
+    Communication: "crimson-energy",
+    Data: "crimson-energy",
     "Dev Tools": "sky-sapphire",
     "Error Handling": "crimson-energy",
     "File System": "sky-sapphire",
-    "Internationalization": "royal-amethyst",
+    Internationalization: "royal-amethyst",
 };
 
 // Load curated metadata
@@ -212,7 +212,9 @@ export type Category = (typeof categories)[number];
 const categoryColors: Record<string, AccentColor> = ${JSON.stringify(categoryColors, null, 4).replace(/\n/g, "\n")};
 
 export const packages: PackageInfo[] = [
-${packages.map((p) => `    {
+${packages
+    .map(
+        (p) => `    {
         accentColor: categoryColors[${JSON.stringify(p.category)}]!,
         category: ${JSON.stringify(p.category)},
         description: ${JSON.stringify(p.description)},
@@ -221,7 +223,9 @@ ${packages.map((p) => `    {
         name: ${JSON.stringify(p.name)},
         npmName: ${JSON.stringify(p.npmName)},
         slug: ${JSON.stringify(p.slug)},
-    },`).join("\n")}
+    },`,
+    )
+    .join("\n")}
 ];
 
 export function getPackageBySlug(slug: string): PackageInfo | undefined {
