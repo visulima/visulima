@@ -3,10 +3,6 @@
     "$schema": "../../../node_modules/nx/schemas/project-schema.json",
     "sourceRoot": "packages/error-debugging/error-handler/src",
     "projectType": "library",
-    "tags": [
-        "error-handler",
-        "type:package",
-        "category:error-handling"
-    ],
+    "tags": ["error-handler", "type:package", "category:error-handling"],
     "implicitDependencies": []
 }

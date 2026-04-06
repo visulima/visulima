@@ -16,7 +16,7 @@ describe("createNegotiatedErrorHandler negotiator", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Bad Request\"}");
+        expect(res._getData()).toBe('{"type":"about:blank","title":"Bad Request","status":400,"detail":"Bad Request"}');
     });
 
     it("uses JSON:API when Accept is application/vnd.api+json", async () => {
@@ -32,7 +32,7 @@ describe("createNegotiatedErrorHandler negotiator", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":400,\"title\":\"Bad Request\",\"detail\":\"Bad Request\"}]}");
+        expect(res._getData()).toBe('{"errors":[{"code":400,"title":"Bad Request","detail":"Bad Request"}]}');
     });
 
     it("uses Problem JSON when Accept is application/problem+json", async () => {
@@ -48,7 +48,7 @@ describe("createNegotiatedErrorHandler negotiator", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(400);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"type\":\"about:blank\",\"title\":\"Bad Request\",\"status\":400,\"detail\":\"Bad Request\"}");
+        expect(res._getData()).toBe('{"type":"about:blank","title":"Bad Request","status":400,"detail":"Bad Request"}');
     });
 
     it("uses HTML when Accept is text/html and default HTML handler provided", async () => {

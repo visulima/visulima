@@ -15,19 +15,23 @@ const app = express();
 // Your routes...
 
 // Error handler (must be last)
-app.use(createErrorHandler({
-    debug: true,
-}));
+app.use(
+    createErrorHandler({
+        debug: true,
+    }),
+);
 ```
 
 ## Custom Format
 
 ```typescript
-app.use(createErrorHandler({
-    debug: true,
-    formatError: (error) => ({
-        error: error.message,
-        code: error.statusCode || 500,
+app.use(
+    createErrorHandler({
+        debug: true,
+        formatError: (error) => ({
+            error: error.message,
+            code: error.statusCode || 500,
+        }),
     }),
-}));
+);
 ```
