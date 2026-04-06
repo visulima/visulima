@@ -4,7 +4,9 @@ import Section from "@/components/sections/section";
 import SectionTitle from "@/components/sections/section-title";
 import FlickeringGrid from "@/components/ui/flickering-grid";
 
-const GoodFirstIssueBanner = <FlickeringGrid className="ml-0.5 w-full" color="green" flickerChance={0.1} gridGap={2} height={45} maxOpacity={0.3} squareSize={2} />;
+const GoodFirstIssueBanner = (
+    <FlickeringGrid className="ml-0.5 w-full" color="green" flickerChance={0.1} gridGap={2} height={45} maxOpacity={0.3} squareSize={2} />
+);
 
 const SupportCard = ({
     accentColor,
@@ -82,20 +84,17 @@ const SupportSection = () => (
             </div>
         </Section>
         <Section classes={{ root: "pt-20" }} mode="light">
-
             <SupportCard accentColor="via-sky-sapphire/30" className="mr-px" icon={BookOpen} iconColor="text-sky-sapphire/70" title="Ready to help us out?">
                 Be sure to check out the package's contribution guidelines first. They'll walk you through the process on how to properly submit an issue or
                 pull request to our repositories.
             </SupportCard>
             <div className="hidden lg:col-span-2 lg:block" />
 
-
             <div className="hidden lg:col-span-2 lg:block" />
             <SupportCard accentColor="via-royal-amethyst/30" icon={GitPullRequest} iconColor="text-royal-amethyst/70" title="Submit a pull request">
                 Found something to improve? Fork the repo, make your changes, and open a PR. We review every contribution and provide feedback to help you get
                 merged.
             </SupportCard>
-
 
             <SupportCard
                 accentColor="via-emerald-500/30"

@@ -146,9 +146,7 @@ const fetchWithRetry = async (url, maxRetries = 5) => {
 };
 
 const fetchPackageDownloads = async (pkg, period) => {
-    const data = await fetchWithRetry(
-        `https://api.npmjs.org/downloads/point/${period}/@visulima/${pkg}`,
-    );
+    const data = await fetchWithRetry(`https://api.npmjs.org/downloads/point/${period}/@visulima/${pkg}`);
 
     return data?.downloads || 0;
 };
@@ -164,15 +162,11 @@ const fetchPackageMonthlyChart = async (pkg, cutoffDate) => {
     const now = new Date();
     const dailyByMonth = {};
 
-    const windows = cutoffDate
-        ? buildWindows(new Date(cutoffDate), now)
-        : buildFullHistoryWindows(now);
+    const windows = cutoffDate ? buildWindows(new Date(cutoffDate), now) : buildFullHistoryWindows(now);
 
     for (const { start, end } of windows) {
         await delay(1500);
-        const data = await fetchWithRetry(
-            `https://api.npmjs.org/downloads/range/${start}:${end}/@visulima/${pkg}`,
-        );
+        const data = await fetchWithRetry(`https://api.npmjs.org/downloads/range/${start}:${end}/@visulima/${pkg}`);
 
         if (data?.downloads) {
             for (const day of data.downloads) {
@@ -267,9 +261,7 @@ const fetchRepoStars = async (repo) => {
 
 const fetchRepoContributors = async (repo) => {
     try {
-        const response = await fetch(
-            `https://api.github.com/repos/${repo}/contributors?per_page=1&anon=true`,
-        );
+        const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=1&anon=true`);
 
         if (response.ok) {
             const linkHeader = response.headers.get("Link");
@@ -330,9 +322,7 @@ const main = async () => {
             console.log(`    Fetching chart data from ${cutoffDate}...`);
             const freshChart = await fetchPackageMonthlyChart(pkg, cutoffDate);
             monthlyChart[pkg] = mergeMonthlyChart(cachedChart, freshChart);
-            console.log(
-                `    ${freshChart.length} new months fetched, ${monthlyChart[pkg].length} months total`,
-            );
+            console.log(`    ${freshChart.length} new months fetched, ${monthlyChart[pkg].length} months total`);
         } else {
             console.log(`    Fetching full chart data...`);
             monthlyChart[pkg] = await fetchPackageMonthlyChart(pkg, null);

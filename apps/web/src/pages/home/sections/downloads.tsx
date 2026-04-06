@@ -44,41 +44,26 @@ const DownloadChart: FC<{ data: MonthlyDataPoint[] }> = ({ data }) => {
 
     return (
         <div className="relative h-full w-full">
-            <motion.div
-                className="absolute inset-0 h-full w-full"
-                animate={{ opacity: 1 }}
-                initial={{ opacity: 0 }}
-                transition={{ duration: 1.5 }}
-            >
-            <svg
-                className="h-full w-full"
-                preserveAspectRatio="none"
-                viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}
-            >
-                <defs>
-                    <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(258 80% 55%)" stopOpacity="0.15" />
-                        <stop offset="100%" stopColor="hsl(258 80% 55%)" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
+            <motion.div className="absolute inset-0 h-full w-full" animate={{ opacity: 1 }} initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
+                <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}>
+                    <defs>
+                        <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(258 80% 55%)" stopOpacity="0.15" />
+                            <stop offset="100%" stopColor="hsl(258 80% 55%)" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
 
+                    {GRID_FRACTIONS.map((fraction) => {
+                        const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
+                        return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
+                    })}
 
-                {GRID_FRACTIONS.map((fraction) => {
-                    const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
-                    return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
-                })}
+                    <path d={areaPath} fill="url(#chart-gradient)" />
 
+                    <path d={linePath} fill="none" stroke="hsl(258 80% 55%)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
-                <path d={areaPath} fill="url(#chart-gradient)" />
-
-
-                <path d={linePath} fill="none" stroke="hsl(258 80% 55%)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-
-
-                {lastPoint && (
-                    <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill="hsl(258 80% 55%)" r="4" />
-                )}
-            </svg>
+                    {lastPoint && <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill="hsl(258 80% 55%)" r="4" />}
+                </svg>
             </motion.div>
             <div className="absolute right-6 bottom-3 left-6 flex justify-between md:right-10 md:left-10">
                 <span className="font-mono text-sm text-gray-400">{formatMonth(firstMonth)}</span>
@@ -238,20 +223,16 @@ const Downloads: FC = () => {
 
     return (
         <Section classes={{ root: "pb-0" }} gridLength={2} mode="light">
-
             <div className="col-span-full">
                 <h3 className="max-w-lg text-balance text-2xl font-bold tracking-tight text-gray-900 lg:text-3xl">Trusted by developers worldwide</h3>
             </div>
 
-
             <div className="col-span-full mt-10 border-t border-gray-200">
                 <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-2 md:divide-x md:divide-y-0">
-
                     <div className="flex flex-col justify-between gap-6 p-6 md:p-10">
                         <span className="flex items-center gap-2 text-sm text-gray-500">Total downloads</span>
                         <AnimatedNumber className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl" suffix="+" value={totalDownloads} />
                     </div>
-
 
                     <div className="relative flex flex-col aspect-[5/3]">
                         <div className="absolute top-4 left-6 z-20 md:left-10">
@@ -263,7 +244,6 @@ const Downloads: FC = () => {
                     </div>
                 </div>
             </div>
-
 
             <div className="col-span-full border-t border-b border-gray-200">
                 <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-4 md:divide-x md:divide-y-0">

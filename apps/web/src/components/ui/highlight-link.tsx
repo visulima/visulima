@@ -36,7 +36,13 @@ const InnerContent: FC<PropsWithChildren<{ icon?: ReactNode }>> = ({ children, i
     </div>
 );
 
-const HighlightLink: FC<PropsWithChildren<ExternalLinkProperties | InternalLinkProperties>> = ({ children, className, icon, mode = "light", ...properties }) => {
+const HighlightLink: FC<PropsWithChildren<ExternalLinkProperties | InternalLinkProperties>> = ({
+    children,
+    className,
+    icon,
+    mode = "light",
+    ...properties
+}) => {
     if ("href" in properties) {
         const { href, ...rest } = properties as ExternalLinkProperties;
 

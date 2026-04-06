@@ -131,34 +131,25 @@ const MiniChart: FC<{ accentColor: AccentColor; data: MonthlyDataPoint[] }> = me
 
     return (
         <div className="relative h-full w-full">
-            <motion.div
-                className="absolute inset-0 h-full w-full"
-                animate={{ opacity: 1 }}
-                initial={{ opacity: 0 }}
-                transition={{ duration: 1.5 }}
-            >
-            <svg
-                className="h-full w-full"
-                preserveAspectRatio="none"
-                viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}
-            >
-                <defs>
-                    <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor={color} stopOpacity="0.12" />
-                        <stop offset="100%" stopColor={color} stopOpacity="0" />
-                    </linearGradient>
-                </defs>
+            <motion.div className="absolute inset-0 h-full w-full" animate={{ opacity: 1 }} initial={{ opacity: 0 }} transition={{ duration: 1.5 }}>
+                <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${CHART_VIEW_WIDTH} ${CHART_VIEW_HEIGHT}`}>
+                    <defs>
+                        <linearGradient id={id} x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+                            <stop offset="100%" stopColor={color} stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
 
-                {GRID_FRACTIONS.map((fraction) => {
-                    const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
-                    return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
-                })}
+                    {GRID_FRACTIONS.map((fraction) => {
+                        const y = CHART_PAD_TOP + CHART_HEIGHT * (1 - fraction);
+                        return <line key={fraction} stroke="rgba(0,0,0,0.04)" strokeDasharray="4 4" x1="0" x2={CHART_VIEW_WIDTH} y1={y} y2={y} />;
+                    })}
 
-                <path d={areaPath} fill={`url(#${id})`} />
-                <path d={linePath} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                    <path d={areaPath} fill={`url(#${id})`} />
+                    <path d={linePath} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
 
-                {lastPoint && <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill={color} r="4" />}
-            </svg>
+                    {lastPoint && <circle className="animate-pulse" cx={lastPoint.x} cy={lastPoint.y} fill={color} r="4" />}
+                </svg>
             </motion.div>
             <div className="absolute right-4 bottom-1 left-4 flex justify-between">
                 <span className="font-mono text-xs text-gray-400">{formatMonth(firstMonth)}</span>

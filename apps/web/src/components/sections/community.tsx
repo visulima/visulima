@@ -15,10 +15,18 @@ const Community = () => (
             />
 
             {/* TODO: Replace placeholders with real community content */}
-            <div className="h-56" aria-label="Community content placeholder">test</div>
-            <div className="h-56" aria-label="Social feed placeholder">Find us on the feed</div>
-            <div className="h-56" aria-label="Community join placeholder">Join our community</div>
-            <div className="h-56" aria-label="Social feed placeholder">Find us on the feed</div>
+            <div className="h-56" aria-label="Community content placeholder">
+                test
+            </div>
+            <div className="h-56" aria-label="Social feed placeholder">
+                Find us on the feed
+            </div>
+            <div className="h-56" aria-label="Community join placeholder">
+                Join our community
+            </div>
+            <div className="h-56" aria-label="Social feed placeholder">
+                Find us on the feed
+            </div>
         </Section>
     </div>
 );

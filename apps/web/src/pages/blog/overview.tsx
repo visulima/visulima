@@ -286,7 +286,6 @@ const Overview = () => {
                                     </PaginationItem>
                                 ))}
 
-
                                 {pageNumbersForLinks.length > 0 && pageNumbersForLinks[pageNumbersForLinks.length - 1] < totalPages ? (
                                     <PaginationItem>
                                         <PaginationEllipsis />
