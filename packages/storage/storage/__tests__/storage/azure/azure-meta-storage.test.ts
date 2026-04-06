@@ -48,7 +48,7 @@ describe(AzureMetaStorage, () => {
                 deleteIfExists: vi.fn(),
             }),
             listBlobsFlat: vi.fn().mockReturnValue({
-                async* [Symbol.asyncIterator]() {
+                async *[Symbol.asyncIterator]() {
                     // Empty iterator
                 },
             }),

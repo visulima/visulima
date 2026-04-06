@@ -110,8 +110,8 @@ describe(AwsLightStorage, () => {
             });
 
             // Mock create multipart upload
-            const createMultipartUploadResponse
-                = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>";
+            const createMultipartUploadResponse =
+                '<?xml version="1.0" encoding="UTF-8"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>';
 
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
@@ -179,7 +179,7 @@ describe(AwsLightStorage, () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult></InitiateMultipartUploadResult>",
+                text: async () => '<?xml version="1.0" encoding="UTF-8"?><InitiateMultipartUploadResult></InitiateMultipartUploadResult>',
             });
 
             await expect(storage.create(metafile)).rejects.toThrow();
@@ -208,7 +208,7 @@ describe(AwsLightStorage, () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>',
             });
 
             // Mock PUT request for saveMeta
@@ -258,13 +258,13 @@ describe(AwsLightStorage, () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
+                text: async () => '<?xml version="1.0" encoding="UTF-8"?><ListPartsResult></ListPartsResult>',
             });
 
             // Mock upload part
             getMockFetch().mockResolvedValueOnce({
                 headers: new Headers({
-                    ETag: "\"1234\"",
+                    ETag: '"1234"',
                 }),
                 ok: true,
                 status: 200,
@@ -276,7 +276,7 @@ describe(AwsLightStorage, () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>"etag123"</ETag></CompleteMultipartUploadResult>',
             });
 
             // Mock PUT request for saveMeta (write saves updated metadata after completion)
@@ -321,13 +321,13 @@ describe(AwsLightStorage, () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
+                text: async () => '<?xml version="1.0" encoding="UTF-8"?><ListPartsResult></ListPartsResult>',
             });
 
             // Mock upload part
             getMockFetch().mockResolvedValueOnce({
                 headers: new Headers({
-                    ETag: "\"1234\"",
+                    ETag: '"1234"',
                 }),
                 ok: true,
                 status: 200,
@@ -339,7 +339,7 @@ describe(AwsLightStorage, () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>"etag123"</ETag></CompleteMultipartUploadResult>',
             });
 
             // Mock PUT request for saveMeta (write saves updated metadata after completion)
@@ -736,7 +736,7 @@ describe("awsLightPresignedStorage", () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><InitiateMultipartUploadResult><UploadId>123456789</UploadId></InitiateMultipartUploadResult>',
             });
 
             // Mock PUT request for saveMeta (AwsLightMetaStorage saves metadata to S3)
@@ -750,7 +750,7 @@ describe("awsLightPresignedStorage", () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
+                text: async () => '<?xml version="1.0" encoding="UTF-8"?><ListPartsResult></ListPartsResult>',
             });
 
             const awsLightFile = await storage.create(metafile);
@@ -784,7 +784,7 @@ describe("awsLightPresignedStorage", () => {
             getMockFetch().mockResolvedValueOnce({
                 ok: true,
                 status: 200,
-                text: async () => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult></ListPartsResult>",
+                text: async () => '<?xml version="1.0" encoding="UTF-8"?><ListPartsResult></ListPartsResult>',
             });
 
             const awsLightFile = await storage.update(metafile, metafile);
@@ -823,7 +823,7 @@ describe("awsLightPresignedStorage", () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>"etag123"</ETag></CompleteMultipartUploadResult>',
             });
 
             const preCompleted = {
@@ -863,7 +863,7 @@ describe("awsLightPresignedStorage", () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ListPartsResult><Part><ETag>123456789</ETag><PartNumber>1</PartNumber><Size>64</Size></Part></ListPartsResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><ListPartsResult><Part><ETag>123456789</ETag><PartNumber>1</PartNumber><Size>64</Size></Part></ListPartsResult>',
             });
 
             // Mock PUT request for saveMeta (update saves metadata after completion)
@@ -878,7 +878,7 @@ describe("awsLightPresignedStorage", () => {
                 ok: true,
                 status: 200,
                 text: async () =>
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>\"etag123\"</ETag></CompleteMultipartUploadResult>",
+                    '<?xml version="1.0" encoding="UTF-8"?><CompleteMultipartUploadResult><Location>/1234</Location><ETag>"etag123"</ETag></CompleteMultipartUploadResult>',
             });
 
             const awsLightFile = await storage.update({ id: metafile.id }, {});

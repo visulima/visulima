@@ -45,7 +45,7 @@ export class Tus<
         // Create TusBase instance with access to this Tus instance
         const tusInstance = this;
 
-        this.tusBase = new class extends TusBase<TFile> {
+        this.tusBase = new (class extends TusBase<TFile> {
             // eslint-disable-next-line class-methods-use-this
             protected override get storage() {
                 return tusInstance.storage as unknown as {
@@ -78,7 +78,7 @@ export class Tus<
             protected override buildFileUrl(requestUrl: string, file: TFile): string {
                 return tusInstance.buildFileUrlForTus(requestUrl, file);
             }
-        }();
+        })();
     }
 
     /**

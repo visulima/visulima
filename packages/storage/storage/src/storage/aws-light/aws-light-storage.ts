@@ -154,8 +154,8 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
             await this.checkIfExpired({ expiredAt: Expires } as AwsLightFile);
 
             // Body from adapter is ReadableStream, convert to Readable
-            const stream: Readable
-                = Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
+            const stream: Readable =
+                Body instanceof ReadableStream ? Readable.fromWeb(Body as unknown as import("node:stream/web").ReadableStream<Uint8Array>) : (Body as Readable);
 
             const readableStream = new Readable({
                 read() {
@@ -176,9 +176,9 @@ class AwsLightStorage extends S3BaseStorage<AwsLightFile> {
                 headers: {
                     "Content-Length": ContentLength?.toString() ?? "0",
                     "Content-Type": ContentType as string,
-                    ...ETag && { ETag },
-                    ...Expires && { "X-Upload-Expires": Expires.toString() },
-                    ...LastModified && { "Last-Modified": LastModified.toString() },
+                    ...(ETag && { ETag }),
+                    ...(Expires && { "X-Upload-Expires": Expires.toString() }),
+                    ...(LastModified && { "Last-Modified": LastModified.toString() }),
                 },
                 size: Number(ContentLength),
                 stream: readableStream,
