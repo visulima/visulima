@@ -201,8 +201,7 @@ export const waitForOverlayUpdate = async (page: Page, timeout = 1000): Promise<
  * Checks if a file path represents an original source file (not compiled).
  */
 export const isOriginalSourcePath = (filePath: string | null): boolean => {
-    if (!filePath)
-        return false;
+    if (!filePath) return false;
 
     // Should contain original source extensions (handle line numbers like :37)
     const hasOriginalExtension = ORIGINAL_EXTENSION_REGEX.test(filePath);
