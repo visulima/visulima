@@ -25,7 +25,7 @@ describe(InProcessTaskHasher, () => {
         // Create test project structure
         await mkdir(join(workspaceRoot, "packages/lib-a/src"), { recursive: true });
         await writeFile(join(workspaceRoot, "packages/lib-a/src/index.ts"), "export const a = 1;");
-        await writeFile(join(workspaceRoot, "packages/lib-a/package.json"), '{"name":"lib-a"}');
+        await writeFile(join(workspaceRoot, "packages/lib-a/package.json"), "{\"name\":\"lib-a\"}");
     });
 
     afterEach(async () => {

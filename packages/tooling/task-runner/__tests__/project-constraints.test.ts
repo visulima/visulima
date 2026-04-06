@@ -1,27 +1,28 @@
-import type { ConstraintsConfig, ProjectGraph } from "../src/types";
-
 import { describe, expect, it } from "vitest";
 
 import { enforceProjectConstraints } from "../src/project-constraints";
+import type { ConstraintsConfig, ProjectGraph } from "../src/types";
 
-const makeGraph = (overrides?: Partial<ProjectGraph>): ProjectGraph => ({
-    dependencies: {
-        app: [{ source: "app", target: "lib-ui", type: "static" }],
-        "lib-api": [{ source: "lib-api", target: "lib-shared", type: "static" }],
-        "lib-shared": [],
-        "lib-ui": [
-            { source: "lib-ui", target: "lib-shared", type: "static" },
-            { source: "lib-ui", target: "lib-api", type: "static" },
-        ],
-    },
-    nodes: {
-        app: { data: { root: "packages/app", tags: ["frontend"] }, name: "app", type: "application" },
-        "lib-api": { data: { root: "packages/lib-api", tags: ["backend", "shared"] }, name: "lib-api", type: "library" },
-        "lib-shared": { data: { root: "packages/lib-shared", tags: ["shared"] }, name: "lib-shared", type: "library" },
-        "lib-ui": { data: { root: "packages/lib-ui", tags: ["frontend"] }, name: "lib-ui", type: "library" },
-    },
-    ...overrides,
-});
+const makeGraph = (overrides?: Partial<ProjectGraph>): ProjectGraph => {
+    return {
+        dependencies: {
+            app: [{ source: "app", target: "lib-ui", type: "static" }],
+            "lib-api": [{ source: "lib-api", target: "lib-shared", type: "static" }],
+            "lib-shared": [],
+            "lib-ui": [
+                { source: "lib-ui", target: "lib-shared", type: "static" },
+                { source: "lib-ui", target: "lib-api", type: "static" },
+            ],
+        },
+        nodes: {
+            app: { data: { root: "packages/app", tags: ["frontend"] }, name: "app", type: "application" },
+            "lib-api": { data: { root: "packages/lib-api", tags: ["backend", "shared"] }, name: "lib-api", type: "library" },
+            "lib-shared": { data: { root: "packages/lib-shared", tags: ["shared"] }, name: "lib-shared", type: "library" },
+            "lib-ui": { data: { root: "packages/lib-ui", tags: ["frontend"] }, name: "lib-ui", type: "library" },
+        },
+        ...overrides,
+    };
+};
 
 describe(enforceProjectConstraints, () => {
     describe("no constraints", () => {
@@ -145,8 +146,8 @@ describe(enforceProjectConstraints, () => {
         it("should check multiple source tags independently", () => {
             const graph: ProjectGraph = {
                 dependencies: {
-                    multi: [{ source: "multi", target: "dep", type: "static" }],
                     dep: [],
+                    multi: [{ source: "multi", target: "dep", type: "static" }],
                 },
                 nodes: {
                     dep: { data: { root: "packages/dep", tags: ["shared"] }, name: "dep", type: "library" },
@@ -334,8 +335,8 @@ describe(enforceProjectConstraints, () => {
         it("should not produce duplicate violations for application boundary + allowedDependencyTypes", () => {
             const graph: ProjectGraph = {
                 dependencies: {
-                    lib: [{ source: "lib", target: "app", type: "static" }],
                     app: [],
+                    lib: [{ source: "lib", target: "app", type: "static" }],
                 },
                 nodes: {
                     app: { data: { root: "packages/app" }, name: "app", type: "application" },
@@ -484,8 +485,8 @@ describe(enforceProjectConstraints, () => {
         it("should return no violations when no dependency kind rules are set", () => {
             const graph: ProjectGraph = {
                 dependencies: {
-                    lib: [{ source: "lib", target: "app", type: "static" }],
                     app: [],
+                    lib: [{ source: "lib", target: "app", type: "static" }],
                 },
                 nodes: {
                     app: { data: { root: "packages/app" }, name: "app", type: "application" },

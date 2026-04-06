@@ -26,8 +26,7 @@ const formatDuration = (ms: number): string => {
 
 /**
  * Generate a timing summary table string from close events.
- *
- * @param closeEvents - Close events from the concurrent run (in completion order)
+ * @param closeEvents Close events from the concurrent run (in completion order)
  * @returns Formatted table string
  */
 export const formatTimingTable = (closeEvents: ConcurrentCloseEvent[]): string => {
@@ -36,7 +35,7 @@ export const formatTimingTable = (closeEvents: ConcurrentCloseEvent[]): string =
     }
 
     // Sort by duration descending
-    const sorted = [...closeEvents].sort((a, b) => b.durationMs - a.durationMs);
+    const sorted = closeEvents.toSorted((a, b) => b.durationMs - a.durationMs);
 
     // Calculate column widths
     const nameWidth = Math.max(4, ...sorted.map((e) => (e.name ?? String(e.index)).length));
@@ -56,7 +55,7 @@ export const formatTimingTable = (closeEvents: ConcurrentCloseEvent[]): string =
         const duration = formatDuration(event.durationMs).padEnd(durationWidth);
         const code = String(event.exitCode).padEnd(codeWidth);
         const killed = (event.killed ? "yes" : "no").padEnd(6);
-        const command = event.command.length > 40 ? event.command.slice(0, 39) + "\u2026" : event.command;
+        const command = event.command.length > 40 ? `${event.command.slice(0, 39)}\u2026` : event.command;
 
         return [name, duration, code, killed, command].join(" \u2502 ");
     });
@@ -66,9 +65,8 @@ export const formatTimingTable = (closeEvents: ConcurrentCloseEvent[]): string =
 
 /**
  * Print timing summary to a writable stream.
- *
- * @param closeEvents - Close events from the concurrent run
- * @param output - Output stream (default: process.stdout)
+ * @param closeEvents Close events from the concurrent run
+ * @param output Output stream (default: process.stdout)
  */
 export const logTimings = (closeEvents: ConcurrentCloseEvent[], output: NodeJS.WritableStream = process.stdout): void => {
     if (closeEvents.length === 0) {

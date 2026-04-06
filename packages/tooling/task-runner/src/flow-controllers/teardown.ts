@@ -21,7 +21,6 @@ export interface TeardownOptions {
  * Run teardown commands sequentially.
  * Each command runs in the shell with inherited stdio.
  * If a command fails, subsequent commands are still attempted.
- *
  * @returns Array of exit codes for each teardown command
  */
 export const runTeardown = async (options: TeardownOptions): Promise<number[]> => {
@@ -31,6 +30,7 @@ export const runTeardown = async (options: TeardownOptions): Promise<number[]> =
     for (const command of commands) {
         // eslint-disable-next-line no-await-in-loop -- intentionally sequential
         const code = await runTeardownCommand(command, cwd);
+
         results.push(code);
     }
 
@@ -41,23 +41,21 @@ export const runTeardown = async (options: TeardownOptions): Promise<number[]> =
  * Run a single teardown command with inherited stdio.
  * Commands originate from vis.config teardown (trusted).
  */
-const runTeardownCommand = (command: string, cwd?: string): Promise<number> => {
-    return new Promise((resolve) => {
-        const shellProgram = process.platform === "win32" ? "cmd.exe" : "/bin/sh";
-        const shellArgs = process.platform === "win32" ? ["/s", "/c", `"${command}"`] : ["-c", command];
+const runTeardownCommand = (command: string, cwd?: string): Promise<number> => new Promise((resolve) => {
+    const shellProgram = process.platform === "win32" ? "cmd.exe" : "/bin/sh";
+    const shellArgs = process.platform === "win32" ? ["/s", "/c", `"${command}"`] : ["-c", command];
 
-        const child = spawn(shellProgram, shellArgs, {
-            cwd,
-            stdio: "inherit",
-            windowsVerbatimArguments: process.platform === "win32",
-        });
-
-        child.on("close", (code) => {
-            resolve(code ?? 1);
-        });
-
-        child.on("error", () => {
-            resolve(1);
-        });
+    const child = spawn(shellProgram, shellArgs, {
+        cwd,
+        stdio: "inherit",
+        windowsVerbatimArguments: process.platform === "win32",
     });
-};
+
+    child.on("close", (code) => {
+        resolve(code ?? 1);
+    });
+
+    child.on("error", () => {
+        resolve(1);
+    });
+});

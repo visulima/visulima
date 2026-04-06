@@ -17,7 +17,6 @@ import { filterAffectedTasks } from "../src/affected";
 import { toGraphAscii, toGraphJson, toGraphvizDot } from "../src/graph-visualizer";
 import { findCycle, findCycles, getDependentTasks, getLeafTasks, makeAcyclic, walkTaskGraph } from "../src/task-graph-utils";
 import type { TaskGraph } from "../src/types";
-
 import { buildTaskGraph } from "./setup";
 
 // ─── Topological walk ───────────────────────────────────────────────
@@ -49,6 +48,7 @@ const buildDiamondGraph = (layers: number, breadth: number): TaskGraph => {
     // Layer 0: leaf tasks
     for (let b = 0; b < breadth; b++) {
         const id = `L0-${b}:build`;
+
         tasks[id] = {
             id,
             outputs: [],
@@ -62,6 +62,7 @@ const buildDiamondGraph = (layers: number, breadth: number): TaskGraph => {
     for (let layer = 1; layer < layers; layer++) {
         for (let b = 0; b < breadth; b++) {
             const id = `L${layer}-${b}:build`;
+
             tasks[id] = {
                 id,
                 outputs: [],
@@ -79,9 +80,7 @@ const buildDiamondGraph = (layers: number, breadth: number): TaskGraph => {
         }
     }
 
-    const roots = Object.keys(tasks).filter((id) => {
-        return !Object.values(dependencies).some((deps) => deps.includes(id));
-    });
+    const roots = Object.keys(tasks).filter((id) => !Object.values(dependencies).some((deps) => deps.includes(id)));
 
     return { dependencies, roots, tasks };
 };

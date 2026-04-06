@@ -16,7 +16,6 @@ import { join } from "node:path";
 import { afterAll, beforeAll, bench, describe } from "vitest";
 
 import { Cache } from "../src/cache";
-
 import { cleanupFixture, createFixtureFiles } from "./setup";
 
 describe("cache operations - small result (1KB output)", () => {
@@ -84,6 +83,7 @@ describe("cache operations - with output archiving", () => {
 
         // Create a mock dist/ directory with build outputs
         const distDir = join(fixtureDir, "dist");
+
         mkdirSync(distDir, { recursive: true });
 
         for (let i = 0; i < 20; i++) {

@@ -144,12 +144,12 @@ const printTree = (
  * // Render: dot -Tsvg -o graph.svg <<< "$dot"
  * ```
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const toGraphvizDot = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}): string => {
     const { focusedTasks, groupByProject = true, taskStatuses } = options;
     const focused = focusedTasks ? new Set(focusedTasks) : undefined;
 
-    const lines: string[] = ["digraph TaskGraph {", "  rankdir=LR;", '  node [shape=box, style=filled, fontname="monospace"];'];
+    const lines: string[] = ["digraph TaskGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fontname=\"monospace\"];"];
 
     // Group nodes by project
     if (groupByProject) {
@@ -164,7 +164,7 @@ const toGraphvizDot = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {
         }
 
         for (const [project, tasks] of projectTasks) {
-            lines.push(`  subgraph "cluster_${project}" {`, `    label="${project}";`, "    style=dashed;", '    color="#888888";');
+            lines.push(`  subgraph "cluster_${project}" {`, `    label="${project}";`, "    style=dashed;", "    color=\"#888888\";");
 
             for (const task of tasks) {
                 const color = getNodeColor(task.id, focused, taskStatuses);
@@ -442,7 +442,7 @@ const toGraphAscii = (taskGraph: TaskGraph, options: GraphVisualizerOptions = {}
  * Exports a project graph in DOT format.
  */
 const projectGraphToDot = (projectGraph: ProjectGraph): string => {
-    const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", '  node [shape=box, style=filled, fillcolor="#87CEEB", fontname="monospace"];'];
+    const lines: string[] = ["digraph ProjectGraph {", "  rankdir=LR;", "  node [shape=box, style=filled, fillcolor=\"#87CEEB\", fontname=\"monospace\"];"];
 
     for (const node of Object.values(projectGraph.nodes)) {
         const color = node.type === "application" ? "#FFD700" : "#87CEEB";
@@ -452,19 +452,30 @@ const projectGraphToDot = (projectGraph: ProjectGraph): string => {
 
     for (const [project, deps] of Object.entries(projectGraph.dependencies)) {
         for (const dep of deps) {
-            const attrs: string[] = [];
+            const attributes: string[] = [];
 
-            if (dep.type === "implicit") {
-                attrs.push("style=dashed");
-            } else if (dep.type === "devDependency") {
-                attrs.push("style=dotted", 'color="#888888"');
-            } else if (dep.type === "peerDependency") {
-                attrs.push("style=dashed", 'color="#CC8800"');
-            } else {
-                attrs.push("style=solid");
+            switch (dep.type) {
+                case "devDependency": {
+                    attributes.push("style=dotted", "color=\"#888888\"");
+
+                    break;
+                }
+                case "implicit": {
+                    attributes.push("style=dashed");
+
+                    break;
+                }
+                case "peerDependency": {
+                    attributes.push("style=dashed", "color=\"#CC8800\"");
+
+                    break;
+                }
+                default: {
+                    attributes.push("style=solid");
+                }
             }
 
-            lines.push(`  "${project}" -> "${dep.target}" [${attrs.join(", ")}];`);
+            lines.push(`  "${project}" -> "${dep.target}" [${attributes.join(", ")}];`);
         }
     }
 

@@ -2,6 +2,7 @@ import type { ChildProcess } from "node:child_process";
 import { exec, execFileSync } from "node:child_process";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { platform } from "node:os";
+
 import { join, resolve } from "@visulima/path";
 
 import { uniqueId } from "./utils";

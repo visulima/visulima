@@ -1,5 +1,4 @@
 import type { ConcurrentCommandConfig, ConcurrentCommandInput } from "../types";
-
 import { expandArguments } from "./expand-arguments";
 import { expandShortcut } from "./expand-shortcut";
 import { expandWildcard } from "./expand-wildcard";
@@ -26,6 +25,7 @@ export const parseCommands = (inputs: ConcurrentCommandInput[], options: ParseCo
         if (typeof input === "string") {
             return { command: input };
         }
+
         return { ...input };
     });
 
@@ -38,6 +38,7 @@ export const parseCommands = (inputs: ConcurrentCommandInput[], options: ParseCo
     // Step 4: expand wildcards (may produce multiple configs per input)
     configs = configs.flatMap((config) => {
         const result = expandWildcard(config);
+
         return Array.isArray(result) ? result : [result];
     });
 

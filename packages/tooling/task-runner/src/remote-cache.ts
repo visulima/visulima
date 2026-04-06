@@ -1,8 +1,9 @@
 import { execFile } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { mkdir, readFile, rm, stat } from "node:fs/promises";
-import { join } from "@visulima/path";
 import { pipeline } from "node:stream/promises";
+
+import { join } from "@visulima/path";
 
 /**
  * Options for the remote cache.
@@ -30,7 +31,6 @@ interface RemoteCacheOptions {
 
 const createTarGz = (sourceDirectory: string, outputPath: string): Promise<void> =>
     new Promise((resolve, reject) => {
-        // eslint-disable-next-line sonarjs/no-os-command-from-path
         execFile("tar", ["-czf", outputPath, "-C", sourceDirectory, "."], (error) => {
             if (error) {
                 reject(error);
@@ -42,7 +42,6 @@ const createTarGz = (sourceDirectory: string, outputPath: string): Promise<void>
 
 const extractTarGz = (archivePath: string, destinationDirectory: string): Promise<void> =>
     new Promise((resolve, reject) => {
-        // eslint-disable-next-line sonarjs/no-os-command-from-path
         execFile("tar", ["-xzf", archivePath, "-C", destinationDirectory], (error) => {
             if (error) {
                 reject(error);

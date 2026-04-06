@@ -1,24 +1,26 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { expandArguments } from "../src/command-parser/expand-arguments";
 import { expandShortcut } from "../src/command-parser/expand-shortcut";
 import { expandWildcard } from "../src/command-parser/expand-wildcard";
-import { stripQuotes } from "../src/command-parser/strip-quotes";
 import { parseCommands } from "../src/command-parser/index";
+import { stripQuotes } from "../src/command-parser/strip-quotes";
 import type { ConcurrentCommandConfig } from "../src/types";
 
-const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => ({
-    command,
-    name,
-});
+const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => {
+    return {
+        command,
+        name,
+    };
+};
 
-describe("stripQuotes", () => {
+describe(stripQuotes, () => {
     it("should remove surrounding double quotes", () => {
-        expect(stripQuotes(makeConfig('"echo hello"')).command).toBe("echo hello");
+        expect(stripQuotes(makeConfig("\"echo hello\"")).command).toBe("echo hello");
     });
 
     it("should remove surrounding single quotes", () => {
@@ -34,17 +36,18 @@ describe("stripQuotes", () => {
     });
 
     it("should not modify commands with internal quotes", () => {
-        expect(stripQuotes(makeConfig('echo "hello world"')).command).toBe('echo "hello world"');
+        expect(stripQuotes(makeConfig("echo \"hello world\"")).command).toBe("echo \"hello world\"");
     });
 
     it("should preserve other config fields", () => {
-        const result = stripQuotes({ command: '"echo"', name: "test", cwd: "/tmp" });
+        const result = stripQuotes({ command: "\"echo\"", cwd: "/tmp", name: "test" });
+
         expect(result.name).toBe("test");
         expect(result.cwd).toBe("/tmp");
     });
 });
 
-describe("expandShortcut", () => {
+describe(expandShortcut, () => {
     it("should expand npm:build to npm run build", () => {
         expect(expandShortcut(makeConfig("npm:build")).command).toBe("npm run build");
     });
@@ -90,54 +93,63 @@ describe("expandShortcut", () => {
     });
 });
 
-describe("expandArguments", () => {
+describe(expandArguments, () => {
     it("should replace {1} with first argument", () => {
         const result = expandArguments(makeConfig("echo {1}"), ["hello"]);
+
         expect(result.command).toBe("echo 'hello'");
     });
 
     it("should replace {2} with second argument", () => {
         const result = expandArguments(makeConfig("echo {2}"), ["a", "b"]);
+
         expect(result.command).toBe("echo 'b'");
     });
 
     it("should replace {@} with all arguments individually quoted", () => {
         const result = expandArguments(makeConfig("echo {@}"), ["a", "b", "c"]);
+
         expect(result.command).toBe("echo 'a' 'b' 'c'");
     });
 
     it("should replace {*} with all arguments as single quoted string", () => {
         const result = expandArguments(makeConfig("echo {*}"), ["a", "b", "c"]);
+
         expect(result.command).toBe("echo 'a b c'");
     });
 
     it("should handle escaped placeholders", () => {
-        const result = expandArguments(makeConfig("echo \\{1}"), ["hello"]);
+        const result = expandArguments(makeConfig(String.raw`echo \{1}`), ["hello"]);
+
         expect(result.command).toBe("echo {1}");
     });
 
     it("should replace missing positional with empty string", () => {
         const result = expandArguments(makeConfig("echo {5}"), ["a"]);
+
         expect(result.command).toBe("echo ");
     });
 
     it("should handle no additional arguments", () => {
         const result = expandArguments(makeConfig("echo {1}"), []);
+
         expect(result.command).toBe("echo {1}");
     });
 
     it("should handle arguments with single quotes", () => {
         const result = expandArguments(makeConfig("echo {1}"), ["it's"]);
-        expect(result.command).toBe("echo 'it'\\''s'");
+
+        expect(result.command).toBe(String.raw`echo 'it'\''s'`);
     });
 
     it("should handle multiple placeholders", () => {
         const result = expandArguments(makeConfig("{1} && {2}"), ["echo a", "echo b"]);
+
         expect(result.command).toBe("'echo a' && 'echo b'");
     });
 });
 
-describe("expandWildcard", () => {
+describe(expandWildcard, () => {
     let fixtureDir: string;
 
     beforeEach(() => {
@@ -146,7 +158,7 @@ describe("expandWildcard", () => {
     });
 
     afterEach(() => {
-        rmSync(fixtureDir, { recursive: true, force: true });
+        rmSync(fixtureDir, { force: true, recursive: true });
     });
 
     it("should expand npm run watch-* against package.json scripts", () => {
@@ -154,10 +166,10 @@ describe("expandWildcard", () => {
             join(fixtureDir, "package.json"),
             JSON.stringify({
                 scripts: {
-                    "watch-js": "tsc --watch",
-                    "watch-css": "sass --watch",
-                    "watch-tests": "vitest --watch",
                     build: "tsc",
+                    "watch-css": "sass --watch",
+                    "watch-js": "tsc --watch",
+                    "watch-tests": "vitest --watch",
                 },
             }),
         );
@@ -165,10 +177,13 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "npm run watch-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(3);
 
         const commands = configs.map((c) => c.command).sort();
+
         expect(commands).toEqual(["npm run watch-css", "npm run watch-js", "npm run watch-tests"]);
     });
 
@@ -178,7 +193,9 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "npm run dev-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(1);
         expect(configs[0]!.name).toBe("dev-server");
     });
@@ -186,12 +203,14 @@ describe("expandWildcard", () => {
     it("should not expand when no wildcard present", () => {
         const config = makeConfig("npm run build");
         const result = expandWildcard(config);
+
         expect(result).toEqual(config);
     });
 
     it("should not expand non-run commands", () => {
         const config = makeConfig("echo watch-*");
         const result = expandWildcard(config);
+
         expect(result).toEqual(config);
     });
 
@@ -199,41 +218,49 @@ describe("expandWildcard", () => {
         writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { build: "tsc" } }));
 
         const result = expandWildcard({ command: "npm run watch-*", cwd: fixtureDir });
+
         expect(Array.isArray(result)).toBe(false);
     });
 
     it("should return original config when package.json is missing", () => {
-        const result = expandWildcard({ command: "npm run watch-*", cwd: fixtureDir + "/nonexistent" });
+        const result = expandWildcard({ command: "npm run watch-*", cwd: `${fixtureDir}/nonexistent` });
+
         expect(Array.isArray(result)).toBe(false);
     });
 
     it("should work with pnpm run wildcards", () => {
-        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "lint-js": "eslint", "lint-css": "stylelint" } }));
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "lint-css": "stylelint", "lint-js": "eslint" } }));
 
         const result = expandWildcard({ command: "pnpm run lint-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(2);
     });
 
     it("should preserve trailing arguments after wildcard", () => {
-        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "test-unit": "vitest", "test-e2e": "playwright" } }));
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "test-e2e": "playwright", "test-unit": "vitest" } }));
 
         const result = expandWildcard({ command: "npm run test-* --verbose", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs.every((c) => c.command.endsWith(" --verbose"))).toBe(true);
     });
 
     it("should not override existing name", () => {
         writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-app": "node app.js" } }));
 
-        const result = expandWildcard({ command: "npm run dev-*", name: "my-name", cwd: fixtureDir });
+        const result = expandWildcard({ command: "npm run dev-*", cwd: fixtureDir, name: "my-name" });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs[0]!.name).toBe("my-name");
     });
 
@@ -242,9 +269,9 @@ describe("expandWildcard", () => {
             join(fixtureDir, "deno.json"),
             JSON.stringify({
                 tasks: {
+                    build: "deno compile",
                     "dev-api": "deno run api.ts",
                     "dev-web": "deno run web.ts",
-                    build: "deno compile",
                 },
             }),
         );
@@ -252,10 +279,13 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(2);
 
         const commands = configs.map((c) => c.command).sort();
+
         expect(commands).toEqual(["deno task dev-api", "deno task dev-web"]);
     });
 
@@ -274,7 +304,9 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "deno task test-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(2);
     });
 
@@ -293,7 +325,9 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(1);
         expect(configs[0]!.command).toContain("dev-serve");
     });
@@ -305,7 +339,9 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(1);
         // deno.json task should win over package.json script
         expect(configs[0]!.command).toContain("dev-app");
@@ -318,30 +354,36 @@ describe("expandWildcard", () => {
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
         expect(Array.isArray(result)).toBe(true);
+
         const configs = result as ConcurrentCommandConfig[];
+
         expect(configs).toHaveLength(2);
 
         const names = configs.map((c) => c.name).sort();
+
         expect(names).toEqual(["dev-deno", "dev-node"]);
     });
 });
 
-describe("parseCommands", () => {
+describe(parseCommands, () => {
     it("should normalize string inputs", () => {
         const result = parseCommands(["echo hello"]);
+
         expect(result).toHaveLength(1);
         expect(result[0]!.command).toBe("echo hello");
     });
 
     it("should normalize object inputs", () => {
         const result = parseCommands([{ command: "echo hello", name: "test" }]);
+
         expect(result).toHaveLength(1);
         expect(result[0]!.command).toBe("echo hello");
         expect(result[0]!.name).toBe("test");
     });
 
     it("should strip quotes and expand shortcuts in pipeline", () => {
-        const result = parseCommands(['"npm:build"']);
+        const result = parseCommands(["\"npm:build\""]);
+
         expect(result).toHaveLength(1);
         expect(result[0]!.command).toBe("npm run build");
         expect(result[0]!.name).toBe("build");
@@ -349,6 +391,7 @@ describe("parseCommands", () => {
 
     it("should expand arguments when provided", () => {
         const result = parseCommands(["echo {1}"], { additionalArguments: ["world"] });
+
         expect(result).toHaveLength(1);
         expect(result[0]!.command).toBe("echo 'world'");
     });
@@ -359,6 +402,7 @@ describe("parseCommands", () => {
 
     it("should handle mixed string and object inputs", () => {
         const result = parseCommands(["echo one", { command: "echo two", name: "second" }]);
+
         expect(result).toHaveLength(2);
         expect(result[0]!.command).toBe("echo one");
         expect(result[1]!.name).toBe("second");

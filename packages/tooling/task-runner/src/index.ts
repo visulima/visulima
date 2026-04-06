@@ -1,18 +1,3 @@
-// Command parser
-export type { ParseCommandsOptions } from "./command-parser";
-export { expandArguments, expandShortcut, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
-
-// Concurrent process runner
-export { runConcurrently } from "./concurrent";
-export { runConcurrentFallback } from "./concurrent-fallback";
-
-// Shell detection
-export { detectScriptShell } from "./detect-shell";
-
-// Flow controllers
-export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
-export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
-
 // Affected detection (git diff-based)
 export type { AffectedOptions, AffectedResult } from "./affected";
 export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, filterAffectedTasks, getAffectedProjects, getChangedFiles } from "./affected";
@@ -20,9 +5,18 @@ export { buildForwardDependencyMap, buildReverseDependencyMap, expandAffected, f
 // Cache
 export type { CachedResult, CacheOptions } from "./cache";
 export { Cache, formatCacheSize, parseCacheSize } from "./cache";
+
+// Command parser
+export type { ParseCommandsOptions } from "./command-parser";
+export { expandArguments, expandShortcut, expandWildcard, parseCommands, stripQuotes } from "./command-parser";
+// Concurrent process runner
+export { runConcurrently } from "./concurrent";
+export { runConcurrentFallback } from "./concurrent-fallback";
 // Default task runner
 export { defaultTaskRunner } from "./default-task-runner";
 
+// Shell detection
+export { detectScriptShell } from "./detect-shell";
 // File access tracking
 export type { FileAccess, TrackingResult } from "./file-access-tracker";
 export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker";
@@ -30,6 +24,10 @@ export { FileAccessTracker, generatePreloadScript } from "./file-access-tracker"
 // Auto-fingerprinting (Vite Task-style caching)
 export type { CacheMissReason, TaskFingerprint } from "./fingerprint";
 export { FingerprintManager } from "./fingerprint";
+
+// Flow controllers
+export type { InputHandlerOptions, RestartOptions, TeardownOptions } from "./flow-controllers";
+export { createInputHandler, formatTimingTable, logTimings, runTeardown, withRestart } from "./flow-controllers";
 
 // Framework environment variable inference
 export type { DetectedFramework } from "./framework-inference";
@@ -92,11 +90,16 @@ export { TrackedTaskExecutor } from "./tracked-executor";
 
 // Core types
 export type {
+    AffectedScope,
     ConcurrentCloseEvent,
     ConcurrentCommandConfig,
     ConcurrentCommandInput,
     ConcurrentRunnerOptions,
     ConcurrentRunResult,
+    ConstraintsConfig,
+    ConstraintViolation,
+    DependencyKindRules,
+    DependencyType,
     EnvironmentInput,
     ExternalDependencyInput,
     FileSetInput,
@@ -109,6 +112,7 @@ export type {
     ProjectGraphDependency,
     ProjectGraphProjectNode,
     RuntimeInput,
+    TagRelationships,
     TargetConfiguration,
     TargetDependencyConfig,
     Task,
@@ -122,12 +126,6 @@ export type {
     TaskRunnerOptions,
     TasksRunner,
     TaskStatus,
-    AffectedScope,
-    ConstraintsConfig,
-    ConstraintViolation,
-    DependencyKindRules,
-    DependencyType,
-    TagRelationships,
     TaskTarget,
     TypeBoundaries,
     WorkspaceConfiguration,

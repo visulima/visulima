@@ -1,6 +1,5 @@
 import { Cache } from "./cache";
 import { inferFrameworkEnvPatterns } from "./framework-inference";
-import { EmptyLifeCycle } from "./life-cycle";
 import { RemoteCache } from "./remote-cache";
 import { InProcessTaskHasher } from "./task-hasher";
 import { TaskOrchestrator } from "./task-orchestrator";
@@ -65,12 +64,12 @@ const resolveParallel = (parallel: number | boolean | undefined): number => {
  * ```
  */
 const defaultTaskRunner = async (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _tasks: Task[],
     options: TaskRunnerOptions,
     context: TaskRunnerContext,
 ): Promise<TaskResults> => {
-    const { lifeCycle = new EmptyLifeCycle(), projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
+    const { lifeCycle, projectGraph, taskExecutor, taskGraph, workspaceRoot } = context;
 
     // Create the cache
     const cache = new Cache({
@@ -154,5 +153,4 @@ const defaultTaskRunner = async (
     return orchestrator.run();
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export { defaultTaskRunner };

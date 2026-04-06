@@ -2,10 +2,10 @@ import { mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { xxh3Hash } from "@shared/xxh3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../src/utils";
-import { xxh3Hash } from "@shared/xxh3";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -16,7 +16,7 @@ const createTemporaryDirectory = async (): Promise<string> => {
     return directory;
 };
 
-describe("hashFile", () => {
+describe(hashFile, () => {
     let temporaryDirectory: string;
 
     beforeEach(async () => {
@@ -57,7 +57,7 @@ describe("hashFile", () => {
     });
 });
 
-describe("hashStrings", () => {
+describe(hashStrings, () => {
     it("should hash a single string deterministically", () => {
         const result = hashStrings("hello");
 
@@ -79,15 +79,15 @@ describe("hashStrings", () => {
     });
 });
 
-describe("sortObjectKeys", () => {
+describe(sortObjectKeys, () => {
     it("should sort top-level keys alphabetically", () => {
-        const result = sortObjectKeys({ c: 3, a: 1, b: 2 });
+        const result = sortObjectKeys({ a: 1, b: 2, c: 3 });
 
         expect(Object.keys(result)).toEqual(["a", "b", "c"]);
     });
 
     it("should recursively sort nested object keys", () => {
-        const result = sortObjectKeys({ b: { z: 1, a: 2 }, a: 1 });
+        const result = sortObjectKeys({ a: 1, b: { a: 2, z: 1 } });
 
         expect(Object.keys(result)).toEqual(["a", "b"]);
         expect(Object.keys(result["b"] as Record<string, unknown>)).toEqual(["a", "z"]);
@@ -100,13 +100,13 @@ describe("sortObjectKeys", () => {
     });
 
     it("should handle null and undefined values", () => {
-        const result = sortObjectKeys({ b: null, a: undefined });
+        const result = sortObjectKeys({ a: undefined, b: null });
 
         expect(result).toEqual({ a: undefined, b: null });
     });
 });
 
-describe("collectFiles", () => {
+describe(collectFiles, () => {
     let temporaryDirectory: string;
 
     beforeEach(async () => {
@@ -179,7 +179,7 @@ describe("collectFiles", () => {
     });
 });
 
-describe("resolveTaskCwd", () => {
+describe(resolveTaskCwd, () => {
     it("should return workspace root when task has no projectRoot", () => {
         const task = {
             id: "test:build",
@@ -204,7 +204,7 @@ describe("resolveTaskCwd", () => {
     });
 });
 
-describe("createFailureResult", () => {
+describe(createFailureResult, () => {
     it("should create a failure result from an Error", () => {
         const task = {
             id: "test:build",
@@ -236,7 +236,7 @@ describe("createFailureResult", () => {
     });
 });
 
-describe("readPackageDeps", () => {
+describe(readPackageDeps, () => {
     let temporaryDirectory: string;
 
     beforeEach(async () => {
@@ -263,7 +263,7 @@ describe("readPackageDeps", () => {
         const result = await readPackageDeps(packageJsonPath);
 
         expect(result).toBeDefined();
-        expect(result).toEqual(new Set(["lodash", "vitest", "fsevents", "react"]));
+        expect(result).toEqual(new Set(["fsevents", "lodash", "react", "vitest"]));
     });
 
     it("should exclude peer dependencies when peer is false", async () => {

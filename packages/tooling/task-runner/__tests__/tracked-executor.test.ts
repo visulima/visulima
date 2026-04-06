@@ -16,15 +16,17 @@ const createTemporaryDirectory = async (): Promise<string> => {
     return directory;
 };
 
-const createTask = (overrides: Partial<Task> = {}): Task => ({
-    id: "test-project:build",
-    outputs: [],
-    overrides: {},
-    target: { project: "test-project", target: "build" },
-    ...overrides,
-});
+const createTask = (overrides: Partial<Task> = {}): Task => {
+    return {
+        id: "test-project:build",
+        outputs: [],
+        overrides: {},
+        target: { project: "test-project", target: "build" },
+        ...overrides,
+    };
+};
 
-describe("TrackedTaskExecutor", () => {
+describe(TrackedTaskExecutor, () => {
     let workspaceRoot: string;
     let executor: TrackedTaskExecutor;
 
@@ -125,7 +127,7 @@ describe("TrackedTaskExecutor", () => {
                 env: { CUSTOM_VAR: "custom_value" },
             };
 
-            const result = await executor.execute(task, options, 'echo "$CUSTOM_VAR"');
+            const result = await executor.execute(task, options, "echo \"$CUSTOM_VAR\"");
 
             expect(result.terminalOutput).toContain("custom_value");
         });

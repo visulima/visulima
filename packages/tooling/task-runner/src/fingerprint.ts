@@ -1,4 +1,5 @@
 import { readdir, stat } from "node:fs/promises";
+
 import { relative, resolve } from "@visulima/path";
 
 import type { FileAccess } from "./file-access-tracker";
@@ -45,7 +46,6 @@ export class FingerprintManager {
         this.#workspaceRoot = resolve(workspaceRoot);
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async createFingerprint(
         accesses: FileAccess[],
         command: string,
@@ -300,7 +300,7 @@ export class FingerprintManager {
             return cached;
         }
 
-        const hash = (await hashFile(filePath)) ?? undefined;
+        const hash = await hashFile(filePath) ?? undefined;
 
         this.#fileHashCache.set(filePath, hash);
 

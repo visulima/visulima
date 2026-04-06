@@ -144,14 +144,16 @@ describe(TaskScheduler, () => {
     });
 });
 
-const makeTask = (id: string): Task => ({
-    id,
-    outputs: [],
-    overrides: {},
-    target: { project: id.split(":")[0] as string, target: id.split(":")[1] as string },
-});
+const makeTask = (id: string): Task => {
+    return {
+        id,
+        outputs: [],
+        overrides: {},
+        target: { project: id.split(":")[0] as string, target: id.split(":")[1] as string },
+    };
+};
 
-describe("TaskScheduler.partitionTasks", () => {
+describe("taskScheduler.partitionTasks", () => {
     it("should split 10 tasks into 4 partitions of [3, 3, 3, 1]", () => {
         const tasks = Array.from({ length: 10 }, (_, i) => makeTask(`p${String(i).padStart(2, "0")}:build`));
 
@@ -242,11 +244,11 @@ describe("TaskScheduler.partitionTasks", () => {
 });
 
 describe(parsePartition, () => {
-    it('should parse "1/4" correctly', () => {
+    it("should parse \"1/4\" correctly", () => {
         expect(parsePartition("1/4")).toEqual({ index: 1, total: 4 });
     });
 
-    it('should parse "3/3" correctly', () => {
+    it("should parse \"3/3\" correctly", () => {
         expect(parsePartition("3/3")).toEqual({ index: 3, total: 3 });
     });
 
@@ -256,6 +258,7 @@ describe(parsePartition, () => {
         delete process.env.VIS_PARTITION;
 
         expect(parsePartition(undefined)).toBeUndefined();
+
         process.env.VIS_PARTITION = original;
     });
 

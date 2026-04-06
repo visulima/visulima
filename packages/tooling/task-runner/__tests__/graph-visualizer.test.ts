@@ -44,9 +44,9 @@ describe(toGraphvizDot, () => {
         const dot = toGraphvizDot(createTaskGraph());
 
         expect(dot).toContain("digraph TaskGraph");
-        expect(dot).toContain('"app:build"');
-        expect(dot).toContain('"app:build" -> "lib-a:build"');
-        expect(dot).toContain('"app:build" -> "lib-b:build"');
+        expect(dot).toContain("\"app:build\"");
+        expect(dot).toContain("\"app:build\" -> \"lib-a:build\"");
+        expect(dot).toContain("\"app:build\" -> \"lib-b:build\"");
     });
 
     it("should group by project in subgraphs", () => {
@@ -62,7 +62,7 @@ describe(toGraphvizDot, () => {
         });
 
         // Focused tasks should have non-grey color
-        expect(dot).toContain('"app:build"');
+        expect(dot).toContain("\"app:build\"");
         // Non-focused should be grey
         expect(dot).toContain("#eeeeee");
     });
@@ -121,8 +121,8 @@ describe(toGraphHtml, () => {
     it("should embed the graph data as JSON", () => {
         const html = toGraphHtml(createTaskGraph());
 
-        expect(html).toContain('"app:build"');
-        expect(html).toContain('"lib-core:build"');
+        expect(html).toContain("\"app:build\"");
+        expect(html).toContain("\"lib-core:build\"");
     });
 });
 
@@ -163,9 +163,9 @@ describe(projectGraphToDot, () => {
         const dot = projectGraphToDot(createProjectGraph());
 
         expect(dot).toContain("digraph ProjectGraph");
-        expect(dot).toContain('"app"');
-        expect(dot).toContain('"lib-a"');
-        expect(dot).toContain('"app" -> "lib-a"');
+        expect(dot).toContain("\"app\"");
+        expect(dot).toContain("\"lib-a\"");
+        expect(dot).toContain("\"app\" -> \"lib-a\"");
     });
 
     it("should use different colors for applications and libraries", () => {

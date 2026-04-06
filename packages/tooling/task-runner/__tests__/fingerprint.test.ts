@@ -28,7 +28,7 @@ describe(FingerprintManager, () => {
         await mkdir(join(workspaceRoot, "src"), { recursive: true });
         await writeFile(join(workspaceRoot, "src/index.ts"), "export const x = 1;");
         await writeFile(join(workspaceRoot, "src/utils.ts"), "export const y = 2;");
-        await writeFile(join(workspaceRoot, "package.json"), '{"name":"test"}');
+        await writeFile(join(workspaceRoot, "package.json"), "{\"name\":\"test\"}");
     });
 
     afterEach(async () => {
@@ -149,7 +149,7 @@ describe(FingerprintManager, () => {
             const reasons = await manager.validate(fingerprint);
 
             expect(reasons).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(reasons!.some((r) => r.type === "file-changed")).toBe(true);
         });
 
@@ -164,7 +164,7 @@ describe(FingerprintManager, () => {
             const reasons = await manager.validate(fingerprint);
 
             expect(reasons).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(reasons!.some((r) => r.type === "file-deleted")).toBe(true);
         });
 
@@ -179,7 +179,7 @@ describe(FingerprintManager, () => {
             const reasons = await manager.validate(fingerprint);
 
             expect(reasons).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(reasons!.some((r) => r.type === "file-created")).toBe(true);
         });
 
@@ -194,7 +194,7 @@ describe(FingerprintManager, () => {
             const reasons = await manager.validate(fingerprint);
 
             expect(reasons).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(reasons!.some((r) => r.type === "directory-changed")).toBe(true);
         });
     });
@@ -214,7 +214,7 @@ describe(FingerprintManager, () => {
             const result = manager.validateCommand(fingerprint, "app:build", { mode: "prod" });
 
             expect(result).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.type).toBe("args-changed");
         });
     });

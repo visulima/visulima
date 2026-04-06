@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { detectScriptShell, resetShellCache } from "../src/detect-shell";
 
-describe("detectScriptShell", () => {
+describe(detectScriptShell, () => {
     afterEach(() => {
         resetShellCache();
         delete process.env["npm_config_script_shell"];
@@ -33,6 +33,7 @@ describe("detectScriptShell", () => {
         resetShellCache();
 
         const first = detectScriptShell();
+
         // Change env var -- should still return cached value
         process.env["npm_config_script_shell"] = "/bin/fish";
         const second = detectScriptShell();

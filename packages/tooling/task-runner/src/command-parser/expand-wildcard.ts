@@ -13,6 +13,7 @@ const readPackageScripts = (cwd: string): Record<string, string> => {
     try {
         const raw = readFileSync(join(cwd, "package.json"), "utf8");
         const pkg = JSON.parse(raw) as { scripts?: Record<string, string> };
+
         return pkg.scripts ?? {};
     } catch {
         return {};
@@ -62,7 +63,7 @@ const readDenoTasks = (cwd: string): Record<string, string> => {
 /**
  * Escapes a string for use in a regular expression.
  */
-const escapeRegExp = (s: string): string => s.replaceAll(/[$()*+.?[\\\]^{|}]/g, "\\$&");
+const escapeRegExp = (s: string): string => s.replaceAll(/[$()*+.?[\\\]^{|}]/g, String.raw`\$&`);
 
 /**
  * Expands wildcard patterns in package manager "run" commands.
@@ -99,8 +100,8 @@ export const expandWildcard = (config: ConcurrentCommandConfig): ConcurrentComma
 
     // Build regex from the wildcard pattern
     const parts = scriptPattern.split("*");
-    const regexStr = parts.map(escapeRegExp).join("(.+)");
-    const wildcardRegex = new RegExp(`^${regexStr}$`);
+    const regexString = parts.map(escapeRegExp).join("(.+)");
+    const wildcardRegex = new RegExp(`^${regexString}$`);
 
     // Check for omission filter: pattern!(exclude)
     const omitMatch = /!\(([^)]+)\)/.exec(scriptPattern);
@@ -115,7 +116,7 @@ export const expandWildcard = (config: ConcurrentCommandConfig): ConcurrentComma
             return false;
         }
 
-        if (omitRegex && omitRegex.test(name)) {
+        if (omitRegex?.test(name)) {
             return false;
         }
 
@@ -129,9 +130,11 @@ export const expandWildcard = (config: ConcurrentCommandConfig): ConcurrentComma
     const remainingArgs = afterRun.slice(scriptPattern.length);
     const runPrefix = command.slice(0, runMatch.index + runMatch[0].length);
 
-    return matching.map((scriptName) => ({
-        ...config,
-        command: `${runPrefix} ${scriptName}${remainingArgs}`,
-        name: config.name ?? scriptName,
-    }));
+    return matching.map((scriptName) => {
+        return {
+            ...config,
+            command: `${runPrefix} ${scriptName}${remainingArgs}`,
+            name: config.name ?? scriptName,
+        };
+    });
 };

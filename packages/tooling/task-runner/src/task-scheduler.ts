@@ -80,7 +80,7 @@ const calculateProjectDepths = (projectGraph: ProjectGraph): Map<string, number>
  * Manages the scheduling order of tasks based on dependencies,
  * parallelism constraints, and estimated execution times.
  */
-// eslint-disable-next-line import/prefer-default-export
+
 export class TaskScheduler {
     readonly #taskGraph: TaskGraph;
 
@@ -100,9 +100,8 @@ export class TaskScheduler {
      * Partitions a list of tasks for distributed CI execution.
      * Tasks are sorted by ID for deterministic distribution, then split
      * using ceiling division so partitions differ by at most one task.
-     *
-     * @param tasks - The full list of tasks to partition
-     * @param partition - The partition configuration (1-based index and total)
+     * @param tasks The full list of tasks to partition
+     * @param partition The partition configuration (1-based index and total)
      * @returns The subset of tasks assigned to this partition
      */
     public static partitionTasks(tasks: Task[], partition: PartitionOptions): Task[] {

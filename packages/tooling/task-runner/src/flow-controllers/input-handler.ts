@@ -24,10 +24,10 @@
 import type { Readable, Writable } from "node:stream";
 
 export interface InputHandlerOptions {
-    /** Stream to read input from. Default: process.stdin. */
-    inputStream?: Readable;
     /** Default command index to route unprefixed input to. Default: 0. */
     defaultTarget?: number;
+    /** Stream to read input from. Default: process.stdin. */
+    inputStream?: Readable;
     /** Whether to pause the input stream when all processes finish. Default: true. */
     pauseOnFinish?: boolean;
 }
@@ -42,13 +42,12 @@ const INPUT_PREFIX_REGEX = /^(\S+?):(.+)/s;
 
 /**
  * Creates an input handler that routes stdin to child processes.
- *
- * @param commands - Map of command index/name to their stdin streams
- * @param options - Input handler configuration
+ * @param commands Map of command index/name to their stdin streams
+ * @param options Input handler configuration
  * @returns cleanup function to call when done
  */
-export const createInputHandler = (commands: CommandStdin[], options: InputHandlerOptions = {}): (() => void) => {
-    const { inputStream = process.stdin, defaultTarget = 0, pauseOnFinish = true } = options;
+export const createInputHandler = (commands: CommandStdin[], options: InputHandlerOptions = {}): () => void => {
+    const { defaultTarget = 0, inputStream = process.stdin, pauseOnFinish = true } = options;
 
     // Build lookup maps
     const byIndex = new Map<number, CommandStdin>();
@@ -72,6 +71,7 @@ export const createInputHandler = (commands: CommandStdin[], options: InputHandl
 
             if (targetCmd) {
                 targetCmd.stdin.write(rest);
+
                 return;
             }
         }
