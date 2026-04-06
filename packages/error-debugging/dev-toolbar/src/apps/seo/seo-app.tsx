@@ -138,8 +138,9 @@ const validateProduct: Validator = (schema) => {
     const hasRating = has(schema, "aggregateRating");
     const hasReview = has(schema, "review");
 
-    if (!hasOffers && !hasRating && !hasReview)
+    if (!hasOffers && !hasRating && !hasReview) {
         msgs.push({ message: "At least one of: offers, aggregateRating, or review is required for rich results", property: "offers", severity: "error" });
+    }
 
     if (hasOffers) {
         const offers = Array.isArray(schema["offers"]) ? (schema["offers"] as Record<string, unknown>[])[0] : (schema["offers"] as Record<string, unknown>);
@@ -181,8 +182,9 @@ const validateBreadcrumbList: Validator = (schema) => {
     if (items.length < 2) msgs.push({ message: "itemListElement should have at least 2 items", property: "itemListElement", severity: "warning" });
 
     items.forEach((item: Record<string, unknown>, i: number) => {
-        if (item["position"] !== i + 1)
+        if (item["position"] !== i + 1) {
             msgs.push({ message: `itemListElement[${i}].position should be ${i + 1}`, property: `itemListElement[${i}].position`, severity: "warning" });
+        }
 
         const name = (item["name"] as string) || (item["item"] as Record<string, unknown>)?.["name"];
 
