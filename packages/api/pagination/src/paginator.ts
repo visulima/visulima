@@ -34,7 +34,7 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
     ) {
         super(...rows);
 
-        this.totalNumber = Number(totalNumber);
+        this.totalNumber = totalNumber;
 
         this.rows = rows;
         this.isEmpty = this.rows.length === 0;
@@ -177,6 +177,6 @@ export default class Paginator<T = unknown> extends Array<T> implements IPaginat
      * to cast it to a bigint.
      */
     public get total(): number {
-        return Number(this.totalNumber);
+        return this.totalNumber;
     }
 }

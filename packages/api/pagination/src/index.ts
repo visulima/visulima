@@ -5,6 +5,6 @@ export { default as Paginator } from "./paginator";
 export { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "./swagger";
 
 export const paginate = <Result>(page: number, perPage: number, total: number, rows: Result[]): PaginatorInterface<Result> =>
-    new Paginator(total, Number(perPage), Number(page), ...rows);
+    new Paginator(total, perPage, page, ...rows);
 
 export type { PaginationMeta, PaginationResult, Paginator as PaginatorInterface } from "./types.d";
