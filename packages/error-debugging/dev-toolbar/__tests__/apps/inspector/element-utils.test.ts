@@ -1,16 +1,5 @@
 // @vitest-environment jsdom
-import { beforeAll, describe, expect, it } from "vitest";
-
-// Polyfill CSS.escape for JSDOM
-beforeAll(() => {
-    if (typeof CSS === "undefined" || !CSS.escape) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (globalThis as any).CSS = {
-            ...(typeof CSS !== "undefined" ? CSS : {}),
-            escape: (value: string) => value.replaceAll(/([^\w-])/g, "\\$1"),
-        };
-    }
-});
+import { beforeAll, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
     captureAccessibility,
@@ -25,8 +14,18 @@ import {
     isElementFixed,
 } from "../../../src/apps/inspector/element-utils";
 
+// Polyfill CSS.escape for JSDOM
+beforeAll(() => {
+    if (typeof CSS === "undefined" || !CSS.escape) {
+        (globalThis as any).CSS = {
+            ...typeof CSS === "undefined" ? {} : CSS,
+            escape: (value: string) => value.replaceAll(/([^\w-])/g, String.raw`\$1`),
+        };
+    }
+});
+
 describe("element-utils", () => {
-    describe("generateSelector", () => {
+    describe(generateSelector, () => {
         it("uses ID when available", () => {
             const el = document.createElement("div");
 
@@ -34,6 +33,7 @@ describe("element-utils", () => {
             document.body.append(el);
 
             expect(generateSelector(el)).toBe("#my-element");
+
             el.remove();
         });
 
@@ -47,6 +47,7 @@ describe("element-utils", () => {
 
             expect(selector).toContain("button");
             expect(selector).toContain("submit-btn");
+
             el.remove();
         });
 
@@ -61,17 +62,18 @@ describe("element-utils", () => {
             const selector = generateSelector(el2);
 
             expect(selector).toContain("nth-of-type");
+
             parent.remove();
         });
     });
 
-    describe("getElementLabel", () => {
+    describe(getElementLabel, () => {
         it("labels buttons with text", () => {
             const btn = document.createElement("button");
 
             btn.textContent = "Submit";
 
-            expect(getElementLabel(btn)).toBe('button "Submit"');
+            expect(getElementLabel(btn)).toBe("button \"Submit\"");
         });
 
         it("labels links with href", () => {
@@ -80,7 +82,7 @@ describe("element-utils", () => {
             a.href = "/about";
             a.textContent = "About";
 
-            expect(getElementLabel(a)).toBe('link "About" to /about');
+            expect(getElementLabel(a)).toBe("link \"About\" to /about");
         });
 
         it("labels images with alt text", () => {
@@ -88,7 +90,7 @@ describe("element-utils", () => {
 
             img.alt = "Logo";
 
-            expect(getElementLabel(img)).toBe('image "Logo"');
+            expect(getElementLabel(img)).toBe("image \"Logo\"");
         });
 
         it("labels inputs with type and placeholder", () => {
@@ -97,7 +99,7 @@ describe("element-utils", () => {
             input.type = "email";
             input.placeholder = "Enter email";
 
-            expect(getElementLabel(input)).toBe('input[email] "Enter email"');
+            expect(getElementLabel(input)).toBe("input[email] \"Enter email\"");
         });
 
         it("labels headings with text", () => {
@@ -105,7 +107,7 @@ describe("element-utils", () => {
 
             h1.textContent = "Welcome";
 
-            expect(getElementLabel(h1)).toBe('h1 "Welcome"');
+            expect(getElementLabel(h1)).toBe("h1 \"Welcome\"");
         });
 
         it("falls back to tag for empty elements", () => {
@@ -115,7 +117,7 @@ describe("element-utils", () => {
         });
     });
 
-    describe("cleanCssClasses", () => {
+    describe(cleanCssClasses, () => {
         it("strips CSS module hashes", () => {
             const el = document.createElement("div");
 
@@ -135,7 +137,7 @@ describe("element-utils", () => {
         });
     });
 
-    describe("getFullDomPath", () => {
+    describe(getFullDomPath, () => {
         it("builds path from element to body", () => {
             const div = document.createElement("div");
             const span = document.createElement("span");
@@ -148,11 +150,12 @@ describe("element-utils", () => {
             expect(path).toContain("body");
             expect(path).toContain("div");
             expect(path).toContain("span");
+
             div.remove();
         });
     });
 
-    describe("getNearbyElements", () => {
+    describe(getNearbyElements, () => {
         it("returns sibling tags", () => {
             const parent = document.createElement("div");
             const a = document.createElement("span");
@@ -174,7 +177,7 @@ describe("element-utils", () => {
         });
     });
 
-    describe("getNearbyText", () => {
+    describe(getNearbyText, () => {
         it("returns element text content", () => {
             const el = document.createElement("p");
 
@@ -210,25 +213,26 @@ describe("element-utils", () => {
         });
     });
 
-    describe("getSelectedText", () => {
+    describe(getSelectedText, () => {
         it("returns empty when no selection", () => {
             expect(getSelectedText()).toBe("");
         });
     });
 
-    describe("isElementFixed", () => {
+    describe(isElementFixed, () => {
         it("returns false for static elements", () => {
             const el = document.createElement("div");
 
             document.body.append(el);
 
             // JSDOM doesn't compute styles, but we test the function doesn't crash
-            expect(typeof isElementFixed(el)).toBe("boolean");
+            expectTypeOf(isElementFixed(el)).toBeBoolean();
+
             el.remove();
         });
     });
 
-    describe("captureAccessibility", () => {
+    describe(captureAccessibility, () => {
         it("captures role", () => {
             const el = document.createElement("div");
 
@@ -265,7 +269,7 @@ describe("element-utils", () => {
         });
     });
 
-    describe("captureComputedStyles", () => {
+    describe(captureComputedStyles, () => {
         it("returns a string of styles", () => {
             const el = document.createElement("div");
 
@@ -273,7 +277,8 @@ describe("element-utils", () => {
 
             const styles = captureComputedStyles(el);
 
-            expect(typeof styles).toBe("string");
+            expectTypeOf(styles).toBeString();
+
             el.remove();
         });
     });

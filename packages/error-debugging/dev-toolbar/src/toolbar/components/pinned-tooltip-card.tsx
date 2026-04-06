@@ -193,8 +193,8 @@ const PinnedTooltipCard = ({ onMove, onUnpin, pinned }: PinnedTooltipCardProps):
                         "text-muted-foreground/50 hover:text-destructive",
                         "transition-colors duration-150",
                     )}
-                    onClick={() => onUnpin(pinned.id)}
-                    onMouseDown={(event) => event.stopPropagation()}
+                    onClick={() => { onUnpin(pinned.id); }}
+                    onMouseDown={(event) => { event.stopPropagation(); }}
                     title="Unpin"
                     type="button"
                 >

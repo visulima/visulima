@@ -237,7 +237,7 @@ class AppManager {
     public async closeApp(appId: string): Promise<boolean> {
         const app = this.apps.get(appId);
 
-        if (!app || !app.active) {
+        if (!app?.active) {
             return false;
         }
 

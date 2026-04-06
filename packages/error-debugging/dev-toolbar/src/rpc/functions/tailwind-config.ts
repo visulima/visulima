@@ -27,7 +27,7 @@ const STRIP_DEFAULT_THEME_REGEX = /@theme\s+default[^{]*\{[\s\S]*?\}/g;
  */
 // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
 const VARIABLE_REGEX = /(--[\w-]+)\s*:\s*([\s\S]*?);/g;
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const parseThemeVariables = (css: string): Record<string, string> => {
     const variables: Record<string, string> = {};
 
@@ -90,7 +90,6 @@ const parseThemeVariables = (css: string): Record<string, string> => {
 const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
     const results: string[] = [];
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     const walk = async (directory: string, depth: number): Promise<void> => {
         if (depth > 4) {
             return;
@@ -119,7 +118,7 @@ const findTailwindCSSFiles = async (root: string): Promise<string[]> => {
                     // eslint-disable-next-line no-await-in-loop
                     const content = await fs.readFile(fullPath, "utf8");
 
-                    if (content.includes("@import") && (content.includes('"tailwindcss"') || content.includes("'tailwindcss'"))) {
+                    if (content.includes("@import") && (content.includes("\"tailwindcss\"") || content.includes("'tailwindcss'"))) {
                         results.push(fullPath);
                     }
                 } catch {

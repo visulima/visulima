@@ -46,7 +46,7 @@ interface SelectProps {
     value?: string;
 }
 
-interface SelectTriggerProps extends Omit<JSX.ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface SelectTriggerProps extends Omit<JSX.ButtonHTMLAttributes, "children"> {
     children: ComponentChildren;
     class?: string;
 }
@@ -107,7 +107,7 @@ const Select = ({ children, onValueChange, value = "" }: SelectProps): JSX.Eleme
     }, [open]);
 
     const contextValue = useMemo(
-        () => ({ highlightedValue, instanceId, onSelect, open, search, setHighlightedValue, setOpen, setSearch, triggerRef, value }),
+        () => { return { highlightedValue, instanceId, onSelect, open, search, setHighlightedValue, setOpen, setSearch, triggerRef, value }; },
         [highlightedValue, instanceId, onSelect, open, search, value],
     );
 
@@ -136,7 +136,7 @@ const SelectTrigger = ({ children, class: className, ...rest }: SelectTriggerPro
                 "transition-colors duration-150",
                 className,
             )}
-            onClick={() => setOpen(!open)}
+            onClick={() => { setOpen(!open); }}
             ref={(element) => {
                 triggerRef.current = element;
             }}
@@ -171,7 +171,7 @@ const SelectValue = ({ class: className, options, placeholder = "Select…" }: S
 
 const getOptionElements = (list: HTMLElement): HTMLElement[] => [...list.querySelectorAll<HTMLElement>("[role='option']:not([aria-disabled='true'])")];
 
-const getOptionValue = (element: HTMLElement): string | null => element.getAttribute("data-value");
+const getOptionValue = (element: HTMLElement): string | null => element.dataset.value;
 
 // ─── Content (dropdown) ─────────────────────────────────────────────────────────
 
@@ -192,6 +192,7 @@ const SelectContent = ({
 
     // Keep a ref to the latest highlightedValue to avoid stale closures in keydown
     const highlightedRef = useRef(highlightedValue);
+
     highlightedRef.current = highlightedValue;
 
     // Position the dropdown using floating-ui
@@ -323,6 +324,12 @@ const SelectContent = ({
                     break;
                 }
 
+                case "End": {
+                    event_.preventDefault();
+                    highlightByIndex(count - 1);
+                    break;
+                }
+
                 case "Enter": {
                     event_.preventDefault();
 
@@ -332,9 +339,9 @@ const SelectContent = ({
 
                     break;
                 }
+                case "Escape":
 
-                case "Tab":
-                case "Escape": {
+                case "Tab": {
                     event_.preventDefault();
                     setOpen(false);
                     triggerRef.current?.focus();
@@ -344,12 +351,6 @@ const SelectContent = ({
                 case "Home": {
                     event_.preventDefault();
                     highlightByIndex(0);
-                    break;
-                }
-
-                case "End": {
-                    event_.preventDefault();
-                    highlightByIndex(count - 1);
                     break;
                 }
                 // No default
@@ -368,7 +369,7 @@ const SelectContent = ({
         return undefined;
     }
 
-    const activeDescendantId = highlightedValue !== null ? `${instanceId}-option-${highlightedValue}` : undefined;
+    const activeDescendantId = highlightedValue === null ? undefined : `${instanceId}-option-${highlightedValue}`;
 
     return (
         <div
@@ -397,7 +398,7 @@ const SelectContent = ({
                             "px-1.5 py-1 border-0 outline-none",
                         )}
                         onInput={(event_) => {
-                            setSearch((event_.currentTarget as HTMLInputElement).value);
+                            setSearch(event_.currentTarget.value);
                             setHighlightedValue(null);
                         }}
                         placeholder="Search…"
@@ -444,8 +445,8 @@ const SelectItem = ({ children, class: className, value: itemValue }: SelectItem
             )}
             data-value={itemValue}
             id={itemId}
-            onClick={() => onSelect(itemValue)}
-            onMouseEnter={() => setHighlightedValue(itemValue)}
+            onClick={() => { onSelect(itemValue); }}
+            onMouseEnter={() => { setHighlightedValue(itemValue); }}
             role="option"
         >
             <span class="flex-1 truncate">{children}</span>

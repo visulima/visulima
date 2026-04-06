@@ -63,7 +63,7 @@ describe("inject source", () => {
       })
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -116,7 +116,7 @@ describe("inject source", () => {
       })
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -141,7 +141,7 @@ describe("inject source", () => {
       })
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -179,7 +179,7 @@ describe("inject source", () => {
       })
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -207,7 +207,7 @@ describe("inject source", () => {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -233,7 +233,7 @@ describe("inject source", () => {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -273,7 +273,7 @@ function test(props) {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -298,7 +298,7 @@ function test(props) {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -338,7 +338,7 @@ function test(props) {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(
@@ -376,7 +376,7 @@ function test(props) {
       }
         `,
                     "test.jsx",
-                )!.code!,
+                )!.code,
             );
 
             expect(output).toBe(

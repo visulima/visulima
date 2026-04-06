@@ -82,7 +82,6 @@ export const updateAnnotation = async (server: ViteDevServer, id: string, data: 
             return null;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const annotation = annotations[index]!;
         const now = new Date().toISOString();
 
@@ -146,7 +145,6 @@ export const deleteAnnotation = async (server: ViteDevServer, id: string): Promi
             return false;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const annotation = annotations[index]!;
 
         // Clean up screenshot

@@ -5,7 +5,7 @@ import type { JSX } from "preact";
 import type { ForwardRefExoticComponent, RefAttributes } from "preact/compat";
 import { forwardRef } from "preact/compat";
 
-interface InputProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends JSX.InputHTMLAttributes {
     class?: string;
 }
 

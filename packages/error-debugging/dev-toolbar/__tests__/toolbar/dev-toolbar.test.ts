@@ -75,7 +75,7 @@ describe("devToolbar custom element — disconnectedCallback", () => {
 
         document.body.append(toolbar);
 
-        expect(() => toolbar.remove()).not.toThrowError();
+        expect(() => { toolbar.remove(); }).not.toThrow();
         expect(toolbar.isConnected).toBe(false);
     });
 

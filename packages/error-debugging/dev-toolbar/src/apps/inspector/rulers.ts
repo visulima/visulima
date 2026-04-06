@@ -17,7 +17,7 @@ const V_RULER_ID = "__vdt_ruler_v";
 const GUIDELINE_CLASS = "__vdt_guideline";
 const SNAP_THRESHOLD = 5; // px — guideline snaps to element edges within this range
 const SNAP_VELOCITY_MAX = 3; // px/ms — above this speed, snapping is skipped
-const FONT = '9px "JetBrains Mono","Geist Mono",ui-monospace,monospace';
+const FONT = "9px \"JetBrains Mono\",\"Geist Mono\",ui-monospace,monospace";
 
 // ─── Module state ───────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ let visible = false;
 let cornerDiv: HTMLDivElement | null = null;
 let hCanvas: HTMLCanvasElement | null = null;
 let vCanvas: HTMLCanvasElement | null = null;
-let guidelines: Set<HTMLDivElement> = new Set();
+let guidelines = new Set<HTMLDivElement>();
 let resizeHandler: (() => void) | null = null;
 let scrollHandler: (() => void) | null = null;
 let currentPalette: InspectorPalette | null = null;
@@ -90,7 +90,7 @@ const drawHorizontalRuler = (canvas: HTMLCanvasElement, palette: InspectorPalett
     ctx.lineTo(logicalWidth, logicalHeight - 0.5);
     ctx.stroke();
 
-    const scrollX = window.scrollX;
+    const { scrollX } = globalThis;
     const { minor, stepsPerMajor } = computeTickIntervals(1);
 
     ctx.fillStyle = palette.muted;
@@ -162,7 +162,7 @@ const drawVerticalRuler = (canvas: HTMLCanvasElement, palette: InspectorPalette)
     ctx.lineTo(logicalWidth - 0.5, logicalHeight);
     ctx.stroke();
 
-    const scrollY = window.scrollY;
+    const { scrollY } = globalThis;
     const { minor, stepsPerMajor } = computeTickIntervals(1);
 
     ctx.fillStyle = palette.muted;
@@ -330,7 +330,7 @@ const spawnGuideline = (orientation: "horizontal" | "vertical", startViewportPos
         "position:absolute",
         `background:${palette.primary}`,
         "color:#fff",
-        'font:9px/1 "JetBrains Mono","Geist Mono",ui-monospace,monospace',
+        "font:9px/1 \"JetBrains Mono\",\"Geist Mono\",ui-monospace,monospace",
         "padding:2px 4px",
         "white-space:nowrap",
         "pointer-events:none",
@@ -564,7 +564,7 @@ export const isRulerElement = (element: Element): boolean => {
         return false;
     }
 
-    const id = (element as HTMLElement).id;
+    const { id } = (element as HTMLElement);
 
     if (id === CORNER_ID || id === H_RULER_ID || id === V_RULER_ID) {
         return true;

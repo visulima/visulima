@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import inspectIcon from "lucide-static/icons/inspect.svg?raw";
 
-import { detachMarkdownShortcut, removeAllMarkers } from "./annotation-overlay";
 import type { DevToolbarApp } from "../../types/app";
+import { detachMarkdownShortcut, removeAllMarkers } from "./annotation-overlay";
 import { startGlobalInspection, stopGlobalInspection } from "./inspector-app";
 
 const inspectorApp: DevToolbarApp = {
@@ -11,7 +11,6 @@ const inspectorApp: DevToolbarApp = {
     name: "Inspector",
 
     onClick() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const api = (globalThis as any).__VISULIMA_DEVTOOLS__;
 
         startGlobalInspection(async () => {

@@ -160,7 +160,6 @@ const convertViolations = (violations: AxeViolation[], disabledRules: string[]):
 };
 
 const runAxeScan = async (standard: Standard): Promise<{ violations: AxeViolation[] }> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const axeModule: any = await import("axe-core");
     // axe-core is a CJS-only package; ESM interop shape varies by bundler:
     //   Vite ESM interop  → { default: <axe api> }  (.default.run exists)

@@ -85,7 +85,6 @@ const syncViteOverlayTheme = (resolved: "light" | "dark"): void => {
         // localStorage unavailable — skip
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
     const overlay = (globalThis as any).__v_o__current as { shadowRoot?: ShadowRoot } | undefined;
     const rootElement = overlay?.shadowRoot?.querySelector("#__v_o__root");
 

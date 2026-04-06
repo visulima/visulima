@@ -5,7 +5,7 @@ import type { JSX } from "preact";
 import type { ForwardRefExoticComponent, RefAttributes } from "preact/compat";
 import { forwardRef } from "preact/compat";
 
-interface TextareaProps extends JSX.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends JSX.TextareaHTMLAttributes {
     class?: string;
 }
 

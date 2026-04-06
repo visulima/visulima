@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { DEFAULT_SETTINGS, MARKER_COLORS, getMarkerColor, loadSettings, saveSettings } from "../../../src/apps/inspector/annotation-settings";
+import { DEFAULT_SETTINGS, getMarkerColor, loadSettings, MARKER_COLORS, saveSettings } from "../../../src/apps/inspector/annotation-settings";
 
 describe("annotation-settings", () => {
     afterEach(() => {
@@ -10,7 +10,7 @@ describe("annotation-settings", () => {
         saveSettings(DEFAULT_SETTINGS);
     });
 
-    describe("DEFAULT_SETTINGS", () => {
+    describe("dEFAULT_SETTINGS", () => {
         it("has expected default values", () => {
             expect(DEFAULT_SETTINGS.outputDetail).toBe("standard");
             expect(DEFAULT_SETTINGS.markerColorName).toBe("indigo");
@@ -19,7 +19,7 @@ describe("annotation-settings", () => {
         });
     });
 
-    describe("MARKER_COLORS", () => {
+    describe("mARKER_COLORS", () => {
         it("has 7 colors", () => {
             expect(MARKER_COLORS).toHaveLength(7);
         });
@@ -58,7 +58,7 @@ describe("annotation-settings", () => {
 
             const raw = localStorage.getItem("__vdt_annotation_settings");
 
-            expect(raw).toBeTruthy();
+            expect(raw).toBe(true);
             expect(JSON.parse(raw!).outputDetail).toBe("forensic");
         });
 
@@ -82,7 +82,7 @@ describe("annotation-settings", () => {
         });
     });
 
-    describe("getMarkerColor", () => {
+    describe(getMarkerColor, () => {
         it("returns the configured color", () => {
             saveSettings({ ...DEFAULT_SETTINGS, markerColorName: "red" });
 

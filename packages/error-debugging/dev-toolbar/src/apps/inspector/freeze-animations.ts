@@ -48,7 +48,6 @@ const getState = (): FreezeState => {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = globalThis as any;
 
     if (!w[STATE_KEY]) {
@@ -77,7 +76,7 @@ if (globalThis.window !== undefined && !_s.installed) {
     _s.origRAF = globalThis.requestAnimationFrame.bind(globalThis);
 
     // Patch setTimeout — queue callback when frozen
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (globalThis as any).setTimeout = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
             return _s.origSetTimeout(handler, timeout) as unknown as number;
@@ -87,15 +86,15 @@ if (globalThis.window !== undefined && !_s.installed) {
             (...a: any[]) => {
                 if (_s.frozen) {
                     if (_s.frozenTimeoutQueue.length < MAX_FROZEN_QUEUE) {
-                        _s.frozenTimeoutQueue.push(() => (handler as Function)(...a));
+                        _s.frozenTimeoutQueue.push(() => (handler)(...a));
                     } else if (_s.frozenTimeoutQueue.length === MAX_FROZEN_QUEUE) {
                         // Push a sentinel so the warning fires only once
                         _s.frozenTimeoutQueue.push(() => {});
-                        // eslint-disable-next-line no-console
+
                         console.warn(`[dev-toolbar] frozenTimeoutQueue exceeded ${MAX_FROZEN_QUEUE} entries — further callbacks are being dropped.`);
                     }
                 } else {
-                    (handler as Function)(...a);
+                    (handler)(...a);
                 }
             },
             timeout,
@@ -104,7 +103,7 @@ if (globalThis.window !== undefined && !_s.installed) {
     };
 
     // Patch setInterval — skip callback when frozen
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (globalThis as any).setInterval = (handler: TimerHandler, timeout?: number, ...args: unknown[]): number => {
         if (typeof handler === "string") {
             return _s.origSetInterval(handler, timeout) as unknown as number;
@@ -113,7 +112,7 @@ if (globalThis.window !== undefined && !_s.installed) {
         return _s.origSetInterval(
             (...a: any[]) => {
                 if (!_s.frozen) {
-                    (handler as Function)(...a);
+                    (handler)(...a);
                 }
             },
             timeout,
@@ -122,7 +121,7 @@ if (globalThis.window !== undefined && !_s.installed) {
     };
 
     // Patch requestAnimationFrame — queue when frozen
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (globalThis as any).requestAnimationFrame = (callback: FrameRequestCallback): number =>
         _s.origRAF((timestamp: number) => {
             if (_s.frozen) {
@@ -131,7 +130,7 @@ if (globalThis.window !== undefined && !_s.installed) {
                 } else if (_s.frozenRAFQueue.length === MAX_FROZEN_QUEUE) {
                     // Push a sentinel so the warning fires only once
                     _s.frozenRAFQueue.push(() => {});
-                    // eslint-disable-next-line no-console
+
                     console.warn(`[dev-toolbar] frozenRAFQueue exceeded ${MAX_FROZEN_QUEUE} entries — further callbacks are being dropped.`);
                 }
             } else {
@@ -187,7 +186,7 @@ export const freezeAll = (): void => {
                 continue;
             }
 
-            const target = (anim.effect as KeyframeEffect)?.target as Element | null;
+            const target = (anim.effect as KeyframeEffect)?.target;
 
             if (target && !target.closest?.("[id^='__vdt_']") && !target.closest?.("dev-toolbar")) {
                 anim.pause();

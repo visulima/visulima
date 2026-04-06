@@ -6,7 +6,7 @@ import type { ComponentChildren, JSX } from "preact";
 type ButtonSize = "default" | "icon" | "lg" | "sm";
 type ButtonVariant = "default" | "destructive" | "ghost" | "link" | "outline" | "secondary";
 
-interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends JSX.ButtonHTMLAttributes {
     children?: ComponentChildren;
     class?: string;
     size?: ButtonSize;

@@ -1,4 +1,4 @@
-/* eslint-disable import/exports-last, max-classes-per-file */
+/* eslint-disable max-classes-per-file */
 /** @jsxImportSource preact */
 import { render } from "preact";
 
@@ -55,7 +55,6 @@ export class DevToolbar extends HTMLElement {
     public disconnectedCallback(): void {
         // Unmount Preact component when element is removed
         if (this.renderRoot) {
-            // eslint-disable-next-line unicorn/no-null
             render(null, this.renderRoot);
             this.renderRoot = undefined;
         }
@@ -112,8 +111,8 @@ export class DevToolbar extends HTMLElement {
                 },
             },
             {
-                hide: () => this.setToolbarVisible(false),
-                show: () => this.setToolbarVisible(true),
+                hide: () => { this.setToolbarVisible(false); },
+                show: () => { this.setToolbarVisible(true); },
                 toggle: () => {
                     const isHidden = this.isHidden();
 
@@ -154,7 +153,6 @@ export class DevToolbar extends HTMLElement {
      * Check if toolbar is hidden.
      */
     public isHidden(): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
 
         return root?.hasAttribute("data-hidden") ?? true;
@@ -165,7 +163,7 @@ export class DevToolbar extends HTMLElement {
      */
     public setToolbarVisible(visible: boolean): void {
         // Update the data-hidden attribute directly for immediate feedback
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         const root = this.shadowRoot!.querySelector<HTMLDivElement>("#__v_dt__root");
 
         if (root) {
@@ -202,7 +200,7 @@ export class DevToolbar extends HTMLElement {
         const apps = this.appManager.getAllApps();
 
         // Adopt shared stylesheet for Tailwind CSS
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
         const shadowRoot = this.shadowRoot!;
 
         if (sharedToolbarStylesheet) {

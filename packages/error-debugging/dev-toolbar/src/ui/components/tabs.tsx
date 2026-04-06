@@ -35,7 +35,7 @@ interface TabsListProps extends JSX.HTMLAttributes<HTMLDivElement> {
     class?: string;
 }
 
-interface TabsTriggerProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+interface TabsTriggerProps extends JSX.ButtonHTMLAttributes {
     children?: ComponentChildren;
     class?: string;
     disabled?: boolean;

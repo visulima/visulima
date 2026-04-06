@@ -25,13 +25,11 @@ const ViteOverlayButton = (): ComponentChildren => {
 
     useEffect(() => {
         const sync = () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const history = (globalThis as any).__v_o_error_history;
             const count = Array.isArray(history) ? history.length : 0;
 
             setErrorCount(count);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
             const overlay = (globalThis as any).__v_o__current;
 
             if (overlay?.parentNode) {
@@ -47,7 +45,7 @@ const ViteOverlayButton = (): ComponentChildren => {
 
         sync();
 
-        return () => clearInterval(id);
+        return () => { clearInterval(id); };
     }, []);
 
     if (errorCount === 0) {
@@ -55,7 +53,6 @@ const ViteOverlayButton = (): ComponentChildren => {
     }
 
     const handleClick = () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         const overlay = (globalThis as any).__v_o__current;
 
         if (!overlay?.parentNode) {

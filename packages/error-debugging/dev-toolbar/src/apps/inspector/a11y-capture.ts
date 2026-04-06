@@ -19,10 +19,10 @@ const captureA11yInfo = (element: Element): A11yInfo => {
 
     const role = element.getAttribute("role");
     const tabindexAttribute = element.getAttribute("tabindex");
-    const tabindex = tabindexAttribute !== null ? Number.parseInt(tabindexAttribute, 10) : null;
+    const tabindex = tabindexAttribute === null ? null : Number.parseInt(tabindexAttribute, 10);
 
     // Determine focusability: natively focusable elements, or elements with tabindex >= 0
-    const nativelyFocusable = new Set(["a", "button", "input", "select", "textarea", "details", "summary"]);
+    const nativelyFocusable = new Set(["a", "button", "details", "input", "select", "summary", "textarea"]);
     const tag = element.tagName.toLowerCase();
     const isNativelyFocusable = nativelyFocusable.has(tag) && !element.hasAttribute("disabled");
     const isContentEditable = element.hasAttribute("contenteditable") && element.getAttribute("contenteditable") !== "false";

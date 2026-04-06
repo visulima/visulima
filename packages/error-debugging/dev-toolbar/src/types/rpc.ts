@@ -14,7 +14,7 @@ export interface ServerFunctions {
     /**
      * Extension point for custom server functions
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     [key: string]: (...args: any[]) => Promise<any>;
 
     /**
@@ -58,7 +58,7 @@ export interface ServerFunctions {
     /**
      * Get Vite configuration
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     getViteConfig: () => Promise<Record<string, any>>;
 
     /**

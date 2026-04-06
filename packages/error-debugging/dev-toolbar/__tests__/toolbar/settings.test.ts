@@ -42,7 +42,7 @@ describe("settings (browser environment)", () => {
         vi.unstubAllGlobals();
     });
 
-    describe("loadSettings", () => {
+    describe(loadSettings, () => {
         it("returns default settings when localStorage is empty", () => {
             expect.hasAssertions();
 
@@ -94,7 +94,7 @@ describe("settings (browser environment)", () => {
         });
     });
 
-    describe("saveSettings", () => {
+    describe(saveSettings, () => {
         it("stores settings as JSON in localStorage", () => {
             expect.hasAssertions();
 
@@ -137,7 +137,7 @@ describe("settings (browser environment)", () => {
         });
     });
 
-    describe("updateSettings", () => {
+    describe(updateSettings, () => {
         it("merges partial updates with existing settings", () => {
             expect.hasAssertions();
 
@@ -197,7 +197,7 @@ describe("settings (no browser / SSR environment)", () => {
     it("saveSettings is a no-op and does not throw", () => {
         expect.hasAssertions();
 
-        expect(() => saveSettings(DEFAULT_TOOLBAR_SETTINGS)).not.toThrowError();
+        expect(() => { saveSettings(DEFAULT_TOOLBAR_SETTINGS); }).not.toThrow();
     });
 
     it("updateSettings returns defaults without persisting", () => {

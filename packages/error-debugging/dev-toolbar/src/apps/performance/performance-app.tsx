@@ -217,17 +217,19 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
             </Section>
 
             {/* Memory */}
-            {memory ? (
+            {memory
+                ? (
                 <Section title="JS Heap Memory">
                     <MemoryBar memory={memory} />
                 </Section>
-            ) : (
+                )
+                : (
                 <Section title="JS Heap Memory">
                     <p class="text-[0.72rem] text-muted-foreground text-center py-2">
                         Not available — enable <code class="font-mono text-foreground/70">--enable-precise-memory-info</code> in Chrome flags.
                     </p>
                 </Section>
-            )}
+                )}
 
             {/* Core Web Vitals */}
             <Section title="Core Web Vitals">
@@ -244,27 +246,31 @@ const PerformanceApp = (_props: AppComponentProps): ComponentChildren => {
             {/* Long Tasks */}
             <Section
                 action={
-                    longTasks.length > 0 ? (
+                    longTasks.length > 0
+                        ? (
                         <button
                             class="px-2 py-0.5 text-[0.65rem] border border-border text-muted-foreground hover:text-foreground cursor-pointer bg-transparent transition-colors"
-                            onClick={() => performanceMonitor.clearLongTasks()}
+                            onClick={() => { performanceMonitor.clearLongTasks(); }}
                             type="button"
                         >
                             Clear
                         </button>
-                    ) : undefined
+                        )
+                        : undefined
                 }
                 title={`Long Tasks${longTasks.length > 0 ? ` (${longTasks.length})` : ""}`}
             >
-                {longTasks.length === 0 ? (
+                {longTasks.length === 0
+                    ? (
                     <p class="text-[0.72rem] text-muted-foreground text-center py-2">No long tasks detected yet.</p>
-                ) : (
+                    )
+                    : (
                     <div class="max-h-48 overflow-y-auto devtools-content-scroll">
                         {longTasks.map((task) => (
                             <LongTaskRow key={task.id} task={task} />
                         ))}
                     </div>
-                )}
+                    )}
             </Section>
         </div>
     );

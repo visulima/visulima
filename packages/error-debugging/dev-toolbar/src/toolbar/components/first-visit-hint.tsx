@@ -90,7 +90,7 @@ const FirstVisitHint = ({ onDismiss, position }: FirstVisitHintProps): Component
     useEffect(() => {
         const t = setTimeout(setVisible, 600, true);
 
-        return () => clearTimeout(t);
+        return () => { clearTimeout(t); };
     }, []);
 
     // Clear any pending dismiss timeout on unmount to prevent calling onDismiss

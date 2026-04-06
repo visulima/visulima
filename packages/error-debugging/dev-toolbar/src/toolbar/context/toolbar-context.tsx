@@ -86,7 +86,7 @@ export interface ToolbarContextState {
     /**
      * Sets or clears the hovered app. Pass undefined to start the leave debounce.
      */
-    setHoveredApp: (app: DevToolbarAppState | undefined, rect?: DOMRect | undefined) => void;
+    setHoveredApp: (app: DevToolbarAppState | undefined, rect?: DOMRect) => void;
 
     /**
      * Sets a notification for an app.

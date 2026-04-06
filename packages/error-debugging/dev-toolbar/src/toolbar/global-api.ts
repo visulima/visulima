@@ -75,7 +75,6 @@ export const createGlobalAPI = (
 
         rpc: new Proxy({} as ServerFunctions, {
             get(_target, prop: string) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
             },
         }),
@@ -110,7 +109,6 @@ export const createGlobalAPI = (
  */
 export const setupGlobalAPI = (api: VisulimaDevTools): void => {
     if (globalThis.window !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
         (globalThis as any).__VISULIMA_DEVTOOLS__ = api;
     }
 };

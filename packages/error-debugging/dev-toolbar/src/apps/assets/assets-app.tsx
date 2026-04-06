@@ -27,8 +27,8 @@ const formatSize = (bytes: number): string => {
 };
 
 /** Guard against javascript: and data: URIs produced by unusual filenames. */
-// eslint-disable-next-line no-confusing-arrow
-const safePublicPath = (p: string): string => (p.startsWith("/") && !p.includes(":") ? p : "#");
+
+const safePublicPath = (p: string): string => p.startsWith("/") && !p.includes(":") ? p : "#";
 
 const TYPE_FILTER_OPTIONS: { label: string; value: StaticAsset["type"] | "all" }[] = [
     { label: "All", value: "all" },
@@ -69,7 +69,6 @@ const AssetPreview = ({ asset }: { asset: StaticAsset }): ComponentChildren => {
                     alt={asset.publicPath}
                     class="max-w-full max-h-full object-contain"
                     onError={(event_) => {
-                        // eslint-disable-next-line no-param-reassign
                         (event_.target as HTMLImageElement).style.display = "none";
                     }}
                     src={src}
@@ -110,17 +109,16 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
     const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     // Clear the copy feedback timer on unmount
-    useEffect(() => () => clearTimeout(copyTimerRef.current), []);
+    useEffect(() => () => { clearTimeout(copyTimerRef.current); }, []);
 
     const load = (): void => {
         setLoading(true);
         setError(undefined);
         setSelected(undefined);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (helpers.rpc as any)
             .getStaticAssets()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             .then((result: any[]) => {
                 setAssets(result as StaticAsset[]);
                 setLoading(false);
@@ -190,7 +188,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             <div class="flex items-center gap-2 px-4 py-2.5 border-b border-border shrink-0 flex-wrap">
                 <Input
                     class="flex-1 min-w-32 bg-foreground/4 font-mono text-[0.8rem] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 border-border"
-                    onInput={(event) => setSearch((event.target as HTMLInputElement).value)}
+                    onInput={(event) => { setSearch((event.target as HTMLInputElement).value); }}
                     placeholder="Filter assets…"
                     type="text"
                     value={search}
@@ -215,7 +213,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 : "bg-foreground/4 text-muted-foreground border-border hover:bg-foreground/8 hover:text-foreground",
                         )}
                         key={opt.value}
-                        onClick={() => setTypeFilter(opt.value)}
+                        onClick={() => { setTypeFilter(opt.value); }}
                         type="button"
                     >
                         {opt.label}
@@ -227,12 +225,13 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
             <div class="flex flex-1 min-h-0 overflow-hidden">
                 {/* Asset list */}
                 <div class="flex-1 overflow-auto divide-y divide-border/30" role="list">
-                    {filtered.length === 0 ? (
+                    {filtered.length === 0
+                        ? (
                         <div class="flex items-center justify-center p-8 text-[0.8rem] text-muted-foreground">
                             {assets.length === 0 ? "No assets found in public directory." : "No assets match the current filter."}
                         </div>
-                    ) : (
-                        filtered.map((asset) => (
+                        )
+                        : filtered.map((asset) => (
                             <button
                                 aria-label={asset.publicPath}
                                 aria-selected={selected?.publicPath === asset.publicPath}
@@ -242,7 +241,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                     selected?.publicPath === asset.publicPath && "bg-primary/6",
                                 )}
                                 key={asset.publicPath}
-                                onClick={() => setSelected(selected?.publicPath === asset.publicPath ? undefined : asset)}
+                                onClick={() => { setSelected(selected?.publicPath === asset.publicPath ? undefined : asset); }}
                                 role="option"
                                 type="button"
                             >
@@ -251,7 +250,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                                 <span class="shrink-0 text-[0.65rem] text-muted-foreground">{formatSize(asset.size)}</span>
                             </button>
                         ))
-                    )}
+                    }
                 </div>
 
                 {/* Detail panel */}
@@ -259,7 +258,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
                     <div class="border-l border-border bg-background w-72 shrink-0 flex flex-col overflow-hidden">
                         <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-border shrink-0">
                             <span class="text-[0.7rem] font-semibold text-foreground uppercase tracking-wide">Asset Info</span>
-                            <Button aria-label="Close" class="h-6 w-6 text-xs" onClick={() => setSelected(undefined)} size="icon" variant="ghost">
+                            <Button aria-label="Close" class="h-6 w-6 text-xs" onClick={() => { setSelected(undefined); }} size="icon" variant="ghost">
                                 ✕
                             </Button>
                         </div>
@@ -287,7 +286,7 @@ const AssetsApp = ({ helpers }: AppComponentProps): ComponentChildren => {
 
                             {/* Actions */}
                             <div class="flex flex-col gap-2 pt-1">
-                                <Button class="w-full text-[0.75rem]" onClick={() => copyPath(selected)} size="sm" variant="outline">
+                                <Button class="w-full text-[0.75rem]" onClick={() => { copyPath(selected); }} size="sm" variant="outline">
                                     {copied ? "Copied!" : "Copy URL"}
                                 </Button>
                                 <a

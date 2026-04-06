@@ -23,7 +23,7 @@ const makeEvent = (overrides: Partial<TimelineEvent> = {}): TimelineEvent => {
     };
 };
 
-describe("createDevToolbarHook", () => {
+describe(createDevToolbarHook, () => {
     let hook: DevToolbarHook;
 
     beforeEach(() => {
@@ -82,7 +82,7 @@ describe("createDevToolbarHook", () => {
         it("is a no-op when no handlers are registered", () => {
             expect.hasAssertions();
 
-            expect(() => hook.emit("devtools:close")).not.toThrowError();
+            expect(() => { hook.emit("devtools:close"); }).not.toThrow();
         });
 
         it("continues calling remaining handlers when one throws", () => {
@@ -159,7 +159,7 @@ describe("createDevToolbarHook", () => {
         it("is a no-op when event has no handlers", () => {
             expect.hasAssertions();
 
-            expect(() => hook.off("devtools:init")).not.toThrowError();
+            expect(() => { hook.off("devtools:init"); }).not.toThrow();
         });
 
         it("is a no-op when removing a handler that was never registered", () => {
@@ -167,7 +167,7 @@ describe("createDevToolbarHook", () => {
 
             const handler = vi.fn();
 
-            expect(() => hook.off("devtools:init", handler)).not.toThrowError();
+            expect(() => { hook.off("devtools:init", handler); }).not.toThrow();
         });
 
         it("cleans up the handler set when the last handler is removed", () => {
@@ -255,7 +255,7 @@ describe("createDevToolbarHook", () => {
 
             const app = makeApp();
 
-            expect(() => hook.registerApp(app)).not.toThrowError();
+            expect(() => { hook.registerApp(app); }).not.toThrow();
         });
     });
 
@@ -289,7 +289,7 @@ describe("createDevToolbarHook", () => {
 
             const event = makeEvent();
 
-            expect(() => hook.addTimelineEvent("custom", event)).not.toThrowError();
+            expect(() => { hook.addTimelineEvent("custom", event); }).not.toThrow();
         });
 
         it("calls both the callback and the event listener", () => {

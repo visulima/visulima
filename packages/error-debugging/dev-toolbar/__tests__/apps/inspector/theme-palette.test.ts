@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
     ANNOTATION_DARK,
     ANNOTATION_LIGHT,
-    INSPECTOR_DARK,
-    INSPECTOR_LIGHT,
     getAnnotationPalette,
     getInspectorPalette,
+    INSPECTOR_DARK,
+    INSPECTOR_LIGHT,
     isDarkTheme,
     resetPaletteCache,
 } from "../../../src/apps/inspector/theme-palette";
@@ -39,7 +39,7 @@ describe("theme-palette", () => {
         });
     });
 
-    describe("isDarkTheme", () => {
+    describe(isDarkTheme, () => {
         it("returns dark for 'dark' localStorage value", () => {
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
@@ -55,7 +55,7 @@ describe("theme-palette", () => {
         });
     });
 
-    describe("getInspectorPalette", () => {
+    describe(getInspectorPalette, () => {
         it("returns dark palette when theme is dark", () => {
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();
@@ -75,7 +75,7 @@ describe("theme-palette", () => {
         });
     });
 
-    describe("getAnnotationPalette", () => {
+    describe(getAnnotationPalette, () => {
         it("returns palette with base + annotation-specific fields", () => {
             // Set explicit theme to avoid matchMedia (not in JSDOM)
             localStorage.setItem("__v_dt__theme", "dark");
@@ -90,7 +90,7 @@ describe("theme-palette", () => {
         });
     });
 
-    describe("resetPaletteCache", () => {
+    describe(resetPaletteCache, () => {
         it("forces re-read from localStorage on next call", () => {
             localStorage.setItem("__v_dt__theme", "dark");
             resetPaletteCache();

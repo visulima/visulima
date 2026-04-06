@@ -11,7 +11,6 @@ const createServerHelpers = (): ServerHelpers => {
     return {
         rpc: new Proxy({} as ServerHelpers["rpc"], {
             get(_target, prop: string) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return (...args: any[]) => rpcContext.callServer(prop as any, ...args);
             },
         }),
