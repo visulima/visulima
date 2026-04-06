@@ -79,9 +79,7 @@ export const toUint8Array = (data: unknown): Uint8Array => {
     }
 
     if (data instanceof ArrayBuffer) {
-
         return new Uint8Array(data);
-
     }
 
     // Ensure it's an array of numbers before creating Uint8Array from it
