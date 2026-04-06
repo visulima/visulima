@@ -106,11 +106,21 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
         if (state.statusFilter !== "all") {
             filtered = filtered.filter((r) => {
-                if (state.statusFilter === "failed") return r.status === "failure";
+                if (state.statusFilter === "failed") {
+                    return r.status === "failure";
+                }
 
-                if (state.statusFilter === "running") return r.status === "running" || r.status === "pending";
+                if (state.statusFilter === "running") {
 
-                if (state.statusFilter === "passed") return r.status === "success" || isCacheStatus(r.status);
+                    return r.status === "running" || r.status === "pending";
+
+                }
+
+                if (state.statusFilter === "passed") {
+
+                    return r.status === "success" || isCacheStatus(r.status);
+
+                }
 
                 return true;
             });

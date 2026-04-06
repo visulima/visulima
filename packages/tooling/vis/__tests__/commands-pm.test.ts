@@ -9,7 +9,9 @@ import { describe, expect, it } from "vitest";
 // ── Shared helpers ───────────────────────────────────────────────────
 
 const toStringArray = (value: unknown): string[] => {
-    if (!value) return [];
+    if (!value) {
+        return [];
+    }
 
     return Array.isArray(value) ? (value as string[]) : [value as string];
 };

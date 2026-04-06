@@ -277,11 +277,21 @@ const scanUnapprovedBuildScripts = (cwd: string, allowBuilds: Record<string, boo
                 }
 
                 const isApproved = Object.entries(allowBuilds).some(([pattern, allowed]) => {
-                    if (!allowed) return false;
+                    if (!allowed) {
+                        return false;
+                    }
 
-                    if (pattern === pkgName) return true;
+                    if (pattern === pkgName) {
 
-                    if (pattern.endsWith("*")) return pkgName.startsWith(pattern.slice(0, -1));
+                        return true;
+
+                    }
+
+                    if (pattern.endsWith("*")) {
+
+                        return pkgName.startsWith(pattern.slice(0, -1));
+
+                    }
 
                     return false;
                 });
@@ -544,11 +554,17 @@ const expandPatterns = (workspaceRoot: string, patterns: string[]): string[] => 
  * Runs postinstall scripts for approved packages after --ignore-scripts install.
  */
 const runApprovedScripts = (workspaceRoot: string, patterns: string[]): void => {
-    if (patterns.length === 0) return;
+    if (patterns.length === 0) {
+        return;
+    }
 
     const packages = expandPatterns(workspaceRoot, patterns);
 
-    if (packages.length === 0) return;
+    if (packages.length === 0) {
+
+        return;
+
+    }
 
     const nodeModulesPath = join(workspaceRoot, "node_modules");
     let hadFailure = false;
