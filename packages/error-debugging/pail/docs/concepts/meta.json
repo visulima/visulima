@@ -1,8 +1,4 @@
 {
     "title": "Concepts",
-    "pages": [
-        "log-levels",
-        "processors",
-        "reporters"
-    ]
+    "pages": ["log-levels", "processors", "reporters"]
 }

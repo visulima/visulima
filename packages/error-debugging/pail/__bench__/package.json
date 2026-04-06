@@ -1,24 +1,24 @@
 {
-  "name": "pail-bench",
-  "private": true,
-  "scripts": {
-    "test:bench": "vitest bench"
-  },
-  "dependencies": {
-    "@dynamicabot/signales": "catalog:prod",
-    "@ogma/logger": "catalog:prod",
-    "@visulima/pail": "workspace:*",
-    "bunyan": "catalog:prod",
-    "consola": "catalog:prod",
-    "diary": "catalog:prod",
-    "pino": "catalog:prod",
-    "roarr": "catalog:prod",
-    "rslog": "catalog:prod",
-    "tslog": "catalog:prod",
-    "winston": "catalog:prod"
-  },
-  "devDependencies": {
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test"
-  }
+    "name": "pail-bench",
+    "private": true,
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@dynamicabot/signales": "catalog:prod",
+        "@ogma/logger": "catalog:prod",
+        "@visulima/pail": "workspace:*",
+        "bunyan": "catalog:prod",
+        "consola": "catalog:prod",
+        "diary": "catalog:prod",
+        "pino": "catalog:prod",
+        "roarr": "catalog:prod",
+        "rslog": "catalog:prod",
+        "tslog": "catalog:prod",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
 }

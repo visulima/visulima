@@ -1,12 +1,4 @@
 {
     "title": "Framework Middleware",
-    "pages": [
-        "overview",
-        "express",
-        "fastify",
-        "hono",
-        "elysia",
-        "sveltekit",
-        "nextjs"
-    ]
+    "pages": ["overview", "express", "fastify", "hono", "elysia", "sveltekit", "nextjs"]
 }
