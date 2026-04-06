@@ -1,13 +1,13 @@
 {
-  "name": "boxen-bench",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test:bench": "vitest bench"
-  },
-  "devDependencies": {
-    "@visulima/boxen": "workspace:*",
-    "boxen": "catalog:dev",
-    "vitest": "catalog:test"
-  }
+    "name": "boxen-bench",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "devDependencies": {
+        "@visulima/boxen": "workspace:*",
+        "boxen": "catalog:dev",
+        "vitest": "catalog:test"
+    }
 }

@@ -12,12 +12,15 @@ Complete guide to using **@visulima/boxen** for creating terminal boxes.
 ### Built-in Styles
 
 **single** (default):
+
 ```typescript
 import { boxen } from "@visulima/boxen";
 
 console.log(boxen("single", { borderStyle: "single" }));
 ```
+
 Output:
+
 ```
 ┌──────┐
 │single│
@@ -25,10 +28,13 @@ Output:
 ```
 
 **double**:
+
 ```typescript
 console.log(boxen("double", { borderStyle: "double" }));
 ```
+
 Output:
+
 ```
 ╔══════╗
 ║double║
@@ -36,10 +42,13 @@ Output:
 ```
 
 **round**:
+
 ```typescript
 console.log(boxen("round", { borderStyle: "round" }));
 ```
+
 Output:
+
 ```
 ╭─────╮
 │round│
@@ -47,10 +56,13 @@ Output:
 ```
 
 **bold**:
+
 ```typescript
 console.log(boxen("bold", { borderStyle: "bold" }));
 ```
+
 Output:
+
 ```
 ┏━━━━┓
 ┃bold┃
@@ -58,10 +70,13 @@ Output:
 ```
 
 **singleDouble** (single horizontal, double vertical):
+
 ```typescript
 console.log(boxen("singleDouble", { borderStyle: "singleDouble" }));
 ```
+
 Output:
+
 ```
 ╓────────────╖
 ║singleDouble║
@@ -69,10 +84,13 @@ Output:
 ```
 
 **doubleSingle** (double horizontal, single vertical):
+
 ```typescript
 console.log(boxen("doubleSingle", { borderStyle: "doubleSingle" }));
 ```
+
 Output:
+
 ```
 ╒════════════╕
 │doubleSingle│
@@ -80,10 +98,13 @@ Output:
 ```
 
 **classic**:
+
 ```typescript
 console.log(boxen("classic", { borderStyle: "classic" }));
 ```
+
 Output:
+
 ```
 +───────+
 |classic|
@@ -91,10 +112,13 @@ Output:
 ```
 
 **arrow**:
+
 ```typescript
 console.log(boxen("arrow", { borderStyle: "arrow" }));
 ```
+
 Output:
+
 ```
 ↘↓↓↓↓↓↙
 →arrow←
@@ -108,18 +132,20 @@ Define your own border style:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("custom", {
-    borderStyle: {
-        topLeft: "╭",
-        topRight: "╮",
-        bottomLeft: "╰",
-        bottomRight: "╯",
-        top: "─",
-        bottom: "─",
-        left: "│",
-        right: "│",
-    },
-}));
+console.log(
+    boxen("custom", {
+        borderStyle: {
+            topLeft: "╭",
+            topRight: "╮",
+            bottomLeft: "╰",
+            bottomRight: "╯",
+            top: "─",
+            bottom: "─",
+            left: "│",
+            right: "│",
+        },
+    }),
+);
 ```
 
 ## Padding and Margins
@@ -127,12 +153,15 @@ console.log(boxen("custom", {
 ### Padding (Space Inside Box)
 
 **Uniform padding:**
+
 ```typescript
 import { boxen } from "@visulima/boxen";
 
 console.log(boxen("padded", { padding: 1 }));
 ```
+
 Output:
+
 ```
 ┌────────┐
 │        │
@@ -142,18 +171,22 @@ Output:
 ```
 
 **Individual sides:**
+
 ```typescript
-console.log(boxen("custom padding", {
-    padding: {
-        top: 1,
-        right: 2,
-        bottom: 1,
-        left: 2,
-    },
-}));
+console.log(
+    boxen("custom padding", {
+        padding: {
+            top: 1,
+            right: 2,
+            bottom: 1,
+            left: 2,
+        },
+    }),
+);
 ```
 
 **Shorthand:**
+
 ```typescript
 // Same as { top: 1, right: 2, bottom: 1, left: 2 }
 boxen("text", { padding: [1, 2] });
@@ -168,12 +201,15 @@ boxen("text", { padding: [1, 2, 3, 4] });
 ### Margins (Space Outside Box)
 
 **Uniform margin:**
+
 ```typescript
 import { boxen } from "@visulima/boxen";
 
 console.log(boxen("margin", { margin: 1 }));
 ```
+
 Output:
+
 ```
 
    ┌──────┐
@@ -183,15 +219,18 @@ Output:
 ```
 
 **Individual sides:**
+
 ```typescript
-console.log(boxen("custom margin", {
-    margin: {
-        top: 1,
-        right: 2,
-        bottom: 1,
-        left: 2,
-    },
-}));
+console.log(
+    boxen("custom margin", {
+        margin: {
+            top: 1,
+            right: 2,
+            bottom: 1,
+            left: 2,
+        },
+    }),
+);
 ```
 
 ## Text Alignment
@@ -199,23 +238,31 @@ console.log(boxen("custom margin", {
 ### Horizontal Alignment
 
 **Left aligned** (default):
+
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Left\nAligned\nText", {
-    textAlignment: "left",
-    padding: 1,
-}));
+console.log(
+    boxen("Left\nAligned\nText", {
+        textAlignment: "left",
+        padding: 1,
+    }),
+);
 ```
 
 **Center aligned:**
+
 ```typescript
-console.log(boxen("Center\nAligned\nText", {
-    textAlignment: "center",
-    padding: 1,
-}));
+console.log(
+    boxen("Center\nAligned\nText", {
+        textAlignment: "center",
+        padding: 1,
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌─────────┐
 │         │
@@ -227,13 +274,18 @@ Output:
 ```
 
 **Right aligned:**
+
 ```typescript
-console.log(boxen("Right\nAligned\nText", {
-    textAlignment: "right",
-    padding: 1,
-}));
+console.log(
+    boxen("Right\nAligned\nText", {
+        textAlignment: "right",
+        padding: 1,
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌─────────┐
 │         │
@@ -249,15 +301,20 @@ Output:
 ### Header Text
 
 **Centered header:**
+
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Content goes here", {
-    headerText: "Title",
-    headerAlignment: "center",
-}));
+console.log(
+    boxen("Content goes here", {
+        headerText: "Title",
+        headerAlignment: "center",
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌───── Title ─────┐
 │Content goes here│
@@ -265,13 +322,18 @@ Output:
 ```
 
 **Left aligned header:**
+
 ```typescript
-console.log(boxen("Content", {
-    headerText: "Left",
-    headerAlignment: "left",
-}));
+console.log(
+    boxen("Content", {
+        headerText: "Left",
+        headerAlignment: "left",
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌─ Left ──────┐
 │Content      │
@@ -279,13 +341,18 @@ Output:
 ```
 
 **Right aligned header:**
+
 ```typescript
-console.log(boxen("Content", {
-    headerText: "Right",
-    headerAlignment: "right",
-}));
+console.log(
+    boxen("Content", {
+        headerText: "Right",
+        headerAlignment: "right",
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌───────── Right ─┐
 │Content          │
@@ -295,13 +362,18 @@ Output:
 ### Footer Text
 
 **Centered footer:**
+
 ```typescript
-console.log(boxen("Content", {
-    footerText: "Footer",
-    footerAlignment: "center",
-}));
+console.log(
+    boxen("Content", {
+        footerText: "Footer",
+        footerAlignment: "center",
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌───────────────┐
 │Content        │
@@ -311,15 +383,19 @@ Output:
 ### Combined Headers and Footers
 
 ```typescript
-console.log(boxen("Main content here", {
-    headerText: "Header",
-    headerAlignment: "center",
-    footerText: "Footer",
-    footerAlignment: "center",
-    padding: 1,
-}));
+console.log(
+    boxen("Main content here", {
+        headerText: "Header",
+        headerAlignment: "center",
+        footerText: "Footer",
+        footerAlignment: "center",
+        padding: 1,
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌──── Header ────┐
 │                │
@@ -337,9 +413,11 @@ Output:
 import { boxen } from "@visulima/boxen";
 import { green } from "@visulima/colorize";
 
-console.log(boxen("Success!", {
-    borderColor: () => green("─"),
-}));
+console.log(
+    boxen("Success!", {
+        borderColor: () => green("─"),
+    }),
+);
 ```
 
 ### Position-Based Coloring
@@ -350,34 +428,37 @@ Color different parts of the border independently:
 import { boxen } from "@visulima/boxen";
 import { red, green, yellow, blue } from "@visulima/colorize";
 
-console.log(boxen("Colorful!", {
-    borderColor: (border, position) => {
-        // Top border
-        if (["top", "topLeft", "topRight"].includes(position)) {
-            return red(border);
-        }
+console.log(
+    boxen("Colorful!", {
+        borderColor: (border, position) => {
+            // Top border
+            if (["top", "topLeft", "topRight"].includes(position)) {
+                return red(border);
+            }
 
-        // Left border
-        if (position === "left") {
-            return yellow(border);
-        }
+            // Left border
+            if (position === "left") {
+                return yellow(border);
+            }
 
-        // Right border
-        if (position === "right") {
-            return green(border);
-        }
+            // Right border
+            if (position === "right") {
+                return green(border);
+            }
 
-        // Bottom border
-        if (["bottom", "bottomLeft", "bottomRight"].includes(position)) {
-            return blue(border);
-        }
+            // Bottom border
+            if (["bottom", "bottomLeft", "bottomRight"].includes(position)) {
+                return blue(border);
+            }
 
-        return border;
-    },
-}));
+            return border;
+        },
+    }),
+);
 ```
 
 **Border Positions:**
+
 - `topLeft` - Top left corner
 - `top` - Top horizontal line
 - `topRight` - Top right corner
@@ -395,11 +476,13 @@ import { gradient } from "@visulima/colorize/gradient";
 
 const gradientFn = gradient("cyan", "pink");
 
-console.log(boxen("Gradient borders!", {
-    borderColor: (border, position, length) => {
-        return gradientFn(border);
-    },
-}));
+console.log(
+    boxen("Gradient borders!", {
+        borderColor: (border, position, length) => {
+            return gradientFn(border);
+        },
+    }),
+);
 ```
 
 ## Width Control
@@ -411,11 +494,15 @@ Set maximum box width:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("This is a longer text that will wrap", {
-    width: 20,
-}));
+console.log(
+    boxen("This is a longer text that will wrap", {
+        width: 20,
+    }),
+);
 ```
+
 Output:
+
 ```
 ┌──────────────────┐
 │This is a longer  │
@@ -431,10 +518,12 @@ Use terminal width:
 ```typescript
 import { boxen } from "@visulima/boxen";
 
-console.log(boxen("Full width box", {
-    width: "terminal",
-    textAlignment: "center",
-}));
+console.log(
+    boxen("Full width box", {
+        width: "terminal",
+        textAlignment: "center",
+    }),
+);
 ```
 
 ## Advanced Examples
@@ -491,12 +580,14 @@ const info = [
     `${gray("Port:")} ${cyan("3000")}`,
 ].join("\n");
 
-console.log(boxen(info, {
-    padding: 1,
-    headerText: "Application Info",
-    headerAlignment: "center",
-    borderStyle: "double",
-}));
+console.log(
+    boxen(info, {
+        padding: 1,
+        headerText: "Application Info",
+        headerAlignment: "center",
+        borderStyle: "double",
+    }),
+);
 ```
 
 ### Multi-Section Box
@@ -515,12 +606,14 @@ const sections = [
     dim("Note: This is a multi-section box"),
 ].join("\n");
 
-console.log(boxen(sections, {
-    padding: 1,
-    headerText: "Documentation",
-    footerText: "Press Enter to continue",
-    footerAlignment: "center",
-}));
+console.log(
+    boxen(sections, {
+        padding: 1,
+        headerText: "Documentation",
+        footerText: "Press Enter to continue",
+        footerAlignment: "center",
+    }),
+);
 ```
 
 ## Next Steps
