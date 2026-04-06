@@ -11,7 +11,7 @@ Comprehensive ISO standards data for countries (ISO 3166), currencies (ISO 4217)
 
 - **Country Data** - ISO 3166-1 alpha-2/alpha-3 codes, flag emojis, calling codes
 - **Currency Data** - ISO 4217 codes, symbols, country mappings
-- **Region Data** - UN Geoscheme continents and subregions  
+- **Region Data** - UN Geoscheme continents and subregions
 - **Timezone Data** - IANA timezone database with country mappings
 - **BCP 47 Support** - Parse and generate language tags
 - **TypeScript** - Full type definitions
@@ -33,10 +33,10 @@ console.log(getCurrency("en-US")); // "USD"
 // Country selector
 import { getAllCountries, getEmoji } from "@visulima/iso-locale";
 
-const countries = getAllCountries().map(c => ({
+const countries = getAllCountries().map((c) => ({
     code: c.alpha2,
     name: c.name,
-    flag: getEmoji(c.alpha2)
+    flag: getEmoji(c.alpha2),
 }));
 
 // Currency formatting
@@ -50,8 +50,16 @@ function formatPrice(amount: number, code: string) {
 ## Next Steps
 
 <Cards>
-    <Card title="Installation" href="/installation">Install and import</Card>
-    <Card title="Quick Start" href="/quick-start">Get started</Card>
-    <Card title="Usage" href="/usage">Usage guide</Card>
-    <Card title="API" href="/api">API reference</Card>
+    <Card title="Installation" href="/installation">
+        Install and import
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
 </Cards>
