@@ -45,9 +45,7 @@ if (!npmToken) {
     process.exit(1);
 }
 
-const platformDirs = (await readdir(npmDir, { withFileTypes: true }))
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
+const platformDirs = (await readdir(npmDir, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
 
 console.log(`Publishing native addons at version ${version} with tag ${npmTag}`);
 
@@ -75,7 +73,6 @@ try {
         writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + "\n");
 
         try {
-
             const output = execFileSync("npm", ["publish", "--tag", npmTag, "--access", "public", "--provenance"], {
                 cwd: join(npmDir, dir),
                 encoding: "utf-8",

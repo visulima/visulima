@@ -81,12 +81,7 @@
             "!{workspaceRoot}/.storybook/**/*",
             "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
         ],
-        "sharedGlobals": [
-            "{workspaceRoot}/.nvmrc",
-            "{workspaceRoot}/package.json",
-            "{workspaceRoot}/tsconfig.json",
-            "{workspaceRoot}/tsconfig.base.json"
-        ]
+        "sharedGlobals": ["{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/tsconfig.base.json"]
     },
     "parallel": 5,
     "defaultBase": "main",
