@@ -12,9 +12,13 @@ Smart lockfile hashing parses the lockfile and only hashes the resolved versions
 ## Enable
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    smartLockfileHashing: true,
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        smartLockfileHashing: true,
+    },
+    context,
+);
 ```
 
 ## How It Works
@@ -46,7 +50,7 @@ import { LockfileHasher } from "@visulima/task-runner";
 const hasher = new LockfileHasher("/path/to/workspace");
 const result = await hasher.hashForPackage("packages/my-app/package.json");
 
-console.log(result?.hash);          // SHA-256 hash of resolved deps
-console.log(result?.dependencies);  // [{ name: "lodash", version: "4.17.21" }]
-console.log(hasher.lockfileType);   // "npm" | "pnpm" | "yarn"
+console.log(result?.hash); // SHA-256 hash of resolved deps
+console.log(result?.dependencies); // [{ name: "lodash", version: "4.17.21" }]
+console.log(hasher.lockfileType); // "npm" | "pnpm" | "yarn"
 ```

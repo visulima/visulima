@@ -47,15 +47,8 @@ const INPUT_PREFIX_REGEX = /^(\S+?):(.+)/s;
  * @param options - Input handler configuration
  * @returns cleanup function to call when done
  */
-export const createInputHandler = (
-    commands: CommandStdin[],
-    options: InputHandlerOptions = {},
-): (() => void) => {
-    const {
-        inputStream = process.stdin,
-        defaultTarget = 0,
-        pauseOnFinish = true,
-    } = options;
+export const createInputHandler = (commands: CommandStdin[], options: InputHandlerOptions = {}): (() => void) => {
+    const { inputStream = process.stdin, defaultTarget = 0, pauseOnFinish = true } = options;
 
     // Build lookup maps
     const byIndex = new Map<number, CommandStdin>();

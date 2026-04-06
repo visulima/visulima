@@ -59,13 +59,7 @@ const targetDefaults = {
 ## Graph Utilities
 
 ```typescript
-import {
-    findCycle,
-    makeAcyclic,
-    walkTaskGraph,
-    getDependentTasks,
-    getTransitiveDependencies,
-} from "@visulima/task-runner";
+import { findCycle, makeAcyclic, walkTaskGraph, getDependentTasks, getTransitiveDependencies } from "@visulima/task-runner";
 
 // Detect cycles
 const cycle = findCycle(taskGraph);

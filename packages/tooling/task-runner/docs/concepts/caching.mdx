@@ -22,11 +22,7 @@ The default caching mode uses explicit input declarations to compute determinist
 ```typescript
 const options = {
     namedInputs: {
-        production: [
-            "{projectRoot}/src/**/*",
-            "{projectRoot}/package.json",
-            "!{projectRoot}/**/*.test.ts",
-        ],
+        production: ["{projectRoot}/src/**/*", "{projectRoot}/package.json", "!{projectRoot}/**/*.test.ts"],
     },
     targetDefaults: {
         build: { inputs: ["production"] },
@@ -46,11 +42,7 @@ const options = {
 ### Runtime commands
 
 ```typescript
-const inputs = [
-    { runtime: "node --version" },
-    { env: "NODE_ENV" },
-    { externalDependencies: ["typescript", "esbuild"] },
-];
+const inputs = [{ runtime: "node --version" }, { env: "NODE_ENV" }, { externalDependencies: ["typescript", "esbuild"] }];
 ```
 
 ## Global Inputs
@@ -98,8 +90,12 @@ Cache entries are stored atomically in `.task-runner-cache/`:
 Inspect hashes without executing:
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    dryRun: true,
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        dryRun: true,
+    },
+    context,
+);
 // Each task reports "skipped" with its computed hash
 ```

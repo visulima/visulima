@@ -113,9 +113,7 @@ const enforceProjectConstraints = (projectGraph: ProjectGraph, constraints: Cons
 
                 // Libraries must not have a devDependency on a package that is also a production dep
                 if (dependencyKindRules.noDevDependencyOnProductionDep && dep.type === "devDependency" && sourceType === "library") {
-                    const hasProductionDep = dependencies.some(
-                        (other) => other.target === dep.target && other.type === "static",
-                    );
+                    const hasProductionDep = dependencies.some((other) => other.target === dep.target && other.type === "static");
 
                     if (hasProductionDep) {
                         violations.push({

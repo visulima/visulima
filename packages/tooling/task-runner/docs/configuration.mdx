@@ -9,53 +9,53 @@ All options are passed to `defaultTaskRunner` as the second argument.
 
 ## Caching
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `cacheDirectory` | `string` | `.task-runner-cache` | Cache storage directory |
-| `maxCacheSize` | `string` | unlimited | Max cache size (e.g., `"1GB"`) |
-| `maxCacheAge` | `number` | 7 days (ms) | Max cache entry age |
-| `skipNxCache` | `boolean` | `false` | Skip reading from cache |
-| `dryRun` | `boolean` | `false` | Compute hashes without executing |
-| `cacheDiagnostics` | `boolean` | `false` | Log cache miss reasons |
+| Option             | Type      | Default              | Description                      |
+| ------------------ | --------- | -------------------- | -------------------------------- |
+| `cacheDirectory`   | `string`  | `.task-runner-cache` | Cache storage directory          |
+| `maxCacheSize`     | `string`  | unlimited            | Max cache size (e.g., `"1GB"`)   |
+| `maxCacheAge`      | `number`  | 7 days (ms)          | Max cache entry age              |
+| `skipNxCache`      | `boolean` | `false`              | Skip reading from cache          |
+| `dryRun`           | `boolean` | `false`              | Compute hashes without executing |
+| `cacheDiagnostics` | `boolean` | `false`              | Log cache miss reasons           |
 
 ## Inputs
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `namedInputs` | `NamedInputs` | `{}` | Named input definitions |
-| `targetDefaults` | `Record` | `{}` | Default target configurations |
-| `envVars` | `string[]` | `[]` | Env vars to include in hash |
-| `globalInputs` | `string[]` | lockfiles + tsconfig.base.json + tsconfig.json + .env | Files that bust all caches |
-| `globalEnv` | `string[]` | `[]` | Env vars that bust all caches |
-| `smartLockfileHashing` | `boolean` | `false` | Per-package lockfile hashing |
-| `frameworkInference` | `boolean` | `false` | Auto-detect framework env vars |
+| Option                 | Type          | Default                                               | Description                    |
+| ---------------------- | ------------- | ----------------------------------------------------- | ------------------------------ |
+| `namedInputs`          | `NamedInputs` | `{}`                                                  | Named input definitions        |
+| `targetDefaults`       | `Record`      | `{}`                                                  | Default target configurations  |
+| `envVars`              | `string[]`    | `[]`                                                  | Env vars to include in hash    |
+| `globalInputs`         | `string[]`    | lockfiles + tsconfig.base.json + tsconfig.json + .env | Files that bust all caches     |
+| `globalEnv`            | `string[]`    | `[]`                                                  | Env vars that bust all caches  |
+| `smartLockfileHashing` | `boolean`     | `false`                                               | Per-package lockfile hashing   |
+| `frameworkInference`   | `boolean`     | `false`                                               | Auto-detect framework env vars |
 
 ## Auto-Fingerprinting
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `autoFingerprint` | `boolean` | `false` | Enable auto-fingerprinting mode |
-| `fingerprintEnvPatterns` | `string[]` | `[]` | Env var patterns to fingerprint |
-| `untrackedEnvVars` | `string[]` | `[]` | Env vars to exclude from fingerprint |
+| Option                   | Type       | Default | Description                          |
+| ------------------------ | ---------- | ------- | ------------------------------------ |
+| `autoFingerprint`        | `boolean`  | `false` | Enable auto-fingerprinting mode      |
+| `fingerprintEnvPatterns` | `string[]` | `[]`    | Env var patterns to fingerprint      |
+| `untrackedEnvVars`       | `string[]` | `[]`    | Env vars to exclude from fingerprint |
 
 ## Execution
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `parallel` | `number \| boolean` | `3` | Max parallel tasks |
+| Option     | Type                | Default | Description        |
+| ---------- | ------------------- | ------- | ------------------ |
+| `parallel` | `number \| boolean` | `3`     | Max parallel tasks |
 
 ## Remote Cache
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `remoteCache.url` | `string` | - | Cache server URL |
-| `remoteCache.token` | `string` | - | Auth token |
-| `remoteCache.teamId` | `string` | - | Team/namespace |
-| `remoteCache.read` | `boolean` | `true` | Enable remote reads |
-| `remoteCache.write` | `boolean` | `true` | Enable remote writes |
+| Option               | Type      | Default | Description          |
+| -------------------- | --------- | ------- | -------------------- |
+| `remoteCache.url`    | `string`  | -       | Cache server URL     |
+| `remoteCache.token`  | `string`  | -       | Auth token           |
+| `remoteCache.teamId` | `string`  | -       | Team/namespace       |
+| `remoteCache.read`   | `boolean` | `true`  | Enable remote reads  |
+| `remoteCache.write`  | `boolean` | `true`  | Enable remote writes |
 
 ## Output
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option      | Type      | Default | Description               |
+| ----------- | --------- | ------- | ------------------------- |
 | `summarize` | `boolean` | `false` | Generate JSON run summary |

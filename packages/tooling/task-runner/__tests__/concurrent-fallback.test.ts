@@ -19,10 +19,7 @@ describe("runConcurrentFallback", () => {
     });
 
     it("should run multiple commands", async () => {
-        const result = await runConcurrentFallback(
-            [makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")],
-            {},
-        );
+        const result = await runConcurrentFallback([makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")], {});
 
         expect(result.success).toBe(true);
         expect(result.closeEvents).toHaveLength(3);
@@ -37,10 +34,7 @@ describe("runConcurrentFallback", () => {
     });
 
     it("should handle mixed success and failure", async () => {
-        const result = await runConcurrentFallback(
-            [makeConfig("echo ok"), makeConfig("exit 1")],
-            {},
-        );
+        const result = await runConcurrentFallback([makeConfig("echo ok"), makeConfig("exit 1")], {});
 
         expect(result.success).toBe(false);
         expect(result.closeEvents).toHaveLength(2);
@@ -73,27 +67,21 @@ describe("runConcurrentFallback", () => {
     it("should respect maxProcesses for sequential execution", async () => {
         const completionOrder: number[] = [];
 
-        await runConcurrentFallback(
-            [makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")],
-            {
-                maxProcesses: 1,
-                onEvent: (event) => {
-                    if (event.kind === "close") {
-                        completionOrder.push(event.index);
-                    }
-                },
+        await runConcurrentFallback([makeConfig("echo one"), makeConfig("echo two"), makeConfig("echo three")], {
+            maxProcesses: 1,
+            onEvent: (event) => {
+                if (event.kind === "close") {
+                    completionOrder.push(event.index);
+                }
             },
-        );
+        });
 
         // With maxProcesses=1, should complete in order
         expect(completionOrder).toEqual([0, 1, 2]);
     });
 
     it("should support success condition 'first'", async () => {
-        const result = await runConcurrentFallback(
-            [makeConfig("echo ok"), makeConfig("sleep 0.1 && exit 1")],
-            { successCondition: "first" },
-        );
+        const result = await runConcurrentFallback([makeConfig("echo ok"), makeConfig("sleep 0.1 && exit 1")], { successCondition: "first" });
 
         // First to complete is "echo ok" (instant)
         expect(result.success).toBe(true);
@@ -102,10 +90,7 @@ describe("runConcurrentFallback", () => {
     it("should kill others on failure", async () => {
         const start = Date.now();
 
-        const result = await runConcurrentFallback(
-            [makeConfig("exit 1"), makeConfig("sleep 10")],
-            { killOthers: ["failure"], killTimeout: 1000 },
-        );
+        const result = await runConcurrentFallback([makeConfig("exit 1"), makeConfig("sleep 10")], { killOthers: ["failure"], killTimeout: 1000 });
 
         const elapsed = Date.now() - start;
 
@@ -129,10 +114,7 @@ describe("runConcurrentFallback", () => {
     it("should pass environment variables to child processes", async () => {
         const events: ProcessEvent[] = [];
 
-        await runConcurrentFallback(
-            [{ command: "echo $MY_TEST_VAR", env: { MY_TEST_VAR: "hello_test" } }],
-            { onEvent: (event) => events.push(event) },
-        );
+        await runConcurrentFallback([{ command: "echo $MY_TEST_VAR", env: { MY_TEST_VAR: "hello_test" } }], { onEvent: (event) => events.push(event) });
 
         const stdoutEvents = events.filter((e) => e.kind === "stdout");
         expect(stdoutEvents.some((e) => e.text === "hello_test")).toBe(true);
@@ -145,10 +127,9 @@ describe("runConcurrentFallback", () => {
     });
 
     it("should handle success condition 'command-<name>'", async () => {
-        const result = await runConcurrentFallback(
-            [makeConfig("exit 1", "irrelevant"), makeConfig("echo ok", "important")],
-            { successCondition: "command-important" },
-        );
+        const result = await runConcurrentFallback([makeConfig("exit 1", "irrelevant"), makeConfig("echo ok", "important")], {
+            successCondition: "command-important",
+        });
 
         expect(result.success).toBe(true);
     });
@@ -156,10 +137,7 @@ describe("runConcurrentFallback", () => {
     it("should execute directly when shell is false", async () => {
         const events: ProcessEvent[] = [];
 
-        const result = await runConcurrentFallback(
-            [{ command: "echo hello", shell: false }],
-            { onEvent: (event) => events.push(event) },
-        );
+        const result = await runConcurrentFallback([{ command: "echo hello", shell: false }], { onEvent: (event) => events.push(event) });
 
         expect(result.success).toBe(true);
         const stdout = events.filter((e) => e.kind === "stdout");
@@ -174,9 +152,7 @@ describe("runConcurrentFallback", () => {
         });
 
         const closeIdx = events.findIndex((e) => e.kind === "close");
-        const stdoutIndices = events
-            .map((e, i) => (e.kind === "stdout" ? i : -1))
-            .filter((i) => i >= 0);
+        const stdoutIndices = events.map((e, i) => (e.kind === "stdout" ? i : -1)).filter((i) => i >= 0);
 
         // All stdout events should come before the close event
         for (const idx of stdoutIndices) {

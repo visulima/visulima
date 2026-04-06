@@ -18,11 +18,15 @@ Auto-fingerprinting eliminates the need for manual input configuration. Instead 
 ## Enable Auto-Fingerprinting
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    autoFingerprint: true,
-    fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
-    cacheDiagnostics: true,
-}, context);
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        autoFingerprint: true,
+        fingerprintEnvPatterns: ["VITE_*", "NODE_ENV"],
+        cacheDiagnostics: true,
+    },
+    context,
+);
 ```
 
 ## What Gets Tracked
@@ -64,10 +68,10 @@ Some env vars should be available to tasks but not affect the cache (e.g., CI bu
 
 ## Comparison with Nx-style
 
-| Aspect | Nx-style | Auto-fingerprint |
-|--------|----------|-----------------|
-| Configuration | Manual input declarations | Zero-config |
-| Accuracy | May miss files or include too many | Tracks exact files |
-| First run | Hash computed upfront | Must execute to build fingerprint |
-| Performance | Faster cache checks | Slightly slower (validates all files) |
-| Remote cache | Full support | Local only |
+| Aspect        | Nx-style                           | Auto-fingerprint                      |
+| ------------- | ---------------------------------- | ------------------------------------- |
+| Configuration | Manual input declarations          | Zero-config                           |
+| Accuracy      | May miss files or include too many | Tracks exact files                    |
+| First run     | Hash computed upfront              | Must execute to build fingerprint     |
+| Performance   | Faster cache checks                | Slightly slower (validates all files) |
+| Remote cache  | Full support                       | Local only                            |

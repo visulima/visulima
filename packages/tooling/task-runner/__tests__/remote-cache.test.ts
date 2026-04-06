@@ -331,8 +331,7 @@ describe(RemoteCache, () => {
             await new Promise<void>((resolve, reject) => {
                 // eslint-disable-next-line sonarjs/no-os-command-from-path
                 execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error)
-                        reject(error);
+                    if (error) reject(error);
                     else resolve();
                 });
             });

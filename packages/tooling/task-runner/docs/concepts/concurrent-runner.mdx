@@ -32,13 +32,13 @@ runConcurrently(commands, options)
 
 The runner automatically selects the implementation:
 
-| Feature | Native (Rust) | Fallback (JS) |
-|---------|---------------|----------------|
-| Process spawning | tokio async | child_process.spawn |
-| I/O multiplexing | epoll/kqueue via tokio | Node.js event loop |
+| Feature           | Native (Rust)                 | Fallback (JS)                 |
+| ----------------- | ----------------------------- | ----------------------------- |
+| Process spawning  | tokio async                   | child_process.spawn           |
+| I/O multiplexing  | epoll/kqueue via tokio        | Node.js event loop            |
 | Process tree kill | setsid + killpg / Job Objects | process.kill(-pid) / taskkill |
-| Signal handling | tokio::signal | process.on('SIGINT') |
-| Output buffering | Line-buffered async | Line-buffered event-based |
+| Signal handling   | tokio::signal                 | process.on('SIGINT')          |
+| Output buffering  | Line-buffered async           | Line-buffered event-based     |
 
 Both implementations produce identical `ProcessEvent` streams and `ConcurrentRunResult` outputs.
 
@@ -51,6 +51,7 @@ Each child process is spawned in a new session via `setsid()`. This creates a pr
 ### Windows
 
 Each child process is assigned to a Windows Job Object configured with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. This ensures:
+
 - All child processes in the tree are terminated when the Job Object is closed
 - If the parent process crashes, the OS automatically cleans up the children
 - `TerminateJobObject()` provides instant tree killing (no `taskkill` subprocess)
@@ -59,11 +60,11 @@ Each child process is assigned to a Windows Job Object configured with `JOB_OBJE
 
 When the parent process receives a signal:
 
-| Signal | Behavior |
-|--------|----------|
+| Signal          | Behavior                                                               |
+| --------------- | ---------------------------------------------------------------------- |
 | SIGINT (Ctrl+C) | Kill all process groups, translate exit codes to 0 (user cancellation) |
-| SIGTERM | Kill all process groups, preserve original exit codes |
-| SIGHUP | Kill all process groups, preserve original exit codes |
+| SIGTERM         | Kill all process groups, preserve original exit codes                  |
+| SIGHUP          | Kill all process groups, preserve original exit codes                  |
 
 The SIGINT exit code translation matches `concurrently`'s behavior: pressing Ctrl+C is not considered a failure.
 
@@ -83,13 +84,13 @@ Time 4: D completes → Result
 
 ## Success Conditions
 
-| Condition | Meaning |
-|-----------|---------|
-| `"all"` (default) | All commands must exit with code 0 |
-| `"first"` | Only the first command to complete must succeed |
-| `"last"` | Only the last command to complete must succeed |
-| `"command-<name>"` | Only the named command must succeed |
-| `"!command-<name>"` | All commands except the named one must succeed |
+| Condition           | Meaning                                         |
+| ------------------- | ----------------------------------------------- |
+| `"all"` (default)   | All commands must exit with code 0              |
+| `"first"`           | Only the first command to complete must succeed |
+| `"last"`            | Only the last command to complete must succeed  |
+| `"command-<name>"`  | Only the named command must succeed             |
+| `"!command-<name>"` | All commands except the named one must succeed  |
 
 ## Shell Configuration
 
@@ -104,8 +105,8 @@ Custom shells (Git Bash, zsh, fish) are invoked with POSIX-style `-c` arguments.
 
 ## Stdin Modes
 
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| `"null"` (default) | stdin closed | Build tasks, CI |
-| `"pipe"` | stdin is a writable pipe | Programmatic input |
-| `"inherit"` | child reads terminal directly | Dev servers (Vite `r`/`o`/`h`) |
+| Mode               | Description                   | Use Case                       |
+| ------------------ | ----------------------------- | ------------------------------ |
+| `"null"` (default) | stdin closed                  | Build tasks, CI                |
+| `"pipe"`           | stdin is a writable pipe      | Programmatic input             |
+| `"inherit"`        | child reads terminal directly | Dev servers (Vite `r`/`o`/`h`) |

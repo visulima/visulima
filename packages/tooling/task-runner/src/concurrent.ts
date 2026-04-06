@@ -30,10 +30,7 @@ const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandC
  * Core runner function that dispatches to native or JS fallback.
  * This is the inner runner without flow controller wrappers.
  */
-const coreRun = async (
-    configs: ConcurrentCommandConfig[],
-    options: ConcurrentRunnerOptions,
-): Promise<ConcurrentRunResult> => {
+const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => {
     // Resolve shell: explicit option > npm script-shell config > platform default
     const shellPath = options.shellPath ?? detectScriptShell();
 
@@ -86,10 +83,7 @@ const coreRun = async (
  * @param options - Runner options (maxProcesses, killOthers, restart, teardown, etc.)
  * @returns Promise resolving to the run result with close events and success status
  */
-export const runConcurrently = async (
-    commands: ConcurrentCommandInput[],
-    options: ConcurrentRunnerOptions = {},
-): Promise<ConcurrentRunResult> => {
+export const runConcurrently = async (commands: ConcurrentCommandInput[], options: ConcurrentRunnerOptions = {}): Promise<ConcurrentRunResult> => {
     const configs = normalizeCommands(commands);
 
     if (configs.length === 0) {
@@ -100,15 +94,10 @@ export const runConcurrently = async (
     let result: ConcurrentRunResult;
 
     if (options.restart && options.restart.tries !== 0) {
-        result = await withRestart(
-            (cmds, opts) => coreRun(cmds, opts),
-            configs,
-            options,
-            {
-                delay: options.restart.delay ?? 0,
-                tries: options.restart.tries,
-            },
-        );
+        result = await withRestart((cmds, opts) => coreRun(cmds, opts), configs, options, {
+            delay: options.restart.delay ?? 0,
+            tries: options.restart.tries,
+        });
     } else {
         result = await coreRun(configs, options);
     }

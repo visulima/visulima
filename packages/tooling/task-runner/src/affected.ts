@@ -68,8 +68,8 @@ const findProjectForFile = (filePath: string, projects: Record<string, ProjectCo
 
         // Check if file is within this project's root
         if (
-            (filePath.startsWith(`${root}/`) || filePath === root) // Prefer the most specific (longest) match
-            && root.length > bestLength
+            (filePath.startsWith(`${root}/`) || filePath === root) && // Prefer the most specific (longest) match
+            root.length > bestLength
         ) {
             bestMatch = name;
             bestLength = root.length;
@@ -128,12 +128,7 @@ const buildForwardDependencyMap = (projectGraph: ProjectGraph): Map<string, Set<
  * For "direct" scope, only immediate neighbors are included.
  * For "deep" scope, all transitive neighbors are included.
  */
-const expandInDirection = (
-    affected: Set<string>,
-    seeds: Set<string>,
-    adjacency: Map<string, Set<string>>,
-    scope: "deep" | "direct",
-): Set<string> => {
+const expandInDirection = (affected: Set<string>, seeds: Set<string>, adjacency: Map<string, Set<string>>, scope: "deep" | "direct"): Set<string> => {
     const added = new Set<string>();
     const visited = new Set(seeds);
     const queue = [...seeds];
@@ -250,15 +245,7 @@ const getChangedFiles = async (workspaceRoot: string, base: string, head: string
  * This is the same strategy used by `nx affected` and `turbo run --filter=[base...]`.
  */
 const getAffectedProjects = async (options: AffectedOptions): Promise<AffectedResult> => {
-    const {
-        base = "main",
-        downstream = "deep",
-        head = "HEAD",
-        projectGraph,
-        projects,
-        upstream = "none",
-        workspaceRoot,
-    } = options;
+    const { base = "main", downstream = "deep", head = "HEAD", projectGraph, projects, upstream = "none", workspaceRoot } = options;
 
     // Get changed files from git
     const changedFiles = await getChangedFiles(workspaceRoot, base, head);

@@ -227,10 +227,7 @@ const spawnCommand = (
  * Run commands concurrently using pure JavaScript (child_process.spawn).
  * This is the fallback when the native Rust addon is unavailable.
  */
-export const runConcurrentFallback = (
-    commands: ConcurrentCommandConfig[],
-    options: ConcurrentRunnerOptions,
-): Promise<ConcurrentRunResult> => {
+export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => {
     return new Promise((resolve) => {
         if (commands.length === 0) {
             resolve({ closeEvents: [], success: true });

@@ -10,15 +10,19 @@ Remote caching allows team members and CI machines to share cached task results.
 ## Configuration
 
 ```typescript
-const results = await defaultTaskRunner(tasks, {
-    remoteCache: {
-        url: "https://cache.example.com",
-        token: process.env.CACHE_TOKEN,
-        teamId: "my-team",
-        read: true,   // Enable remote reads (default)
-        write: true,  // Enable remote writes (default)
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        remoteCache: {
+            url: "https://cache.example.com",
+            token: process.env.CACHE_TOKEN,
+            teamId: "my-team",
+            read: true, // Enable remote reads (default)
+            write: true, // Enable remote writes (default)
+        },
     },
-}, context);
+    context,
+);
 ```
 
 ## How It Works

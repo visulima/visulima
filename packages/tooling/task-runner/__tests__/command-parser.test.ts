@@ -157,7 +157,7 @@ describe("expandWildcard", () => {
                     "watch-js": "tsc --watch",
                     "watch-css": "sass --watch",
                     "watch-tests": "vitest --watch",
-                    "build": "tsc",
+                    build: "tsc",
                 },
             }),
         );
@@ -169,18 +169,11 @@ describe("expandWildcard", () => {
         expect(configs).toHaveLength(3);
 
         const commands = configs.map((c) => c.command).sort();
-        expect(commands).toEqual([
-            "npm run watch-css",
-            "npm run watch-js",
-            "npm run watch-tests",
-        ]);
+        expect(commands).toEqual(["npm run watch-css", "npm run watch-js", "npm run watch-tests"]);
     });
 
     it("should set name to matched script name", () => {
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "dev-server": "node server.js" } }),
-        );
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-server": "node server.js" } }));
 
         const result = expandWildcard({ command: "npm run dev-*", cwd: fixtureDir });
 
@@ -203,10 +196,7 @@ describe("expandWildcard", () => {
     });
 
     it("should return original config when no scripts match", () => {
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "build": "tsc" } }),
-        );
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { build: "tsc" } }));
 
         const result = expandWildcard({ command: "npm run watch-*", cwd: fixtureDir });
         expect(Array.isArray(result)).toBe(false);
@@ -218,10 +208,7 @@ describe("expandWildcard", () => {
     });
 
     it("should work with pnpm run wildcards", () => {
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "lint-js": "eslint", "lint-css": "stylelint" } }),
-        );
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "lint-js": "eslint", "lint-css": "stylelint" } }));
 
         const result = expandWildcard({ command: "pnpm run lint-*", cwd: fixtureDir });
 
@@ -231,10 +218,7 @@ describe("expandWildcard", () => {
     });
 
     it("should preserve trailing arguments after wildcard", () => {
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "test-unit": "vitest", "test-e2e": "playwright" } }),
-        );
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "test-unit": "vitest", "test-e2e": "playwright" } }));
 
         const result = expandWildcard({ command: "npm run test-* --verbose", cwd: fixtureDir });
 
@@ -244,10 +228,7 @@ describe("expandWildcard", () => {
     });
 
     it("should not override existing name", () => {
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "dev-app": "node app.js" } }),
-        );
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-app": "node app.js" } }));
 
         const result = expandWildcard({ command: "npm run dev-*", name: "my-name", cwd: fixtureDir });
 
@@ -263,7 +244,7 @@ describe("expandWildcard", () => {
                 tasks: {
                     "dev-api": "deno run api.ts",
                     "dev-web": "deno run web.ts",
-                    "build": "deno compile",
+                    build: "deno compile",
                 },
             }),
         );
@@ -275,10 +256,7 @@ describe("expandWildcard", () => {
         expect(configs).toHaveLength(2);
 
         const commands = configs.map((c) => c.command).sort();
-        expect(commands).toEqual([
-            "deno task dev-api",
-            "deno task dev-web",
-        ]);
+        expect(commands).toEqual(["deno task dev-api", "deno task dev-web"]);
     });
 
     it("should expand deno task wildcards from deno.jsonc", () => {
@@ -321,14 +299,8 @@ describe("expandWildcard", () => {
     });
 
     it("should give deno.json tasks precedence over package.json scripts", () => {
-        writeFileSync(
-            join(fixtureDir, "deno.json"),
-            JSON.stringify({ tasks: { "dev-app": "deno run app.ts" } }),
-        );
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "dev-app": "node app.js" } }),
-        );
+        writeFileSync(join(fixtureDir, "deno.json"), JSON.stringify({ tasks: { "dev-app": "deno run app.ts" } }));
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-app": "node app.js" } }));
 
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
@@ -340,14 +312,8 @@ describe("expandWildcard", () => {
     });
 
     it("should merge deno.json tasks with package.json scripts for deno", () => {
-        writeFileSync(
-            join(fixtureDir, "deno.json"),
-            JSON.stringify({ tasks: { "dev-deno": "deno run main.ts" } }),
-        );
-        writeFileSync(
-            join(fixtureDir, "package.json"),
-            JSON.stringify({ scripts: { "dev-node": "node main.js" } }),
-        );
+        writeFileSync(join(fixtureDir, "deno.json"), JSON.stringify({ tasks: { "dev-deno": "deno run main.ts" } }));
+        writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({ scripts: { "dev-node": "node main.js" } }));
 
         const result = expandWildcard({ command: "deno task dev-*", cwd: fixtureDir });
 
@@ -392,10 +358,7 @@ describe("parseCommands", () => {
     });
 
     it("should handle mixed string and object inputs", () => {
-        const result = parseCommands([
-            "echo one",
-            { command: "echo two", name: "second" },
-        ]);
+        const result = parseCommands(["echo one", { command: "echo two", name: "second" }]);
         expect(result).toHaveLength(2);
         expect(result[0]!.command).toBe("echo one");
         expect(result[1]!.name).toBe("second");
