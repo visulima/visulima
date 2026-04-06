@@ -11,6 +11,7 @@ import type { Paths } from "type-fest";
 
 import pathsAreEqual from "./paths-are-equal";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extends Paths<T>[]>(object: T, pickedKeys: PickedKeys, pathUntilNow = ""): T => {
     if (!isPlainObject(object)) {
         return object;
@@ -43,6 +44,7 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
 
             // there's not one pickedKey that allows up to now
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!passed) {
                 return carry;
             }
@@ -56,8 +58,8 @@ const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extend
             return carry;
         }
 
-        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any
-        carry[key] = recursivePick<T, PickedKeys>(object[key] as any, pickedKeys, path);
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
+        carry[key] = recursivePick<T>(object[key] as any, pickedKeys, path);
 
         return carry;
     }, {}) as T;

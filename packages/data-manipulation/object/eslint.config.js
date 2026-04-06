@@ -21,9 +21,9 @@ export default createConfig(
             // Till the eslint is fixed
             "src/error-inspector/index.css",
         ],
-    typescript: {
-        tsconfigPath: "./tsconfig.eslint.json",
-    },
+        typescript: {
+            tsconfigPath: "./tsconfig.eslint.json",
+        },
     },
     {
         files: ["**/*.test.ts"],
