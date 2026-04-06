@@ -12,44 +12,44 @@ export type HtmlErrorHandlerOptions = {
     errorPage?:
         | string
         | ((parameters: {
-            error: Error;
-            reasonPhrase: string;
-            request: IncomingMessage;
-            response: ServerResponse;
-            statusCode: number;
-        }) => string | Promise<string>);
+              error: Error;
+              reasonPhrase: string;
+              request: IncomingMessage;
+              response: ServerResponse;
+              statusCode: number;
+          }) => string | Promise<string>);
 };
 
-export const htmlErrorHandler
-    = (options: HtmlErrorHandlerOptions = {}): ErrorHandler =>
-        async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
-            addStatusCodeToResponse(response, error);
+export const htmlErrorHandler =
+    (options: HtmlErrorHandlerOptions = {}): ErrorHandler =>
+    async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
+        addStatusCodeToResponse(response, error);
 
-            response.setHeader("content-type", "text/html; charset=utf-8");
+        response.setHeader("content-type", "text/html; charset=utf-8");
 
-            const title = getReasonPhrase(response.statusCode) || "Error";
-            const nonceAttribute = options.cspNonce ? ` nonce="${options.cspNonce}"` : "";
+        const title = getReasonPhrase(response.statusCode) || "Error";
+        const nonceAttribute = options.cspNonce ? ` nonce="${options.cspNonce}"` : "";
 
-            if (options.errorPage) {
-                const override
-                    = typeof options.errorPage === "function"
-                        ? await options.errorPage({
-                            error,
-                            reasonPhrase: title,
-                            request,
-                            response,
-                            statusCode: response.statusCode,
-                        })
-                        : options.errorPage;
+        if (options.errorPage) {
+            const override =
+                typeof options.errorPage === "function"
+                    ? await options.errorPage({
+                          error,
+                          reasonPhrase: title,
+                          request,
+                          response,
+                          statusCode: response.statusCode,
+                      })
+                    : options.errorPage;
 
-                if (override) {
-                    response.end(override);
+            if (override) {
+                response.end(override);
 
-                    return;
-                }
+                return;
             }
+        }
 
-            response.end(String.raw`<!DOCTYPE html>
+        response.end(String.raw`<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -84,4 +84,4 @@ export const htmlErrorHandler
         </div>
     </body>
 </html>`);
-        };
+    };
