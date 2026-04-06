@@ -15,8 +15,8 @@ export const bufferToUint8Array = (buf: Buffer): Uint8Array => new Uint8Array(bu
  * @param x The value to check.
  * @returns True if x is a Uint8Array or Buffer, false otherwise.
  */
-export const isUint8Array: (x: unknown) => x is Uint8Array
-    = typeof Buffer === "function"
+export const isUint8Array: (x: unknown) => x is Uint8Array =
+    typeof Buffer === "function"
         ? (x: unknown): x is Uint8Array => x instanceof Uint8Array || Buffer.isBuffer(x)
         : (x: unknown): x is Uint8Array => x instanceof Uint8Array;
 
@@ -27,8 +27,7 @@ export const isUint8Array: (x: unknown) => x is Uint8Array
  * @returns A Uint8Array representing the ASCII encoded string.
  */
 export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string]): Uint8Array => {
-    if (typeof txt === "string")
-        return asciiToUint8Array([txt]);
+    if (typeof txt === "string") return asciiToUint8Array([txt]);
 
     const [input] = Array.isArray(txt) ? txt : [String.raw(txt as TemplateStringsArray)]; // Handle TemplateStringsArray
     const inputLength = input.length;
@@ -50,8 +49,7 @@ export const asciiToUint8Array = (txt: TemplateStringsArray | string | [string])
  * @returns A Uint8Array representing the UTF-8 encoded string.
  */
 export const utf8ToUint8Array = (txt: TemplateStringsArray | [string] | string): Uint8Array => {
-    if (typeof txt === "string")
-        return utf8ToUint8Array([txt]);
+    if (typeof txt === "string") return utf8ToUint8Array([txt]);
 
     const [input] = Array.isArray(txt) ? txt : [String.raw(txt as TemplateStringsArray)]; // Handle TemplateStringsArray
 
@@ -76,8 +74,7 @@ export const toUint8Array = (data: unknown): Uint8Array => {
         return data;
     }
 
-    if (data instanceof ArrayBuffer)
-        return new Uint8Array(data);
+    if (data instanceof ArrayBuffer) return new Uint8Array(data);
 
     // Ensure it's an array of numbers before creating Uint8Array from it
     if (Array.isArray(data) && data.every((item) => typeof item === "number")) {

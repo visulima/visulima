@@ -289,10 +289,10 @@ Use with TypeScript type guards:
 import { isUint8Array } from "@visulima/bytes";
 
 function processData(data: unknown) {
-  if (isUint8Array(data)) {
-    // TypeScript knows data is Uint8Array here
-    console.log(data.length);
-  }
+    if (isUint8Array(data)) {
+        // TypeScript knows data is Uint8Array here
+        console.log(data.length);
+    }
 }
 ```
 
@@ -370,7 +370,9 @@ console.log(toUint8Array(u8) === u8); // true
 // From ArrayBuffer
 const buffer = new ArrayBuffer(3);
 const view = new Uint8Array(buffer);
-view[0] = 1; view[1] = 2; view[2] = 3;
+view[0] = 1;
+view[1] = 2;
+view[2] = 3;
 console.log(toUint8Array(buffer)); // Uint8Array([1, 2, 3])
 
 // From Array of numbers
@@ -390,10 +392,10 @@ Throws error for incompatible types:
 import { toUint8Array } from "@visulima/bytes";
 
 try {
-  toUint8Array(123); // Not convertible
+    toUint8Array(123); // Not convertible
 } catch (error) {
-  console.log(error.message);
-  // "UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array"
+    console.log(error.message);
+    // "UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array"
 }
 
 // Also throws for:
@@ -413,16 +415,16 @@ Check file types by examining their headers:
 import { startsWith } from "@visulima/bytes";
 
 function isPNG(data: Uint8Array): boolean {
-  const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
-  return startsWith(data, pngHeader);
+    const pngHeader = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    return startsWith(data, pngHeader);
 }
 
 function isJPEG(data: Uint8Array): boolean {
-  const jpegHeader = new Uint8Array([0xFF, 0xD8, 0xFF]);
-  return startsWith(data, jpegHeader);
+    const jpegHeader = new Uint8Array([0xff, 0xd8, 0xff]);
+    return startsWith(data, jpegHeader);
 }
 
-const fileData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, /* ... */]);
+const fileData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10 /* ... */]);
 console.log(isPNG(fileData)); // true
 console.log(isJPEG(fileData)); // false
 ```
@@ -435,14 +437,15 @@ Construct messages for binary protocols:
 import { concat } from "@visulima/bytes";
 
 function createMessage(type: number, payload: Uint8Array): Uint8Array {
-  const header = new Uint8Array([
-    0xFF, 0xFF, // Magic number
-    type,       // Message type
-    payload.length >> 8,   // Length high byte
-    payload.length & 0xFF  // Length low byte
-  ]);
+    const header = new Uint8Array([
+        0xff,
+        0xff, // Magic number
+        type, // Message type
+        payload.length >> 8, // Length high byte
+        payload.length & 0xff, // Length low byte
+    ]);
 
-  return concat([header, payload]);
+    return concat([header, payload]);
 }
 
 const payload = new Uint8Array([1, 2, 3, 4]);
@@ -458,27 +461,27 @@ Handle chunked binary data:
 ```typescript
 import { concat, indexOfNeedle } from "@visulima/bytes";
 
-const delimiter = new Uint8Array([0x0A]); // newline
+const delimiter = new Uint8Array([0x0a]); // newline
 let buffer = new Uint8Array([]);
 
 function processChunk(chunk: Uint8Array): string[] {
-  buffer = concat([buffer, chunk]);
+    buffer = concat([buffer, chunk]);
 
-  const messages: string[] = [];
-  let pos: number;
+    const messages: string[] = [];
+    let pos: number;
 
-  while ((pos = indexOfNeedle(buffer, delimiter)) !== -1) {
-    const message = buffer.slice(0, pos);
-    messages.push(new TextDecoder().decode(message));
-    buffer = buffer.slice(pos + 1);
-  }
+    while ((pos = indexOfNeedle(buffer, delimiter)) !== -1) {
+        const message = buffer.slice(0, pos);
+        messages.push(new TextDecoder().decode(message));
+        buffer = buffer.slice(pos + 1);
+    }
 
-  return messages;
+    return messages;
 }
 
 // Simulate receiving chunks
-const chunk1 = new Uint8Array([72, 101, 108, 108, 111, 0x0A, 87]); // "Hello\nW"
-const chunk2 = new Uint8Array([111, 114, 108, 100, 0x0A]); // "orld\n"
+const chunk1 = new Uint8Array([72, 101, 108, 108, 111, 0x0a, 87]); // "Hello\nW"
+const chunk2 = new Uint8Array([111, 114, 108, 100, 0x0a]); // "orld\n"
 
 console.log(processChunk(chunk1)); // ["Hello"]
 console.log(processChunk(chunk2)); // ["World"]
@@ -487,10 +490,10 @@ console.log(processChunk(chunk2)); // ["World"]
 ## Next Steps
 
 <Cards>
-  <Card title="API Reference" href="/api">
-    Complete API documentation with all parameters and types
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters and types
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>
