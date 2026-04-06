@@ -142,21 +142,41 @@ describe("generateVariants", () => {
             expect(variants.has("a_b_c")).toBe(true); // underscores
         });
 
-        it("should produce hyphen insertion for long non-hyphenated names", () => {
+        it("should produce all separator insertions for long non-hyphenated names", () => {
             const variants = generateVariants("express");
 
             expect(variants.has("ex-press")).toBe(true);
+            expect(variants.has("ex.press")).toBe(true);
+            expect(variants.has("ex_press")).toBe(true);
             expect(variants.has("exp-ress")).toBe(true);
-            expect(variants.has("expr-ess")).toBe(true);
         });
 
-        it("should not produce hyphen insertion for short names (length <= 5)", () => {
+        it("should treat underscores as separators", () => {
+            const variants = generateVariants("a_b_c");
+
+            expect(variants.has("abc")).toBe(true); // remove all
+            expect(variants.has("a-b-c")).toBe(true); // underscores → hyphens
+            expect(variants.has("a.b.c")).toBe(true); // underscores → dots
+        });
+
+        it("should not produce separator insertion for short names (length <= 5)", () => {
             const variants = generateVariants("react"); // length 5
 
-            // No hyphen insertion — only 5 chars
-            const hasHyphenInsert = [...variants].some((v) => v.includes("-") && !v.endsWith("-js") && !v.endsWith("-node"));
+            // No separator insertion — only 5 chars
+            const hasSepInsert = [...variants].some(
+                (v) => (v.includes("-") || v.includes(".") || v.includes("_")) && !v.endsWith("-js") && !v.endsWith("-node"),
+            );
 
-            expect(hasHyphenInsert).toBe(false);
+            expect(hasSepInsert).toBe(false);
+        });
+
+        it("should not transpose characters across separators", () => {
+            const variants = generateVariants("body-parser");
+
+            // "bodyp-arser" would mean swapping '-' and 'p' — should not happen
+            expect(variants.has("bodyp-arser")).toBe(false);
+            // "bod-yparser" would mean swapping 'y' and '-' — should not happen
+            expect(variants.has("bod-yparser")).toBe(false);
         });
     });
 
@@ -701,5 +721,51 @@ describe("scanDepsForTyposquats", () => {
         const result = await scanDepsForTyposquats(tmpDir);
 
         expect(result).toBe(false);
+    });
+
+    it("should detect typosquats in npm: alias targets", async () => {
+        Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { "my-axios": "npm:axois@^1.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(false);
+    });
+
+    it("should detect typosquats in pnpm: alias targets", async () => {
+        Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { "my-react": "pnpm:rreact@^18.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(false);
+    });
+
+    it("should not flag non-alias version specifiers", async () => {
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { react: "^18.0.0", express: "~4.18.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(true);
     });
 });

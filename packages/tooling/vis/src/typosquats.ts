@@ -69,7 +69,8 @@ const SUBSTITUTIONS: Record<string, string[]> = {
  * - Separator manipulation (dash/dot/underscore swaps)
  * - Common suffixes (-js, -node)
  *
- * Separators (`-` and `.`) are preserved during omission and duplication passes.
+ * Separators (`-`, `.`, `_`) are preserved during omission and duplication passes.
+ * Transposition is skipped when either character is a separator.
  * Names shorter than 3 characters return an empty set.
  *
  * @param name - The package name to generate variants for.
@@ -83,7 +84,7 @@ export const generateVariants = (name: string): Set<string> => {
     }
 
     for (let i = 0; i < name.length; i++) {
-        const isSeparator = name[i] === "-" || name[i] === ".";
+        const isSeparator = name[i] === "-" || name[i] === "." || name[i] === "_";
 
         // Character omission (skip separators)
         if (!isSeparator) {
@@ -95,12 +96,16 @@ export const generateVariants = (name: string): Set<string> => {
             variants.add(name.slice(0, i) + name[i] + name.slice(i));
         }
 
-        // Adjacent transposition
+        // Adjacent transposition (skip when either char is a separator)
         if (i < name.length - 1 && name[i] !== name[i + 1]) {
-            const chars = name.split("");
+            const nextIsSep = name[i + 1] === "-" || name[i + 1] === "." || name[i + 1] === "_";
 
-            [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
-            variants.add(chars.join(""));
+            if (!isSeparator && !nextIsSep) {
+                const chars = name.split("");
+
+                [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
+                variants.add(chars.join(""));
+            }
         }
 
         // Homoglyph substitution
@@ -114,14 +119,20 @@ export const generateVariants = (name: string): Set<string> => {
         }
     }
 
-    // Separator manipulation
-    if (name.includes("-")) {
-        variants.add(name.replace(/-/g, ""));
-        variants.add(name.replace(/-/g, "."));
-        variants.add(name.replace(/-/g, "_"));
+    // Separator manipulation: replace all separators with each alternative
+    const SEP_RE = /[-._]/g;
+    const hasSeparator = SEP_RE.test(name);
+
+    if (hasSeparator) {
+        variants.add(name.replace(SEP_RE, "")); // remove all
+        variants.add(name.replace(SEP_RE, "-")); // all hyphens
+        variants.add(name.replace(SEP_RE, ".")); // all dots
+        variants.add(name.replace(SEP_RE, "_")); // all underscores
     } else if (name.length > 5) {
         for (let i = 2; i < name.length - 2; i++) {
             variants.add(name.slice(0, i) + "-" + name.slice(i));
+            variants.add(name.slice(0, i) + "." + name.slice(i));
+            variants.add(name.slice(0, i) + "_" + name.slice(i));
         }
     }
 
@@ -300,8 +311,21 @@ export const runTyposquatCheck = async (packageNames: string[], allowlist?: stri
 // ── package.json scanning (for `install` / `update`) ───────────────
 
 /**
+ * Extract the package name from an alias specifier like "npm:reaact@^18".
+ * Returns `undefined` if the value is not an alias.
+ */
+const ALIAS_RE = /^(?:npm|pnpm|yarn):(.+?)(?:@.*)?$/;
+
+const parseAliasTarget = (value: string): string | undefined => {
+    const match = ALIAS_RE.exec(value);
+
+    return match?.[1];
+};
+
+/**
  * Reads unique dependency names from a package.json file.
  * Scans dependencies, devDependencies, optionalDependencies, and peerDependencies.
+ * Also extracts alias targets (e.g. "npm:reaact@^18" → "reaact").
  */
 const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
     if (!existsSync(packageJsonPath)) {
@@ -315,14 +339,26 @@ const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
         peerDependencies?: Record<string, string>;
     };
 
-    return [
-        ...new Set([
-            ...Object.keys(pkg.dependencies ?? {}),
-            ...Object.keys(pkg.devDependencies ?? {}),
-            ...Object.keys(pkg.optionalDependencies ?? {}),
-            ...Object.keys(pkg.peerDependencies ?? {}),
-        ]),
-    ];
+    const allDeps: Record<string, string> = {
+        ...pkg.dependencies,
+        ...pkg.devDependencies,
+        ...pkg.optionalDependencies,
+        ...pkg.peerDependencies,
+    };
+
+    const names = new Set<string>();
+
+    for (const [key, value] of Object.entries(allDeps)) {
+        names.add(key);
+
+        const aliasTarget = parseAliasTarget(value);
+
+        if (aliasTarget) {
+            names.add(aliasTarget);
+        }
+    }
+
+    return [...names];
 };
 
 /**
