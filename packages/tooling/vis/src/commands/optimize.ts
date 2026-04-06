@@ -321,7 +321,7 @@ const optimize: Command = {
         ["vis optimize --pin", "Pin Socket.dev overrides to exact versions"],
         ["vis optimize --prod", "Only optimize production dependencies"],
     ],
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
     execute: async ({ logger, options, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");

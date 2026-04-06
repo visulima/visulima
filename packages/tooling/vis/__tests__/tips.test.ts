@@ -2,9 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { TipContext } from "../src/tips";
 
-vi.mock("is-in-ci", () => ({ default: false }));
+vi.mock(import("is-in-ci"), () => { return { default: false }; });
 
-// eslint-disable-next-line import/first -- must come after vi.mock
 const { showTip, tips } = await import("../src/tips");
 
 describe("showTip", () => {
@@ -33,7 +32,7 @@ describe("showTip", () => {
 
         // is-in-ci evaluates at import time, so we reset modules, re-mock, and re-import
         vi.resetModules();
-        vi.doMock("is-in-ci", () => ({ default: true }));
+        vi.doMock(import("is-in-ci"), () => { return { default: true }; });
         const { showTip: showTipCi } = await import("../src/tips");
 
         showTipCi({ args: ["install"], command: "install", success: true });
@@ -41,7 +40,7 @@ describe("showTip", () => {
         expect(stderrSpy).not.toHaveBeenCalled();
 
         vi.resetModules();
-        vi.doMock("is-in-ci", () => ({ default: false }));
+        vi.doMock(import("is-in-ci"), () => { return { default: false }; });
     });
 });
 
@@ -59,7 +58,7 @@ describe("tip definitions", () => {
         expect.assertions(1);
 
         const allValid = tips.every((t) => {
-            const p = t.probability ?? 1.0;
+            const p = t.probability ?? 1;
 
             return p >= 0 && p <= 1;
         });
@@ -81,11 +80,13 @@ describe("tip definitions", () => {
 });
 
 describe("tip matching", () => {
-    const makeContext = (command: string, args: string[] = [], success = true): TipContext => ({
-        args: [command, ...args],
-        command,
-        success,
-    });
+    const makeContext = (command: string, args: string[] = [], success = true): TipContext => {
+        return {
+            args: [command, ...args],
+            command,
+            success,
+        };
+    };
 
     it("short-aliases should match install command", () => {
         expect.assertions(1);
@@ -177,11 +178,13 @@ describe("tip matching", () => {
 });
 
 describe("tip messages", () => {
-    const makeContext = (command: string): TipContext => ({
-        args: [command],
-        command,
-        success: true,
-    });
+    const makeContext = (command: string): TipContext => {
+        return {
+            args: [command],
+            command,
+            success: true,
+        };
+    };
 
     it("short-aliases should return alias for install", () => {
         expect.assertions(1);

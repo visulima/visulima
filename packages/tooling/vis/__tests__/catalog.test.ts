@@ -1,4 +1,3 @@
-/* eslint-disable n/no-unsupported-features/node-builtins */
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
@@ -42,7 +41,7 @@ import {
 
 // --- parseVersion ---
 
-describe("parseVersion", () => {
+describe(parseVersion, () => {
     it("should parse basic version", () => {
         expect.assertions(1);
 
@@ -130,7 +129,7 @@ describe("parseVersion", () => {
 
 // --- extractPrefix ---
 
-describe("extractPrefix", () => {
+describe(extractPrefix, () => {
     it("should extract caret", () => {
         expect.assertions(1);
 
@@ -188,7 +187,7 @@ describe("extractPrefix", () => {
 
 // --- getUpdateType ---
 
-describe("getUpdateType", () => {
+describe(getUpdateType, () => {
     it("should detect major update", () => {
         expect.assertions(1);
 
@@ -228,7 +227,7 @@ describe("getUpdateType", () => {
 
 // --- isNewer ---
 
-describe("isNewer", () => {
+describe(isNewer, () => {
     it("should detect newer major", () => {
         expect.assertions(1);
 
@@ -292,7 +291,7 @@ describe("isNewer", () => {
 
 // --- matchesPattern ---
 
-describe("matchesPattern", () => {
+describe(matchesPattern, () => {
     it("should match exact name", () => {
         expect.assertions(1);
 
@@ -362,7 +361,7 @@ describe("matchesPattern", () => {
 
 // --- matchesFilters ---
 
-describe("matchesFilters", () => {
+describe(matchesFilters, () => {
     it("should include all when no filters", () => {
         expect.assertions(1);
 
@@ -406,7 +405,7 @@ describe("matchesFilters", () => {
 
 // --- parseCatalogsFromYaml ---
 
-describe("parseCatalogsFromYaml", () => {
+describe(parseCatalogsFromYaml, () => {
     it("should parse default catalog", () => {
         expect.assertions(4);
 
@@ -594,7 +593,7 @@ packages:
 
 // --- findTargetVersion ---
 
-describe("findTargetVersion", () => {
+describe(findTargetVersion, () => {
     const versions = ["1.0.0", "1.0.1", "1.1.0", "1.2.0", "2.0.0", "2.1.0", "3.0.0-beta.1"];
 
     it("should find latest version", () => {
@@ -706,7 +705,7 @@ describe("findTargetVersion", () => {
 
 // --- hasCatalogs ---
 
-describe("hasCatalogs", () => {
+describe(hasCatalogs, () => {
     it("should detect default catalog", () => {
         expect.assertions(1);
 
@@ -768,7 +767,7 @@ catalogs:
 
 // --- readCatalogs ---
 
-describe("readCatalogs", () => {
+describe(readCatalogs, () => {
     it("should read catalogs from pnpm-workspace.yaml", () => {
         expect.assertions(3);
 
@@ -884,7 +883,7 @@ catalog:
 
 // --- checkOutdated ---
 
-describe("checkOutdated", () => {
+describe(checkOutdated, () => {
     const mockFetch = (responses: Record<string, { latest: string; versions: string[] } | "error">) => {
         vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
             const url = typeof input === "string" ? input : input.toString();
@@ -1191,7 +1190,7 @@ describe("checkOutdated", () => {
 
 // --- applyCatalogUpdates ---
 
-describe("applyCatalogUpdates", () => {
+describe(applyCatalogUpdates, () => {
     it("should update version in default catalog", () => {
         expect.assertions(2);
 
@@ -1343,7 +1342,7 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain('"@types/node": ^22.0.0');
+        expect(result).toContain("\"@types/node\": ^22.0.0");
     });
 
     it("should update exact version without prefix", () => {
@@ -1505,8 +1504,8 @@ catalog:
 
         const result = readFileSync(filePath, "utf8");
 
-        expect(result).toContain('- "packages/*"');
-        expect(result).toContain('- "apps/*"');
+        expect(result).toContain("- \"packages/*\"");
+        expect(result).toContain("- \"apps/*\"");
         expect(result).toContain("react: ^19.0.0");
     });
 
@@ -1537,13 +1536,13 @@ catalog:
         const result = readFileSync(filePath, "utf8");
 
         // Quotes around version should be preserved (replace happens inside)
-        expect(result).toContain('^19.0.0"');
+        expect(result).toContain("^19.0.0\"");
     });
 });
 
 // --- Bun catalog support ---
 
-describe("parseBunCatalogs", () => {
+describe(parseBunCatalogs, () => {
     it("should parse default catalog from package.json workspaces", () => {
         expect.assertions(3);
 
@@ -1708,23 +1707,23 @@ describe("readCatalogs with bun", () => {
     });
 });
 
-describe("detectJsonIndent", () => {
+describe(detectJsonIndent, () => {
     it("should detect 2-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{\n  "name": "test"\n}')).toBe(2);
+        expect(detectJsonIndent("{\n  \"name\": \"test\"\n}")).toBe(2);
     });
 
     it("should detect 4-space indent", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{\n    "name": "test"\n}')).toBe(4);
+        expect(detectJsonIndent("{\n    \"name\": \"test\"\n}")).toBe(4);
     });
 
     it("should default to 2 when no indentation found", () => {
         expect.assertions(1);
 
-        expect(detectJsonIndent('{"name":"test"}')).toBe(2);
+        expect(detectJsonIndent("{\"name\":\"test\"}")).toBe(2);
     });
 });
 
@@ -1848,7 +1847,7 @@ describe("applyCatalogUpdates with bun", () => {
         const content = readFileSync(filePath, "utf8");
 
         // Should use 4-space indent
-        expect(content).toContain('    "workspaces"');
+        expect(content).toContain("    \"workspaces\"");
     });
 
     it("should handle multiple updates in bun catalog", () => {
@@ -1959,7 +1958,7 @@ describe("applyCatalogUpdates with bun", () => {
 
 // --- .npmrc support ---
 
-describe("parseNpmrc", () => {
+describe(parseNpmrc, () => {
     it("should parse default registry", () => {
         expect.assertions(1);
 
@@ -2049,7 +2048,7 @@ registry=https://custom.registry.com
     });
 });
 
-describe("getRegistryForPackage", () => {
+describe(getRegistryForPackage, () => {
     const config: NpmrcConfig = {
         authTokens: new Map([["npm.myorg.com", "secret"]]),
         defaultRegistry: "https://registry.npmjs.org",
@@ -2083,7 +2082,7 @@ describe("getRegistryForPackage", () => {
     });
 });
 
-describe("loadNpmrc", () => {
+describe(loadNpmrc, () => {
     it("should load project .npmrc", () => {
         expect.assertions(1);
 
@@ -2119,7 +2118,7 @@ describe("loadNpmrc", () => {
 
 // --- fetchPackageVersions with timeout and registry ---
 
-describe("fetchPackageVersions", () => {
+describe(fetchPackageVersions, () => {
     it("should use custom registry URL", async () => {
         expect.assertions(2);
 
@@ -2186,7 +2185,7 @@ describe("fetchPackageVersions", () => {
             } as Response;
         });
 
-        await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrowError("Aborted");
+        await expect(fetchPackageVersions("slow-pkg", undefined, 50)).rejects.toThrow("Aborted");
 
         vi.restoreAllMocks();
     });
@@ -2215,7 +2214,7 @@ describe("fetchPackageVersions", () => {
 
 // --- Backup & Rollback ---
 
-describe("createBackup", () => {
+describe(createBackup, () => {
     it("should create pnpm backup", () => {
         expect.assertions(2);
 
@@ -2236,7 +2235,7 @@ describe("createBackup", () => {
         const temporaryDirectory = mkdtempSync(join(tmpdir(), "vis-test-"));
         const filePath = join(temporaryDirectory, "package.json");
 
-        writeFileSync(filePath, '{"workspaces":{"catalog":{"react":"^18.0.0"}}}');
+        writeFileSync(filePath, "{\"workspaces\":{\"catalog\":{\"react\":\"^18.0.0\"}}}");
 
         const backupPath = createBackup(temporaryDirectory, "bun");
 
@@ -2253,7 +2252,7 @@ describe("createBackup", () => {
     });
 });
 
-describe("restoreFromBackup", () => {
+describe(restoreFromBackup, () => {
     it("should restore pnpm file from backup", () => {
         expect.assertions(2);
 
@@ -2277,13 +2276,13 @@ describe("restoreFromBackup", () => {
         const filePath = join(temporaryDirectory, "package.json");
         const backupPath = `${filePath}.bak`;
 
-        writeFileSync(backupPath, '{"old":true}');
-        writeFileSync(filePath, '{"new":true}');
+        writeFileSync(backupPath, "{\"old\":true}");
+        writeFileSync(filePath, "{\"new\":true}");
 
         const restored = restoreFromBackup(temporaryDirectory, "bun");
 
         expect(restored).toBe(true);
-        expect(readFileSync(filePath, "utf8")).toContain('"old"');
+        expect(readFileSync(filePath, "utf8")).toContain("\"old\"");
     });
 
     it("should return false when no backup exists", () => {
@@ -2295,7 +2294,7 @@ describe("restoreFromBackup", () => {
     });
 });
 
-describe("hasBackup", () => {
+describe(hasBackup, () => {
     it("should detect existing backup", () => {
         expect.assertions(1);
 
@@ -2328,7 +2327,7 @@ describe("hasBackup", () => {
 
 // --- Output formatting ---
 
-describe("formatOutdatedJson", () => {
+describe(formatOutdatedJson, () => {
     it("should produce valid JSON with outdated and failed", () => {
         expect.assertions(3);
 
@@ -2364,7 +2363,7 @@ describe("formatOutdatedJson", () => {
     });
 });
 
-describe("formatOutdatedMinimal", () => {
+describe(formatOutdatedMinimal, () => {
     it("should format one entry per line", () => {
         expect.assertions(4);
 
@@ -2562,7 +2561,7 @@ describe("checkOutdated with npmrcConfig", () => {
 
 // --- Security scanning (OSV.dev) ---
 
-describe("fetchVulnerabilities", () => {
+describe(fetchVulnerabilities, () => {
     it("should return vulnerabilities from OSV batch API", async () => {
         expect.assertions(9);
 
@@ -2962,7 +2961,7 @@ describe("formatSummary with security", () => {
 
 // --- fetchChangelogInfo ---
 
-describe("fetchChangelogInfo", () => {
+describe(fetchChangelogInfo, () => {
     it("should return GitHub release URL when repo is on GitHub", async () => {
         expect.assertions(3);
 
@@ -3077,7 +3076,7 @@ describe("fetchChangelogInfo", () => {
 
 // --- parseCompositeCatalogName ---
 
-describe("parseCompositeCatalogName", () => {
+describe(parseCompositeCatalogName, () => {
     it("should parse valid composite name with root path", () => {
         expect.assertions(1);
 
@@ -3123,7 +3122,7 @@ describe("parseCompositeCatalogName", () => {
 
 // --- readPackageJsonDeps ---
 
-describe("readPackageJsonDeps", () => {
+describe(readPackageJsonDeps, () => {
     const createTemporaryWorkspace = (): string => mkdtempSync(join(tmpdir(), "vis-npm-test-"));
 
     it("should read deps from a single-package root", () => {
@@ -3293,7 +3292,7 @@ describe("readPackageJsonDeps", () => {
 
 // --- hasPackageJsonDeps ---
 
-describe("hasPackageJsonDeps", () => {
+describe(hasPackageJsonDeps, () => {
     it("should return true when package.json has dependencies", () => {
         expect.assertions(1);
 
@@ -3335,7 +3334,7 @@ describe("hasPackageJsonDeps", () => {
 
 // --- applyPackageJsonUpdates ---
 
-describe("applyPackageJsonUpdates", () => {
+describe(applyPackageJsonUpdates, () => {
     it("should update deps in root package.json", () => {
         expect.assertions(2);
 

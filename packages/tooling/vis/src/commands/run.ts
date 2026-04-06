@@ -231,7 +231,7 @@ const run: Command = {
             while (loopAction !== "quit") {
                 if (loopAction === "rerun") {
                     // Full rerun of all tasks
-                    // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
+
                     await defaultTaskRunner(initialTasks, runnerOptions, {
                         lifeCycle,
                         projectGraph,
@@ -250,7 +250,6 @@ const run: Command = {
 
                         lifeCycle.startTasks?.([task]);
 
-                        // eslint-disable-next-line no-await-in-loop -- sequential retry
                         const retryResult = await runConcurrently([{ command, cwd: resolvedCwd, name: task.id }], {
                             onEvent: (event: ProcessEvent) => {
                                 if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
@@ -287,7 +286,7 @@ const run: Command = {
                 }
 
                 // Wait for user action: quit, rerun, or retry
-                // eslint-disable-next-line no-await-in-loop -- sequential rerun loop
+
                 loopAction = await new Promise<"quit" | "rerun" | "retry">((resolve) => {
                     // Watch for rerun or retry requests
                     const unsubscribe = store.subscribe(() => {
@@ -389,7 +388,7 @@ const run: Command = {
             type: Boolean,
         },
         {
-            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
+            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
             name: "partition",
             type: String,
         },

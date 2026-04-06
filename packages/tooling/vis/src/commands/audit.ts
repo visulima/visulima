@@ -254,7 +254,6 @@ const formatSocketLine = (report: PackageReportData, isAccepted: boolean): strin
 
 // ── Main audit logic ────────────────────────────────────────────────
 
-/* eslint-disable sonarjs/cognitive-complexity -- audit command with multiple output paths */
 const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, logger: Console): Promise<void> => {
     const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
     const isJson = (options.format as string) === "json" || Boolean(options.json);
@@ -571,7 +570,6 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
         process.exitCode = 1;
     }
 };
-/* eslint-enable sonarjs/cognitive-complexity */
 
 // ── Command ─────────────────────────────────────────────────────────
 

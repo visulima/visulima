@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { discoverTemplate, expandCreateShorthand, inferParentDir, isGitUrl } from "../../src/commands/create/discovery";
 
-describe("expandCreateShorthand", () => {
+describe(expandCreateShorthand, () => {
     it("should expand bare names to create-* packages", () => {
         expect.assertions(3);
 
@@ -37,7 +37,7 @@ describe("expandCreateShorthand", () => {
     });
 });
 
-describe("isGitUrl", () => {
+describe(isGitUrl, () => {
     it("should recognize GitHub HTTPS URLs", () => {
         expect.assertions(1);
 
@@ -113,7 +113,7 @@ describe("isGitUrl", () => {
     });
 });
 
-describe("discoverTemplate", () => {
+describe(discoverTemplate, () => {
     it("should resolve built-in vis:app template", () => {
         expect.assertions(2);
 
@@ -247,7 +247,7 @@ describe("discoverTemplate", () => {
     });
 });
 
-describe("inferParentDir", () => {
+describe(inferParentDir, () => {
     it("should return 'apps' for builtin:app", () => {
         expect.assertions(1);
 

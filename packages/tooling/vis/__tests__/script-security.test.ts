@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -9,7 +9,7 @@ import type { VisConfig } from "../src/workspace";
 
 // ── enforceScriptSecurity ────────────────────────────────────────────
 
-describe("enforceScriptSecurity", () => {
+describe(enforceScriptSecurity, () => {
     let tmpDir: string;
 
     beforeEach(() => {
@@ -118,9 +118,9 @@ describe("enforceScriptSecurity", () => {
             const config: VisConfig = {
                 security: {
                     allowBuilds: {
+                        "@prisma/client": true,
                         "core-js": false,
                         esbuild: true,
-                        "@prisma/client": true,
                     },
                 },
             };
@@ -187,7 +187,7 @@ describe("enforceScriptSecurity", () => {
 
 // ── syncAllowBuildsToNativeConfig ────────────────────────────────────
 
-describe("syncAllowBuildsToNativeConfig", () => {
+describe(syncAllowBuildsToNativeConfig, () => {
     let tmpDir: string;
 
     beforeEach(() => {
@@ -204,9 +204,9 @@ describe("syncAllowBuildsToNativeConfig", () => {
             expect.assertions(2);
 
             const actions = syncAllowBuildsToNativeConfig("bun", tmpDir, {
-                esbuild: true,
                 "@prisma/client": true,
                 "core-js": false,
+                esbuild: true,
             });
 
             const pkg = JSON.parse(readFileSync(join(tmpDir, "package.json"), "utf8"));

@@ -16,9 +16,9 @@ describe("sort-package-json native integration", () => {
             expect.assertions(2);
 
             const input = JSON.stringify({
-                dependencies: { b: "1.0.0", a: "2.0.0" },
-                version: "1.0.0",
+                dependencies: { a: "2.0.0", b: "1.0.0" },
                 name: "test-package",
+                version: "1.0.0",
             });
 
             const result = native!.sortPackageJsonString(input);
@@ -32,8 +32,8 @@ describe("sort-package-json native integration", () => {
             expect.assertions(1);
 
             const input = JSON.stringify({
+                dependencies: { a: "1.0.0", b: "1.0.0", c: "1.0.0" },
                 name: "test",
-                dependencies: { c: "1.0.0", a: "1.0.0", b: "1.0.0" },
             });
 
             const result = native!.sortPackageJsonString(input);
@@ -55,10 +55,10 @@ describe("sort-package-json native integration", () => {
             expect.assertions(4);
 
             const input = JSON.stringify({
-                scripts: { test: "vitest", build: "tsc" },
-                name: "test",
-                version: "1.0.0",
                 license: "MIT",
+                name: "test",
+                scripts: { build: "tsc", test: "vitest" },
+                version: "1.0.0",
             });
 
             const result = native!.sortPackageJsonString(input);
@@ -94,7 +94,7 @@ describe("sort-package-json native integration", () => {
 
             const input = JSON.stringify({
                 name: "test",
-                scripts: { test: "vitest", build: "tsc", dev: "vite" },
+                scripts: { build: "tsc", dev: "vite", test: "vitest" },
             });
 
             const result = native!.sortPackageJsonStringWithOptions(input, { sort_scripts: true });
@@ -109,7 +109,7 @@ describe("sort-package-json native integration", () => {
 
             const input = JSON.stringify({
                 name: "test",
-                scripts: { test: "vitest", build: "tsc", dev: "vite" },
+                scripts: { build: "tsc", dev: "vite", test: "vitest" },
             });
 
             const result = native!.sortPackageJsonStringWithOptions(input, { sort_scripts: false });
@@ -124,8 +124,8 @@ describe("sort-package-json native integration", () => {
             expect.assertions(1);
 
             const input = JSON.stringify({
+                devDependencies: { eslint: "9.0.0", typescript: "5.0.0", vitest: "1.0.0" },
                 name: "test",
-                devDependencies: { vitest: "1.0.0", eslint: "9.0.0", typescript: "5.0.0" },
             });
 
             const result = native!.sortPackageJsonStringWithOptions(input, {});

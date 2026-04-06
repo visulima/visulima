@@ -35,9 +35,9 @@ const REPLACED_PACKAGES = ["husky", "lint-staged"] as const;
 // Husky script patterns — shared between hook/migrate and migrate/deps
 const HUSKY_STANDALONE_RE = /\(is-ci \|\| husky \|\| exit 0\)\s*&&\s*/g;
 const HUSKY_INSTALL_AND_RE = /\bhusky(?:\s+install)?\s*&&\s*/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+
 const AND_HUSKY_INSTALL_RE = /\s*&&\s*husky(?:\s+install)?/g;
-// eslint-disable-next-line sonarjs/slow-regex -- husky migration pattern, bounded input
+
 const OR_HUSKY_INSTALL_RE = /\s*\|\|\s*husky(?:\s+install)?/g;
 
 const HUSKY_SCRIPT_PATTERNS: ReadonlyArray<RegExp> = [HUSKY_STANDALONE_RE, HUSKY_INSTALL_AND_RE, AND_HUSKY_INSTALL_RE, OR_HUSKY_INSTALL_RE];

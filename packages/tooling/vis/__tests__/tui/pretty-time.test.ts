@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { formatHrtime, formatMs } from "../../src/tui/pretty-time";
 
 describe("tui/pretty-time", () => {
-    describe("formatMs", () => {
+    describe(formatMs, () => {
         it("should format milliseconds to human-readable string", () => {
             const result = formatMs(5000);
 
@@ -22,19 +22,21 @@ describe("tui/pretty-time", () => {
             const result = formatMs(5_445_000);
 
             // Should show at most 2 units (largest: 2)
-            expect(typeof result).toBe("string");
+            expectTypeOf(result).toBeString();
+
             expect(result.length).toBeGreaterThan(0);
         });
 
         it("should handle zero", () => {
             const result = formatMs(0);
 
-            expect(typeof result).toBe("string");
+            expectTypeOf(result).toBeString();
+
             expect(result).toContain("0");
         });
     });
 
-    describe("formatHrtime", () => {
+    describe(formatHrtime, () => {
         it("should format hrtime tuples", () => {
             const result = formatHrtime([1, 234_000_000]);
 
@@ -45,7 +47,8 @@ describe("tui/pretty-time", () => {
         it("should format zero hrtime", () => {
             const result = formatHrtime([0, 0]);
 
-            expect(typeof result).toBe("string");
+            expectTypeOf(result).toBeString();
+
             expect(result).toContain("0");
         });
 

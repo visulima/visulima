@@ -1,14 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { randomName } from "../../src/commands/create/random-name";
 
-describe("randomName", () => {
+describe(randomName, () => {
     it("should return a string in word-word format", () => {
         expect.assertions(2);
 
         const name = randomName();
 
-        expect(typeof name).toBe("string");
+        expectTypeOf(name).toBeString();
+
         expect(name).toMatch(/^[a-z]+-[a-z]+$/);
     });
 

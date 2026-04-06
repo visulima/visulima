@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -134,7 +134,7 @@ describe("first-run detection", () => {
     it("should not trigger for init, help, or implode commands", () => {
         expect.assertions(1);
 
-        const skipCommands = new Set(["init", "help", "--help", "-h", "--version", "-V", "implode"]);
+        const skipCommands = new Set(["--help", "--version", "-h", "-V", "help", "implode", "init"]);
 
         expect(skipCommands.has("init")).toBe(true);
     });

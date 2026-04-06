@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { AcceptedRisk, PackageReportData, PackageScore } from "../src/socket-security";
+
 // Mock homedir before importing the module under test
 const TEST_HOME = join(tmpdir(), `vis-socket-test-${String(process.pid)}-${String(Date.now())}`);
 
@@ -27,32 +29,34 @@ const {
     scoreLabel,
 } = await import("../src/socket-security");
 
-import type { AcceptedRisk, PackageReportData, PackageScore } from "../src/socket-security";
-
 // --- Helpers ---
 
-const makeScore = (overrides: Partial<PackageScore> = {}): PackageScore => ({
-    license: 0.8,
-    maintenance: 0.7,
-    overall: 0.75,
-    quality: 0.9,
-    supplyChain: 0.6,
-    vulnerability: 0.85,
-    ...overrides,
-});
+const makeScore = (overrides: Partial<PackageScore> = {}): PackageScore => {
+    return {
+        license: 0.8,
+        maintenance: 0.7,
+        overall: 0.75,
+        quality: 0.9,
+        supplyChain: 0.6,
+        vulnerability: 0.85,
+        ...overrides,
+    };
+};
 
-const makeReport = (overrides: Partial<PackageReportData> = {}): PackageReportData => ({
-    alerts: [],
-    author: ["test-author"],
-    id: "pkg:npm/test-pkg@1.0.0",
-    license: "MIT",
-    name: "test-pkg",
-    score: makeScore(),
-    size: 1024,
-    type: "npm",
-    version: "1.0.0",
-    ...overrides,
-});
+const makeReport = (overrides: Partial<PackageReportData> = {}): PackageReportData => {
+    return {
+        alerts: [],
+        author: ["test-author"],
+        id: "pkg:npm/test-pkg@1.0.0",
+        license: "MIT",
+        name: "test-pkg",
+        score: makeScore(),
+        size: 1024,
+        type: "npm",
+        version: "1.0.0",
+        ...overrides,
+    };
+};
 
 // --- Pure function tests ---
 
@@ -238,9 +242,9 @@ describe("buildSocketOptions", () => {
 
 describe("findAcceptedRisk", () => {
     const risks: Record<string, AcceptedRisk> = {
+        "@myorg/*": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.2, reason: "internal" },
         lodash: { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.3, reason: "reviewed" },
         "react@18.0.0": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.35, reason: "pinned" },
-        "@myorg/*": { acceptedAt: "2026-01-01T00:00:00Z", acceptedScore: 0.2, reason: "internal" },
     };
 
     it("should match by unversioned name", () => {
@@ -292,7 +296,7 @@ describe("formatAcceptedRiskSnippet", () => {
 
         const snippet = formatAcceptedRiskSnippet("lodash", "4.17.21", 0.3, "Reviewed and accepted");
 
-        expect(snippet).toContain('"lodash"');
+        expect(snippet).toContain("\"lodash\"");
         expect(snippet).toContain("Reviewed and accepted");
         expect(snippet).toContain("acceptedScore: 0.3");
     });

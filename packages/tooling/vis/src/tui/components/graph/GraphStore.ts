@@ -107,7 +107,7 @@ export class GraphStore {
 
     public getSnapshot = (): GraphState => this.#state;
 
-    public subscribe = (listener: Listener): (() => void) => {
+    public subscribe = (listener: Listener): () => void => {
         this.#listeners.add(listener);
 
         return () => {

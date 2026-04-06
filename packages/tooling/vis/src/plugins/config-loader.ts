@@ -5,8 +5,6 @@ import isInCi from "is-in-ci";
 
 import { findVisConfigFile, loadVisConfig } from "../config";
 
-/* eslint-disable no-param-reassign -- cerebro plugin pattern requires mutating toolbox */
-
 const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {
         try {
@@ -89,7 +87,7 @@ const configLoaderPlugin: Plugin = {
 
                         const configPath = join(workspaceRoot, "vis.config.ts");
                         const content = [
-                            'import { defineConfig } from "@visulima/vis/config";',
+                            "import { defineConfig } from \"@visulima/vis/config\";",
                             "",
                             "// Secure defaults are applied automatically by defineConfig().",
                             "// You only need to add allowBuilds for packages with build scripts.",
@@ -97,7 +95,7 @@ const configLoaderPlugin: Plugin = {
                             "export default defineConfig({",
                             "    security: {",
                             "        allowBuilds: {",
-                            '            // "esbuild": true,',
+                            "            // \"esbuild\": true,",
                             "        },",
                             "    },",
                             "});",
@@ -122,7 +120,5 @@ const configLoaderPlugin: Plugin = {
     },
     name: "config-loader",
 };
-
-/* eslint-enable no-param-reassign */
 
 export default configLoaderPlugin;

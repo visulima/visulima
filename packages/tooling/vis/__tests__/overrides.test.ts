@@ -1,11 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { applyOverrides, lockfileContainsPackage, readLockfileText, readOverrides } from "../src/overrides";
-import type { PmInfo } from "../src/overrides";
 
 let tmpDir: string;
 
@@ -22,18 +21,16 @@ afterEach(() => {
 const writePkgJson = (dir: string, content: Record<string, unknown>): string => {
     const filePath = join(dir, "package.json");
 
-    writeFileSync(filePath, JSON.stringify(content, null, 2) + "\n");
+    writeFileSync(filePath, `${JSON.stringify(content, null, 2)}\n`);
 
     return filePath;
 };
 
-const readPkgJson = (dir: string): Record<string, unknown> => {
-    return JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as Record<string, unknown>;
-};
+const readPkgJson = (dir: string): Record<string, unknown> => JSON.parse(readFileSync(join(dir, "package.json"), "utf8")) as Record<string, unknown>;
 
 // ── readOverrides ───────────────────────────────────────────────────
 
-describe("readOverrides", () => {
+describe(readOverrides, () => {
     describe("npm", () => {
         it("should read overrides from package.json", () => {
             expect.assertions(2);
@@ -124,11 +121,11 @@ describe("readOverrides", () => {
 
 // ── applyOverrides ──────────────────────────────────────────────────
 
-describe("applyOverrides", () => {
+describe(applyOverrides, () => {
     it("should add new overrides to npm package.json", () => {
         expect.assertions(3);
 
-        const pkgJsonPath = writePkgJson(tmpDir, { name: "test", dependencies: { lodash: "^4.0.0" } });
+        const pkgJsonPath = writePkgJson(tmpDir, { dependencies: { lodash: "^4.0.0" }, name: "test" });
 
         const result = applyOverrides(tmpDir, pkgJsonPath, [{ original: "lodash", spec: "npm:@socketregistry/lodash@^4" }], { name: "npm", version: "10.0.0" });
 
@@ -143,7 +140,7 @@ describe("applyOverrides", () => {
     it("should use $<name> reference for npm direct deps", () => {
         expect.assertions(1);
 
-        const pkgJsonPath = writePkgJson(tmpDir, { name: "test", dependencies: { express: "^4.0.0" } });
+        const pkgJsonPath = writePkgJson(tmpDir, { dependencies: { express: "^4.0.0" }, name: "test" });
 
         applyOverrides(tmpDir, pkgJsonPath, [{ original: "express", spec: "npm:@socketregistry/express@^4" }], { name: "npm", version: "10.0.0" });
 
@@ -155,7 +152,7 @@ describe("applyOverrides", () => {
     it("should use spec directly for non-direct deps (npm)", () => {
         expect.assertions(1);
 
-        const pkgJsonPath = writePkgJson(tmpDir, { name: "test", dependencies: {} });
+        const pkgJsonPath = writePkgJson(tmpDir, { dependencies: {}, name: "test" });
 
         applyOverrides(tmpDir, pkgJsonPath, [{ original: "qs", spec: "npm:@socketregistry/qs@^6" }], { name: "npm", version: "10.0.0" });
 
@@ -253,7 +250,7 @@ describe("applyOverrides", () => {
     it("should place overrides field near dependencies", () => {
         expect.assertions(1);
 
-        const pkgJsonPath = writePkgJson(tmpDir, { name: "test", version: "1.0.0", dependencies: { react: "^18" }, engines: { node: ">=20" } });
+        const pkgJsonPath = writePkgJson(tmpDir, { dependencies: { react: "^18" }, engines: { node: ">=20" }, name: "test", version: "1.0.0" });
 
         applyOverrides(tmpDir, pkgJsonPath, [{ original: "react", spec: "$react" }], { name: "npm", version: "10.0.0" });
 
@@ -268,7 +265,7 @@ describe("applyOverrides", () => {
     it("should preserve indent style", () => {
         expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test" }, null, "\t") + "\n");
+        writeFileSync(join(tmpDir, "package.json"), `${JSON.stringify({ name: "test" }, null, "\t")}\n`);
 
         applyOverrides(tmpDir, join(tmpDir, "package.json"), [{ original: "foo", spec: "bar" }], { name: "npm", version: "10.0.0" });
 
@@ -280,11 +277,11 @@ describe("applyOverrides", () => {
 
 // ── lockfileContainsPackage ─────────────────────────────────────────
 
-describe("lockfileContainsPackage", () => {
+describe(lockfileContainsPackage, () => {
     it("should detect npm lockfile entries", () => {
         expect.assertions(2);
 
-        const lockText = '{ "packages": { "node_modules/lodash": { "version": "4.17.21" } } }';
+        const lockText = "{ \"packages\": { \"node_modules/lodash\": { \"version\": \"4.17.21\" } } }";
 
         expect(lockfileContainsPackage(`"lodash":`, "lodash", "npm")).toBe(true);
         expect(lockfileContainsPackage(lockText, "nonexistent", "npm")).toBe(false);
@@ -307,7 +304,7 @@ describe("lockfileContainsPackage", () => {
     it("should detect bun lockfile entries (both formats)", () => {
         expect.assertions(2);
 
-        expect(lockfileContainsPackage('"lodash":', "lodash", "bun")).toBe(true);
+        expect(lockfileContainsPackage("\"lodash\":", "lodash", "bun")).toBe(true);
         expect(lockfileContainsPackage("chalk@5.0.0:", "chalk", "bun")).toBe(true);
     });
 
@@ -320,11 +317,11 @@ describe("lockfileContainsPackage", () => {
 
 // ── readLockfileText ────────────────────────────────────────────────
 
-describe("readLockfileText", () => {
+describe(readLockfileText, () => {
     it("should read npm lockfile", () => {
         expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "package-lock.json"), '{"lockfileVersion": 3}');
+        writeFileSync(join(tmpDir, "package-lock.json"), "{\"lockfileVersion\": 3}");
 
         const text = readLockfileText(tmpDir, "npm");
 
@@ -360,7 +357,7 @@ describe("readLockfileText", () => {
     it("should try bun.lock first for bun", () => {
         expect.assertions(1);
 
-        writeFileSync(join(tmpDir, "bun.lock"), '{"packages":{}}');
+        writeFileSync(join(tmpDir, "bun.lock"), "{\"packages\":{}}");
 
         expect(readLockfileText(tmpDir, "bun")).toContain("packages");
     });

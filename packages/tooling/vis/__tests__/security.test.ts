@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { checkSecurityConfig, scanUnapprovedBuildScripts } from "../src/security";
 import type { VisConfig } from "../src/workspace";
 
-describe("checkSecurityConfig", () => {
+describe(checkSecurityConfig, () => {
     describe("no security section", () => {
         it("should warn when security config is missing entirely", () => {
             expect.assertions(2);
@@ -222,7 +222,7 @@ describe("checkSecurityConfig", () => {
 
             const config: VisConfig = {
                 security: {
-                    allowBuilds: { esbuild: true, "@prisma/client": true },
+                    allowBuilds: { "@prisma/client": true, esbuild: true },
                     blockExoticSubdeps: true,
                     minimumReleaseAge: 1440,
                     trustPolicy: "no-downgrade",
@@ -230,8 +230,8 @@ describe("checkSecurityConfig", () => {
             };
             const result = checkSecurityConfig(config, "pnpm");
 
-            expect(result.warnings.length).toBe(0);
-            expect(result.errors.length).toBe(0);
+            expect(result.warnings).toHaveLength(0);
+            expect(result.errors).toHaveLength(0);
         });
     });
 });
@@ -268,7 +268,7 @@ describe("approve-builds scanning", () => {
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 
-        expect(unapproved.length).toBe(1);
+        expect(unapproved).toHaveLength(1);
         expect(unapproved[0]).toContain("evil-pkg");
     });
 
@@ -288,7 +288,7 @@ describe("approve-builds scanning", () => {
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, { esbuild: true });
 
-        expect(unapproved.length).toBe(0);
+        expect(unapproved).toHaveLength(0);
     });
 
     it("should handle scoped packages", () => {
@@ -308,7 +308,7 @@ describe("approve-builds scanning", () => {
         // Not approved
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 
-        expect(unapproved.length).toBe(1);
+        expect(unapproved).toHaveLength(1);
         expect(unapproved[0]).toContain("@prisma/client");
     });
 
@@ -328,7 +328,7 @@ describe("approve-builds scanning", () => {
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, { "@prisma/*": true });
 
-        expect(unapproved.length).toBe(0);
+        expect(unapproved).toHaveLength(0);
     });
 
     it("should not flag packages without build scripts", () => {
@@ -347,7 +347,7 @@ describe("approve-builds scanning", () => {
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 
-        expect(unapproved.length).toBe(0);
+        expect(unapproved).toHaveLength(0);
     });
 
     it("should return empty for missing node_modules", () => {
@@ -355,6 +355,6 @@ describe("approve-builds scanning", () => {
 
         const unapproved = scanUnapprovedBuildScripts(tmpDir, {});
 
-        expect(unapproved.length).toBe(0);
+        expect(unapproved).toHaveLength(0);
     });
 });

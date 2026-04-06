@@ -23,7 +23,6 @@ const mapOptions = (options: Record<string, unknown>, lintStagedOptions: Record<
 
     for (const [cliKey, lsKey] of mappings) {
         if (options[cliKey] !== undefined) {
-            // eslint-disable-next-line no-param-reassign -- building options object
             lintStagedOptions[lsKey] = options[cliKey];
         }
     }
@@ -32,15 +31,12 @@ const mapOptions = (options: Record<string, unknown>, lintStagedOptions: Record<
         const value = options["concurrent"] as string;
 
         if (value === "true") {
-            // eslint-disable-next-line no-param-reassign -- building options object
             lintStagedOptions["concurrent"] = true;
         } else if (value === "false") {
-            // eslint-disable-next-line no-param-reassign -- building options object
             lintStagedOptions["concurrent"] = false;
         } else {
             const parsed = Number(value);
 
-            // eslint-disable-next-line no-param-reassign -- building options object
             lintStagedOptions["concurrent"] = Number.isNaN(parsed) || value === "" ? true : parsed;
         }
     }
@@ -60,12 +56,12 @@ const staged: Command = {
 
         if (!stagedConfig) {
             throw new Error(
-                'No "staged" config found in vis.config.ts. Please add a staged config:\n\n' +
-                    "  // vis.config.ts\n" +
-                    '  import { defineConfig } from "@visulima/vis/config";\n\n' +
-                    "  export default defineConfig({\n" +
-                    "    staged: { '*': 'vis check --fix' },\n" +
-                    "  });",
+                "No \"staged\" config found in vis.config.ts. Please add a staged config:\n\n"
+                + "  // vis.config.ts\n"
+                + "  import { defineConfig } from \"@visulima/vis/config\";\n\n"
+                + "  export default defineConfig({\n"
+                + "    staged: { '*': 'vis check --fix' },\n"
+                + "  });",
             );
         }
 
@@ -73,7 +69,6 @@ const staged: Command = {
         let lintStaged: (lsOptions: Record<string, unknown>) => Promise<boolean>;
 
         try {
-            // eslint-disable-next-line e18e/ban-dependencies -- lint-staged is the intended dependency for this feature
             const imported = (await import("lint-staged")) as { default: (lsOptions: Record<string, unknown>) => Promise<boolean> };
 
             lintStaged = imported.default;
@@ -89,7 +84,6 @@ const staged: Command = {
 
         const success = await lintStaged(lintStagedOptions);
 
-        // eslint-disable-next-line unicorn/no-process-exit -- CLI command must exit with correct code
         process.exit(success ? 0 : 1);
     },
     name: "staged",

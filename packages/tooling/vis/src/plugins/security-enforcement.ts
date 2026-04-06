@@ -65,8 +65,6 @@ const resolveInstalledPackages = (workspaceRoot: string): { name: string; versio
     return packages;
 };
 
-/* eslint-disable no-param-reassign -- cerebro plugin pattern */
-
 const securityEnforcementPlugin: Plugin = {
     afterCommand: async (toolbox) => {
         if (process.exitCode && process.exitCode !== 0) {
@@ -111,8 +109,8 @@ const securityEnforcementPlugin: Plugin = {
 
                             if (criticalHighCount > 0) {
                                 warn(
-                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. ` +
-                                        "Run 'vis check --security' for details.",
+                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
+                                    + "Run 'vis check --security' for details.",
                                 );
                             }
                         }
@@ -144,7 +142,5 @@ const securityEnforcementPlugin: Plugin = {
     },
     name: "security-enforcement",
 };
-
-/* eslint-enable no-param-reassign */
 
 export default securityEnforcementPlugin;

@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { canSafelyOverwrite, isEmptyDir, isValidPackageName, resolveTargetDir, toValidPackageName } from "../../src/commands/create/utils";
 
-describe("isValidPackageName", () => {
+describe(isValidPackageName, () => {
     it("should accept valid names", () => {
         expect.assertions(4);
 
@@ -69,7 +69,7 @@ describe("isValidPackageName", () => {
     });
 });
 
-describe("toValidPackageName", () => {
+describe(toValidPackageName, () => {
     it("should lowercase the name", () => {
         expect.assertions(1);
 
@@ -101,7 +101,7 @@ describe("toValidPackageName", () => {
     });
 });
 
-describe("isEmptyDir", () => {
+describe(isEmptyDir, () => {
     let tmpDir: string;
 
     beforeEach(() => {
@@ -152,7 +152,7 @@ describe("isEmptyDir", () => {
     });
 });
 
-describe("canSafelyOverwrite", () => {
+describe(canSafelyOverwrite, () => {
     let tmpDir: string;
 
     beforeEach(() => {
@@ -178,7 +178,7 @@ describe("canSafelyOverwrite", () => {
     });
 });
 
-describe("resolveTargetDir", () => {
+describe(resolveTargetDir, () => {
     it("should resolve to absolute path and derive package name", () => {
         expect.assertions(2);
 

@@ -25,7 +25,7 @@ const dlx: Command = {
         const cwd = wsRoot ?? process.cwd();
         const pm = detectPm(cwd);
 
-        const additionalPackages = options.package ? (Array.isArray(options.package) ? (options.package as string[]) : [options.package as string]) : [];
+        const additionalPackages = options.package ? Array.isArray(options.package) ? (options.package as string[]) : [options.package as string] : [];
 
         const code = runDlx(
             pm,
