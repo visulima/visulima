@@ -35,10 +35,10 @@ export interface TaskState {
     rows: TaskRowData[];
     /** Currently highlighted task index in the list. */
     selectedIndex: number;
-    /** Status filter for task list: "all", "failed", "running", "passed". */
-    statusFilter: "all" | "failed" | "passed" | "running";
     /** Command start timestamp (Date.now). */
     startTime: number;
+    /** Status filter for task list: "all", "failed", "running", "passed". */
+    statusFilter: "all" | "failed" | "passed" | "running";
     /** Number of successfully completed tasks. */
     succeeded: number;
     /** Current view mode: list (full width), split (list + output), fullscreen (output only). */
@@ -71,10 +71,12 @@ export class TaskStore {
             pinnedTaskIds: [null, null],
             rerunRequested: false,
             retryTaskId: null,
-            rows: tasks.map((t) => { return { status: "pending" as const, taskId: t.id }; }),
+            rows: tasks.map((t) => {
+                return { status: "pending" as const, taskId: t.id };
+            }),
             selectedIndex: 0,
-            statusFilter: "all",
             startTime: Date.now(),
+            statusFilter: "all",
             succeeded: 0,
             viewMode: "list",
         };
@@ -154,13 +156,13 @@ export class TaskStore {
         }
 
         // Auto-scroll to first failed task so the user sees it immediately
-        let selectedIndex = this.#state.selectedIndex;
+        let { selectedIndex } = this.#state;
 
         if (failed > this.#state.failed) {
-            const firstFailureIdx = rows.findIndex((r) => r.status === "failure");
+            const firstFailureIndex = rows.findIndex((r) => r.status === "failure");
 
-            if (firstFailureIdx !== -1) {
-                selectedIndex = firstFailureIdx;
+            if (firstFailureIndex !== -1) {
+                selectedIndex = firstFailureIndex;
             }
         }
 
@@ -333,7 +335,9 @@ export class TaskStore {
             failed: 0,
             outputs: new Map(),
             rerunRequested: true,
-            rows: this.#state.rows.map((r) => { return { status: "pending" as const, taskId: r.taskId }; }),
+            rows: this.#state.rows.map((r) => {
+                return { status: "pending" as const, taskId: r.taskId };
+            }),
             startTime: Date.now(),
             succeeded: 0,
             viewMode: "list",

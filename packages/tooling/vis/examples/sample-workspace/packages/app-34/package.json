@@ -5,8 +5,8 @@
     "scripts": {
         "build": "echo 'Building app app-34...' && sleep 3.0 && echo 'Webpack: compiled successfully' && echo 'app-34 ready!'",
         "lint": "echo 'Linting app-34...' && sleep 0.2 && echo 'All good!'",
-        "test": "echo 'E2E tests for app-34...' && sleep 0.8 && echo '  12 tests passed, 0 failed'",
-        "dev": "echo 'app-34 started on http://localhost:8004' && while true; do sleep 1; echo '[app-34] GET / 200 12ms'; done"
+        "dev": "echo 'app-34 started on http://localhost:8004' && while true; do sleep 1; echo '[app-34] GET / 200 12ms'; done",
+        "test": "echo 'E2E tests for app-34...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
     },
     "dependencies": {
         "lib-fast-4": "1.0.0",

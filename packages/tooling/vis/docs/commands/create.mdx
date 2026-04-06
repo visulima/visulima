@@ -46,8 +46,8 @@ vis create --list
 
 ## Options
 
-| Option             | Default | Description                                  |
-| ------------------ | ------- | -------------------------------------------- |
+| Option             | Default | Description                                   |
+| ------------------ | ------- | --------------------------------------------- |
 | `--list`           | `false` | Show available templates and config aliases   |
 | `--editor`         |         | Generate editor configs (`vscode`)            |
 | `--git-init`       | `false` | Initialize a git repository after scaffolding |
@@ -55,28 +55,28 @@ vis create --list
 
 ## Built-in Templates
 
-| Template          | Description                                              |
-| ----------------- | -------------------------------------------------------- |
-| `vis:monorepo`    | Full pnpm workspace with `apps/` and `packages/` dirs    |
-| `vis:app`         | Application scaffold via `create-vite`                   |
-| `vis:library`     | TypeScript library with exports, vitest, and tsconfig    |
-| `vis:generator`   | Code generator with `bin/` entry point and `src/` layout |
+| Template        | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `vis:monorepo`  | Full pnpm workspace with `apps/` and `packages/` dirs    |
+| `vis:app`       | Application scaffold via `create-vite`                   |
+| `vis:library`   | TypeScript library with exports, vitest, and tsconfig    |
+| `vis:generator` | Code generator with `bin/` entry point and `src/` layout |
 
 ## Git Repository Templates
 
 Templates can be downloaded from any git host using [giget](https://github.com/unjs/giget):
 
-| Format                         | Example                                          |
-| ------------------------------ | ------------------------------------------------ |
-| GitHub shorthand               | `user/repo`                                      |
-| GitHub with branch             | `user/repo#dev`                                  |
-| GitHub subdirectory            | `user/repo/tree/main/packages/template`          |
-| GitLab                         | `gitlab:group/repo`                              |
-| Bitbucket                      | `bitbucket:team/repo`                            |
-| Sourcehut                      | `sourcehut:~user/repo`                           |
-| SSH                            | `git:git@github.com:user/repo`                   |
-| Full URL                       | `https://github.com/user/repo`                   |
-| Tarball URL                    | `https://example.com/templates/starter.tar.gz`   |
+| Format              | Example                                        |
+| ------------------- | ---------------------------------------------- |
+| GitHub shorthand    | `user/repo`                                    |
+| GitHub with branch  | `user/repo#dev`                                |
+| GitHub subdirectory | `user/repo/tree/main/packages/template`        |
+| GitLab              | `gitlab:group/repo`                            |
+| Bitbucket           | `bitbucket:team/repo`                          |
+| Sourcehut           | `sourcehut:~user/repo`                         |
+| SSH                 | `git:git@github.com:user/repo`                 |
+| Full URL            | `https://github.com/user/repo`                 |
+| Tarball URL         | `https://example.com/templates/starter.tar.gz` |
 
 ### Private Repositories
 

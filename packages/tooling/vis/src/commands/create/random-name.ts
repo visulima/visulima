@@ -9,7 +9,6 @@ import { getRandomWord } from "@nkzw/safe-word-list";
 
 /**
  * Generate a random `word-word` project name from the safe word list.
- *
  * @example
  * ```ts
  * randomName(); // "swift-ember"

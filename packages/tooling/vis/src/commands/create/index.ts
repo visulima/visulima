@@ -30,7 +30,6 @@ import { canSafelyOverwrite, isValidPackageName, resolveTargetDir, toValidPackag
  *
  * If files exist, existing values take precedence over defaults.
  * Creates the `.vscode` directory if missing.
- *
  * @param projectDir Absolute path to the scaffolded project.
  */
 const generateVscodeConfig = (projectDir: string): void => {
@@ -72,7 +71,7 @@ const generateVscodeConfig = (projectDir: string): void => {
                 `${JSON.stringify(
                     {
                         ...existing,
-                        recommendations: [...new Set([...(existing.recommendations || []), ...defaultExtensions.recommendations])],
+                        recommendations: [...new Set([...existing.recommendations || [], ...defaultExtensions.recommendations])],
                     },
                     null,
                     4,
@@ -137,7 +136,6 @@ const initGitRepo = (projectDir: string): void => {
 
 /**
  * Install project dependencies using the detected package manager's native bindings.
- *
  * @returns `true` if installation succeeded, `false` otherwise.
  */
 const installDependencies = (
@@ -280,6 +278,7 @@ const create: Command = {
         // --list: show available templates (including config aliases)
         if (options.list) {
             listTemplates(createConfig?.templates);
+
             return;
         }
 
@@ -323,7 +322,9 @@ const create: Command = {
                 pm = { name: answers.pm, version: detectedPm.version };
             }
         } else if (args.length === 0) {
-            throw new Error("No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.");
+            throw new Error(
+                "No template specified. Usage: vis create <template> [name] [-- args...]\nUse --list to see available templates, or run interactively in a terminal.",
+            );
         } else {
             // ── Non-interactive mode ─────────────────────────────
             // Split args on "--" separator — everything after it is forwarded to the template.
@@ -358,7 +359,7 @@ const create: Command = {
         // For non-interactive mode, resolve target directory with parent inference
         if (!targetDir) {
             const parentDir = inMonorepo ? inferParentDir(config.type) : ".";
-            const resolved = resolveTargetDir(projectName!, resolve(cwd, parentDir));
+            const resolved = resolveTargetDir(projectName, resolve(cwd, parentDir));
 
             targetDir = resolved.targetDir;
             projectName = resolved.packageName;
@@ -384,9 +385,7 @@ const create: Command = {
 
         // Check target directory (skip if the user already confirmed overwrite in interactive mode)
         if (!userConfirmedOverwrite && !canSafelyOverwrite(targetDir)) {
-            throw new Error(
-                `Target directory "${targetDir}" is not empty.\nUse a different name or clear the directory first.`,
-            );
+            throw new Error(`Target directory "${targetDir}" is not empty.\nUse a different name or clear the directory first.`);
         }
 
         if (resolvedInput !== templateInput) {
@@ -410,6 +409,7 @@ const create: Command = {
 
         if (code !== 0) {
             process.exitCode = code;
+
             return;
         }
 

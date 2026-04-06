@@ -23,11 +23,14 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
+
 The published @visulima/vis artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
+
 ## is-in-ci
+
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/is-in-ci

@@ -1,5 +1,5 @@
-import React from "react";
 import { Box, Spinner, Text, useWindowSize } from "@visulima/tui";
+import React from "react";
 
 export interface CheckProgressProps {
     readonly current: number;
@@ -18,20 +18,30 @@ export default function CheckProgressApp({ current, total }: CheckProgressProps)
     const empty = barWidth - filled;
 
     return (
-        <Box flexDirection="column" paddingX={1} marginTop={1}>
+        <Box flexDirection="column" marginTop={1} paddingX={1}>
             <Box>
                 <Spinner type="dots" />
                 <Text>
-                    {" "}Checking {String(total)} catalog dependencies{" "}
+                    {" "}
+                    Checking
+                    {String(total)}
+                    {" "}
+                    catalog dependencies
+                    {" "}
                 </Text>
                 <Text dimColor>
-                    {String(current)}/{String(total)}
+                    {String(current)}
+                    /
+                    {String(total)}
                 </Text>
             </Box>
             <Box>
                 <Text color="cyan">{"\u2501".repeat(filled)}</Text>
                 <Text dimColor>{"\u2500".repeat(empty)}</Text>
-                <Text> {pctText}</Text>
+                <Text>
+                    {" "}
+                    {pctText}
+                </Text>
             </Box>
         </Box>
     );

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Dialog, Text, useApp, useInput } from "@visulima/tui";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface QuitDialogProps {
     /** Countdown seconds. 0 = no auto-exit. */
@@ -80,11 +80,23 @@ const QuitDialog = ({ autoExitSeconds, onCancel, visible }: QuitDialogProps): Re
     return (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={
+            footer={(
                 <Text dimColor>
-                    Press <Text bold color="white">q</Text> to exit, <Text bold color="white">any key</Text> to stay
+                    Press
+                    {" "}
+                    <Text bold color="white">
+                        q
+                    </Text>
+                    {" "}
+                    to exit,
+                    {" "}
+                    <Text bold color="white">
+                        any key
+                    </Text>
+                    {" "}
+                    to stay
                 </Text>
-            }
+            )}
             title={`Exiting in ${countdown}…`}
             visible={visible}
             width={50}

@@ -1,16 +1,16 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 
-import type { Command } from "@visulima/cerebro";
 import { getManifestData } from "@socketsecurity/registry";
+import type { Command } from "@visulima/cerebro";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
 import isInCi from "is-in-ci";
 // @ts-expect-error -- JSON import
+import microUtilitiesManifest from "module-replacements/manifests/micro-utilities.json" with { type: "json" };
+// @ts-expect-error -- JSON import
 import nativeManifest from "module-replacements/manifests/native.json" with { type: "json" };
 // @ts-expect-error -- JSON import
 import preferredManifest from "module-replacements/manifests/preferred.json" with { type: "json" };
-// @ts-expect-error -- JSON import
-import microUtilitiesManifest from "module-replacements/manifests/micro-utilities.json" with { type: "json" };
 import React from "react";
 import { coerce } from "semver";
 
@@ -43,7 +43,7 @@ interface E18eManifest {
 // ── Dep collection ──────────────────────────────────────────────────
 
 /** Collects dependency names from a `package.json`. */
-const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<string> => {
+const collectDepsFromPkgJson = (pkgJsonPath: string, productionOnly: boolean): Set<string> => {
     const deps = new Set<string>();
 
     try {
@@ -54,7 +54,7 @@ const collectDepsFromPkgJson = (pkgJsonPath: string, prodOnly: boolean): Set<str
             peerDependencies?: Record<string, string>;
         };
 
-        const maps = prodOnly
+        const maps = productionOnly
             ? [pkg.dependencies, pkg.optionalDependencies]
             : [pkg.dependencies, pkg.devDependencies, pkg.peerDependencies, pkg.optionalDependencies];
 
@@ -175,7 +175,7 @@ const buildSocketEntries = (allDeps: Set<string>, lockText: string, pm: PmInfo, 
     return entries;
 };
 
-type CodemodFactory = (options: Record<string, never>) => { transform: (opts: { file: { filename: string; source: string } }) => Promise<string> | string };
+type CodemodFactory = (options: Record<string, never>) => { transform: (options_: { file: { filename: string; source: string } }) => Promise<string> | string };
 
 /** Cached codemods map — loaded once on first use. */
 let cachedCodemods: Record<string, CodemodFactory> | undefined;
@@ -186,9 +186,9 @@ const loadCodemods = async (): Promise<Record<string, CodemodFactory>> => {
     }
 
     try {
-        const mod = (await import("module-replacements-codemods")) as { codemods: Record<string, CodemodFactory> };
+        const module_ = (await import("module-replacements-codemods")) as { codemods: Record<string, CodemodFactory> };
 
-        cachedCodemods = mod.codemods;
+        cachedCodemods = module_.codemods;
 
         return cachedCodemods;
     } catch {
@@ -264,8 +264,8 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
 /** Collects .ts/.js/.tsx/.jsx source files, excluding node_modules and dist. */
 const collectSourceFiles = (dir: string): string[] => {
     const files: string[] = [];
-    const SKIP = new Set(["node_modules", "dist", ".git", "coverage", ".next", ".nuxt"]);
-    const EXTENSIONS = new Set([".ts", ".js", ".tsx", ".jsx", ".mts", ".mjs", ".cts", ".cjs"]);
+    const SKIP = new Set([".git", ".next", ".nuxt", "coverage", "dist", "node_modules"]);
+    const EXTENSIONS = new Set([".cjs", ".cts", ".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
 
     const walk = (current: string): void => {
         try {
@@ -281,9 +281,9 @@ const collectSourceFiles = (dir: string): string[] => {
                         walk(fullPath);
                     }
                 } else {
-                    const ext = entry.name.slice(entry.name.lastIndexOf("."));
+                    const extension = entry.name.slice(entry.name.lastIndexOf("."));
 
-                    if (EXTENSIONS.has(ext)) {
+                    if (EXTENSIONS.has(extension)) {
                         files.push(fullPath);
                     }
                 }
@@ -329,26 +329,26 @@ const optimize: Command = {
 
         const pm = detectPm(wsRoot);
         const isDryRun = Boolean(options["dry-run"]);
-        const isProd = Boolean(options.prod);
+        const isProduction = Boolean(options.prod);
         const isPin = Boolean(options.pin);
 
         info(`Detected ${pm.name} v${pm.version}.`);
 
         // Collect all deps
-        const rootDeps = collectDepsFromPkgJson(join(wsRoot, "package.json"), isProd);
-        const workspaceDirs = discoverWorkspacePackages(wsRoot);
+        const rootDeps = collectDepsFromPkgJson(join(wsRoot, "package.json"), isProduction);
+        const workspaceDirectories = discoverWorkspacePackages(wsRoot);
         const allDeps = new Set(rootDeps);
 
-        for (const wsDir of workspaceDirs) {
-            const wsDeps = collectDepsFromPkgJson(join(resolve(wsRoot, wsDir), "package.json"), isProd);
+        for (const wsDir of workspaceDirectories) {
+            const wsDeps = collectDepsFromPkgJson(join(resolve(wsRoot, wsDir), "package.json"), isProduction);
 
             for (const dep of wsDeps) {
                 allDeps.add(dep);
             }
         }
 
-        if (workspaceDirs.length > 0) {
-            info(`Scanned ${String(workspaceDirs.length)} workspace package${workspaceDirs.length === 1 ? "" : "s"}.`);
+        if (workspaceDirectories.length > 0) {
+            info(`Scanned ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}.`);
         }
 
         // Build entries from both sources
@@ -419,7 +419,9 @@ const optimize: Command = {
 
             // Report e18e entries that need manual migration
             if (selectedE18eManual.length > 0) {
-                warn(`\n${String(selectedE18eManual.length)} selected replacement${selectedE18eManual.length === 1 ? "" : "s"} require manual migration (no codemod available):`);
+                warn(
+                    `\n${String(selectedE18eManual.length)} selected replacement${selectedE18eManual.length === 1 ? "" : "s"} require manual migration (no codemod available):`,
+                );
 
                 for (const entry of selectedE18eManual) {
                     info(`  ${entry.packageName} → ${entry.replacement}`);
@@ -432,7 +434,7 @@ const optimize: Command = {
             if (selectedSocket.length > 0) {
                 const overrideEntries: OverrideEntry[] = selectedSocket
                     .filter((e) => e.overrideSpec)
-                    .map((e) => ({ original: e.packageName, spec: e.overrideSpec! }));
+                    .map((e) => { return { original: e.packageName, spec: e.overrideSpec! }; });
 
                 const result = applyOverrides(wsRoot, join(wsRoot, "package.json"), overrideEntries, pm);
 
@@ -449,7 +451,7 @@ const optimize: Command = {
             if (selectedSocket.length > 0 && !options["no-install"]) {
                 info(`\nRunning ${pm.name} install to update lockfile...`);
 
-                const installOpts = {
+                const installOptions = {
                     dev: false,
                     filter: [],
                     force: false,
@@ -464,7 +466,7 @@ const optimize: Command = {
                     workspaceRoot: false,
                 };
 
-                const code = runInstall(pm, installOpts, wsRoot, logger);
+                const code = runInstall(pm, installOptions, wsRoot, logger);
 
                 if (code !== 0) {
                     warn(`${pm.name} install exited with code ${String(code)}. Run it manually.`);
@@ -480,13 +482,24 @@ const optimize: Command = {
         // Static output (non-TTY, CI, dry-run, JSON)
         if (isJson) {
             process.stdout.write(
-                JSON.stringify({
-                    e18e: e18eEntries.map((e) => ({ category: e.category, hasCodemod: e.hasCodemod, packageName: e.packageName, replacement: e.replacement })),
-                    packageManager: pm.name,
-                    socket: dedupedSocketEntries.map((e) => ({ overrideSpec: e.overrideSpec, packageName: e.packageName, replacement: e.replacement })),
-                    total: allEntries.length,
-                    workspaces: workspaceDirs.length,
-                }, undefined, 2) + "\n",
+                `${JSON.stringify(
+                    {
+                        e18e: e18eEntries.map((e) => {
+                            return {
+                                category: e.category,
+                                hasCodemod: e.hasCodemod,
+                                packageName: e.packageName,
+                                replacement: e.replacement,
+                            };
+                        }),
+                        packageManager: pm.name,
+                        socket: dedupedSocketEntries.map((e) => { return { overrideSpec: e.overrideSpec, packageName: e.packageName, replacement: e.replacement }; }),
+                        total: allEntries.length,
+                        workspaces: workspaceDirectories.length,
+                    },
+                    undefined,
+                    2,
+                )}\n`,
             );
 
             return;

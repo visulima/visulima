@@ -29,12 +29,7 @@ describe("StagedConfig type", () => {
 
     it("accepts mixed arrays of strings and functions", () => {
         assertType<StagedConfig>({
-            "*": [
-                () => "pnpm install --ignore-scripts",
-                () => "pnpm test",
-                "oxlint --deny-warnings --fix",
-                "prettier --ignore-unknown --write",
-            ],
+            "*": [() => "pnpm install --ignore-scripts", () => "pnpm test", "oxlint --deny-warnings --fix", "prettier --ignore-unknown --write"],
         });
     });
 

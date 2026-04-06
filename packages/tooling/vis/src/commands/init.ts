@@ -1,6 +1,6 @@
-import { createInterface } from "node:readline";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -48,9 +48,7 @@ const generateConfigContent = (pm: string, options: InitOptions): string => {
         .map(([k]) => `            "${k}": true,`)
         .join("\n");
 
-    const allowBuildsBlock = allowBuildsEntries
-        ? `{\n${allowBuildsEntries}\n        }`
-        : "{}";
+    const allowBuildsBlock = allowBuildsEntries ? `{\n${allowBuildsEntries}\n        }` : "{}";
 
     let securityBlock = `        allowBuilds: ${allowBuildsBlock},`;
 

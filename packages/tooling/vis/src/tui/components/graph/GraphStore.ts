@@ -43,12 +43,14 @@ const buildNodes = (projectGraph: ProjectGraph): GraphNode[] => {
     }
 
     return Object.values(projectGraph.nodes)
-        .map((node: ProjectGraphProjectNode) => ({
-            deps: projectGraph.dependencies[node.name] ?? [],
-            name: node.name,
-            reverseDeps: reverseDeps.get(node.name) ?? [],
-            type: node.type,
-        }))
+        .map((node: ProjectGraphProjectNode) => {
+            return {
+                deps: projectGraph.dependencies[node.name] ?? [],
+                name: node.name,
+                reverseDeps: reverseDeps.get(node.name) ?? [],
+                type: node.type,
+            };
+        })
         .sort((a, b) => {
             // Apps first, then libs, alphabetical within each group
             if (a.type !== b.type) {
@@ -81,7 +83,9 @@ const filterNodes = (allNodes: GraphNode[], filterType: GraphFilterType, filterT
 
 export class GraphStore {
     #state: GraphState;
+
     #listeners = new Set<Listener>();
+
     #projectGraph: ProjectGraph;
 
     public constructor(projectGraph: ProjectGraph) {
@@ -103,7 +107,7 @@ export class GraphStore {
 
     public getSnapshot = (): GraphState => this.#state;
 
-    public subscribe = (listener: Listener): (() => void) => {
+    public subscribe = (listener: Listener): () => void => {
         this.#listeners.add(listener);
 
         return () => {

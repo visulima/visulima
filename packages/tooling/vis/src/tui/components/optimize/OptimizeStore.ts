@@ -2,29 +2,29 @@
 interface OptimizeEntry {
     /** Category for filtering and display. */
     category: "micro-utility" | "native" | "preferred" | "socket";
-    /** Human-readable replacement target description. */
-    replacement: string;
-    /** The original package name. */
-    packageName: string;
-    /** The override spec for socket entries (e.g., "npm:@socketregistry/is-regex@^1"). */
-    overrideSpec?: string;
     /** Whether a codemod is available for this entry (e18e only). */
     hasCodemod: boolean;
+    /** The override spec for socket entries (e.g., "npm:@socketregistry/is-regex@^1"). */
+    overrideSpec?: string;
+    /** The original package name. */
+    packageName: string;
+    /** Human-readable replacement target description. */
+    replacement: string;
 }
 
 type FilterType = "all" | "micro-utility" | "native" | "preferred" | "socket";
 
 interface OptimizeState {
+    applyProgress: { current: number; total: number } | null;
     checkedEntries: Set<string>;
     entries: OptimizeEntry[];
-    filterType: FilterType;
-    filterText: string;
-    filterActive: boolean;
-    focusedPanel: "detail" | "list";
-    selectedIndex: number;
-    phase: "applying" | "browsing" | "done" | "error";
     error: string | null;
-    applyProgress: { current: number; total: number } | null;
+    filterActive: boolean;
+    filterText: string;
+    filterType: FilterType;
+    focusedPanel: "detail" | "list";
+    phase: "applying" | "browsing" | "done" | "error";
+    selectedIndex: number;
 }
 
 type Listener = () => void;
@@ -67,7 +67,7 @@ class OptimizeStore {
 
     getSnapshot = (): OptimizeState => this.#state;
 
-    subscribe = (listener: Listener): (() => void) => {
+    subscribe = (listener: Listener): () => void => {
         this.#listeners.add(listener);
 
         return () => {

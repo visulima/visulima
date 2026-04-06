@@ -32,7 +32,7 @@ const getCacheLabel = (status: TaskRowData["status"]): string => {
 };
 
 const getPinLabel = (taskId: string, pinnedTaskIds: [string | null, string | null]): string =>
-    (pinnedTaskIds[0] === taskId ? "[1]" : pinnedTaskIds[1] === taskId ? "[2]" : "");
+    pinnedTaskIds[0] === taskId ? "[1]" : pinnedTaskIds[1] === taskId ? "[2]" : "";
 
 // ── Sub-components ──────────────────────────────────────────────────────
 
@@ -140,8 +140,12 @@ const TaskListPanel = ({
     title,
 }: TaskListPanelProps): React.JSX.Element => {
     const borderColor = (() => {
-        if (headerStatus === "error") return "red";
-        if (headerStatus === "success") return "green";
+        if (headerStatus === "error")
+            return "red";
+
+        if (headerStatus === "success")
+            return "green";
+
         return focused ? "white" : "gray";
     })();
 
@@ -157,6 +161,7 @@ const TaskListPanel = ({
     if (hasActiveWork) {
         for (let i = 0; i < parallelSlots; i++) {
             const row = runningRows[i];
+
             if (row) {
                 parallelElements.push(
                     <TaskListRow
@@ -172,7 +177,9 @@ const TaskListPanel = ({
                     <Box key={`par-empty-${String(i)}`}>
                         <Text> </Text>
                         <Box width={STATUS_ICON_WIDTH}>
-                            <Text bold color="gray">{"  \u00B7  "}</Text>
+                            <Text bold color="gray">
+                                {"  \u00B7  "}
+                            </Text>
                         </Box>
                         <Text dimColor>Waiting for task...</Text>
                     </Box>,
@@ -184,14 +191,14 @@ const TaskListPanel = ({
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
             {/* Header */}
-            <Box gap={1} paddingX={1} flexShrink={0}>
+            <Box flexShrink={0} gap={1} paddingX={1}>
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
                 <Text>{title}</Text>
                 {/* Column headers aligned right (hidden in compact/split mode) */}
                 {!compact && (
-                    <Box flexGrow={1} justifyContent="flex-end" gap={0}>
+                    <Box flexGrow={1} gap={0} justifyContent="flex-end">
                         <Box justifyContent="flex-end" width={CACHE_COLUMN_WIDTH}>
                             <Text dimColor>Cache</Text>
                         </Box>
@@ -203,16 +210,7 @@ const TaskListPanel = ({
             </Box>
 
             {/* Scrollable completed task list */}
-            <ScrollView
-                ref={scrollRef}
-                flexGrow={1}
-                flexShrink={1}
-                paddingLeft={1}
-                paddingY={1}
-                scrollbar
-                scrollbarColor="gray"
-                scrollbarStyle="block"
-            >
+            <ScrollView flexGrow={1} flexShrink={1} paddingLeft={1} paddingY={1} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                 {rows.map((row) => (
                     <TaskListRow
                         compact={compact}
@@ -226,7 +224,18 @@ const TaskListPanel = ({
 
             {/* Fixed parallel slots at bottom (only while tasks active) */}
             {hasActiveWork && (
-                <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexDirection="column" flexShrink={0} paddingLeft={1} paddingY={1}>
+                <Box
+                    borderBottom={false}
+                    borderColor="gray"
+                    borderLeft={false}
+                    borderRight={false}
+                    borderStyle="single"
+                    borderTop
+                    flexDirection="column"
+                    flexShrink={0}
+                    paddingLeft={1}
+                    paddingY={1}
+                >
                     {parallelElements}
                 </Box>
             )}
@@ -234,7 +243,9 @@ const TaskListPanel = ({
             {/* Filter bar */}
             {filterActive && (
                 <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" borderTop flexShrink={0} paddingX={1}>
-                    <Text color="white" bold>{"/ "}</Text>
+                    <Text bold color="white">
+                        {"/ "}
+                    </Text>
                     <Text>{filterText}</Text>
                     <Text inverse> </Text>
                 </Box>

@@ -27,7 +27,9 @@ const Header = ({ children, title, variant }: HeaderProps): React.JSX.Element =>
                 <Text bold inverse>
                     {" VIS "}
                 </Text>
-                <Text bold color={color}>{"\u2022"}</Text>
+                <Text bold color={color}>
+                    {"\u2022"}
+                </Text>
                 <Text>{title}</Text>
             </Box>
             {children}

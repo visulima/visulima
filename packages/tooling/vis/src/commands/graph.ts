@@ -50,6 +50,7 @@ const printDepsTree = (
 
     if (currentDepth >= maxDepth && deps.length > 0) {
         lines.push(`${childPrefix}${dim(`... ${deps.length} more`)}`);
+
         return;
     }
 
@@ -63,14 +64,7 @@ const printDepsTree = (
 };
 
 /** Render a root project node and its dependency tree. */
-const printRootProject = (
-    name: string,
-    nodes: Map<string, NodeInfo>,
-    printed: Set<string>,
-    lines: string[],
-    maxDepth: number,
-    indent: string,
-): void => {
+const printRootProject = (name: string, nodes: Map<string, NodeInfo>, printed: Set<string>, lines: string[], maxDepth: number, indent: string): void => {
     const node = nodes.get(name);
     const isApp = node?.type === "application";
     const displayName = isApp ? bold(name) : name;
@@ -82,11 +76,13 @@ const printRootProject = (
 
     if (deps.length === 0) {
         lines.push(`${indent}  ${dim("(no dependencies)")}`);
+
         return;
     }
 
     if (maxDepth <= 0) {
         lines.push(`${indent}  ${dim(`... ${deps.length} dependencies`)}`);
+
         return;
     }
 
@@ -104,7 +100,7 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
 
     for (const [name, node] of Object.entries(projectGraph.nodes)) {
         nodes.set(name, {
-            deps: (projectGraph.dependencies[name] ?? []).map((d) => ({ target: d.target, type: d.type })),
+            deps: (projectGraph.dependencies[name] ?? []).map((d) => { return { target: d.target, type: d.type }; }),
             name,
             type: node.type,
         });
@@ -134,8 +130,7 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
 
     // Applications section
     if (apps.length > 0) {
-        lines.push(` ${bold(cyan(`Applications (${apps.length})`))}`);
-        lines.push("");
+        lines.push(` ${bold(cyan(`Applications (${apps.length})`))}`, "");
 
         for (const name of apps) {
             const printed = new Set<string>();
@@ -147,8 +142,7 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
 
     // Libraries section
     if (libs.length > 0) {
-        lines.push(` ${bold(cyan(`Libraries (${libs.length})`))}`);
-        lines.push("");
+        lines.push(` ${bold(cyan(`Libraries (${libs.length})`))}`, "");
 
         for (const name of libs) {
             const printed = new Set<string>();
@@ -193,14 +187,18 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
 
 // ── JSON Export ──────────────────────────────────────────────────────
 
-const projectGraphToJson = (projectGraph: ProjectGraph): {
+const projectGraphToJson = (
+    projectGraph: ProjectGraph,
+): {
     edges: { source: string; target: string; type: string }[];
     nodes: { name: string; type: string }[];
 } => {
-    const nodes = Object.values(projectGraph.nodes).map((node) => ({
-        name: node.name,
-        type: node.type,
-    }));
+    const nodes = Object.values(projectGraph.nodes).map((node) => {
+        return {
+            name: node.name,
+            type: node.type,
+        };
+    });
 
     const edges = Object.values(projectGraph.dependencies).flat();
 
@@ -210,10 +208,12 @@ const projectGraphToJson = (projectGraph: ProjectGraph): {
 // ── HTML Visualization ──────────────────────────────────────────────
 
 const projectGraphToHtml = (projectGraph: ProjectGraph): string => {
-    const nodes = Object.values(projectGraph.nodes).map((node) => ({
-        name: node.name,
-        type: node.type,
-    }));
+    const nodes = Object.values(projectGraph.nodes).map((node) => {
+        return {
+            name: node.name,
+            type: node.type,
+        };
+    });
 
     const edges: { source: string; target: string; type: string }[] = [];
 
@@ -497,7 +497,7 @@ const graph: Command = {
                 }
 
                 // Keep event loop alive while TUI is active
-                const keepAlive = setInterval(() => {}, 1_000);
+                const keepAlive = setInterval(() => {}, 1000);
 
                 const store = new GraphStore(projectGraph);
                 const instance = render(React.createElement(VisGraphApp, { autoExitSeconds, store }), {
@@ -509,6 +509,7 @@ const graph: Command = {
 
                 await instance.waitUntilExit();
                 clearInterval(keepAlive);
+
                 return;
             }
 

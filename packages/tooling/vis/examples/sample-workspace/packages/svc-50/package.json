@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "build": "echo 'svc-50 built' && sleep 0.3",
-        "dev": "echo 'svc-50 server starting on port 4050...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-50: request handled\"; done",
         "lint": "echo 'svc-50 lint OK'",
+        "dev": "echo 'svc-50 server starting on port 4050...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-50: request handled\"; done",
         "test": "echo 'svc-50 tests OK'"
     },
     "dependencies": {

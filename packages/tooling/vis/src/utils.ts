@@ -38,32 +38,32 @@ const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
  * Extracts the package name and optional version specifier from a CLI argument
  * like "react", "react@19", "@scope/pkg@^2".
  */
-const parsePackageArgument = (arg: string): { name: string; versionSpec: string | undefined } => {
+const parsePackageArgument = (argument: string): { name: string; versionSpec: string | undefined } => {
     // Handle scoped packages: @scope/name@version
-    if (arg.startsWith("@")) {
-        const slashIndex = arg.indexOf("/");
+    if (argument.startsWith("@")) {
+        const slashIndex = argument.indexOf("/");
 
         if (slashIndex === -1) {
-            return { name: arg, versionSpec: undefined };
+            return { name: argument, versionSpec: undefined };
         }
 
-        const afterSlash = arg.slice(slashIndex + 1);
+        const afterSlash = argument.slice(slashIndex + 1);
         const atIndex = afterSlash.indexOf("@");
 
         if (atIndex === -1) {
-            return { name: arg, versionSpec: undefined };
+            return { name: argument, versionSpec: undefined };
         }
 
         return {
-            name: arg.slice(0, slashIndex + 1 + atIndex),
+            name: argument.slice(0, slashIndex + 1 + atIndex),
             versionSpec: afterSlash.slice(atIndex + 1),
         };
     }
 
-    const match = VERSION_SPEC_REGEX.exec(arg);
+    const match = VERSION_SPEC_REGEX.exec(argument);
 
     if (!match) {
-        return { name: arg, versionSpec: undefined };
+        return { name: argument, versionSpec: undefined };
     }
 
     return { name: match[1], versionSpec: match[2] };

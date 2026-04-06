@@ -34,6 +34,12 @@ interface VisConfig {
     };
 
     /**
+     * Project dependency constraints.
+     * Enforced after building the project graph, before running tasks.
+     */
+    constraints?: ConstraintsConfig;
+
+    /**
      * Configuration for the `vis create` scaffolding command.
      * Controls template downloads (via giget), default options, and
      * post-creation behavior.
@@ -107,12 +113,6 @@ interface VisConfig {
          */
         templates?: Record<string, string>;
     };
-
-    /**
-     * Project dependency constraints.
-     * Enforced after building the project graph, before running tasks.
-     */
-    constraints?: ConstraintsConfig;
     /** Package override mappings applied during migration (e.g., `{ "lodash": "lodash-es" }`) */
     overrides?: Record<string, string>;
 
@@ -142,82 +142,6 @@ interface VisConfig {
         allowBuilds?: Record<string, boolean>;
 
         /**
-         * Socket.dev security intelligence configuration.
-         * When enabled, vis fetches package security scores, alerts, and report
-         * data from the Socket.dev API during install, update, and check commands.
-         * @see https://socket.dev
-         */
-        socket?: {
-            /**
-             * Packages whose low Socket.dev scores or alerts have been reviewed
-             * and explicitly accepted. These packages skip the confirmation
-             * prompt during `vis add` and show as "acknowledged" in `vis audit`.
-             *
-             * Key format: package name (`"lodash"`), name@version
-             * (`"lodash@4.17.21"`), or glob (`"@myorg/*"`).
-             * Unversioned keys match all versions of that package.
-             *
-             * @example
-             * ```
-             * acceptedRisks: {
-             *   "some-risky-pkg": {
-             *     reason: "Internal fork, low score expected",
-             *     acceptedAt: "2026-03-15T10:00:00Z",
-             *     acceptedScore: 0.25,
-             *   },
-             * }
-             * ```
-             */
-            acceptedRisks?: Record<
-                string,
-                {
-                    /** ISO 8601 timestamp when the risk was accepted. */
-                    acceptedAt: string;
-                    /** The overall Socket.dev score at the time of acceptance. */
-                    acceptedScore: number;
-                    /** User-provided reason for accepting the risk. */
-                    reason: string;
-                }
-            >;
-            /**
-             * Custom Socket.dev API token. Falls back to the public API token.
-             * Set via VIS_SOCKET_TOKEN environment variable or here.
-             */
-            apiToken?: string;
-            /**
-             * Cache TTL in milliseconds for Socket.dev reports.
-             * @default 3_600_000 (1 hour)
-             */
-            cacheTtlMs?: number;
-            /**
-             * Enable Socket.dev security scanning on install/update/check commands.
-             * @default false
-             */
-            enabled?: boolean;
-            /**
-             * Minimum overall Socket.dev score (0–1) for a package to be
-             * accepted without a confirmation prompt during `vis add`.
-             * Packages scoring below this threshold trigger an interactive
-             * prompt asking the user to confirm. Set to 0 to disable.
-             * @default 0.4
-             */
-            minimumScore?: number;
-            /**
-             * Request timeout in milliseconds for the Socket.dev API.
-             * @default 15_000 (15 seconds)
-             */
-            timeoutMs?: number;
-        };
-
-        /**
-         * Package names to skip during typosquat detection.
-         * Use this for internal packages or known-safe names that happen to
-         * look similar to popular packages.
-         * @example ["my-internal-axois", "@myorg/recat"]
-         */
-        typosquatAllowlist?: string[];
-
-        /**
          * When true, prevents transitive dependencies from using exotic sources
          * (git repositories, direct tarball URLs). Only direct dependencies may
          * use such sources. Equivalent to pnpm's `blockExoticSubdeps`.
@@ -241,6 +165,78 @@ interface VisConfig {
          * @example ["webpack", "react", "@myorg/*"]
          */
         minimumReleaseAgeExclude?: string[];
+
+        /**
+         * Socket.dev security intelligence configuration.
+         * When enabled, vis fetches package security scores, alerts, and report
+         * data from the Socket.dev API during install, update, and check commands.
+         * @see https://socket.dev
+         */
+        socket?: {
+            /**
+             * Packages whose low Socket.dev scores or alerts have been reviewed
+             * and explicitly accepted. These packages skip the confirmation
+             * prompt during `vis add` and show as "acknowledged" in `vis audit`.
+             *
+             * Key format: package name (`"lodash"`), name@version
+             * (`"lodash@4.17.21"`), or glob (`"@myorg/*"`).
+             * Unversioned keys match all versions of that package.
+             * @example
+             * ```
+             * acceptedRisks: {
+             *   "some-risky-pkg": {
+             *     reason: "Internal fork, low score expected",
+             *     acceptedAt: "2026-03-15T10:00:00Z",
+             *     acceptedScore: 0.25,
+             *   },
+             * }
+             * ```
+             */
+            acceptedRisks?: Record<
+                string,
+                {
+                    /** ISO 8601 timestamp when the risk was accepted. */
+                    acceptedAt: string;
+                    /** The overall Socket.dev score at the time of acceptance. */
+                    acceptedScore: number;
+                    /** User-provided reason for accepting the risk. */
+                    reason: string;
+                }
+            >;
+
+            /**
+             * Custom Socket.dev API token. Falls back to the public API token.
+             * Set via VIS_SOCKET_TOKEN environment variable or here.
+             */
+            apiToken?: string;
+
+            /**
+             * Cache TTL in milliseconds for Socket.dev reports.
+             * @default 3_600_000 (1 hour)
+             */
+            cacheTtlMs?: number;
+
+            /**
+             * Enable Socket.dev security scanning on install/update/check commands.
+             * @default false
+             */
+            enabled?: boolean;
+
+            /**
+             * Minimum overall Socket.dev score (0–1) for a package to be
+             * accepted without a confirmation prompt during `vis add`.
+             * Packages scoring below this threshold trigger an interactive
+             * prompt asking the user to confirm. Set to 0 to disable.
+             * @default 0.4
+             */
+            minimumScore?: number;
+
+            /**
+             * Request timeout in milliseconds for the Socket.dev API.
+             * @default 15_000 (15 seconds)
+             */
+            timeoutMs?: number;
+        };
 
         /**
          * When true, installation will fail (exit non-zero) if any dependencies
@@ -275,7 +271,21 @@ interface VisConfig {
          * @example 43200 // 30 days
          */
         trustPolicyIgnoreAfter?: number;
+
+        /**
+         * Package names to skip during typosquat detection.
+         * Use this for internal packages or known-safe names that happen to
+         * look similar to popular packages.
+         * @example ["my-internal-axois", "@myorg/recat"]
+         */
+        typosquatAllowlist?: string[];
     };
+    /** sort-package-json command defaults */
+    sortPackageJson?: {
+        /** Alphabetize script commands (default: false) */
+        sortScripts?: boolean;
+    };
+
     /**
      * Staged file patterns and commands (replaces lint-staged).
      *
@@ -287,11 +297,6 @@ interface VisConfig {
      * - A top-level generate-task function
      */
     staged?: StagedConfig;
-    /** sort-package-json command defaults */
-    sortPackageJson?: {
-        /** Alphabetize script commands (default: false) */
-        sortScripts?: boolean;
-    };
     /** Target default configurations */
     targetDefaults?: Record<string, Partial<TargetConfiguration>>;
     /** Task runner options */
@@ -310,6 +315,7 @@ interface VisConfig {
     update?: {
         exclude?: string[];
         format?: "json" | "minimal" | "table";
+
         /**
          * Package names or glob patterns to permanently ignore during updates.
          * Ignored packages are skipped and listed in the output so you know
@@ -607,5 +613,7 @@ const buildProjectGraph = (workspaceRoot: string, workspace: WorkspaceConfigurat
     return { dependencies, nodes };
 };
 
-export type { PackageJson, StagedConfig, VisConfig };
+export type { PackageJson, VisConfig };
 export { buildProjectGraph, discoverWorkspace, readPnpmWorkspacePatterns, resolveWorkspacePatterns };
+
+export { type Configuration as StagedConfig } from "lint-staged";

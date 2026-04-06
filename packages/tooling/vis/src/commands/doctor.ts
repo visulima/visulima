@@ -1,27 +1,19 @@
-import { readFileSync } from "node:fs";
-
 import type { Command } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
-import { render, renderToString, Text } from "@visulima/tui";
-import isInCi from "is-in-ci";
-import React from "react";
 
 import type { CatalogCheckOptions, OutdatedEntry } from "../catalog";
-import { checkOutdated, fetchVulnerabilities, formatSummary, loadNpmrc, readCatalogs } from "../catalog";
-import { error as errorOutput, info, note, success, warn } from "../output";
-import type { OverrideEntry } from "../overrides";
+import { checkOutdated, fetchVulnerabilities, loadNpmrc, readCatalogs } from "../catalog";
+import { error as errorOutput, info, note, success } from "../output";
 import { applyOverrides, readLockfileText } from "../overrides";
 import { detectPm, runInstall } from "../pm-runner";
-import type { AcceptedRisk, PackageReportData } from "../socket-security";
-import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk } from "../socket-security";
+import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../socket-security";
+import type { OptimizeEntry } from "../tui/components/optimize/OptimizeStore";
 import type { VisConfig } from "../workspace";
-
 import type { DuplicatePackage } from "./audit";
 import { findDuplicateDependencies, scanInstalledPackages } from "./audit";
 import { buildE18eEntries, buildSocketEntries, collectDepsFromPkgJson, discoverWorkspacePackages, markCodemodAvailability, runCodemod } from "./optimize";
-import type { OptimizeEntry } from "../tui/components/optimize/OptimizeStore";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -39,26 +31,21 @@ interface DoctorResults {
 
 /**
  * Runs all diagnostic scans in parallel and returns a unified result.
- *
- * @param workspaceRoot - Absolute path to the workspace root.
- * @param visConfig - Loaded vis configuration (may be undefined if no config file).
- * @param resolveCodemods - When true, checks which e18e entries have codemods available (adds latency).
+ * @param workspaceRoot Absolute path to the workspace root.
+ * @param visConfig Loaded vis configuration (may be undefined if no config file).
+ * @param resolveCodemods When true, checks which e18e entries have codemods available (adds latency).
  * @returns Aggregated results including outdated, vulns, duplicates, and optimization counts.
  */
-const runAllScans = async (
-    workspaceRoot: string,
-    visConfig: VisConfig | undefined,
-    resolveCodemods: boolean = false,
-): Promise<DoctorResults> => {
+const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefined, resolveCodemods: boolean = false): Promise<DoctorResults> => {
     const pm = detectPm(workspaceRoot);
     const { packageManager } = findPackageManagerSync(workspaceRoot);
 
     // Collect deps across workspaces (shared by outdated + optimize scans)
     const rootDeps = collectDepsFromPkgJson(join(workspaceRoot, "package.json"), false);
-    const workspaceDirs = discoverWorkspacePackages(workspaceRoot);
+    const workspaceDirectories = discoverWorkspacePackages(workspaceRoot);
     const allDeps = new Set(rootDeps);
 
-    for (const wsDir of workspaceDirs) {
+    for (const wsDir of workspaceDirectories) {
         const wsDeps = collectDepsFromPkgJson(join(resolve(workspaceRoot, wsDir), "package.json"), false);
 
         for (const dep of wsDeps) {
@@ -69,7 +56,7 @@ const runAllScans = async (
     // Build scan config
     const npmrcConfig = loadNpmrc(workspaceRoot);
     const catalogs = readCatalogs(workspaceRoot, packageManager);
-    const socketOpts = buildSocketOptions(visConfig?.security?.socket);
+    const socketOptions = buildSocketOptions(visConfig?.security?.socket);
     const acceptedRisks = visConfig?.security?.socket?.acceptedRisks;
     const lockText = readLockfileText(workspaceRoot, pm.name);
 
@@ -84,7 +71,9 @@ const runAllScans = async (
 
     // Run all scans in parallel
     const [outdatedResult, installed, duplicates, e18eEntries, socketEntries] = await Promise.all([
-        catalogs.size > 0 ? checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOpts, acceptedRisks) : Promise.resolve({ failed: [], ignored: [], outdated: [] }),
+        catalogs.size > 0
+            ? checkOutdated(catalogs, checkOptions, npmrcConfig, undefined, workspaceRoot, socketOptions, acceptedRisks)
+            : Promise.resolve({ failed: [], ignored: [], outdated: [] }),
         Promise.resolve(scanInstalledPackages(workspaceRoot)),
         findDuplicateDependencies(workspaceRoot, pm.name),
         Promise.resolve(buildE18eEntries(allDeps)),
@@ -104,10 +93,10 @@ const runAllScans = async (
     let socketAlerts = 0;
     let socketLowScore = 0;
 
-    if (socketOpts && installed.length > 0) {
+    if (socketOptions && installed.length > 0) {
         const reports = await fetchSocketReports(
-            installed.map((p) => ({ name: p.name, version: p.version })),
-            socketOpts,
+            installed.map((p) => { return { name: p.name, version: p.version }; }),
+            socketOptions,
         );
 
         for (const report of reports.values()) {
@@ -132,7 +121,7 @@ const runAllScans = async (
 
     // Also scan installed packages for known vulnerabilities (catches advisory-only CVEs)
     if (installed.length > 0) {
-        const vulnMap = await fetchVulnerabilities(installed.map((p) => ({ name: p.name, version: p.version })));
+        const vulnMap = await fetchVulnerabilities(installed.map((p) => { return { name: p.name, version: p.version }; }));
 
         for (const vulns of vulnMap.values()) {
             vulnCount += vulns.length;
@@ -146,31 +135,27 @@ const runAllScans = async (
         outdated: outdatedResult.outdated,
         socketIssues: { alerts: socketAlerts, lowScore: socketLowScore },
         vulnCount,
-        workspaceCount: workspaceDirs.length,
+        workspaceCount: workspaceDirectories.length,
     };
 };
 
 // ── Display ─────────────────────────────────────────────────────────
 
 /** Returns a colored checkmark (ok) or cross (not ok). */
-const icon = (ok: boolean): string => (ok ? green("\u2713") : red("\u2717"));
+const icon = (ok: boolean): string => ok ? green("\u2713") : red("\u2717");
 const warnIcon = yellow("\u26A0");
 
 const displayResults = (results: DoctorResults): void => {
-    const {
-        duplicates,
-        installedCount,
-        optimizations,
-        outdated,
-        socketIssues,
-        vulnCount,
-        workspaceCount,
-    } = results;
+    const { duplicates, installedCount, optimizations, outdated, socketIssues, vulnCount, workspaceCount } = results;
 
     info("");
 
     // Dependencies section
-    info(dim("\u2500\u2500 Dependencies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
+    info(
+        dim(
+            "\u2500\u2500 Dependencies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        ),
+    );
     info(`  ${icon(true)} ${String(installedCount)} packages installed`);
 
     if (outdated.length > 0) {
@@ -179,9 +164,14 @@ const displayResults = (results: DoctorResults): void => {
         const patches = outdated.filter((e) => e.updateType === "patch").length;
         const parts: string[] = [];
 
-        if (majors > 0) parts.push(`${String(majors)} major`);
-        if (minors > 0) parts.push(`${String(minors)} minor`);
-        if (patches > 0) parts.push(`${String(patches)} patch`);
+        if (majors > 0)
+            parts.push(`${String(majors)} major`);
+
+        if (minors > 0)
+            parts.push(`${String(minors)} minor`);
+
+        if (patches > 0)
+            parts.push(`${String(patches)} patch`);
 
         info(`  ${warnIcon} ${String(outdated.length)} outdated (${parts.join(", ")})`);
     } else {
@@ -196,7 +186,11 @@ const displayResults = (results: DoctorResults): void => {
 
     // Security section
     info("");
-    info(dim("\u2500\u2500 Security \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
+    info(
+        dim(
+            "\u2500\u2500 Security \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        ),
+    );
 
     if (vulnCount > 0) {
         info(`  ${icon(false)} ${String(vulnCount)} vulnerabilit${vulnCount === 1 ? "y" : "ies"} found`);
@@ -218,7 +212,11 @@ const displayResults = (results: DoctorResults): void => {
 
     // Optimization section
     info("");
-    info(dim("\u2500\u2500 Optimization \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
+    info(
+        dim(
+            "\u2500\u2500 Optimization \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        ),
+    );
 
     let natives = 0;
     let preferred = 0;
@@ -226,24 +224,51 @@ const displayResults = (results: DoctorResults): void => {
     let socketOverrides = 0;
 
     for (const o of optimizations) {
-        if (o.category === "native") natives++;
-        else if (o.category === "preferred") preferred++;
-        else if (o.category === "micro-utility") micros++;
-        else if (o.category === "socket") socketOverrides++;
+        switch (o.category) {
+            case "micro-utility": {
+                micros++;
+                break;
+            }
+            case "native": {
+                natives++;
+                break;
+            }
+            case "preferred": {
+                preferred++;
+                break;
+            }
+            case "socket": { {
+                socketOverrides++;
+                // No default
+            }
+            break;
+            }
+        }
     }
 
     if (optimizations.length > 0) {
-        if (natives > 0) info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
-        if (preferred > 0) info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
-        if (micros > 0) info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
-        if (socketOverrides > 0) info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
+        if (natives > 0)
+            info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
+
+        if (preferred > 0)
+            info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
+
+        if (micros > 0)
+            info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
+
+        if (socketOverrides > 0)
+            info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
     } else {
         info(`  ${icon(true)} No optimizations available`);
     }
 
     // Summary
     info("");
-    info(dim("\u2500\u2500 Summary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"));
+    info(
+        dim(
+            "\u2500\u2500 Summary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        ),
+    );
 
     const criticalCount = vulnCount;
     const improvementCount = outdated.length + duplicates.length + optimizations.length;
@@ -300,7 +325,6 @@ const displayActions = (results: DoctorResults): void => {
  * Runs all diagnostic scans in parallel (outdated, vulnerabilities,
  * Socket.dev scores, duplicates, optimization opportunities) and
  * displays a single dashboard with actionable next steps.
- *
  * @example
  * ```sh
  * vis doctor           # full health check
@@ -326,10 +350,10 @@ const doctor: Command = {
         info(`\n  ${dim("VIS DOCTOR")} — project health check\n`);
         info(`  ${icon(true)} Detected ${pm.name} v${pm.version}`);
 
-        const workspaceDirs = discoverWorkspacePackages(wsRoot);
+        const workspaceDirectories = discoverWorkspacePackages(wsRoot);
 
-        if (workspaceDirs.length > 0) {
-            info(`  ${icon(true)} ${String(workspaceDirs.length)} workspace package${workspaceDirs.length === 1 ? "" : "s"}`);
+        if (workspaceDirectories.length > 0) {
+            info(`  ${icon(true)} ${String(workspaceDirectories.length)} workspace package${workspaceDirectories.length === 1 ? "" : "s"}`);
         }
 
         info(`\n  Scanning...`);
@@ -343,16 +367,32 @@ const doctor: Command = {
         let optSocket = 0;
 
         for (const o of results.optimizations) {
-            if (o.category === "native") optNative++;
-            else if (o.category === "preferred") optPreferred++;
-            else if (o.category === "micro-utility") optMicro++;
-            else if (o.category === "socket") optSocket++;
+            switch (o.category) {
+                case "micro-utility": {
+                    optMicro++;
+                    break;
+                }
+                case "native": {
+                    optNative++;
+                    break;
+                }
+                case "preferred": {
+                    optPreferred++;
+                    break;
+                }
+                case "socket": { {
+                    optSocket++;
+                    // No default
+                }
+                break;
+                }
+            }
         }
 
         // JSON output
         if ((options.format as string) === "json" || options.json) {
             process.stdout.write(
-                JSON.stringify(
+                `${JSON.stringify(
                     {
                         dependencies: {
                             duplicates: results.duplicates.length,
@@ -376,7 +416,7 @@ const doctor: Command = {
                     },
                     undefined,
                     2,
-                ) + "\n",
+                )}\n`,
             );
 
             if (options["exit-code"] && (results.vulnCount > 0 || results.socketIssues.alerts > 0)) {
@@ -395,7 +435,7 @@ const doctor: Command = {
 
             const socketEntries = results.optimizations
                 .filter((o) => o.category === "socket" && o.overrideSpec)
-                .map((o) => ({ original: o.packageName, spec: o.overrideSpec! }));
+                .map((o) => { return { original: o.packageName, spec: o.overrideSpec! }; });
 
             if (socketEntries.length > 0) {
                 const overrideResult = applyOverrides(wsRoot, join(wsRoot, "package.json"), socketEntries, pm);
@@ -422,14 +462,22 @@ const doctor: Command = {
             if (socketEntries.length > 0) {
                 info(`\n  Running ${pm.name} install to update lockfile...`);
 
-                const installOpts = {
-                    dev: false, filter: [], force: false, frozenLockfile: false,
-                    ignoreScripts: false, lockfileOnly: false, noOptional: false,
-                    offline: false, prod: false, recursive: false, silent: false,
+                const installOptions = {
+                    dev: false,
+                    filter: [],
+                    force: false,
+                    frozenLockfile: false,
+                    ignoreScripts: false,
+                    lockfileOnly: false,
+                    noOptional: false,
+                    offline: false,
+                    prod: false,
+                    recursive: false,
+                    silent: false,
                     workspaceRoot: false,
                 };
 
-                runInstall(pm, installOpts, wsRoot, logger);
+                runInstall(pm, installOptions, wsRoot, logger);
             }
 
             info("");

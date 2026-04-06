@@ -1,8 +1,7 @@
 import { Box, ScrollBar, Text } from "@visulima/tui";
 
-import type { FilterType, OptimizeEntry } from "./OptimizeStore";
-
 import { CATEGORY_COLORS, CATEGORY_LABELS } from "./constants";
+import type { FilterType, OptimizeEntry } from "./OptimizeStore";
 
 const FILTER_LABELS: { key: FilterType; label: string; shortcut: string }[] = [
     { key: "all", label: "All", shortcut: "1" },
@@ -25,11 +24,21 @@ const EntryRow = ({ checked, entry, isSelected }: EntryRowProps): React.JSX.Elem
     const codemodBadge = entry.hasCodemod ? "\u2699" : " ";
 
     return (
-        <Box height={1} flexShrink={0}>
+        <Box flexShrink={0} height={1}>
             <Text>{isSelected ? ">" : " "}</Text>
-            <Text color={checked ? "white" : "gray"}> {checkbox} </Text>
-            <Text color={catColor} bold>{`[${catLabel}]`.padEnd(9)}</Text>
-            <Text> {codemodBadge} </Text>
+            <Text color={checked ? "white" : "gray"}>
+                {" "}
+                {checkbox}
+                {" "}
+            </Text>
+            <Text bold color={catColor}>
+                {`[${catLabel}]`.padEnd(9)}
+            </Text>
+            <Text>
+                {" "}
+                {codemodBadge}
+                {" "}
+            </Text>
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
                     {entry.packageName}
@@ -76,18 +85,41 @@ const OptimizeListPanel = ({
     let socketCount = 0;
 
     for (const e of entries) {
-        if (e.category === "native") nativeCount++;
-        else if (e.category === "preferred") preferredCount++;
-        else if (e.category === "micro-utility") microCount++;
-        else if (e.category === "socket") socketCount++;
+        switch (e.category) {
+            case "micro-utility": {
+                microCount++;
+                break;
+            }
+            case "native": {
+                nativeCount++;
+                break;
+            }
+            case "preferred": {
+                preferredCount++;
+                break;
+            }
+            case "socket": { {
+                socketCount++;
+                // No default
+            }
+            break;
+            }
+        }
     }
 
     const summaryParts: string[] = [];
 
-    if (nativeCount > 0) summaryParts.push(`${nativeCount} native`);
-    if (preferredCount > 0) summaryParts.push(`${preferredCount} preferred`);
-    if (microCount > 0) summaryParts.push(`${microCount} micro`);
-    if (socketCount > 0) summaryParts.push(`${socketCount} socket`);
+    if (nativeCount > 0)
+        summaryParts.push(`${nativeCount} native`);
+
+    if (preferredCount > 0)
+        summaryParts.push(`${preferredCount} preferred`);
+
+    if (microCount > 0)
+        summaryParts.push(`${microCount} micro`);
+
+    if (socketCount > 0)
+        summaryParts.push(`${socketCount} socket`);
 
     const summaryText = summaryParts.length > 0 ? ` (${summaryParts.join(", ")})` : "";
     const checkedCount = checkedEntries.size;
@@ -95,9 +127,7 @@ const OptimizeListPanel = ({
     const rows: React.JSX.Element[] = [];
 
     for (const [index, entry] of entries.entries()) {
-        rows.push(
-            <EntryRow key={entry.packageName} checked={checkedEntries.has(entry.packageName)} entry={entry} isSelected={index === selectedIndex} />,
-        );
+        rows.push(<EntryRow checked={checkedEntries.has(entry.packageName)} entry={entry} isSelected={index === selectedIndex} key={entry.packageName} />);
     }
 
     const contentHeight = entries.length;
@@ -105,28 +135,42 @@ const OptimizeListPanel = ({
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
-            <Box flexShrink={0} paddingX={1} gap={1}>
+            <Box flexShrink={0} gap={1} paddingX={1}>
                 <Text bold inverse>
                     {" VIS OPTIMIZE "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries} optimizations{summaryText}
+                    {totalEntries}
+                    {" "}
+                    optimizations
+                    {summaryText}
                 </Text>
-                {!isDryRun && checkedCount > 0 && <Text dimColor> — {checkedCount} selected</Text>}
+                {!isDryRun && checkedCount > 0 && (
+                    <Text dimColor>
+                        {" "}
+                        —
+                        {checkedCount}
+                        {" "}
+                        selected
+                    </Text>
+                )}
             </Box>
 
-            <Box flexShrink={0} paddingX={1} paddingY={1} gap={1}>
+            <Box flexShrink={0} gap={1} paddingX={1} paddingY={1}>
                 {FILTER_LABELS.map((f) => {
                     const isActive = filterType === f.key;
 
                     return (
                         <Box key={f.key}>
                             <Text dimColor={!isActive}>[</Text>
-                            <Text color={isActive ? "cyan" : "gray"} bold={isActive}>
+                            <Text bold={isActive} color={isActive ? "cyan" : "gray"}>
                                 {f.shortcut}
                             </Text>
                             <Text dimColor={!isActive}>]</Text>
-                            <Text color={isActive ? "white" : "gray"}> {f.label}</Text>
+                            <Text color={isActive ? "white" : "gray"}>
+                                {" "}
+                                {f.label}
+                            </Text>
                         </Box>
                     );
                 })}
@@ -134,16 +178,16 @@ const OptimizeListPanel = ({
 
             {filterActive && (
                 <Box flexShrink={0} paddingX={1}>
-                    <Text color="white" bold>
+                    <Text bold color="white">
                         {"/ "}
                     </Text>
                     <Text>{filterText}</Text>
-                    <Text inverse>{" "}</Text>
+                    <Text inverse> </Text>
                 </Box>
             )}
 
             <Box flexDirection="row" flexGrow={1} overflow="hidden">
-                <Box flexDirection="column" flexGrow={1} paddingLeft={1} overflow="hidden">
+                <Box flexDirection="column" flexGrow={1} overflow="hidden" paddingLeft={1}>
                     <Box flexDirection="column" marginTop={-scrollOffset}>
                         {rows}
                     </Box>
