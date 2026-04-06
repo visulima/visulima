@@ -1,5 +1,7 @@
 import { execSync } from "node:child_process";
 
+const trailingNewlineRegex = /\n$/;
+
 /**
  * Return output of javascript file.
  */
@@ -11,5 +13,5 @@ export const execScriptSync = (file: string, flags: string[] = [], environment: 
     const result = execSync(cmd);
 
     // replace last newline in result
-    return result.toString().replace(/\n$/, "");
+    return result.toString().replace(trailingNewlineRegex, "");
 };
