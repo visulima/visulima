@@ -190,7 +190,6 @@ class TaskOrchestrator {
         return this.#results;
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #executionLoop(): Promise<void> {
         while (!this.#scheduler.isComplete() && !this.#aborted) {
             const batch = this.#scheduler.getNextBatch();
@@ -263,7 +262,6 @@ class TaskOrchestrator {
         }
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #processTask(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
 
@@ -309,7 +307,6 @@ class TaskOrchestrator {
         return result;
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     async #processTaskWithFingerprint(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
 

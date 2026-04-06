@@ -28,6 +28,7 @@ export const detectScriptShell = (): string | undefined => {
 
     if (envShell) {
         cachedShellPath = envShell;
+
         return envShell;
     }
 
@@ -42,6 +43,7 @@ export const detectScriptShell = (): string | undefined => {
         // npm returns "undefined" (literal string) when not configured
         if (result && result !== "undefined" && result !== "") {
             cachedShellPath = result;
+
             return result;
         }
     } catch {
@@ -50,6 +52,7 @@ export const detectScriptShell = (): string | undefined => {
 
     // 3. Not configured -- use platform defaults
     cachedShellPath = null;
+
     return undefined;
 };
 

@@ -4,7 +4,7 @@ import type { TaskGraph } from "./types";
  * Finds a single cycle in the task graph, if one exists.
  * Returns the cycle as an array of task IDs, or null if no cycle exists.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 export const findCycle = (taskGraph: TaskGraph): string[] | undefined => {
     const visited = new Set<string>();
     const inStack = new Set<string>();
@@ -18,7 +18,7 @@ export const findCycle = (taskGraph: TaskGraph): string[] | undefined => {
         const stack = [taskId];
 
         while (stack.length > 0) {
-            const current = stack[stack.length - 1] as string;
+            const current = stack.at(-1) as string;
 
             if (!visited.has(current)) {
                 visited.add(current);
@@ -110,7 +110,7 @@ export const findCycles = (taskGraph: TaskGraph): string[][] => {
  * Note: If the graph contains cycles, tasks involved in cycles will not be visited.
  * Use `findCycle` to detect cycles before walking if complete traversal is required.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 export const walkTaskGraph = (taskGraph: TaskGraph, callback: (taskId: string) => void): void => {
     // Build a reverse map: for each task, count how many dependencies it has
     const dependencyCount = new Map<string, number>();

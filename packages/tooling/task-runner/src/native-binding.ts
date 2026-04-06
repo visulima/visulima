@@ -121,7 +121,7 @@ const esmRequire = createRequire(import.meta.url);
  * The result is cached after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
- * `task-runner-native.<platform>.node`. The napi-generated index.js
+ * `task-runner-native.&lt;platform>.node`. The napi-generated index.js
  * handles platform detection automatically.
  *
  * Uses createRequire because the napi-generated index.js is CJS.

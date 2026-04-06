@@ -105,6 +105,7 @@ describe("runConcurrently (public API)", () => {
         await runConcurrently([{ command: "echo $CONCURRENT_TEST_VAR", env: { CONCURRENT_TEST_VAR: "it_works" } }], { onEvent: (event) => events.push(event) });
 
         const stdout = events.filter((e) => e.kind === "stdout");
+
         expect(stdout.some((e) => e.text === "it_works")).toBe(true);
     });
 
@@ -124,12 +125,14 @@ describe("runConcurrently (public API)", () => {
     it("should support stdin null mode (default)", async () => {
         // cat with stdin=null reads EOF and exits 0
         const result = await runConcurrently([{ command: "cat", stdin: "null" }]);
+
         expect(result.success).toBe(true);
     });
 
     it("should support stdin pipe mode", async () => {
         // echo doesn't read stdin, so pipe mode doesn't block
         const result = await runConcurrently([{ command: "echo pipe-test", stdin: "pipe" }]);
+
         expect(result.success).toBe(true);
         expect(result.closeEvents[0]!.exitCode).toBe(0);
     });
@@ -138,8 +141,8 @@ describe("runConcurrently (public API)", () => {
         const events: ProcessEvent[] = [];
 
         const result = await runConcurrently(["echo shell-override"], {
-            shellPath: "/bin/bash",
             onEvent: (event) => events.push(event),
+            shellPath: "/bin/bash",
         });
 
         expect(result.success).toBe(true);
@@ -161,13 +164,15 @@ describe("runConcurrently (public API)", () => {
 
         const result = await runConcurrently(["exit 1"], {
             onEvent: (event) => events.push(event),
-            restart: { tries: 2, delay: 0 },
+            restart: { delay: 0, tries: 2 },
         });
 
         // Should still fail after retries
         expect(result.success).toBe(false);
+
         // Should have 3 close events total (original + 2 retries)
         const closeEvents = events.filter((e) => e.kind === "close");
+
         expect(closeEvents.length).toBeGreaterThanOrEqual(1);
     });
 

@@ -75,11 +75,11 @@ describe(createTaskGraph, () => {
             "lib-b": [{ source: "lib-b", target: "lib-a", type: "static" }],
         },
         nodes: {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             app: { data: workspace.projects["app"]!, name: "app", type: "application" },
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             "lib-a": { data: workspace.projects["lib-a"]!, name: "lib-a", type: "library" },
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             "lib-b": { data: workspace.projects["lib-b"]!, name: "lib-b", type: "library" },
         },
     };
@@ -134,7 +134,7 @@ describe(createTaskGraph, () => {
         const graph: ProjectGraph = {
             dependencies: { app: [] },
             nodes: {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
                 app: { data: workspaceWithSelf.projects["app"]!, name: "app", type: "application" },
             },
         };

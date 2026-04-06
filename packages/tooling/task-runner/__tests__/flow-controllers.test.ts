@@ -2,22 +2,24 @@ import { PassThrough } from "node:stream";
 
 import { describe, expect, it } from "vitest";
 
+import { runConcurrentFallback } from "../src/concurrent-fallback";
 import { createInputHandler } from "../src/flow-controllers/input-handler";
 import { formatTimingTable } from "../src/flow-controllers/log-timings";
 import { withRestart } from "../src/flow-controllers/restart-process";
 import { runTeardown } from "../src/flow-controllers/teardown";
-import { runConcurrentFallback } from "../src/concurrent-fallback";
 import type { ConcurrentCloseEvent } from "../src/types";
 
-describe("formatTimingTable", () => {
-    const makeEvent = (index: number, name: string, exitCode: number, durationMs: number): ConcurrentCloseEvent => ({
-        index,
-        command: `echo ${name}`,
-        name,
-        exitCode,
-        killed: false,
-        durationMs,
-    });
+describe(formatTimingTable, () => {
+    const makeEvent = (index: number, name: string, exitCode: number, durationMs: number): ConcurrentCloseEvent => {
+        return {
+            command: `echo ${name}`,
+            durationMs,
+            exitCode,
+            index,
+            killed: false,
+            name,
+        };
+    };
 
     it("should format a single command", () => {
         const table = formatTimingTable([makeEvent(0, "build", 0, 1234)]);
@@ -35,6 +37,7 @@ describe("formatTimingTable", () => {
 
         // Skip header and separator (first 2 lines)
         const dataLines = lines.slice(2);
+
         expect(dataLines[0]).toContain("slow");
         expect(dataLines[1]).toContain("medium");
         expect(dataLines[2]).toContain("fast");
@@ -42,15 +45,16 @@ describe("formatTimingTable", () => {
 
     it("should show killed status", () => {
         const event: ConcurrentCloseEvent = {
-            index: 0,
             command: "sleep 10",
-            name: "long",
-            exitCode: -9,
-            killed: true,
             durationMs: 500,
+            exitCode: -9,
+            index: 0,
+            killed: true,
+            name: "long",
         };
 
         const table = formatTimingTable([event]);
+
         expect(table).toContain("yes");
     });
 
@@ -60,24 +64,28 @@ describe("formatTimingTable", () => {
 
     it("should truncate long commands", () => {
         const event = makeEvent(0, "x", 0, 100);
+
         event.command = "a".repeat(50);
 
         const table = formatTimingTable([event]);
+
         expect(table).toContain("\u2026"); // ellipsis
     });
 
     it("should format millisecond durations", () => {
         const table = formatTimingTable([makeEvent(0, "quick", 0, 42)]);
+
         expect(table).toContain("42ms");
     });
 
     it("should format minute durations", () => {
         const table = formatTimingTable([makeEvent(0, "long", 0, 90_000)]);
+
         expect(table).toContain("1m");
     });
 });
 
-describe("createInputHandler", () => {
+describe(createInputHandler, () => {
     it("should route unprefixed input to default target", () => {
         const stdin0 = new PassThrough();
         const inputStream = new PassThrough();
@@ -85,11 +93,12 @@ describe("createInputHandler", () => {
 
         stdin0.on("data", (data: Buffer) => chunks.push(data.toString()));
 
-        const cleanup = createInputHandler([{ index: 0, name: "server", stdin: stdin0 }], { inputStream, defaultTarget: 0 });
+        const cleanup = createInputHandler([{ index: 0, name: "server", stdin: stdin0 }], { defaultTarget: 0, inputStream });
 
         inputStream.write("hello\n");
 
         expect(chunks).toEqual(["hello\n"]);
+
         cleanup();
     });
 
@@ -115,6 +124,7 @@ describe("createInputHandler", () => {
 
         expect(chunks0).toEqual([]);
         expect(chunks1).toEqual(["hello\n"]);
+
         cleanup();
     });
 
@@ -137,6 +147,7 @@ describe("createInputHandler", () => {
         inputStream.write("1:world\n");
 
         expect(chunks1).toEqual(["world\n"]);
+
         cleanup();
     });
 
@@ -144,24 +155,26 @@ describe("createInputHandler", () => {
         const inputStream = new PassThrough();
 
         const cleanup = createInputHandler([], { inputStream });
+
         cleanup();
 
         expect(inputStream.listenerCount("data")).toBe(0);
     });
 });
 
-describe("withRestart", () => {
+describe(withRestart, () => {
     it("should not restart when tries is 0", async () => {
         let callCount = 0;
 
         const result = await withRestart(
             async (commands, options) => {
                 callCount++;
+
                 return runConcurrentFallback(commands, options);
             },
             [{ command: "exit 1" }],
             {},
-            { tries: 0, delay: 0 },
+            { delay: 0, tries: 0 },
         );
 
         expect(callCount).toBe(1);
@@ -174,11 +187,12 @@ describe("withRestart", () => {
         const result = await withRestart(
             async (commands, options) => {
                 callCount++;
+
                 return runConcurrentFallback(commands, options);
             },
             [{ command: "exit 1" }],
             {},
-            { tries: 2, delay: 0 },
+            { delay: 0, tries: 2 },
         );
 
         // Original + 2 retries = 3 calls
@@ -192,11 +206,12 @@ describe("withRestart", () => {
         const result = await withRestart(
             async (commands, options) => {
                 callCount++;
+
                 return runConcurrentFallback(commands, options);
             },
             [{ command: "echo ok" }],
             {},
-            { tries: 3, delay: 0 },
+            { delay: 0, tries: 3 },
         );
 
         expect(callCount).toBe(1);
@@ -204,7 +219,7 @@ describe("withRestart", () => {
     });
 });
 
-describe("runTeardown", () => {
+describe(runTeardown, () => {
     it("should run teardown commands sequentially", async () => {
         const results = await runTeardown({
             commands: ["echo cleanup1", "echo cleanup2"],
@@ -231,6 +246,7 @@ describe("runTeardown", () => {
 
     it("should handle empty commands", async () => {
         const results = await runTeardown({ commands: [] });
+
         expect(results).toEqual([]);
     });
 });

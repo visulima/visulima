@@ -12,19 +12,18 @@ import { logTimings } from "./flow-controllers/log-timings";
 import { withRestart } from "./flow-controllers/restart-process";
 import { runTeardown } from "./flow-controllers/teardown";
 import { loadNativeBindings } from "./native-binding";
-import type { ConcurrentCommandConfig, ConcurrentCommandInput, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent } from "./types";
+import type { ConcurrentCommandConfig, ConcurrentCommandInput, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "./types";
 
 /**
  * Normalize command inputs to ConcurrentCommandConfig objects.
  */
-const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandConfig[] => {
-    return inputs.map((input) => {
-        if (typeof input === "string") {
-            return { command: input };
-        }
-        return input;
-    });
-};
+const normalizeCommands = (inputs: ConcurrentCommandInput[]): ConcurrentCommandConfig[] => inputs.map((input) => {
+    if (typeof input === "string") {
+        return { command: input };
+    }
+
+    return input;
+});
 
 /**
  * Core runner function that dispatches to native or JS fallback.
@@ -46,17 +45,20 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
             successCondition: options.successCondition,
         };
 
-        const nativeCommands = configs.map((c) => ({
-            command: c.command,
-            cwd: c.cwd,
-            env: c.env,
-            name: c.name,
-            shell: c.shell,
-            stdin: c.stdin,
-        }));
+        const nativeCommands = configs.map((c) => {
+            return {
+                command: c.command,
+                cwd: c.cwd,
+                env: c.env,
+                name: c.name,
+                shell: c.shell,
+                stdin: c.stdin,
+            };
+        });
 
         if (options.onEvent) {
             const userCallback = options.onEvent;
+
             return native.runConcurrent(nativeCommands, nativeOptions, (event) => {
                 userCallback(event as unknown as ProcessEvent);
             });
@@ -78,9 +80,8 @@ const coreRun = async (configs: ConcurrentCommandConfig[], options: ConcurrentRu
  * - `restart`: retry failed commands with configurable delay/backoff
  * - `teardown`: run cleanup commands after all processes complete
  * - `timings`: print a timing summary table
- *
- * @param commands - Array of command strings or config objects
- * @param options - Runner options (maxProcesses, killOthers, restart, teardown, etc.)
+ * @param commands Array of command strings or config objects
+ * @param options Runner options (maxProcesses, killOthers, restart, teardown, etc.)
  * @returns Promise resolving to the run result with close events and success status
  */
 export const runConcurrently = async (commands: ConcurrentCommandInput[], options: ConcurrentRunnerOptions = {}): Promise<ConcurrentRunResult> => {
@@ -94,7 +95,7 @@ export const runConcurrently = async (commands: ConcurrentCommandInput[], option
     let result: ConcurrentRunResult;
 
     if (options.restart && options.restart.tries !== 0) {
-        result = await withRestart((cmds, opts) => coreRun(cmds, opts), configs, options, {
+        result = await withRestart((cmds, options_) => coreRun(cmds, options_), configs, options, {
             delay: options.restart.delay ?? 0,
             tries: options.restart.tries,
         });

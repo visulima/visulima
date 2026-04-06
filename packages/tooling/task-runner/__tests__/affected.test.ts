@@ -1,8 +1,7 @@
-import type { ProjectGraph } from "../src/types";
-
 import { describe, expect, it } from "vitest";
 
 import { expandAffected, filterAffectedTasks } from "../src/affected";
+import type { ProjectGraph } from "../src/types";
 
 describe(filterAffectedTasks, () => {
     it("should filter tasks to only affected projects", () => {
@@ -64,20 +63,22 @@ describe(filterAffectedTasks, () => {
  * Downstream (dependents): D ← C ← B ← A
  * Upstream (dependencies):  A → B → C → D
  */
-const makeLinearGraph = (): ProjectGraph => ({
-    dependencies: {
-        A: [{ source: "A", target: "B", type: "static" }],
-        B: [{ source: "B", target: "C", type: "static" }],
-        C: [{ source: "C", target: "D", type: "static" }],
-        D: [],
-    },
-    nodes: {
-        A: { data: { root: "packages/a" }, name: "A", type: "application" },
-        B: { data: { root: "packages/b" }, name: "B", type: "library" },
-        C: { data: { root: "packages/c" }, name: "C", type: "library" },
-        D: { data: { root: "packages/d" }, name: "D", type: "library" },
-    },
-});
+const makeLinearGraph = (): ProjectGraph => {
+    return {
+        dependencies: {
+            A: [{ source: "A", target: "B", type: "static" }],
+            B: [{ source: "B", target: "C", type: "static" }],
+            C: [{ source: "C", target: "D", type: "static" }],
+            D: [],
+        },
+        nodes: {
+            A: { data: { root: "packages/a" }, name: "A", type: "application" },
+            B: { data: { root: "packages/b" }, name: "B", type: "library" },
+            C: { data: { root: "packages/c" }, name: "C", type: "library" },
+            D: { data: { root: "packages/d" }, name: "D", type: "library" },
+        },
+    };
+};
 
 describe(expandAffected, () => {
     describe("downstream scope", () => {

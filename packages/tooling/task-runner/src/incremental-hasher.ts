@@ -159,7 +159,7 @@ class IncrementalFileHasher {
             const cached = this.#snapshot.get(filePath);
 
             // Fast path: mtime and size match → reuse cached hash
-            if (cached && cached.mtimeMs === fileStat.mtimeMs && cached.size === fileStat.size) {
+            if (cached?.mtimeMs === fileStat.mtimeMs && cached.size === fileStat.size) {
                 return cached.hash;
             }
 

@@ -5,13 +5,13 @@
  * Supports fixed delay or exponential backoff.
  */
 
-import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent } from "../types";
+import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "../types";
 
 export interface RestartOptions {
-    /** Maximum number of restart attempts per command. 0 = no restarts. -1 = infinite. */
-    tries: number;
     /** Delay between restarts in milliseconds. "exponential" for 2^attempt * 1000ms. */
     delay: number | "exponential";
+    /** Maximum number of restart attempts per command. 0 = no restarts. -1 = infinite. */
+    tries: number;
 }
 
 interface RestartState {
@@ -21,25 +21,24 @@ interface RestartState {
 
 /**
  * Wraps a runner function to add restart-on-failure behavior.
- *
- * @param runFn - The underlying runner function (runConcurrently or runConcurrentFallback)
- * @param commands - The original command configs
- * @param options - Runner options
- * @param restartOptions - Restart-specific options
+ * @param runFn The underlying runner function (runConcurrently or runConcurrentFallback)
+ * @param commands The original command configs
+ * @param options Runner options
+ * @param restartOptions Restart-specific options
  */
 export const withRestart = async (
-    runFn: (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions) => Promise<ConcurrentRunResult>,
+    runFunction: (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions) => Promise<ConcurrentRunResult>,
     commands: ConcurrentCommandConfig[],
     options: ConcurrentRunnerOptions,
     restartOptions: RestartOptions,
 ): Promise<ConcurrentRunResult> => {
-    const { tries, delay } = restartOptions;
+    const { delay, tries } = restartOptions;
 
     if (tries === 0) {
-        return runFn(commands, options);
+        return runFunction(commands, options);
     }
 
-    const state: Map<number, RestartState> = new Map();
+    const state = new Map<number, RestartState>();
     const allCloseEvents: ConcurrentCloseEvent[] = [];
     const userOnEvent = options.onEvent;
 
@@ -49,10 +48,11 @@ export const withRestart = async (
 
     while (pendingRestarts.length > 0) {
         const currentBatch = pendingRestarts;
+
         pendingRestarts = [];
 
         // eslint-disable-next-line no-await-in-loop -- sequential restart loop
-        const result = await runFn(currentBatch, {
+        const result = await runFunction(currentBatch, {
             ...options,
             onEvent: (event: ProcessEvent) => {
                 userOnEvent?.(event);
@@ -62,6 +62,7 @@ export const withRestart = async (
         for (const closeEvent of result.closeEvents) {
             if (closeEvent.exitCode !== 0) {
                 const cmdState = state.get(closeEvent.index) ?? { attempts: 0, commandIndex: closeEvent.index };
+
                 cmdState.attempts++;
                 state.set(closeEvent.index, cmdState);
 

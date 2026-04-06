@@ -2,7 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { FileAccessTracker, generatePreloadScript } from "../src/file-access-tracker";
 
@@ -16,7 +16,7 @@ const createTemporaryDirectory = async (base?: string): Promise<string> => {
     return directory;
 };
 
-describe("FileAccessTracker", () => {
+describe(FileAccessTracker, () => {
     let workspaceRoot: string;
 
     beforeEach(async () => {
@@ -43,7 +43,9 @@ describe("FileAccessTracker", () => {
             const result = await tracker.track("echo hello", { cwd: workspaceRoot });
 
             expect(result.output).toContain("hello");
-            expect(typeof result.code).toBe("number");
+
+            expectTypeOf(result.code).toBeNumber();
+
             expect(Array.isArray(result.accesses)).toBe(true);
         });
 
@@ -133,7 +135,7 @@ describe("FileAccessTracker", () => {
 
         it("should pass environment variables to the command", async () => {
             const tracker = new FileAccessTracker(workspaceRoot);
-            const result = await tracker.track('echo "$MY_TEST_VAR"', {
+            const result = await tracker.track("echo \"$MY_TEST_VAR\"", {
                 cwd: workspaceRoot,
                 env: { MY_TEST_VAR: "test_value_123" },
             });
@@ -159,7 +161,7 @@ describe("FileAccessTracker", () => {
     });
 });
 
-describe("generatePreloadScript", () => {
+describe(generatePreloadScript, () => {
     it("should return a string containing the output path", () => {
         const script = generatePreloadScript("/tmp/test-log.jsonl");
 
@@ -169,23 +171,23 @@ describe("generatePreloadScript", () => {
     it("should patch fs sync and async methods", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('"readFileSync"');
-        expect(script).toContain('"statSync"');
-        expect(script).toContain('"readdirSync"');
+        expect(script).toContain("\"readFileSync\"");
+        expect(script).toContain("\"statSync\"");
+        expect(script).toContain("\"readdirSync\"");
     });
 
     it("should patch fs/promises", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('require("node:fs/promises")');
-        expect(script).toContain('"readFile"');
-        expect(script).toContain('"stat"');
-        expect(script).toContain('"readdir"');
+        expect(script).toContain("require(\"node:fs/promises\")");
+        expect(script).toContain("\"readFile\"");
+        expect(script).toContain("\"stat\"");
+        expect(script).toContain("\"readdir\"");
     });
 
     it("should flush on process exit", () => {
         const script = generatePreloadScript("/tmp/log");
 
-        expect(script).toContain('process.on("beforeExit"');
+        expect(script).toContain("process.on(\"beforeExit\"");
     });
 });

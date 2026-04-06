@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { runConcurrentFallback } from "../src/concurrent-fallback";
 import type { ConcurrentCommandConfig, ProcessEvent } from "../src/types";
 
-const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => ({
-    command,
-    name,
-});
+const makeConfig = (command: string, name?: string): ConcurrentCommandConfig => {
+    return {
+        command,
+        name,
+    };
+};
 
-describe("runConcurrentFallback", () => {
+describe(runConcurrentFallback, () => {
     it("should run a single echo command", async () => {
         const result = await runConcurrentFallback([makeConfig("echo hello", "greeter")], {});
 
@@ -108,6 +110,7 @@ describe("runConcurrentFallback", () => {
         });
 
         const stderrEvents = events.filter((e) => e.kind === "stderr");
+
         expect(stderrEvents.some((e) => e.text === "error")).toBe(true);
     });
 
@@ -117,6 +120,7 @@ describe("runConcurrentFallback", () => {
         await runConcurrentFallback([{ command: "echo $MY_TEST_VAR", env: { MY_TEST_VAR: "hello_test" } }], { onEvent: (event) => events.push(event) });
 
         const stdoutEvents = events.filter((e) => e.kind === "stdout");
+
         expect(stdoutEvents.some((e) => e.text === "hello_test")).toBe(true);
     });
 
@@ -140,7 +144,9 @@ describe("runConcurrentFallback", () => {
         const result = await runConcurrentFallback([{ command: "echo hello", shell: false }], { onEvent: (event) => events.push(event) });
 
         expect(result.success).toBe(true);
+
         const stdout = events.filter((e) => e.kind === "stdout");
+
         expect(stdout.some((e) => e.text === "hello")).toBe(true);
     });
 
@@ -151,12 +157,12 @@ describe("runConcurrentFallback", () => {
             onEvent: (event) => events.push(event),
         });
 
-        const closeIdx = events.findIndex((e) => e.kind === "close");
-        const stdoutIndices = events.map((e, i) => (e.kind === "stdout" ? i : -1)).filter((i) => i >= 0);
+        const closeIndex = events.findIndex((e) => e.kind === "close");
+        const stdoutIndices = events.map((e, i) => e.kind === "stdout" ? i : -1).filter((i) => i >= 0);
 
         // All stdout events should come before the close event
-        for (const idx of stdoutIndices) {
-            expect(idx).toBeLessThan(closeIdx);
+        for (const index of stdoutIndices) {
+            expect(index).toBeLessThan(closeIndex);
         }
     });
 });

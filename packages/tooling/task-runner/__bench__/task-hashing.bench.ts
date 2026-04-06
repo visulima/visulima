@@ -14,12 +14,10 @@ import { createHash } from "node:crypto";
 
 import { afterAll, beforeAll, bench, describe } from "vitest";
 
-import { loadNativeBindings } from "../src/native-binding";
 import { computeTaskHash, InProcessTaskHasher } from "../src/task-hasher";
 import type { TaskHashDetails } from "../src/types";
 import { hashStrings } from "../src/utils";
-
-import { buildProjectGraph, cleanupFixture, createMonorepoFixture } from "./setup";
+import { cleanupFixture, createMonorepoFixture } from "./setup";
 
 // ─── computeTaskHash: JS vs Native ─────────────────────────────────
 
@@ -38,8 +36,8 @@ const makeHashDetails = (nodeCount: number): TaskHashDetails => {
         },
         nodes,
         runtime: {
-            "env:NODE_ENV": hashStrings("NODE_ENV", "production"),
             "env:CI": hashStrings("CI", "true"),
+            "env:NODE_ENV": hashStrings("NODE_ENV", "production"),
         },
     };
 };
@@ -49,6 +47,7 @@ describe("computeTaskHash - 50 file nodes", () => {
 
     bench("JS SHA-256 (Nx-style)", () => {
         const hash = createHash("sha256");
+
         hash.update(details.command);
 
         for (const key of Object.keys(details.nodes).sort()) {
@@ -59,14 +58,14 @@ describe("computeTaskHash - 50 file nodes", () => {
         if (details.implicitDeps) {
             for (const key of Object.keys(details.implicitDeps).sort()) {
                 hash.update(key);
-                hash.update((details.implicitDeps as Record<string, string>)[key] as string);
+                hash.update((details.implicitDeps)[key] as string);
             }
         }
 
         if (details.runtime) {
             for (const key of Object.keys(details.runtime).sort()) {
                 hash.update(key);
-                hash.update((details.runtime as Record<string, string>)[key] as string);
+                hash.update((details.runtime)[key] as string);
             }
         }
 
@@ -83,6 +82,7 @@ describe("computeTaskHash - 500 file nodes", () => {
 
     bench("JS SHA-256 (Nx-style)", () => {
         const hash = createHash("sha256");
+
         hash.update(details.command);
 
         for (const key of Object.keys(details.nodes).sort()) {
@@ -93,7 +93,7 @@ describe("computeTaskHash - 500 file nodes", () => {
         if (details.implicitDeps) {
             for (const key of Object.keys(details.implicitDeps).sort()) {
                 hash.update(key);
-                hash.update((details.implicitDeps as Record<string, string>)[key] as string);
+                hash.update((details.implicitDeps)[key] as string);
             }
         }
 
@@ -110,6 +110,7 @@ describe("computeTaskHash - 2000 file nodes", () => {
 
     bench("JS SHA-256 (Nx-style)", () => {
         const hash = createHash("sha256");
+
         hash.update(details.command);
 
         for (const key of Object.keys(details.nodes).sort()) {

@@ -1,4 +1,3 @@
-/* eslint-disable sonarjs/no-nested-functions */
 import { execFile } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
@@ -36,10 +35,10 @@ const startMockServer = (handler: (request: IncomingMessage, response: ServerRes
 
 const closeServer = (server: Server): Promise<void> =>
     new Promise((resolve) => {
-        server.close(() => resolve());
+        server.close(() => { resolve(); });
     });
 
-const collectRequestBody = (request: IncomingMessage): Promise<Buffer<ArrayBufferLike>> => {
+const collectRequestBody = (request: IncomingMessage): Promise<Buffer> => {
     const chunks: Buffer[] = [];
 
     return new Promise((resolve) => {
@@ -181,7 +180,7 @@ describe(RemoteCache, () => {
             await writeFile(join(entryDirectory, "terminalOutput"), "Build done");
 
             let receivedMethod = "";
-            let receivedBody: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+            let receivedBody: Buffer = Buffer.alloc(0);
 
             const { server, url } = await startMockServer((request, response) => {
                 receivedMethod = request.method ?? "";
@@ -329,9 +328,9 @@ describe(RemoteCache, () => {
             const archivePath = join(cacheDirectory, "artifact.tar.gz");
 
             await new Promise<void>((resolve, reject) => {
-                // eslint-disable-next-line sonarjs/no-os-command-from-path
                 execFile("tar", ["-czf", archivePath, "-C", sourceDirectory, "."], (error) => {
-                    if (error) reject(error);
+                    if (error)
+                        reject(error);
                     else resolve();
                 });
             });

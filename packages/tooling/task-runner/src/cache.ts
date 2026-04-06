@@ -1,8 +1,8 @@
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { cp, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "@visulima/path";
 
 import { formatBytes, parseBytes } from "@visulima/humanizer";
+import { dirname, join, resolve } from "@visulima/path";
 
 import type { TaskFingerprint } from "./fingerprint";
 import { uniqueId } from "./utils";
@@ -85,7 +85,7 @@ const parseCacheSize = (sizeString: string): number => {
     const result = parseBytes(sizeString.trim());
 
     if (Number.isNaN(result)) {
-        throw new Error(`Invalid cache size format: "${sizeString}". Expected format like "500MB" or "1GB".`);
+        throw new TypeError(`Invalid cache size format: "${sizeString}". Expected format like "500MB" or "1GB".`);
     }
 
     return result;
@@ -331,7 +331,7 @@ class Cache {
      * Removes old cache entries that exceed the maximum age,
      * and enforces the maximum cache size by evicting oldest entries.
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
     public async removeOldEntries(): Promise<void> {
         try {
             const entries = await readdir(this.#cacheDirectory);

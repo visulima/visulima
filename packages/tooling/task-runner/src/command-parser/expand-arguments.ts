@@ -6,7 +6,7 @@ const PLACEHOLDER_REGEX = /\\?\{([@*]|[1-9]\d*)\}/g;
  * Shell-escapes a string by wrapping in single quotes.
  * Single quotes within the string are escaped.
  */
-const shellQuote = (s: string): string => `'${s.replaceAll("'", "'\\''")}'`;
+const shellQuote = (s: string): string => `'${s.replaceAll("'", String.raw`'\''`)}'`;
 
 /**
  * Expands argument placeholders in command strings.

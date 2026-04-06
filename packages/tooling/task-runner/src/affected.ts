@@ -8,7 +8,7 @@ import type { AffectedScope, ProjectConfiguration, ProjectGraph } from "./types"
  * Only allows characters valid in git refs: alphanumeric, ., -, _, /, ~, ^
  */
 const validateGitRef = (ref: string): void => {
-    if (!/^[a-zA-Z0-9._\-/~^@{}]+$/.test(ref)) {
+    if (!/^[\w.\-/~^@{}]+$/.test(ref)) {
         throw new Error(`Invalid git ref: "${ref}". Only alphanumeric characters, dots, dashes, underscores, slashes, tildes, carets, and @ are allowed.`);
     }
 };
@@ -19,6 +19,7 @@ const validateGitRef = (ref: string): void => {
 interface AffectedOptions {
     /** The base ref to compare against (default: "main") */
     base?: string;
+
     /**
      * Control how far downstream (dependents of changed projects) to include.
      * @default "deep"
@@ -30,6 +31,7 @@ interface AffectedOptions {
     projectGraph: ProjectGraph;
     /** All project configurations keyed by name */
     projects: Record<string, ProjectConfiguration>;
+
     /**
      * Control how far upstream (dependencies of changed projects) to include.
      * @default "none"
@@ -68,8 +70,8 @@ const findProjectForFile = (filePath: string, projects: Record<string, ProjectCo
 
         // Check if file is within this project's root
         if (
-            (filePath.startsWith(`${root}/`) || filePath === root) && // Prefer the most specific (longest) match
-            root.length > bestLength
+            (filePath.startsWith(`${root}/`) || filePath === root) // Prefer the most specific (longest) match
+            && root.length > bestLength
         ) {
             bestMatch = name;
             bestLength = root.length;
@@ -174,12 +176,14 @@ const expandAffected = (
     // Downstream: projects that depend on changed projects (dependents)
     if (options.downstream !== "none") {
         const reverseDeps = buildReverseDependencyMap(projectGraph);
+
         downstream = expandInDirection(affected, changedProjects, reverseDeps, options.downstream);
     }
 
     // Upstream: projects that changed projects depend on (dependencies)
     if (options.upstream !== "none") {
         const forwardDeps = buildForwardDependencyMap(projectGraph);
+
         upstream = expandInDirection(affected, changedProjects, forwardDeps, options.upstream);
     }
 

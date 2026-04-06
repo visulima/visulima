@@ -35,11 +35,11 @@ describe(Cache, () => {
             const result = await cache.get("abc123");
 
             expect(result).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.code).toBe(0);
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.terminalOutput).toBe("build output");
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.hash).toBe("abc123");
         });
 
@@ -85,7 +85,6 @@ describe(Cache, () => {
 
             const result = await cache.get("hash1");
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.terminalOutput).toBe("second output");
         });
     });
@@ -131,7 +130,7 @@ describe(Cache, () => {
             const result = await cache.getByTaskId("project:build");
 
             expect(result).toBeDefined();
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.hash).toBe("hash1");
         });
 
@@ -149,9 +148,8 @@ describe(Cache, () => {
 
             const result = await cache.getByTaskId("project:build");
 
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             expect(result!.hash).toBe("hash2");
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
             expect(result!.terminalOutput).toBe("output2");
         });
     });

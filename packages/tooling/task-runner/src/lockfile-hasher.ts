@@ -55,7 +55,7 @@ const extractPackageName = (path: string): string | undefined => {
  * Parses package-lock.json (npm v2/v3 format) to extract resolved versions.
  * The v2/v3 format uses a flat "packages" map with paths like "node_modules/pkg-name".
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const parseNpmLockfile = (content: string): Map<string, string> => {
     const versions = new Map<string, string>();
 
@@ -77,8 +77,8 @@ const parseNpmLockfile = (content: string): Map<string, string> => {
                 const name = extractPackageName(path);
 
                 if (
-                    name && // Use the first (top-level) occurrence
-                    !versions.has(name)
+                    name // Use the first (top-level) occurrence
+                    && !versions.has(name)
                 ) {
                     versions.set(name, entry.version);
                 }
@@ -127,7 +127,6 @@ const parsePnpmLockfile = (content: string): Map<string, string> => {
 
     // eslint-disable-next-line no-cond-assign
     while ((match = depVersionRegex.exec(content) ?? undefined) !== undefined) {
-        // eslint-disable-next-line sonarjs/anchor-precedence
         const name = (match[1] as string).replaceAll(/^['"]|['"]$/g, "");
         let version = (match[2] as string).trim();
 
@@ -179,8 +178,8 @@ const parseYarnLockfile = (content: string): Map<string, string> => {
     //     version: 1.2.3
 
     /* eslint-disable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
-    const entryRegex =
-        /^["']?(?:@([^/@"']+)\/)?([^@"']+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+version:?\s+"?([^"\n]+)"?/gm;
+    const entryRegex
+        = /^["']?(?:@([^/@"']+)\/)?([^@"']+)@[^"'\n]+["']?:?[\t\v\f\r \u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]*\n\s+version:?\s+"?([^"\n]+)"?/gm;
     /* eslint-enable sonarjs/slow-regex, sonarjs/regex-complexity, regexp/no-super-linear-backtracking */
     let match: RegExpExecArray | undefined;
 

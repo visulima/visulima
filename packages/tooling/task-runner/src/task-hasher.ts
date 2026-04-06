@@ -1,7 +1,6 @@
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 
-// eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import type { Xxh3Hasher } from "@shared/xxh3";
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
@@ -203,7 +202,6 @@ class InProcessTaskHasher implements TaskHasher {
         this.#frameworkInference = options.frameworkInference ?? false;
     }
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     public async hashTask(task: Task): Promise<TaskHashDetails> {
         const commandHash = this.#hashCommand(task);
         const nodes: Record<string, string> = {};
@@ -327,7 +325,7 @@ class InProcessTaskHasher implements TaskHasher {
                     continue;
                 } else if (this.#namedInputs[input] && !seen.has(input)) {
                     seen.add(input);
-                    result.push(...this.#expandInputs(this.#namedInputs[input] as (string | InputDefinition)[], projectName));
+                    result.push(...this.#expandInputs(this.#namedInputs[input], projectName));
                 } else {
                     result.push({ fileset: input });
                 }
@@ -518,14 +516,14 @@ const computeTaskHash = (hashDetails: TaskHashDetails): string => {
 
         const implicitDeps = hashDetails.implicitDeps
             ? Object.keys(hashDetails.implicitDeps)
-                  .toSorted()
-                  .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
+                .toSorted()
+                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
             : undefined;
 
         const runtime = hashDetails.runtime
             ? Object.keys(hashDetails.runtime)
-                  .toSorted()
-                  .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
+                .toSorted()
+                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
             : undefined;
 
         return native.computeTaskHash({

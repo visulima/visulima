@@ -20,7 +20,6 @@ import { afterAll, beforeAll, bench, describe } from "vitest";
 import { IncrementalFileHasher } from "../src/incremental-hasher";
 import { loadNativeBindings } from "../src/native-binding";
 import { hashFile } from "../src/utils";
-
 import { cleanupFixture, createFixtureFiles } from "./setup";
 
 // ─── Small project (50 files × 1KB) ────────────────────────────────
@@ -43,6 +42,7 @@ describe("file hashing - small project (50 files × 1KB)", () => {
 
         for (const file of files) {
             const content = readFileSync(join(srcDir, file));
+
             createHash("sha256").update(content).digest("hex");
         }
     });
@@ -56,14 +56,17 @@ describe("file hashing - small project (50 files × 1KB)", () => {
 
     bench("native Rust xxHash3 parallel (our addon)", async () => {
         const native = loadNativeBindings();
+
         if (!native) {
             return; // Skip if native not available
         }
+
         native.hashFilesInDirectory(srcDir, fixtureDir);
     });
 
     bench("incremental hasher (warm cache)", async () => {
         const hasher = new IncrementalFileHasher({ workspaceRoot: fixtureDir });
+
         // First run populates cache
         await hasher.hashDirectory(srcDir);
         // Second run uses mtime cache
@@ -91,6 +94,7 @@ describe("file hashing - medium project (500 files × 4KB)", () => {
 
         for (const file of files) {
             const content = readFileSync(join(srcDir, file));
+
             createHash("sha256").update(content).digest("hex");
         }
     });
@@ -104,14 +108,17 @@ describe("file hashing - medium project (500 files × 4KB)", () => {
 
     bench("native Rust xxHash3 parallel (our addon)", async () => {
         const native = loadNativeBindings();
+
         if (!native) {
             return;
         }
+
         native.hashFilesInDirectory(srcDir, fixtureDir);
     });
 
     bench("incremental hasher (warm cache)", async () => {
         const hasher = new IncrementalFileHasher({ workspaceRoot: fixtureDir });
+
         await hasher.hashDirectory(srcDir);
         await hasher.hashDirectory(srcDir);
     });
@@ -137,6 +144,7 @@ describe("file hashing - large project (2000 files × 8KB)", () => {
 
         for (const file of files) {
             const content = readFileSync(join(srcDir, file));
+
             createHash("sha256").update(content).digest("hex");
         }
     });
@@ -150,14 +158,17 @@ describe("file hashing - large project (2000 files × 8KB)", () => {
 
     bench("native Rust xxHash3 parallel (our addon)", async () => {
         const native = loadNativeBindings();
+
         if (!native) {
             return;
         }
+
         native.hashFilesInDirectory(srcDir, fixtureDir);
     });
 
     bench("incremental hasher (warm cache)", async () => {
         const hasher = new IncrementalFileHasher({ workspaceRoot: fixtureDir });
+
         await hasher.hashDirectory(srcDir);
         await hasher.hashDirectory(srcDir);
     });

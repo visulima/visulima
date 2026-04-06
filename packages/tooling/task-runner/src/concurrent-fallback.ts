@@ -9,10 +9,10 @@
  * This is the same approach used by npm/pnpm/yarn themselves.
  */
 
-import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
+import { spawn } from "node:child_process";
 
-import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunResult, ConcurrentRunnerOptions, ProcessEvent } from "./types";
+import type { ConcurrentCloseEvent, ConcurrentCommandConfig, ConcurrentRunnerOptions, ConcurrentRunResult, ProcessEvent } from "./types";
 
 interface ActiveProcess {
     child: ChildProcess;
@@ -149,6 +149,7 @@ const spawnCommand = (
 
     // Stream stdout line by line
     let stdoutBuffer = "";
+
     child.stdout?.on("data", (data: Buffer) => {
         stdoutBuffer += data.toString();
         const lines = stdoutBuffer.split("\n");
@@ -171,6 +172,7 @@ const spawnCommand = (
 
     // Stream stderr line by line
     let stderrBuffer = "";
+
     child.stderr?.on("data", (data: Buffer) => {
         stderrBuffer += data.toString();
         const lines = stderrBuffer.split("\n");
@@ -227,117 +229,121 @@ const spawnCommand = (
  * Run commands concurrently using pure JavaScript (child_process.spawn).
  * This is the fallback when the native Rust addon is unavailable.
  */
-export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => {
-    return new Promise((resolve) => {
-        if (commands.length === 0) {
-            resolve({ closeEvents: [], success: true });
-            return;
+export const runConcurrentFallback = (commands: ConcurrentCommandConfig[], options: ConcurrentRunnerOptions): Promise<ConcurrentRunResult> => new Promise((resolve) => {
+    if (commands.length === 0) {
+        resolve({ closeEvents: [], success: true });
+
+        return;
+    }
+
+    const maxProcesses = options.maxProcesses && options.maxProcesses > 0 ? options.maxProcesses : commands.length;
+    const killSignal = options.killSignal ?? "SIGTERM";
+    const killOthers = options.killOthers ?? [];
+    const successCondition = options.successCondition ?? "all";
+    const onEvent = options.onEvent ?? (() => {});
+
+    const active: ActiveProcess[] = [];
+    const closeEvents: ConcurrentCloseEvent[] = [];
+    const pending = commands.map((_, i) => i);
+    let aborting = false;
+    let sigintAbort = false;
+
+    const killAll = (): void => {
+        for (const proc of active) {
+            if (proc.child.pid) {
+                killTree(proc.child.pid, killSignal);
+            }
+        }
+    };
+
+    const shouldKillOthers = (event: ConcurrentCloseEvent): boolean => {
+        for (const condition of killOthers) {
+            if (condition === "failure" && event.exitCode !== 0) {
+                return true;
+            }
+
+            if (condition === "success" && event.exitCode === 0) {
+                return true;
+            }
         }
 
-        const maxProcesses = options.maxProcesses && options.maxProcesses > 0 ? options.maxProcesses : commands.length;
-        const killSignal = options.killSignal ?? "SIGTERM";
-        const killOthers = options.killOthers ?? [];
-        const successCondition = options.successCondition ?? "all";
-        const onEvent = options.onEvent ?? (() => {});
+        return false;
+    };
 
-        const active: ActiveProcess[] = [];
-        const closeEvents: ConcurrentCloseEvent[] = [];
-        const pending = commands.map((_, i) => i);
-        let aborting = false;
-        let sigintAbort = false;
+    const maybeSpawnMore = (): void => {
+        while (active.length < maxProcesses && pending.length > 0) {
+            const cmdIndex = pending.shift()!;
+            const config = commands[cmdIndex]!;
 
-        const killAll = (): void => {
-            for (const proc of active) {
-                if (proc.child.pid) {
-                    killTree(proc.child.pid, killSignal);
-                }
-            }
-        };
+            const proc = spawnCommand(cmdIndex, config, options.shellPath, onEvent, (closeEvent) => {
+                // Remove from active
+                const index = active.findIndex((p) => p.index === cmdIndex);
 
-        const shouldKillOthers = (event: ConcurrentCloseEvent): boolean => {
-            for (const condition of killOthers) {
-                if (condition === "failure" && event.exitCode !== 0) {
-                    return true;
+                if (index !== -1) {
+                    active.splice(index, 1);
                 }
 
-                if (condition === "success" && event.exitCode === 0) {
-                    return true;
+                if (aborting) {
+                    closeEvent.killed = true;
+
+                    // SIGINT (Ctrl+C) translates to exit code 0 -- user cancellation
+                    // is not a failure. Matches concurrently behavior.
+                    if (sigintAbort) {
+                        closeEvent.exitCode = 0;
+                    }
                 }
-            }
-            return false;
-        };
 
-        const maybeSpawnMore = (): void => {
-            while (active.length < maxProcesses && pending.length > 0) {
-                const cmdIndex = pending.shift()!;
-                const config = commands[cmdIndex]!;
+                closeEvents.push(closeEvent);
 
-                const proc = spawnCommand(cmdIndex, config, options.shellPath, onEvent, (closeEvent) => {
-                    // Remove from active
-                    const idx = active.findIndex((p) => p.index === cmdIndex);
-                    if (idx !== -1) {
-                        active.splice(idx, 1);
-                    }
+                // Check kill-others
+                if (!aborting && shouldKillOthers(closeEvent)) {
+                    aborting = true;
+                    killAll();
+                }
 
-                    if (aborting) {
-                        closeEvent.killed = true;
-                        // SIGINT (Ctrl+C) translates to exit code 0 -- user cancellation
-                        // is not a failure. Matches concurrently behavior.
-                        if (sigintAbort) {
-                            closeEvent.exitCode = 0;
-                        }
-                    }
+                // Spawn more or finish
+                if (!aborting) {
+                    maybeSpawnMore();
+                }
 
-                    closeEvents.push(closeEvent);
+                if (active.length === 0 && pending.length === 0) {
+                    const success = evaluateSuccess(closeEvents, successCondition);
 
-                    // Check kill-others
-                    if (!aborting && shouldKillOthers(closeEvent)) {
-                        aborting = true;
-                        killAll();
-                    }
+                    resolve({ closeEvents, success });
+                }
+            });
 
-                    // Spawn more or finish
-                    if (!aborting) {
-                        maybeSpawnMore();
-                    }
+            active.push(proc);
+        }
+    };
 
-                    if (active.length === 0 && pending.length === 0) {
-                        const success = evaluateSuccess(closeEvents, successCondition);
-                        resolve({ closeEvents, success });
-                    }
-                });
+    // Handle signals -- clean up listeners when done
+    const handleSigint = (): void => {
+        if (!aborting) {
+            aborting = true;
+            sigintAbort = true;
+            killAll();
+        }
+    };
 
-                active.push(proc);
-            }
-        };
+    const handleSigterm = (): void => {
+        if (!aborting) {
+            aborting = true;
+            killAll();
+        }
+    };
 
-        // Handle signals -- clean up listeners when done
-        const handleSigint = (): void => {
-            if (!aborting) {
-                aborting = true;
-                sigintAbort = true;
-                killAll();
-            }
-        };
+    process.on("SIGINT", handleSigint);
+    process.on("SIGTERM", handleSigterm);
 
-        const handleSigterm = (): void => {
-            if (!aborting) {
-                aborting = true;
-                killAll();
-            }
-        };
+    const originalResolve = resolve;
 
-        process.on("SIGINT", handleSigint);
-        process.on("SIGTERM", handleSigterm);
+    resolve = ((result: ConcurrentRunResult) => {
+        process.removeListener("SIGINT", handleSigint);
+        process.removeListener("SIGTERM", handleSigterm);
+        originalResolve(result);
+    }) as typeof resolve;
 
-        const originalResolve = resolve;
-        resolve = ((result: ConcurrentRunResult) => {
-            process.removeListener("SIGINT", handleSigint);
-            process.removeListener("SIGTERM", handleSigterm);
-            originalResolve(result);
-        }) as typeof resolve;
-
-        // Start spawning
-        maybeSpawnMore();
-    });
-};
+    // Start spawning
+    maybeSpawnMore();
+});

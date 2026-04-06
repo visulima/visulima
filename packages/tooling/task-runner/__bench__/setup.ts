@@ -15,6 +15,7 @@ import type { ProjectGraph, Task, TaskGraph } from "../src/types";
 export const createFixtureFiles = (fileCount: number, fileSizeBytes: number): string => {
     const dir = mkdtempSync(join(tmpdir(), "task-runner-bench-"));
     const srcDir = join(dir, "src");
+
     mkdirSync(srcDir, { recursive: true });
 
     const content = "a".repeat(fileSizeBytes);
@@ -27,9 +28,9 @@ export const createFixtureFiles = (fileCount: number, fileSizeBytes: number): st
     writeFileSync(
         join(dir, "package.json"),
         JSON.stringify({
+            dependencies: { lodash: "^4.17.21" },
             name: "bench-fixture",
             version: "1.0.0",
-            dependencies: { lodash: "^4.17.21" },
         }),
     );
 
@@ -49,6 +50,7 @@ export const cleanupFixture = (dir: string): void => {
 export const createMonorepoFixture = (packageCount: number, filesPerPackage: number, fileSizeBytes: number): string => {
     const root = mkdtempSync(join(tmpdir(), "task-runner-bench-mono-"));
     const packagesDir = join(root, "packages");
+
     mkdirSync(packagesDir, { recursive: true });
 
     // Root lockfile
@@ -60,14 +62,15 @@ export const createMonorepoFixture = (packageCount: number, filesPerPackage: num
     for (let p = 0; p < packageCount; p++) {
         const pkgDir = join(packagesDir, `pkg-${p}`);
         const srcDir = join(pkgDir, "src");
+
         mkdirSync(srcDir, { recursive: true });
 
         writeFileSync(
             join(pkgDir, "package.json"),
             JSON.stringify({
+                dependencies: p > 0 ? { [`@bench/pkg-${p - 1}`]: "^1.0.0" } : {},
                 name: `@bench/pkg-${p}`,
                 version: "1.0.0",
-                dependencies: p > 0 ? { [`@bench/pkg-${p - 1}`]: "^1.0.0" } : {},
             }),
         );
 
@@ -88,6 +91,7 @@ export const buildTaskGraph = (packageCount: number): TaskGraph => {
 
     for (let i = 0; i < packageCount; i++) {
         const taskId = `pkg-${i}:build`;
+
         tasks[taskId] = {
             id: taskId,
             outputs: [`packages/pkg-${i}/dist`],
@@ -112,6 +116,7 @@ export const buildProjectGraph = (packageCount: number): ProjectGraph => {
 
     for (let i = 0; i < packageCount; i++) {
         const name = `pkg-${i}`;
+
         nodes[name] = {
             data: {
                 root: `packages/${name}`,

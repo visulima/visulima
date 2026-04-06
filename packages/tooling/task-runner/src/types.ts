@@ -197,6 +197,7 @@ export interface TypeBoundaries {
      * depend on libraries.
      */
     allowedDependencyTypes?: Record<string, string[]>;
+
     /**
      * When true, no project may depend on an "application" type project.
      * Applications are typically deployment targets, not libraries.
@@ -501,15 +502,15 @@ export interface TaskRunnerContext {
 /**
  * Input for a concurrent command -- either a string or a config object.
  */
-export type ConcurrentCommandInput =
-    | string
-    | {
-          command: string;
-          cwd?: string;
-          env?: Record<string, string>;
-          name?: string;
-          stdin?: "inherit" | "null" | "pipe";
-      };
+export type ConcurrentCommandInput
+    = | string
+        | {
+            command: string;
+            cwd?: string;
+            env?: Record<string, string>;
+            name?: string;
+            stdin?: "inherit" | "null" | "pipe";
+        };
 
 /**
  * Configuration for a single command to run concurrently.
@@ -525,6 +526,7 @@ export interface ConcurrentCommandConfig {
     name?: string;
     /** Whether to use shell execution (default: true). */
     shell?: boolean;
+
     /**
      * Stdin mode for the child process.
      * - "null" (default): stdin closed, child cannot read input
@@ -548,12 +550,7 @@ export interface ConcurrentRunnerOptions {
     maxProcesses?: number;
     /** Callback for real-time process events. */
     onEvent?: (event: ProcessEvent) => void;
-    /**
-     * Custom shell path for command execution.
-     * Overrides the platform default (/bin/sh on Unix, cmd.exe on Windows).
-     * Automatically detected from npm's `script-shell` config if not set.
-     */
-    shellPath?: string;
+
     /** Restart options for failed commands. */
     restart?: {
         /** Delay between restarts in ms. "exponential" for 2^attempt * 1000ms. */
@@ -561,7 +558,14 @@ export interface ConcurrentRunnerOptions {
         /** Maximum restart attempts per command. 0 = no restarts. -1 = infinite. */
         tries: number;
     };
-    /** Success condition: "first", "last", "all", or "command-<name|index>". */
+
+    /**
+     * Custom shell path for command execution.
+     * Overrides the platform default (/bin/sh on Unix, cmd.exe on Windows).
+     * Automatically detected from npm's `script-shell` config if not set.
+     */
+    shellPath?: string;
+    /** Success condition: "first", "last", "all", or "command-&lt;name|index>". */
     successCondition?: string;
     /** Commands to run sequentially after all processes complete. */
     teardown?: string[];
