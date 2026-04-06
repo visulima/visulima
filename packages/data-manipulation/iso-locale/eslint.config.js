@@ -1,24 +1,27 @@
 import { createConfig } from "@anolilab/eslint-config";
 
 /** @type {import("@anolilab/eslint-config").PromiseFlatConfigComposer} */
-export default createConfig({
-    ignores: [
-        "dist",
-        "node_modules",
-        "coverage",
-        "__fixtures__",
-        "__docs__",
-        "vitest.config.ts",
-        "packem.config.ts",
-        ".secretlintrc.cjs",
-        "package.json",
-        "README.md",
-        "research.md",
-        ".prettierrc.cjs",
-    ],
-}, {
-    files: ["src/data/*.ts"],
-    rules: {
-        "sonarjs/file-name-differ-from-class": "off",
+export default createConfig(
+    {
+        ignores: [
+            "dist",
+            "node_modules",
+            "coverage",
+            "__fixtures__",
+            "__docs__",
+            "vitest.config.ts",
+            "packem.config.ts",
+            ".secretlintrc.cjs",
+            "package.json",
+            "README.md",
+            "research.md",
+            "prettier.config.js",
+        ],
     },
-});
+    {
+        files: ["src/data/*.ts"],
+        rules: {
+            "sonarjs/file-name-differ-from-class": "off",
+        },
+    },
+);
