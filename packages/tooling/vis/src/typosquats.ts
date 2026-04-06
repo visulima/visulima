@@ -7,8 +7,8 @@
  */
 
 import { createInterface } from "node:readline";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { red, yellow } from "@visulima/colorize";
@@ -198,10 +198,15 @@ export const checkTyposquat = (packageName: string): TyposquatMatch | undefined 
 };
 
 /** Check multiple package names. Returns only the matches (empty if all safe). */
-export const checkTyposquats = (packageNames: string[]): TyposquatMatch[] => {
+export const checkTyposquats = (packageNames: string[], allowlist?: string[]): TyposquatMatch[] => {
+    const allowed = allowlist ? new Set(allowlist) : undefined;
     const matches: TyposquatMatch[] = [];
 
     for (const name of packageNames) {
+        if (allowed?.has(name)) {
+            continue;
+        }
+
         const match = checkTyposquat(name);
 
         if (match) {
@@ -224,8 +229,8 @@ export const checkTyposquats = (packageNames: string[]): TyposquatMatch[] => {
  *
  * Non-interactive mode always aborts.
  */
-export const runTyposquatCheck = async (packageNames: string[]): Promise<TyposquatCheckResult> => {
-    const matches = checkTyposquats(packageNames);
+export const runTyposquatCheck = async (packageNames: string[], allowlist?: string[]): Promise<TyposquatCheckResult> => {
+    const matches = checkTyposquats(packageNames, allowlist);
 
     if (matches.length === 0) {
         return { ok: true, packages: packageNames };
@@ -274,4 +279,87 @@ export const runTyposquatCheck = async (packageNames: string[]): Promise<Typosqu
     }
 
     return { ok: false, packages: packageNames };
+};
+
+// ── package.json scanning ──────────────────────────────────────────
+
+/**
+ * Reads dependency names from a package.json file.
+ * Returns a flat array of all dependency names (dependencies, devDependencies,
+ * optionalDependencies, peerDependencies).
+ */
+const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
+    if (!existsSync(packageJsonPath)) {
+        return [];
+    }
+
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+        optionalDependencies?: Record<string, string>;
+        peerDependencies?: Record<string, string>;
+    };
+
+    return [
+        ...Object.keys(pkg.dependencies ?? {}),
+        ...Object.keys(pkg.devDependencies ?? {}),
+        ...Object.keys(pkg.optionalDependencies ?? {}),
+        ...Object.keys(pkg.peerDependencies ?? {}),
+    ];
+};
+
+/**
+ * Scan package.json dependencies for potential typosquats.
+ *
+ * Unlike `runTyposquatCheck` (used by `add`), this cannot replace names because
+ * they live in package.json. It warns the user and asks whether to proceed.
+ *
+ * In non-interactive mode, always aborts.
+ *
+ * @returns `true` to proceed, `false` to abort.
+ */
+export const scanDepsForTyposquats = async (cwd: string, allowlist?: string[]): Promise<boolean> => {
+    const packageJsonPath = join(cwd, "package.json");
+    const depNames = readDepsFromPackageJson(packageJsonPath);
+
+    if (depNames.length === 0) {
+        return true;
+    }
+
+    const matches = checkTyposquats(depNames, allowlist);
+
+    if (matches.length === 0) {
+        return true;
+    }
+
+    warn("");
+    warn(red(`Possible typosquat${matches.length === 1 ? "" : "s"} in package.json dependencies:`));
+
+    for (const match of matches) {
+        const method = match.method === "blocklist" ? "known typosquat" : "similar name";
+
+        warn(`  ${yellow("\u26A0")} ${red(match.input)} \u2014 did you mean ${yellow(match.legitimate)}? (${method})`);
+    }
+
+    warn("");
+    warn("Fix the package name in package.json before proceeding.");
+
+    // Non-interactive: always block
+    if (!process.stdin.isTTY) {
+        warn("Aborting: potential typosquat detected in non-interactive mode. Use --no-typosquat-check to skip.");
+
+        return false;
+    }
+
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    const answer = await new Promise<string>((resolve) => {
+        rl.question("Continue anyway? [y/N] ", (a) => {
+            resolve(a.trim().toLowerCase());
+        });
+    });
+
+    rl.close();
+
+    return answer === "y" || answer === "yes";
 };

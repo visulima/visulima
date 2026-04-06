@@ -1,6 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck } from "../src/typosquats";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { checkTyposquat, checkTyposquats, generateVariants, runTyposquatCheck, scanDepsForTyposquats } from "../src/typosquats";
 import { parsePackageArgument } from "../src/utils";
 
 // ── generateVariants ───────────────────────────────────────────────
@@ -573,5 +577,126 @@ describe("parsePackageArgument", () => {
 
     it("should parse a scoped package with dist-tag", () => {
         expect(parsePackageArgument("@scope/pkg@latest")).toEqual({ name: "@scope/pkg", versionSpec: "latest" });
+    });
+});
+
+// ── allowlist ──────────────────────────────────────────────────────
+
+describe("checkTyposquats with allowlist", () => {
+    it("should skip allowlisted packages", () => {
+        const result = checkTyposquats(["axois", "halk"], ["axois"]);
+
+        expect(result).toHaveLength(1);
+        expect(result[0].input).toBe("halk");
+    });
+
+    it("should skip all matches when all are allowlisted", () => {
+        const result = checkTyposquats(["axois", "halk"], ["axois", "halk"]);
+
+        expect(result).toEqual([]);
+    });
+
+    it("should behave normally when allowlist is empty", () => {
+        const result = checkTyposquats(["axois"], []);
+
+        expect(result).toHaveLength(1);
+    });
+
+    it("should behave normally when allowlist is undefined", () => {
+        const result = checkTyposquats(["axois"], undefined);
+
+        expect(result).toHaveLength(1);
+    });
+});
+
+// ── scanDepsForTyposquats ──────────────────────────────────────────
+
+describe("scanDepsForTyposquats", () => {
+    let tmpDir: string;
+
+    beforeEach(() => {
+        tmpDir = mkdtempSync(join(tmpdir(), "vis-typosquat-test-"));
+    });
+
+    afterEach(() => {
+        if (existsSync(tmpDir)) {
+            rmSync(tmpDir, { recursive: true, force: true });
+        }
+    });
+
+    it("should return true when no package.json exists", async () => {
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(true);
+    });
+
+    it("should return true when package.json has no dependencies", async () => {
+        writeFileSync(join(tmpDir, "package.json"), JSON.stringify({ name: "test" }));
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(true);
+    });
+
+    it("should return true when all dependencies are safe", async () => {
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { react: "^18.0.0", express: "^4.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(true);
+    });
+
+    it("should return false in non-TTY mode when a typosquat is found", async () => {
+        Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { axois: "^1.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(false);
+    });
+
+    it("should skip allowlisted deps", async () => {
+        Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                dependencies: { axois: "^1.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir, ["axois"]);
+
+        expect(result).toBe(true);
+    });
+
+    it("should scan all dependency types", async () => {
+        Object.defineProperty(process.stdin, "isTTY", { value: false, writable: true });
+
+        writeFileSync(
+            join(tmpDir, "package.json"),
+            JSON.stringify({
+                name: "test",
+                devDependencies: { axois: "^1.0.0" },
+            }),
+        );
+
+        const result = await scanDepsForTyposquats(tmpDir);
+
+        expect(result).toBe(false);
     });
 });

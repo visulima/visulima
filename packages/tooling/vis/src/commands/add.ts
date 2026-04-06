@@ -268,7 +268,7 @@ const add: Command = {
         // Typosquat check (unless disabled)
         if (!options["no-typosquat-check"]) {
             const parsed = packages.map((p: string) => parsePackageArgument(p));
-            const result = await runTyposquatCheck(parsed.map((p) => p.name));
+            const result = await runTyposquatCheck(parsed.map((p) => p.name), visConfig?.security?.typosquatAllowlist);
 
             if (!result.ok) {
                 process.exitCode = 1;

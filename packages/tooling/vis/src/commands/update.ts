@@ -33,7 +33,7 @@ import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import { buildSocketOptions, scoreColor } from "../socket-security";
-import { runTyposquatCheck } from "../typosquats";
+import { runTyposquatCheck, scanDepsForTyposquats } from "../typosquats";
 import { parsePackageArgument } from "../utils";
 import type { VisConfig } from "../workspace";
 
@@ -455,27 +455,40 @@ const update: Command = {
         const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
 
-        // Typosquat check on explicit package arguments
-        if (argument.length > 0 && !options["no-typosquat-check"]) {
-            const parsed = argument.map((a: string) => parsePackageArgument(a));
-            const result = await runTyposquatCheck(parsed.map((p) => p.name));
+        // Typosquat check
+        if (!options["no-typosquat-check"]) {
+            if (argument.length > 0) {
+                // Explicit package arguments: offer name correction
+                const parsed = argument.map((a: string) => parsePackageArgument(a));
+                const allowlist = visConfig?.security?.typosquatAllowlist;
+                const result = await runTyposquatCheck(parsed.map((p) => p.name), allowlist);
 
-            if (!result.ok) {
-                process.exitCode = 1;
+                if (!result.ok) {
+                    process.exitCode = 1;
 
-                return;
-            }
-
-            // Rebuild args with corrected names, preserving version specifiers
-            argument = parsed.map((p, i) => {
-                const corrected = result.packages[i];
-
-                if (corrected !== p.name) {
-                    return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                    return;
                 }
 
-                return argument[i];
-            });
+                // Rebuild args with corrected names, preserving version specifiers
+                argument = parsed.map((p, i) => {
+                    const corrected = result.packages[i];
+
+                    if (corrected !== p.name) {
+                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                    }
+
+                    return argument[i];
+                });
+            } else {
+                // No explicit args: scan package.json deps for typosquats
+                const shouldContinue = await scanDepsForTyposquats(workspaceRoot, visConfig?.security?.typosquatAllowlist);
+
+                if (!shouldContinue) {
+                    process.exitCode = 1;
+
+                    return;
+                }
+            }
         }
 
         // Rollback mode
