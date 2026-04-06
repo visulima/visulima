@@ -9,11 +9,12 @@ title: "API Reference"
 Find tsconfig.json file.
 
 **Signature:**
+
 ```typescript
 function findTsConfig(cwd?: string): Promise<{
     path: string;
     config: TsConfig;
-} | null>
+} | null>;
 ```
 
 ## readTsConfig()
@@ -21,14 +22,13 @@ function findTsConfig(cwd?: string): Promise<{
 Read and parse tsconfig.json file.
 
 **Signature:**
+
 ```typescript
-function readTsConfig(
-    path: string,
-    options?: { tscCompatible?: boolean }
-): Promise<TsConfig>
+function readTsConfig(path: string, options?: { tscCompatible?: boolean }): Promise<TsConfig>;
 ```
 
 **Options:**
+
 - `tscCompatible` - Parse in TypeScript compiler compatible mode
 
 ## writeTsConfig()
@@ -36,14 +36,13 @@ function readTsConfig(
 Write tsconfig.json file.
 
 **Signature:**
+
 ```typescript
-function writeTsConfig(
-    config: TsConfig,
-    options?: { cwd?: string }
-): Promise<void>
+function writeTsConfig(config: TsConfig, options?: { cwd?: string }): Promise<void>;
 ```
 
 **Options:**
+
 - `cwd` - Directory to write tsconfig.json
 
 ## TsConfig Type

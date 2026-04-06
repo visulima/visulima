@@ -69,7 +69,7 @@ describe("node_modules", () => {
         it("implicit tsconfig.json", async () => {
             expect.assertions(1);
 
-            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), "require(\"fs\")");
+            writeFileSync(join(distribution, "node_modules", "dep", "index.js"), 'require("fs")');
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
                 main: "./index.js",
             });
@@ -325,7 +325,7 @@ describe("node_modules", () => {
         });
     });
 
-    it("directory named \"tsconfig.json\"", async () => {
+    it('directory named "tsconfig.json"', async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.json", "tsconfig.json"), {

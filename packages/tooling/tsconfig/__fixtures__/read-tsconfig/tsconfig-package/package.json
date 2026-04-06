@@ -1,5 +1,5 @@
 {
-  "name": "tsconfig-package",
-  "devDependencies": {},
-  "tsconfig": "./some-config.json"
+    "name": "tsconfig-package",
+    "devDependencies": {},
+    "tsconfig": "./some-config.json"
 }

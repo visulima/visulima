@@ -557,7 +557,6 @@ This is an open source project and will always remain free to use. If you think 
 
 The visulima tsconfig is open-sourced software licensed under the [MIT][license]
 
-
 <!-- badges -->
 
 [license-badge]: https://img.shields.io/npm/l/@visulima/tsconfig?style=for-the-badge
