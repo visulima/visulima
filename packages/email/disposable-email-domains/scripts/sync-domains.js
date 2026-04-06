@@ -9,13 +9,15 @@ import DisposableEmailSyncManager from "./disposable-email-sync-manager.js";
 const filename = fileURLToPath(import.meta.url);
 const dirnamePath = dirname(filename);
 
+const GITHUB_REPO_REGEX = /github\.com\/([^/]+\/[^/]+)/;
+
 /**
  * Extracts repository name from GitHub URL
  * @param {string} url - GitHub repository URL
  * @returns {string} Repository name in format "owner/repo"
  */
 const extractRepoName = (url) => {
-    const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
+    const match = url.match(GITHUB_REPO_REGEX);
 
     if (match) {
         return match[1];
