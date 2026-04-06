@@ -4,8 +4,7 @@ import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
 import { sanitizeHtml } from "../utils/sanitize";
 
 const tooltip = ({ message }: { message?: string } = {}): string => {
-    if (!message)
-        return "";
+    if (!message) return "";
 
     const safe = sanitizeHtml(message);
 

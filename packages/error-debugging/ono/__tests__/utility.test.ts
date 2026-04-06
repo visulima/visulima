@@ -13,7 +13,7 @@ describe("utilities", () => {
             it("should sanitize HTML content", () => {
                 expect.assertions(2);
 
-                const input = "<script>alert(\"xss\")</script><p>Hello</p>";
+                const input = '<script>alert("xss")</script><p>Hello</p>';
                 const result = sanitizeHtml(input);
 
                 expect(result).toBe("<p>Hello</p>");
@@ -49,7 +49,7 @@ describe("utilities", () => {
             it("should sanitize attribute values", () => {
                 expect.assertions(2);
 
-                const input = "\"onload=alert(1)\"";
+                const input = '"onload=alert(1)"';
                 const result = sanitizeAttribute(input);
 
                 expect(result).toContain("&quot;");
@@ -65,7 +65,7 @@ describe("utilities", () => {
                 // DOMPurify might already escape some characters, so we check that dangerous chars are escaped
                 expect(result).not.toContain("<");
                 expect(result).not.toContain(">");
-                expect(result).not.toContain("\"");
+                expect(result).not.toContain('"');
                 expect(result).not.toContain("'");
                 expect(result).toContain("&");
             });
