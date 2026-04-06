@@ -17,4 +17,4 @@ export const copySetLoose = <Value extends Set<unknown>>(set: Value, state: Stat
 /**
  * Deeply copy the values of the original, as well as any custom properties.
  */
-export const copySetStrict = <Value extends Set<unknown>>(set: Value, state: State): Value => copyOwnProperties(set, copySetLoose<Value>(set, state), state);
+export const copySetStrict = <Value extends Set<unknown>>(set: Value, state: State): Value => copyOwnProperties(set, copySetLoose(set, state), state);

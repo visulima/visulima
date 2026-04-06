@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment */
 import type { State } from "../types";
 import copyOwnProperties from "../utils/copy-own-properties";
 

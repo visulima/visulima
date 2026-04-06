@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file,sonarjs/pseudo-random,@typescript-eslint/no-base-to-string,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument,@typescript-eslint/require-await,sonarjs/no-empty-group,e18e/prefer-static-regex,@typescript-eslint/unbound-method,@typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-return,unicorn/no-null */
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
@@ -39,8 +40,8 @@ describe(deepClone, () => {
 
         expect(() => {
             const entries = [
-                [new Object(), "foo"],
-                [new Object(), 64],
+                [{}, "foo"],
+                [{}, 64],
             ] as const;
 
             deepClone(new WeakMap<object, unknown>(entries));
@@ -65,7 +66,7 @@ describe(deepClone, () => {
         expect.assertions(3);
 
         expect(() => {
-            const values = [new Object(), new Object()];
+            const values = [{}, {}];
 
             deepClone(new WeakSet(values));
         }).toThrow(TypeError);
@@ -104,10 +105,7 @@ describe(deepClone, () => {
         expect.assertions(2);
 
         try {
-            // eslint-disable-next-line compat/compat
-            const promise = new Promise((resolve) => {
-                resolve(undefined);
-            });
+            const promise = Promise.resolve(undefined);
 
             deepClone(promise);
         } catch (error) {
@@ -116,7 +114,6 @@ describe(deepClone, () => {
         }
 
         try {
-            // eslint-disable-next-line compat/compat
             deepClone(new Promise(() => {}));
         } catch (error) {
             // eslint-disable-next-line vitest/no-conditional-expect
@@ -465,7 +462,7 @@ describe(deepClone, () => {
         it(`${label} clone a deep array`, async () => {
             expect.assertions(9);
 
-            const o = [{ a: 1, b: 2 }, [3], [[], 123_456_789n, undefined], new Object()];
+            const o = [{ a: 1, b: 2 }, [3], [[], 123_456_789n, undefined], {}];
 
             // eslint-disable-next-line vitest/prefer-strict-equal
             expect(clone(o), "same values").toEqual(o);
@@ -988,7 +985,7 @@ describe(deepClone, () => {
                 },
             });
 
-            const error4 = clone(error3) as any;
+            const error4 = clone(error3);
 
             expect((error3 as any).beep, "accessor descriptor").toStrictEqual(error4.beep);
             expect((error3 as any).boop, "accessor descriptor").toStrictEqual(error4.boop);
@@ -1041,7 +1038,7 @@ describe(deepClone, () => {
 
         const yeeInput = /foobar/;
 
-        assertRegExp(deepClone<RegExp>(yeeInput) as RegExp, yeeInput);
+        assertRegExp(deepClone(yeeInput) as RegExp, yeeInput);
     });
 
     it(`clone strict a RegExp with extra functions`, async () => {
@@ -1054,7 +1051,7 @@ describe(deepClone, () => {
         (yeeInput as any).haw = { [key]: 7 };
         (yeeInput as any).yeehaw = true;
 
-        const yeeCopy = deepClone<RegExp>(yeeInput, { strict: true });
+        const yeeCopy = deepClone(yeeInput, { strict: true });
 
         expect((yeeCopy as any).haw[key]).toBe((yeeInput as any).haw[key]);
 

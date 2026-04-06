@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call,@typescript-eslint/unbound-method */
 import type { TypedArray } from "../types";
 
 const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | TypedArray>(arrayBuffer: Value): Value => {

@@ -7,7 +7,7 @@ export const copyArrayLoose = <Value extends unknown[]>(array: Value, state: Sta
     // set in the cache immediately to be able to reuse the object recursively
     state.cache.set(array, clone);
 
-    // eslint-disable-next-line no-loops/no-loops,no-plusplus
+    // eslint-disable-next-line no-plusplus
     for (let index = 0, { length } = array; index < length; ++index) {
         clone[index] = state.clone(array[index], state);
     }
