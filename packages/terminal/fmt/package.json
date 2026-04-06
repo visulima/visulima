@@ -1,124 +1,124 @@
 {
-  "name": "@visulima/fmt",
-  "version": "2.0.0-alpha.7",
-  "description": "Util.format-like string formatting utility.",
-  "keywords": [
-    "anolilab",
-    "fmt",
-    "format",
-    "formatter",
-    "formatting",
-    "quick-format-unescaped",
-    "str",
-    "string",
-    "string-format",
-    "util",
-    "util.format",
-    "visulima"
-  ],
-  "homepage": "https://visulima.com/packages/fmt/",
-  "bugs": {
-    "url": "https://github.com/visulima/visulima/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/visulima/visulima.git",
-    "directory": "packages/terminal/fmt"
-  },
-  "funding": [
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/prisis"
+    "name": "@visulima/fmt",
+    "version": "2.0.0-alpha.7",
+    "description": "Util.format-like string formatting utility.",
+    "keywords": [
+        "anolilab",
+        "fmt",
+        "format",
+        "formatter",
+        "formatting",
+        "quick-format-unescaped",
+        "str",
+        "string",
+        "string-format",
+        "util",
+        "util.format",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/fmt/",
+    "bugs": {
+        "url": "https://github.com/visulima/visulima/issues"
     },
-    {
-      "type": "consulting",
-      "url": "https://anolilab.com/support"
-    }
-  ],
-  "license": "MIT",
-  "author": {
-    "name": "Daniel Bannert",
-    "email": "d.bannert@anolilab.de"
-  },
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/fmt"
     },
-    "./package.json": "./package.json"
-  },
-  "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "typesVersions": {
-    ">=5.0": {
-      ".": [
-        "./dist/index.d.ts"
-      ]
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
+        },
+        "./package.json": "./package.json"
+    },
+    "main": "dist/index.cjs",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ]
+        }
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "lint:attw": "attw --pack",
+        "lint:eslint": "eslint . --cache --concurrency auto ",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:bench": "vitest bench",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "quick-format-unescaped": "catalog:dev",
+        "rimraf": "catalog:node",
+        "semantic-release": "catalog:cli",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "engines": {
+        "node": ">=22.13 <=25.x"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
     }
-  },
-  "files": [
-    "dist/**",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE.md"
-  ],
-  "scripts": {
-    "build": "packem build --development",
-    "build:prod": "packem build --production",
-    "clean": "rimraf node_modules dist .eslintcache",
-    "dev": "pnpm run build --watch",
-    "lint:attw": "attw --pack",
-    "lint:eslint": "eslint . --cache --concurrency auto ",
-    "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
-    "lint:package-json": "publint --strict",
-    "lint:prettier": "prettier --config=.prettierrc.cjs --check .",
-    "lint:prettier:fix": "prettier --config=.prettierrc.cjs --write .",
-    "lint:types": "tsc --noEmit",
-    "test": "vitest run",
-    "test:bench": "vitest bench",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui --coverage.enabled=true",
-    "test:watch": "vitest"
-  },
-  "devDependencies": {
-    "@anolilab/eslint-config": "catalog:lint",
-    "@anolilab/prettier-config": "catalog:lint",
-    "@anolilab/semantic-release-pnpm": "catalog:dev",
-    "@anolilab/semantic-release-preset": "catalog:dev",
-    "@arethetypeswrong/cli": "catalog:dev",
-    "@types/node": "catalog:types",
-    "@visulima/packem": "catalog:dev",
-    "@vitest/coverage-v8": "catalog:test",
-    "@vitest/ui": "catalog:test",
-    "conventional-changelog-conventionalcommits": "catalog:dev",
-    "esbuild": "catalog:build",
-    "eslint": "catalog:lint",
-    "prettier": "catalog:lint",
-    "publint": "catalog:dev",
-    "quick-format-unescaped": "catalog:dev",
-    "rimraf": "catalog:node",
-    "semantic-release": "catalog:cli",
-    "typescript": "catalog:tsc",
-    "vitest": "catalog:test"
-  },
-  "engines": {
-    "node": ">=22.13 <=25.x"
-  },
-  "os": [
-    "darwin",
-    "linux",
-    "win32"
-  ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  }
 }
