@@ -91,8 +91,8 @@ const AI_TIMEOUT_MS = 120_000;
 const buildPackageList = (outdated: OutdatedEntry[]): string =>
     outdated
         .map((entry) => {
-            const vulnInfo
-                = entry.vulnerabilities && entry.vulnerabilities.length > 0
+            const vulnInfo =
+                entry.vulnerabilities && entry.vulnerabilities.length > 0
                     ? ` [VULNERABILITIES: ${entry.vulnerabilities.map((v) => `${v.severity} ${v.id}`).join(", ")}]`
                     : "";
 
@@ -308,8 +308,8 @@ const ruleBasedAnalysis = (outdated: OutdatedEntry[], analysisType: AnalysisType
             riskLevel = "high";
             action = breakingChanges.length > 0 ? "review" : "update";
             effort = "medium";
-            reason
-                = breakingChanges.length > 0
+            reason =
+                breakingChanges.length > 0
                     ? `Major update with known breaking changes: ${breakingChanges[0]}`
                     : "Major version update, review changelog before applying.";
         } else if (entry.updateType === "minor") {
@@ -403,7 +403,7 @@ const mergeResults = (results: AiAnalysisResult[], provider: string, analysisTyp
         analysisType,
         provider,
         recommendations,
-        summary: summaries.length === 1 ? summaries[0] ?? "" : `Analyzed ${String(recommendations.length)} packages in ${String(results.length)} batches.`,
+        summary: summaries.length === 1 ? (summaries[0] ?? "") : `Analyzed ${String(recommendations.length)} packages in ${String(results.length)} batches.`,
         warnings: [...new Set(warnings)],
     };
 };
@@ -444,12 +444,12 @@ const formatAiAnalysis = (result: AiAnalysisResult): string => {
             React.createElement(Text, null, result.summary),
             React.createElement(Text, null, ""),
             React.createElement(Table, { borderStyle: "none", data: tableData }),
-            ...result.warnings.length > 0
+            ...(result.warnings.length > 0
                 ? [
-                    React.createElement(Text, null, ""),
-                    ...result.warnings.map((warning, i) => React.createElement(Text, { dimColor: true, key: String(i) }, `  ${warning}`)),
-                ]
-                : [],
+                      React.createElement(Text, null, ""),
+                      ...result.warnings.map((warning, i) => React.createElement(Text, { dimColor: true, key: String(i) }, `  ${warning}`)),
+                  ]
+                : []),
         ),
         { columns },
     );

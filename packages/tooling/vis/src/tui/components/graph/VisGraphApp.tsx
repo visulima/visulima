@@ -328,11 +328,7 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-                    {columns}
-                    x
-                    {rows}
-                    )
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -383,25 +379,22 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-                    {" "}
-                    scroll
-                    {" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-                    {" "}
+                    </Text>{" "}
                     close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -444,9 +437,7 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
                 <Text>
                     <Text bold color="white">
                         {" "}
-                        {"\u2192"}
-                        /
-                        {"\u2190"}
+                        {"\u2192"}/{"\u2190"}
                     </Text>
                     <Text dimColor> Focus detail/list</Text>
                 </Text>
@@ -560,7 +551,13 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
                     <Box width={detailWidth}>{detailPanel}</Box>
                 </Box>
                 {footer}
-                <QuitDialog autoExitSeconds={autoExitSeconds ?? 3} onCancel={() => { setQuitDialogVisible(false); }} visible={quitDialogVisible} />
+                <QuitDialog
+                    autoExitSeconds={autoExitSeconds ?? 3}
+                    onCancel={() => {
+                        setQuitDialogVisible(false);
+                    }}
+                    visible={quitDialogVisible}
+                />
                 {helpPopup}
             </Box>
         );
@@ -575,7 +572,13 @@ const VisGraphApp = ({ autoExitSeconds = 0, store }: VisGraphAppProps): React.JS
             <Box height={listHeight}>{listPanel}</Box>
             <Box flexGrow={1}>{detailPanel}</Box>
             {footer}
-            <QuitDialog autoExitSeconds={autoExitSeconds ?? 3} onCancel={() => { setQuitDialogVisible(false); }} visible={quitDialogVisible} />
+            <QuitDialog
+                autoExitSeconds={autoExitSeconds ?? 3}
+                onCancel={() => {
+                    setQuitDialogVisible(false);
+                }}
+                visible={quitDialogVisible}
+            />
             {helpPopup}
         </Box>
     );

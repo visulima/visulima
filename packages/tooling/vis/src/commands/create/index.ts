@@ -71,7 +71,7 @@ const generateVscodeConfig = (projectDir: string): void => {
                 `${JSON.stringify(
                     {
                         ...existing,
-                        recommendations: [...new Set([...existing.recommendations || [], ...defaultExtensions.recommendations])],
+                        recommendations: [...new Set([...(existing.recommendations || []), ...defaultExtensions.recommendations])],
                     },
                     null,
                     4,
@@ -196,7 +196,7 @@ const extractRepoName = (input: string): string => {
     const last = segments.at(-1) ?? "";
 
     // Strip provider prefix (e.g., "github:" from "github:user")
-    const withoutPrefix = last.includes(":") ? last.split(":").pop() ?? last : last;
+    const withoutPrefix = last.includes(":") ? (last.split(":").pop() ?? last) : last;
 
     return toValidPackageName(withoutPrefix) || "my-project";
 };

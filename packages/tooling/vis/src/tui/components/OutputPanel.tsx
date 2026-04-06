@@ -37,14 +37,11 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
 
     const borderStyle = focused ? "bold" : "single";
     const borderColor = (() => {
-        if (statusValue === "failure")
-            return "red";
+        if (statusValue === "failure") return "red";
 
-        if (statusValue === "success" || isCacheStatus(statusValue))
-            return focused ? "green" : "gray";
+        if (statusValue === "success" || isCacheStatus(statusValue)) return focused ? "green" : "gray";
 
-        if (statusValue === "running")
-            return focused ? "white" : "cyan";
+        if (statusValue === "running") return focused ? "white" : "cyan";
 
         return focused ? "white" : "gray";
     })();
@@ -56,7 +53,7 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     const topRightTitle = duration === undefined ? undefined : formatMs(duration);
 
     // Bottom hint: context-dependent
-    const bottomTitle = taskId ? focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus" : undefined;
+    const bottomTitle = taskId ? (focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus") : undefined;
 
     // Empty state
     if (!taskId) {

@@ -95,7 +95,9 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
 
     if (socketOptions && installed.length > 0) {
         const reports = await fetchSocketReports(
-            installed.map((p) => { return { name: p.name, version: p.version }; }),
+            installed.map((p) => {
+                return { name: p.name, version: p.version };
+            }),
             socketOptions,
         );
 
@@ -121,7 +123,11 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
 
     // Also scan installed packages for known vulnerabilities (catches advisory-only CVEs)
     if (installed.length > 0) {
-        const vulnMap = await fetchVulnerabilities(installed.map((p) => { return { name: p.name, version: p.version }; }));
+        const vulnMap = await fetchVulnerabilities(
+            installed.map((p) => {
+                return { name: p.name, version: p.version };
+            }),
+        );
 
         for (const vulns of vulnMap.values()) {
             vulnCount += vulns.length;
@@ -142,7 +148,7 @@ const runAllScans = async (workspaceRoot: string, visConfig: VisConfig | undefin
 // ── Display ─────────────────────────────────────────────────────────
 
 /** Returns a colored checkmark (ok) or cross (not ok). */
-const icon = (ok: boolean): string => ok ? green("\u2713") : red("\u2717");
+const icon = (ok: boolean): string => (ok ? green("\u2713") : red("\u2717"));
 const warnIcon = yellow("\u26A0");
 
 const displayResults = (results: DoctorResults): void => {
@@ -164,14 +170,11 @@ const displayResults = (results: DoctorResults): void => {
         const patches = outdated.filter((e) => e.updateType === "patch").length;
         const parts: string[] = [];
 
-        if (majors > 0)
-            parts.push(`${String(majors)} major`);
+        if (majors > 0) parts.push(`${String(majors)} major`);
 
-        if (minors > 0)
-            parts.push(`${String(minors)} minor`);
+        if (minors > 0) parts.push(`${String(minors)} minor`);
 
-        if (patches > 0)
-            parts.push(`${String(patches)} patch`);
+        if (patches > 0) parts.push(`${String(patches)} patch`);
 
         info(`  ${warnIcon} ${String(outdated.length)} outdated (${parts.join(", ")})`);
     } else {
@@ -237,27 +240,24 @@ const displayResults = (results: DoctorResults): void => {
                 preferred++;
                 break;
             }
-            case "socket": { {
-                socketOverrides++;
-                // No default
-            }
-            break;
+            case "socket": {
+                {
+                    socketOverrides++;
+                    // No default
+                }
+                break;
             }
         }
     }
 
     if (optimizations.length > 0) {
-        if (natives > 0)
-            info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
+        if (natives > 0) info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
 
-        if (preferred > 0)
-            info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
+        if (preferred > 0) info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
 
-        if (micros > 0)
-            info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
+        if (micros > 0) info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
 
-        if (socketOverrides > 0)
-            info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
+        if (socketOverrides > 0) info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
     } else {
         info(`  ${icon(true)} No optimizations available`);
     }
@@ -380,11 +380,12 @@ const doctor: Command = {
                     optPreferred++;
                     break;
                 }
-                case "socket": { {
-                    optSocket++;
-                    // No default
-                }
-                break;
+                case "socket": {
+                    {
+                        optSocket++;
+                        // No default
+                    }
+                    break;
                 }
             }
         }
@@ -435,7 +436,9 @@ const doctor: Command = {
 
             const socketEntries = results.optimizations
                 .filter((o) => o.category === "socket" && o.overrideSpec)
-                .map((o) => { return { original: o.packageName, spec: o.overrideSpec! }; });
+                .map((o) => {
+                    return { original: o.packageName, spec: o.overrideSpec! };
+                });
 
             if (socketEntries.length > 0) {
                 const overrideResult = applyOverrides(wsRoot, join(wsRoot, "package.json"), socketEntries, pm);

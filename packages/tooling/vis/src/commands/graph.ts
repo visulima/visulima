@@ -100,7 +100,9 @@ const projectGraphToAscii = (projectGraph: ProjectGraph, maxDepth: number): stri
 
     for (const [name, node] of Object.entries(projectGraph.nodes)) {
         nodes.set(name, {
-            deps: (projectGraph.dependencies[name] ?? []).map((d) => { return { target: d.target, type: d.type }; }),
+            deps: (projectGraph.dependencies[name] ?? []).map((d) => {
+                return { target: d.target, type: d.type };
+            }),
             name,
             type: node.type,
         });

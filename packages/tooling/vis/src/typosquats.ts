@@ -181,7 +181,7 @@ const getReverseLookup = (): Map<string, string> => {
 // ── Detection ──────────────────────────────────────────────────────
 
 /** Strip scope from a package name (e.g. "@scope/foo" -> "foo"). */
-const bareName = (packageName: string): string => packageName.startsWith("@") ? (packageName.split("/")[1] ?? packageName) : packageName;
+const bareName = (packageName: string): string => (packageName.startsWith("@") ? (packageName.split("/")[1] ?? packageName) : packageName);
 
 /**
  * Check a single package name against the typosquat blocklist.

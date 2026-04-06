@@ -140,11 +140,9 @@ const TaskListPanel = ({
     title,
 }: TaskListPanelProps): React.JSX.Element => {
     const borderColor = (() => {
-        if (headerStatus === "error")
-            return "red";
+        if (headerStatus === "error") return "red";
 
-        if (headerStatus === "success")
-            return "green";
+        if (headerStatus === "success") return "green";
 
         return focused ? "white" : "gray";
     })();
