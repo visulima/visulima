@@ -481,9 +481,7 @@ const GraphSection = ({ active }: { active: boolean }) => {
         const app = (globalThis as any).__ratatatApp;
 
         if (!app) {
-
             return;
-
         }
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
@@ -1153,9 +1151,7 @@ const TabBar = ({ current, onSelect }: { current: number; onSelect: (i: number) 
         }
 
         if (e.y !== 1) {
-
             return;
-
         } // tab bar is always row 1 (border on row 0, content row 1)
 
         const hit = hitRegions.findIndex((r) => e.x >= r.start && e.x <= r.end);

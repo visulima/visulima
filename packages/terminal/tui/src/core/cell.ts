@@ -17,9 +17,7 @@ export const Cell = {
         }
 
         if (charSlot > 0x10_ff_ff) {
-
             return "";
-
         }
 
         return String.fromCodePoint(charSlot);

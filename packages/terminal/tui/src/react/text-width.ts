@@ -28,9 +28,7 @@ export function countWrappedRowsForLine(line: string, width: number): number {
     }
 
     if (line.length === 0) {
-
         return 1;
-
     }
 
     let rows = 1;

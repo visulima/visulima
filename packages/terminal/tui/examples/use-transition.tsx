@@ -24,9 +24,7 @@ function generateItems(filter) {
     const all = Array.from({ length: 200 }, (_, i) => `Item ${i + 1}: ${["Apple", "Banana", "Cherry", "Date", "Elderberry"][i % 5]}`);
 
     if (!filter) {
-
         return all.slice(0, 10);
-
     }
 
     const start = Date.now();

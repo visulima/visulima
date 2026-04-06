@@ -46,15 +46,11 @@ function valueColor(normalized: number): number {
     } // green
 
     if (normalized < 0.75) {
-
         return 226;
-
     } // yellow
 
     if (normalized < 0.9) {
-
         return 208;
-
     } // orange
 
     return 196; // red

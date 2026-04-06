@@ -50,27 +50,19 @@ function heatChar(heat: number): string {
     }
 
     if (heat < 60) {
-
         return "·";
-
     }
 
     if (heat < 100) {
-
         return "░";
-
     }
 
     if (heat < 150) {
-
         return "▒";
-
     }
 
     if (heat < 200) {
-
         return "▓";
-
     }
 
     return "█";

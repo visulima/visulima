@@ -136,9 +136,7 @@ const LogoApp = () => {
         const app = (globalThis as any).__ratatatApp;
 
         if (!app) {
-
             return;
-
         }
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {

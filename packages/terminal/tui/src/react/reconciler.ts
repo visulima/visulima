@@ -247,9 +247,7 @@ const hostConfig: ReactReconciler.HostConfig<
         const newKeys = Object.keys(newProps).filter((k) => k !== "children");
 
         if (oldKeys.length !== newKeys.length) {
-
             return true;
-
         }
 
         for (const key of newKeys) {
