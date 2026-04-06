@@ -21,14 +21,19 @@ export default createConfig(
             // Till the eslint is fixed
             "src/error-inspector/index.css",
         ],
-    typescript: {
-        tsconfigPath: "./tsconfig.eslint.json",
-    },
+        typescript: {
+            tsconfigPath: "./tsconfig.eslint.json",
+        },
     },
     {
         files: ["**/*.test.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
+            "@typescript-eslint/no-unsafe-argument": "off",
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-call": "off",
+            "@typescript-eslint/require-await": "off",
+            "e18e/ban-dependencies": "off",
             "no-secrets/no-secrets": "off",
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",

@@ -19,7 +19,7 @@ describe("usage `@visulima/find-cache-directory` npm package", () => {
         expect(received).toStrictEqual(join(__dirname, "..", "..", "node_modules", ".cache"));
     });
 
-    it(`should work as ESM package`, async () => {
+    it(`should work as ESM package`, () => {
         expect.assertions(1);
 
         const filename = join(__dirname, "..", "..", "__fixtures__/package/mjs/test.mjs");
