@@ -9,6 +9,8 @@
  * to play nicely with monorepo setups.
  */
 
+import { relative } from "node:path";
+
 import { downloadTemplate } from "giget";
 
 import { info, warn } from "../../../output";
@@ -85,18 +87,27 @@ const applyAutoFixes = (
  * directory as the first arg (e.g., `create-vite my-app`).
  *
  * Auto-fix rules are applied for known tools that need extra flags.
+ *
+ * @param config Resolved template config with source package name and extra args.
+ * @param context Runtime context with PM, cwd, target dir, and monorepo flag.
+ * @returns Exit code — 0 on success, non-zero on failure.
  */
 export const executeRemoteNpm = (
     config: TemplateConfig,
     context: ExecutionContext,
 ): number => {
-    const args = applyAutoFixes(config.source, [...config.args], context.inMonorepo);
+    // Build initial args: inject target directory first (most create-* packages
+    // expect the output directory as their first positional arg), then append
+    // any extra args from the user. This must happen BEFORE applyAutoFixes
+    // so that prependCommand (e.g., "create" for sv) lands before the target dir.
+    const relativeTarget = relative(context.cwd, context.targetDir) || ".";
+    const initialArgs = [...config.args];
 
-    // Inject target directory as first positional arg if not already present
-    // (most create-* packages expect the output directory as their first arg)
-    if (context.targetDir && !args.includes(context.targetDir)) {
-        args.unshift(context.targetDir);
+    if (relativeTarget && !initialArgs.includes(relativeTarget)) {
+        initialArgs.unshift(relativeTarget);
     }
+
+    const args = applyAutoFixes(config.source, initialArgs, context.inMonorepo);
 
     info(`Running ${config.source} via ${context.pm.name} dlx...`);
 
@@ -130,6 +141,10 @@ export const executeRemoteNpm = (
  * - `owner/repo` (defaults to GitHub)
  * - Full HTTPS URLs
  * - `git:` prefix for raw git clone
+ *
+ * @param config Resolved template config with giget source string and extra args.
+ * @param context Runtime context with target dir and createConfig (auth, registry, etc.).
+ * @returns Exit code — 0 on success, 1 on failure.
  */
 export const executeRemoteGit = async (
     config: TemplateConfig,

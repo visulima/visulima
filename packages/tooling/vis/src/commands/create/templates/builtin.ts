@@ -7,7 +7,7 @@
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 
 import { info, success } from "../../../output";
 import { runDlx } from "../../../pm-runner";
@@ -18,7 +18,9 @@ import type { ExecutionContext, TemplateConfig } from "./types";
 const executeApp = (config: TemplateConfig, context: ExecutionContext): number => {
     info("Scaffolding application via create-vite...");
 
-    const args = [context.targetDir, ...config.args];
+    // create-vite expects a relative directory name, not an absolute path
+    const relativeTarget = relative(context.cwd, context.targetDir) || ".";
+    const args = [relativeTarget, ...config.args];
 
     // Add --no-immediate to avoid auto-install
     if (!args.includes("--no-immediate")) {
@@ -131,6 +133,9 @@ const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): num
 
     writeFileSync(join(targetDir, "__tests__", "index.test.ts"), libraryTestIndex(projectName));
     success("Created __tests__/index.test.ts");
+
+    writeFileSync(join(targetDir, ".gitignore"), "node_modules/\ndist/\n.env\n.DS_Store\n");
+    success("Created .gitignore");
 
     return 0;
 };

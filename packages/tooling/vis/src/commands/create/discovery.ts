@@ -62,6 +62,9 @@ const GIGET_PREFIXES = [
 
 /**
  * Check if the input looks like a git/tarball URL that giget can handle.
+ *
+ * @param input Raw user input string.
+ * @returns `true` when the input matches a known git host, provider prefix, or URL scheme.
  */
 export const isGitUrl = (input: string): boolean => {
     // Explicit host or provider prefix
@@ -82,13 +85,29 @@ export const isGitUrl = (input: string): boolean => {
 // ── npm shorthand expansion ───────────────────────────────────────
 
 /**
+ * Names that are used as direct npm executables (not `create-*` packages).
+ * These must not be expanded — they are passed directly to `dlx` and
+ * matched against AUTO_FIXES keys in remote.ts.
+ */
+const DIRECT_PACKAGES = new Set(["sv"]);
+
+/**
  * Expand shorthand npm create names following the `npm create` convention:
  *
  * - `vite`       → `create-vite`
  * - `@scope/foo` → `@scope/create-foo`
  * - `create-vue` → `create-vue` (already expanded)
+ * - `sv`         → `sv` (direct-package initialiser, not expanded)
+ *
+ * @param name Bare package name or scoped package name.
+ * @returns Expanded package name suitable for `dlx`.
  */
 export const expandCreateShorthand = (name: string): string => {
+    // Direct-package initializers that should not be expanded
+    if (DIRECT_PACKAGES.has(name)) {
+        return name;
+    }
+
     // Already has the `create-` prefix
     if (name.startsWith("create-") || (name.startsWith("@") && name.includes("/create-"))) {
         return name;
@@ -118,6 +137,10 @@ export const expandCreateShorthand = (name: string): string => {
 /**
  * Given the raw template string from the user, determine what kind of
  * template it is and return a resolved {@link TemplateConfig}.
+ *
+ * @param input Raw template string (e.g., "vis:app", "vite", "user/repo").
+ * @param extraArgs Additional CLI arguments to forward to the template runner.
+ * @returns Resolved template configuration with type, source, and args.
  */
 export const discoverTemplate = (input: string, extraArgs: string[] = []): TemplateConfig => {
     if (!input) {
@@ -145,7 +168,10 @@ export const discoverTemplate = (input: string, extraArgs: string[] = []): Templ
 
 /**
  * Suggest the most appropriate parent directory for a new project based on
- * the template type and current workspace layout.
+ * the template type.
+ *
+ * @param type The resolved template type.
+ * @returns Suggested parent directory name ("apps", "packages", or ".").
  */
 export const inferParentDir = (type: TemplateType): string => {
     switch (type) {

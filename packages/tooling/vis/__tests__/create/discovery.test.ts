@@ -29,6 +29,12 @@ describe("expandCreateShorthand", () => {
 
         expect(expandCreateShorthand("@scope")).toBe("@scope");
     });
+
+    it("should preserve direct-package initializers like sv", () => {
+        expect.assertions(1);
+
+        expect(expandCreateShorthand("sv")).toBe("sv");
+    });
 });
 
 describe("isGitUrl", () => {

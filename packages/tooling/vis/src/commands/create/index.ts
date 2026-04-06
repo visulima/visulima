@@ -11,7 +11,7 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import type { Command } from "@visulima/cerebro";
 
@@ -94,6 +94,12 @@ const generateAiInstructions = (projectDir: string, pmName: string): void => {
     mkdirSync(aiDir, { recursive: true });
 
     const instructionsPath = join(aiDir, "instructions");
+
+    // Skip if the template already provided AI instructions
+    if (existsSync(instructionsPath)) {
+        return;
+    }
+
     const content = `# Project Instructions
 
 This project was scaffolded with vis create.
@@ -294,7 +300,9 @@ const create: Command = {
                 cwd,
                 defaultEditor: createConfig?.defaultEditor,
                 defaultGitInit: createConfig?.gitInit,
-                defaultPm: createConfig?.defaultPm ?? detectedPm.name,
+                // Only seed defaultPm when config explicitly sets it —
+                // otherwise show the PM picker so the user can choose.
+                defaultPm: createConfig?.defaultPm,
                 inMonorepo,
             });
 
@@ -365,7 +373,7 @@ const create: Command = {
         const resolvedTarget = resolve(targetDir);
         const rel = relative(resolve(cwd), resolvedTarget);
 
-        if (rel.startsWith("..")) {
+        if (rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel)) {
             throw new Error(`Target directory "${targetDir}" is outside the working directory. Use a name without "../" path segments.`);
         }
 
