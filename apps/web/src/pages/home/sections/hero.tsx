@@ -113,8 +113,12 @@ const CodeLine: FC<{ content: string }> = ({ content }) => {
     return (
         <span>
             {content.split(/(\s+)/).map((segment, index) => {
-                if (/^\s+$/.test(segment)) return <span key={index}>{segment}</span>;
-                if (!segment) return null;
+                if (/^\s+$/.test(segment)) {
+                    return <span key={index}>{segment}</span>;
+                }
+                if (!segment) {
+                    return null;
+                }
 
                 const isKeyword = /^(import|from|const|await|export|async|function|type)$/.test(segment);
                 const isString = /^["'`]/.test(segment);
@@ -155,7 +159,9 @@ const PackageShowcase: FC = () => {
             setVisibleLines(0);
 
             const d = packageDemos[index];
-            if (!d) return;
+            if (!d) {
+                return;
+            }
 
             const reveal = (lineIdx: number) => {
                 if (lineIdx <= d.output.length) {
@@ -244,7 +250,9 @@ const PackageShowcase: FC = () => {
                                     transition={{ duration: 0.1 }}
                                 >
                                     {demo.output.map((line, index) => {
-                                        if (index >= visibleLines) return null;
+                                        if (index >= visibleLines) {
+                                            return null;
+                                        }
                                         return (
                                             <div key={`${activeIndex}-${index}`}>
                                                 <span className={line.color ?? "text-white/30"}>{line.text || "\u00A0"}</span>

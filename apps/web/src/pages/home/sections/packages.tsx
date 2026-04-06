@@ -65,7 +65,9 @@ const BUILD_SEQUENCES: BuildStep[][] = [
 ];
 
 const getStepColor = (step: BuildStep): string => {
-    if (step.color) return step.color;
+    if (step.color) {
+        return step.color;
+    }
     switch (step.type) {
         case "cmd":
             return "text-white/80";
@@ -101,7 +103,9 @@ const PackemTerminal = () => {
         }
 
         const nextStep = sequence[visibleSteps];
-        if (!nextStep) return;
+        if (!nextStep) {
+            return;
+        }
 
         const timer = setTimeout(() => {
             setVisibleSteps((v) => v + 1);
