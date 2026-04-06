@@ -122,6 +122,7 @@ const clean: Command = {
         if (!native) {
             failure("Native bindings unavailable. Ensure the correct platform binary is installed.");
             process.exitCode = 1;
+
             return;
         }
 

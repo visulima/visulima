@@ -1,7 +1,7 @@
 import type { Task } from "@visulima/task-runner";
 import type { ScrollViewRef } from "@visulima/tui";
 import { Box, Dialog, Text, useApp, useInput, useWindowSize } from "@visulima/tui";
-import React, { useCallback, useMemo, useRef, useState, useEffect, useSyncExternalStore } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { formatTargetsAndProjects } from "../formatting-utils";
 import { formatMs } from "../pretty-time";
@@ -41,7 +41,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const [quitDialogVisible, setQuitDialogVisible] = useState(false);
 
     // Save scroll positions per view mode so transitions don't lose the user's place
-    const savedScrollRef = useRef<{ list: number; splitList: number; splitOutput: number }>({
+    const savedScrollRef = useRef({
         list: 0,
         splitList: 0,
         splitOutput: 0,
@@ -58,23 +58,29 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     }, [state.viewMode]);
 
     // Helper: restore scroll positions after transitioning (deferred for React re-render)
-    const restoreScrollPositions = useCallback((targetMode: "fullscreen" | "list" | "split") => {
-        setTimeout(() => {
-            if (targetMode === "list") {
-                const saved = savedScrollRef.current.list;
-                listScrollRef.current?.scrollTo(saved);
-            } else if (targetMode === "split") {
-                const savedList = savedScrollRef.current.splitList;
-                // If no saved position, scroll to selected item
-                if (savedList > 0) {
-                    listScrollRef.current?.scrollTo(savedList);
-                } else {
-                    listScrollRef.current?.scrollTo(Math.max(0, store.getSnapshot().selectedIndex - 2));
+    const restoreScrollPositions = useCallback(
+        (targetMode: "fullscreen" | "list" | "split") => {
+            setTimeout(() => {
+                if (targetMode === "list") {
+                    const saved = savedScrollRef.current.list;
+
+                    listScrollRef.current?.scrollTo(saved);
+                } else if (targetMode === "split") {
+                    const savedList = savedScrollRef.current.splitList;
+
+                    // If no saved position, scroll to selected item
+                    if (savedList > 0) {
+                        listScrollRef.current?.scrollTo(savedList);
+                    } else {
+                        listScrollRef.current?.scrollTo(Math.max(0, store.getSnapshot().selectedIndex - 2));
+                    }
+
+                    outputScrollRef.current?.scrollTo(savedScrollRef.current.splitOutput);
                 }
-                outputScrollRef.current?.scrollTo(savedScrollRef.current.splitOutput);
-            }
-        }, 0);
-    }, [store]);
+            }, 0);
+        },
+        [store],
+    );
 
     // Auto-show quit dialog when tasks complete — only if autoExit is enabled
     const previousDoneRef = useRef(false);
@@ -100,9 +106,15 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
         if (state.statusFilter !== "all") {
             filtered = filtered.filter((r) => {
-                if (state.statusFilter === "failed") return r.status === "failure";
-                if (state.statusFilter === "running") return r.status === "running" || r.status === "pending";
-                if (state.statusFilter === "passed") return r.status === "success" || isCacheStatus(r.status);
+                if (state.statusFilter === "failed")
+                    return r.status === "failure";
+
+                if (state.statusFilter === "running")
+                    return r.status === "running" || r.status === "pending";
+
+                if (state.statusFilter === "passed")
+                    return r.status === "success" || isCacheStatus(r.status);
+
                 return true;
             });
         }
@@ -205,7 +217,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             if (input === "R" && state.done) {
                 const row = filteredRows[state.selectedIndex];
 
-                if (row && row.status === "failure") {
+                if (row?.status === "failure") {
                     store.requestRetry(row.taskId);
                 }
 
@@ -215,9 +227,9 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
             // Status filter cycling (Shift+F)
             if (input === "F" && !state.filterActive) {
                 const filters = ["all", "failed", "running", "passed"] as const;
-                const currentIdx = filters.indexOf(state.statusFilter);
+                const currentIndex = filters.indexOf(state.statusFilter);
 
-                store.setStatusFilter(filters[(currentIdx + 1) % filters.length]!);
+                store.setStatusFilter(filters[(currentIndex + 1) % filters.length]!);
 
                 return;
             }
@@ -448,8 +460,6 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
                 // Escape: clear filter text in list mode
                 if (key.escape && state.filterText) {
                     store.setFilter("");
-
-                    return;
                 }
             }
         },
@@ -481,11 +491,39 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
     const statusSummary = (
         <Box gap={1}>
-            {state.succeeded > 0 && <Text color="green" bold>{"\u2713"} {state.succeeded}</Text>}
-            {state.failed > 0 && <Text color="red" bold>{"\u2717"} {state.failed}</Text>}
-            {runningCount > 0 && <Text color="cyan">{"\u25F7"} {runningCount}</Text>}
-            <Text dimColor>{state.rows.length} total</Text>
-            {state.statusFilter !== "all" && <Text color="yellow">[{state.statusFilter}]</Text>}
+            {state.succeeded > 0 && (
+                <Text bold color="green">
+                    {"\u2713"}
+                    {" "}
+                    {state.succeeded}
+                </Text>
+            )}
+            {state.failed > 0 && (
+                <Text bold color="red">
+                    {"\u2717"}
+                    {" "}
+                    {state.failed}
+                </Text>
+            )}
+            {runningCount > 0 && (
+                <Text color="cyan">
+                    {"\u25F7"}
+                    {" "}
+                    {runningCount}
+                </Text>
+            )}
+            <Text dimColor>
+                {state.rows.length}
+                {" "}
+                total
+            </Text>
+            {state.statusFilter !== "all" && (
+                <Text color="yellow">
+                    [
+                    {state.statusFilter}
+                    ]
+                </Text>
+            )}
         </Box>
     );
 
@@ -495,50 +533,178 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
 
     if (state.viewMode === "fullscreen") {
         footerItems = [
-            <Box key="esc" gap={1}><Text bold color="white">Esc</Text><Text dimColor>BACK</Text></Box>,
-            <Box key="scroll" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>SCROLL</Text></Box>,
-            <Box key="page" gap={1}><Text bold color="white">^u ^d</Text><Text dimColor>PAGE</Text></Box>,
-            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
+            <Box gap={1} key="esc">
+                <Text bold color="white">
+                    Esc
+                </Text>
+                <Text dimColor>BACK</Text>
+            </Box>,
+            <Box gap={1} key="scroll">
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>
+                <Text dimColor>SCROLL</Text>
+            </Box>,
+            <Box gap={1} key="page">
+                <Text bold color="white">
+                    ^u ^d
+                </Text>
+                <Text dimColor>PAGE</Text>
+            </Box>,
+            <Box gap={1} key="q">
+                <Text bold color="white">
+                    q
+                </Text>
+                <Text dimColor>QUIT</Text>
+            </Box>,
         ];
     } else if (state.done) {
         const canRetry = filteredRows[state.selectedIndex]?.status === "failure";
 
         footerItems = [
-            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
-            <Box key="r" gap={1}><Text bold color="white">r</Text><Text dimColor>RERUN</Text></Box>,
-            ...(canRetry ? [<Box key="R" gap={1}><Text bold color="white">R</Text><Text dimColor>RETRY</Text></Box>] : []),
-            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
-            <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
-            <Box key="F" gap={1}><Text bold color="white">F</Text><Text dimColor>FILTER</Text></Box>,
-            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text></Box>,
+            <Box gap={1} key="q">
+                <Text bold color="white">
+                    q
+                </Text>
+                <Text dimColor>QUIT</Text>
+            </Box>,
+            <Box gap={1} key="r">
+                <Text bold color="white">
+                    r
+                </Text>
+                <Text dimColor>RERUN</Text>
+            </Box>,
+            ...canRetry
+                ? [
+                    <Box gap={1} key="R">
+                        <Text bold color="white">
+                            R
+                        </Text>
+                        <Text dimColor>RETRY</Text>
+                    </Box>,
+                ]
+                : [],
+            <Box gap={1} key="?">
+                <Text bold color="white">
+                    ?
+                </Text>
+                <Text dimColor>HELP</Text>
+            </Box>,
+            <Box gap={1} key="nav">
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>
+                <Text dimColor>NAV</Text>
+            </Box>,
+            <Box gap={1} key="F">
+                <Text bold color="white">
+                    F
+                </Text>
+                <Text dimColor>FILTER</Text>
+            </Box>,
+            <Box gap={1} key="enter">
+                <Text bold color="white">
+                    {"\u23CE"}
+                </Text>
+                <Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text>
+            </Box>,
         ];
     } else if (state.viewMode === "split" && state.focusedPanel === "output") {
         footerItems = [
-            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
-            <Box key="esc" gap={1}><Text bold color="white">Esc</Text><Text dimColor>BACK</Text></Box>,
-            <Box key="scroll" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>SCROLL</Text></Box>,
-            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>FULLSCREEN</Text></Box>,
-            <Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>,
-            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
+            <Box gap={1} key="q">
+                <Text bold color="white">
+                    q
+                </Text>
+                <Text dimColor>QUIT</Text>
+            </Box>,
+            <Box gap={1} key="esc">
+                <Text bold color="white">
+                    Esc
+                </Text>
+                <Text dimColor>BACK</Text>
+            </Box>,
+            <Box gap={1} key="scroll">
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>
+                <Text dimColor>SCROLL</Text>
+            </Box>,
+            <Box gap={1} key="enter">
+                <Text bold color="white">
+                    {"\u23CE"}
+                </Text>
+                <Text dimColor>FULLSCREEN</Text>
+            </Box>,
+            <Box gap={1} key="tab">
+                <Text bold color="white">
+                    Tab
+                </Text>
+                <Text dimColor>PANEL</Text>
+            </Box>,
+            <Box gap={1} key="?">
+                <Text bold color="white">
+                    ?
+                </Text>
+                <Text dimColor>HELP</Text>
+            </Box>,
         ];
     } else {
         footerItems = [
-            <Box key="q" gap={1}><Text bold color="white">q</Text><Text dimColor>QUIT</Text></Box>,
-            <Box key="?" gap={1}><Text bold color="white">?</Text><Text dimColor>HELP</Text></Box>,
-            <Box key="nav" gap={1}><Text bold color="white">{"\u2191\u2193"}</Text><Text dimColor>NAV</Text></Box>,
-            <Box key="/" gap={1}><Text bold color="white">/</Text><Text dimColor>FILTER</Text></Box>,
-            <Box key="F" gap={1}><Text bold color="white">F</Text><Text dimColor>STATUS</Text></Box>,
-            <Box key="enter" gap={1}><Text bold color="white">{"\u23CE"}</Text><Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text></Box>,
-            ...(state.viewMode === "split" ? [<Box key="tab" gap={1}><Text bold color="white">Tab</Text><Text dimColor>PANEL</Text></Box>] : []),
+            <Box gap={1} key="q">
+                <Text bold color="white">
+                    q
+                </Text>
+                <Text dimColor>QUIT</Text>
+            </Box>,
+            <Box gap={1} key="?">
+                <Text bold color="white">
+                    ?
+                </Text>
+                <Text dimColor>HELP</Text>
+            </Box>,
+            <Box gap={1} key="nav">
+                <Text bold color="white">
+                    {"\u2191\u2193"}
+                </Text>
+                <Text dimColor>NAV</Text>
+            </Box>,
+            <Box gap={1} key="/">
+                <Text bold color="white">
+                    /
+                </Text>
+                <Text dimColor>FILTER</Text>
+            </Box>,
+            <Box gap={1} key="F">
+                <Text bold color="white">
+                    F
+                </Text>
+                <Text dimColor>STATUS</Text>
+            </Box>,
+            <Box gap={1} key="enter">
+                <Text bold color="white">
+                    {"\u23CE"}
+                </Text>
+                <Text dimColor>{state.viewMode === "list" ? "OUTPUT" : "FULLSCREEN"}</Text>
+            </Box>,
+            ...state.viewMode === "split"
+                ? [
+                    <Box gap={1} key="tab">
+                        <Text bold color="white">
+                            Tab
+                        </Text>
+                        <Text dimColor>PANEL</Text>
+                    </Box>,
+                ]
+                : [],
         ];
     }
 
     const footer = (
         <Box borderBottom={false} borderColor="gray" borderLeft={false} borderRight={false} borderStyle="single" flexShrink={0} justifyContent="space-between">
-            <Box paddingX={1} gap={2} flexWrap="wrap" flexGrow={1}>
+            <Box flexGrow={1} flexWrap="wrap" gap={2} paddingX={1}>
                 {footerItems}
             </Box>
-            <Box paddingX={1} flexShrink={0}>
+            <Box flexShrink={0} paddingX={1}>
                 {statusSummary}
             </Box>
         </Box>
@@ -549,70 +715,282 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     const helpPopup = (
         <Dialog
             backgroundColor="#1e1e1e"
-            footer={
+            footer={(
                 <Text dimColor>
-                    <Text bold color="white">{"\u2191\u2193"}</Text> scroll  <Text bold color="white">?</Text>/<Text bold color="white">Esc</Text> close
+                    <Text bold color="white">
+                        {"\u2191\u2193"}
+                    </Text>
+                    {" "}
+                    scroll
+                    {" "}
+                    <Text bold color="white">
+                        ?
+                    </Text>
+                    /
+                    <Text bold color="white">
+                        Esc
+                    </Text>
+                    {" "}
+                    close
                 </Text>
-            }
+            )}
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
             width={52}
         >
-            <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">NAVIGATION</Text></Box>
-                <Box>
-                    <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Move up</Text></Text></Box>
-                    <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Move down</Text></Text>
+            <Box flexDirection="column" marginBottom={1}>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text>
+                    <Text bold color="white">
+                        NAVIGATION
+                    </Text>
                 </Box>
-                <Text><Text color="white" bold>  Tab</Text><Text dimColor>    Switch panel (split)</Text></Text>
-                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Back / close</Text></Text>
-                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  Show output / fullscreen</Text></Text>
+                <Box>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                {"\u2191"}
+                                /k
+                            </Text>
+                            <Text dimColor> Move up</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            {"\u2193"}
+                            /j
+                        </Text>
+                        <Text dimColor> Move down</Text>
+                    </Text>
+                </Box>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        Tab
+                    </Text>
+                    <Text dimColor> Switch panel (split)</Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        Esc
+                    </Text>
+                    <Text dimColor> Back / close</Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        Enter
+                    </Text>
+                    <Text dimColor> Show output / fullscreen</Text>
+                </Text>
             </Box>
 
-            <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">VIEWS</Text></Box>
-                <Text><Text color="white" bold>  Enter</Text><Text dimColor>  List {"\u2192"} Split {"\u2192"} Fullscreen</Text></Text>
-                <Text><Text color="white" bold>  Esc</Text><Text dimColor>    Fullscreen {"\u2192"} Split {"\u2192"} List</Text></Text>
+            <Box flexDirection="column" marginBottom={1}>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text>
+                    <Text bold color="white">
+                        VIEWS
+                    </Text>
+                </Box>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        Enter
+                    </Text>
+                    <Text dimColor>
+                        {" "}
+                        List
+                        {" "}
+                        {"\u2192"}
+                        {" "}
+                        Split
+                        {" "}
+                        {"\u2192"}
+                        {" "}
+                        Fullscreen
+                    </Text>
+                </Text>
+                <Text>
+                    <Text bold color="white">
+                        {" "}
+                        Esc
+                    </Text>
+                    <Text dimColor>
+                        {" "}
+                        Fullscreen
+                        {" "}
+                        {"\u2192"}
+                        {" "}
+                        Split
+                        {" "}
+                        {"\u2192"}
+                        {" "}
+                        List
+                    </Text>
+                </Text>
             </Box>
 
-            <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">ACTIONS</Text></Box>
-                <Box>
-                    <Box width={24}><Text><Text color="white" bold>  /</Text><Text dimColor>      Filter by text</Text></Text></Box>
-                    <Text><Text color="white" bold>  F</Text><Text dimColor>  Filter by status</Text></Text>
+            <Box flexDirection="column" marginBottom={1}>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text>
+                    <Text bold color="white">
+                        ACTIONS
+                    </Text>
                 </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  1</Text><Text dimColor>/</Text><Text color="white" bold>2</Text><Text dimColor>    Pin to output pane</Text></Text></Box>
-                    <Text><Text color="white" bold>  0</Text><Text dimColor>  Clear pins</Text></Text>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                /
+                            </Text>
+                            <Text dimColor> Filter by text</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            F
+                        </Text>
+                        <Text dimColor> Filter by status</Text>
+                    </Text>
                 </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  r</Text><Text dimColor>      Rerun all (done)</Text></Text></Box>
-                    <Text><Text color="white" bold>  R</Text><Text dimColor>  Retry failed task</Text></Text>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                1
+                            </Text>
+                            <Text dimColor>/</Text>
+                            <Text bold color="white">
+                                2
+                            </Text>
+                            <Text dimColor> Pin to output pane</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            0
+                        </Text>
+                        <Text dimColor> Clear pins</Text>
+                    </Text>
+                </Box>
+                <Box>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                r
+                            </Text>
+                            <Text dimColor> Rerun all (done)</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            R
+                        </Text>
+                        <Text dimColor> Retry failed task</Text>
+                    </Text>
                 </Box>
             </Box>
 
-            <Box marginBottom={1} flexDirection="column">
-                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">SCROLLING</Text><Text dimColor> (output panel)</Text></Box>
-                <Box>
-                    <Box width={24}><Text><Text color="white" bold>  {"\u2191"}/k</Text><Text dimColor>  Scroll up</Text></Text></Box>
-                    <Text><Text color="white" bold>  {"\u2193"}/j</Text><Text dimColor>  Scroll down</Text></Text>
+            <Box flexDirection="column" marginBottom={1}>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text>
+                    <Text bold color="white">
+                        SCROLLING
+                    </Text>
+                    <Text dimColor> (output panel)</Text>
                 </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  ^u</Text><Text dimColor>    Page up</Text></Text></Box>
-                    <Text><Text color="white" bold>  ^d</Text><Text dimColor>    Page down</Text></Text>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                {"\u2191"}
+                                /k
+                            </Text>
+                            <Text dimColor> Scroll up</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            {"\u2193"}
+                            /j
+                        </Text>
+                        <Text dimColor> Scroll down</Text>
+                    </Text>
                 </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  Home</Text><Text dimColor>  Top</Text></Text></Box>
-                    <Text><Text color="white" bold>  End</Text><Text dimColor>   Bottom</Text></Text>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                ^u
+                            </Text>
+                            <Text dimColor> Page up</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            ^d
+                        </Text>
+                        <Text dimColor> Page down</Text>
+                    </Text>
+                </Box>
+                <Box>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                Home
+                            </Text>
+                            <Text dimColor> Top</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            End
+                        </Text>
+                        <Text dimColor> Bottom</Text>
+                    </Text>
                 </Box>
             </Box>
 
             <Box flexDirection="column">
-                <Box marginBottom={1}><Text dimColor>{"\u2500\u2500 "}</Text><Text bold color="white">GENERAL</Text></Box>
+                <Box marginBottom={1}>
+                    <Text dimColor>{"\u2500\u2500 "}</Text>
+                    <Text bold color="white">
+                        GENERAL
+                    </Text>
+                </Box>
                 <Box>
-                    <Box width={24}><Text><Text color="white" bold>  q</Text><Text dimColor>      Quit</Text></Text></Box>
-                    <Text><Text color="white" bold>  ?</Text><Text dimColor>  Toggle help</Text></Text>
+                    <Box width={24}>
+                        <Text>
+                            <Text bold color="white">
+                                {" "}
+                                q
+                            </Text>
+                            <Text dimColor> Quit</Text>
+                        </Text>
+                    </Box>
+                    <Text>
+                        <Text bold color="white">
+                            {" "}
+                            ?
+                        </Text>
+                        <Text dimColor> Toggle help</Text>
+                    </Text>
                 </Box>
             </Box>
         </Dialog>
@@ -621,11 +999,7 @@ const VisTaskRunnerApp = ({ autoExitSeconds, parallelSlots, projectNames, store,
     // ── Quit dialog overlay ───────────────────────────────────────────
 
     const quitDialog = (
-        <QuitDialog
-            autoExitSeconds={autoExitSeconds > 0 ? autoExitSeconds : 3}
-            onCancel={() => setQuitDialogVisible(false)}
-            visible={quitDialogVisible}
-        />
+        <QuitDialog autoExitSeconds={autoExitSeconds > 0 ? autoExitSeconds : 3} onCancel={() => { setQuitDialogVisible(false); }} visible={quitDialogVisible} />
     );
 
     // ── FULLSCREEN OUTPUT VIEW ──────────────────────────────────────

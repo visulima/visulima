@@ -234,7 +234,14 @@ describe("config cache", () => {
         expect(config.update?.target).toBe("patch");
 
         const cachePath = join(tmpDir, "node_modules", ".cache", "vis", "vis-config-cache.json");
-        const cacheExists = (() => { try { readFileSync(cachePath); return true; } catch { return false; } })();
+        const cacheExists = (() => {
+            try {
+                readFileSync(cachePath);
+                return true;
+            } catch {
+                return false;
+            }
+        })();
 
         expect(cacheExists).toBe(true);
     });

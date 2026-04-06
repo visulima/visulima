@@ -92,7 +92,7 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
                     break;
                 }
-            // No default
+                // No default
             }
 
             const line = renderToString(

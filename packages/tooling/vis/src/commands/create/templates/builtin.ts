@@ -44,56 +44,56 @@ const executeApp = (config: TemplateConfig, context: ExecutionContext): number =
 // ── vis:library — scaffold a TS library package ───────────────────
 
 const libraryPackageJson = (name: string): string =>
-    JSON.stringify(
+    `${JSON.stringify(
         {
-            name,
-            version: "0.0.1",
-            type: "module",
+            devDependencies: {
+                typescript: "^5.0.0",
+                vitest: "^3.0.0",
+            },
             exports: {
                 ".": {
-                    types: "./dist/index.d.ts",
                     default: "./dist/index.js",
+                    types: "./dist/index.d.ts",
                 },
             },
-            main: "./dist/index.js",
-            types: "./dist/index.d.ts",
             files: ["dist"],
+            main: "./dist/index.js",
+            name,
             scripts: {
                 build: "tsc",
                 dev: "tsc --watch",
                 test: "vitest run",
                 "test:watch": "vitest",
             },
-            devDependencies: {
-                typescript: "^5.0.0",
-                vitest: "^3.0.0",
-            },
+            type: "module",
+            types: "./dist/index.d.ts",
+            version: "0.0.1",
         },
         null,
         4,
-    ) + "\n";
+    )}\n`;
 
 const libraryTsconfig = (): string =>
-    JSON.stringify(
+    `${JSON.stringify(
         {
             compilerOptions: {
-                target: "ES2022",
+                declaration: true,
+                declarationMap: true,
+                esModuleInterop: true,
                 module: "Node16",
                 moduleResolution: "Node16",
                 outDir: "./dist",
                 rootDir: "./src",
-                strict: true,
-                esModuleInterop: true,
                 skipLibCheck: true,
-                declaration: true,
-                declarationMap: true,
                 sourceMap: true,
+                strict: true,
+                target: "ES2022",
             },
             include: ["src/**/*"],
         },
         null,
         4,
-    ) + "\n";
+    )}\n`;
 
 const librarySrcIndex = (name: string): string => `/**
  * ${name} — library entry point.
@@ -144,7 +144,6 @@ const executeLibrary = (_config: TemplateConfig, context: ExecutionContext): num
 
 /**
  * Execute a built-in template (vis:app or vis:library).
- *
  * @param config Resolved template config with type and extra args.
  * @param context Runtime context with PM info, target dir, and project name.
  * @returns Exit code — 0 on success, non-zero on failure.

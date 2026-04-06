@@ -82,14 +82,14 @@ const securityEnforcementPlugin: Plugin = {
         // Display Socket.dev security summary after install/update commands
         const command = process.argv[2] ?? "";
 
-        const socketOpts = buildSocketOptions(toolbox.visConfig?.security?.socket);
+        const socketOptions = buildSocketOptions(toolbox.visConfig?.security?.socket);
 
-        if (INSTALL_COMMANDS.has(command) && socketOpts && toolbox.workspaceRoot) {
+        if (INSTALL_COMMANDS.has(command) && socketOptions && toolbox.workspaceRoot) {
             try {
                 const packages = resolveInstalledPackages(toolbox.workspaceRoot);
 
                 if (packages.length > 0) {
-                    const reports = await fetchSocketReports(packages, socketOpts);
+                    const reports = await fetchSocketReports(packages, socketOptions);
 
                     if (reports.size > 0) {
                         const overview = formatSecurityOverview(reports);
@@ -111,8 +111,8 @@ const securityEnforcementPlugin: Plugin = {
 
                             if (criticalHighCount > 0) {
                                 warn(
-                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. ` +
-                                        "Run 'vis check --security' for details.",
+                                    `${String(criticalHighCount)} critical/high severity alert${criticalHighCount === 1 ? "" : "s"} detected. `
+                                    + "Run 'vis check --security' for details.",
                                 );
                             }
                         }
@@ -135,7 +135,7 @@ const securityEnforcementPlugin: Plugin = {
                 const enforcement = enforceScriptSecurity(pm.name, toolbox.workspaceRoot, toolbox.visConfig);
 
                 for (const w of enforcement.warnings) {
-                    toolbox.logger.warn("security: " + w);
+                    toolbox.logger.warn(`security: ${w}`);
                 }
 
                 (toolbox as unknown as Record<string, unknown>).scriptEnforcement = enforcement;

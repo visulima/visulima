@@ -1,12 +1,11 @@
 import { execSync } from "node:child_process";
 
-import React from "react";
 import type { Command } from "@visulima/cerebro";
 import { red } from "@visulima/colorize";
-import isInCi from "is-in-ci";
-import { render, renderToString, Text } from "@visulima/tui";
-
 import { findPackageManagerSync, getPackageManagerVersion } from "@visulima/package";
+import { render, renderToString, Text } from "@visulima/tui";
+import isInCi from "is-in-ci";
+import React from "react";
 
 import type { AiAnalysisResult } from "../ai-analysis";
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
@@ -29,10 +28,10 @@ import {
 } from "../catalog";
 import type { UpdateCommandOptions } from "../package-manager";
 import { resolveUpdateCommand } from "../package-manager";
+import { buildSocketOptions, scoreColor } from "../socket-security";
 import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
-import { buildSocketOptions, scoreColor } from "../socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../typosquats";
 import { parsePackageArgument } from "../utils";
 import type { VisConfig } from "../workspace";
@@ -168,18 +167,18 @@ const executeCatalogUpdate = async (
 
     const onProgress = isTTY
         ? (current: number, total: number): void => {
-              if (!progressInstance) {
-                  progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                      interactive: true,
-                      patchConsole: false,
-                  });
-              } else {
-                  progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-              }
-          }
+            if (progressInstance) {
+                progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+            } else {
+                progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                    interactive: true,
+                    patchConsole: false,
+                });
+            }
+        }
         : (current: number, total: number): void => {
-              logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-          };
+            logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+        };
 
     if (!isTTY) {
         logger.info(`Checking ${String(totalDeps)} catalog dependencies...\n`);
@@ -280,14 +279,14 @@ const executeCatalogUpdate = async (
         for (const entry of outdated) {
             const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
             const isAck = Boolean(entry.acceptedRisk);
-            const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
+            const icon = hasSecurityIssue ? isAck ? "\u2713" : "\u26A0" : "\u2713";
             const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
             const socketOverall = entry.socketReport?.score.overall;
-            const scoreSuffix = socketOverall !== undefined ? ` [${String(Math.round(socketOverall * 100))}%]` : "";
-            const socketColorName = socketOverall !== undefined ? scoreColor(socketOverall) : undefined;
+            const scoreSuffix = socketOverall === undefined ? "" : ` [${String(Math.round(socketOverall * 100))}%]`;
+            const socketColorName = socketOverall === undefined ? undefined : scoreColor(socketOverall);
 
             process.stdout.write(
-                renderToString(
+                `${renderToString(
                     React.createElement(
                         Text,
                         null,
@@ -298,7 +297,7 @@ const executeCatalogUpdate = async (
                         socketColorName ? React.createElement(Text, { color: socketColorName }, scoreSuffix) : null,
                     ),
                     { columns },
-                ) + "\n",
+                )}\n`,
             );
         }
 
@@ -416,7 +415,7 @@ const executePmWrapper = (
         const execError = error as { status?: number };
         const exitCode = execError.status ?? 1;
 
-        logger.error("\n" + red("\u2716") + " Update failed (exit code " + String(exitCode) + ")");
+        logger.error(`\n${red("\u2716")} Update failed (exit code ${String(exitCode)})`);
         logger.error(`  Command: ${fullCommand}`);
         logger.error(`  Directory: ${workspaceRoot}\n`);
 
@@ -450,7 +449,7 @@ const update: Command = {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
-        let argument = rawArgument as string[];
+        let argument = rawArgument;
 
         const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
@@ -461,7 +460,10 @@ const update: Command = {
                 // Explicit package arguments: offer name correction
                 const parsed = argument.map((a: string) => parsePackageArgument(a));
                 const allowlist = visConfig?.security?.typosquatAllowlist;
-                const result = await runTyposquatCheck(parsed.map((p) => p.name), allowlist);
+                const result = await runTyposquatCheck(
+                    parsed.map((p) => p.name),
+                    allowlist,
+                );
 
                 if (!result.ok) {
                     process.exitCode = 1;

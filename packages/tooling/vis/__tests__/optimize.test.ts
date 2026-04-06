@@ -178,10 +178,7 @@ describe("OptimizeStore", () => {
     it("should toggle all respecting current filter", () => {
         expect.assertions(2);
 
-        const store = new OptimizeStore([
-            makeEntry({ packageName: "a", category: "native" }),
-            makeEntry({ packageName: "b", category: "socket" }),
-        ]);
+        const store = new OptimizeStore([makeEntry({ packageName: "a", category: "native" }), makeEntry({ packageName: "b", category: "socket" })]);
 
         store.setFilter("native");
         store.toggleAll();
@@ -197,10 +194,7 @@ describe("pnpm v10+ workspace overrides integration", () => {
     it("should round-trip read and write overrides in pnpm-workspace.yaml", () => {
         expect.assertions(3);
 
-        writeFileSync(
-            join(tmpDir, "pnpm-workspace.yaml"),
-            "packages:\n  - packages/*\n\noverrides:\n  lodash: ^4.17.21\n",
-        );
+        writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n\noverrides:\n  lodash: ^4.17.21\n");
         writePkgJson(tmpDir, { name: "test" });
 
         const pm: PmInfo = { name: "pnpm", version: "10.32.1" };

@@ -115,10 +115,10 @@ const analyze: Command = {
             }
 
             // Also fetch Socket.dev report if enabled
-            const socketOpts = buildSocketOptions(visConfig?.security?.socket);
+            const socketOptions = buildSocketOptions(visConfig?.security?.socket);
 
-            if (socketOpts) {
-                const reports = await fetchSocketReports([{ name: packageName, version }], socketOpts);
+            if (socketOptions) {
+                const reports = await fetchSocketReports([{ name: packageName, version }], socketOptions);
                 const report = reports.get(`${packageName}@${version}`);
 
                 if (report) {

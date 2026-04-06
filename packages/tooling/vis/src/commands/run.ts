@@ -1,7 +1,15 @@
 import type { Command } from "@visulima/cerebro";
 import type { ProcessEvent, Task, TaskRunnerOptions, TaskTarget } from "@visulima/task-runner";
-import { createTaskGraph, defaultTaskRunner, enforceProjectConstraints, generateRunSummary, parsePartition, runConcurrently, TaskScheduler, writeRunSummary } from "@visulima/task-runner";
-
+import {
+    createTaskGraph,
+    defaultTaskRunner,
+    enforceProjectConstraints,
+    generateRunSummary,
+    parsePartition,
+    runConcurrently,
+    TaskScheduler,
+    writeRunSummary,
+} from "@visulima/task-runner";
 import isInCi from "is-in-ci";
 
 import { createDynamicOutputRenderer } from "../tui/dynamic-life-cycle";
@@ -21,7 +29,9 @@ const MAX_OUTPUT_BYTES = 256 * 1024;
  */
 class OutputRingBuffer {
     readonly #maxBytes: number;
+
     #buffer = "";
+
     #truncated = false;
 
     constructor(maxBytes: number) {
@@ -42,6 +52,7 @@ class OutputRingBuffer {
         if (this.#truncated) {
             return `[...output truncated, showing last ${Math.round(this.#maxBytes / 1024)}KB...]\n${this.#buffer}`;
         }
+
         return this.#buffer;
     }
 }
@@ -69,17 +80,12 @@ const createConcurrentExecutor = (workspaceRoot: string) => async (task: Task, o
     const output = new OutputRingBuffer(MAX_OUTPUT_BYTES);
 
     const onEvent = (event: ProcessEvent): void => {
-        if (event.kind === "stdout" || event.kind === "stderr") {
-            if (event.text !== undefined) {
-                output.append(event.text + "\n");
-            }
+        if ((event.kind === "stdout" || event.kind === "stderr") && event.text !== undefined) {
+            output.append(`${event.text}\n`);
         }
     };
 
-    const result = await runConcurrently(
-        [{ command, cwd: resolvedCwd, env: options.env, name: task.id }],
-        { killOthers: ["failure"], onEvent },
-    );
+    const result = await runConcurrently([{ command, cwd: resolvedCwd, env: options.env, name: task.id }], { killOthers: ["failure"], onEvent });
 
     const closeEvent = result.closeEvents[0];
 
@@ -245,32 +251,33 @@ const run: Command = {
                         lifeCycle.startTasks?.([task]);
 
                         // eslint-disable-next-line no-await-in-loop -- sequential retry
-                        const retryResult = await runConcurrently(
-                            [{ command, cwd: resolvedCwd, name: task.id }],
-                            {
-                                onEvent: (event: ProcessEvent) => {
-                                    if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
-                                        store.addOutput(task.id, event.text + "\n");
-                                    }
-                                },
+                        const retryResult = await runConcurrently([{ command, cwd: resolvedCwd, name: task.id }], {
+                            onEvent: (event: ProcessEvent) => {
+                                if ((event.kind === "stdout" || event.kind === "stderr") && event.text) {
+                                    store.addOutput(task.id, `${event.text}\n`);
+                                }
                             },
-                        );
+                        });
 
                         const closeEvent = retryResult.closeEvents[0];
 
-                        lifeCycle.endTasks?.([{
-                            code: closeEvent?.exitCode ?? 1,
-                            status: closeEvent?.exitCode === 0 ? "success" : "failure",
-                            task,
-                            terminalOutput: store.getSnapshot().outputs.get(task.id),
-                        }]);
+                        lifeCycle.endTasks?.([
+                            {
+                                code: closeEvent?.exitCode ?? 1,
+                                status: closeEvent?.exitCode === 0 ? "success" : "failure",
+                                task,
+                                terminalOutput: store.getSnapshot().outputs.get(task.id),
+                            },
+                        ]);
                     } else if (task) {
-                        lifeCycle.endTasks?.([{
-                            code: 1,
-                            status: "failure",
-                            task,
-                            terminalOutput: `No command configured for ${task.id}`,
-                        }]);
+                        lifeCycle.endTasks?.([
+                            {
+                                code: 1,
+                                status: "failure",
+                                task,
+                                terminalOutput: `No command configured for ${task.id}`,
+                            },
+                        ]);
                     }
 
                     retryTaskId = null;
@@ -301,8 +308,14 @@ const run: Command = {
 
                     // Check if user quit -- clean up subscription to avoid leak
                     dynamic.renderIsDone.then(
-                        () => { unsubscribe(); resolve("quit"); },
-                        () => { unsubscribe(); resolve("quit"); },
+                        () => {
+                            unsubscribe();
+                            resolve("quit");
+                        },
+                        () => {
+                            unsubscribe();
+                            resolve("quit");
+                        },
                     );
                 });
             }
@@ -376,7 +389,7 @@ const run: Command = {
             type: Boolean,
         },
         {
-            description: 'Partition tasks for distributed CI (e.g., "1/4" for first of four runners). Falls back to VIS_PARTITION env var.',
+            description: "Partition tasks for distributed CI (e.g., \"1/4\" for first of four runners). Falls back to VIS_PARTITION env var.",
             name: "partition",
             type: String,
         },

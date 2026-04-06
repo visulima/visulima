@@ -41,11 +41,7 @@ const AUTO_FIXES: Record<string, AutoFix> = {
     },
 };
 
-const applyAutoFixes = (
-    source: string,
-    args: string[],
-    inMonorepo: boolean,
-): string[] => {
+const applyAutoFixes = (source: string, args: string[], inMonorepo: boolean): string[] => {
     const fix = AUTO_FIXES[source];
 
     if (!fix) {
@@ -59,17 +55,17 @@ const applyAutoFixes = (
     }
 
     if (fix.args) {
-        for (const arg of fix.args) {
-            if (!result.includes(arg)) {
-                result.push(arg);
+        for (const argument of fix.args) {
+            if (!result.includes(argument)) {
+                result.push(argument);
             }
         }
     }
 
     if (inMonorepo && fix.monoArgs) {
-        for (const arg of fix.monoArgs) {
-            if (!result.includes(arg)) {
-                result.push(arg);
+        for (const argument of fix.monoArgs) {
+            if (!result.includes(argument)) {
+                result.push(argument);
             }
         }
     }
@@ -87,15 +83,11 @@ const applyAutoFixes = (
  * directory as the first arg (e.g., `create-vite my-app`).
  *
  * Auto-fix rules are applied for known tools that need extra flags.
- *
  * @param config Resolved template config with source package name and extra args.
  * @param context Runtime context with PM, cwd, target dir, and monorepo flag.
  * @returns Exit code — 0 on success, non-zero on failure.
  */
-export const executeRemoteNpm = (
-    config: TemplateConfig,
-    context: ExecutionContext,
-): number => {
+export const executeRemoteNpm = (config: TemplateConfig, context: ExecutionContext): number => {
     // Build initial args: inject target directory first (most create-* packages
     // expect the output directory as their first positional arg), then append
     // any extra args from the user. This must happen BEFORE applyAutoFixes
@@ -141,15 +133,11 @@ export const executeRemoteNpm = (
  * - `owner/repo` (defaults to GitHub)
  * - Full HTTPS URLs
  * - `git:` prefix for raw git clone
- *
  * @param config Resolved template config with giget source string and extra args.
  * @param context Runtime context with target dir and createConfig (auth, registry, etc.).
  * @returns Exit code — 0 on success, 1 on failure.
  */
-export const executeRemoteGit = async (
-    config: TemplateConfig,
-    context: ExecutionContext,
-): Promise<number> => {
+export const executeRemoteGit = async (config: TemplateConfig, context: ExecutionContext): Promise<number> => {
     const { createConfig } = context;
 
     info(`Downloading template from ${config.source}...`);

@@ -62,7 +62,6 @@ const GIGET_PREFIXES = [
 
 /**
  * Check if the input looks like a git/tarball URL that giget can handle.
- *
  * @param input Raw user input string.
  * @returns `true` when the input matches a known git host, provider prefix, or URL scheme.
  */
@@ -98,7 +97,6 @@ const DIRECT_PACKAGES = new Set(["sv"]);
  * - `@scope/foo` → `@scope/create-foo`
  * - `create-vue` → `create-vue` (already expanded)
  * - `sv`         → `sv` (direct-package initialiser, not expanded)
- *
  * @param name Bare package name or scoped package name.
  * @returns Expanded package name suitable for `dlx`.
  */
@@ -137,7 +135,6 @@ export const expandCreateShorthand = (name: string): string => {
 /**
  * Given the raw template string from the user, determine what kind of
  * template it is and return a resolved {@link TemplateConfig}.
- *
  * @param input Raw template string (e.g., "vis:app", "vite", "user/repo").
  * @param extraArgs Additional CLI arguments to forward to the template runner.
  * @returns Resolved template configuration with type, source, and args.
@@ -169,7 +166,6 @@ export const discoverTemplate = (input: string, extraArgs: string[] = []): Templ
 /**
  * Suggest the most appropriate parent directory for a new project based on
  * the template type.
- *
  * @param type The resolved template type.
  * @returns Suggested parent directory name ("apps", "packages", or ".").
  */

@@ -94,23 +94,20 @@ const rewritePackageJson = (root: string, packageManager: PackageManagerType, ov
                 case "bun": {
                     // Bun supports catalogs in both workspaces.catalog and top-level catalog;
                     // prefer the location the user already chose to avoid moving their config.
-                    const workspacesField = pkg["workspaces"] as
-                        | string[]
-                        | { catalog?: Record<string, string>; packages?: string[] }
-                        | undefined;
-                    const workspacesObj = workspacesField && !Array.isArray(workspacesField) ? workspacesField : undefined;
+                    const workspacesField = pkg["workspaces"] as string[] | { catalog?: Record<string, string>; packages?: string[] } | undefined;
+                    const workspacesObject = workspacesField && !Array.isArray(workspacesField) ? workspacesField : undefined;
                     const bunCatalog: Record<string, string> = {
-                        ...(workspacesObj?.catalog ?? (pkg["catalog"] as Record<string, string> | undefined)),
+                        ...workspacesObject?.catalog ?? (pkg["catalog"] as Record<string, string> | undefined),
                     };
 
                     for (const [key, value] of Object.entries(overrides)) {
                         bunCatalog[key] = value;
                     }
 
-                    if (workspacesObj?.catalog != null) {
-                        workspacesObj.catalog = bunCatalog;
-                    } else {
+                    if (workspacesObject?.catalog == undefined) {
                         pkg["catalog"] = bunCatalog;
+                    } else {
+                        workspacesObject.catalog = bunCatalog;
                     }
 
                     // bun overrides support catalog: references

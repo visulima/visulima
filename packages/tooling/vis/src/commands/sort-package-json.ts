@@ -36,9 +36,9 @@ const findPackageJsonFiles = (root: string): string[] => {
     const pnpmPatterns = readPnpmWorkspacePatterns(root);
 
     if (pnpmPatterns) {
-        const projectDirs = resolveWorkspacePatterns(root, pnpmPatterns);
+        const projectDirectories = resolveWorkspacePatterns(root, pnpmPatterns);
 
-        for (const dir of projectDirs) {
+        for (const dir of projectDirectories) {
             addFile(join(root, dir, "package.json"));
         }
     } else {
@@ -49,14 +49,12 @@ const findPackageJsonFiles = (root: string): string[] => {
             const rootPkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
                 workspaces?: string[] | { packages?: string[] };
             };
-            const patterns = Array.isArray(rootPkg.workspaces)
-                ? rootPkg.workspaces
-                : rootPkg.workspaces?.packages;
+            const patterns = Array.isArray(rootPkg.workspaces) ? rootPkg.workspaces : rootPkg.workspaces?.packages;
 
             if (patterns) {
-                const projectDirs = resolveWorkspacePatterns(root, patterns);
+                const projectDirectories = resolveWorkspacePatterns(root, patterns);
 
-                for (const dir of projectDirs) {
+                for (const dir of projectDirectories) {
                     addFile(join(root, dir, "package.json"));
                 }
             }
@@ -98,6 +96,7 @@ const sortPackageJson: Command = {
 
         if (files.length === 0) {
             info("No package.json files found.");
+
             return;
         }
 
@@ -120,8 +119,8 @@ const sortPackageJson: Command = {
                 }
 
                 // Normalize: ensure trailing newline for comparison
-                const normalizedContents = contents.endsWith("\n") ? contents : contents + "\n";
-                const normalizedSorted = sorted.endsWith("\n") ? sorted : sorted + "\n";
+                const normalizedContents = contents.endsWith("\n") ? contents : `${contents}\n`;
+                const normalizedSorted = sorted.endsWith("\n") ? sorted : `${sorted}\n`;
 
                 if (normalizedContents === normalizedSorted) {
                     sortedCount++;

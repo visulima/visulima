@@ -1,13 +1,12 @@
 import { createInterface } from "node:readline";
 
 import type { Command } from "@visulima/cerebro";
-
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { coerce } from "semver";
 
 import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
-import { runTyposquatCheck } from "../typosquats";
+import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
 import {
     buildSocketOptions,
     DEFAULT_LOW_SCORE_THRESHOLD,
@@ -19,7 +18,7 @@ import {
     scoreColor,
     scoreLabel,
 } from "../socket-security";
-import type { AcceptedRisk, PackageReportData, SocketSecurityOptions } from "../socket-security";
+import { runTyposquatCheck } from "../typosquats";
 import { parsePackageArgument, toStringArray } from "../utils";
 
 /**
@@ -75,19 +74,19 @@ const displaySecurityReports = (
     const lowScorePackages: PackageReportData[] = [];
 
     for (const report of reports.values()) {
-        const overall = report.score.overall;
+        const { overall } = report.score;
         const color = scoreColor(overall);
         const pct = `${String(Math.round(overall * 100))}%`;
         const alertCount = report.alerts.length;
         const fullName = getFullPackageName(report);
         const accepted = findAcceptedRisk(fullName, report.version, acceptedRisks);
 
-        const colorFn = color === "red" ? red : color === "yellow" ? yellow : green;
+        const colorFunction = color === "red" ? red : color === "yellow" ? yellow : green;
 
         if (accepted) {
-            info(`  ${colorFn(pct)} ${formatReportSummary(report)} ${dim(`[accepted: ${accepted.reason}]`)}`);
+            info(`  ${colorFunction(pct)} ${formatReportSummary(report)} ${dim(`[accepted: ${accepted.reason}]`)}`);
         } else {
-            info(`  ${colorFn(pct)} ${formatReportSummary(report)}`);
+            info(`  ${colorFunction(pct)} ${formatReportSummary(report)}`);
         }
 
         if (alertCount > 0) {
@@ -259,7 +258,7 @@ const add: Command = {
         ["vis add lodash --no-typosquat-check", "Skip typosquat name check"],
     ],
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        let packages = argument as string[];
+        let packages = argument;
 
         if (!packages || packages.length === 0) {
             throw new Error("No packages specified. Usage: vis add <packages...>");
@@ -268,7 +267,10 @@ const add: Command = {
         // Typosquat check (unless disabled)
         if (!options["no-typosquat-check"]) {
             const parsed = packages.map((p: string) => parsePackageArgument(p));
-            const result = await runTyposquatCheck(parsed.map((p) => p.name), visConfig?.security?.typosquatAllowlist);
+            const result = await runTyposquatCheck(
+                parsed.map((p) => p.name),
+                visConfig?.security?.typosquatAllowlist,
+            );
 
             if (!result.ok) {
                 process.exitCode = 1;
@@ -290,12 +292,12 @@ const add: Command = {
 
         // Socket.dev pre-add check (unless disabled)
         if (!options["no-socket-check"]) {
-            const socketOpts = buildSocketOptions(visConfig?.security?.socket);
+            const socketOptions = buildSocketOptions(visConfig?.security?.socket);
 
-            if (socketOpts) {
-                const minimumScore = socketOpts.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
+            if (socketOptions) {
+                const minimumScore = socketOptions.minimumScore ?? DEFAULT_LOW_SCORE_THRESHOLD;
 
-                const shouldContinue = await runSocketPreCheck(packages, socketOpts, minimumScore, visConfig?.security?.socket?.acceptedRisks);
+                const shouldContinue = await runSocketPreCheck(packages, socketOptions, minimumScore, visConfig?.security?.socket?.acceptedRisks);
 
                 if (!shouldContinue) {
                     process.exitCode = 1;

@@ -37,19 +37,18 @@ const select = async (rl: RL, question: string, choices: { hint?: string; label:
     process.stderr.write(`  ${question}\n`);
 
     for (const [index, choice] of choices.entries()) {
-        const num = bold(cyan(`  ${String(index + 1)}.`));
+        const number_ = bold(cyan(`  ${String(index + 1)}.`));
         const hint = choice.hint ? dim(` — ${choice.hint}`) : "";
 
-        process.stderr.write(`${num} ${choice.label}${hint}\n`);
+        process.stderr.write(`${number_} ${choice.label}${hint}\n`);
     }
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
-        const answer = await ask(rl, `\n  ${dim("Enter choice (1-" + String(choices.length) + "):")} `);
-        const num = Number.parseInt(answer, 10);
+        const answer = await ask(rl, `\n  ${dim(`Enter choice (1-${String(choices.length)}):`)} `);
+        const number_ = Number.parseInt(answer, 10);
 
-        if (num >= 1 && num <= choices.length) {
-            return (choices[num - 1] as { value: string }).value;
+        if (number_ >= 1 && number_ <= choices.length) {
+            return (choices[number_ - 1] as { value: string }).value;
         }
 
         // Also accept typing the value directly
@@ -78,7 +77,6 @@ export interface PromptResult {
 
 /**
  * Run the full interactive prompt flow and return the collected answers.
- *
  * @param options.cwd Working directory for resolving paths.
  * @param options.defaultPm Pre-selected package manager (skips PM prompt when set).
  * @param options.defaultGitInit Default for the git-init prompt (from vis.config.ts).
@@ -101,18 +99,18 @@ export const runInteractivePrompts = async (options: {
         // 1. Template selection
         const templateChoices = options.inMonorepo
             ? [
-                  { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                  { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                  { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                  { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-              ]
+                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+            ]
             : [
-                  { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
-                  { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
-                  { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
-                  { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
-                  { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
-              ];
+                { hint: "Full workspace setup", label: "Vis Monorepo", value: "vis:monorepo" },
+                { hint: "Scaffold via create-vite", label: "Vis Application", value: "vis:app" },
+                { hint: "Reusable package scaffold", label: "Vis Library", value: "vis:library" },
+                { hint: "Code generator scaffold", label: "Vis Generator", value: "vis:generator" },
+                { hint: "Enter an npm create-* package or GitHub URL", label: "Custom template", value: "__custom__" },
+            ];
 
         let template = await select(rl, "Select a template:", templateChoices);
 
@@ -179,9 +177,7 @@ export const runInteractivePrompts = async (options: {
 
         // 7. Editor config (defaults from vis.config.ts)
         const editorDefault = options.defaultEditor === "vscode";
-        const editor = (await confirm(rl, "Generate VS Code configuration?", editorDefault))
-            ? ("vscode" as const)
-            : undefined;
+        const editor = await confirm(rl, "Generate VS Code configuration?", editorDefault) ? ("vscode" as const) : undefined;
 
         process.stderr.write("\n");
 

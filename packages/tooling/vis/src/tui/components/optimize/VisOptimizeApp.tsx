@@ -11,11 +11,11 @@ const MIN_HORIZONTAL_WIDTH = 100;
 const MIN_VIEWPORT_HEIGHT = 10;
 
 const FILTER_KEYS: Record<string, FilterType> = {
-    "1": "all",
-    "2": "native",
-    "3": "preferred",
-    "4": "micro-utility",
-    "5": "socket",
+    1: "all",
+    2: "native",
+    3: "preferred",
+    4: "micro-utility",
+    5: "socket",
 };
 
 interface VisOptimizeAppProps {
@@ -124,10 +124,8 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
                     }
                 } else if (input === "a") {
                     store.toggleAll();
-                } else if (key.return) {
-                    if (!isDryRun && state.checkedEntries.size > 0) {
-                        handleExit(store.getCheckedEntries());
-                    }
+                } else if (key.return && !isDryRun && state.checkedEntries.size > 0) {
+                    handleExit(store.getCheckedEntries());
                 }
             } else if (state.focusedPanel === "detail") {
                 if (key.upArrow || input === "k") {
@@ -142,8 +140,13 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
 
     if (rows < MIN_VIEWPORT_HEIGHT) {
         return (
-            <Box justifyContent="center" alignItems="center">
-                <Text color="yellow">Terminal too small. Resize to at least {MIN_VIEWPORT_HEIGHT} rows.</Text>
+            <Box alignItems="center" justifyContent="center">
+                <Text color="yellow">
+                    Terminal too small. Resize to at least
+                    {MIN_VIEWPORT_HEIGHT}
+                    {" "}
+                    rows.
+                </Text>
             </Box>
         );
     }
@@ -151,7 +154,7 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
     return (
         <Box flexDirection="column" height={rows} width={columns}>
             <Box flexDirection={isHorizontal ? "row" : "column"} flexGrow={1}>
-                <Box flexGrow={1} flexBasis={isHorizontal ? "50%" : undefined}>
+                <Box flexBasis={isHorizontal ? "50%" : undefined} flexGrow={1}>
                     <OptimizeListPanel
                         checkedEntries={state.checkedEntries}
                         entries={filteredEntries}
@@ -166,15 +169,18 @@ const VisOptimizeApp = ({ isDryRun, store }: VisOptimizeAppProps): React.JSX.Ele
                         viewportHeight={viewportHeight}
                     />
                 </Box>
-                <Box flexGrow={1} flexBasis={isHorizontal ? "50%" : undefined}>
+                <Box flexBasis={isHorizontal ? "50%" : undefined} flexGrow={1}>
                     <OptimizeDetailPanel entry={selectedEntry} focused={state.focusedPanel === "detail"} scrollRef={detailScrollRef} />
                 </Box>
             </Box>
 
-            <Box paddingX={1} flexShrink={0}>
+            <Box flexShrink={0} paddingX={1}>
                 <Text dimColor>
-                    {isDryRun ? "Preview mode" : "space:toggle a:all enter:apply"} | tab:switch panel /:{" "}
-                    filter q:quit | {"\u2699"}=codemod available
+                    {isDryRun ? "Preview mode" : "space:toggle a:all enter:apply"}
+                    {" "}
+                    | tab:switch panel /: filter q:quit |
+                    {"\u2699"}
+                    =codemod available
                 </Text>
             </Box>
 

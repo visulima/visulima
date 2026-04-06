@@ -4,8 +4,8 @@
     "private": true,
     "scripts": {
         "build": "echo 'Building lib-fast-8...' && sleep .5 && echo 'lib-fast-8 built!'",
-        "dev": "echo 'lib-fast-8 dev server on port 3008' && while true; do sleep 1; echo '[lib-fast-8] heartbeat'; done",
         "lint": "echo 'Linting lib-fast-8... OK'",
+        "dev": "echo 'lib-fast-8 dev server on port 3008' && while true; do sleep 1; echo '[lib-fast-8] heartbeat'; done",
         "test": "echo 'Testing lib-fast-8... 3 tests passed'"
     },
     "dependencies": {

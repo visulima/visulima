@@ -18,26 +18,26 @@ import type { ExecutionContext } from "./types";
 
 // The monorepo template always uses pnpm since it generates pnpm-workspace.yaml.
 const rootPackageJson = (name: string): string =>
-    JSON.stringify(
+    `${JSON.stringify(
         {
+            devDependencies: {
+                "@visulima/vis": "latest",
+            },
             name,
-            version: "0.0.0",
+            packageManager: "pnpm@latest",
             private: true,
-            type: "module",
             scripts: {
                 build: "vis run build",
                 dev: "vis run dev",
                 lint: "vis run lint",
                 test: "vis run test",
             },
-            devDependencies: {
-                "@visulima/vis": "latest",
-            },
-            packageManager: "pnpm@latest",
+            type: "module",
+            version: "0.0.0",
         },
         null,
         4,
-    ) + "\n";
+    )}\n`;
 
 const pnpmWorkspaceYaml = (): string => `packages:
   - "apps/*"
@@ -127,7 +127,6 @@ pnpm test
 
 /**
  * Scaffold a pnpm monorepo workspace with apps/ and packages/ directories.
- *
  * @param context Execution context with project name, target directory, and PM info.
  * @returns Exit code (0 = success).
  */

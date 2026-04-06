@@ -1,8 +1,8 @@
-import React from "react";
 import type { Command } from "@visulima/cerebro";
-import isInCi from "is-in-ci";
-import { render, renderToString, Text } from "@visulima/tui";
 import { findPackageManagerSync } from "@visulima/package";
+import { render, renderToString, Text } from "@visulima/tui";
+import isInCi from "is-in-ci";
+import React from "react";
 
 import { formatAiAnalysis, runAiAnalysis, validateAnalysisType } from "../ai-analysis";
 import type { CatalogCheckOptions, UpdateTarget } from "../catalog";
@@ -95,7 +95,7 @@ const check: Command = {
             ignore: toFilterArray(configDefaults.ignore),
             include: [...toFilterArray(options.include as string | string[] | undefined), ...toFilterArray(configDefaults.include), ...argument],
             includePrerelease: (options.prerelease as boolean) || configDefaults.prerelease || false,
-            security: options["no-security"] ? false : true,
+            security: !options["no-security"],
             target: target as UpdateTarget,
         };
 
@@ -110,18 +110,18 @@ const check: Command = {
 
         const onProgress = isTTY
             ? (current: number, total: number): void => {
-                  if (!progressInstance) {
-                      progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
-                          interactive: true,
-                          patchConsole: false,
-                      });
-                  } else {
-                      progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
-                  }
-              }
+                if (progressInstance) {
+                    progressInstance.rerender(React.createElement(CheckProgressApp, { current, total }));
+                } else {
+                    progressInstance = render(React.createElement(CheckProgressApp, { current, total }), {
+                        interactive: true,
+                        patchConsole: false,
+                    });
+                }
+            }
             : (current: number, total: number): void => {
-                  logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
-              };
+                logger.info(`Checking ${String(current)}/${String(total)} dependencies...`);
+            };
 
         if (!isTTY) {
             logger.info(`Checking ${String(totalDeps)} catalog dependencies against npm registry...\n`);
@@ -189,14 +189,14 @@ const check: Command = {
             for (const entry of outdated) {
                 const hasSecurityIssue = entry.vulnerabilities?.length || (entry.socketReport && entry.socketReport.alerts.length > 0);
                 const isAck = Boolean(entry.acceptedRisk);
-                const icon = hasSecurityIssue ? (isAck ? "\u2713" : "\u26A0") : "\u2713";
+                const icon = hasSecurityIssue ? isAck ? "\u2713" : "\u26A0" : "\u2713";
                 const iconColor = isAck ? "gray" : entry.updateType === "major" ? "red" : entry.updateType === "minor" ? "yellow" : "green";
                 const socketOverall = entry.socketReport?.score.overall;
-                const scoreSuffix = socketOverall !== undefined ? ` [${String(Math.round(socketOverall * 100))}%]` : "";
-                const socketColorName = socketOverall !== undefined ? scoreColor(socketOverall) : undefined;
+                const scoreSuffix = socketOverall === undefined ? "" : ` [${String(Math.round(socketOverall * 100))}%]`;
+                const socketColorName = socketOverall === undefined ? undefined : scoreColor(socketOverall);
 
                 process.stdout.write(
-                    renderToString(
+                    `${renderToString(
                         React.createElement(
                             Text,
                             null,
@@ -207,7 +207,7 @@ const check: Command = {
                             socketColorName ? React.createElement(Text, { color: socketColorName }, scoreSuffix) : null,
                         ),
                         { columns },
-                    ) + "\n",
+                    )}\n`,
                 );
             }
 

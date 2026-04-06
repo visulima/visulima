@@ -70,10 +70,7 @@ describe("readOverrides", () => {
         it("should read overrides from pnpm-workspace.yaml", () => {
             expect.assertions(2);
 
-            writeFileSync(
-                join(tmpDir, "pnpm-workspace.yaml"),
-                "packages:\n  - packages/*\n\noverrides:\n  lodash: ^4.17.21\n",
-            );
+            writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n\noverrides:\n  lodash: ^4.17.21\n");
 
             const result = readOverrides(tmpDir, {}, { name: "pnpm", version: "10.32.1" });
 
@@ -198,7 +195,10 @@ describe("applyOverrides", () => {
         writeFileSync(join(tmpDir, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n");
         const pkgJsonPath = writePkgJson(tmpDir, { name: "test" });
 
-        const result = applyOverrides(tmpDir, pkgJsonPath, [{ original: "lodash", spec: "npm:@socketregistry/lodash@^4" }], { name: "pnpm", version: "10.32.1" });
+        const result = applyOverrides(tmpDir, pkgJsonPath, [{ original: "lodash", spec: "npm:@socketregistry/lodash@^4" }], {
+            name: "pnpm",
+            version: "10.32.1",
+        });
 
         expect(result.added).toStrictEqual(["lodash"]);
 
@@ -234,7 +234,15 @@ describe("applyOverrides", () => {
 
         const pkgJsonPath = writePkgJson(tmpDir, { name: "test" });
 
-        applyOverrides(tmpDir, pkgJsonPath, [{ original: "zzz", spec: "a" }, { original: "aaa", spec: "b" }], { name: "npm", version: "10.0.0" });
+        applyOverrides(
+            tmpDir,
+            pkgJsonPath,
+            [
+                { original: "zzz", spec: "a" },
+                { original: "aaa", spec: "b" },
+            ],
+            { name: "npm", version: "10.0.0" },
+        );
 
         const pkg = readPkgJson(tmpDir);
         const keys = Object.keys(pkg.overrides as Record<string, string>);

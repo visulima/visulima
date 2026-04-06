@@ -14,27 +14,27 @@ import type { ExecutionContext } from "./types";
 // ── Template files ────────────────────────────────────────────────
 
 const packageJson = (name: string, description: string): string =>
-    JSON.stringify(
+    `${JSON.stringify(
         {
-            name,
-            version: "0.0.1",
-            private: true,
-            type: "module",
-            description,
             bin: {
                 [name]: "./bin/index.js",
             },
+            description,
+            devDependencies: {
+                typescript: "^5.0.0",
+            },
+            name,
+            private: true,
             scripts: {
                 build: "tsc",
                 dev: "tsc --watch",
             },
-            devDependencies: {
-                typescript: "^5.0.0",
-            },
+            type: "module",
+            version: "0.0.1",
         },
         null,
         4,
-    ) + "\n";
+    )}\n`;
 
 const binIndex = (name: string): string => `#!/usr/bin/env node
 
@@ -48,24 +48,24 @@ console.log("Hello from ${name}!");
 `;
 
 const tsconfigJson = (): string =>
-    JSON.stringify(
+    `${JSON.stringify(
         {
             compilerOptions: {
-                target: "ES2022",
+                declaration: true,
+                esModuleInterop: true,
                 module: "Node16",
                 moduleResolution: "Node16",
                 outDir: "./dist",
                 rootDir: "./src",
-                strict: true,
-                esModuleInterop: true,
                 skipLibCheck: true,
-                declaration: true,
+                strict: true,
+                target: "ES2022",
             },
             include: ["src/**/*", "bin/**/*"],
         },
         null,
         4,
-    ) + "\n";
+    )}\n`;
 
 const srcIndex = (): string => `/**
  * Generator core logic — export functions used by the CLI entry point.
@@ -80,7 +80,6 @@ export const generate = (): void => {
 
 /**
  * Scaffold a code generator package with a bin entry point.
- *
  * @param context Runtime context with project name and target directory.
  * @param description Optional generator description for package.json.
  * @returns Exit code — 0 on success.

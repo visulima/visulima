@@ -25,7 +25,7 @@ interface OutputPanelProps {
     focused: boolean;
     output: string;
     scrollRef?: React.RefObject<import("@visulima/tui").ScrollViewRef>;
-    /** Whether to show "<enter> full screen" hint in bottom border. */
+    /** Whether to show "&lt;enter> full screen" hint in bottom border. */
     showFullscreenHint?: boolean;
     status: TaskRowData["status"] | undefined;
     taskId: string | null;
@@ -37,9 +37,15 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
 
     const borderStyle = focused ? "bold" : "single";
     const borderColor = (() => {
-        if (statusValue === "failure") return "red";
-        if (statusValue === "success" || isCacheStatus(statusValue)) return focused ? "green" : "gray";
-        if (statusValue === "running") return focused ? "white" : "cyan";
+        if (statusValue === "failure")
+            return "red";
+
+        if (statusValue === "success" || isCacheStatus(statusValue))
+            return focused ? "green" : "gray";
+
+        if (statusValue === "running")
+            return focused ? "white" : "cyan";
+
         return focused ? "white" : "gray";
     })();
 
@@ -47,16 +53,10 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     const topTitle = taskId ? `${statusIcon}  ${taskId}` : undefined;
 
     // Duration on top-right
-    const topRightTitle = duration !== undefined ? formatMs(duration) : undefined;
+    const topRightTitle = duration === undefined ? undefined : formatMs(duration);
 
     // Bottom hint: context-dependent
-    const bottomTitle = !taskId
-        ? undefined
-        : focused && showFullscreenHint
-            ? "<enter> full screen"
-            : !focused
-                ? "<tab> or <enter> to focus"
-                : undefined;
+    const bottomTitle = taskId ? focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus" : undefined;
 
     // Empty state
     if (!taskId) {
@@ -84,11 +84,11 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     if (!output && (statusValue === "running" || statusValue === "pending")) {
         return (
             <Box
+                borderBottomTitle={bottomTitle}
                 borderColor={borderColor}
                 borderStyle={borderStyle}
-                borderTopTitle={topTitle}
                 borderTopRightTitle={topRightTitle}
-                borderBottomTitle={bottomTitle}
+                borderTopTitle={topTitle}
                 flexDirection="column"
                 flexGrow={1}
                 paddingX={2}
@@ -103,17 +103,17 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
 
     return (
         <Box
+            borderBottomTitle={bottomTitle}
             borderColor={borderColor}
             borderStyle={borderStyle}
-            borderTopTitle={topTitle}
             borderTopRightTitle={topRightTitle}
-            borderBottomTitle={bottomTitle}
+            borderTopTitle={topTitle}
             flexDirection="column"
             flexGrow={1}
         >
             {/* Output content — scrollable */}
             <Box flexGrow={1} flexShrink={1} paddingY={1}>
-                <ScrollView ref={scrollRef} flexGrow={1} followOutput paddingX={2} scrollbar scrollbarColor="gray" scrollbarStyle="block">
+                <ScrollView flexGrow={1} followOutput paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray" scrollbarStyle="block">
                     {lines.map((line, i) => (
                         <Text key={String(i)}>{line}</Text>
                     ))}

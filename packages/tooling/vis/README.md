@@ -88,8 +88,8 @@ vis hook install
 
 ## Commands
 
-| Command                 | Alias | Description                                                      |
-| ----------------------- | ----- | ---------------------------------------------------------------- |
+| Command                 | Alias | Description                                                       |
+| ----------------------- | ----- | ----------------------------------------------------------------- |
 | `vis create [template]` |       | Scaffold a new project from templates, npm packages, or git repos |
 | `vis init`              |       | Initialize vis.config.ts with security defaults                   |
 | `vis run <target>`      |       | Run a target across workspace projects with caching               |

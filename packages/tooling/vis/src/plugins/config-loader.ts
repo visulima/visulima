@@ -1,7 +1,7 @@
 import type { Plugin } from "@visulima/cerebro";
 import { bold, cyan, red, yellow } from "@visulima/colorize";
-import isInCi from "is-in-ci";
 import { findMonorepoRootSync } from "@visulima/package";
+import isInCi from "is-in-ci";
 
 import { findVisConfigFile, loadVisConfig } from "../config";
 
@@ -13,11 +13,7 @@ const configLoaderPlugin: Plugin = {
             const cwdOption = toolbox.options?.cwd as string | undefined;
             let workspaceRoot: string;
 
-            if (cwdOption) {
-                workspaceRoot = (await import("node:path")).resolve(process.cwd(), cwdOption);
-            } else {
-                workspaceRoot = findMonorepoRootSync(process.cwd()).path;
-            }
+            workspaceRoot = cwdOption ? (await import("node:path")).resolve(process.cwd(), cwdOption) : findMonorepoRootSync(process.cwd()).path;
 
             toolbox.workspaceRoot = workspaceRoot;
 
@@ -31,30 +27,30 @@ const configLoaderPlugin: Plugin = {
                     const message = configError instanceof Error ? configError.message : String(configError);
 
                     toolbox.logger.error("");
-                    toolbox.logger.error(red(bold("\u2716 Failed to load " + configFile)));
-                    toolbox.logger.error("  " + message);
+                    toolbox.logger.error(red(bold(`\u2716 Failed to load ${configFile}`)));
+                    toolbox.logger.error(`  ${message}`);
                     toolbox.logger.error("");
 
                     if (message.includes("Cannot find module")) {
                         const moduleMatch = /Cannot find module '([^']+)'/.exec(message);
                         const moduleName = moduleMatch?.[1] ?? "unknown";
 
-                        toolbox.logger.error(yellow("\u2192 Hint:") + " The module " + bold(moduleName) + " could not be resolved.");
+                        toolbox.logger.error(`${yellow("\u2192 Hint:")} The module ${bold(moduleName)} could not be resolved.`);
 
                         if (moduleName.includes("@visulima/vis")) {
                             toolbox.logger.error("  This usually means the package isn't installed or the export path changed.");
-                            toolbox.logger.error("  Try: " + cyan("pnpm add @visulima/vis"));
-                            toolbox.logger.error("  Or regenerate: " + cyan("vis init --force"));
+                            toolbox.logger.error(`  Try: ${cyan("pnpm add @visulima/vis")}`);
+                            toolbox.logger.error(`  Or regenerate: ${cyan("vis init --force")}`);
                         } else {
-                            toolbox.logger.error("  Try: " + cyan("pnpm add " + moduleName));
+                            toolbox.logger.error(`  Try: ${cyan(`pnpm add ${moduleName}`)}`);
                         }
                     } else if (message.includes("SyntaxError") || message.includes("Unexpected token")) {
-                        toolbox.logger.error(yellow("\u2192 Hint:") + " The config file has a syntax error.");
+                        toolbox.logger.error(`${yellow("\u2192 Hint:")} The config file has a syntax error.`);
                         toolbox.logger.error("  Check your config for typos or invalid syntax.");
-                        toolbox.logger.error("  Or regenerate: " + cyan("vis init --force"));
+                        toolbox.logger.error(`  Or regenerate: ${cyan("vis init --force")}`);
                     } else {
-                        toolbox.logger.error(yellow("\u2192 Hint:") + " Delete the broken config and recreate it:");
-                        toolbox.logger.error("  " + cyan("rm " + configFile + " && vis init"));
+                        toolbox.logger.error(`${yellow("\u2192 Hint:")} Delete the broken config and recreate it:`);
+                        toolbox.logger.error(`  ${cyan(`rm ${configFile} && vis init`)}`);
                     }
 
                     toolbox.logger.error("");
@@ -93,7 +89,7 @@ const configLoaderPlugin: Plugin = {
 
                         const configPath = join(workspaceRoot, "vis.config.ts");
                         const content = [
-                            'import { defineConfig } from "@visulima/vis/config";',
+                            "import { defineConfig } from \"@visulima/vis/config\";",
                             "",
                             "// Secure defaults are applied automatically by defineConfig().",
                             "// You only need to add allowBuilds for packages with build scripts.",
@@ -101,7 +97,7 @@ const configLoaderPlugin: Plugin = {
                             "export default defineConfig({",
                             "    security: {",
                             "        allowBuilds: {",
-                            '            // "esbuild": true,',
+                            "            // \"esbuild\": true,",
                             "        },",
                             "    },",
                             "});",
@@ -109,7 +105,7 @@ const configLoaderPlugin: Plugin = {
                         ].join("\n");
 
                         writeFileSync(configPath, content);
-                        toolbox.logger.info("\u2713 Created " + configPath + "\n");
+                        toolbox.logger.info(`\u2713 Created ${configPath}\n`);
                         toolbox.visConfig = await loadVisConfig(workspaceRoot);
                     }
                 } else {
@@ -118,7 +114,7 @@ const configLoaderPlugin: Plugin = {
             }
         } catch (error: unknown) {
             if (error instanceof Error && !error.message.includes("monorepo root")) {
-                toolbox.logger.warn("Failed to detect workspace: " + error.message);
+                toolbox.logger.warn(`Failed to detect workspace: ${error.message}`);
             }
 
             toolbox.visConfig = {};

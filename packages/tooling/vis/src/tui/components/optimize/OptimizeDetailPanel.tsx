@@ -15,7 +15,7 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
 
     if (!entry) {
         return (
-            <Box borderColor="gray" borderStyle="single" flexDirection="column" flexGrow={1} alignItems="center" justifyContent="center">
+            <Box alignItems="center" borderColor="gray" borderStyle="single" flexDirection="column" flexGrow={1} justifyContent="center">
                 <Text dimColor>No entry selected</Text>
             </Box>
         );
@@ -25,20 +25,20 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
 
     return (
         <Box borderColor={borderColor} borderStyle="single" flexDirection="column" flexGrow={1}>
-            <Box flexShrink={0} paddingX={2} paddingTop={1}>
+            <Box flexShrink={0} paddingTop={1} paddingX={2}>
                 <Text bold color="white">
                     {entry.packageName}
                 </Text>
             </Box>
 
-            <ScrollView ref={scrollRef} flexGrow={1} flexShrink={1} paddingX={2} scrollbar scrollbarColor="gray">
-                <Text>{""}</Text>
+            <ScrollView flexGrow={1} flexShrink={1} paddingX={2} ref={scrollRef} scrollbar scrollbarColor="gray">
+                <Text />
 
                 <Box>
                     <Box width={14}>
                         <Text dimColor>Category:</Text>
                     </Box>
-                    <Text color={categoryColor} bold>
+                    <Text bold color={categoryColor}>
                         {entry.category}
                     </Text>
                 </Box>
@@ -79,18 +79,28 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                         <Text bold color="green">
                             ACTION
                         </Text>
-                        <Box marginTop={1} paddingLeft={2} flexDirection="column">
-                            {entry.hasCodemod ? (
-                                <>
-                                    <Text color="green">{"\u2713"} Codemod will rewrite imports to use native API.</Text>
-                                    <Text dimColor> The package can then be removed from dependencies.</Text>
-                                </>
-                            ) : (
-                                <>
-                                    <Text color="yellow">{"\u2139"} No automated codemod available.</Text>
-                                    <Text dimColor> Manual migration required — replace usage with native equivalent.</Text>
-                                </>
-                            )}
+                        <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+                            {entry.hasCodemod
+                                ? (
+                                    <>
+                                        <Text color="green">
+                                            {"\u2713"}
+                                            {" "}
+                                            Codemod will rewrite imports to use native API.
+                                        </Text>
+                                        <Text dimColor> The package can then be removed from dependencies.</Text>
+                                    </>
+                                )
+                                : (
+                                    <>
+                                        <Text color="yellow">
+                                            {"\u2139"}
+                                            {" "}
+                                            No automated codemod available.
+                                        </Text>
+                                        <Text dimColor> Manual migration required — replace usage with native equivalent.</Text>
+                                    </>
+                                )}
                         </Box>
                     </Box>
                 )}
@@ -101,8 +111,12 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                         <Text bold color="cyan">
                             ACTION
                         </Text>
-                        <Box marginTop={1} paddingLeft={2} flexDirection="column">
-                            <Text color="cyan">{"\u2713"} Override will redirect resolution to the hardened package.</Text>
+                        <Box flexDirection="column" marginTop={1} paddingLeft={2}>
+                            <Text color="cyan">
+                                {"\u2713"}
+                                {" "}
+                                Override will redirect resolution to the hardened package.
+                            </Text>
                             <Text dimColor> No source code changes needed — drop-in replacement.</Text>
                         </Box>
                     </Box>
@@ -113,9 +127,10 @@ const OptimizeDetailPanel = ({ entry, focused, scrollRef }: OptimizeDetailPanelP
                     <Text bold color="white">
                         LINKS
                     </Text>
-                    <Box marginTop={1} paddingLeft={2} flexDirection="column">
+                    <Box flexDirection="column" marginTop={1} paddingLeft={2}>
                         <Text color="cyan" underline>
-                            https://npmx.dev/{entry.packageName}
+                            https://npmx.dev/
+                            {entry.packageName}
                         </Text>
                     </Box>
                 </Box>

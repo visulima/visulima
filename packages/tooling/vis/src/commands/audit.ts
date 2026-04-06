@@ -11,8 +11,8 @@ import { fetchVulnerabilities } from "../catalog";
 import { error as errorOutput, info, note, success, warn } from "../output";
 import { detectPm } from "../pm-runner";
 import type { AcceptedRisk, PackageReportData } from "../socket-security";
-import type { VisConfig } from "../workspace";
 import { buildSocketOptions, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports, findAcceptedRisk, getFullPackageName, scoreLabel } from "../socket-security";
+import type { VisConfig } from "../workspace";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -205,8 +205,8 @@ const findDuplicateDependencies = async (workspaceRoot: string, pmName: string):
 const SEVERITY_ORDER: Record<string, number> = {
     CRITICAL: 0,
     HIGH: 1,
-    MODERATE: 2,
     LOW: 3,
+    MODERATE: 2,
     UNKNOWN: 4,
 };
 
@@ -235,12 +235,12 @@ const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
 };
 
 const formatVulnLine = (name: string, version: string, vuln: SecurityVulnerability, isAccepted: boolean): string => {
-    const colorFn = SEVERITY_COLOR_FN[vuln.severity] ?? dim;
+    const colorFunction = SEVERITY_COLOR_FN[vuln.severity] ?? dim;
     const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
     const fixedVersions = vuln.fixedVersions ?? [];
     const fixed = fixedVersions.length > 0 ? ` (fix: ${fixedVersions.join(", ")})` : "";
 
-    return `  ${colorFn(vuln.severity)} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
+    return `  ${colorFunction(vuln.severity)} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
 };
 
 const formatSocketLine = (report: PackageReportData, isAccepted: boolean): string => {
@@ -287,13 +287,13 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     info(`Found ${String(installed.length)} packages.\n`);
 
     // 2. Fetch vulnerability and security data in parallel
-    const packagesToScan = installed.map((p) => ({ name: p.name, version: p.version }));
+    const packagesToScan = installed.map((p) => { return { name: p.name, version: p.version }; });
 
-    const socketOpts = buildSocketOptions(socketConfig);
+    const socketOptions = buildSocketOptions(socketConfig);
 
     const [vulnMap, socketReports, duplicates] = await Promise.all([
         fetchVulnerabilities(packagesToScan),
-        socketOpts ? fetchSocketReports(packagesToScan, socketOpts) : Promise.resolve(new Map<string, PackageReportData>()),
+        socketOptions ? fetchSocketReports(packagesToScan, socketOptions) : Promise.resolve(new Map<string, PackageReportData>()),
         findDuplicateDependencies(workspaceRoot, pm.name),
     ]);
 
@@ -339,20 +339,24 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // 5. JSON output
     if (isJson) {
         const jsonResult = {
-            duplicates: duplicates.map((d) => ({
-                name: d.name,
-                versionCount: d.versions.length,
-                versions: d.versions,
-            })),
+            duplicates: duplicates.map((d) => {
+                return {
+                    name: d.name,
+                    versionCount: d.versions.length,
+                    versions: d.versions,
+                };
+            }),
             packages: installed.length,
-            results: filtered.map((e) => ({
-                acceptedRisk: e.acceptedRisk ?? null,
-                name: e.name,
-                socketAlerts: e.socketReport?.alerts ?? [],
-                socketScore: e.socketReport?.score.overall ?? null,
-                version: e.version,
-                vulnerabilities: e.vulnerabilities,
-            })),
+            results: filtered.map((e) => {
+                return {
+                    acceptedRisk: e.acceptedRisk ?? null,
+                    name: e.name,
+                    socketAlerts: e.socketReport?.alerts ?? [],
+                    socketScore: e.socketReport?.score.overall ?? null,
+                    version: e.version,
+                    vulnerabilities: e.vulnerabilities,
+                };
+            }),
             summary: {
                 accepted: filtered.filter((e) => e.acceptedRisk).length,
                 duplicatePackages: duplicates.length,
@@ -423,7 +427,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
 
             if (showFixes && (vuln.fixedVersions ?? []).length > 0) {
-                note(`    Fix: update to ${vuln.fixedVersions[vuln.fixedVersions.length - 1]}`);
+                note(`    Fix: update to ${vuln.fixedVersions.at(-1)}`);
             }
         }
     }
@@ -450,9 +454,9 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
             info(formatSocketLine(entry.socketReport, isExcluded));
 
             for (const alert of entry.socketReport.alerts) {
-                const alertColorFn = SOCKET_ALERT_COLORS[alert.severity] ?? dim;
+                const alertColorFunction = SOCKET_ALERT_COLORS[alert.severity] ?? dim;
 
-                info(`    ${alertColorFn(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
+                info(`    ${alertColorFunction(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
             }
         }
     }

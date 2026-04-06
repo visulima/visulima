@@ -6,9 +6,9 @@
  * warn users before they install a potentially malicious package.
  */
 
-import { createInterface } from "node:readline";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 
 import { red, yellow } from "@visulima/colorize";
@@ -31,6 +31,7 @@ export interface TyposquatMatch {
 export interface TyposquatCheckResult {
     /** Whether the operation should proceed. */
     ok: boolean;
+
     /**
      * The (possibly corrected) package names to use.
      * When the user chooses "use suggested name", the typosquat names are
@@ -72,8 +73,7 @@ const SUBSTITUTIONS: Record<string, string[]> = {
  * Separators (`-`, `.`, `_`) are preserved during omission and duplication passes.
  * Transposition is skipped when either character is a separator.
  * Names shorter than 3 characters return an empty set.
- *
- * @param name - The package name to generate variants for.
+ * @param name The package name to generate variants for.
  * @returns A set of unique variant strings (never includes the original name).
  */
 export const generateVariants = (name: string): Set<string> => {
@@ -98,9 +98,9 @@ export const generateVariants = (name: string): Set<string> => {
 
         // Adjacent transposition (skip when either char is a separator)
         if (i < name.length - 1 && name[i] !== name[i + 1]) {
-            const nextIsSep = name[i + 1] === "-" || name[i + 1] === "." || name[i + 1] === "_";
+            const nextIsSeparator = name[i + 1] === "-" || name[i + 1] === "." || name[i + 1] === "_";
 
-            if (!isSeparator && !nextIsSep) {
+            if (!isSeparator && !nextIsSeparator) {
                 const chars = name.split("");
 
                 [chars[i], chars[i + 1]] = [chars[i + 1], chars[i]];
@@ -124,15 +124,15 @@ export const generateVariants = (name: string): Set<string> => {
     const hasSeparator = SEP_RE.test(name);
 
     if (hasSeparator) {
-        variants.add(name.replace(SEP_RE, "")); // remove all
-        variants.add(name.replace(SEP_RE, "-")); // all hyphens
-        variants.add(name.replace(SEP_RE, ".")); // all dots
-        variants.add(name.replace(SEP_RE, "_")); // all underscores
+        variants.add(name.replaceAll(SEP_RE, "")); // remove all
+        variants.add(name.replaceAll(SEP_RE, "-")); // all hyphens
+        variants.add(name.replaceAll(SEP_RE, ".")); // all dots
+        variants.add(name.replaceAll(SEP_RE, "_")); // all underscores
     } else if (name.length > 5) {
         for (let i = 2; i < name.length - 2; i++) {
-            variants.add(name.slice(0, i) + "-" + name.slice(i));
-            variants.add(name.slice(0, i) + "." + name.slice(i));
-            variants.add(name.slice(0, i) + "_" + name.slice(i));
+            variants.add(`${name.slice(0, i)}-${name.slice(i)}`);
+            variants.add(`${name.slice(0, i)}.${name.slice(i)}`);
+            variants.add(`${name.slice(0, i)}_${name.slice(i)}`);
         }
     }
 
@@ -181,8 +181,7 @@ const getReverseLookup = (): Map<string, string> => {
 // ── Detection ──────────────────────────────────────────────────────
 
 /** Strip scope from a package name (e.g. "@scope/foo" -> "foo"). */
-const bareName = (packageName: string): string =>
-    packageName.startsWith("@") ? packageName.split("/")[1] ?? packageName : packageName;
+const bareName = (packageName: string): string => packageName.startsWith("@") ? (packageName.split("/")[1] ?? packageName) : packageName;
 
 /**
  * Check a single package name against the typosquat blocklist.
@@ -368,7 +367,6 @@ const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
  * they live in package.json. It warns the user and asks whether to proceed.
  *
  * In non-interactive mode, always aborts.
- *
  * @returns `true` to proceed, `false` to abort.
  */
 export const scanDepsForTyposquats = async (cwd: string, allowlist?: string[]): Promise<boolean> => {
