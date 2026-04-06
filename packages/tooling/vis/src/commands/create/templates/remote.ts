@@ -103,7 +103,7 @@ export const executeRemoteNpm = (
     const relativeTarget = relative(context.cwd, context.targetDir) || ".";
     const initialArgs = [...config.args];
 
-    if (relativeTarget && !initialArgs.includes(relativeTarget)) {
+    if (!initialArgs.includes(relativeTarget)) {
         initialArgs.unshift(relativeTarget);
     }
 

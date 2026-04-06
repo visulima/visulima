@@ -140,7 +140,12 @@ const initGitRepo = (projectDir: string): void => {
  *
  * @returns `true` if installation succeeded, `false` otherwise.
  */
-const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string }, logger: Console): boolean => {
+const installDependencies = (
+    projectDir: string,
+    pm: { name: "bun" | "npm" | "pnpm" | "yarn"; version: string },
+    logger: Console,
+    preferOffline: boolean = false,
+): boolean => {
     info("Installing dependencies...");
 
     const code = runInstall(
@@ -153,7 +158,7 @@ const installDependencies = (projectDir: string, pm: { name: "bun" | "npm" | "pn
             ignoreScripts: false,
             lockfileOnly: false,
             noOptional: false,
-            offline: false,
+            offline: preferOffline,
         },
         projectDir,
         logger,
@@ -351,7 +356,7 @@ const create: Command = {
         const config = discoverTemplate(resolvedInput, extraArgs);
 
         // For non-interactive mode, resolve target directory with parent inference
-        if (!targetDir!) {
+        if (!targetDir) {
             const parentDir = inMonorepo ? inferParentDir(config.type) : ".";
             const resolved = resolveTargetDir(projectName!, resolve(cwd, parentDir));
 
@@ -430,7 +435,7 @@ const create: Command = {
         const shouldInstall = createConfig?.install !== false;
 
         if (shouldInstall && existsSync(join(targetDir, "package.json"))) {
-            depsInstalled = installDependencies(targetDir, pm, logger);
+            depsInstalled = installDependencies(targetDir, pm, logger, createConfig?.preferOffline);
         }
 
         printNextSteps(targetDir, cwd, pm.name, depsInstalled);
