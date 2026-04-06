@@ -29,30 +29,30 @@ Output structure:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "definitions": {
-    "User": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer" },
-        "email": { "type": "string" },
-        "name": { "type": ["string", "null"] }
-      }
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "definitions": {
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "integer" },
+                "email": { "type": "string" },
+                "name": { "type": ["string", "null"] }
+            }
+        },
+        "Post": {
+            "type": "object",
+            "properties": {
+                "id": { "type": "integer" },
+                "title": { "type": "string" },
+                "content": { "type": ["string", "null"] }
+            }
+        }
     },
-    "Post": {
-      "type": "object",
-      "properties": {
-        "id": { "type": "integer" },
-        "title": { "type": "string" },
-        "content": { "type": ["string", "null"] }
-      }
+    "properties": {
+        "user": { "$ref": "#/definitions/User" },
+        "post": { "$ref": "#/definitions/Post" }
     }
-  },
-  "properties": {
-    "user": { "$ref": "#/definitions/User" },
-    "post": { "$ref": "#/definitions/Post" }
-  }
 }
 ```
 
@@ -62,10 +62,10 @@ Customize the transformation:
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  keepRelationScalarFields: "true",    // Keep foreign keys
-  includeRequiredFields: "true",        // Add required fields
-  persistOriginalType: "true",          // Keep Prisma types
-  schemaId: "https://api.example.com",  // Set schema ID
+    keepRelationScalarFields: "true", // Keep foreign keys
+    includeRequiredFields: "true", // Add required fields
+    persistOriginalType: "true", // Keep Prisma types
+    schemaId: "https://api.example.com", // Set schema ID
 });
 ```
 
@@ -77,24 +77,24 @@ Use the generated schema for validation:
 import Ajv from "ajv";
 
 const schema = transformDMMF(dmmf, {
-  includeRequiredFields: "true",
+    includeRequiredFields: "true",
 });
 
 const ajv = new Ajv();
 const validate = ajv.compile(schema.definitions.User);
 
 const user = {
-  id: 1,
-  email: "user@example.com",
-  name: "John Doe",
+    id: 1,
+    email: "user@example.com",
+    name: "John Doe",
 };
 
 const valid = validate(user);
 
 if (!valid) {
-  console.error("Validation errors:", validate.errors);
+    console.error("Validation errors:", validate.errors);
 } else {
-  console.log("Valid user data!");
+    console.log("Valid user data!");
 }
 ```
 
@@ -107,14 +107,11 @@ import { transformDMMF } from "@visulima/prisma-dmmf-transformer";
 import { writeFileSync } from "fs";
 
 const schema = transformDMMF(dmmf, {
-  schemaId: "https://api.example.com/schema",
+    schemaId: "https://api.example.com/schema",
 });
 
 // Save schema
-writeFileSync(
-  "./api-schema.json",
-  JSON.stringify(schema, null, 2)
-);
+writeFileSync("./api-schema.json", JSON.stringify(schema, null, 2));
 
 console.log("Schema saved to api-schema.json");
 ```
@@ -147,22 +144,19 @@ import { transformDMMF } from "@visulima/prisma-dmmf-transformer";
 import { writeFileSync } from "fs";
 
 generatorHandler({
-  onManifest: () => ({
-    defaultOutput: "./generated",
-    prettyName: "JSON Schema Generator",
-  }),
+    onManifest: () => ({
+        defaultOutput: "./generated",
+        prettyName: "JSON Schema Generator",
+    }),
 
-  onGenerate: async (options) => {
-    const schema = transformDMMF(options.dmmf, {
-      includeRequiredFields: "true",
-      persistOriginalType: "true",
-    });
+    onGenerate: async (options) => {
+        const schema = transformDMMF(options.dmmf, {
+            includeRequiredFields: "true",
+            persistOriginalType: "true",
+        });
 
-    writeFileSync(
-      `${options.generator.output.value}/schema.json`,
-      JSON.stringify(schema, null, 2)
-    );
-  },
+        writeFileSync(`${options.generator.output.value}/schema.json`, JSON.stringify(schema, null, 2));
+    },
 });
 ```
 
@@ -184,13 +178,13 @@ npx prisma generate
 ## Next Steps
 
 <Cards>
-  <Card title="Concepts" href="/concepts/dmmf">
-    Learn about DMMF and JSON Schema
-  </Card>
-  <Card title="Options" href="/usage/options">
-    Explore transformation options
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation
-  </Card>
+    <Card title="Concepts" href="/concepts/dmmf">
+        Learn about DMMF and JSON Schema
+    </Card>
+    <Card title="Options" href="/usage/options">
+        Explore transformation options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
 </Cards>

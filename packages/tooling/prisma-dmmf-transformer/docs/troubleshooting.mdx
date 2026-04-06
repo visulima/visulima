@@ -6,7 +6,7 @@ title: "Troubleshooting"
 
 Common issues and solutions when working with the Prisma DMMF transformer.
 
-## Cannot Access _getDmmf()
+## Cannot Access \_getDmmf()
 
 **Problem**: TypeScript error accessing internal method
 
@@ -25,9 +25,9 @@ Or extend the Prisma Client type:
 
 ```typescript
 declare module "@prisma/client" {
-  interface PrismaClient {
-    _getDmmf(): Promise<DMMF.Document>;
-  }
+    interface PrismaClient {
+        _getDmmf(): Promise<DMMF.Document>;
+    }
 }
 
 const dmmf = await prisma._getDmmf();
@@ -40,16 +40,19 @@ const dmmf = await prisma._getDmmf();
 **Solutions**:
 
 1. Ensure Prisma schema is valid:
+
 ```bash
 npx prisma validate
 ```
 
 2. Generate Prisma Client:
+
 ```bash
 npx prisma generate
 ```
 
 3. Check DMMF structure:
+
 ```typescript
 console.log(dmmf.datamodel.models);
 ```
@@ -63,7 +66,7 @@ console.log(dmmf.datamodel.models);
 ```typescript
 // To include relations
 const schema = transformDMMF(dmmf, {
-  keepRelationScalarFields: "true",
+    keepRelationScalarFields: "true",
 });
 ```
 
@@ -75,7 +78,7 @@ const schema = transformDMMF(dmmf, {
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  includeRequiredFields: "true",
+    includeRequiredFields: "true",
 });
 ```
 
@@ -87,7 +90,7 @@ const schema = transformDMMF(dmmf, {
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  persistOriginalType: "true",
+    persistOriginalType: "true",
 });
 ```
 
@@ -99,7 +102,7 @@ const schema = transformDMMF(dmmf, {
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  schemaId: "https://api.example.com/schema",
+    schemaId: "https://api.example.com/schema",
 });
 ```
 
@@ -133,7 +136,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 
 const ajv = new Ajv();
-addFormats(ajv);  // Adds date-time format support
+addFormats(ajv); // Adds date-time format support
 
 const validate = ajv.compile(schema);
 ```
@@ -145,18 +148,20 @@ const validate = ajv.compile(schema);
 **Solutions**:
 
 1. Transform once and cache:
+
 ```typescript
 let cachedSchema: JSONSchema7 | null = null;
 
 function getSchema() {
-  if (!cachedSchema) {
-    cachedSchema = transformDMMF(dmmf);
-  }
-  return cachedSchema;
+    if (!cachedSchema) {
+        cachedSchema = transformDMMF(dmmf);
+    }
+    return cachedSchema;
 }
 ```
 
 2. Transform only needed models:
+
 ```typescript
 const schema = transformDMMF(dmmf);
 const userSchema = schema.definitions.User;
@@ -179,19 +184,19 @@ model Category {
 
 ```json
 {
-  "Category": {
-    "properties": {
-      "parent": {
-        "$ref": "#/definitions/Category"
-      },
-      "children": {
-        "type": "array",
-        "items": {
-          "$ref": "#/definitions/Category"
+    "Category": {
+        "properties": {
+            "parent": {
+                "$ref": "#/definitions/Category"
+            },
+            "children": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/definitions/Category"
+                }
+            }
         }
-      }
     }
-  }
 }
 ```
 
@@ -226,12 +231,18 @@ Enable verbose output:
 ```typescript
 const dmmf = await (prisma as any)._getDmmf();
 
-console.log("Models:", dmmf.datamodel.models.map((m) => m.name));
-console.log("Enums:", dmmf.datamodel.enums.map((e) => e.name));
+console.log(
+    "Models:",
+    dmmf.datamodel.models.map((m) => m.name),
+);
+console.log(
+    "Enums:",
+    dmmf.datamodel.enums.map((e) => e.name),
+);
 
 const schema = transformDMMF(dmmf, {
-  includeRequiredFields: "true",
-  persistOriginalType: "true",
+    includeRequiredFields: "true",
+    persistOriginalType: "true",
 });
 
 console.log(JSON.stringify(schema, null, 2));

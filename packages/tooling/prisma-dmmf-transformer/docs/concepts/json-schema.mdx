@@ -12,10 +12,10 @@ The transformer generates JSON Schema Draft 7 compliant schemas:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "definitions": {},
-  "properties": {}
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "definitions": {},
+    "properties": {}
 }
 ```
 
@@ -38,30 +38,30 @@ model User {
 
 ```json
 {
-  "definitions": {
-    "User": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "email": {
-          "type": "string"
-        },
-        "name": {
-          "type": ["string", "null"]
-        },
-        "age": {
-          "type": "integer"
+    "definitions": {
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": ["string", "null"]
+                },
+                "age": {
+                    "type": "integer"
+                }
+            }
         }
-      }
+    },
+    "properties": {
+        "user": {
+            "$ref": "#/definitions/User"
+        }
     }
-  },
-  "properties": {
-    "user": {
-      "$ref": "#/definitions/User"
-    }
-  }
 }
 ```
 
@@ -71,17 +71,17 @@ model User {
 
 Prisma types convert to JSON Schema types:
 
-| Prisma Type | JSON Schema Type |
-|-------------|------------------|
-| String      | "string"         |
-| Int         | "integer"        |
-| BigInt      | "integer"        |
-| Float       | "number"         |
-| Decimal     | "number"         |
-| Boolean     | "boolean"        |
+| Prisma Type | JSON Schema Type                  |
+| ----------- | --------------------------------- |
+| String      | "string"                          |
+| Int         | "integer"                         |
+| BigInt      | "integer"                         |
+| Float       | "number"                          |
+| Decimal     | "number"                          |
+| Boolean     | "boolean"                         |
 | DateTime    | "string" with format: "date-time" |
-| Json        | "object"         |
-| Bytes       | "string"         |
+| Json        | "object"                          |
+| Bytes       | "string"                          |
 
 ### Optional Fields
 
@@ -95,9 +95,9 @@ model User {
 
 ```json
 {
-  "name": {
-    "type": ["string", "null"]
-  }
+    "name": {
+        "type": ["string", "null"]
+    }
 }
 ```
 
@@ -113,12 +113,12 @@ model User {
 
 ```json
 {
-  "tags": {
-    "type": "array",
-    "items": {
-      "type": "string"
+    "tags": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        }
     }
-  }
 }
 ```
 
@@ -140,20 +140,20 @@ model User {
 
 ```json
 {
-  "definitions": {
-    "Role": {
-      "type": "string",
-      "enum": ["USER", "ADMIN", "MODERATOR"]
-    },
-    "User": {
-      "type": "object",
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/Role"
+    "definitions": {
+        "Role": {
+            "type": "string",
+            "enum": ["USER", "ADMIN", "MODERATOR"]
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "$ref": "#/definitions/Role"
+                }
+            }
         }
-      }
     }
-  }
 }
 ```
 
@@ -174,11 +174,11 @@ model Post {
 
 ```json
 {
-  "properties": {
-    "author": {
-      "$ref": "#/definitions/User"
+    "properties": {
+        "author": {
+            "$ref": "#/definitions/User"
+        }
     }
-  }
 }
 ```
 
@@ -190,14 +190,14 @@ Both relation and foreign key are included:
 
 ```json
 {
-  "properties": {
-    "author": {
-      "$ref": "#/definitions/User"
-    },
-    "authorId": {
-      "type": "integer"
+    "properties": {
+        "author": {
+            "$ref": "#/definitions/User"
+        },
+        "authorId": {
+            "type": "integer"
+        }
     }
-  }
 }
 ```
 
@@ -215,13 +215,13 @@ model User {
 
 ```json
 {
-  "type": "object",
-  "properties": {
-    "id": { "type": "integer" },
-    "email": { "type": "string" },
-    "name": { "type": ["string", "null"] }
-  },
-  "required": ["id", "email"]
+    "type": "object",
+    "properties": {
+        "id": { "type": "integer" },
+        "email": { "type": "string" },
+        "name": { "type": ["string", "null"] }
+    },
+    "required": ["id", "email"]
 }
 ```
 
@@ -231,15 +231,15 @@ With `persistOriginalType: "true"`, Prisma types are preserved:
 
 ```json
 {
-  "email": {
-    "type": "string",
-    "prismaType": "String"
-  },
-  "createdAt": {
-    "type": "string",
-    "format": "date-time",
-    "prismaType": "DateTime"
-  }
+    "email": {
+        "type": "string",
+        "prismaType": "String"
+    },
+    "createdAt": {
+        "type": "string",
+        "format": "date-time",
+        "prismaType": "DateTime"
+    }
 }
 ```
 
@@ -251,16 +251,16 @@ The `schemaId` option sets the `$id` property:
 
 ```typescript
 transformDMMF(dmmf, {
-  schemaId: "https://api.example.com/schema",
+    schemaId: "https://api.example.com/schema",
 });
 ```
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://api.example.com/schema",
-  "type": "object",
-  "definitions": {}
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.example.com/schema",
+    "type": "object",
+    "definitions": {}
 }
 ```
 
@@ -268,7 +268,7 @@ This creates resolvable references:
 
 ```json
 {
-  "$ref": "https://api.example.com/schema#/definitions/User"
+    "$ref": "https://api.example.com/schema#/definitions/User"
 }
 ```
 
@@ -282,10 +282,14 @@ Reusable model schemas:
 
 ```json
 {
-  "definitions": {
-    "User": { /* schema */ },
-    "Post": { /* schema */ }
-  }
+    "definitions": {
+        "User": {
+            /* schema */
+        },
+        "Post": {
+            /* schema */
+        }
+    }
 }
 ```
 
@@ -295,10 +299,10 @@ Top-level references (camelCase model names):
 
 ```json
 {
-  "properties": {
-    "user": { "$ref": "#/definitions/User" },
-    "post": { "$ref": "#/definitions/Post" }
-  }
+    "properties": {
+        "user": { "$ref": "#/definitions/User" },
+        "post": { "$ref": "#/definitions/Post" }
+    }
 }
 ```
 
@@ -320,23 +324,23 @@ model User {
 
 ```json
 {
-  "definitions": {
-    "Address": {
-      "type": "object",
-      "properties": {
-        "street": { "type": "string" },
-        "city": { "type": "string" },
-        "zip": { "type": "string" }
-      }
-    },
-    "User": {
-      "type": "object",
-      "properties": {
-        "address": {
-          "$ref": "#/definitions/Address"
+    "definitions": {
+        "Address": {
+            "type": "object",
+            "properties": {
+                "street": { "type": "string" },
+                "city": { "type": "string" },
+                "zip": { "type": "string" }
+            }
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/Address"
+                }
+            }
         }
-      }
     }
-  }
 }
 ```

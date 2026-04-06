@@ -12,10 +12,10 @@ The `transformDMMF` function accepts an options object:
 
 ```typescript
 interface TransformOptions {
-  keepRelationScalarFields?: "true" | "false";
-  includeRequiredFields?: "true" | "false";
-  persistOriginalType?: "true" | "false";
-  schemaId?: string;
+    keepRelationScalarFields?: "true" | "false";
+    includeRequiredFields?: "true" | "false";
+    persistOriginalType?: "true" | "false";
+    schemaId?: string;
 }
 ```
 
@@ -40,12 +40,12 @@ With `"false"` (default):
 
 ```json
 {
-  "Post": {
-    "properties": {
-      "id": { "type": "integer" },
-      "author": { "$ref": "#/definitions/User" }
+    "Post": {
+        "properties": {
+            "id": { "type": "integer" },
+            "author": { "$ref": "#/definitions/User" }
+        }
     }
-  }
 }
 ```
 
@@ -53,13 +53,13 @@ With `"true"`:
 
 ```json
 {
-  "Post": {
-    "properties": {
-      "id": { "type": "integer" },
-      "author": { "$ref": "#/definitions/User" },
-      "authorId": { "type": "integer" }
+    "Post": {
+        "properties": {
+            "id": { "type": "integer" },
+            "author": { "$ref": "#/definitions/User" },
+            "authorId": { "type": "integer" }
+        }
     }
-  }
 }
 ```
 
@@ -67,16 +67,18 @@ With `"true"`:
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  keepRelationScalarFields: "true",
+    keepRelationScalarFields: "true",
 });
 ```
 
 **When to use `"true"`:**
+
 - Need foreign keys for validation
 - Building API payloads with IDs
 - Database migration tools
 
 **When to use `"false"`:**
+
 - Documentation generation
 - GraphQL schema generation
 - Object-oriented APIs
@@ -102,14 +104,14 @@ With `"false"` (default):
 
 ```json
 {
-  "User": {
-    "type": "object",
-    "properties": {
-      "id": { "type": "integer" },
-      "email": { "type": "string" },
-      "name": { "type": ["string", "null"] }
+    "User": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "integer" },
+            "email": { "type": "string" },
+            "name": { "type": ["string", "null"] }
+        }
     }
-  }
 }
 ```
 
@@ -117,15 +119,15 @@ With `"true"`:
 
 ```json
 {
-  "User": {
-    "type": "object",
-    "properties": {
-      "id": { "type": "integer" },
-      "email": { "type": "string" },
-      "name": { "type": ["string", "null"] }
-    },
-    "required": ["id", "email"]
-  }
+    "User": {
+        "type": "object",
+        "properties": {
+            "id": { "type": "integer" },
+            "email": { "type": "string" },
+            "name": { "type": ["string", "null"] }
+        },
+        "required": ["id", "email"]
+    }
 }
 ```
 
@@ -133,16 +135,18 @@ With `"true"`:
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  includeRequiredFields: "true",
+    includeRequiredFields: "true",
 });
 ```
 
 **When to use `"true"`:**
+
 - Data validation
 - Form validation
 - API request validation
 
 **When to use `"false"`:**
+
 - Documentation only
 - Partial update schemas
 - Flexible validation
@@ -169,14 +173,14 @@ With `"false"` (default):
 
 ```json
 {
-  "User": {
-    "properties": {
-      "id": { "type": "integer" },
-      "email": { "type": "string" },
-      "createdAt": { "type": "string", "format": "date-time" },
-      "metadata": { "type": "object" }
+    "User": {
+        "properties": {
+            "id": { "type": "integer" },
+            "email": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "metadata": { "type": "object" }
+        }
     }
-  }
 }
 ```
 
@@ -184,27 +188,27 @@ With `"true"`:
 
 ```json
 {
-  "User": {
-    "properties": {
-      "id": {
-        "type": "integer",
-        "prismaType": "Int"
-      },
-      "email": {
-        "type": "string",
-        "prismaType": "String"
-      },
-      "createdAt": {
-        "type": "string",
-        "format": "date-time",
-        "prismaType": "DateTime"
-      },
-      "metadata": {
-        "type": "object",
-        "prismaType": "Json"
-      }
+    "User": {
+        "properties": {
+            "id": {
+                "type": "integer",
+                "prismaType": "Int"
+            },
+            "email": {
+                "type": "string",
+                "prismaType": "String"
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "prismaType": "DateTime"
+            },
+            "metadata": {
+                "type": "object",
+                "prismaType": "Json"
+            }
+        }
     }
-  }
 }
 ```
 
@@ -212,16 +216,18 @@ With `"true"`:
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  persistOriginalType: "true",
+    persistOriginalType: "true",
 });
 ```
 
 **When to use `"true"`:**
+
 - Custom code generators
 - Type mapping tools
 - Prisma-specific tooling
 
 **When to use `"false"`:**
+
 - Standard JSON Schema validation
 - OpenAPI documentation
 - Generic schema consumers
@@ -237,7 +243,7 @@ Set the `$id` property for the schema.
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  schemaId: "https://api.example.com/schema/v1",
+    schemaId: "https://api.example.com/schema/v1",
 });
 ```
 
@@ -245,10 +251,10 @@ Output:
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://api.example.com/schema/v1",
-  "type": "object",
-  "definitions": {}
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://api.example.com/schema/v1",
+    "type": "object",
+    "definitions": {}
 }
 ```
 
@@ -266,6 +272,7 @@ const schema = transformDMMF(dmmf, {
 ```
 
 **When to use:**
+
 - Publishing schemas to a registry
 - Cross-schema references
 - API versioning
@@ -276,10 +283,10 @@ Use multiple options together:
 
 ```typescript
 const schema = transformDMMF(dmmf, {
-  keepRelationScalarFields: "true",    // Include foreign keys
-  includeRequiredFields: "true",        // Add validation constraints
-  persistOriginalType: "true",          // Keep Prisma types
-  schemaId: "https://api.example.com",  // Set schema ID
+    keepRelationScalarFields: "true", // Include foreign keys
+    includeRequiredFields: "true", // Add validation constraints
+    persistOriginalType: "true", // Keep Prisma types
+    schemaId: "https://api.example.com", // Set schema ID
 });
 ```
 
@@ -289,8 +296,8 @@ const schema = transformDMMF(dmmf, {
 
 ```typescript
 transformDMMF(dmmf, {
-  includeRequiredFields: "true",
-  keepRelationScalarFields: "false",
+    includeRequiredFields: "true",
+    keepRelationScalarFields: "false",
 });
 ```
 
@@ -298,9 +305,9 @@ transformDMMF(dmmf, {
 
 ```typescript
 transformDMMF(dmmf, {
-  includeRequiredFields: "false",
-  keepRelationScalarFields: "false",
-  schemaId: "https://docs.example.com/schema",
+    includeRequiredFields: "false",
+    keepRelationScalarFields: "false",
+    schemaId: "https://docs.example.com/schema",
 });
 ```
 
@@ -308,8 +315,8 @@ transformDMMF(dmmf, {
 
 ```typescript
 transformDMMF(dmmf, {
-  includeRequiredFields: "true",
-  keepRelationScalarFields: "true",
-  persistOriginalType: "true",
+    includeRequiredFields: "true",
+    keepRelationScalarFields: "true",
+    persistOriginalType: "true",
 });
 ```
