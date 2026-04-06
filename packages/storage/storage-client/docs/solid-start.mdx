@@ -106,18 +106,12 @@ export default function Home() {
 
             {isUploading() && (
                 <div style={{ "margin-top": "1rem" }}>
-                    <div>
-                        Progress: {progress()}%
-                    </div>
+                    <div>Progress: {progress()}%</div>
                     <progress max={100} value={progress()} style={{ width: "100%", "max-width": "400px" }} />
                 </div>
             )}
 
-            {error() && (
-                <div style={{ color: "red", "margin-top": "1rem" }}>
-                    Error: {error()?.message}
-                </div>
-            )}
+            {error() && <div style={{ color: "red", "margin-top": "1rem" }}>Error: {error()?.message}</div>}
 
             {result() && (
                 <div style={{ color: "green", "margin-top": "1rem" }}>
@@ -126,7 +120,10 @@ export default function Home() {
                     {result()?.filename && <div>Filename: {result()?.filename}</div>}
                     {result()?.url && (
                         <div>
-                            URL: <a href={result()?.url} target="_blank" rel="noopener noreferrer">{result()?.url}</a>
+                            URL:{" "}
+                            <a href={result()?.url} target="_blank" rel="noopener noreferrer">
+                                {result()?.url}
+                            </a>
                         </div>
                     )}
                 </div>
@@ -319,12 +316,10 @@ export default function LargeFileUpload() {
             {isUploading() && (
                 <div style={{ "margin-top": "1rem" }}>
                     <progress max={100} value={progress()} style={{ width: "100%" }} />
-                    <div>Progress: {progress()}% ({offset()} bytes uploaded)</div>
-                    {isPaused() ? (
-                        <button onClick={resume}>Resume</button>
-                    ) : (
-                        <button onClick={pause}>Pause</button>
-                    )}
+                    <div>
+                        Progress: {progress()}% ({offset()} bytes uploaded)
+                    </div>
+                    {isPaused() ? <button onClick={resume}>Resume</button> : <button onClick={pause}>Pause</button>}
                 </div>
             )}
 
@@ -342,11 +337,27 @@ export default function LargeFileUpload() {
 import { createBatchUpload, createFileInput } from "@visulima/storage-client/solid";
 
 export default function BatchUploadPage() {
-    const { files, inputRef, handleFileChange, handleDrop, handleDragOver, openFileDialog, reset: resetFiles } = createFileInput({
+    const {
+        files,
+        inputRef,
+        handleFileChange,
+        handleDrop,
+        handleDragOver,
+        openFileDialog,
+        reset: resetFiles,
+    } = createFileInput({
         multiple: true,
     });
 
-    const { uploadBatch, progress, isUploading, completedCount, errorCount, items, reset: resetUpload } = createBatchUpload({
+    const {
+        uploadBatch,
+        progress,
+        isUploading,
+        completedCount,
+        errorCount,
+        items,
+        reset: resetUpload,
+    } = createBatchUpload({
         endpoint: "/api/upload/multipart",
         onSuccess: (results) => {
             console.log("Batch complete:", results);
@@ -392,7 +403,9 @@ export default function BatchUploadPage() {
                 <div style={{ "margin-top": "1rem" }}>
                     <progress max={100} value={progress()} style={{ width: "100%" }} />
                     <div>Progress: {progress()}%</div>
-                    <div>Completed: {completedCount()} / {items().length}</div>
+                    <div>
+                        Completed: {completedCount()} / {items().length}
+                    </div>
                     <div>Errors: {errorCount()}</div>
                 </div>
             )}
@@ -437,9 +450,7 @@ export default function FilesPage() {
     };
 
     const toggleSelect = (id: string) => {
-        setSelectedIds((prev) =>
-            prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-        );
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
     };
 
     return (
@@ -458,13 +469,8 @@ export default function FilesPage() {
                 <For each={data()?.data}>
                     {(file) => (
                         <li>
-                            <input
-                                type="checkbox"
-                                checked={selectedIds().includes(file.id)}
-                                onChange={() => toggleSelect(file.id)}
-                            />
-                            {file.originalName || file.name || file.id}
-                            {" "}({file.size} bytes)
+                            <input type="checkbox" checked={selectedIds().includes(file.id)} onChange={() => toggleSelect(file.id)} />
+                            {file.originalName || file.name || file.id} ({file.size} bytes)
                             <button onClick={() => handleDelete(file.id)} disabled={isDeleting()}>
                                 Delete
                             </button>

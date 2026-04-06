@@ -73,15 +73,15 @@ export const createPatchChunk = (options: CreatePatchChunkOptions): CreatePatchC
 
     const dataStore = (mutation.data as unknown as Readable<UploadResult | undefined> | null) ?? readable<UploadResult | undefined>(undefined);
     const errorStore = (mutation.error as unknown as Readable<Error | null> | null) ?? readable<Error | null>(undefined);
-    const isLoadingStore: Readable<boolean>
+    const isLoadingStore: Readable<boolean> =
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Query mutation type is complex
-        = typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
+        typeof (mutation.isPending as any) === "object" && (mutation.isPending as any) !== null && "subscribe" in (mutation.isPending as any)
             ? (mutation.isPending as unknown as Readable<boolean>)
             : readable<boolean>(false);
 
     return {
         data: derived(dataStore, ($data) => $data || undefined),
-        error: derived(errorStore, ($error) => $error ? ($error as Error) : undefined),
+        error: derived(errorStore, ($error) => ($error ? ($error as Error) : undefined)),
         isLoading: isLoadingStore,
         patchChunk: (id: string, chunk: Blob, offset: number, checksum?: string) => mutation.mutateAsync({ checksum, chunk, id, offset }),
         reset: mutation.reset,

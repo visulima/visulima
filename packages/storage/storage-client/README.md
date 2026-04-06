@@ -88,34 +88,34 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <UploadComponent />
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <UploadComponent />
+        </QueryClientProvider>
+    );
 }
 
 function UploadComponent() {
-  const { upload, progress, isUploading, error, result } = useUpload({
-    endpointMultipart: "/api/upload/multipart",
-    onSuccess: (result) => console.log("Upload successful:", result),
-  });
+    const { upload, progress, isUploading, error, result } = useUpload({
+        endpointMultipart: "/api/upload/multipart",
+        onSuccess: (result) => console.log("Upload successful:", result),
+    });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      await upload(file);
-    }
-  };
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            await upload(file);
+        }
+    };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      {isUploading && <div>Progress: {progress}%</div>}
-      {error && <div>Error: {error.message}</div>}
-      {result && <div>File ID: {result.id}</div>}
-    </div>
-  );
+    return (
+        <div>
+            <input type="file" onChange={handleFileChange} />
+            {isUploading && <div>Progress: {progress}%</div>}
+            {error && <div>Error: {error.message}</div>}
+            {result && <div>File ID: {result.id}</div>}
+        </div>
+    );
 }
 ```
 
@@ -123,27 +123,27 @@ function UploadComponent() {
 
 ```vue
 <template>
-  <div>
-    <input type="file" @change="handleFileChange" />
-    <div v-if="isUploading">Progress: {{ progress }}%</div>
-    <div v-if="error">Error: {{ error.message }}</div>
-    <div v-if="result">File ID: {{ result.id }}</div>
-  </div>
+    <div>
+        <input type="file" @change="handleFileChange" />
+        <div v-if="isUploading">Progress: {{ progress }}%</div>
+        <div v-if="error">Error: {{ error.message }}</div>
+        <div v-if="result">File ID: {{ result.id }}</div>
+    </div>
 </template>
 
 <script setup lang="ts">
 import { useUpload } from "@visulima/storage-client/vue";
 
 const { upload, progress, isUploading, error, result } = useUpload({
-  endpointMultipart: "/api/upload/multipart",
+    endpointMultipart: "/api/upload/multipart",
 });
 
 const handleFileChange = async (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    await upload(file);
-  }
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (file) {
+        await upload(file);
+    }
 };
 </script>
 ```
@@ -157,34 +157,34 @@ import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
 const queryClient = new QueryClient();
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <UploadComponent />
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <UploadComponent />
+        </QueryClientProvider>
+    );
 }
 
 function UploadComponent() {
-  const { upload, progress, isUploading, error, result } = createUpload({
-    endpointMultipart: "/api/upload/multipart",
-  });
+    const { upload, progress, isUploading, error, result } = createUpload({
+        endpointMultipart: "/api/upload/multipart",
+    });
 
-  const handleFileChange = async (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
-      await upload(file);
-    }
-  };
+    const handleFileChange = async (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const file = target.files?.[0];
+        if (file) {
+            await upload(file);
+        }
+    };
 
-  return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      {isUploading() && <div>Progress: {progress()}%</div>}
-      {error() && <div>Error: {error()?.message}</div>}
-      {result() && <div>File ID: {result()?.id}</div>}
-    </div>
-  );
+    return (
+        <div>
+            <input type="file" onChange={handleFileChange} />
+            {isUploading() && <div>Progress: {progress()}%</div>}
+            {error() && <div>Error: {error()?.message}</div>}
+            {result() && <div>File ID: {result()?.id}</div>}
+        </div>
+    );
 }
 ```
 
@@ -236,7 +236,7 @@ Traditional `multipart/form-data` uploads, perfect for small to medium files and
 import { useMultipartUpload } from "@visulima/storage-client/react";
 
 const { upload, progress, isUploading } = useMultipartUpload({
-  endpoint: "/api/upload/multipart",
+    endpoint: "/api/upload/multipart",
 });
 
 await upload(file);
@@ -250,7 +250,7 @@ Resumable uploads using the TUS protocol, ideal for large files and unreliable n
 import { useTusUpload } from "@visulima/storage-client/react";
 
 const { upload, pause, resume, progress } = useTusUpload({
-  endpoint: "/api/upload/tus",
+    endpoint: "/api/upload/tus",
 });
 
 await upload(file);
@@ -267,8 +267,8 @@ Client-side chunked uploads for large files without requiring TUS server support
 import { useChunkedRestUpload } from "@visulima/storage-client/react";
 
 const { upload, progress } = useChunkedRestUpload({
-  endpoint: "/api/upload/chunked-rest",
-  chunkSize: 5 * 1024 * 1024, // 5MB chunks
+    endpoint: "/api/upload/chunked-rest",
+    chunkSize: 5 * 1024 * 1024, // 5MB chunks
 });
 
 await upload(file);

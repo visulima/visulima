@@ -29,7 +29,7 @@ describe(usePatchChunk, () => {
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
-                ETag: "\"chunk-etag\"",
+                ETag: '"chunk-etag"',
                 "X-Upload-Complete": "false",
                 "X-Upload-Offset": "100",
             }),
