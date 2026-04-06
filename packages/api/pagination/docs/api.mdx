@@ -9,10 +9,7 @@ title: "API Reference"
 Offset-based pagination.
 
 ```typescript
-function paginate<T>(
-    items: T[],
-    options: { page: number; limit: number }
-): Promise<PaginationResult<T>>
+function paginate<T>(items: T[], options: { page: number; limit: number }): Promise<PaginationResult<T>>;
 ```
 
 ## cursorPaginate()
@@ -20,10 +17,7 @@ function paginate<T>(
 Cursor-based pagination.
 
 ```typescript
-function cursorPaginate<T>(
-    items: T[],
-    options: { cursor?: string; limit: number }
-): Promise<CursorPaginationResult<T>>
+function cursorPaginate<T>(items: T[], options: { cursor?: string; limit: number }): Promise<CursorPaginationResult<T>>;
 ```
 
 ## Types

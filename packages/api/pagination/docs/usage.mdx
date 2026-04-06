@@ -38,8 +38,5 @@ const result = await cursorPaginate(query, {
 ## With Prisma
 
 ```typescript
-const result = await paginate(
-    await prisma.user.findMany(),
-    { page: 1, limit: 10 }
-);
+const result = await paginate(await prisma.user.findMany(), { page: 1, limit: 10 });
 ```
