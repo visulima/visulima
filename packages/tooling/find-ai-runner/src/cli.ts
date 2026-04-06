@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { parseArgs } from "node:util";
 
 import { PROVIDER_NAMES } from "./constants";
@@ -95,6 +96,7 @@ const handleList = (cliValues: CliValues): void => {
         return;
     }
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const provider of all) {
         const status = provider.available ? "\u2713" : "\u2717";
         const version = provider.version ? ` (v${provider.version})` : "";
@@ -117,9 +119,9 @@ const handleDetect = (cliPositionals: string[], cliValues: CliValues): void => {
         console.log(JSON.stringify(info, undefined, 2));
     } else if (info.available) {
         console.log(`${info.name} is available`);
-        console.log(`  Path: ${info.path}`);
+        console.log(`  Path: ${info.path ?? "unknown"}`);
         console.log(`  Version: ${info.version ?? "unknown"}`);
-        console.log(`  Detected via: ${info.detectionMethod}`);
+        console.log(`  Detected via: ${info.detectionMethod ?? "unknown"}`);
     } else {
         console.log(`${info.name} is not available on this system.`);
     }

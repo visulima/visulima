@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import type { AiProviderInfo } from "../src/index";
 import { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDER_NAMES, PROVIDERS, runProvider } from "../src/index";
@@ -55,8 +55,9 @@ describe("pROVIDERS", () => {
     });
 
     it("should have buildArgs function for every provider", () => {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const config of Object.values(PROVIDERS)) {
-            expect(typeof config.buildArgs).toBe("function");
+            expectTypeOf(config.buildArgs).toBeFunction();
         }
     });
 
@@ -84,7 +85,7 @@ describe("pROVIDER_NAMES", () => {
 
 // --- detectProvider ---
 
-describe("detectProvider", () => {
+describe(detectProvider, () => {
     beforeEach(() => {
         vi.resetAllMocks();
         mockExecFileSync.mockImplementation(() => {
@@ -264,7 +265,7 @@ describe("detectProvider", () => {
 
 // --- detectAllProviders ---
 
-describe("detectAllProviders", () => {
+describe(detectAllProviders, () => {
     beforeEach(() => {
         vi.resetAllMocks();
         mockExecFileSync.mockImplementation(() => {
@@ -304,7 +305,7 @@ describe("detectAllProviders", () => {
 
 // --- detectAvailableProviders ---
 
-describe("detectAvailableProviders", () => {
+describe(detectAvailableProviders, () => {
     beforeEach(() => {
         vi.resetAllMocks();
         mockExecFileSync.mockImplementation(() => {
@@ -335,7 +336,7 @@ describe("detectAvailableProviders", () => {
     it("should include detection-only providers if found", () => {
         mockExecFileSync.mockImplementation((cmd: string, args?: ReadonlyArray<string>) => {
             if (cmd === "which" && (args?.[0] === "claude" || args?.[0] === "amp")) {
-                return `/usr/bin/${args?.[0] as string}\n`;
+                return `/usr/bin/${args[0] as string}\n`;
             }
 
             throw new Error("not found");
@@ -354,7 +355,7 @@ describe("detectAvailableProviders", () => {
 
 // --- buildCliArgs ---
 
-describe("buildCliArgs", () => {
+describe(buildCliArgs, () => {
     it("should build claude args", () => {
         const args = buildCliArgs("claude", "analyze this");
 
@@ -516,14 +517,14 @@ describe("buildCliArgs", () => {
 
 // --- runProvider ---
 
-describe("runProvider", () => {
+describe(runProvider, () => {
     it("should reject when provider is not available", async () => {
         const provider: AiProviderInfo = {
             available: false,
             name: "claude",
         };
 
-        await expect(runProvider(provider, "test")).rejects.toThrowError("not available");
+        await expect(runProvider(provider, "test")).rejects.toThrow("not available");
     });
 
     it("should reject when provider has no path", async () => {
@@ -532,6 +533,6 @@ describe("runProvider", () => {
             name: "claude",
         };
 
-        await expect(runProvider(provider, "test")).rejects.toThrowError("not available");
+        await expect(runProvider(provider, "test")).rejects.toThrow("not available");
     });
 });
