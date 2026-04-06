@@ -57,7 +57,7 @@ jobs:
                       packages/email/disposable-email-domains/dist/domains.json
                       packages/email/disposable-email-domains/README.md
                       packages/tooling/vis/data/typosquats.json
-                  commit_message: "chore: sync data sources (disposable email domains, typosquats blocklist)"
+                  commit_message: "fix: sync data sources (disposable email domains, typosquats blocklist)"
                   commit_user_name: "github-actions-shell"
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
                   commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
