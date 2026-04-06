@@ -170,11 +170,17 @@ const displayResults = (results: DoctorResults): void => {
         const patches = outdated.filter((e) => e.updateType === "patch").length;
         const parts: string[] = [];
 
-        if (majors > 0) parts.push(`${String(majors)} major`);
+        if (majors > 0) {
+            parts.push(`${String(majors)} major`);
+        }
 
-        if (minors > 0) parts.push(`${String(minors)} minor`);
+        if (minors > 0) {
+            parts.push(`${String(minors)} minor`);
+        }
 
-        if (patches > 0) parts.push(`${String(patches)} patch`);
+        if (patches > 0) {
+            parts.push(`${String(patches)} patch`);
+        }
 
         info(`  ${warnIcon} ${String(outdated.length)} outdated (${parts.join(", ")})`);
     } else {
@@ -251,13 +257,21 @@ const displayResults = (results: DoctorResults): void => {
     }
 
     if (optimizations.length > 0) {
-        if (natives > 0) info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
+        if (natives > 0) {
+            info(`  ${warnIcon} ${String(natives)} replaceable with native APIs`);
+        }
 
-        if (preferred > 0) info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
+        if (preferred > 0) {
+            info(`  ${warnIcon} ${String(preferred)} with lighter alternatives`);
+        }
 
-        if (micros > 0) info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
+        if (micros > 0) {
+            info(`  ${warnIcon} ${String(micros)} trivial micro-utilities`);
+        }
 
-        if (socketOverrides > 0) info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
+        if (socketOverrides > 0) {
+            info(`  ${warnIcon} ${String(socketOverrides)} @socketregistry overrides available`);
+        }
     } else {
         info(`  ${icon(true)} No optimizations available`);
     }

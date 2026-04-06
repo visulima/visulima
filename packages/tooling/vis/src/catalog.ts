@@ -1562,15 +1562,25 @@ const formatSummary = (outdated: OutdatedEntry[]): string => {
     let lowScoreCount = 0;
 
     for (const entry of outdated) {
-        if (entry.updateType === "major") majors++;
-        else if (entry.updateType === "minor") minors++;
-        else patches++;
+        if (entry.updateType === "major") {
+            majors++;
+        } else if (entry.updateType === "minor") {
+            minors++;
+        } else {
+            patches++;
+        }
 
-        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) securityCount++;
+        if (entry.vulnerabilities && entry.vulnerabilities.length > 0) {
+            securityCount++;
+        }
 
-        if (entry.socketReport?.alerts.length) socketAlertCount++;
+        if (entry.socketReport?.alerts.length) {
+            socketAlertCount++;
+        }
 
-        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) lowScoreCount++;
+        if (entry.socketReport && entry.socketReport.score.overall < DEFAULT_LOW_SCORE_THRESHOLD) {
+            lowScoreCount++;
+        }
     }
 
     const parts: string[] = [];
@@ -1912,7 +1922,7 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
             }
         });
 
-        results.push(...(await Promise.all(fetches)));
+        results.push(...await Promise.all(fetches));
     } finally {
         clearTimeout(timeout);
     }
