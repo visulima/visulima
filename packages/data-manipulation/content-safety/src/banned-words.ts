@@ -34,13 +34,11 @@ import zh from "./words/zh";
  *
  * Contains curated lists of profanity, slurs, hate speech, and explicit content
  * across 19 languages. Each language is represented by its ISO 639-1 code.
- *
  * @remarks
  * - All words are checked simultaneously regardless of user locale
  * - Words are normalized to NFC Unicode form for consistent matching
  * - Multi-word phrases are supported (e.g., "white trash")
  * - Leet-speak variants are included where applicable
- *
  * @example
  * ```typescript
  * import { BANNED_WORDS } from "@visulima/content-safety";
@@ -48,10 +46,10 @@ import zh from "./words/zh";
  * console.log(Object.keys(BANNED_WORDS)); // ['ar', 'az', 'de', 'en', ...]
  * console.log(BANNED_WORDS.en.length); // Number of English banned words
  * ```
- *
  * @public
  */
-export const BANNED_WORDS: Record<string, readonly string[]> = {
+// eslint-disable-next-line import/prefer-default-export
+export const BANNED_WORDS: Record<string, ReadonlyArray<string>> = {
     /** Arabic banned words */
     ar,
     /** Azerbaijani banned words */

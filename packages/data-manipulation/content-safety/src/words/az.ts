@@ -6,7 +6,7 @@
  * - https://github.com/coffee-and-fun/google-profanity-words
  * - https://github.com/viddexa/safetext
  */
-const words: readonly string[] = [
+const words: ReadonlyArray<string> = [
     "agzyva tyokerem",
     "amcyghyna goyum",
     "anavi sikim",
