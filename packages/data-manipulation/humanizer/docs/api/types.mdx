@@ -128,9 +128,8 @@ type IntlLocale =
     | "ja-JP"
     | "zh"
     | "zh-CN"
-    | "zh-TW"
-    // ... 700+ more locales
-;
+    | "zh-TW";
+// ... 700+ more locales
 ```
 
 ## Duration Types
@@ -240,6 +239,7 @@ type DurationUnitName = "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms";
 ```
 
 **Description:**
+
 - `y`: Years
 - `mo`: Months
 - `w`: Weeks
@@ -428,10 +428,9 @@ type DurationDigitReplacements = [
 ```
 
 **Example:**
+
 ```typescript
-const arabicDigits: DurationDigitReplacements = [
-    "۰", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"
-];
+const arabicDigits: DurationDigitReplacements = ["۰", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
 ```
 
 ### DurationPiece
@@ -538,12 +537,7 @@ import type { FormateByteOptions } from "@visulima/humanizer";
 import type { DurationOptions } from "@visulima/humanizer";
 
 // Multiple types
-import type {
-    FormateByteOptions,
-    ParseByteOptions,
-    DurationOptions,
-    DurationLanguage,
-} from "@visulima/humanizer";
+import type { FormateByteOptions, ParseByteOptions, DurationOptions, DurationLanguage } from "@visulima/humanizer";
 
 // All types
 import type * as Humanizer from "@visulima/humanizer";

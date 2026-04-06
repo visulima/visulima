@@ -13,12 +13,13 @@ Formats numeric bytes into a human-readable string.
 ### Signature
 
 ```typescript
-function formatBytes(bytes: number, options?: FormateByteOptions): string
+function formatBytes(bytes: number, options?: FormateByteOptions): string;
 ```
 
 ### Parameters
 
 #### bytes
+
 - **Type:** `number`
 - **Required:** Yes
 - **Description:** The byte value to format
@@ -26,6 +27,7 @@ function formatBytes(bytes: number, options?: FormateByteOptions): string
 Must be a finite number. Non-finite values (Infinity, NaN) will throw a TypeError.
 
 #### options
+
 - **Type:** `FormateByteOptions`
 - **Required:** No
 - **Description:** Configuration options for formatting
@@ -33,6 +35,7 @@ Must be a finite number. Non-finite values (Infinity, NaN) will throw a TypeErro
 ### Options
 
 #### decimals
+
 - **Type:** `number`
 - **Default:** `0`
 - **Description:** Number of decimal places to show
@@ -43,6 +46,7 @@ formatBytes(1234567, { decimals: 2 });
 ```
 
 #### locale
+
 - **Type:** `string`
 - **Default:** `"en-US"`
 - **Description:** Locale for number formatting (uses Intl.NumberFormat)
@@ -53,6 +57,7 @@ formatBytes(1234567, { decimals: 2, locale: "de-DE" });
 ```
 
 #### long
+
 - **Type:** `boolean`
 - **Default:** `false`
 - **Description:** Use long unit names instead of abbreviations
@@ -63,6 +68,7 @@ formatBytes(1024, { long: true });
 ```
 
 #### units
+
 - **Type:** `"metric" | "iec" | "metric_octet" | "iec_octet"`
 - **Default:** `"metric"`
 - **Description:** Unit system to use
@@ -78,6 +84,7 @@ formatBytes(1024, { units: "iec" });
 ```
 
 #### base
+
 - **Type:** `2 | 10`
 - **Default:** `2`
 - **Description:** Mathematical base for unit conversion
@@ -91,6 +98,7 @@ formatBytes(1000, { base: 10 });
 ```
 
 #### unit
+
 - **Type:** `string` (e.g., `"KB"`, `"MB"`, `"GB"`)
 - **Default:** `undefined` (auto-detect)
 - **Description:** Force output to a specific unit
@@ -101,6 +109,7 @@ formatBytes(1234567, { unit: "KB", decimals: 2 });
 ```
 
 #### space
+
 - **Type:** `boolean`
 - **Default:** `true`
 - **Description:** Include space between value and unit
@@ -181,12 +190,13 @@ Parses a human-readable byte string into a numeric value.
 ### Signature
 
 ```typescript
-function parseBytes(value: string, options?: ParseByteOptions): number
+function parseBytes(value: string, options?: ParseByteOptions): number;
 ```
 
 ### Parameters
 
 #### value
+
 - **Type:** `string`
 - **Required:** Yes
 - **Description:** The byte string to parse
@@ -194,6 +204,7 @@ function parseBytes(value: string, options?: ParseByteOptions): number
 Examples: `"1 KB"`, `"1.5 MB"`, `"2GB"`, `"1 Megabytes"`
 
 #### options
+
 - **Type:** `ParseByteOptions`
 - **Required:** No
 - **Description:** Configuration options for parsing
@@ -201,6 +212,7 @@ Examples: `"1 KB"`, `"1.5 MB"`, `"2GB"`, `"1 Megabytes"`
 ### Options
 
 #### locale
+
 - **Type:** `string`
 - **Default:** `"en-US"`
 - **Description:** Locale for parsing localized number formats
@@ -211,6 +223,7 @@ parseBytes("117,70 MB", { locale: "de-DE" });
 ```
 
 #### units
+
 - **Type:** `"metric" | "iec" | "metric_octet" | "iec_octet"`
 - **Default:** `"metric"`
 - **Description:** Unit system for parsing
@@ -221,6 +234,7 @@ parseBytes("1 KiB", { units: "iec" });
 ```
 
 #### base
+
 - **Type:** `2 | 10`
 - **Default:** `2`
 - **Description:** Mathematical base for unit conversion
@@ -367,16 +381,8 @@ interface ParseByteOptions {
 All CLDR locales are supported. Common examples:
 
 ```typescript
-type IntlLocale =
-    | "en-US"
-    | "en-GB"
-    | "de-DE"
-    | "fr-FR"
-    | "es-ES"
-    | "ja-JP"
-    | "zh-CN"
-    // ... 700+ more locales
-;
+type IntlLocale = "en-US" | "en-GB" | "de-DE" | "fr-FR" | "es-ES" | "ja-JP" | "zh-CN";
+// ... 700+ more locales
 ```
 
 ---
@@ -385,22 +391,22 @@ type IntlLocale =
 
 ### Metric Units (Base 10)
 
-| Unit | Short | Long | Value |
-|------|-------|------|-------|
-| Bytes | B | Bytes | 1 |
-| Kilobytes | KB | Kilobytes | 1,000 |
-| Megabytes | MB | Megabytes | 1,000,000 |
-| Gigabytes | GB | Gigabytes | 1,000,000,000 |
-| Terabytes | TB | Terabytes | 1,000,000,000,000 |
-| Petabytes | PB | Petabytes | 1,000,000,000,000,000 |
+| Unit      | Short | Long      | Value                 |
+| --------- | ----- | --------- | --------------------- |
+| Bytes     | B     | Bytes     | 1                     |
+| Kilobytes | KB    | Kilobytes | 1,000                 |
+| Megabytes | MB    | Megabytes | 1,000,000             |
+| Gigabytes | GB    | Gigabytes | 1,000,000,000         |
+| Terabytes | TB    | Terabytes | 1,000,000,000,000     |
+| Petabytes | PB    | Petabytes | 1,000,000,000,000,000 |
 
 ### IEC Units (Base 2)
 
-| Unit | Short | Long | Value |
-|------|-------|------|-------|
-| Bytes | B | Bytes | 1 |
-| Kibibytes | KiB | Kibibytes | 1,024 |
-| Mebibytes | MiB | Mebibytes | 1,048,576 |
-| Gibibytes | GiB | Gibibytes | 1,073,741,824 |
-| Tebibytes | TiB | Tebibytes | 1,099,511,627,776 |
-| Pebibytes | PiB | Pebibytes | 1,125,899,906,842,624 |
+| Unit      | Short | Long      | Value                 |
+| --------- | ----- | --------- | --------------------- |
+| Bytes     | B     | Bytes     | 1                     |
+| Kibibytes | KiB   | Kibibytes | 1,024                 |
+| Mebibytes | MiB   | Mebibytes | 1,048,576             |
+| Gibibytes | GiB   | Gibibytes | 1,073,741,824         |
+| Tebibytes | TiB   | Tebibytes | 1,099,511,627,776     |
+| Pebibytes | PiB   | Pebibytes | 1,125,899,906,842,624 |

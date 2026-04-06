@@ -419,9 +419,7 @@ function validateUploadSize(userInput: string, maxBytes: number): boolean {
     }
 
     if (bytes > maxBytes) {
-        throw new Error(
-            `Size ${formatBytes(bytes)} exceeds maximum ${formatBytes(maxBytes)}`,
-        );
+        throw new Error(`Size ${formatBytes(bytes)} exceeds maximum ${formatBytes(maxBytes)}`);
     }
 
     return true;
@@ -438,10 +436,7 @@ validateUploadSize("100 MB", maxSize); // Error: exceeds maximum
 ```typescript
 import { formatBytes, parseBytes } from "@visulima/humanizer";
 
-function calculateRemainingStorage(
-    totalStr: string,
-    usedStr: string,
-): { remaining: string; percentUsed: string } {
+function calculateRemainingStorage(totalStr: string, usedStr: string): { remaining: string; percentUsed: string } {
     const total = parseBytes(totalStr);
     const used = parseBytes(usedStr);
     const remaining = total - used;
