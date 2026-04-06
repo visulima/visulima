@@ -16,17 +16,20 @@ Functions for cursor positioning, movement, and styling.
 Move cursor to absolute position.
 
 **Signature:**
+
 ```typescript
-function cursorTo(x: number, y?: number): string
+function cursorTo(x: number, y?: number): string;
 ```
 
 **Parameters:**
+
 - `x` (`number`) - Column position (0-based)
 - `y` (`number`, optional) - Row position (0-based)
 
 **Returns:** ANSI escape sequence string
 
 **Example:**
+
 ```typescript
 import { cursorTo } from "@visulima/ansi";
 process.stdout.write(cursorTo(10, 5)); // Move to column 10, row 5
@@ -39,11 +42,13 @@ process.stdout.write(cursorTo(10, 5)); // Move to column 10, row 5
 Move cursor relative to current position.
 
 **Signature:**
+
 ```typescript
-function cursorMove(x: number, y: number): string
+function cursorMove(x: number, y: number): string;
 ```
 
 **Parameters:**
+
 - `x` (`number`) - Columns to move (positive = right, negative = left)
 - `y` (`number`) - Rows to move (positive = down, negative = up)
 
@@ -56,14 +61,16 @@ function cursorMove(x: number, y: number): string
 Move cursor in specific direction.
 
 **Signatures:**
+
 ```typescript
-function cursorUp(count?: number): string
-function cursorDown(count?: number): string
-function cursorForward(count?: number): string
-function cursorBackward(count?: number): string
+function cursorUp(count?: number): string;
+function cursorDown(count?: number): string;
+function cursorForward(count?: number): string;
+function cursorBackward(count?: number): string;
 ```
 
 **Parameters:**
+
 - `count` (`number`, optional) - Number of positions to move. Default: `1`
 
 **Returns:** ANSI escape sequence string
@@ -75,11 +82,13 @@ function cursorBackward(count?: number): string
 Move cursor to leftmost position (column 0).
 
 **Signature:**
+
 ```typescript
-const cursorLeft: string
+const cursorLeft: string;
 ```
 
 **Example:**
+
 ```typescript
 import { cursorLeft } from "@visulima/ansi";
 process.stdout.write(cursorLeft);
@@ -92,12 +101,14 @@ process.stdout.write(cursorLeft);
 Save and restore cursor position.
 
 **Signatures:**
+
 ```typescript
-const cursorSave: string
-const cursorRestore: string
+const cursorSave: string;
+const cursorRestore: string;
 ```
 
 **Example:**
+
 ```typescript
 import { cursorSave, cursorRestore } from "@visulima/ansi";
 process.stdout.write(cursorSave);
@@ -112,12 +123,14 @@ process.stdout.write(cursorRestore);
 Control cursor visibility.
 
 **Signatures:**
+
 ```typescript
-const cursorHide: string
-const cursorShow: string
+const cursorHide: string;
+const cursorShow: string;
 ```
 
 **Example:**
+
 ```typescript
 import { cursorHide, cursorShow } from "@visulima/ansi";
 process.stdout.write(cursorHide);
@@ -132,22 +145,25 @@ process.stdout.write(cursorShow);
 Set cursor appearance.
 
 **Signature:**
+
 ```typescript
-function setCursorStyle(style: CursorStyle): string
+function setCursorStyle(style: CursorStyle): string;
 ```
 
 **Parameters:**
+
 - `style` (`CursorStyle`) - One of:
-  - `"blinking-block"`
-  - `"steady-block"`
-  - `"blinking-underline"`
-  - `"steady-underline"`
-  - `"blinking-bar"`
-  - `"steady-bar"`
+    - `"blinking-block"`
+    - `"steady-block"`
+    - `"blinking-underline"`
+    - `"steady-underline"`
+    - `"blinking-bar"`
+    - `"steady-bar"`
 
 **Returns:** ANSI escape sequence string
 
 **Example:**
+
 ```typescript
 import { setCursorStyle } from "@visulima/ansi";
 process.stdout.write(setCursorStyle("blinking-bar"));
@@ -164,11 +180,13 @@ Functions for clearing and manipulating the screen.
 Clear the entire screen.
 
 **Signature:**
+
 ```typescript
-const clearScreen: string
+const clearScreen: string;
 ```
 
 **Example:**
+
 ```typescript
 import { clearScreen } from "@visulima/ansi";
 process.stdout.write(clearScreen);
@@ -181,9 +199,10 @@ process.stdout.write(clearScreen);
 Erase from cursor to end/start of screen.
 
 **Signatures:**
+
 ```typescript
-const eraseDown: string
-const eraseUp: string
+const eraseDown: string;
+const eraseUp: string;
 ```
 
 ---
@@ -193,13 +212,15 @@ const eraseUp: string
 Erase line or part of line.
 
 **Signatures:**
+
 ```typescript
-const eraseLine: string
-const eraseLineEnd: string
-const eraseLineStart: string
+const eraseLine: string;
+const eraseLineEnd: string;
+const eraseLineStart: string;
 ```
 
 **Example:**
+
 ```typescript
 import { eraseLine } from "@visulima/ansi";
 process.stdout.write(eraseLine);
@@ -213,11 +234,13 @@ console.log("New line content");
 Erase multiple lines.
 
 **Signature:**
+
 ```typescript
-function eraseLines(count: number): string
+function eraseLines(count: number): string;
 ```
 
 **Parameters:**
+
 - `count` (`number`) - Number of lines to erase
 
 **Returns:** ANSI escape sequence string
@@ -229,8 +252,9 @@ function eraseLines(count: number): string
 Clear screen and move cursor to home position (0, 0).
 
 **Signature:**
+
 ```typescript
-const clearScreenAndHomeCursor: string
+const clearScreenAndHomeCursor: string;
 ```
 
 ---
@@ -240,12 +264,14 @@ const clearScreenAndHomeCursor: string
 Switch between normal and alternative screen buffers.
 
 **Signatures:**
+
 ```typescript
-const alternativeScreenOn: string
-const alternativeScreenOff: string
+const alternativeScreenOn: string;
+const alternativeScreenOff: string;
 ```
 
 **Example:**
+
 ```typescript
 import { alternativeScreenOn, alternativeScreenOff } from "@visulima/ansi";
 
@@ -261,12 +287,14 @@ process.stdout.write(alternativeScreenOff);
 Scroll screen region.
 
 **Signatures:**
+
 ```typescript
-function scrollUp(count?: number): string
-function scrollDown(count?: number): string
+function scrollUp(count?: number): string;
+function scrollDown(count?: number): string;
 ```
 
 **Parameters:**
+
 - `count` (`number`, optional) - Number of lines to scroll. Default: `1`
 
 **Returns:** ANSI escape sequence string
@@ -280,19 +308,22 @@ function scrollDown(count?: number): string
 Create clickable hyperlink in terminal.
 
 **Signature:**
+
 ```typescript
-function hyperlink(url: string, text: string, options?: HyperlinkOptions): string
+function hyperlink(url: string, text: string, options?: HyperlinkOptions): string;
 ```
 
 **Parameters:**
+
 - `url` (`string`) - URL to link to
 - `text` (`string`) - Display text
 - `options` (`HyperlinkOptions`, optional) - Additional options
-  - `id` (`string`, optional) - Unique ID for the link
+    - `id` (`string`, optional) - Unique ID for the link
 
 **Returns:** Formatted hyperlink string
 
 **Example:**
+
 ```typescript
 import { hyperlink } from "@visulima/ansi";
 
@@ -309,21 +340,24 @@ console.log(`Visit ${link} for more info`);
 Display image in iTerm2.
 
 **Signature:**
+
 ```typescript
-function image(buffer: Buffer | Uint8Array, options?: ImageOptions): string
+function image(buffer: Buffer | Uint8Array, options?: ImageOptions): string;
 ```
 
 **Parameters:**
+
 - `buffer` (`Buffer | Uint8Array`) - Image data
 - `options` (`ImageOptions`, optional) - Display options
-  - `width` (`number | string`, optional) - Width (pixels, percent, or "auto")
-  - `height` (`number | string`, optional) - Height (pixels, percent, or "auto")
-  - `preserveAspectRatio` (`boolean`, optional) - Preserve aspect ratio. Default: `true`
-  - `inline` (`boolean`, optional) - Display inline with text. Default: `false`
+    - `width` (`number | string`, optional) - Width (pixels, percent, or "auto")
+    - `height` (`number | string`, optional) - Height (pixels, percent, or "auto")
+    - `preserveAspectRatio` (`boolean`, optional) - Preserve aspect ratio. Default: `true`
+    - `inline` (`boolean`, optional) - Display inline with text. Default: `false`
 
 **Returns:** iTerm2 image escape sequence
 
 **Example:**
+
 ```typescript
 import { image } from "@visulima/ansi";
 import { readFileSync } from "fs";
@@ -341,16 +375,19 @@ process.stdout.write(image(img, { width: "50%", height: "auto" }));
 Remove ANSI escape codes from string.
 
 **Signature:**
+
 ```typescript
-function strip(text: string): string
+function strip(text: string): string;
 ```
 
 **Parameters:**
+
 - `text` (`string`) - String containing ANSI codes
 
 **Returns:** String with ANSI codes removed
 
 **Example:**
+
 ```typescript
 import { strip } from "@visulima/ansi";
 import { cursorUp } from "@visulima/ansi";
@@ -369,16 +406,19 @@ console.log(clean); // "Hello World"
 Set terminal window title.
 
 **Signature:**
+
 ```typescript
-function setWindowTitle(title: string): string
+function setWindowTitle(title: string): string;
 ```
 
 **Parameters:**
+
 - `title` (`string`) - Window title
 
 **Returns:** ANSI escape sequence string
 
 **Example:**
+
 ```typescript
 import { setWindowTitle } from "@visulima/ansi";
 process.stdout.write(setWindowTitle("My App"));
@@ -391,11 +431,13 @@ process.stdout.write(setWindowTitle("My App"));
 Set window icon name.
 
 **Signature:**
+
 ```typescript
-function setIconName(name: string): string
+function setIconName(name: string): string;
 ```
 
 **Parameters:**
+
 - `name` (`string`) - Icon name
 
 **Returns:** ANSI escape sequence string
@@ -407,11 +449,13 @@ function setIconName(name: string): string
 Set both icon name and window title.
 
 **Signature:**
+
 ```typescript
-function setIconNameAndWindowTitle(title: string): string
+function setIconNameAndWindowTitle(title: string): string;
 ```
 
 **Parameters:**
+
 - `title` (`string`) - Title for both icon and window
 
 **Returns:** ANSI escape sequence string
@@ -423,20 +467,22 @@ function setIconNameAndWindowTitle(title: string): string
 Control window state and position.
 
 **Signatures:**
-```typescript
-const minimizeWindow: string
-const maximizeWindow: string
-const raiseWindow: string
-const lowerWindow: string
-const restoreWindow: string
-const refreshWindow: string
 
-function moveWindow(x: number, y: number): string
-function resizeTextAreaChars(width: number, height: number): string
-function resizeTextAreaPixels(width: number, height: number): string
+```typescript
+const minimizeWindow: string;
+const maximizeWindow: string;
+const raiseWindow: string;
+const lowerWindow: string;
+const restoreWindow: string;
+const refreshWindow: string;
+
+function moveWindow(x: number, y: number): string;
+function resizeTextAreaChars(width: number, height: number): string;
+function resizeTextAreaPixels(width: number, height: number): string;
 ```
 
 **Example:**
+
 ```typescript
 import { maximizeWindow, moveWindow } from "@visulima/ansi";
 
@@ -451,18 +497,20 @@ process.stdout.write(moveWindow(100, 100));
 ### Enable/Disable Mouse Tracking
 
 **Signatures:**
+
 ```typescript
-const enableNormalMouse: string
-const disableNormalMouse: string
-const enableButtonEventMouse: string
-const disableButtonEventMouse: string
-const enableAnyEventMouse: string
-const disableAnyEventMouse: string
-const enableX10Mouse: string
-const disableX10Mouse: string
+const enableNormalMouse: string;
+const disableNormalMouse: string;
+const enableButtonEventMouse: string;
+const disableButtonEventMouse: string;
+const enableAnyEventMouse: string;
+const disableAnyEventMouse: string;
+const enableX10Mouse: string;
+const disableX10Mouse: string;
 ```
 
 **Example:**
+
 ```typescript
 import { enableNormalMouse, disableNormalMouse } from "@visulima/ansi";
 
@@ -484,18 +532,21 @@ process.stdout.write(disableNormalMouse);
 Set or reset terminal modes.
 
 **Signatures:**
+
 ```typescript
-function setMode(mode: string): string
-function resetMode(mode: string): string
+function setMode(mode: string): string;
+function resetMode(mode: string): string;
 ```
 
 **Common Modes:**
+
 - `"IRM"` - Insert/Replace Mode
 - `"LNM"` - Line Feed/New Line Mode
 - `"SRM"` - Send/Receive Mode
 - `"KAM"` - Keyboard Action Mode
 
 **Example:**
+
 ```typescript
 import { setMode, resetMode } from "@visulima/ansi";
 
@@ -511,34 +562,34 @@ process.stdout.write(resetMode("IRM"));
 ### Cursor Movement
 
 ```typescript
-const CURSOR_UP_1: string
-const CURSOR_DOWN_1: string
-const CURSOR_FORWARD_1: string
-const CURSOR_BACKWARD_1: string
-const CURSOR_TO_COLUMN_1: string
+const CURSOR_UP_1: string;
+const CURSOR_DOWN_1: string;
+const CURSOR_FORWARD_1: string;
+const CURSOR_BACKWARD_1: string;
+const CURSOR_TO_COLUMN_1: string;
 ```
 
 ### Screen Operations
 
 ```typescript
-const ALT_SCREEN_ON: string
-const ALT_SCREEN_OFF: string
-const SCROLL_UP_1: string
-const SCROLL_DOWN_1: string
+const ALT_SCREEN_ON: string;
+const ALT_SCREEN_OFF: string;
+const SCROLL_UP_1: string;
+const SCROLL_DOWN_1: string;
 ```
 
 ### Cursor State
 
 ```typescript
-const SAVE_CURSOR_DEC: string
-const RESTORE_CURSOR_DEC: string
+const SAVE_CURSOR_DEC: string;
+const RESTORE_CURSOR_DEC: string;
 ```
 
 ### Reset
 
 ```typescript
-const RESET_INITIAL_STATE: string
-const RIS: string // Reset to Initial State
+const RESET_INITIAL_STATE: string;
+const RIS: string; // Reset to Initial State
 ```
 
 ---
@@ -550,47 +601,37 @@ const RIS: string // Reset to Initial State
 All functions can be imported from specific submodules:
 
 **Cursor:** `@visulima/ansi/cursor`
+
 ```typescript
-import {
-  cursorTo,
-  cursorMove,
-  cursorUp,
-  cursorDown,
-  cursorHide,
-  cursorShow
-} from "@visulima/ansi/cursor";
+import { cursorTo, cursorMove, cursorUp, cursorDown, cursorHide, cursorShow } from "@visulima/ansi/cursor";
 ```
 
 **Clear:** `@visulima/ansi/clear`
+
 ```typescript
-import {
-  clearScreen,
-  clearScreenAndHomeCursor,
-  resetTerminal
-} from "@visulima/ansi/clear";
+import { clearScreen, clearScreenAndHomeCursor, resetTerminal } from "@visulima/ansi/clear";
 ```
 
 **Erase:** `@visulima/ansi/erase`
+
 ```typescript
-import {
-  eraseLine,
-  eraseDown,
-  eraseUp,
-  eraseLines
-} from "@visulima/ansi/erase";
+import { eraseLine, eraseDown, eraseUp, eraseLines } from "@visulima/ansi/erase";
 ```
 
 **Hyperlink:** `@visulima/ansi/hyperlink`
+
 ```typescript
 import { hyperlink } from "@visulima/ansi/hyperlink";
 ```
 
 **Image:** `@visulima/ansi/image`
+
 ```typescript
 import { image } from "@visulima/ansi/image";
 ```
 
 **Strip:** `@visulima/ansi/strip`
+
 ```typescript
 import { strip } from "@visulima/ansi/strip";
 ```
@@ -601,35 +642,35 @@ import { strip } from "@visulima/ansi/strip";
 
 ## Function Summary by Category
 
-| Category | Key Functions |
-|----------|---------------|
-| **Cursor Position** | `cursorTo`, `cursorMove`, `cursorSave`, `cursorRestore` |
-| **Cursor Movement** | `cursorUp`, `cursorDown`, `cursorForward`, `cursorBackward` |
-| **Cursor Visibility** | `cursorHide`, `cursorShow`, `setCursorStyle` |
-| **Screen Clear** | `clearScreen`, `eraseDown`, `eraseUp` |
-| **Line Erase** | `eraseLine`, `eraseLineEnd`, `eraseLineStart`, `eraseLines` |
-| **Screen Buffer** | `alternativeScreenOn`, `alternativeScreenOff` |
-| **Scrolling** | `scrollUp`, `scrollDown` |
-| **Hyperlinks** | `hyperlink` |
-| **Images** | `image` |
-| **Strip** | `strip` |
-| **Window** | `setWindowTitle`, `maximizeWindow`, `moveWindow` |
-| **Mouse** | `enableNormalMouse`, `disableNormalMouse` |
-| **Modes** | `setMode`, `resetMode` |
+| Category              | Key Functions                                               |
+| --------------------- | ----------------------------------------------------------- |
+| **Cursor Position**   | `cursorTo`, `cursorMove`, `cursorSave`, `cursorRestore`     |
+| **Cursor Movement**   | `cursorUp`, `cursorDown`, `cursorForward`, `cursorBackward` |
+| **Cursor Visibility** | `cursorHide`, `cursorShow`, `setCursorStyle`                |
+| **Screen Clear**      | `clearScreen`, `eraseDown`, `eraseUp`                       |
+| **Line Erase**        | `eraseLine`, `eraseLineEnd`, `eraseLineStart`, `eraseLines` |
+| **Screen Buffer**     | `alternativeScreenOn`, `alternativeScreenOff`               |
+| **Scrolling**         | `scrollUp`, `scrollDown`                                    |
+| **Hyperlinks**        | `hyperlink`                                                 |
+| **Images**            | `image`                                                     |
+| **Strip**             | `strip`                                                     |
+| **Window**            | `setWindowTitle`, `maximizeWindow`, `moveWindow`            |
+| **Mouse**             | `enableNormalMouse`, `disableNormalMouse`                   |
+| **Modes**             | `setMode`, `resetMode`                                      |
 
 ---
 
 ## Terminal Support
 
-| Feature | iTerm2 | Terminal.app | Windows Terminal | VS Code |
-|---------|--------|--------------|------------------|---------|
-| Cursor Control | ✅ | ✅ | ✅ | ✅ |
-| Screen Clearing | ✅ | ✅ | ✅ | ✅ |
-| Alternative Screen | ✅ | ✅ | ✅ | ✅ |
-| Hyperlinks | ✅ | ✅ | ✅ | ✅ |
-| Images | ✅ | ❌ | ❌ | ❌ |
-| Mouse Events | ✅ | ✅ | ✅ | ✅ |
-| Window Ops | ✅ | ⚠️ | ⚠️ | ❌ |
+| Feature            | iTerm2 | Terminal.app | Windows Terminal | VS Code |
+| ------------------ | ------ | ------------ | ---------------- | ------- |
+| Cursor Control     | ✅     | ✅           | ✅               | ✅      |
+| Screen Clearing    | ✅     | ✅           | ✅               | ✅      |
+| Alternative Screen | ✅     | ✅           | ✅               | ✅      |
+| Hyperlinks         | ✅     | ✅           | ✅               | ✅      |
+| Images             | ✅     | ❌           | ❌               | ❌      |
+| Mouse Events       | ✅     | ✅           | ✅               | ✅      |
+| Window Ops         | ✅     | ⚠️           | ⚠️               | ❌      |
 
 ✅ Full support | ⚠️ Partial support | ❌ Not supported
 
@@ -638,10 +679,10 @@ import { strip } from "@visulima/ansi/strip";
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use these functions with examples
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use these functions with examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>
