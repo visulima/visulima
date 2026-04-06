@@ -217,7 +217,44 @@ export const checkTyposquats = (packageNames: string[], allowlist?: string[]): T
     return matches;
 };
 
-// ── Interactive prompt ─────────────────────────────────────────────
+// ── Shared helpers ─────────────────────────────────────────────────
+
+/** Print typosquat warnings to stderr. */
+const printTyposquatWarnings = (matches: TyposquatMatch[], context: string): void => {
+    warn("");
+    warn(red(`Possible typosquat${matches.length === 1 ? "" : "s"} ${context}:`));
+
+    for (const match of matches) {
+        const method = match.method === "blocklist" ? "known typosquat" : "similar name";
+
+        warn(`  ${yellow("\u26A0")} ${red(match.input)} \u2014 did you mean ${yellow(match.legitimate)}? (${method})`);
+    }
+
+    warn("");
+};
+
+/** Prompt user with a question. Returns the lowercased, trimmed answer. Aborts in non-TTY. */
+const askConfirmation = async (question: string): Promise<string | undefined> => {
+    if (!process.stdin.isTTY) {
+        warn("Aborting: potential typosquat detected in non-interactive mode. Use --no-typosquat-check to skip.");
+
+        return undefined;
+    }
+
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+    const answer = await new Promise<string>((resolve) => {
+        rl.question(question, (a) => {
+            resolve(a.trim().toLowerCase());
+        });
+    });
+
+    rl.close();
+
+    return answer;
+};
+
+// ── Interactive prompt (for `add`) ─────────────────────────────────
 
 /**
  * Display typosquat warnings and prompt the user.
@@ -236,36 +273,15 @@ export const runTyposquatCheck = async (packageNames: string[], allowlist?: stri
         return { ok: true, packages: packageNames };
     }
 
-    warn("");
-    warn(red(`Possible typosquat${matches.length === 1 ? "" : "s"} detected:`));
+    printTyposquatWarnings(matches, "detected");
 
-    for (const match of matches) {
-        const method = match.method === "blocklist" ? "known typosquat" : "similar name";
+    const answer = await askConfirmation(
+        `Use suggested package${matches.length === 1 ? "" : "s"} instead? [S]uggested / [y]es, keep original / [N]o, abort (default: N) `,
+    );
 
-        warn(`  ${yellow("\u26A0")} ${red(match.input)} \u2014 did you mean ${yellow(match.legitimate)}? (${method})`);
-    }
-
-    warn("");
-
-    // Non-interactive: always block
-    if (!process.stdin.isTTY) {
-        warn("Aborting: potential typosquat detected in non-interactive mode. Use --no-typosquat-check to skip.");
-
+    if (answer === undefined) {
         return { ok: false, packages: packageNames };
     }
-
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-
-    const answer = await new Promise<string>((resolve) => {
-        rl.question(
-            `Use suggested package${matches.length === 1 ? "" : "s"} instead? [S]uggested / [y]es, keep original / [N]o, abort (default: N) `,
-            (a) => {
-                resolve(a.trim().toLowerCase());
-            },
-        );
-    });
-
-    rl.close();
 
     if (answer === "s" || answer === "suggested") {
         const replacements = new Map(matches.map((m) => [m.input, m.legitimate]));
@@ -281,12 +297,11 @@ export const runTyposquatCheck = async (packageNames: string[], allowlist?: stri
     return { ok: false, packages: packageNames };
 };
 
-// ── package.json scanning ──────────────────────────────────────────
+// ── package.json scanning (for `install` / `update`) ───────────────
 
 /**
- * Reads dependency names from a package.json file.
- * Returns a flat array of all dependency names (dependencies, devDependencies,
- * optionalDependencies, peerDependencies).
+ * Reads unique dependency names from a package.json file.
+ * Scans dependencies, devDependencies, optionalDependencies, and peerDependencies.
  */
 const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
     if (!existsSync(packageJsonPath)) {
@@ -301,10 +316,12 @@ const readDepsFromPackageJson = (packageJsonPath: string): string[] => {
     };
 
     return [
-        ...Object.keys(pkg.dependencies ?? {}),
-        ...Object.keys(pkg.devDependencies ?? {}),
-        ...Object.keys(pkg.optionalDependencies ?? {}),
-        ...Object.keys(pkg.peerDependencies ?? {}),
+        ...new Set([
+            ...Object.keys(pkg.dependencies ?? {}),
+            ...Object.keys(pkg.devDependencies ?? {}),
+            ...Object.keys(pkg.optionalDependencies ?? {}),
+            ...Object.keys(pkg.peerDependencies ?? {}),
+        ]),
     ];
 };
 
@@ -332,34 +349,10 @@ export const scanDepsForTyposquats = async (cwd: string, allowlist?: string[]): 
         return true;
     }
 
-    warn("");
-    warn(red(`Possible typosquat${matches.length === 1 ? "" : "s"} in package.json dependencies:`));
-
-    for (const match of matches) {
-        const method = match.method === "blocklist" ? "known typosquat" : "similar name";
-
-        warn(`  ${yellow("\u26A0")} ${red(match.input)} \u2014 did you mean ${yellow(match.legitimate)}? (${method})`);
-    }
-
-    warn("");
+    printTyposquatWarnings(matches, "in package.json dependencies");
     warn("Fix the package name in package.json before proceeding.");
 
-    // Non-interactive: always block
-    if (!process.stdin.isTTY) {
-        warn("Aborting: potential typosquat detected in non-interactive mode. Use --no-typosquat-check to skip.");
-
-        return false;
-    }
-
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-
-    const answer = await new Promise<string>((resolve) => {
-        rl.question("Continue anyway? [y/N] ", (a) => {
-            resolve(a.trim().toLowerCase());
-        });
-    });
-
-    rl.close();
+    const answer = await askConfirmation("Continue anyway? [y/N] ");
 
     return answer === "y" || answer === "yes";
 };

@@ -612,6 +612,7 @@ describe("checkTyposquats with allowlist", () => {
 // ── scanDepsForTyposquats ──────────────────────────────────────────
 
 describe("scanDepsForTyposquats", () => {
+    const originalIsTTY = process.stdin.isTTY;
     let tmpDir: string;
 
     beforeEach(() => {
@@ -619,6 +620,8 @@ describe("scanDepsForTyposquats", () => {
     });
 
     afterEach(() => {
+        Object.defineProperty(process.stdin, "isTTY", { value: originalIsTTY, writable: true });
+
         if (existsSync(tmpDir)) {
             rmSync(tmpDir, { recursive: true, force: true });
         }
