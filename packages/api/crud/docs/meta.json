@@ -1,11 +1,4 @@
 {
     "title": "Crud",
-    "pages": [
-        "index",
-        "installation",
-        "---Getting Started---",
-        "usage",
-        "---API Reference---",
-        "api"
-    ]
+    "pages": ["index", "installation", "---Getting Started---", "usage", "---API Reference---", "api"]
 }

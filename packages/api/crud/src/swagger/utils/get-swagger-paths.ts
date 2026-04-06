@@ -213,7 +213,7 @@ const getSwaggerPaths = <M extends string>({ models, modelsConfig, routes, route
     Object.keys(routes).reduce((accumulator: Record<string, any>, value: M | string) => {
         const routeTypes = routes[value] as RouteType[];
 
-        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : routesMap?.[value as M] ?? value;
+        const resourceName = models?.[value]?.name ? (models[value] as ModelOption).name : (routesMap?.[value as M] ?? value);
 
         const tag = modelsConfig?.[value]?.tag.name ?? value;
 
