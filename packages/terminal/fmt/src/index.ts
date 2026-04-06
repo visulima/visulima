@@ -5,7 +5,7 @@ const tryStringify = (o: any): string => {
     try {
         return JSON.stringify(o);
     } catch {
-        return '"[Circular]"';
+        return "\"[Circular]\"";
     }
 };
 
@@ -28,7 +28,9 @@ const CHAR_c = "c".codePointAt(0);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
 export const format = (fmt: Record<string, any> | string, arguments_: any[] = [], options: Options = {}): string => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
     if ((typeof fmt !== "string" && typeof fmt !== "object") || fmt === null) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         throw new TypeError(`fmt must be a string or object, got ${fmt === null ? "null" : typeof fmt}`);
     }
 
@@ -46,8 +48,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 
         objects[0] = stringify(fmt);
 
-        for (let index = 1; index < argumentsLength; index++) {
-            // eslint-disable-next-line security/detect-object-injection
+        for (let index = 1; index < argumentsLength; index += 1) {
             objects[index] = stringify(arguments_[index - offset]);
         }
 
@@ -63,16 +64,17 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
     let lastPosition = -1;
 
     let usedStyle = false;
+    // eslint-disable-next-line unicorn/no-null
     let previousCss = null;
 
-    for (let index = 0; index < fmt.length; ) {
+    for (let index = 0; index < fmt.length;) {
         if (fmt.codePointAt(index) === CHAR_PERCENT && index + 1 < fmt.length) {
             lastPosition = lastPosition > -1 ? lastPosition : 0;
 
             const c = fmt.codePointAt(index + 1);
 
             if (c === undefined) {
-                ++a;
+                a += 1; // eslint-disable-line no-useless-assignment,sonarjs/no-dead-store
                 break;
             }
 
@@ -81,7 +83,9 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     // Inspired by Deno's handling of '%c'.
                     // eslint-disable-next-line no-secrets/no-secrets
                     // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison
                     if (globalThis.window === undefined) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const css = parseCss(arguments_[a as keyof typeof arguments_]);
 
                         if (lastPosition < index) {
@@ -98,12 +102,13 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 
                     lastPosition = index + 2;
 
-                    index++;
+                    index += 1;
 
                     break;
                 }
                 case CHAR_d:
                 case CHAR_f: {
+                    // eslint-disable-next-line eqeqeq
                     if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == undefined) {
                         break;
                     }
@@ -115,10 +120,11 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     result += Number(arguments_[a as keyof typeof arguments_]).toString();
                     lastPosition = index + 2;
 
-                    index++;
+                    index += 1;
                     break;
                 }
                 case CHAR_i: {
+                    // eslint-disable-next-line eqeqeq
                     if (a >= arguments_.length || arguments_[a as keyof typeof arguments_] == undefined) {
                         break;
                     }
@@ -130,7 +136,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     result += Math.floor(Number(arguments_[a as keyof typeof arguments_])).toString();
                     lastPosition = index + 2;
 
-                    index++;
+                    index += 1;
                     break;
                 }
                 case CHAR_j:
@@ -144,17 +150,19 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     const temporaryArgument = arguments_[a as keyof typeof arguments_];
                     const type = typeof temporaryArgument;
 
                     if (type === "string") {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         result += `'${temporaryArgument}'`;
                         lastPosition = index + 2;
                         break;
                     }
 
                     if (type === "function") {
-                        // eslint-disable-next-line @typescript-eslint/ban-types
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
                         result += (temporaryArgument as Function).name ? `[Function: ${(temporaryArgument as Function).name}]` : "[Function: <anonymous>]";
                         lastPosition = index + 2;
                         break;
@@ -163,7 +171,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     result += stringify(temporaryArgument);
                     lastPosition = index + 2;
 
-                    index++;
+                    index += 1;
                     break;
                 }
                 case CHAR_PERCENT: {
@@ -174,8 +182,8 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     result += "%";
                     lastPosition = index + 2;
 
-                    index++;
-                    a--;
+                    index += 1;
+                    a -= 1;
                     break;
                 }
                 case CHAR_s: {
@@ -187,36 +195,34 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                         result += fmt.slice(lastPosition, index);
                     }
 
-                    result +=
-                        typeof arguments_[a as keyof typeof arguments_] === "object"
+                    result
+                        += typeof arguments_[a as keyof typeof arguments_] === "object"
                             ? stringify(arguments_[a as keyof typeof arguments_])
                             : String(arguments_[a as keyof typeof arguments_]);
                     lastPosition = index + 2;
 
-                    index++;
+                    index += 1;
                     break;
                 }
                 default: {
-                    // eslint-disable-next-line security/detect-object-injection
                     if (typeof options.formatters?.[c] === "function") {
                         if (lastPosition < index) {
                             result += fmt.slice(lastPosition, index);
                         }
 
-                        // eslint-disable-next-line security/detect-object-injection
-                        result += (options.formatters[c] as FormatterFunction)(arguments_[a as keyof typeof arguments_]);
+                        result += options.formatters[c](arguments_[a as keyof typeof arguments_]);
 
                         lastPosition = index + 2;
 
-                        index++;
+                        index += 1;
                     }
                 }
             }
 
-            ++a;
+            a += 1;
         }
 
-        ++index;
+        index += 1;
     }
 
     if (lastPosition === -1) {
@@ -237,7 +243,7 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
 export const build = (
     options: Options = {},
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): ((f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string) => {
+): (f: NonNullable<Record<string, any> | string>, arguments_?: any[], formatOptions?: Omit<Options, "formatters">) => string => {
     const formatters: FormatterMap = {};
 
     if (typeof options.formatters === "object") {
@@ -260,7 +266,6 @@ export const build = (
                 throw new Error(`${key}.codePointAt(0) failed to return a value, please report this issue`);
             }
 
-            // eslint-disable-next-line security/detect-object-injection
             formatters[c] = formatterFunction;
         });
     }

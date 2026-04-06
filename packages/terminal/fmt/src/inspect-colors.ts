@@ -162,17 +162,18 @@ const colorKeywords: Map<string, string> = new Map<string, string>([
     ["yellowgreen", "#9acd32"],
 ]);
 
-// eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
+// eslint-disable-next-line regexp/no-unused-capturing-group
 const HASH_PATTERN = /^#([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})([\dA-F]{2})?$/i;
 // eslint-disable-next-line regexp/optimal-quantifier-concatenation,regexp/no-unused-capturing-group
 const SMALL_HASH_PATTERN = /^#([\dA-F])([\dA-F])([\dA-F])([\dA-F])?$/i;
-const RGB_PATTERN =
-    // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
-    /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
-const HSL_PATTERN =
-    // eslint-disable-next-line security/detect-unsafe-regex,regexp/no-unused-capturing-group
-    /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+const RGB_PATTERN
+    // eslint-disable-next-line regexp/no-unused-capturing-group,sonarjs/regex-complexity
+    = /^rgba?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
+const HSL_PATTERN
+    // eslint-disable-next-line regexp/no-unused-capturing-group,sonarjs/regex-complexity
+    = /^hsla?\(\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))%\s*(,\s*([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*)?\)$/;
 
+/* eslint-disable unicorn/no-null */
 const getDefaultCss = (): CssObject => {
     return {
         __proto__: null,
@@ -184,8 +185,9 @@ const getDefaultCss = (): CssObject => {
         textDecorationLine: [],
     };
 };
+/* eslint-enable unicorn/no-null */
 
-const SPACE_PATTERN = /\s+/g;
+const SPACE_PATTERN = /\s+/;
 
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // eslint-disable-next-line no-secrets/no-secrets
@@ -206,9 +208,9 @@ const parseCssColor = (colorString: string): [number, number, number] | null => 
 
     if (smallHashMatch) {
         return [
-            Number.parseInt(`${smallHashMatch[1]}${smallHashMatch[1]}`, 16),
-            Number.parseInt(`${smallHashMatch[2]}${smallHashMatch[2]}`, 16),
-            Number.parseInt(`${smallHashMatch[3]}${smallHashMatch[3]}`, 16),
+            Number.parseInt(`${smallHashMatch[1] as string}${smallHashMatch[1] as string}`, 16),
+            Number.parseInt(`${smallHashMatch[2] as string}${smallHashMatch[2] as string}`, 16),
+            Number.parseInt(`${smallHashMatch[3] as string}${smallHashMatch[3] as string}`, 16),
         ];
     }
 
@@ -262,7 +264,7 @@ const parseCssColor = (colorString: string): [number, number, number] | null => 
         return [Math.round((r_ + m) * 255), Math.round((g_ + m) * 255), Math.round((b_ + m) * 255)];
     }
 
-    return null;
+    return null; // eslint-disable-line unicorn/no-null
 };
 
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
@@ -281,16 +283,17 @@ export const parseCss = (cssString: string): CssObject => {
     const rawEntries = [];
 
     let inValue = false;
+    // eslint-disable-next-line unicorn/no-null
     let currentKey = null;
     let parenthesesDepth = 0;
     let currentPart = "";
 
     for (const c of cssString) {
         if (c === "(") {
-            parenthesesDepth++;
+            parenthesesDepth += 1;
         } else if (parenthesesDepth > 0) {
             if (c === ")") {
-                parenthesesDepth--;
+                parenthesesDepth -= 1;
             }
         } else if (inValue) {
             if (c === ";") {
@@ -300,7 +303,7 @@ export const parseCss = (cssString: string): CssObject => {
                     rawEntries.push([currentKey, value]);
                 }
 
-                currentKey = null;
+                currentKey = null; // eslint-disable-line unicorn/no-null
                 currentPart = "";
                 inValue = false;
 
@@ -324,13 +327,15 @@ export const parseCss = (cssString: string): CssObject => {
             rawEntries.push([currentKey, value]);
         }
 
-        currentKey = null;
-        currentPart = "";
+        currentKey = null; // eslint-disable-line unicorn/no-null,no-useless-assignment
+        currentPart = ""; // eslint-disable-line no-useless-assignment,sonarjs/no-dead-store
     }
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const { 0: key, 1: value } of rawEntries) {
         switch (key) {
             case "background-color": {
+                // eslint-disable-next-line eqeqeq
                 if (value != undefined) {
                     css.backgroundColor = value;
                 }
@@ -338,6 +343,7 @@ export const parseCss = (cssString: string): CssObject => {
                 break;
             }
             case "color": {
+                // eslint-disable-next-line eqeqeq
                 if (value != undefined) {
                     css.color = value;
                 }
@@ -359,15 +365,17 @@ export const parseCss = (cssString: string): CssObject => {
                 break;
             }
             case "text-decoration": {
-                css.textDecorationColor = null;
+                css.textDecorationColor = null; // eslint-disable-line unicorn/no-null
                 css.textDecorationLine = [];
 
                 // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
                 const arguments_ = (value as string).split(SPACE_PATTERN);
 
+                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const argument of arguments_) {
                     const maybeColor = parseCssColor(argument);
 
+                    // eslint-disable-next-line eqeqeq
                     if (maybeColor != undefined) {
                         css.textDecorationColor = maybeColor;
                     } else if (["line-through", "overline", "underline"].includes(argument)) {
@@ -380,6 +388,7 @@ export const parseCss = (cssString: string): CssObject => {
             case "text-decoration-color": {
                 const color = parseCssColor(value as string);
 
+                // eslint-disable-next-line eqeqeq
                 if (color != undefined) {
                     css.textDecorationColor = color;
                 }
@@ -390,6 +399,7 @@ export const parseCss = (cssString: string): CssObject => {
                 css.textDecorationLine = [];
                 const lineTypes = (value as string).split(SPACE_PATTERN);
 
+                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const lineType of lineTypes) {
                     if (["line-through", "overline", "underline"].includes(lineType)) {
                         css.textDecorationLine.push(lineType);
@@ -410,13 +420,14 @@ export const parseCss = (cssString: string): CssObject => {
 // eslint-disable-next-line no-secrets/no-secrets
 // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L2933
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null): string => {
+export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null): string => { // eslint-disable-line unicorn/no-null
     // eslint-disable-next-line no-param-reassign
     previousCss = previousCss ?? getDefaultCss();
 
     let ansi = "";
 
     if (!colorEquals(css.backgroundColor, previousCss.backgroundColor)) {
+        // eslint-disable-next-line eqeqeq
         if (css.backgroundColor == undefined) {
             ansi += "\u001B[49m";
         } else {
@@ -465,7 +476,7 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                     if (Array.isArray(css.backgroundColor)) {
                         const { 0: r, 1: g, 2: b } = css.backgroundColor;
 
-                        ansi += `\u001B[48;2;${r};${g};${b}m`;
+                        ansi += `\u001B[48;2;${String(r)};${String(g)};${String(b)}m`;
                     } else {
                         const parsed = parseCssColor(css.backgroundColor);
 
@@ -474,7 +485,7 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                         } else {
                             const { 0: r, 1: g, 2: b } = parsed;
 
-                            ansi += `\u001B[48;2;${r};${g};${b}m`;
+                            ansi += `\u001B[48;2;${String(r)};${String(g)};${String(b)}m`;
                         }
                     }
                 }
@@ -483,6 +494,7 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
     }
 
     if (!colorEquals(css.color, previousCss.color)) {
+        // eslint-disable-next-line eqeqeq
         if (css.color == undefined) {
             ansi += "\u001B[39m";
         } else {
@@ -531,7 +543,7 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                     if (Array.isArray(css.color)) {
                         const { 0: r, 1: g, 2: b } = css.color;
 
-                        ansi += `\u001B[38;2;${r};${g};${b}m`;
+                        ansi += `\u001B[38;2;${String(r)};${String(g)};${String(b)}m`;
                     } else {
                         const parsed = parseCssColor(css.color);
 
@@ -540,7 +552,7 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
                         } else {
                             const { 0: r, 1: g, 2: b } = parsed;
 
-                            ansi += `\u001B[38;2;${r};${g};${b}m`;
+                            ansi += `\u001B[38;2;${String(r)};${String(g)};${String(b)}m`;
                         }
                     }
                 }
@@ -557,12 +569,13 @@ export const cssToAnsi = (css: CssObject, previousCss: CssObject | null = null):
     }
 
     if (!colorEquals(css.textDecorationColor, previousCss.textDecorationColor)) {
+        // eslint-disable-next-line eqeqeq
         if (css.textDecorationColor == undefined) {
             ansi += "\u001B[59m";
         } else {
             const { 0: r, 1: g, 2: b } = css.textDecorationColor;
 
-            ansi += `\u001B[58;2;${r};${g};${b}m`;
+            ansi += `\u001B[58;2;${String(r)};${String(g)};${String(b)}m`;
         }
     }
 
