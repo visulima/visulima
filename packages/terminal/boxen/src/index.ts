@@ -38,7 +38,8 @@ const getObject = (detail: Partial<Spacer> | number | undefined): Spacer => {
     };
 };
 
-const getBorderWidth = (borderStyle: BorderStyle | string) => (borderStyle === NONE ? 0 : 2);
+// eslint-disable-next-line no-confusing-arrow
+const getBorderWidth = (borderStyle: BorderStyle | string) => borderStyle === NONE ? 0 : 2;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
@@ -51,6 +52,7 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
         // eslint-disable-next-line no-param-reassign
         borderStyle = {};
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const side of sides) {
             // eslint-disable-next-line no-param-reassign
             borderStyle[side as keyof BorderStyle] = "";
@@ -82,8 +84,9 @@ const getBorderChars = (borderStyle: BorderStyle | string): BorderStyle => {
             borderStyle.bottom = borderStyle.horizontal;
         }
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const side of sides) {
-            if (borderStyle[side as keyof BorderStyle] === null || typeof borderStyle[side as keyof BorderStyle] !== "string") {
+            if (typeof borderStyle[side as keyof BorderStyle] !== "string") {
                 throw new TypeError(`Invalid border style: ${side}`);
             }
         }
@@ -101,12 +104,12 @@ const wrapText = (
     colorizeBorder: (string: string, length: number) => string,
     alignment: string,
 ) => {
-    let title = "";
-
     // eslint-disable-next-line no-param-reassign
     text = colorizeText(text);
 
     const textWidth = getStringWidth(text);
+
+    let title: string;
 
     switch (alignment) {
         case "left": {
@@ -130,8 +133,8 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(Math.floor(horizontal.length / 2));
 
-                title =
-                    colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title
+                    = colorizeBorder(horizontal.slice(1), getStringWidth(horizontal.slice(1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = horizontal.slice(horizontal.length / 2);
@@ -171,12 +174,14 @@ const makeContentText = (
     if (textWidth > max) {
         const newLines = [];
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const line of lines) {
-            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.BREAK_WORDS }) as string;
+            const createdLines = wordWrap(line, { width: max, wrapMode: WrapMode.BREAK_WORDS });
             const alignedLines = alignText(createdLines, { align: textAlignment });
             const alignedLinesArray = (alignedLines as string).split("\n");
             const longestLength = Math.max(...alignedLinesArray.map((s) => getStringWidth(s)));
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const alignedLine of alignedLinesArray) {
                 let paddedLine;
 
@@ -291,10 +296,10 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     result += lines
         .map(
             (line) =>
-                marginLeft +
-                colorizeBorder(chars.left, "left", getStringWidth(chars.left)) +
-                colorizeContent(line) +
-                colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
+                marginLeft
+                + colorizeBorder(chars.left, "left", getStringWidth(chars.left))
+                + colorizeContent(line)
+                + colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
         )
         .join(NEWLINE);
 
@@ -331,15 +336,11 @@ const sanitizeOptions = (options: DimensionOptions): DimensionOptions => {
             newDimensions = options.fullscreen(newDimensions.columns, newDimensions.rows);
         }
 
-        if (!options.width) {
-            // eslint-disable-next-line no-param-reassign
-            options.width = newDimensions.columns;
-        }
+        // eslint-disable-next-line no-param-reassign
+        options.width ??= newDimensions.columns;
 
-        if (!options.height) {
-            // eslint-disable-next-line no-param-reassign
-            options.height = newDimensions.rows;
-        }
+        // eslint-disable-next-line no-param-reassign
+        options.height ??= newDimensions.rows;
     }
 
     // If width is provided, make sure it's not below 1
@@ -357,7 +358,8 @@ const sanitizeOptions = (options: DimensionOptions): DimensionOptions => {
     return options;
 };
 
-const formatTitle = (title: string, borderStyle: BorderStyle | string): string => (borderStyle === NONE ? title : ` ${title} `);
+// eslint-disable-next-line no-confusing-arrow
+const formatTitle = (title: string, borderStyle: BorderStyle | string): string => borderStyle === NONE ? title : ` ${title} `;
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const determineDimensions = (text: string, columnsWidth: number, options: DimensionOptions): DimensionOptions => {
@@ -368,10 +370,10 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest =
-        widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS })) +
-        options.padding.left +
-        options.padding.right;
+    const widest
+        = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
+            + options.padding.left
+            + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {
@@ -401,7 +403,7 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
 
     // If fixed width is provided, use it or content width as reference
     // eslint-disable-next-line no-param-reassign
-    options.width = options.width || widest;
+    options.width = options.width ?? widest;
 
     if (!widthOverride) {
         if (options.margin.left && options.margin.right && options.width > maxWidth) {

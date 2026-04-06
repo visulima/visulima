@@ -5,6 +5,7 @@ import { getStringWidth } from "@visulima/string";
 export const widestLine = (string: string): number => {
     let lineWidth = 0;
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const line of string.split("\n")) {
         lineWidth = Math.max(lineWidth, getStringWidth(line));
     }
