@@ -10,26 +10,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 Install the package using your preferred package manager:
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/ansi
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/ansi
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/ansi
-    ```
-  </Tab>
-  <Tab value="bun">
-    ```bash
-    bun add @visulima/ansi
-    ```
-  </Tab>
+    <Tab value="npm">```bash npm install @visulima/ansi ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/ansi ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/ansi ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/ansi ```</Tab>
 </Tabs>
 
 ## Import Methods
@@ -139,6 +123,7 @@ const movement: string = cursorMove(2, 3);
 ANSI escape codes work in most modern terminals:
 
 **Full Support:**
+
 - iTerm2 (macOS) - including images and extended features
 - Terminal.app (macOS)
 - GNOME Terminal (Linux)
@@ -150,10 +135,12 @@ ANSI escape codes work in most modern terminals:
 - Kitty
 
 **Partial Support:**
+
 - cmd.exe (Windows) - limited ANSI support
 - PowerShell - basic ANSI support
 
 **Not Supported:**
+
 - Very old terminal emulators
 - Non-interactive environments without TTY
 
@@ -166,19 +153,19 @@ const isTTY = process.stdout.isTTY;
 const supportsAnsi = process.env.TERM !== "dumb" && isTTY;
 
 if (supportsAnsi) {
-  process.stdout.write(cursorUp(1));
+    process.stdout.write(cursorUp(1));
 } else {
-  console.log("ANSI not supported");
+    console.log("ANSI not supported");
 }
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use ANSI codes with examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Explore the complete API documentation
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use ANSI codes with examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
 </Cards>

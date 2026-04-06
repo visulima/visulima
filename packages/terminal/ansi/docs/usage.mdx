@@ -240,11 +240,13 @@ import { readFileSync } from "fs";
 const imageData = readFileSync("logo.png");
 
 // Display image
-process.stdout.write(image(imageData, {
-  width: "50%",
-  height: "auto",
-  preserveAspectRatio: true
-}));
+process.stdout.write(
+    image(imageData, {
+        width: "50%",
+        height: "auto",
+        preserveAspectRatio: true,
+    }),
+);
 ```
 
 Inline images:
@@ -284,8 +286,8 @@ import { hyperlink } from "@visulima/ansi";
 const link = hyperlink("https://example.com", "Example");
 const textOnly = strip(link);
 
-console.log(link.length);      // Long (includes ANSI codes)
-console.log(textOnly.length);  // 7 (just "Example")
+console.log(link.length); // Long (includes ANSI codes)
+console.log(textOnly.length); // 7 (just "Example")
 ```
 
 ## Window Control
@@ -317,12 +319,7 @@ process.stdout.write(setIconNameAndWindowTitle("CLI App"));
 Control window state (terminal support varies):
 
 ```typescript
-import {
-  minimizeWindow,
-  maximizeWindow,
-  raiseWindow,
-  lowerWindow
-} from "@visulima/ansi";
+import { minimizeWindow, maximizeWindow, raiseWindow, lowerWindow } from "@visulima/ansi";
 
 // Minimize window
 process.stdout.write(minimizeWindow);
@@ -365,25 +362,21 @@ process.stdout.write(enableNormalMouse);
 // Listen for mouse events
 stdin.setRawMode(true);
 stdin.on("data", (data) => {
-  // Parse mouse event from data
-  console.log("Mouse event:", data);
+    // Parse mouse event from data
+    console.log("Mouse event:", data);
 });
 
 // Disable when done
 process.on("exit", () => {
-  process.stdout.write(disableNormalMouse);
-  stdin.setRawMode(false);
+    process.stdout.write(disableNormalMouse);
+    stdin.setRawMode(false);
 });
 ```
 
 Different mouse modes:
 
 ```typescript
-import {
-  enableButtonEventMouse,
-  enableAnyEventMouse,
-  enableX10Mouse
-} from "@visulima/ansi";
+import { enableButtonEventMouse, enableAnyEventMouse, enableX10Mouse } from "@visulima/ansi";
 
 // Track button presses and releases
 process.stdout.write(enableButtonEventMouse);
@@ -414,10 +407,7 @@ process.stdout.write(resetMode("IRM"));
 Common modes:
 
 ```typescript
-import {
-  SetLineFeedNewLineMode,
-  ResetLineFeedNewLineMode
-} from "@visulima/ansi";
+import { SetLineFeedNewLineMode, ResetLineFeedNewLineMode } from "@visulima/ansi";
 
 // Enable line feed/new line mode
 process.stdout.write(SetLineFeedNewLineMode);
@@ -433,33 +423,28 @@ process.stdout.write(ResetLineFeedNewLineMode);
 Create an updating progress bar:
 
 ```typescript
-import {
-  cursorHide,
-  cursorShow,
-  cursorTo,
-  eraseLine
-} from "@visulima/ansi";
+import { cursorHide, cursorShow, cursorTo, eraseLine } from "@visulima/ansi";
 
 function showProgress(current: number, total: number) {
-  const percent = Math.floor((current / total) * 100);
-  const filled = Math.floor(percent / 2);
-  const bar = "█".repeat(filled) + "░".repeat(50 - filled);
+    const percent = Math.floor((current / total) * 100);
+    const filled = Math.floor(percent / 2);
+    const bar = "█".repeat(filled) + "░".repeat(50 - filled);
 
-  process.stdout.write(cursorHide);
-  process.stdout.write(cursorTo(0));
-  process.stdout.write(eraseLine);
-  process.stdout.write(`Progress: [${bar}] ${percent}%`);
+    process.stdout.write(cursorHide);
+    process.stdout.write(cursorTo(0));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Progress: [${bar}] ${percent}%`);
 
-  if (current === total) {
-    process.stdout.write("\n");
-    process.stdout.write(cursorShow);
-  }
+    if (current === total) {
+        process.stdout.write("\n");
+        process.stdout.write(cursorShow);
+    }
 }
 
 // Use it
 for (let i = 0; i <= 100; i++) {
-  showProgress(i, 100);
-  await new Promise(resolve => setTimeout(resolve, 50));
+    showProgress(i, 100);
+    await new Promise((resolve) => setTimeout(resolve, 50));
 }
 ```
 
@@ -473,22 +458,22 @@ import { cursorHide, cursorShow, cursorBackward, eraseLine } from "@visulima/ans
 const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 async function spinner(message: string, duration: number) {
-  process.stdout.write(cursorHide);
+    process.stdout.write(cursorHide);
 
-  let frame = 0;
-  const interval = setInterval(() => {
+    let frame = 0;
+    const interval = setInterval(() => {
+        process.stdout.write(cursorBackward(100));
+        process.stdout.write(eraseLine);
+        process.stdout.write(`${frames[frame]} ${message}`);
+        frame = (frame + 1) % frames.length;
+    }, 80);
+
+    await new Promise((resolve) => setTimeout(resolve, duration));
+
+    clearInterval(interval);
     process.stdout.write(cursorBackward(100));
     process.stdout.write(eraseLine);
-    process.stdout.write(`${frames[frame]} ${message}`);
-    frame = (frame + 1) % frames.length;
-  }, 80);
-
-  await new Promise(resolve => setTimeout(resolve, duration));
-
-  clearInterval(interval);
-  process.stdout.write(cursorBackward(100));
-  process.stdout.write(eraseLine);
-  process.stdout.write(cursorShow);
+    process.stdout.write(cursorShow);
 }
 
 // Use it
@@ -501,34 +486,28 @@ console.log("✓ Complete!");
 Build a simple menu with cursor control:
 
 ```typescript
-import {
-  cursorHide,
-  cursorShow,
-  cursorUp,
-  cursorTo,
-  eraseLine
-} from "@visulima/ansi";
+import { cursorHide, cursorShow, cursorUp, cursorTo, eraseLine } from "@visulima/ansi";
 
 const options = ["Option 1", "Option 2", "Option 3", "Exit"];
 let selected = 0;
 
 function drawMenu() {
-  console.log("\nSelect an option:");
-  options.forEach((option, index) => {
-    const prefix = index === selected ? ">" : " ";
-    console.log(`${prefix} ${option}`);
-  });
+    console.log("\nSelect an option:");
+    options.forEach((option, index) => {
+        const prefix = index === selected ? ">" : " ";
+        console.log(`${prefix} ${option}`);
+    });
 }
 
 function updateMenu() {
-  process.stdout.write(cursorUp(options.length + 1));
-  process.stdout.write(cursorTo(0));
+    process.stdout.write(cursorUp(options.length + 1));
+    process.stdout.write(cursorTo(0));
 
-  options.forEach((option, index) => {
-    process.stdout.write(eraseLine);
-    const prefix = index === selected ? ">" : " ";
-    console.log(`${prefix} ${option}`);
-  });
+    options.forEach((option, index) => {
+        process.stdout.write(eraseLine);
+        const prefix = index === selected ? ">" : " ";
+        console.log(`${prefix} ${option}`);
+    });
 }
 
 // Initial draw
@@ -537,20 +516,24 @@ drawMenu();
 // Handle keyboard input
 process.stdin.setRawMode(true);
 process.stdin.on("data", (data) => {
-  const key = data.toString();
+    const key = data.toString();
 
-  if (key === "\u001b[A") { // Up arrow
-    selected = Math.max(0, selected - 1);
-    updateMenu();
-  } else if (key === "\u001b[B") { // Down arrow
-    selected = Math.min(options.length - 1, selected + 1);
-    updateMenu();
-  } else if (key === "\r") { // Enter
-    console.log(`\nYou selected: ${options[selected]}`);
-    process.exit(0);
-  } else if (key === "\u0003") { // Ctrl+C
-    process.exit(0);
-  }
+    if (key === "\u001b[A") {
+        // Up arrow
+        selected = Math.max(0, selected - 1);
+        updateMenu();
+    } else if (key === "\u001b[B") {
+        // Down arrow
+        selected = Math.min(options.length - 1, selected + 1);
+        updateMenu();
+    } else if (key === "\r") {
+        // Enter
+        console.log(`\nYou selected: ${options[selected]}`);
+        process.exit(0);
+    } else if (key === "\u0003") {
+        // Ctrl+C
+        process.exit(0);
+    }
 });
 ```
 
@@ -559,37 +542,30 @@ process.stdin.on("data", (data) => {
 Create a full-screen terminal application:
 
 ```typescript
-import {
-  alternativeScreenOn,
-  alternativeScreenOff,
-  clearScreen,
-  cursorTo,
-  cursorHide,
-  cursorShow
-} from "@visulima/ansi";
+import { alternativeScreenOn, alternativeScreenOff, clearScreen, cursorTo, cursorHide, cursorShow } from "@visulima/ansi";
 
 async function fullScreenApp() {
-  // Enter alternative screen
-  process.stdout.write(alternativeScreenOn);
-  process.stdout.write(clearScreen);
-  process.stdout.write(cursorHide);
+    // Enter alternative screen
+    process.stdout.write(alternativeScreenOn);
+    process.stdout.write(clearScreen);
+    process.stdout.write(cursorHide);
 
-  // Draw UI
-  process.stdout.write(cursorTo(0, 0));
-  console.log("┌────────────────────────────┐");
-  console.log("│   My Full-Screen App       │");
-  console.log("└────────────────────────────┘");
+    // Draw UI
+    process.stdout.write(cursorTo(0, 0));
+    console.log("┌────────────────────────────┐");
+    console.log("│   My Full-Screen App       │");
+    console.log("└────────────────────────────┘");
 
-  // Wait for input
-  await new Promise(resolve => {
-    process.stdin.setRawMode(true);
-    process.stdin.once("data", resolve);
-  });
+    // Wait for input
+    await new Promise((resolve) => {
+        process.stdin.setRawMode(true);
+        process.stdin.once("data", resolve);
+    });
 
-  // Clean up
-  process.stdout.write(cursorShow);
-  process.stdout.write(alternativeScreenOff);
-  process.stdin.setRawMode(false);
+    // Clean up
+    process.stdout.write(cursorShow);
+    process.stdout.write(alternativeScreenOff);
+    process.stdin.setRawMode(false);
 }
 
 // Run it
@@ -606,11 +582,11 @@ import { cursorSave, cursorRestore, cursorTo, eraseLine } from "@visulima/ansi";
 let statusLine = 0;
 
 function setStatus(message: string) {
-  process.stdout.write(cursorSave);
-  process.stdout.write(cursorTo(0, statusLine));
-  process.stdout.write(eraseLine);
-  process.stdout.write(`Status: ${message}`);
-  process.stdout.write(cursorRestore);
+    process.stdout.write(cursorSave);
+    process.stdout.write(cursorTo(0, statusLine));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Status: ${message}`);
+    process.stdout.write(cursorRestore);
 }
 
 // Use it
@@ -631,10 +607,10 @@ setStatus("Complete!");
 ## Next Steps
 
 <Cards>
-  <Card title="API Reference" href="/api">
-    Complete API documentation for all functions
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation for all functions
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>

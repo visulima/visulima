@@ -10,30 +10,35 @@ Comprehensive ANSI escape codes for terminal control. Take full control of your 
 ## Key Features
 
 **Cursor Control**
+
 - Position cursor anywhere on screen
 - Move cursor in any direction
 - Show, hide, and style cursor
 - Save and restore cursor position
 
 **Screen Manipulation**
+
 - Clear screen or parts of it
 - Alternative screen buffer support
 - Scroll regions up and down
 - Erase lines and characters
 
 **Advanced Terminal Features**
+
 - Clickable hyperlinks in terminal
 - Display images (iTerm2 support)
 - Mouse event tracking
 - Terminal mode management
 
 **Window and Title Control**
+
 - Set window and icon titles
 - Window operations (minimize, maximize, etc.)
 - Report window state and position
 - Status reporting
 
 **Utility Functions**
+
 - Strip ANSI codes from strings
 - tmux passthrough support
 - Terminal capability queries
@@ -82,21 +87,21 @@ Create dynamic terminal UIs with precise cursor control:
 import { cursorTo, eraseLine, cursorHide, cursorShow } from "@visulima/ansi";
 
 function updateProgress(percent: number) {
-  process.stdout.write(cursorHide);
-  process.stdout.write(cursorTo(0));
-  process.stdout.write(eraseLine);
-  process.stdout.write(`Progress: [${"=".repeat(percent / 2)}${" ".repeat(50 - percent / 2)}] ${percent}%`);
+    process.stdout.write(cursorHide);
+    process.stdout.write(cursorTo(0));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Progress: [${"=".repeat(percent / 2)}${" ".repeat(50 - percent / 2)}] ${percent}%`);
 
-  if (percent === 100) {
-    process.stdout.write("\n");
-    process.stdout.write(cursorShow);
-  }
+    if (percent === 100) {
+        process.stdout.write("\n");
+        process.stdout.write(cursorShow);
+    }
 }
 
 // Simulate progress
 for (let i = 0; i <= 100; i += 10) {
-  updateProgress(i);
-  await new Promise(resolve => setTimeout(resolve, 200));
+    updateProgress(i);
+    await new Promise((resolve) => setTimeout(resolve, 200));
 }
 ```
 
@@ -121,10 +126,12 @@ import { image } from "@visulima/ansi";
 import { readFileSync } from "fs";
 
 const imageData = readFileSync("logo.png");
-process.stdout.write(image(imageData, {
-  width: "50%",
-  height: "auto"
-}));
+process.stdout.write(
+    image(imageData, {
+        width: "50%",
+        height: "auto",
+    }),
+);
 ```
 
 ### Clean ANSI Codes from Strings
@@ -144,20 +151,21 @@ console.log(cleaned); // "Hello  World" (no ANSI codes)
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Learn about installation and import methods
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Explore ANSI codes organized by category
-  </Card>
-  <Card title="API Reference" href="/api">
-    Complete API documentation for all functions
-  </Card>
+    <Card title="Installation" href="/installation">
+        Learn about installation and import methods
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore ANSI codes organized by category
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation for all functions
+    </Card>
 </Cards>
 
 ## Browser and Server Support
 
 This package is designed for Node.js terminal applications:
+
 - **Node.js:** ≥22.13 ≤25.x (full support)
 - **Browsers:** Not applicable (terminal-specific functionality)
 - **Deno/Bun:** Compatible with terminal-supporting runtimes
