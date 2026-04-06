@@ -8,11 +8,7 @@ description: Use template engines for dynamic email content with @visulima/email
 @visulima/email supports multiple template engines for rendering dynamic email content. All template engines implement the `TemplateRenderer` interface and can be used with the `MailMessage.view()` method.
 
 ```typescript
-type TemplateRenderer = (
-    template: unknown,
-    data?: Record<string, unknown>,
-    options?: Record<string, unknown>,
-) => string | Promise<string>;
+type TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>) => string | Promise<string>;
 ```
 
 ## Available Template Engines
@@ -27,10 +23,7 @@ type TemplateRenderer = (
 import { MailMessage } from "@visulima/email";
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Welcome");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
 
 await message.view(renderHandlebars, "<h1>Hello {{name}}!</h1><p>Welcome to {{company}}.</p>", {
     name: "John",
@@ -72,10 +65,7 @@ await message.view(renderHandlebars, "{{> header}}<p>Content here</p>", {
 import { MailMessage } from "@visulima/email";
 import mjml from "@visulima/email/template/mjml";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Welcome");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
 
 const mjmlTemplate = `
 <mjml>
@@ -94,19 +84,24 @@ await message.view(mjml, mjmlTemplate);
 
 #### MJML Options
 
-| Option            | Type                               | Default  | Description                         |
-| ----------------- | ---------------------------------- | -------- | ----------------------------------- |
-| `beautify`        | `boolean`                          | `false`  | Beautify the output HTML            |
-| `minify`          | `boolean`                          | `false`  | Minify the output HTML              |
-| `keepComments`    | `boolean`                          | `true`   | Keep comments in the output         |
-| `validationLevel` | `"strict" \| "soft" \| "skip"`     | `"soft"` | Validation strictness level         |
-| `fonts`           | `Record<string, string>`           | -        | Custom fonts map                    |
+| Option            | Type                           | Default  | Description                 |
+| ----------------- | ------------------------------ | -------- | --------------------------- |
+| `beautify`        | `boolean`                      | `false`  | Beautify the output HTML    |
+| `minify`          | `boolean`                      | `false`  | Minify the output HTML      |
+| `keepComments`    | `boolean`                      | `true`   | Keep comments in the output |
+| `validationLevel` | `"strict" \| "soft" \| "skip"` | `"soft"` | Validation strictness level |
+| `fonts`           | `Record<string, string>`       | -        | Custom fonts map            |
 
 ```typescript
-await message.view(mjml, mjmlTemplate, {}, {
-    minify: true,
-    validationLevel: "strict",
-});
+await message.view(
+    mjml,
+    mjmlTemplate,
+    {},
+    {
+        minify: true,
+        validationLevel: "strict",
+    },
+);
 ```
 
 ### React Email
@@ -139,10 +134,10 @@ await message.view(reactEmail, <WelcomeEmail name="John" />);
 
 #### React Email Options
 
-| Option      | Type      | Default | Description                            |
-| ----------- | --------- | ------- | -------------------------------------- |
-| `plainText` | `boolean` | `false` | Render as plain text instead of HTML   |
-| `pretty`    | `boolean` | `false` | Pretty print the output HTML           |
+| Option      | Type      | Default | Description                          |
+| ----------- | --------- | ------- | ------------------------------------ |
+| `plainText` | `boolean` | `false` | Render as plain text instead of HTML |
+| `pretty`    | `boolean` | `false` | Pretty print the output HTML         |
 
 ### Vue Email
 
@@ -154,10 +149,7 @@ await message.view(reactEmail, <WelcomeEmail name="John" />);
 import { MailMessage } from "@visulima/email";
 import vueEmail from "@visulima/email/template/vue-email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Welcome");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
 
 await message.view(vueEmail, VueEmailComponent, {
     name: "John",
@@ -167,11 +159,11 @@ await message.view(vueEmail, VueEmailComponent, {
 
 #### Vue Email Options
 
-| Option             | Type                      | Default | Description                            |
-| ------------------ | ------------------------- | ------- | -------------------------------------- |
-| `plainText`        | `boolean`                 | `false` | Render as plain text instead of HTML   |
-| `pretty`           | `boolean`                 | `false` | Pretty print the output HTML           |
-| `htmlToTextOptions`| `Record<string, unknown>` | -       | Options for HTML-to-text conversion    |
+| Option              | Type                      | Default | Description                          |
+| ------------------- | ------------------------- | ------- | ------------------------------------ |
+| `plainText`         | `boolean`                 | `false` | Render as plain text instead of HTML |
+| `pretty`            | `boolean`                 | `false` | Pretty print the output HTML         |
+| `htmlToTextOptions` | `Record<string, unknown>` | -       | Options for HTML-to-text conversion  |
 
 ### HTML-to-Text
 
@@ -188,12 +180,12 @@ const text = htmlToText("<h1>Hello World</h1><p>Welcome to our platform.</p>");
 
 #### HTML-to-Text Options
 
-| Option             | Type                    | Default | Description                              |
-| ------------------ | ----------------------- | ------- | ---------------------------------------- |
-| `wordwrap`         | `number \| false`       | `80`    | Word wrap limit (false to disable)       |
-| `preserveNewlines` | `boolean`               | `false` | Preserve newlines in output              |
-| `longWordSplit`    | `object`                | -       | Options for handling long words          |
-| `selectors`        | `object[]`              | -       | Custom selectors for formatting elements |
+| Option             | Type              | Default | Description                              |
+| ------------------ | ----------------- | ------- | ---------------------------------------- |
+| `wordwrap`         | `number \| false` | `80`    | Word wrap limit (false to disable)       |
+| `preserveNewlines` | `boolean`         | `false` | Preserve newlines in output              |
+| `longWordSplit`    | `object`          | -       | Options for handling long words          |
+| `selectors`        | `object[]`        | -       | Custom selectors for formatting elements |
 
 ## Auto-Generated Text Content
 
@@ -214,10 +206,7 @@ Use `viewText()` for text-only template rendering:
 ```typescript
 import { renderHandlebars } from "@visulima/email/template/handlebars";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Welcome");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
 
 await message.viewText(renderHandlebars, "Hello {{name}}! Welcome to {{company}}.", {
     name: "John",

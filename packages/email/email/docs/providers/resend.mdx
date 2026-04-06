@@ -26,25 +26,21 @@ const mail = createMail(
 
 The `ResendConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                    | Description                                          |
-| ---------- | --------- | -------- | -------------------------- | ---------------------------------------------------- |
-| `apiKey`   | `string`  | Yes      | -                          | Your Resend API key (starts with `re_`)              |
-| `endpoint` | `string`  | No       | `https://api.resend.com`   | Custom API endpoint                                  |
-| `debug`    | `boolean` | No       | `false`                    | Enable debug logging                                 |
-| `logger`   | `Console` | No       | -                          | Custom logger instance                               |
-| `retries`  | `number`  | No       | `3`                        | Number of retry attempts on failure                  |
-| `timeout`  | `number`  | No       | `30000`                    | Request timeout in milliseconds                      |
+| Option     | Type      | Required | Default                  | Description                             |
+| ---------- | --------- | -------- | ------------------------ | --------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                        | Your Resend API key (starts with `re_`) |
+| `endpoint` | `string`  | No       | `https://api.resend.com` | Custom API endpoint                     |
+| `debug`    | `boolean` | No       | `false`                  | Enable debug logging                    |
+| `logger`   | `Console` | No       | -                        | Custom logger instance                  |
+| `retries`  | `number`  | No       | `3`                      | Number of retry attempts on failure     |
+| `timeout`  | `number`  | No       | `30000`                  | Request timeout in milliseconds         |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Resend")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Resend").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -102,17 +98,17 @@ const options: ResendEmailOptions = {
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |
 
 ## Additional Methods
 

@@ -28,28 +28,24 @@ const mail = createMail(
 
 The `AwsSesConfig` interface extends `BaseConfig` with the following options:
 
-| Option             | Type      | Required | Default        | Description                                       |
-| ------------------ | --------- | -------- | -------------- | ------------------------------------------------- |
-| `accessKeyId`      | `string`  | Yes      | -              | AWS access key ID                                 |
-| `secretAccessKey`  | `string`  | Yes      | -              | AWS secret access key                             |
-| `region`           | `string`  | Yes      | `us-east-1`    | AWS region                                        |
-| `sessionToken`     | `string`  | No       | -              | AWS session token (for temporary credentials)     |
-| `apiVersion`       | `string`  | No       | `2010-12-01`   | AWS SES API version                               |
-| `endpoint`         | `string`  | No       | Auto-resolved  | Custom endpoint (defaults to `email.{region}.amazonaws.com`) |
-| `maxAttempts`      | `number`  | No       | `3`            | Maximum request attempts                          |
-| `debug`            | `boolean` | No       | `false`        | Enable debug logging                              |
-| `logger`           | `Console` | No       | -              | Custom logger instance                            |
+| Option            | Type      | Required | Default       | Description                                                  |
+| ----------------- | --------- | -------- | ------------- | ------------------------------------------------------------ |
+| `accessKeyId`     | `string`  | Yes      | -             | AWS access key ID                                            |
+| `secretAccessKey` | `string`  | Yes      | -             | AWS secret access key                                        |
+| `region`          | `string`  | Yes      | `us-east-1`   | AWS region                                                   |
+| `sessionToken`    | `string`  | No       | -             | AWS session token (for temporary credentials)                |
+| `apiVersion`      | `string`  | No       | `2010-12-01`  | AWS SES API version                                          |
+| `endpoint`        | `string`  | No       | Auto-resolved | Custom endpoint (defaults to `email.{region}.amazonaws.com`) |
+| `maxAttempts`     | `number`  | No       | `3`           | Maximum request attempts                                     |
+| `debug`           | `boolean` | No       | `false`       | Enable debug logging                                         |
+| `logger`          | `Console` | No       | -             | Custom logger instance                                       |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from AWS SES")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from AWS SES").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -77,27 +73,27 @@ const options: AwsSesEmailOptions = {
 };
 ```
 
-| Option                   | Type                      | Description                            |
-| ------------------------ | ------------------------- | -------------------------------------- |
-| `configurationSetName`   | `string`                  | Configuration set name                 |
-| `messageTags`            | `Record<string, string>`  | Message tags as key-value pairs        |
-| `sourceArn`              | `string`                  | Source ARN for sending authorization   |
-| `returnPath`             | `string`                  | Return path email address              |
-| `returnPathArn`          | `string`                  | Return path ARN                        |
+| Option                 | Type                     | Description                          |
+| ---------------------- | ------------------------ | ------------------------------------ |
+| `configurationSetName` | `string`                 | Configuration set name               |
+| `messageTags`          | `Record<string, string>` | Message tags as key-value pairs      |
+| `sourceArn`            | `string`                 | Source ARN for sending authorization |
+| `returnPath`           | `string`                 | Return path email address            |
+| `returnPathArn`        | `string`                 | Return path ARN                      |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | No        |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | No        |
-| Scheduling       | No        |
-| Tagging          | No        |
-| Templates        | No        |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | No        |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | No        |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |
 
 ## Important Notes
 

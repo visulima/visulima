@@ -27,12 +27,12 @@ const mail = createMail(
 
 The `HttpEmailConfig` interface has the following options:
 
-| Option     | Type                      | Required | Default  | Description                          |
-| ---------- | ------------------------- | -------- | -------- | ------------------------------------ |
-| `endpoint` | `string`                  | Yes      | -        | The HTTP endpoint URL to send to     |
-| `apiKey`   | `string`                  | No       | -        | API key for authentication           |
-| `headers`  | `Record<string, string>`  | No       | -        | Custom HTTP headers for all requests |
-| `method`   | `"GET" \| "POST" \| "PUT"` | No     | `"POST"` | HTTP method to use                   |
+| Option     | Type                       | Required | Default  | Description                          |
+| ---------- | -------------------------- | -------- | -------- | ------------------------------------ |
+| `endpoint` | `string`                   | Yes      | -        | The HTTP endpoint URL to send to     |
+| `apiKey`   | `string`                   | No       | -        | API key for authentication           |
+| `headers`  | `Record<string, string>`   | No       | -        | Custom HTTP headers for all requests |
+| `method`   | `"GET" \| "POST" \| "PUT"` | No       | `"POST"` | HTTP method to use                   |
 
 **Note:** The HTTP provider does not extend `BaseConfig` and does not support `debug`, `logger`, `retries`, or `timeout` options from the base configuration.
 
@@ -41,11 +41,7 @@ The `HttpEmailConfig` interface has the following options:
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello via HTTP")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello via HTTP").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -71,22 +67,22 @@ const options: HttpEmailOptions = {
 };
 ```
 
-| Option            | Type                        | Description                                  |
-| ----------------- | --------------------------- | -------------------------------------------- |
-| `customParams`    | `Record<string, unknown>`   | Custom parameters in the request payload     |
-| `endpointOverride`| `string`                    | Override the endpoint for this specific email |
-| `methodOverride`  | `"GET" \| "POST" \| "PUT"` | Override the HTTP method for this email       |
+| Option             | Type                       | Description                                   |
+| ------------------ | -------------------------- | --------------------------------------------- |
+| `customParams`     | `Record<string, unknown>`  | Custom parameters in the request payload      |
+| `endpointOverride` | `string`                   | Override the endpoint for this specific email |
+| `methodOverride`   | `"GET" \| "POST" \| "PUT"` | Override the HTTP method for this email       |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | No        |
-| Templates        | No        |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

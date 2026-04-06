@@ -287,8 +287,8 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 // Add delivery time
                 if (emailOptions.deliveryTime) {
-                    formData["o:deliverytime"]
-                        = typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
+                    formData["o:deliverytime"] =
+                        typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
                 }
 
                 // Add tracking options

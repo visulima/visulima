@@ -195,12 +195,12 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
                 const responseBody = (result.data as { body?: Record<string, unknown> })?.body;
 
                 if (responseBody && typeof responseBody === "object") {
-                    messageId
-                        = (responseBody.id as string | undefined)
-                            || (responseBody.messageId as string | undefined)
-                            || ((responseBody.data
-                                && typeof responseBody.data === "object"
-                                && ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
+                    messageId =
+                        (responseBody.id as string | undefined) ||
+                        (responseBody.messageId as string | undefined) ||
+                        ((responseBody.data &&
+                            typeof responseBody.data === "object" &&
+                            ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
                 }
 
                 if (!messageId) {
@@ -237,12 +237,12 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
                 });
 
                 return Boolean(
-                    result.data
-                    && typeof result.data === "object"
-                    && "statusCode" in result.data
-                    && typeof result.data.statusCode === "number"
-                    && result.data.statusCode >= 200
-                    && result.data.statusCode < 300,
+                    result.data &&
+                    typeof result.data === "object" &&
+                    "statusCode" in result.data &&
+                    typeof result.data.statusCode === "number" &&
+                    result.data.statusCode >= 200 &&
+                    result.data.statusCode < 300,
                 );
             } catch {
                 return false;

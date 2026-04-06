@@ -36,11 +36,7 @@ Use `attachFromPath()` to attach a file from the filesystem. The file is read an
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Invoice Attached")
-    .html("<h1>Your invoice is attached.</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Invoice Attached").html("<h1>Your invoice is attached.</h1>");
 
 await message.attachFromPath("/path/to/invoice.pdf");
 ```
@@ -49,24 +45,24 @@ await message.attachFromPath("/path/to/invoice.pdf");
 
 ```typescript
 await message.attachFromPath("/path/to/document.pdf", {
-    filename: "my-invoice.pdf",         // Custom filename
-    contentType: "application/pdf",      // Override MIME type
-    contentDisposition: "attachment",    // 'attachment' (default) or 'inline'
-    encoding: "base64",                  // Content transfer encoding
-    headers: { "X-Custom": "value" },   // Custom attachment headers
+    filename: "my-invoice.pdf", // Custom filename
+    contentType: "application/pdf", // Override MIME type
+    contentDisposition: "attachment", // 'attachment' (default) or 'inline'
+    encoding: "base64", // Content transfer encoding
+    headers: { "X-Custom": "value" }, // Custom attachment headers
 });
 ```
 
 The `AttachmentOptions` interface:
 
-| Option               | Type                        | Description                                     |
-| -------------------- | --------------------------- | ----------------------------------------------- |
-| `filename`           | `string`                    | Custom filename (defaults to file basename)      |
-| `contentType`        | `string`                    | MIME type (auto-detected if not provided)        |
-| `contentDisposition` | `"attachment" \| "inline"`  | Disposition type (default: `"attachment"`)        |
-| `encoding`           | `string`                    | Transfer encoding (e.g., `"base64"`, `"7bit"`)  |
-| `cid`                | `string`                    | Content-ID for inline attachments                |
-| `headers`            | `Record<string, string>`    | Custom headers for this attachment               |
+| Option               | Type                       | Description                                    |
+| -------------------- | -------------------------- | ---------------------------------------------- |
+| `filename`           | `string`                   | Custom filename (defaults to file basename)    |
+| `contentType`        | `string`                   | MIME type (auto-detected if not provided)      |
+| `contentDisposition` | `"attachment" \| "inline"` | Disposition type (default: `"attachment"`)     |
+| `encoding`           | `string`                   | Transfer encoding (e.g., `"base64"`, `"7bit"`) |
+| `cid`                | `string`                   | Content-ID for inline attachments              |
+| `headers`            | `Record<string, string>`   | Custom headers for this attachment             |
 
 ## Attaching Raw Data
 
@@ -75,11 +71,7 @@ Use `attachData()` to attach raw string or Buffer content:
 ```typescript
 const csvContent = "Name,Email\nJohn,john@example.com";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Report")
-    .html("<h1>Report attached</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Report").html("<h1>Report attached</h1>");
 
 message.attachData(csvContent, {
     filename: "report.csv",
@@ -102,9 +94,9 @@ message.attachData(pdfBuffer, {
 
 The `AttachmentDataOptions` interface extends `AttachmentOptions` with a required `filename`:
 
-| Option     | Type     | Required | Description                      |
-| ---------- | -------- | -------- | -------------------------------- |
-| `filename` | `string` | Yes      | Filename for the attachment      |
+| Option     | Type     | Required | Description                 |
+| ---------- | -------- | -------- | --------------------------- |
+| `filename` | `string` | Yes      | Filename for the attachment |
 
 ## Inline Attachments (Embedded Images)
 
@@ -113,10 +105,7 @@ The `AttachmentDataOptions` interface extends `AttachmentOptions` with a require
 Use `embedFromPath()` to embed an image from the filesystem as an inline attachment. It returns a Content-ID that you can use in HTML with `cid:`:
 
 ```typescript
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Newsletter");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Newsletter");
 
 const logoCid = await message.embedFromPath("/path/to/logo.png");
 
@@ -177,11 +166,7 @@ You can attach calendar events (ICS/iCal format) to emails:
 ### From String
 
 ```typescript
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Meeting Invite")
-    .html("<h1>You're invited!</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Meeting Invite").html("<h1>You're invited!</h1>");
 
 message.icalEvent("BEGIN:VCALENDAR\nVERSION:2.0\n...", {
     method: "REQUEST",
@@ -191,14 +176,17 @@ message.icalEvent("BEGIN:VCALENDAR\nVERSION:2.0\n...", {
 ### Using ical-generator
 
 ```typescript
-message.icalEvent((calendar) => {
-    calendar.createEvent({
-        start: new Date("2025-01-15T10:00:00Z"),
-        end: new Date("2025-01-15T11:00:00Z"),
-        summary: "Team Meeting",
-        location: "Conference Room A",
-    });
-}, { method: "REQUEST" });
+message.icalEvent(
+    (calendar) => {
+        calendar.createEvent({
+            start: new Date("2025-01-15T10:00:00Z"),
+            end: new Date("2025-01-15T11:00:00Z"),
+            summary: "Team Meeting",
+            location: "Conference Room A",
+        });
+    },
+    { method: "REQUEST" },
+);
 ```
 
 ### From File
@@ -219,22 +207,22 @@ message.icalEventFromUrl("https://example.com/event.ics", {
 
 The `CalendarEventOptions` interface:
 
-| Option            | Type     | Description                                              |
-| ----------------- | -------- | -------------------------------------------------------- |
+| Option            | Type     | Description                                                |
+| ----------------- | -------- | ---------------------------------------------------------- |
 | `method`          | `string` | Calendar method (e.g., `"REQUEST"`, `"CANCEL"`, `"REPLY"`) |
-| `alternativeText` | `string` | Alternative text for the calendar event                  |
+| `alternativeText` | `string` | Alternative text for the calendar event                    |
 
 ## Provider Support
 
 Not all providers support attachments. Check the provider documentation for attachment support:
 
-| Provider    | Attachments | Inline Images |
-| ----------- | ----------- | ------------- |
-| Resend      | Yes         | Yes           |
-| Brevo       | Yes         | Yes           |
-| Mailgun     | Yes         | Yes           |
-| SendGrid    | Yes         | Yes           |
-| Postmark    | Yes         | Yes           |
-| SMTP        | Yes         | Yes           |
-| AWS SES     | No          | No            |
-| Mock        | Yes         | Yes           |
+| Provider | Attachments | Inline Images |
+| -------- | ----------- | ------------- |
+| Resend   | Yes         | Yes           |
+| Brevo    | Yes         | Yes           |
+| Mailgun  | Yes         | Yes           |
+| SendGrid | Yes         | Yes           |
+| Postmark | Yes         | Yes           |
+| SMTP     | Yes         | Yes           |
+| AWS SES  | No          | No            |
+| Mock     | Yes         | Yes           |

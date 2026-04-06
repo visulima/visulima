@@ -27,26 +27,22 @@ const mail = createMail(
 
 The `MailjetConfig` interface extends `BaseConfig` with the following options:
 
-| Option      | Type      | Required | Default                      | Description                      |
-| ----------- | --------- | -------- | ---------------------------- | -------------------------------- |
-| `apiKey`    | `string`  | Yes      | -                            | Your Mailjet API key             |
-| `apiSecret` | `string`  | Yes      | -                            | Your Mailjet API secret          |
-| `endpoint`  | `string`  | No       | `https://api.mailjet.com`    | Custom API endpoint              |
-| `debug`     | `boolean` | No       | `false`                      | Enable debug logging             |
-| `logger`    | `Console` | No       | -                            | Custom logger instance           |
-| `retries`   | `number`  | No       | `3`                          | Number of retry attempts         |
-| `timeout`   | `number`  | No       | `30000`                      | Request timeout in milliseconds  |
+| Option      | Type      | Required | Default                   | Description                     |
+| ----------- | --------- | -------- | ------------------------- | ------------------------------- |
+| `apiKey`    | `string`  | Yes      | -                         | Your Mailjet API key            |
+| `apiSecret` | `string`  | Yes      | -                         | Your Mailjet API secret         |
+| `endpoint`  | `string`  | No       | `https://api.mailjet.com` | Custom API endpoint             |
+| `debug`     | `boolean` | No       | `false`                   | Enable debug logging            |
+| `logger`    | `Console` | No       | -                         | Custom logger instance          |
+| `retries`   | `number`  | No       | `3`                       | Number of retry attempts        |
+| `timeout`   | `number`  | No       | `30000`                   | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Mailjet")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mailjet").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -71,29 +67,29 @@ const options: MailjetEmailOptions = {
 };
 ```
 
-| Option                 | Type                      | Description                                    |
-| ---------------------- | ------------------------- | ---------------------------------------------- |
-| `templateId`           | `number`                  | Mailjet template ID                            |
-| `templateLanguage`     | `boolean`                 | Enable template language processing            |
-| `templateVariables`    | `Record<string, unknown>` | Template variables                             |
-| `customId`             | `string`                  | Custom ID for tracking                         |
-| `campaign`             | `string`                  | Custom campaign name                           |
-| `deduplicateCampaign`  | `boolean`                 | Prevent duplicate emails in campaign           |
-| `priority`             | `number`                  | Priority (1-5, where 1 is highest)             |
-| `deliveryTime`         | `number`                  | Delivery time (Unix timestamp)                 |
-| `eventPayload`         | `string`                  | Event payload for webhooks                     |
-| `urlTags`              | `Record<string, string>`  | URL tags for tracking                          |
+| Option                | Type                      | Description                          |
+| --------------------- | ------------------------- | ------------------------------------ |
+| `templateId`          | `number`                  | Mailjet template ID                  |
+| `templateLanguage`    | `boolean`                 | Enable template language processing  |
+| `templateVariables`   | `Record<string, unknown>` | Template variables                   |
+| `customId`            | `string`                  | Custom ID for tracking               |
+| `campaign`            | `string`                  | Custom campaign name                 |
+| `deduplicateCampaign` | `boolean`                 | Prevent duplicate emails in campaign |
+| `priority`            | `number`                  | Priority (1-5, where 1 is highest)   |
+| `deliveryTime`        | `number`                  | Delivery time (Unix timestamp)       |
+| `eventPayload`        | `string`                  | Event payload for webhooks           |
+| `urlTags`             | `Record<string, string>`  | URL tags for tracking                |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

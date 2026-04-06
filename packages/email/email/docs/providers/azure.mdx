@@ -40,29 +40,25 @@ const mail = createMail(
 
 The `AzureConfig` interface extends `BaseConfig` with the following options:
 
-| Option             | Type      | Required | Default | Description                                            |
-| ------------------ | --------- | -------- | ------- | ------------------------------------------------------ |
-| `region`           | `string`  | Yes      | -       | Azure region (e.g., `eastus`, `westus`)                |
-| `connectionString` | `string`  | No*      | -       | Azure Communication Services connection string         |
-| `accessToken`      | `string`  | No*      | -       | Azure AD access token for OAuth2 authentication        |
+| Option             | Type      | Required | Default | Description                                                              |
+| ------------------ | --------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `region`           | `string`  | Yes      | -       | Azure region (e.g., `eastus`, `westus`)                                  |
+| `connectionString` | `string`  | No\*     | -       | Azure Communication Services connection string                           |
+| `accessToken`      | `string`  | No\*     | -       | Azure AD access token for OAuth2 authentication                          |
 | `endpoint`         | `string`  | No       | Auto    | Custom endpoint (defaults to `https://{region}.communication.azure.com`) |
-| `debug`            | `boolean` | No       | `false` | Enable debug logging                                   |
-| `logger`           | `Console` | No       | -       | Custom logger instance                                 |
-| `retries`          | `number`  | No       | `3`     | Number of retry attempts                               |
-| `timeout`          | `number`  | No       | `30000` | Request timeout in milliseconds                        |
+| `debug`            | `boolean` | No       | `false` | Enable debug logging                                                     |
+| `logger`           | `Console` | No       | -       | Custom logger instance                                                   |
+| `retries`          | `number`  | No       | `3`     | Number of retry attempts                                                 |
+| `timeout`          | `number`  | No       | `30000` | Request timeout in milliseconds                                          |
 
-*Either `connectionString` or `accessToken` must be provided.
+\*Either `connectionString` or `accessToken` must be provided.
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Azure")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Azure").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -71,22 +67,22 @@ const result = await mail.send(message);
 
 The Azure provider supports additional options through `AzureEmailOptions`:
 
-| Option              | Type                      | Description                      |
-| ------------------- | ------------------------- | -------------------------------- |
-| `importance`        | `"normal" \| "high"`      | Email importance level           |
-| `templateId`        | `string`                  | Azure template ID                |
-| `templateVariables` | `Record<string, unknown>` | Template variables               |
+| Option              | Type                      | Description            |
+| ------------------- | ------------------------- | ---------------------- |
+| `importance`        | `"normal" \| "high"`      | Email importance level |
+| `templateId`        | `string`                  | Azure template ID      |
+| `templateVariables` | `Record<string, unknown>` | Template variables     |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | No        |
-| Templates        | Yes       |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | Yes       |
+| Tracking       | No        |

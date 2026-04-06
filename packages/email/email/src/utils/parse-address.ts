@@ -143,22 +143,22 @@ const parseAddress = (address: string): EmailAddress | undefined => {
         return undefined;
     }
 
-    if (trimmed.includes("\"") && !trimmed.startsWith("\"")) {
-        const quoteIndex = trimmed.indexOf("\"");
+    if (trimmed.includes('"') && !trimmed.startsWith('"')) {
+        const quoteIndex = trimmed.indexOf('"');
 
         if (quoteIndex < trimmed.indexOf("@")) {
             return undefined;
         }
     }
 
-    if (trimmed.startsWith("\"")) {
+    if (trimmed.startsWith('"')) {
         let i = 1;
         let foundClosingQuote = false;
 
         while (i < trimmed.length) {
             if (trimmed[i] === "\\" && i + 1 < trimmed.length) {
                 i += 2;
-            } else if (trimmed[i] === "\"") {
+            } else if (trimmed[i] === '"') {
                 if (i + 1 < trimmed.length && trimmed[i + 1] === "@") {
                     foundClosingQuote = true;
                     break;
@@ -172,7 +172,7 @@ const parseAddress = (address: string): EmailAddress | undefined => {
 
         if (!foundClosingQuote && trimmed.includes("@")) {
             const firstAt = trimmed.indexOf("@");
-            const firstQuoteAfterStart = trimmed.slice(1).indexOf("\"");
+            const firstQuoteAfterStart = trimmed.slice(1).indexOf('"');
 
             if (firstQuoteAfterStart === -1 || firstAt < firstQuoteAfterStart + 1) {
                 return undefined;

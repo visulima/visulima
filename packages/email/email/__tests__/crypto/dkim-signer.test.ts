@@ -219,7 +219,7 @@ describe(DkimSigner, () => {
 
             expect(signed.headers["DKIM-Signature"]).toBeDefined();
             expect(signed.headers.To).toContain("recipient1@example.com");
-            expect(signed.headers.To).toContain("\"Recipient 2\" <recipient2@example.com>");
+            expect(signed.headers.To).toContain('"Recipient 2" <recipient2@example.com>');
         });
 
         it("should handle custom headers", async () => {

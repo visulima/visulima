@@ -37,25 +37,21 @@ const mail = createMail(
 
 The `OpenTelemetryConfig` interface extends `BaseConfig` with the following options:
 
-| Option          | Type                        | Required | Default   | Description                                              |
-| --------------- | --------------------------- | -------- | --------- | -------------------------------------------------------- |
-| `provider`      | `Provider \| ProviderFactory` | Yes    | -         | The provider to wrap with instrumentation                |
-| `serviceName`   | `string`                    | No       | `"email"` | Service name for OpenTelemetry spans                     |
-| `recordContent` | `boolean`                   | No       | `false`   | Whether to record email content in spans                 |
-| `tracer`        | `Tracer`                    | No       | Global    | Custom OpenTelemetry tracer instance                     |
-| `debug`         | `boolean`                   | No       | `false`   | Enable debug logging                                     |
-| `logger`        | `Console`                   | No       | -         | Custom logger instance                                   |
+| Option          | Type                          | Required | Default   | Description                               |
+| --------------- | ----------------------------- | -------- | --------- | ----------------------------------------- |
+| `provider`      | `Provider \| ProviderFactory` | Yes      | -         | The provider to wrap with instrumentation |
+| `serviceName`   | `string`                      | No       | `"email"` | Service name for OpenTelemetry spans      |
+| `recordContent` | `boolean`                     | No       | `false`   | Whether to record email content in spans  |
+| `tracer`        | `Tracer`                      | No       | Global    | Custom OpenTelemetry tracer instance      |
+| `debug`         | `boolean`                     | No       | `false`   | Enable debug logging                      |
+| `logger`        | `Console`                     | No       | -         | Custom logger instance                    |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello with Tracing")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello with Tracing").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 // Spans will be created automatically for the send operation

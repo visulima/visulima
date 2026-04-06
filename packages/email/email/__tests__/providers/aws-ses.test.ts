@@ -77,7 +77,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
-                    body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-123</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                    body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-123</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
                 success: true,
@@ -242,7 +242,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
-                    body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult></SendRawEmailResult></SendRawEmailResponse>",
+                    body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
                 success: true,
@@ -273,7 +273,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
-                    body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId></MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                    body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId></MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
                 success: true,
@@ -304,7 +304,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
-                    body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>   </MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                    body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>   </MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
                 success: true,
@@ -335,7 +335,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
-                    body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-456</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                    body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-456</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
                 success: true,
@@ -371,7 +371,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
-                        body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                        body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
                     success: true,
@@ -409,7 +409,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
-                        body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                        body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
                     success: true,
@@ -446,7 +446,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
-                        body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                        body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
                     success: true,
@@ -486,7 +486,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
-                        body: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>",
+                        body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
                     success: true,

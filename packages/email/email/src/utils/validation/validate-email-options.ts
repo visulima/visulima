@@ -30,8 +30,7 @@ const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
     }
 
     const checkAddresses = (addresses: EmailAddress | EmailAddress[] | undefined, field: string) => {
-        if (!addresses)
-            return;
+        if (!addresses) return;
 
         const list = Array.isArray(addresses) ? addresses : [addresses];
 

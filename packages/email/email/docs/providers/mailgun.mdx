@@ -27,26 +27,22 @@ const mail = createMail(
 
 The `MailgunConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                      | Description                                                       |
-| ---------- | --------- | -------- | ---------------------------- | ----------------------------------------------------------------- |
-| `apiKey`   | `string`  | Yes      | -                            | Your Mailgun API key                                              |
-| `domain`   | `string`  | Yes      | -                            | Your Mailgun sending domain                                       |
-| `endpoint` | `string`  | No       | `https://api.mailgun.net`    | API endpoint (use `https://api.eu.mailgun.net` for EU accounts)   |
-| `debug`    | `boolean` | No       | `false`                      | Enable debug logging                                              |
-| `logger`   | `Console` | No       | -                            | Custom logger instance                                            |
-| `retries`  | `number`  | No       | `3`                          | Number of retry attempts on failure                               |
-| `timeout`  | `number`  | No       | `30000`                      | Request timeout in milliseconds                                   |
+| Option     | Type      | Required | Default                   | Description                                                     |
+| ---------- | --------- | -------- | ------------------------- | --------------------------------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                         | Your Mailgun API key                                            |
+| `domain`   | `string`  | Yes      | -                         | Your Mailgun sending domain                                     |
+| `endpoint` | `string`  | No       | `https://api.mailgun.net` | API endpoint (use `https://api.eu.mailgun.net` for EU accounts) |
+| `debug`    | `boolean` | No       | `false`                   | Enable debug logging                                            |
+| `logger`   | `Console` | No       | -                         | Custom logger instance                                          |
+| `retries`  | `number`  | No       | `3`                       | Number of retry attempts on failure                             |
+| `timeout`  | `number`  | No       | `30000`                   | Request timeout in milliseconds                                 |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@mg.example.com")
-    .subject("Hello from Mailgun")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@mg.example.com").subject("Hello from Mailgun").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -72,19 +68,19 @@ const options: MailgunEmailOptions = {
 };
 ```
 
-| Option                | Type                      | Description                                      |
-| --------------------- | ------------------------- | ------------------------------------------------ |
-| `tags`                | `string[]`                | Tags for categorization                          |
-| `template`            | `string`                  | Mailgun template name                            |
-| `templateVariables`   | `Record<string, unknown>` | Template variables                               |
-| `campaignId`          | `string`                  | Campaign ID for tracking                         |
-| `deliveryTime`        | `string \| number`        | Delivery time (RFC 2822 date or Unix timestamp)  |
-| `clickTracking`       | `boolean`                 | Enable/disable click tracking                    |
-| `openTracking`        | `boolean`                 | Enable/disable open tracking                     |
-| `unsubscribeTracking` | `boolean`                 | Enable/disable unsubscribe tracking              |
-| `testMode`            | `boolean`                 | Test mode - emails will not actually be sent      |
-| `requireTls`          | `boolean`                 | Require TLS for delivery                         |
-| `skipVerification`    | `boolean`                 | Skip TLS certificate verification                |
+| Option                | Type                      | Description                                     |
+| --------------------- | ------------------------- | ----------------------------------------------- |
+| `tags`                | `string[]`                | Tags for categorization                         |
+| `template`            | `string`                  | Mailgun template name                           |
+| `templateVariables`   | `Record<string, unknown>` | Template variables                              |
+| `campaignId`          | `string`                  | Campaign ID for tracking                        |
+| `deliveryTime`        | `string \| number`        | Delivery time (RFC 2822 date or Unix timestamp) |
+| `clickTracking`       | `boolean`                 | Enable/disable click tracking                   |
+| `openTracking`        | `boolean`                 | Enable/disable open tracking                    |
+| `unsubscribeTracking` | `boolean`                 | Enable/disable unsubscribe tracking             |
+| `testMode`            | `boolean`                 | Test mode - emails will not actually be sent    |
+| `requireTls`          | `boolean`                 | Require TLS for delivery                        |
+| `skipVerification`    | `boolean`                 | Skip TLS certificate verification               |
 
 ## EU Region
 
@@ -102,17 +98,17 @@ const mail = createMail(
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |
 
 ## Additional Methods
 

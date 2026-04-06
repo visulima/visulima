@@ -155,13 +155,13 @@ const mailPaceProvider: ProviderFactory<MailPaceConfig, unknown, MailPaceEmailOp
                 });
 
                 return Boolean(
-                    result.success
-                    && result.data
-                    && typeof result.data === "object"
-                    && "statusCode" in result.data
-                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
-                    && (result.data as { statusCode: number }).statusCode >= 200
-                    && (result.data as { statusCode: number }).statusCode < 300,
+                    result.success &&
+                    result.data &&
+                    typeof result.data === "object" &&
+                    "statusCode" in result.data &&
+                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
+                    (result.data as { statusCode: number }).statusCode >= 200 &&
+                    (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
