@@ -18,6 +18,9 @@ export default createConfig(
             "__tests__/crypto/fixtures.ts",
             "README.md",
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
     },
     {
         files: ["**/*.test.ts"],
