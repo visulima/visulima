@@ -43,6 +43,6 @@ describe(validateAdapterMethods, () => {
     it("should throw a error for a invalid adapter", () => {
         expect.assertions(1);
         // @ts-expect-error
-        expect(() => validateAdapterMethods(new InvalidAdapter())).toThrow("Adapter must implement the \"create\" method.");
+        expect(() => validateAdapterMethods(new InvalidAdapter())).toThrow('Adapter must implement the "create" method.');
     });
 });
