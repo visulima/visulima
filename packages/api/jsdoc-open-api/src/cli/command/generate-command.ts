@@ -31,19 +31,18 @@ const generateCommand = async (
         followSymlinks?: boolean;
         include?: (RegExp | string)[];
         swaggerDefinition: BaseDefinition;
+    } = {
+        exclude: [],
+        swaggerDefinition: {} as BaseDefinition,
     };
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         let config = await import(pathToFileURL(normalize(options.config ?? configName)).href);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (config?.default) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
             config = config.default;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         openapiConfig = config;
     } catch {
         throw new Error(`No config file found, on: ${options.config ?? ".openapirc.js"}\n`);
@@ -61,16 +60,15 @@ const generateCommand = async (
     const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
     const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
 
-    // eslint-disable-next-line unicorn/prevent-abbreviations,no-for-of-array/no-for-of-array
-    for (const dir of paths) {
+    // eslint-disable-next-line unicorn/prevent-abbreviations,no-loops/no-loops
+    for await (const dir of paths) {
         // Check if the path is a directory
-        // eslint-disable-next-line unicorn/no-await-expression-member,no-await-in-loop
+        // eslint-disable-next-line security/detect-non-literal-fs-filename,unicorn/no-await-expression-member
         (await lstat(dir)).isDirectory();
 
-        // eslint-disable-next-line no-await-in-loop
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
         const realDirectory = await realpath(dir);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,no-await-in-loop,@typescript-eslint/no-unsafe-call
         const files: string[] = await collect(realDirectory, {
             extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
             followSymlinks: openapiConfig.followSymlinks ?? false,
@@ -114,11 +112,11 @@ const generateCommand = async (
     }
 
     if (options.veryVerbose) {
-        // eslint-disable-next-line no-console,unicorn/no-null
+        // eslint-disable-next-line no-console
         console.log(JSON.stringify(spec, null, 2));
     }
 
-    await validate(structuredClone(spec) as Record<string, unknown>);
+    await validate(JSON.parse(JSON.stringify(spec)) as Record<string, unknown>);
 
     const output = options.output ?? "swagger.json";
 
@@ -129,8 +127,9 @@ const generateCommand = async (
         console.log(`Written swagger spec to "${output}" file`);
     }
 
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await mkdir(dirname(output), { recursive: true });
-    // eslint-disable-next-line unicorn/no-null
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
     await writeFile(output, JSON.stringify(spec, null, 2));
 
     // eslint-disable-next-line no-console
