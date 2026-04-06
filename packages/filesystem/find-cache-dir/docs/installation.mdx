@@ -10,26 +10,10 @@ import { Tab, Tabs } from "fumadocs-ui/components/tabs";
 Install the package using your preferred package manager:
 
 <Tabs items={["npm", "pnpm", "yarn", "bun"]}>
-  <Tab value="npm">
-    ```bash
-    npm install @visulima/find-cache-dir
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash
-    pnpm add @visulima/find-cache-dir
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash
-    yarn add @visulima/find-cache-dir
-    ```
-  </Tab>
-  <Tab value="bun">
-    ```bash
-    bun add @visulima/find-cache-dir
-    ```
-  </Tab>
+    <Tab value="npm">```bash npm install @visulima/find-cache-dir ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/find-cache-dir ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/find-cache-dir ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/find-cache-dir ```</Tab>
 </Tabs>
 
 ## Import Methods
@@ -86,9 +70,9 @@ import { findCacheDir, findCacheDirSync } from "@visulima/find-cache-dir";
 import type { Options } from "@visulima/find-cache-dir";
 
 const options: Options = {
-  cwd: process.cwd(),
-  create: true,
-  throwError: false
+    cwd: process.cwd(),
+    create: true,
+    throwError: false,
 };
 
 const cacheDir: string = await findCacheDir("my-app", options);
@@ -97,10 +81,10 @@ const cacheDir: string = await findCacheDir("my-app", options);
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use async/sync versions and options
-  </Card>
-  <Card title="API Reference" href="/api">
-    Explore the complete API documentation
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use async/sync versions and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
 </Cards>
