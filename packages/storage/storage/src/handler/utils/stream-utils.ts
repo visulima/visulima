@@ -83,7 +83,9 @@ export const pipeWithBackpressure = <TResponse extends ServerResponse>(
     let isDestroyed = false;
 
     const cleanup = () => {
-        if (isDestroyed) return;
+        if (isDestroyed) {
+            return;
+        }
 
         isDestroyed = true;
         source.destroy();
