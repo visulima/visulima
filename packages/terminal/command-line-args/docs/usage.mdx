@@ -12,11 +12,11 @@ import { parseArgs } from "@visulima/command-line-args";
 
 const definitions = [
     {
-        name: "file",           // Long option: --file
-        alias: "f",             // Short option: -f
-        type: String,           // Type conversion
+        name: "file", // Long option: --file
+        alias: "f", // Short option: -f
+        type: String, // Type conversion
         defaultValue: "in.txt", // Default value
-        multiple: false,        // Single value (default)
+        multiple: false, // Single value (default)
     },
 ];
 
@@ -26,18 +26,21 @@ const options = parseArgs(definitions);
 ## Type Conversion
 
 **String:**
+
 ```typescript
 { name: "file", type: String }
 // --file input.txt → { file: "input.txt" }
 ```
 
 **Number:**
+
 ```typescript
 { name: "count", type: Number }
 // --count 42 → { count: 42 }
 ```
 
 **Boolean:**
+
 ```typescript
 { name: "verbose", type: Boolean }
 // --verbose → { verbose: true }
@@ -47,9 +50,7 @@ const options = parseArgs(definitions);
 ## Multiple Values
 
 ```typescript
-const options = parseArgs([
-    { name: "include", type: String, multiple: true },
-]);
+const options = parseArgs([{ name: "include", type: String, multiple: true }]);
 
 // node script.js --include src --include lib --include test
 // { include: ["src", "lib", "test"] }
@@ -58,9 +59,7 @@ const options = parseArgs([
 ## Default Option (Positional)
 
 ```typescript
-const options = parseArgs([
-    { name: "files", type: String, multiple: true, defaultOption: true },
-]);
+const options = parseArgs([{ name: "files", type: String, multiple: true, defaultOption: true }]);
 
 // node script.js file1.txt file2.txt file3.txt
 // { files: ["file1.txt", "file2.txt", "file3.txt"] }

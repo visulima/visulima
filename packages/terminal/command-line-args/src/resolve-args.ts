@@ -215,11 +215,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 const nextToken = tokens[i + 1] as ArgumentToken | undefined;
                 // Check if next token is a value-only option token (from short option groups like -ab=value)
                 const isValueOnlyOptionToken = nextToken && nextToken.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
-                const shouldConsumeValue
-                    = nextToken
-                        && definition
-                        && !(definition.type && isBooleanType(definition.type))
-                        && (nextToken.kind === "positional" || isValueOnlyOptionToken);
+                const shouldConsumeValue =
+                    nextToken &&
+                    definition &&
+                    !(definition.type && isBooleanType(definition.type)) &&
+                    (nextToken.kind === "positional" || isValueOnlyOptionToken);
                 const isDefaultOptionNonMultiple = definition && definition.defaultOption && !definition.multiple && !definition.lazyMultiple;
 
                 if (shouldConsumeValue && (!definition?.defaultOption || isDefaultOptionNonMultiple)) {
@@ -229,11 +229,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                         const collectedValues: any[] = [];
 
                         while (
-                            currentIndex < tokens.length
-                            && ((tokens[currentIndex] as ArgumentToken).kind === "positional"
-                                || ((tokens[currentIndex] as ArgumentToken).kind === "option"
-                                    && !("name" in (tokens[currentIndex] as ArgumentToken))
-                                    && (tokens[currentIndex] as ArgumentToken).value !== undefined))
+                            currentIndex < tokens.length &&
+                            ((tokens[currentIndex] as ArgumentToken).kind === "positional" ||
+                                ((tokens[currentIndex] as ArgumentToken).kind === "option" &&
+                                    !("name" in (tokens[currentIndex] as ArgumentToken)) &&
+                                    (tokens[currentIndex] as ArgumentToken).value !== undefined))
                         ) {
                             collectedValues.push((tokens[currentIndex] as ArgumentToken).value);
                             consumedPositionalIndices.add((tokens[currentIndex] as ArgumentToken).index);
@@ -346,11 +346,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
         for (const token of tokens) {
             if (
-                token.kind === "option"
-                && !definitionMap.has(token.name || "")
-                && !aliasMap.has(token.name || "")
-                && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
+                token.kind === "option" &&
+                !definitionMap.has(token.name || "") &&
+                !aliasMap.has(token.name || "") &&
+                (!options.caseInsensitive ||
+                    (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || "")))
             ) {
                 stopAtUnknownArgvIndex = token.index;
                 break;
@@ -439,11 +439,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
         const firstUnknownOptionTokenIndex = tokens.findIndex(
             (token) =>
-                token.kind === "option"
-                && !definitionMap.has(token.name || "")
-                && !aliasMap.has(token.name || "")
-                && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
+                token.kind === "option" &&
+                !definitionMap.has(token.name || "") &&
+                !aliasMap.has(token.name || "") &&
+                (!options.caseInsensitive ||
+                    (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() || "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() || ""))),
         );
 
         const firstUnconsumedPositionalTokenIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
