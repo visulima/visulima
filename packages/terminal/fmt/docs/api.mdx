@@ -14,15 +14,13 @@ Complete reference for all functions and types in the `@visulima/fmt` package.
 Format a string using printf-style placeholders.
 
 **Signature:**
+
 ```typescript
-function format(
-  fmt: string,
-  parameters: unknown[],
-  options?: FormatOptions
-): string
+function format(fmt: string, parameters: unknown[], options?: FormatOptions): string;
 ```
 
 **Parameters:**
+
 - `fmt` (`string`, required) - Format string with placeholders (e.g., "Hello %s")
 - `parameters` (`unknown[]`, required) - Array of values to substitute
 - `options` (`FormatOptions`, optional) - Formatting options
@@ -30,6 +28,7 @@ function format(
 **Returns:** `string` - Formatted string
 
 **Example:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
@@ -44,25 +43,28 @@ console.log(result); // "Hello Alice, you have 5 messages"
 Build a custom format function with additional formatters.
 
 **Signature:**
+
 ```typescript
-function build(options: BuildOptions): FormatFunction
+function build(options: BuildOptions): FormatFunction;
 ```
 
 **Parameters:**
+
 - `options` (`BuildOptions`, required) - Configuration options
-  - `formatters` (`Formatters`, optional) - Custom format specifiers
+    - `formatters` (`Formatters`, optional) - Custom format specifiers
 
 **Returns:** `FormatFunction` - A custom format function
 
 **Example:**
+
 ```typescript
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    t: (time) => new Date(time).toLocaleString(),
-    h: (num) => `0x${num.toString(16)}`
-  }
+    formatters: {
+        t: (time) => new Date(time).toLocaleString(),
+        h: (num) => `0x${num.toString(16)}`,
+    },
 });
 
 const result = format("Time: %t, Hex: %h", [Date.now(), 255]);
@@ -78,21 +80,24 @@ const result = format("Time: %t, Hex: %h", [Date.now(), 255]);
 Options for the `format` function.
 
 **Type Definition:**
+
 ```typescript
 interface FormatOptions {
-  stringify?: (value: unknown) => string;
+    stringify?: (value: unknown) => string;
 }
 ```
 
 **Properties:**
+
 - `stringify` (`function`, optional) - Custom serializer for %j placeholder
 
 **Example:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
 const options = {
-  stringify: (obj: unknown) => JSON.stringify(obj, null, 2)
+    stringify: (obj: unknown) => JSON.stringify(obj, null, 2),
 };
 
 const result = format("Config: %j", [{ port: 8080 }], options);
@@ -105,13 +110,15 @@ const result = format("Config: %j", [{ port: 8080 }], options);
 Options for the `build` function.
 
 **Type Definition:**
+
 ```typescript
 interface BuildOptions {
-  formatters?: Formatters;
+    formatters?: Formatters;
 }
 ```
 
 **Properties:**
+
 - `formatters` (`Formatters`, optional) - Custom format specifiers
 
 ---
@@ -121,6 +128,7 @@ interface BuildOptions {
 Custom formatter functions.
 
 **Type Definition:**
+
 ```typescript
 type Formatters = Record<string, (value: any) => string>;
 ```
@@ -128,10 +136,11 @@ type Formatters = Record<string, (value: any) => string>;
 **Description:** An object mapping single-character keys to formatter functions.
 
 **Example:**
+
 ```typescript
 const formatters: Formatters = {
-  u: (url) => new URL(url).hostname,
-  p: (percent) => `${(percent * 100).toFixed(2)}%`
+    u: (url) => new URL(url).hostname,
+    p: (percent) => `${(percent * 100).toFixed(2)}%`,
 };
 ```
 
@@ -142,12 +151,9 @@ const formatters: Formatters = {
 The function signature returned by `build`.
 
 **Type Definition:**
+
 ```typescript
-type FormatFunction = (
-  fmt: string,
-  parameters: unknown[],
-  options?: FormatOptions
-) => string;
+type FormatFunction = (fmt: string, parameters: unknown[], options?: FormatOptions) => string;
 ```
 
 **Description:** Same signature as `format` but with custom formatters baked in.
@@ -158,35 +164,37 @@ type FormatFunction = (
 
 ### Standard Specifiers
 
-| Specifier | Description | Example |
-|-----------|-------------|---------|
-| `%s` | String | `format("%s", ["hello"])` → `"hello"` |
-| `%d` | Decimal number | `format("%d", [42])` → `"42"` |
-| `%i` | Integer | `format("%i", [42.7])` → `"42"` |
-| `%f` | Float | `format("%f", [3.14])` → `"3.14"` |
-| `%j` | JSON | `format("%j", [{a:1}])` → `'{"a":1}'` |
-| `%o` | Object | `format("%o", [{a:1}])` → `'{a: 1}'` |
-| `%O` | Object (detailed) | `format("%O", [obj])` → includes non-enumerable |
-| `%c` | CSS styling | `format("%cText%c", ["color:red", ""])` |
-| `%%` | Literal % | `format("%%", [])` → `"%"` |
+| Specifier | Description       | Example                                         |
+| --------- | ----------------- | ----------------------------------------------- |
+| `%s`      | String            | `format("%s", ["hello"])` → `"hello"`           |
+| `%d`      | Decimal number    | `format("%d", [42])` → `"42"`                   |
+| `%i`      | Integer           | `format("%i", [42.7])` → `"42"`                 |
+| `%f`      | Float             | `format("%f", [3.14])` → `"3.14"`               |
+| `%j`      | JSON              | `format("%j", [{a:1}])` → `'{"a":1}'`           |
+| `%o`      | Object            | `format("%o", [{a:1}])` → `'{a: 1}'`            |
+| `%O`      | Object (detailed) | `format("%O", [obj])` → includes non-enumerable |
+| `%c`      | CSS styling       | `format("%cText%c", ["color:red", ""])`         |
+| `%%`      | Literal %         | `format("%%", [])` → `"%"`                      |
 
 ### %s - String
 
 Converts values to strings.
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("%s", [42]));           // "42"
-console.log(format("%s", [true]));         // "true"
-console.log(format("%s", [[1, 2]]));       // "1,2"
-console.log(format("%s", [null]));         // "null"
-console.log(format("%s", [undefined]));    // "undefined"
+console.log(format("%s", [42])); // "42"
+console.log(format("%s", [true])); // "true"
+console.log(format("%s", [[1, 2]])); // "1,2"
+console.log(format("%s", [null])); // "null"
+console.log(format("%s", [undefined])); // "undefined"
 console.log(format("%s", [Symbol("id")])); // "Symbol(id)"
 ```
 
 **Special Cases:**
+
 - `BigInt` is not converted to string
 - `-0` remains as `-0`
 - Objects are converted via `toString()`
@@ -198,18 +206,20 @@ console.log(format("%s", [Symbol("id")])); // "Symbol(id)"
 Converts values to numbers.
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("%d", [42]));      // "42"
-console.log(format("%d", ["123"]));   // "123"
-console.log(format("%d", [true]));    // "1"
-console.log(format("%d", [false]));   // "0"
-console.log(format("%d", ["abc"]));   // "NaN"
-console.log(format("%d", [null]));    // "0"
+console.log(format("%d", [42])); // "42"
+console.log(format("%d", ["123"])); // "123"
+console.log(format("%d", [true])); // "1"
+console.log(format("%d", [false])); // "0"
+console.log(format("%d", ["abc"])); // "NaN"
+console.log(format("%d", [null])); // "0"
 ```
 
 **Not Supported:**
+
 - `BigInt` values
 - `Symbol` values
 
@@ -220,12 +230,13 @@ console.log(format("%d", [null]));    // "0"
 Converts values to integers (truncates decimals).
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("%i", [42.7]));    // "42"
-console.log(format("%i", [42]));      // "42"
-console.log(format("%i", [-42.7]));   // "-42"
+console.log(format("%i", [42.7])); // "42"
+console.log(format("%i", [42])); // "42"
+console.log(format("%i", [-42.7])); // "-42"
 console.log(format("%i", ["123.9"])); // "123"
 ```
 
@@ -236,15 +247,17 @@ console.log(format("%i", ["123.9"])); // "123"
 Converts values to floating-point numbers.
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
 console.log(format("%f", [3.14159])); // "3.14159"
-console.log(format("%f", [42]));      // "42"
-console.log(format("%f", ["2.5"]));   // "2.5"
+console.log(format("%f", [42])); // "42"
+console.log(format("%f", ["2.5"])); // "2.5"
 ```
 
 **Not Supported:**
+
 - `Symbol` values
 
 ---
@@ -254,17 +267,19 @@ console.log(format("%f", ["2.5"]));   // "2.5"
 Serializes values as JSON.
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("%j", [{ a: 1 }]));        // '{"a":1}'
-console.log(format("%j", [[1, 2, 3]]));       // '[1,2,3]'
-console.log(format("%j", [null]));            // 'null'
-console.log(format("%j", [undefined]));       // undefined (no output)
-console.log(format("%j", [() => {}]));        // undefined (no output)
+console.log(format("%j", [{ a: 1 }])); // '{"a":1}'
+console.log(format("%j", [[1, 2, 3]])); // '[1,2,3]'
+console.log(format("%j", [null])); // 'null'
+console.log(format("%j", [undefined])); // undefined (no output)
+console.log(format("%j", [() => {}])); // undefined (no output)
 ```
 
 **Circular References:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
@@ -282,6 +297,7 @@ console.log(format("%j", [obj]));
 Inspect objects.
 
 **%o - Basic Inspection:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
@@ -291,13 +307,14 @@ console.log(format("%o", [obj]));
 ```
 
 **%O - Detailed Inspection:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
 const obj = { visible: "yes" };
 Object.defineProperty(obj, "hidden", {
-  value: "secret",
-  enumerable: false
+    value: "secret",
+    enumerable: false,
 });
 
 console.log(format("%o", [obj]));
@@ -314,6 +331,7 @@ console.log(format("%O", [obj]));
 Apply CSS-like styles to terminal output.
 
 **Supported Properties:**
+
 - `color` - Text color
 - `background-color` - Background color
 - `font-weight` - `bold` or `normal`
@@ -323,28 +341,30 @@ Apply CSS-like styles to terminal output.
 - `text-decoration-line` - Decoration type
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
 // Red text
-format("%cError%c", ["color: red", ""])
+format("%cError%c", ["color: red", ""]);
 
 // Bold green text
-format("%cSuccess%c", ["color: green; font-weight: bold", ""])
+format("%cSuccess%c", ["color: green; font-weight: bold", ""]);
 
 // Italic with underline
-format("%cNote%c", ["font-style: italic; text-decoration: underline", ""])
+format("%cNote%c", ["font-style: italic; text-decoration: underline", ""]);
 
 // Yellow background
-format("%cWarning%c", ["background-color: yellow", ""])
+format("%cWarning%c", ["background-color: yellow", ""]);
 ```
 
 **Reset Styles:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
 // Empty string resets all styles
-format("%cStyled%c Normal", ["color: red", ""])
+format("%cStyled%c Normal", ["color: red", ""]);
 ```
 
 **Note:** %c only works in terminals with ANSI color support. In non-color environments, it's ignored.
@@ -356,11 +376,12 @@ format("%cStyled%c Normal", ["color: red", ""])
 Output a literal % character.
 
 **Behavior:**
+
 ```typescript
 import { format } from "@visulima/fmt";
 
-console.log(format("Progress: 50%%", []));  // "Progress: 50%"
-console.log(format("%%off", []));           // "%off"
+console.log(format("Progress: 50%%", [])); // "Progress: 50%"
+console.log(format("%%off", [])); // "%off"
 ```
 
 ---
@@ -375,14 +396,14 @@ Add your own format specifiers:
 import { build } from "@visulima/fmt";
 
 const format = build({
-  formatters: {
-    // Single character key
-    t: (value) => new Date(value).toLocaleString(),
-    u: (value) => new URL(value).hostname,
-    h: (value) => `0x${value.toString(16)}`,
-    p: (value) => `${(value * 100).toFixed(2)}%`,
-    b: (value) => value ? "Yes" : "No"
-  }
+    formatters: {
+        // Single character key
+        t: (value) => new Date(value).toLocaleString(),
+        u: (value) => new URL(value).hostname,
+        h: (value) => `0x${value.toString(16)}`,
+        p: (value) => `${(value * 100).toFixed(2)}%`,
+        b: (value) => (value ? "Yes" : "No"),
+    },
 });
 
 // Use them
@@ -400,18 +421,20 @@ type FormatterFunction = (value: any) => string;
 ```
 
 **Requirements:**
+
 - Must return a string
 - Single parameter (the value to format)
 - Should handle invalid input gracefully
 
 **Example:**
+
 ```typescript
 const safeFormatter = (value: unknown): string => {
-  try {
-    return String(value);
-  } catch {
-    return "[Error formatting value]";
-  }
+    try {
+        return String(value);
+    } catch {
+        return "[Error formatting value]";
+    }
 };
 ```
 
@@ -426,10 +449,12 @@ import { format } from "@visulima/fmt";
 import safeStringify from "fast-safe-stringify";
 
 const options = {
-  stringify: safeStringify
+    stringify: safeStringify,
 };
 
-const data = { /* complex object */ };
+const data = {
+    /* complex object */
+};
 const result = format("Data: %j", [data], options);
 ```
 
@@ -446,10 +471,10 @@ const result = format("Data: %j", [data], options);
 ## Next Steps
 
 <Cards>
-  <Card title="Usage Guide" href="/usage">
-    Learn how to use all features with examples
-  </Card>
-  <Card title="Back to Overview" href="/">
-    Return to package overview
-  </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use all features with examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
 </Cards>
