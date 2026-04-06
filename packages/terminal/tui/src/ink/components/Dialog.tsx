@@ -84,7 +84,19 @@ export type Props = {
      * Scrollbar visual style.
      * @default "block"
      */
-    readonly scrollbarStyle?: "arrow" | "block" | "bold" | "classic" | "dots" | "double" | "doubleSingle" | "line" | "round" | "single" | "singleDouble" | "thick";
+    readonly scrollbarStyle?:
+        | "arrow"
+        | "block"
+        | "bold"
+        | "classic"
+        | "dots"
+        | "double"
+        | "doubleSingle"
+        | "line"
+        | "round"
+        | "single"
+        | "singleDouble"
+        | "thick";
 
     /**
      * Whether the dialog is visible. When `false`, nothing is rendered.
@@ -142,22 +154,20 @@ export default function Dialog({
     const cols = columnsProp ?? (windowSize.columns || 80);
     const termRows = rowsProp ?? (windowSize.rows || 24);
 
-    const bg = backgroundColorProp ?? (paletteLoading ? "black" : palette?.background ?? "black");
+    const bg = backgroundColorProp ?? (paletteLoading ? "black" : (palette?.background ?? "black"));
 
     const resolvedMaxHeight = maxHeightProp <= 1 ? Math.floor(termRows * maxHeightProp) : Math.min(maxHeightProp, termRows - 2);
 
-    const titleElement
-        = typeof title === "string"
-            ? (
-                <Box marginBottom={1}>
-                    <Text bold color={borderColor}>
-                        {title}
-                    </Text>
-                </Box>
-            )
-            : title ?? null
-        ;
-
+    const titleElement =
+        typeof title === "string" ? (
+            <Box marginBottom={1}>
+                <Text bold color={borderColor}>
+                    {title}
+                </Text>
+            </Box>
+        ) : (
+            (title ?? null)
+        );
     return (
         <Box alignItems="center" height={termRows} justifyContent="center" position="absolute" width={cols}>
             <Box
@@ -179,7 +189,15 @@ export default function Dialog({
                 )}
 
                 {/* Scrollable content with built-in scrollbar */}
-                <ScrollView flexGrow={1} flexShrink={1} paddingX={paddingX} ref={scrollViewRef} scrollbar scrollbarColor={borderColor} scrollbarStyle={scrollbarStyleProp}>
+                <ScrollView
+                    flexGrow={1}
+                    flexShrink={1}
+                    paddingX={paddingX}
+                    ref={scrollViewRef}
+                    scrollbar
+                    scrollbarColor={borderColor}
+                    scrollbarStyle={scrollbarStyleProp}
+                >
                     {children}
                 </ScrollView>
 

@@ -18,16 +18,7 @@ import { isFullwidthCodePoint } from "@visulima/string";
 import type { AnsiToken } from "./ansi-tokenizer";
 import { tokenizeAnsi } from "./ansi-tokenizer";
 import { ansi256ToColorName } from "./color-utils";
-import {
-    BOLD_MASK,
-    DIM_MASK,
-    FULL_WIDTH_MASK,
-    HIDDEN_MASK,
-    INVERSE_MASK,
-    ITALIC_MASK,
-    STRIKETHROUGH_MASK,
-    UNDERLINE_MASK,
-} from "./style-flags";
+import { BOLD_MASK, DIM_MASK, FULL_WIDTH_MASK, HIDDEN_MASK, INVERSE_MASK, ITALIC_MASK, STRIKETHROUGH_MASK, UNDERLINE_MASK } from "./style-flags";
 import { StyledLine } from "./styled-line";
 
 // ── SGR State Machine ────────────────────────────────────────────────
@@ -59,7 +50,10 @@ const applySgrParams = (state: SgrState, parameterString: string): SgrState => {
     // Handle colon-delimited sub-parameters (e.g., "38:2::255:100:0")
     // by normalizing to semicolon delimiter
     const normalizedParams = parameterString.includes(":") ? parameterString.replaceAll(":", ";") : parameterString;
-    const params = normalizedParams.split(";").filter((s) => s.length > 0).map(Number);
+    const params = normalizedParams
+        .split(";")
+        .filter((s) => s.length > 0)
+        .map(Number);
     let { bgColor, fgColor, formatFlags, link } = state;
 
     let index = 0;

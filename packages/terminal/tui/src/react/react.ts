@@ -63,8 +63,7 @@ export const Spinner: React.FC<SpinnerProps> = ({ frames = DEFAULT_SPINNER_FRAME
     const [index, setIndex] = React.useState(0);
 
     React.useEffect(() => {
-        if (interval <= 0 || resolvedFrames.length <= 1)
-            return;
+        if (interval <= 0 || resolvedFrames.length <= 1) return;
 
         const timer = setInterval(() => {
             setIndex((previous) => (previous + 1) % resolvedFrames.length);
@@ -154,8 +153,7 @@ export interface TransformProps {
     transform: (s: string, index: number) => string;
 }
 export const Transform: React.FC<TransformProps> = ({ children, transform }) => {
-    if (children === undefined || children === null)
-        return null;
+    if (children === undefined || children === null) return null;
 
     return React.createElement("box", { flexShrink: 1, transform }, children);
 };
@@ -168,11 +166,9 @@ const TabHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { disableFocus, enableFocus, focusNext, focusPrevious } = useFocusManager();
 
     useInput((_input, key) => {
-        if (key.tab && !key.shift)
-            focusNext();
+        if (key.tab && !key.shift) focusNext();
 
-        if (key.tab && key.shift)
-            focusPrevious();
+        if (key.tab && key.shift) focusPrevious();
 
         if (key.escape) {
             disableFocus();
@@ -430,11 +426,9 @@ export function renderInline(element: React.ReactElement, options?: InlineOption
 
     // Flush buffered stdout/stderr after the inline region is gone
     process.on("exit", () => {
-        if (stdoutLines.length > 0)
-            process.stdout.write(stdoutLines.join(""));
+        if (stdoutLines.length > 0) process.stdout.write(stdoutLines.join(""));
 
-        if (stderrLines.length > 0)
-            process.stderr.write(stderrLines.join(""));
+        if (stderrLines.length > 0) process.stderr.write(stderrLines.join(""));
 
         resolveExit();
     });

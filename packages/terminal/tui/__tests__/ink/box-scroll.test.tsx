@@ -224,7 +224,16 @@ describe("box scroll – padding", () => {
 
     it("scrollTop max with padding shows last lines", () => {
         const output = renderToString(
-            <Box width={15} height={7} overflowY="scroll" borderStyle="round" padding={2} flexDirection="column" overflow="hidden" scrollTop={Number.MAX_SAFE_INTEGER}>
+            <Box
+                width={15}
+                height={7}
+                overflowY="scroll"
+                borderStyle="round"
+                padding={2}
+                flexDirection="column"
+                overflow="hidden"
+                scrollTop={Number.MAX_SAFE_INTEGER}
+            >
                 <Box flexDirection="column" flexShrink={0}>
                     <Text>{tallText}</Text>
                 </Box>

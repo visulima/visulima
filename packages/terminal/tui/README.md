@@ -99,22 +99,22 @@ Full documentation, API reference, component gallery, and guides are available a
 
 ## Performance
 
-| Scenario | @visulima/tui | Ink 6.8 | Speedup |
-| --- | ---: | ---: | ---: |
-| Mount + render (simple) | 3,221 ops/s | 2,694 ops/s | **1.2x faster** |
-| Mount + render (dashboard) | 1,659 ops/s | 718 ops/s | **2.3x faster** |
-| Rerender (simple) | 19,111 ops/s | 25,743 ops/s | 0.74x |
+| Scenario                   | @visulima/tui |      Ink 6.8 |         Speedup |
+| -------------------------- | ------------: | -----------: | --------------: |
+| Mount + render (simple)    |   3,221 ops/s |  2,694 ops/s | **1.2x faster** |
+| Mount + render (dashboard) |   1,659 ops/s |    718 ops/s | **2.3x faster** |
+| Rerender (simple)          |  19,111 ops/s | 25,743 ops/s |           0.74x |
 
 > Benchmarks use production builds. Run: `pnpm --filter @visulima/tui run build:prod && pnpm vitest bench`
 
 ### Kitchen Sink Demo
 
-| Layout | Focus | Graph | Live |
-| --- | --- | --- | --- |
+| Layout                              | Focus                             | Graph                             | Live                            |
+| ----------------------------------- | --------------------------------- | --------------------------------- | ------------------------------- |
 | ![Layout](docs/media/ks-layout.png) | ![Focus](docs/media/ks-focus.png) | ![Graph](docs/media/ks-graph.png) | ![Live](docs/media/ks-live.png) |
 
-| Incremental | UI | Static | Mouse |
-| --- | --- | --- | --- |
+| Incremental                                   | UI                          | Static                              | Mouse                             |
+| --------------------------------------------- | --------------------------- | ----------------------------------- | --------------------------------- |
 | ![Incremental](docs/media/ks-incremental.png) | ![UI](docs/media/ks-ui.png) | ![Static](docs/media/ks-static.png) | ![Mouse](docs/media/ks-mouse.png) |
 
 ## Related

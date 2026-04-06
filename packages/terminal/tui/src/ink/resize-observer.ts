@@ -90,11 +90,7 @@ class ResizeObserver {
  * Measure a node and collect resize observer entries for it.
  * Used by both the main render loop and static render processing.
  */
-export function measureAndExtractObservers(
-    node: DOMElement,
-    observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>,
-    forceCache = false,
-): void {
+export function measureAndExtractObservers(node: DOMElement, observerEntries: Map<ResizeObserver, ResizeObserverEntry[]>, forceCache = false): void {
     const hasObservers = node.resizeObservers && node.resizeObservers.size > 0;
 
     if ((hasObservers || forceCache) && node.yogaNode) {

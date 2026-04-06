@@ -40,10 +40,10 @@ let currentUpdatePriority = NoEventPriority;
  */
 function resolveNodeColors(props: Props): { bg: number; fg: number; styles: number } {
     // fg: explicit numeric fg > color prop > 255 (terminal default)
-    const fg = resolveColor(props.fg === undefined ? props.color === undefined ? undefined : props.color : props.fg);
+    const fg = resolveColor(props.fg === undefined ? (props.color === undefined ? undefined : props.color) : props.fg);
 
     // bg: explicit numeric bg > backgroundColor prop > 255 (terminal default)
-    const bg = resolveColor(props.bg === undefined ? props.backgroundColor === undefined ? undefined : props.backgroundColor : props.bg);
+    const bg = resolveColor(props.bg === undefined ? (props.backgroundColor === undefined ? undefined : props.backgroundColor) : props.bg);
 
     // styles bitfield — explicit number overrides, otherwise build from boolean props
     let styles: number;
@@ -51,29 +51,21 @@ function resolveNodeColors(props: Props): { bg: number; fg: number; styles: numb
     if (props.styles === undefined) {
         styles = 0;
 
-        if (props.bold)
-            styles |= 1;
+        if (props.bold) styles |= 1;
 
-        if (props.dim || props.dimColor)
-            styles |= 2;
+        if (props.dim || props.dimColor) styles |= 2;
 
-        if (props.italic)
-            styles |= 4;
+        if (props.italic) styles |= 4;
 
-        if (props.underline)
-            styles |= 8;
+        if (props.underline) styles |= 8;
 
-        if (props.blink)
-            styles |= 16;
+        if (props.blink) styles |= 16;
 
-        if (props.inverse)
-            styles |= 32;
+        if (props.inverse) styles |= 32;
 
-        if (props.hidden)
-            styles |= 64;
+        if (props.hidden) styles |= 64;
 
-        if (props.strikethrough)
-            styles |= 128;
+        if (props.strikethrough) styles |= 128;
     } else {
         styles = props.styles;
     }
@@ -227,8 +219,7 @@ const hostConfig: ReactReconciler.HostConfig<
     insertBefore(parentInstance, child, beforeChild) {
         // Remove child from its current owner BEFORE computing indexOf(beforeChild).
         // Same-parent reorders shift the array, so we must get the index after removal.
-        if (child.parent)
-            child.remove();
+        if (child.parent) child.remove();
 
         const index = parentInstance.children.indexOf(beforeChild);
 
@@ -255,12 +246,10 @@ const hostConfig: ReactReconciler.HostConfig<
         const oldKeys = Object.keys(oldProps).filter((k) => k !== "children");
         const newKeys = Object.keys(newProps).filter((k) => k !== "children");
 
-        if (oldKeys.length !== newKeys.length)
-            return true;
+        if (oldKeys.length !== newKeys.length) return true;
 
         for (const key of newKeys) {
-            if (oldProps[key] !== newProps[key])
-                return true;
+            if (oldProps[key] !== newProps[key]) return true;
         }
 
         return null;
@@ -275,14 +264,12 @@ const hostConfig: ReactReconciler.HostConfig<
     requestPostPaintCallback: () => {},
 
     resetAfterCommit(containerInfo: any) {
-        if (typeof onAfterCommit === "function")
-            onAfterCommit();
+        if (typeof onAfterCommit === "function") onAfterCommit();
     },
     resolveEventTimeStamp: () => -1.1,
     resolveEventType: () => null,
     resolveUpdatePriority() {
-        if (currentUpdatePriority !== NoEventPriority)
-            return currentUpdatePriority;
+        if (currentUpdatePriority !== NoEventPriority) return currentUpdatePriority;
 
         return DefaultEventPriority;
     },

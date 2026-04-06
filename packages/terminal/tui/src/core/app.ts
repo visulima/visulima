@@ -37,8 +37,7 @@ export class RatatatApp extends EventEmitter {
 
     /** Enters raw mode + alternate screen. Does NOT start any render loop. */
     start(): void {
-        if (this.isRunning)
-            return;
+        if (this.isRunning) return;
 
         // Enter raw mode, alternate screen, mouse tracking, and bracketed paste (RAII guard)
         this.terminal = new TerminalGuard(true);
@@ -132,8 +131,7 @@ export class RatatatApp extends EventEmitter {
      * and directly on resize for immediate response.
      */
     paintNow(calculateLayout: (w: number, h: number) => void, renderToBuffer: (buf: Uint32Array, w: number, h: number) => void): void {
-        if (!this.isRunning)
-            return;
+        if (!this.isRunning) return;
 
         calculateLayout(this.width, this.height);
         renderToBuffer(this.backBuffer, this.width, this.height);

@@ -198,8 +198,7 @@ export const ControlledScrollView = ({
         const childArray = toChildArray(children);
 
         childArray.forEach((child: ReactNode, index: number) => {
-            if (!child)
-                return;
+            if (!child) return;
 
             const key = isValidElement(child) ? child.key : null;
             const effectiveKey = key ?? index;
@@ -299,13 +298,13 @@ export const ControlledScrollView = ({
     let belowSpacerHeight = 0;
     // Only virtualize if all current items have been measured (height > 0).
     // New items added dynamically will have height 0 until measured.
-    const allItemsMeasured
-        = childArray.length > 0
-            && childArray.every((_: ReactNode, index: number) => {
-                const key = itemKeysRef.current[index] ?? index;
+    const allItemsMeasured =
+        childArray.length > 0 &&
+        childArray.every((_: ReactNode, index: number) => {
+            const key = itemKeysRef.current[index] ?? index;
 
-                return (itemHeightsRef.current[key] ?? 0) > 0;
-            });
+            return (itemHeightsRef.current[key] ?? 0) > 0;
+        });
     const shouldVirtualize = virtualize && hasMeasuredRef.current && allItemsMeasured;
 
     if (shouldVirtualize) {
@@ -385,8 +384,7 @@ export const ControlledScrollView = ({
                     <Box flexDirection="column" marginTop={-scrollOffset} width="100%">
                         {shouldVirtualize && aboveSpacerHeight > 0 && <Box height={aboveSpacerHeight} />}
                         {childArray.map((child: ReactNode, index: number) => {
-                            if (!child)
-                                return null;
+                            if (!child) return null;
 
                             if (shouldVirtualize && (index < firstRenderIndex || index > lastRenderIndex)) {
                                 return null;
@@ -395,7 +393,7 @@ export const ControlledScrollView = ({
                             return (
                                 <MeasurableItem
                                     index={index}
-                                    key={isValidElement(child) ? child.key ?? index : index}
+                                    key={isValidElement(child) ? (child.key ?? index) : index}
                                     measureKey={itemMeasureKeys[index]}
                                     onMeasure={handleItemMeasure}
                                     width={viewportSize.width}

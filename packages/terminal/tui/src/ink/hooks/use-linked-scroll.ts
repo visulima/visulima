@@ -58,7 +58,9 @@ const createLinkedScrollGroup = (): LinkedScrollGroup => {
 
         const listener: Listener = {
             ref: scrollRef,
-            setOffset: () => { setTick((t) => t + 1); },
+            setOffset: () => {
+                setTick((t) => t + 1);
+            },
         };
 
         const listenerRef = useRef(listener);

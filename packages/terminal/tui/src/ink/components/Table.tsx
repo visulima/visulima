@@ -159,17 +159,17 @@ function TableComponent<T extends ScalarDict>({
 
         // Resolve column configs
         const resolvedColumns: ColumnConfig<T>[] = columnsProp
-            ? columnsProp.map((col) => typeof col === "string" ? { key: col } : col)
+            ? columnsProp.map((col) => (typeof col === "string" ? { key: col } : col))
             : (Object.keys(data[0] as object) as (keyof T & string)[]).map((key) => {
-                return { key };
-            });
+                  return { key };
+              });
 
         if (resolvedColumns.length === 0) {
             return "";
         }
 
         // Resolve border style
-        const border = typeof borderStyle === "string" ? BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER : borderStyle;
+        const border = typeof borderStyle === "string" ? (BORDER_PRESETS[borderStyle] ?? DEFAULT_BORDER) : borderStyle;
 
         // Build column widths array (undefined entries let tabular auto-calculate)
         const columnWidths: (number | undefined)[] = resolvedColumns.map((col) => col.width);
