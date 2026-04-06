@@ -161,13 +161,13 @@ export class Table {
         let fixedGridWidths: number[] | undefined;
 
         if (Array.isArray(this.#options.columnWidths)) {
-            const widthArray
-                = this.#options.columnWidths.length >= numberColumns
+            const widthArray =
+                this.#options.columnWidths.length >= numberColumns
                     ? this.#options.columnWidths.slice(0, numberColumns)
                     : [
-                        ...this.#options.columnWidths,
-                        ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
-                    ];
+                          ...this.#options.columnWidths,
+                          ...Array.from<number | undefined>({ length: numberColumns - this.#options.columnWidths.length }).fill(undefined),
+                      ];
 
             // Only treat as fully fixed if all entries are defined numbers
             const allDefined = widthArray.every((w) => typeof w === "number" && Number.isFinite(w));
@@ -238,9 +238,9 @@ export class Table {
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
             truncate:
-                this.#options.truncate
-                || (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number"))
-                || (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
+                this.#options.truncate ||
+                (fixedGridWidths !== undefined && fixedGridWidths.every((w) => typeof w === "number")) ||
+                (this.#options.maxWidth !== undefined && !this.#options.balancedWidths),
             truncateOverflow: this.#options.truncateOverflow ?? true,
             wordWrap: this.#options.wordWrap ?? false,
         } satisfies GridOptions;
@@ -297,8 +297,8 @@ export class Table {
                 }
 
                 // Replace real tab characters with spaces if needed
-                const processedContent
-                    = this.#options.transformTabToSpace && typeof cellInput === "string"
+                const processedContent =
+                    this.#options.transformTabToSpace && typeof cellInput === "string"
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 

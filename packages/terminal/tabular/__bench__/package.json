@@ -1,14 +1,14 @@
 {
-  "name": "tabular-bench",
-  "scripts": {
-    "test:bench": "vitest bench --run"
-  },
-  "devDependencies": {
-    "@types/cli-table": "catalog:types",
-    "@types/node": "catalog:types",
-    "cli-table": "catalog:dev",
-    "cli-table3": "catalog:dev",
-    "table": "catalog:dev",
-    "vitest": "catalog:test"
-  }
+    "name": "tabular-bench",
+    "scripts": {
+        "test:bench": "vitest bench --run"
+    },
+    "devDependencies": {
+        "@types/cli-table": "catalog:types",
+        "@types/node": "catalog:types",
+        "cli-table": "catalog:dev",
+        "cli-table3": "catalog:dev",
+        "table": "catalog:dev",
+        "vitest": "catalog:test"
+    }
 }
