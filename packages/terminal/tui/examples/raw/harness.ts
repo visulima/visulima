@@ -52,7 +52,9 @@ export function createLoop(paint: PaintFn, fps = 60): Loop {
     }
 
     function stop() {
-        if (!running) return;
+        if (!running) {
+            return;
+        }
 
         running = false;
 

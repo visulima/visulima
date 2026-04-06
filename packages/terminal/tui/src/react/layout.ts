@@ -144,7 +144,9 @@ export class LayoutNode {
      * The _destroyed guard prevents double-free if free() is also called.
      */
     destroy(): void {
-        if (this._destroyed) return;
+        if (this._destroyed) {
+            return;
+        }
 
         this._destroyed = true;
 

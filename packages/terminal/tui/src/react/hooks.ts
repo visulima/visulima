@@ -135,9 +135,15 @@ export const useInput = (handler: InputHandler): void => {
         };
 
         const handleData = (data: string, flags?: { ctrl?: boolean; meta?: boolean }) => {
-            if (data.startsWith("\u001B")) return; // unhandled escape sequences
+            if (data.startsWith("\u001B")) {
+                return;
+            } // unhandled escape sequences
 
-            if (data === "\r" || data === "\n") return;
+            if (data === "\r" || data === "\n") {
+
+                return;
+
+            }
 
             handlerRef.current(
                 data,
@@ -198,7 +204,9 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
     });
 
     useEffect(() => {
-        if (!isActive) return;
+        if (!isActive) {
+            return;
+        }
 
         const onPaste = (text: string) => {
             handlerRef.current(text);
@@ -374,8 +382,9 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
         const layout = ref.current.getLayout();
 
         setMetrics((previous) => {
-            if (previous.width === layout.width && previous.height === layout.height && previous.left === layout.left && previous.top === layout.top)
+            if (previous.width === layout.width && previous.height === layout.height && previous.left === layout.left && previous.top === layout.top) {
                 return previous;
+            }
 
             return { height: layout.height, left: layout.left, top: layout.top, width: layout.width };
         });
@@ -387,7 +396,9 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
 
     // Update on terminal resize
     useEffect(() => {
-        if (!context?.app) return;
+        if (!context?.app) {
+            return;
+        }
 
         context.app.on("resize", updateMetrics);
 
@@ -604,7 +615,9 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
     }, []);
 
     useInput((input, key) => {
-        if (!isActive) return;
+        if (!isActive) {
+            return;
+        }
 
         const { current } = cursorRef;
         const value_ = valueRef.current;
@@ -615,7 +628,11 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
             return;
         }
 
-        if (key.escape) return;
+        if (key.escape) {
+
+            return;
+
+        }
 
         if (key.leftArrow) {
             setCursor(Math.max(0, current - 1));
@@ -642,7 +659,9 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         if (key.backspace) {
-            if (current === 0) return;
+            if (current === 0) {
+                return;
+            }
 
             const next = value_.slice(0, current - 1) + value_.slice(current);
 
@@ -654,7 +673,9 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         if (key.delete) {
-            if (current >= value_.length) return;
+            if (current >= value_.length) {
+                return;
+            }
 
             const next = value_.slice(0, current) + value_.slice(current + 1);
 
@@ -699,7 +720,9 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         // Ignore other ctrl/meta combos
-        if (key.ctrl || key.meta) return;
+        if (key.ctrl || key.meta) {
+            return;
+        }
 
         // Printable character — insert at cursor
         if (input && input.length > 0) {
@@ -715,7 +738,9 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
     const context = useContext(RatatatContext);
 
     useEffect(() => {
-        if (!context || !isActive) return;
+        if (!context || !isActive) {
+            return;
+        }
 
         const onPaste = (text: string) => {
             // Strip control characters; convert CR/CRLF → space

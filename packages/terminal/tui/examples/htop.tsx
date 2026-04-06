@@ -45,7 +45,11 @@ function cpuPercents(previous: CpuSnapshot, current: CpuSnapshot): number[] {
         const totalDiff = currentTotal - previousTotal;
         const idleDiff = c.idle - p.idle;
 
-        if (totalDiff === 0) return 0;
+        if (totalDiff === 0) {
+
+            return 0;
+
+        }
 
         return Math.round(((totalDiff - idleDiff) / totalDiff) * 100);
     });

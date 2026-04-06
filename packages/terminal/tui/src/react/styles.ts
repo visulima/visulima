@@ -45,16 +45,30 @@ function rgbToAnsi256(r: number, g: number, b: number): number {
  * rgb() ("rgb(255,136,0)"), ansi256() ("ansi256(42)"), or undefined (→ 255 = terminal default).
  */
 export function resolveColor(color: number | string | undefined): number {
-    if (color === undefined) return 255;
+    if (color === undefined) {
+        return 255;
+    }
 
-    if (typeof color === "number") return color;
+    if (typeof color === "number") {
 
-    if (color in NAMED_COLORS) return NAMED_COLORS[color]!;
+        return color;
+
+    }
+
+    if (color in NAMED_COLORS) {
+
+        return NAMED_COLORS[color]!;
+
+    }
 
     // ansi256(N) syntax
     const ansiMatch = /^ansi256\(\s*(\d+)\s*\)$/.exec(color);
 
-    if (ansiMatch) return Number(ansiMatch[1]);
+    if (ansiMatch) {
+
+        return Number(ansiMatch[1]);
+
+    }
 
     // #RGB shorthand → expand to #RRGGBB
     const hex3Match = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(color);
@@ -70,12 +84,20 @@ export function resolveColor(color: number | string | undefined): number {
     // #RRGGBB hex
     const hexMatch = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
 
-    if (hexMatch) return rgbToAnsi256(Number.parseInt(hexMatch[1]!, 16), Number.parseInt(hexMatch[2]!, 16), Number.parseInt(hexMatch[3]!, 16));
+    if (hexMatch) {
+
+        return rgbToAnsi256(Number.parseInt(hexMatch[1]!, 16), Number.parseInt(hexMatch[2]!, 16), Number.parseInt(hexMatch[3]!, 16));
+
+    }
 
     // rgb(R, G, B)
     const rgbMatch = /^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(color);
 
-    if (rgbMatch) return rgbToAnsi256(Number(rgbMatch[1]), Number(rgbMatch[2]), Number(rgbMatch[3]));
+    if (rgbMatch) {
+
+        return rgbToAnsi256(Number(rgbMatch[1]), Number(rgbMatch[2]), Number(rgbMatch[3]));
+
+    }
 
     return 255; // unrecognised → terminal default
 }
@@ -351,7 +373,11 @@ const applyDisplayStyles = (node: YogaNode, style: Styles): void => {
 const applyBorderStyles = (node: YogaNode, style: Styles, currentStyle: Styles): void => {
     const hasBorderChanges = "borderStyle" in style || "borderTop" in style || "borderBottom" in style || "borderLeft" in style || "borderRight" in style;
 
-    if (!hasBorderChanges) return;
+    if (!hasBorderChanges) {
+
+        return;
+
+    }
 
     const borderWidth = currentStyle.borderStyle ? 1 : 0;
 

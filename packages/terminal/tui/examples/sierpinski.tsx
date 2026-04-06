@@ -205,7 +205,9 @@ const SierpinskiApp = () => {
         let loopFrame = 0;
 
         function loop() {
-            if (!running) return;
+            if (!running) {
+                return;
+            }
 
             loopFrame++;
 

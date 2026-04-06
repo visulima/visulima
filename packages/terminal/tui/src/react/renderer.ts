@@ -212,9 +212,15 @@ export function renderTreeToBuffer(root: LayoutNode, buffer: Uint32Array, cols: 
 
 function writeCell(buffer: Uint32Array, cols: number, rows: number, sx: number, sy: number, charCode: number, attributeCode: number, clip: Clip) {
     // Clip to parent bounds first, then terminal bounds
-    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1) return;
+    if (sx < clip.x0 || sx >= clip.x1 || sy < clip.y0 || sy >= clip.y1) {
+        return;
+    }
 
-    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) return;
+    if (sx < 0 || sx >= cols || sy < 0 || sy >= rows) {
+
+        return;
+
+    }
 
     const index = (sy * cols + sx) * 2;
 
@@ -236,9 +242,15 @@ function paintBorder(
     styles: number,
     clip: Clip,
 ) {
-    if (!node._style?.borderStyle) return;
+    if (!node._style?.borderStyle) {
+        return;
+    }
 
-    if (w <= 0 || h <= 0) return;
+    if (w <= 0 || h <= 0) {
+
+        return;
+
+    }
 
     const box = (cliBoxes as any)[node._style.borderStyle];
     const borderFg = node._style.borderColor === undefined ? fg : resolveColor(node._style.borderColor);
@@ -306,9 +318,15 @@ function paintBorder(
  *  correctly transformed output of inner Transforms.
  */
 function collectText(node: LayoutNode): string {
-    if (node._hidden) return "";
+    if (node._hidden) {
+        return "";
+    }
 
-    if (node.text !== undefined) return node.text;
+    if (node.text !== undefined) {
+
+        return node.text;
+
+    }
 
     const raw = node.children.map(collectText).join("");
 
@@ -334,7 +352,9 @@ function paintText(
     attributeCode: number,
     clip: Clip,
 ) {
-    if (w <= 0 || h <= 0) return;
+    if (w <= 0 || h <= 0) {
+        return;
+    }
 
     let cursorX = 0;
     let cursorY = 0;
@@ -402,7 +422,9 @@ function paintNode(
     clip: Clip,
 ) {
     // Suspense hides nodes by setting _hidden — skip the entire subtree
-    if (node._hidden) return;
+    if (node._hidden) {
+        return;
+    }
 
     const layout = node.getLayout();
 
@@ -425,7 +447,9 @@ function paintNode(
     };
 
     // If the node is entirely outside the clip, skip it and its children
-    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1) return;
+    if (nodeClip.x0 >= nodeClip.x1 || nodeClip.y0 >= nodeClip.y1) {
+        return;
+    }
 
     // <Transform> node: collect all descendant text, apply transform fn, paint result
     if (typeof node.transform === "function") {

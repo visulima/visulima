@@ -474,11 +474,17 @@ const GraphSection = ({ active }: { active: boolean }) => {
     });
 
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         const app = (globalThis as any).__ratatatApp;
 
-        if (!app) return;
+        if (!app) {
+
+            return;
+
+        }
 
         const unsub = app.onBeforeFlush((buffer: Uint32Array, w: number, h: number) => {
             const f = (globalThis as any).__kitchenFrame ?? 0;
@@ -737,7 +743,9 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
 
     // Clock — 1s
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         const t = setInterval(() => {
             setTimestamp(new Date().toLocaleTimeString());
@@ -749,7 +757,9 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
 
     // High-freq updates — ~60fps
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         let frameCount = 0;
         let lastFps = Date.now();
@@ -788,7 +798,9 @@ const IncrementalSection = ({ active }: { active: boolean }) => {
     }, [active]);
 
     useInput((input, key) => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         if (key.upArrow) setSelectedIndex((i) => (i === 0 ? INC_SERVICES.length - 1 : i - 1));
 
@@ -913,7 +925,9 @@ const PrimitivesSubsection = ({ active }: { active: boolean }) => {
     const [syncing, setSyncing] = useState(true);
 
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         const t = setInterval(() => {
             setBuildProgress((p) => {
@@ -930,7 +944,9 @@ const PrimitivesSubsection = ({ active }: { active: boolean }) => {
     }, [active]);
 
     useInput((input, key) => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         if (key.upArrow || input === "k") setSelectedIndex((i) => (i === 0 ? SELECT_COLORS.length - 1 : i - 1));
 
@@ -1073,7 +1089,9 @@ const UiSection = ({ active }: { active: boolean }) => {
     const [subIndex, setSubIndex] = useState(0);
 
     useInput((_input, key) => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         if (key.upArrow) setSubIndex((i) => Math.max(0, i - 1));
 
@@ -1130,9 +1148,15 @@ const TabBar = ({ current, onSelect }: { current: number; onSelect: (i: number) 
     }, []);
 
     useMouse((e) => {
-        if (e.button !== "left") return;
+        if (e.button !== "left") {
+            return;
+        }
 
-        if (e.y !== 1) return; // tab bar is always row 1 (border on row 0, content row 1)
+        if (e.y !== 1) {
+
+            return;
+
+        } // tab bar is always row 1 (border on row 0, content row 1)
 
         const hit = hitRegions.findIndex((r) => e.x >= r.start && e.x <= r.end);
 
@@ -1192,12 +1216,16 @@ const StaticSection = ({ active }: { active: boolean }) => {
     const counterRef = useRef(0);
 
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         let cancelled = false;
 
         const runNext = () => {
-            if (cancelled) return;
+            if (cancelled) {
+                return;
+            }
 
             const i = counterRef.current % TASK_NAMES.length;
             const name = TASK_NAMES[i]!;
@@ -1206,7 +1234,9 @@ const StaticSection = ({ active }: { active: boolean }) => {
             setRunning(name);
 
             setTimeout(() => {
-                if (cancelled) return;
+                if (cancelled) {
+                    return;
+                }
 
                 const ok = Math.random() > 0.1;
 
@@ -1301,7 +1331,9 @@ const MouseSection = ({ active }: { active: boolean }) => {
 
     // Mouse events
     useMouse((e) => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         switch (e.button) {
             case "left": {
@@ -1404,13 +1436,17 @@ function useAnimationLoop(active: boolean, onTick: (frame: number) => void) {
     const frameRef = React.useRef(0);
 
     useEffect(() => {
-        if (!active) return;
+        if (!active) {
+            return;
+        }
 
         let running = true;
         let handle: ReturnType<typeof setTimeout>;
 
         function loop() {
-            if (!running) return;
+            if (!running) {
+                return;
+            }
 
             frameRef.current++;
             onTick(frameRef.current);

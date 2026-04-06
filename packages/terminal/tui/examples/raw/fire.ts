@@ -45,15 +45,33 @@ buildPalette();
 
 // Fire characters — sparse at low heat, dense/solid at high heat
 function heatChar(heat: number): string {
-    if (heat < 20) return " ";
+    if (heat < 20) {
+        return " ";
+    }
 
-    if (heat < 60) return "·";
+    if (heat < 60) {
 
-    if (heat < 100) return "░";
+        return "·";
 
-    if (heat < 150) return "▒";
+    }
 
-    if (heat < 200) return "▓";
+    if (heat < 100) {
+
+        return "░";
+
+    }
+
+    if (heat < 150) {
+
+        return "▒";
+
+    }
+
+    if (heat < 200) {
+
+        return "▓";
+
+    }
 
     return "█";
 }

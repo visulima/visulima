@@ -44,7 +44,9 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const add = useCallback((id: string, options: { autoFocus: boolean }) => {
         // Avoid duplicates
-        if (itemsRef.current.some((e) => e.id === id)) return;
+        if (itemsRef.current.some((e) => e.id === id)) {
+            return;
+        }
 
         const entry: FocusEntry = { autoFocus: options.autoFocus, id, isActive: true };
 
@@ -52,10 +54,14 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         // Auto-focus: if no component is focused yet and autoFocus is set
         setActiveId((previous) => {
-            if (options.autoFocus && previous === undefined) return id;
+            if (options.autoFocus && previous === undefined) {
+                return id;
+            }
 
             // If this is the first registered component and nothing is focused, focus it
-            if (itemsRef.current.filter((e) => e.isActive).length === 1 && previous === undefined) return id;
+            if (itemsRef.current.filter((e) => e.isActive).length === 1 && previous === undefined) {
+                return id;
+            }
 
             return previous;
         });
@@ -82,14 +88,22 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const focusNext = useCallback(() => {
-        if (!isEnabled) return;
+        if (!isEnabled) {
+            return;
+        }
 
         const active = itemsRef.current.filter((e) => e.isActive);
 
-        if (active.length === 0) return;
+        if (active.length === 0) {
+
+            return;
+
+        }
 
         setActiveId((previous) => {
-            if (previous === undefined) return active[0]?.id;
+            if (previous === undefined) {
+                return active[0]?.id;
+            }
 
             const index = active.findIndex((e) => e.id === previous);
 
@@ -98,14 +112,22 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, [isEnabled]);
 
     const focusPrevious = useCallback(() => {
-        if (!isEnabled) return;
+        if (!isEnabled) {
+            return;
+        }
 
         const active = itemsRef.current.filter((e) => e.isActive);
 
-        if (active.length === 0) return;
+        if (active.length === 0) {
+
+            return;
+
+        }
 
         setActiveId((previous) => {
-            if (previous === undefined) return active.at(-1)?.id;
+            if (previous === undefined) {
+                return active.at(-1)?.id;
+            }
 
             const index = active.findIndex((e) => e.id === previous);
 
@@ -115,7 +137,9 @@ export const FocusProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const focus = useCallback(
         (id: string) => {
-            if (!isEnabled) return;
+            if (!isEnabled) {
+                return;
+            }
 
             if (itemsRef.current.some((e) => e.id === id && e.isActive)) {
                 setActiveId(id);

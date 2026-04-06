@@ -63,7 +63,9 @@ export const Spinner: React.FC<SpinnerProps> = ({ frames = DEFAULT_SPINNER_FRAME
     const [index, setIndex] = React.useState(0);
 
     React.useEffect(() => {
-        if (interval <= 0 || resolvedFrames.length <= 1) return;
+        if (interval <= 0 || resolvedFrames.length <= 1) {
+            return;
+        }
 
         const timer = setInterval(() => {
             setIndex((previous) => (previous + 1) % resolvedFrames.length);
@@ -153,7 +155,9 @@ export interface TransformProps {
     transform: (s: string, index: number) => string;
 }
 export const Transform: React.FC<TransformProps> = ({ children, transform }) => {
-    if (children === undefined || children === null) return null;
+    if (children === undefined || children === null) {
+        return null;
+    }
 
     return React.createElement("box", { flexShrink: 1, transform }, children);
 };

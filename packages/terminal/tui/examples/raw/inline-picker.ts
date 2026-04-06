@@ -107,7 +107,9 @@ const loop = createInlineLoop(
 
 // Input handling
 process.stdin.on("data", (key: string) => {
-    if (done) return;
+    if (done) {
+        return;
+    }
 
     switch (key) {
         case "\r":

@@ -37,7 +37,11 @@ const read = () => {
 
     if (state === "pending") throw promise;
 
-    if (state === "done") return value;
+    if (state === "done") {
+
+        return value;
+
+    }
 };
 
 const Dynamic = () => {

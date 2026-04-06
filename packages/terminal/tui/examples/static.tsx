@@ -24,7 +24,9 @@ const App = () => {
         const TOTAL = 12;
 
         const run = () => {
-            if (count >= TOTAL) return;
+            if (count >= TOTAL) {
+                return;
+            }
 
             const passed = Math.random() > 0.15; // ~85% pass rate
 

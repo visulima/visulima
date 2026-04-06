@@ -102,11 +102,21 @@ const nextCanned = () => CANNED[cannedIndex++ % CANNED.length];
 
 // How many terminal rows a committed message occupies
 function messageRows(message: Message): number {
-    if (message.kind === "system") return 1;
+    if (message.kind === "system") {
+        return 1;
+    }
 
-    if (message.kind === "tool") return 1;
+    if (message.kind === "tool") {
 
-    if (message.kind === "diff") return message.text.split("\n").length;
+        return 1;
+
+    }
+
+    if (message.kind === "diff") {
+
+        return message.text.split("\n").length;
+
+    }
 
     // user / ai: 1 blank line + 1 per line of text
     return 1 + message.text.split("\n").length;
@@ -529,7 +539,9 @@ const RattataApp = () => {
         const tick = () => {
             streamTimer.current = setTimeout(() => {
                 setActive((current) => {
-                    if (!current) return current;
+                    if (!current) {
+                        return current;
+                    }
 
                     charIndex.current++;
                     const next = fullText.slice(0, charIndex.current);

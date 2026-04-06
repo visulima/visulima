@@ -21,7 +21,9 @@ const App = () => {
     const [assets, setAssets] = useState(18);
 
     useEffect(() => {
-        if (!running) return;
+        if (!running) {
+            return;
+        }
 
         const t = setInterval(() => {
             setBuild((p) => (p >= 100 ? 0 : p + 1));
