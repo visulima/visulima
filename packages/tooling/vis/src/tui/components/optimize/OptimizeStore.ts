@@ -67,7 +67,7 @@ class OptimizeStore {
 
     getSnapshot = (): OptimizeState => this.#state;
 
-    subscribe = (listener: Listener): () => void => {
+    subscribe = (listener: Listener): (() => void) => {
         this.#listeners.add(listener);
 
         return () => {

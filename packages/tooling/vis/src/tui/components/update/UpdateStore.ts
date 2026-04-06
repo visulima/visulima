@@ -59,8 +59,8 @@ const filterEntries = (entries: OutdatedEntry[], filterType: FilterType, filterT
     let filtered = entries;
 
     if (filterType !== "all") {
-        filtered
-            = filterType === "security"
+        filtered =
+            filterType === "security"
                 ? filtered.filter((e) => (e.vulnerabilities && e.vulnerabilities.length > 0) || (e.socketReport && e.socketReport.alerts.length > 0))
                 : filtered.filter((e) => e.updateType === filterType);
     }
@@ -106,7 +106,7 @@ export class UpdateStore {
 
     public getSnapshot = (): UpdateState => this.#state;
 
-    public subscribe = (listener: Listener): () => void => {
+    public subscribe = (listener: Listener): (() => void) => {
         this.#listeners.add(listener);
 
         return () => {
@@ -182,13 +182,13 @@ export class UpdateStore {
                 ...this.#state,
                 filterActive: active,
                 filterText: active ? this.#state.filterText : "",
-                ...active
+                ...(active
                     ? {}
                     : {
-                        entries: filterEntries(this.#allEntries, this.#state.filterType, ""),
-                        groupedByCatalog: groupByCatalog(filterEntries(this.#allEntries, this.#state.filterType, "")),
-                        selectedIndex: 0,
-                    },
+                          entries: filterEntries(this.#allEntries, this.#state.filterType, ""),
+                          groupedByCatalog: groupByCatalog(filterEntries(this.#allEntries, this.#state.filterType, "")),
+                          selectedIndex: 0,
+                      }),
             });
         }
     }

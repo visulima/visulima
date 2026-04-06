@@ -361,11 +361,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
         return (
             <Box alignItems="center" height={rows} justifyContent="center" width={columns}>
                 <Text color="yellow">
-                    Terminal too small (
-                    {columns}
-                    x
-                    {rows}
-                    )
+                    Terminal too small ({columns}x{rows})
                 </Text>
             </Box>
         );
@@ -446,25 +442,22 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
 
     const helpPopup = (
         <Dialog
-            footer={(
+            footer={
                 <Text dimColor>
                     <Text bold color="white">
                         {"\u2191\u2193"}
-                    </Text>
-                    {" "}
-                    scroll
-                    {" "}
+                    </Text>{" "}
+                    scroll{" "}
                     <Text bold color="white">
                         ?
                     </Text>
                     /
                     <Text bold color="white">
                         Esc
-                    </Text>
-                    {" "}
+                    </Text>{" "}
                     close
                 </Text>
-            )}
+            }
             scrollRef={helpScrollRef}
             title="KEYBOARD SHORTCUTS"
             visible={helpVisible}
@@ -507,9 +500,7 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
                 <Text>
                     <Text bold color="white">
                         {" "}
-                        {"\u2192"}
-                        /
-                        {"\u2190"}
+                        {"\u2192"}/{"\u2190"}
                     </Text>
                     <Text dimColor> Focus detail/list</Text>
                 </Text>
@@ -638,36 +629,24 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
             {majorCount > 0 && (
                 <Box marginBottom={1} marginTop={1}>
                     <Text color="yellow">
-                        {"\u26A0"}
-                        {" "}
-                        {majorCount}
-                        {" "}
-                        major update
-                        {majorCount === 1 ? "" : "s"}
-                        {" "}
-                        — review breaking changes
+                        {"\u26A0"} {majorCount} major update
+                        {majorCount === 1 ? "" : "s"} — review breaking changes
                     </Text>
                 </Box>
             )}
             <Text dimColor>
-                Press
-                {" "}
+                Press{" "}
                 <Text bold color="white">
                     u
-                </Text>
-                {" "}
-                or
-                {" "}
+                </Text>{" "}
+                or{" "}
                 <Text bold color="white">
                     Enter
-                </Text>
-                {" "}
-                to confirm,
-                {" "}
+                </Text>{" "}
+                to confirm,{" "}
                 <Text bold color="white">
                     Esc
-                </Text>
-                {" "}
+                </Text>{" "}
                 to cancel
             </Text>
         </Box>
@@ -683,16 +662,9 @@ const VisUpdateApp = ({ autoExitSeconds = 0, changelogUrls, isDryRun, store }: V
         >
             {checkedList.map((e) => (
                 <Box gap={1} key={e.packageName}>
-                    <Text>
-                        {" "}
-                        {e.packageName}
-                    </Text>
+                    <Text> {e.packageName}</Text>
                     <Text dimColor>
-                        {e.currentRange}
-                        {" "}
-                        {"\u2192"}
-                        {" "}
-                        {e.newRange}
+                        {e.currentRange} {"\u2192"} {e.newRange}
                     </Text>
                     <Text bold color={e.updateType === "major" ? "red" : e.updateType === "minor" ? "yellow" : "green"}>
                         {e.updateType}
