@@ -90,8 +90,14 @@ const showToast = (message: string, type: "error" | "success" = "success"): void
     toast.textContent = message;
     toast.style.cssText = `position:fixed;z-index:2147483648;bottom:1rem;right:1rem;padding:6px 14px;background:${type === "success" ? "#22c55e" : "#ef4444"};color:#fff;font:12px/1 "JetBrains Mono","Geist Mono",ui-monospace,"Cascadia Code","Fira Code",monospace;font-weight:600;pointer-events:none;opacity:0;transition:opacity 0.2s,transform 0.2s;transform:translateY(4px);`;
     document.body.append(toast);
-    requestAnimationFrame(() => { toast.style.opacity = "1"; toast.style.transform = "translateY(0)"; });
-    setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 200); }, 1500);
+    requestAnimationFrame(() => {
+        toast.style.opacity = "1";
+        toast.style.transform = "translateY(0)";
+    });
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 200);
+    }, 1500);
 };
 
 /**
@@ -1803,7 +1809,11 @@ const showAnnotationDetail = (annotation: Annotation): void => {
     closeX.type = "button";
     closeX.textContent = "\u00D7";
     closeX.style.cssText = `background:none;border:none;color:${c.muted};cursor:pointer;font-size:16px;padding:0 0 0 4px;line-height:1;`;
-    closeX.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); removeAnnotationDetail(); });
+    closeX.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeAnnotationDetail();
+    });
     header.append(closeX);
     popup.append(header);
 
@@ -1886,9 +1896,7 @@ const showAnnotationDetail = (annotation: Annotation): void => {
                 `white-space:pre-wrap`,
                 `word-break:break-word`,
                 `align-self:${isHuman ? "flex-end" : "flex-start"}`,
-                isHuman
-                    ? `background:${c.primary};color:#18181b`
-                    : `background:${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"};color:${c.fg}`,
+                isHuman ? `background:${c.primary};color:#18181b` : `background:${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"};color:${c.fg}`,
             ].join(";");
             bubble.textContent = message.content;
 
@@ -1904,7 +1912,9 @@ const showAnnotationDetail = (annotation: Annotation): void => {
             threadScroll.append(wrapper);
         }
 
-        requestAnimationFrame(() => { threadScroll.scrollTop = threadScroll.scrollHeight; });
+        requestAnimationFrame(() => {
+            threadScroll.scrollTop = threadScroll.scrollHeight;
+        });
         body.append(threadScroll);
     }
 
@@ -1922,8 +1932,12 @@ const showAnnotationDetail = (annotation: Annotation): void => {
     threadInput.style.cssText = `flex:1;min-height:28px;max-height:80px;resize:none;padding:5px 8px;background:${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"};border:1px solid transparent;color:${c.fg};font:11px/1.4 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;box-sizing:border-box;outline:none;`;
     threadInput.addEventListener("click", (e) => e.stopPropagation());
     threadInput.addEventListener("keydown", (e) => e.stopPropagation());
-    threadInput.addEventListener("focus", () => { threadInput.style.borderColor = c.primary; });
-    threadInput.addEventListener("blur", () => { threadInput.style.borderColor = "transparent"; });
+    threadInput.addEventListener("focus", () => {
+        threadInput.style.borderColor = c.primary;
+    });
+    threadInput.addEventListener("blur", () => {
+        threadInput.style.borderColor = "transparent";
+    });
     // Auto-grow
     threadInput.addEventListener("input", () => {
         threadInput.style.height = "auto";
@@ -2031,7 +2045,12 @@ const showAnnotationDetail = (annotation: Annotation): void => {
             editCloseX.type = "button";
             editCloseX.textContent = "\u00D7";
             editCloseX.style.cssText = `background:none;border:none;color:${c.muted};cursor:pointer;font-size:16px;padding:0;line-height:1;margin-left:auto;`;
-            editCloseX.addEventListener("click", (ev) => { ev.preventDefault(); ev.stopPropagation(); removeAnnotationDetail(); showAnnotationDetail(annotation); });
+            editCloseX.addEventListener("click", (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                removeAnnotationDetail();
+                showAnnotationDetail(annotation);
+            });
             editHeaderBar.append(editCloseX);
             popup.append(editHeaderBar);
 
@@ -2150,8 +2169,12 @@ const showAnnotationDetail = (annotation: Annotation): void => {
             editTextarea.style.cssText = `width:100%;min-height:90px;resize:vertical;padding:8px 10px;background:${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"};border:1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"};color:${c.fg};font:12px/1.5 -apple-system,BlinkMacSystemFont,system-ui,sans-serif;box-sizing:border-box;outline:none;transition:border-color 0.15s;`;
             editTextarea.addEventListener("click", (ev) => ev.stopPropagation());
             editTextarea.addEventListener("keydown", (ev) => ev.stopPropagation());
-            editTextarea.addEventListener("focus", () => { editTextarea.style.borderColor = c.primary; });
-            editTextarea.addEventListener("blur", () => { editTextarea.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"; });
+            editTextarea.addEventListener("focus", () => {
+                editTextarea.style.borderColor = c.primary;
+            });
+            editTextarea.addEventListener("blur", () => {
+                editTextarea.style.borderColor = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)";
+            });
             editBody.append(editTextarea);
             popup.append(editBody);
 
@@ -2197,7 +2220,11 @@ const showAnnotationDetail = (annotation: Annotation): void => {
             cancelButton.type = "button";
             cancelButton.textContent = "Cancel";
             cancelButton.style.cssText = `padding:4px 10px;border:1px solid ${c.btnBorder};background:transparent;color:${c.fg};font-size:10px;font-weight:500;cursor:pointer;`;
-            cancelButton.addEventListener("click", (ev) => { ev.stopPropagation(); removeAnnotationDetail(); showAnnotationDetail(annotation); });
+            cancelButton.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                removeAnnotationDetail();
+                showAnnotationDetail(annotation);
+            });
             editActionBar.append(cancelButton);
 
             // Delete — text-only, right-aligned

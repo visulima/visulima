@@ -279,9 +279,7 @@ export const startMcpServer = async (): Promise<void> => {
 
             // Track annotation IDs instead of counts to detect new annotations
             // even when others are resolved simultaneously
-            const knownIds = new Set(
-                (await readAnnotations(root)).filter((a) => a.status === "pending").map((a) => a.id),
-            );
+            const knownIds = new Set((await readAnnotations(root)).filter((a) => a.status === "pending").map((a) => a.id));
 
             // Use a timer-based approach with proper cleanup
             let pollInterval: ReturnType<typeof setInterval> | undefined;

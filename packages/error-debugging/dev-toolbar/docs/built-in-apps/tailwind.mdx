@@ -13,13 +13,13 @@ The Tailwind app fetches your project's fully-resolved Tailwind CSS configuratio
 
 The panel organizes tokens into tabs:
 
-| Tab | Contents |
-| --- | --- |
-| **Colors** | Every color token with a visual swatch and its hex/rgb value |
-| **Spacing** | Spacing scale values (0, 0.5, 1, 2, 3, 4, ..., 96) |
+| Tab            | Contents                                                              |
+| -------------- | --------------------------------------------------------------------- |
+| **Colors**     | Every color token with a visual swatch and its hex/rgb value          |
+| **Spacing**    | Spacing scale values (0, 0.5, 1, 2, 3, 4, ..., 96)                    |
 | **Typography** | Font families, font sizes, font weights, line heights, letter spacing |
-| **Effects** | Box shadows, opacity scale, blur values |
-| **Config** | Raw CSS custom properties from your `:root` / `@layer theme` |
+| **Effects**    | Box shadows, opacity scale, blur values                               |
+| **Config**     | Raw CSS custom properties from your `:root` / `@layer theme`          |
 
 Each section supports search — type to filter tokens by name or value.
 
@@ -31,7 +31,8 @@ Each section supports search — type to filter tokens by name or value.
 4. The resolved tokens are sent to the browser panel and rendered as interactive cards.
 
 <Callout type="info">
-    Only **Tailwind CSS v4** is supported. The app returns `null` and shows a "No Tailwind config found" message when no Tailwind v4 CSS is detected. Tailwind v3 projects using `tailwind.config.js` are not supported.
+    Only **Tailwind CSS v4** is supported. The app returns `null` and shows a "No Tailwind config found" message when no Tailwind v4 CSS is detected. Tailwind
+    v3 projects using `tailwind.config.js` are not supported.
 </Callout>
 
 ## Token resolution
