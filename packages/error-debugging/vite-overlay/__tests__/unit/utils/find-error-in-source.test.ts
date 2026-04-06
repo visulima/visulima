@@ -510,7 +510,7 @@ describe(findErrorInSourceCode, () => {
             // TypeError for undefined functions is harder to pinpoint exactly
             // The function call location might not be found due to how the error is generated
             // At least it shouldn't crash
-            expect(() => findErrorInSourceCode(sourceCode, "missingFunction is not a function")).not.toThrowError();
+            expect(() => findErrorInSourceCode(sourceCode, "missingFunction is not a function")).not.toThrow();
         });
 
         it("should handle property access errors", () => {

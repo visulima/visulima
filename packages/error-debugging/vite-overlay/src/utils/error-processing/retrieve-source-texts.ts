@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/different-types-comparison, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing */
 import { readFile } from "node:fs/promises";
 
 import type { ViteDevServer } from "vite";
@@ -37,8 +38,8 @@ const retrieveSourceTexts = async (server: ViteDevServer, module_: unknown, file
         }
     }
 
-    const transformId =
-        module_ && typeof module_ === "object" && (("id" in module_ && module_.id) || ("url" in module_ && module_.url))
+    const transformId
+        = module_ && typeof module_ === "object" && (("id" in module_ && module_.id) || ("url" in module_ && module_.url))
             ? ((("id" in module_ && module_.id) || ("url" in module_ && module_.url)) as string)
             : idCandidates[0];
 

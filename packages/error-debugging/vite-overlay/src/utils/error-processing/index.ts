@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain, no-for-of-array/no-for-of-array, @typescript-eslint/restrict-template-expressions, @typescript-eslint/await-thenable, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call */
 import { codeFrame, formatStacktrace, parseStacktrace } from "@visulima/error";
 import aiPrompt from "@visulima/error/solution/ai/prompt";
 import type { ViteDevServer } from "vite";
@@ -25,7 +26,7 @@ const HTTP_ORIGIN_RE = /^https?:\/\/[^/]+/;
 const LEADING_SLASH_RE = /^\//;
 
 const HTML_ENTITIES: Record<string, string> = {
-    '"': "&quot;",
+    "\"": "&quot;",
     "&": "&amp;",
     "'": "&#39;",
     "<": "&lt;",
@@ -293,8 +294,8 @@ const buildExtendedErrorData = async (
     const vueErrorInfo = framework === "vue" && error?.message ? parseVueCompilationError(error.message) : undefined;
     const individualErrors = extractIndividualErrors(error);
     const primaryError = individualErrors[0] || error;
-    const isReactHydrationError =
-        framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
+    const isReactHydrationError
+        = framework === "react" && error.message && (error.message.toLowerCase().includes("hydration") || error.message.toLowerCase().includes("hydrating"));
 
     let causeQuery = "";
 
@@ -382,11 +383,11 @@ const buildExtendedErrorData = async (
                         },
                     }),
                     message: primaryError.message,
-                    originalCodeFrameContent: `<pre class="shiki"><code>${escapeHtml(diffContent as string)}</code></pre>`,
+                    originalCodeFrameContent: `<pre class="shiki"><code>${escapeHtml(diffContent)}</code></pre>`,
                     originalFileColumn: compiledColumn,
                     originalFileLine: compiledLine,
                     originalFilePath: compiledFilePath,
-                    originalSnippet: diffContent as string,
+                    originalSnippet: diffContent,
                     originalStack: primaryError.stack || "",
                 } as const;
             }
@@ -406,7 +407,7 @@ const buildExtendedErrorData = async (
                     },
                 }),
                 message: primaryError.message,
-                originalCodeFrameContent: highlighter.codeToHtml(diffContent as string, {
+                originalCodeFrameContent: highlighter.codeToHtml(diffContent, {
                     lang: langName,
                     themes: { dark: "min-dark", light: "min-light" },
                     transformers: [shikiDiffTransformer()],
@@ -414,7 +415,7 @@ const buildExtendedErrorData = async (
                 originalFileColumn: compiledColumn,
                 originalFileLine: compiledLine,
                 originalFilePath: compiledFilePath,
-                originalSnippet: diffContent as string,
+                originalSnippet: diffContent,
                 originalStack: primaryError.stack || "",
             } as const;
         }
@@ -428,11 +429,11 @@ const buildExtendedErrorData = async (
 
         const sourceTrace = traces?.find(
             (trace: { file?: string }) =>
-                trace?.file &&
-                !trace.file.startsWith("http") &&
-                !trace.file.includes("node_modules") &&
-                !trace.file.includes(".vite") &&
-                trace.file.includes(".tsx"),
+                trace?.file
+                && !trace.file.startsWith("http")
+                && !trace.file.includes("node_modules")
+                && !trace.file.includes(".vite")
+                && trace.file.includes(".tsx"),
         );
 
         if (sourceTrace?.file) {
@@ -562,21 +563,21 @@ const buildExtendedErrorData = async (
                 const columnIndex = Math.max(0, compiledColumn - 1);
                 const textAtLocation = new Set(targetCompiledLine.slice(Math.max(0, columnIndex)));
 
-                const hasErrorPattern =
-                    textAtLocation.has("new Error(") ||
-                    textAtLocation.has("throw new Error") ||
-                    textAtLocation.has("throw ") ||
-                    textAtLocation.has(errorMessage.slice(0, 20));
+                const hasErrorPattern
+                    = textAtLocation.has("new Error(")
+                        || textAtLocation.has("throw new Error")
+                        || textAtLocation.has("throw ")
+                        || textAtLocation.has(errorMessage.slice(0, 20));
 
                 compiledFrameHasCorrectCode = hasErrorPattern;
 
                 if (!compiledFrameHasCorrectCode && sourceSearchWasSuccessful) {
-                    const isCompiledFramework =
-                        originalFilePath.includes(".svelte") ||
-                        originalFilePath.includes(".vue") ||
-                        originalFilePath.includes(".astro") ||
-                        compiledFilePath.includes(".js") ||
-                        compiledFilePath.includes(".ts");
+                    const isCompiledFramework
+                        = originalFilePath.includes(".svelte")
+                            || originalFilePath.includes(".vue")
+                            || originalFilePath.includes(".astro")
+                            || compiledFilePath.includes(".js")
+                            || compiledFilePath.includes(".ts");
 
                     if (isCompiledFramework) {
                         compiledFrameHasCorrectCode = true;

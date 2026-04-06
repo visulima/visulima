@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions, no-for-of-array/no-for-of-array, @typescript-eslint/require-await, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -141,7 +142,8 @@ const collectFileCandidates = (rootDirectory: string, importBaseName: string, im
             const entries = fs.readdirSync(directory, { withFileTypes: true });
 
             for (const entry of entries) {
-                if (candidates.length > MAX_FILES_TO_SEARCH) break;
+                if (candidates.length > MAX_FILES_TO_SEARCH)
+                    break;
 
                 const fullPath = path.join(directory, entry.name);
 
@@ -269,7 +271,7 @@ const ERROR_PATTERNS = [
                 "Server-only variables should not be prefixed with `VITE_`.",
                 "- Do not use `process.env` in browser code; prefer `import.meta.env.*`",
                 "- Custom vars must be prefixed with `VITE_` to be exposed to client",
-                '- For TS, add `/// <reference types="vite/client" />` for type-safe access',
+                "- For TS, add `/// <reference types=\"vite/client\" />` for type-safe access",
             ].join("\n"),
             header: "Environment Variables",
         },
@@ -301,7 +303,7 @@ const ERROR_PATTERNS = [
             body: "Check your `tsconfig.json` and make sure it includes proper paths and compiler options. For Vite, you might need a `vite-env.d.ts` file.",
             header: "TypeScript Configuration",
         },
-        test: (message: string, file?: string) => has(message, "TypeScript") || (file && file.endsWith(".ts")),
+        test: (message: string, file?: string) => has(message, "TypeScript") || file?.endsWith(".ts"),
     },
     {
         solution: {

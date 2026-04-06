@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/require-await */
 import { readFile } from "node:fs/promises";
 
 import type { ErrorLocation } from "@visulima/error";

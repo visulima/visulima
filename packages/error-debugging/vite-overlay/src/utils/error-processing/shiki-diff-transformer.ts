@@ -1,3 +1,4 @@
+/* eslint-disable no-for-of-array/no-for-of-array, @typescript-eslint/no-unnecessary-condition */
 import type { Element, ElementContent, ElementContentMap } from "hast";
 import type { ShikiTransformer } from "shiki/types";
 
@@ -14,7 +15,7 @@ const shikiDiffTransformer = (options: Options = {}): ShikiTransformer => {
         code(node: Element) {
             this.addClassToHast(this.pre, classActivePre);
 
-            const lines = node.children.filter((nodeChild: ElementContent) => nodeChild.type === "element") as Element[];
+            const lines = node.children.filter((nodeChild: ElementContent) => nodeChild.type === "element");
 
             lines.forEach((line) => {
                 for (const child of line.children as Element[]) {

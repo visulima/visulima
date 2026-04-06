@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from "vitest";
 
 import { isHttpUrl, normalizeIdCandidates } from "../../../src/utils/normalize-id-candidates";
@@ -102,9 +103,9 @@ describe(normalizeIdCandidates, () => {
     it("should handle edge cases", () => {
         expect.assertions(3);
 
-        expect(() => normalizeIdCandidates(null as any)).not.toThrowError();
+        expect(() => normalizeIdCandidates(null as any)).not.toThrow();
 
-        expect(() => normalizeIdCandidates(undefined as any)).not.toThrowError();
+        expect(() => normalizeIdCandidates(undefined as any)).not.toThrow();
         expect(normalizeIdCandidates("")).toStrictEqual([]);
     });
 });

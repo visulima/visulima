@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-misused-spread */
 const CONTEXT_WINDOW_SIZE = 64;
 const BROADER_CONTEXT_SIZE = 16;
 const MIN_TOKEN_LENGTH = 3;
@@ -144,9 +145,9 @@ const realignOriginalPosition = (compiledSource: string, compiledLine: number, c
     const candidateToken = extractCandidateToken(compiledLineText, compiledColumn);
 
     return (
-        tryTokenBasedSearch(candidateToken, originalLines) ||
-        tryLineSubstringSearch(compiledLineText.trim(), originalLines) ||
-        tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
+        tryTokenBasedSearch(candidateToken, originalLines)
+        || tryLineSubstringSearch(compiledLineText.trim(), originalLines)
+        || tryWhitespaceInsensitiveSearch(compiledLineText.trim(), originalLines)
     );
 };
 

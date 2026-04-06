@@ -1,3 +1,4 @@
+/* eslint-disable no-for-of-array/no-for-of-array, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import { formatStacktrace, parseStacktrace } from "@visulima/error";
 import type { ViteDevServer } from "vite";
 

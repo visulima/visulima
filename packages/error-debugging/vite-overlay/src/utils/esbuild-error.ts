@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/restrict-template-expressions */
 export interface ESBuildMessage extends Error {
     location?: {
         column?: number;

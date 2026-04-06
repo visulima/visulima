@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call,@typescript-eslint/unbound-method,@typescript-eslint/no-unsafe-argument */
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call,@typescript-eslint/unbound-method */
 import { readFile } from "node:fs/promises";
 
 import type { ViteDevServer } from "vite";

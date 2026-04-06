@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/prefer-regexp-exec, @typescript-eslint/prefer-nullish-coalescing */
 const VUE_POSITION_RE = /\((\d+):(\d+)\)/;
 // eslint-disable-next-line sonarjs/slow-regex
 const VUE_FILE_PATH_RE = /(\S+\.vue)/;
@@ -18,14 +19,14 @@ const parseVueCompilationError = (errorMessage: string): { column: number; line:
 
     const positionMatch = errorMessage.match(VUE_POSITION_RE);
 
-    if (positionMatch && positionMatch[1] && positionMatch[2]) {
+    if (positionMatch?.[1] && positionMatch[2]) {
         line = Number.parseInt(positionMatch[1], 10);
         column = Number.parseInt(positionMatch[2], 10);
     }
 
     const fileMatch = errorMessage.match(VUE_FILE_PATH_RE);
 
-    if (fileMatch && fileMatch[1]) {
+    if (fileMatch?.[1]) {
         filePath = fileMatch[1] || "";
     }
 

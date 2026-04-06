@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/prefer-nullish-coalescing */
 import { expect, test } from "@playwright/test";
 
 import { waitForErrorOverlay, waitForErrorTestPage } from "./utils/test-helpers";
