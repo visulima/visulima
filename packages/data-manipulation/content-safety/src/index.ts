@@ -1,2 +1,2 @@
 export { BANNED_WORDS } from "./banned-words";
-export { checkBannedWords, type BannedWordMatch, type BannedWordsResult } from "./checker";
+export { type BannedWordMatch, type BannedWordsResult, checkBannedWords } from "./checker";

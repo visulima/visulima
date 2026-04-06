@@ -1,24 +1,28 @@
-import { describe, it, expect } from "vitest";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import { BANNED_WORDS } from "../src/banned-words";
 import { checkBannedWords } from "../src/checker";
 
-describe("checkBannedWords", () => {
+describe(checkBannedWords, () => {
     describe("empty / clean input", () => {
         it("returns no matches for empty string", () => {
             const result = checkBannedWords("");
+
             expect(result.hasBannedWords).toBe(false);
             expect(result.matches).toEqual([]);
         });
 
         it("returns no matches for whitespace-only string", () => {
             const result = checkBannedWords("   \n\t  ");
+
             expect(result.hasBannedWords).toBe(false);
             expect(result.matches).toEqual([]);
         });
 
         it("returns no matches for clean text", () => {
             const result = checkBannedWords("Hello, how are you today? The weather is nice.");
+
             expect(result.hasBannedWords).toBe(false);
             expect(result.matches).toEqual([]);
         });
@@ -27,46 +31,55 @@ describe("checkBannedWords", () => {
             const result = checkBannedWords(
                 "This is a perfectly normal message about programming. I love writing TypeScript code and building web applications with React.",
             );
+
             expect(result.hasBannedWords).toBe(false);
         });
     });
 
-    describe("English detection", () => {
+    describe("english detection", () => {
         it("detects a single banned word", () => {
             const result = checkBannedWords("you are a nigger");
+
             expect(result.hasBannedWords).toBe(true);
             expect(result.matches).toHaveLength(1);
             expect(result.matches[0]!.word.toLowerCase()).toBe("nigger");
+
             // "nigger" appears in multiple language lists; first alphabetically wins
-            expect(typeof result.matches[0]!.language).toBe("string");
+            expectTypeOf(result.matches[0]!.language).toBeString();
         });
 
         it("detects multiple banned words", () => {
             const result = checkBannedWords("fuck this shit");
+
             expect(result.hasBannedWords).toBe(true);
             expect(result.matches.length).toBeGreaterThanOrEqual(2);
 
             const words = result.matches.map((m) => m.word.toLowerCase());
+
             expect(words).toContain("fuck");
             expect(words).toContain("shit");
         });
 
         it("is case-insensitive", () => {
             const result = checkBannedWords("FUCK FuCk fuck");
+
             expect(result.hasBannedWords).toBe(true);
             expect(result.matches.length).toBeGreaterThanOrEqual(3);
         });
 
         it("detects multi-word phrases", () => {
             const result = checkBannedWords("that is white trash behavior");
+
             expect(result.hasBannedWords).toBe(true);
 
             const words = result.matches.map((m) => m.word.toLowerCase());
+
             expect(words).toContain("white trash");
         });
 
         it("detects leet-speak variants from Google list", () => {
             const result = checkBannedWords("you are a b1tch");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
@@ -75,9 +88,11 @@ describe("checkBannedWords", () => {
         it("returns correct startIndex and endIndex", () => {
             const text = "hello fuck world";
             const result = checkBannedWords(text);
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches.find((m) => m.word.toLowerCase() === "fuck");
+
             expect(match).toBeDefined();
             expect(match!.startIndex).toBe(6);
             expect(match!.endIndex).toBe(10);
@@ -88,8 +103,10 @@ describe("checkBannedWords", () => {
             const text = "shit and fuck";
             const result = checkBannedWords(text);
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const match of result.matches) {
                 const extracted = text.slice(match.startIndex, match.endIndex);
+
                 expect(extracted.toLowerCase()).toBe(match.word.toLowerCase());
             }
         });
@@ -97,6 +114,7 @@ describe("checkBannedWords", () => {
         it("positions are usable for text highlighting", () => {
             const text = "this is bullshit and you know it";
             const result = checkBannedWords(text);
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches[0]!;
@@ -113,133 +131,158 @@ describe("checkBannedWords", () => {
             // "ass" should not match inside "class" or "assignment"
             const result = checkBannedWords("I went to class for my assignment");
             const assMatches = result.matches.filter((m) => m.word.toLowerCase() === "ass");
+
             expect(assMatches).toHaveLength(0);
         });
 
         it("does not match 'ho' inside 'house'", () => {
             const result = checkBannedWords("I went to the house");
             const hoMatches = result.matches.filter((m) => m.word.toLowerCase() === "ho");
+
             expect(hoMatches).toHaveLength(0);
         });
 
         it("matches standalone word at start of text", () => {
             const result = checkBannedWords("fuck this");
+
             expect(result.hasBannedWords).toBe(true);
         });
 
         it("matches standalone word at end of text", () => {
             const result = checkBannedWords("this is fuck");
+
             expect(result.hasBannedWords).toBe(true);
         });
 
         it("matches word surrounded by punctuation", () => {
-            const result = checkBannedWords('he said "fuck" loudly');
+            const result = checkBannedWords("he said \"fuck\" loudly");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("German detection", () => {
+    describe("german detection", () => {
         it("detects German profanity", () => {
             const result = checkBannedWords("Du bist ein Arschloch");
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches.find((m) => m.word.toLowerCase() === "arschloch");
+
             expect(match).toBeDefined();
             expect(match!.language).toBe("de");
         });
 
         it("detects German slur", () => {
             const result = checkBannedWords("Hurensohn");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("Spanish detection", () => {
+    describe("spanish detection", () => {
         it("detects Spanish profanity", () => {
             const result = checkBannedWords("eres un pendejo");
+
             expect(result.hasBannedWords).toBe(true);
 
             const words = result.matches.map((m) => m.word.toLowerCase());
+
             expect(words).toContain("pendejo");
         });
 
         it("detects 'hijo de puta'", () => {
             const result = checkBannedWords("es un hijo de puta");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("French detection", () => {
+    describe("french detection", () => {
         it("detects French profanity", () => {
             const result = checkBannedWords("tu es un connard");
+
             expect(result.hasBannedWords).toBe(true);
 
             const words = result.matches.map((m) => m.word.toLowerCase());
+
             expect(words).toContain("connard");
         });
 
         it("detects 'fils de pute'", () => {
             const result = checkBannedWords("c'est un fils de pute");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("Chinese detection (CJK without word boundaries)", () => {
+    describe("chinese detection (CJK without word boundaries)", () => {
         it("detects Chinese profanity", () => {
             const result = checkBannedWords("你是傻逼");
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches.find((m) => m.word === "傻逼");
+
             expect(match).toBeDefined();
             expect(match!.language).toBe("zh");
         });
 
         it("detects Chinese profanity embedded in text", () => {
             const result = checkBannedWords("这个人真他妈的烦人");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("Japanese detection", () => {
+    describe("japanese detection", () => {
         it("detects Japanese profanity", () => {
             const result = checkBannedWords("お前はクソだ");
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches.find((m) => m.word === "クソ");
+
             expect(match).toBeDefined();
             expect(match!.language).toBe("ja");
         });
     });
 
-    describe("Korean detection", () => {
+    describe("korean detection", () => {
         it("detects Korean profanity", () => {
             const result = checkBannedWords("이 씨발 뭐야");
+
             expect(result.hasBannedWords).toBe(true);
 
             const match = result.matches.find((m) => m.word === "씨발");
+
             expect(match).toBeDefined();
             expect(match!.language).toBe("ko");
         });
     });
 
-    describe("Arabic detection", () => {
+    describe("arabic detection", () => {
         it("detects Arabic profanity (native script)", () => {
             const result = checkBannedWords("أنت شرموطة");
+
             expect(result.hasBannedWords).toBe(true);
         });
 
         it("detects Arabic profanity (transliterated)", () => {
             const result = checkBannedWords("you sharmouta");
+
             expect(result.hasBannedWords).toBe(true);
         });
     });
 
-    describe("Russian detection", () => {
+    describe("russian detection", () => {
         it("detects Russian profanity (transliterated)", () => {
             const result = checkBannedWords("idi nahuy blyad");
+
             expect(result.hasBannedWords).toBe(true);
 
             const words = result.matches.map((m) => m.word.toLowerCase());
+
             expect(words).toContain("blyad");
         });
     });
@@ -247,15 +290,17 @@ describe("checkBannedWords", () => {
     describe("multi-language in single text", () => {
         it("detects words from multiple languages", () => {
             const result = checkBannedWords("scheisse and mierda");
+
             expect(result.hasBannedWords).toBe(true);
             expect(result.matches.length).toBeGreaterThanOrEqual(2);
 
             const langs = new Set(result.matches.map((m) => m.language));
+
             expect(langs.size).toBeGreaterThanOrEqual(2);
         });
     });
 
-    describe("Unicode normalization", () => {
+    describe("unicode normalization", () => {
         it("matches NFC-normalized text", () => {
             // "enculé" can be composed differently
             const nfc = "encul\u00E9"; // é as single character
@@ -276,7 +321,7 @@ describe("checkBannedWords", () => {
             const result2 = checkBannedWords(text);
 
             expect(result1.hasBannedWords).toBe(result2.hasBannedWords);
-            expect(result1.matches.length).toBe(result2.matches.length);
+            expect(result1.matches).toHaveLength(result2.matches.length);
         });
 
         it("handles sequential calls with different inputs", () => {
@@ -291,10 +336,11 @@ describe("checkBannedWords", () => {
     });
 });
 
-describe("BANNED_WORDS", () => {
+describe("bANNED_WORDS", () => {
     it("contains all expected language codes", () => {
         const expectedLangs = ["ar", "az", "de", "en", "es", "fa", "fr", "ga", "hi", "it", "ja", "ko", "nl", "pl", "pt", "ru", "sv", "tr", "zh"];
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const lang of expectedLangs) {
             expect(BANNED_WORDS[lang]).toBeDefined();
             expect(Array.isArray(BANNED_WORDS[lang])).toBe(true);
@@ -306,15 +352,19 @@ describe("BANNED_WORDS", () => {
     });
 
     it("all word lists are non-empty", () => {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
             expect(words.length, `${lang} should have words`).toBeGreaterThan(0);
         }
     });
 
     it("all words are lowercase trimmed strings", () => {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const word of words) {
-                expect(typeof word, `${lang}: word should be string`).toBe("string");
+                expectTypeOf(word).toBeString();
+
                 expect(word.length, `${lang}: word should be non-empty`).toBeGreaterThan(0);
                 expect(word, `${lang}: "${word}" should be trimmed`).toBe(word.trim());
             }
@@ -322,14 +372,16 @@ describe("BANNED_WORDS", () => {
     });
 
     it("has no duplicate words within a language", () => {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [lang, words] of Object.entries(BANNED_WORDS)) {
             const lowered = words.map((w) => w.toLowerCase());
             const unique = new Set(lowered);
-            expect(unique.size, `${lang} should have no duplicates (found ${lowered.length - unique.size})`).toBe(lowered.length);
+
+            expect(unique.size, `${lang} should have no duplicates (found ${String(lowered.length - unique.size)})`).toBe(lowered.length);
         }
     });
 
-    it("English list has substantial coverage", () => {
+    it("english list has substantial coverage", () => {
         expect(BANNED_WORDS["en"]!.length).toBeGreaterThan(1000);
     });
 });

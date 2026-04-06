@@ -2,11 +2,9 @@ import { BANNED_WORDS } from "./banned-words";
 
 /**
  * Represents a single banned word match found in text.
- *
  * @remarks
  * The match includes position information for highlighting or censoring purposes.
  * The language field indicates which language dictionary the word was matched from.
- *
  * @example
  * ```typescript
  * const match: BannedWordMatch = {
@@ -16,27 +14,25 @@ import { BANNED_WORDS } from "./banned-words";
  *   language: "en"
  * };
  * ```
- *
  * @public
  */
+// eslint-disable-next-line import/exports-last
 export interface BannedWordMatch {
-    /** The matched word or phrase exactly as it appears in the text */
-    word: string;
-    /** Zero-based start index in the original text */
-    startIndex: number;
     /** Zero-based end index in the original text (exclusive) */
     endIndex: number;
     /** ISO 639-1 language code the word was matched from (e.g., 'en', 'de', 'ja') */
     language: string;
+    /** Zero-based start index in the original text */
+    startIndex: number;
+    /** The matched word or phrase exactly as it appears in the text */
+    word: string;
 }
 
 /**
  * Result of checking text for banned words.
- *
  * @remarks
  * Contains both a convenience boolean flag and detailed match information.
  * The matches array is empty when no banned words are found.
- *
  * @example
  * ```typescript
  * const result: BannedWordsResult = {
@@ -46,9 +42,9 @@ export interface BannedWordMatch {
  *   ]
  * };
  * ```
- *
  * @public
  */
+// eslint-disable-next-line import/exports-last
 export interface BannedWordsResult {
     /** `true` if one or more banned words were found, `false` otherwise */
     hasBannedWords: boolean;
@@ -58,15 +54,11 @@ export interface BannedWordsResult {
 
 /**
  * Escapes special regex characters in a string.
- *
- * @param str - String to escape
+ * @param string_ String to escape
  * @returns Escaped string safe for use in RegExp constructor
- *
  * @internal
  */
-const escapeRegExp = (str: string): string => {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
+const escapeRegExp = (string_: string): string => string_.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 
 /**
  * Language groups for splitting regex compilation.
@@ -74,16 +66,15 @@ const escapeRegExp = (str: string): string => {
  * @internal
  */
 const LANGUAGE_GROUPS = {
-    western: new Set(["en", "de", "es", "fr", "nl", "pt", "it", "sv", "ga"]),
+    cjk: new Set(["ja", "ko", "zh"]),
     eastern: new Set(["pl", "ru"]),
-    middleEast: new Set(["ar", "fa", "tr", "az"]),
+    middleEast: new Set(["ar", "az", "fa", "tr"]),
     southAsian: new Set(["hi"]),
-    cjk: new Set(["zh", "ja", "ko"]),
+    western: new Set(["de", "en", "es", "fr", "ga", "it", "nl", "pt", "sv"]),
 } as const;
 
 /**
  * Builds optimized regex patterns split by language groups for better performance.
- *
  * @remarks
  * This function:
  * - Splits patterns into 5 geographic/script groups to reduce regex size
@@ -91,27 +82,29 @@ const LANGUAGE_GROUPS = {
  * - Sorts patterns by length (longest first) to match phrases before individual words
  * - Creates a language lookup map for match attribution
  * - Produces smaller, faster-compiling regexes than a single giant pattern
- *
  * @returns Object containing compiled regexes and word-to-language mapping
- *
  * @internal
  */
+/* eslint-disable sonarjs/cognitive-complexity */
 const buildRegexGroups = (): {
-    regexGroups: Array<{ name: string; regex: RegExp }>;
+    regexGroups: { name: string; regex: RegExp }[];
     wordToLanguage: Map<string, string>;
 } => {
     const wordToLanguage = new Map<string, string>();
     const groupPatterns: Record<string, string[]> = {
-        western: [],
+        cjk: [],
         eastern: [],
         middleEast: [],
         southAsian: [],
-        cjk: [],
+        western: [],
     };
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [lang, words] of Object.entries(BANNED_WORDS)) {
         // Determine which group this language belongs to
         let groupName = "";
+
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [group, langs] of Object.entries(LANGUAGE_GROUPS)) {
             if (langs.has(lang)) {
                 groupName = group;
@@ -125,6 +118,7 @@ const buildRegexGroups = (): {
 
         const isCjk = LANGUAGE_GROUPS.cjk.has(lang);
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const word of words) {
             const normalized = word.normalize("NFC").toLowerCase();
 
@@ -136,14 +130,15 @@ const buildRegexGroups = (): {
                 if (isCjk) {
                     groupPatterns[groupName]?.push(escaped);
                 } else {
-                    groupPatterns[groupName]?.push(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`);
+                    groupPatterns[groupName]?.push(String.raw`(?<![\p{L}\p{N}])${escaped}(?![\p{L}\p{N}])`);
                 }
             }
         }
     }
 
-    const regexGroups: Array<{ name: string; regex: RegExp }> = [];
+    const regexGroups: { name: string; regex: RegExp }[] = [];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [groupName, patterns] of Object.entries(groupPatterns)) {
         if (patterns.length > 0) {
             patterns.sort((a, b) => b.length - a.length);
@@ -156,15 +151,14 @@ const buildRegexGroups = (): {
 
     return { regexGroups, wordToLanguage };
 };
+/* eslint-enable sonarjs/cognitive-complexity */
 
 const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups();
 
 /**
  * Checks text for banned words across all configured languages.
- *
- * @param text - The text to check for banned words
+ * @param text The text to check for banned words
  * @returns Result object containing match information
- *
  * @remarks
  * This function:
  * - Checks against 19 language dictionaries simultaneously
@@ -178,7 +172,6 @@ const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups()
  * For performance, the implementation splits patterns into 5 geographic/script groups
  * (Western, Eastern European, Middle Eastern, South Asian, CJK), significantly
  * reducing regex compilation time and JIT overhead.
- *
  * @example
  * Basic usage:
  * ```typescript
@@ -188,7 +181,6 @@ const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups()
  * console.log(result.hasBannedWords); // false
  * console.log(result.matches); // []
  * ```
- *
  * @example
  * Handling matches:
  * ```typescript
@@ -201,7 +193,6 @@ const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups()
  *   });
  * }
  * ```
- *
  * @example
  * Censoring text:
  * ```typescript
@@ -217,7 +208,6 @@ const { regexGroups, wordToLanguage: cachedWordToLanguage } = buildRegexGroups()
  *              censored.slice(match.endIndex);
  * }
  * ```
- *
  * @public
  */
 export const checkBannedWords = (text: string): BannedWordsResult => {
@@ -228,19 +218,21 @@ export const checkBannedWords = (text: string): BannedWordsResult => {
     const normalized = text.normalize("NFC");
     const matches: BannedWordMatch[] = [];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const { regex } of regexGroups) {
         regex.lastIndex = 0;
         let match: RegExpExecArray | null;
 
+        // eslint-disable-next-line no-cond-assign
         while ((match = regex.exec(normalized)) !== null) {
             const matchedText = match[0].toLowerCase();
             const language = cachedWordToLanguage.get(matchedText) ?? "unknown";
 
             matches.push({
-                word: match[0],
-                startIndex: match.index,
                 endIndex: match.index + match[0].length,
                 language,
+                startIndex: match.index,
+                word: match[0],
             });
         }
     }
