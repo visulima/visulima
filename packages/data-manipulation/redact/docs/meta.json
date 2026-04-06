@@ -1,10 +1,4 @@
 {
     "title": "Redact",
-    "pages": [
-        "index",
-        "installation",
-        "---Documentation---",
-        "usage",
-        "api"
-    ]
+    "pages": ["index", "installation", "---Documentation---", "usage", "api"]
 }

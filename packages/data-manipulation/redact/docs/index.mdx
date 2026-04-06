@@ -10,12 +10,14 @@ Powerful library for redacting and masking sensitive data. Protect user privacy 
 ## Key Features
 
 **Smart Redaction**
+
 - Deep object property masking
 - Circular reference handling
 - Path-based redaction rules
 - Preserves object structure
 
 **Built-in Detection**
+
 - 40+ sensitive data patterns
 - Passwords, tokens, API keys
 - Credit cards, SSN, bank accounts
@@ -23,12 +25,14 @@ Powerful library for redacting and masking sensitive data. Protect user privacy 
 - Personal names (NLP-powered)
 
 **Text Anonymization**
+
 - Natural Language Processing
 - Detect people, organizations
 - Money, dates, locations
 - Customizable entity types
 
 **Production-Ready**
+
 - TypeScript support
 - No input mutation
 - GDPR compliant
@@ -46,10 +50,10 @@ Redact sensitive object properties:
 import { redact } from "@visulima/redact";
 
 const user = {
-  name: "Alice",
-  email: "alice@example.com",
-  password: "secret123",
-  creditCard: "4532-1234-5678-9010"
+    name: "Alice",
+    email: "alice@example.com",
+    password: "secret123",
+    creditCard: "4532-1234-5678-9010",
 };
 
 const safe = redact(user, ["password", "creditCard"]);
@@ -76,8 +80,8 @@ console.log(anonymized);
 import { redact } from "@visulima/redact";
 
 function logUserAction(user: User, action: string) {
-  const safeUser = redact(user, ["password", "ssn", "creditCard", "apiKey"]);
-  logger.info({ user: safeUser, action });
+    const safeUser = redact(user, ["password", "ssn", "creditCard", "apiKey"]);
+    logger.info({ user: safeUser, action });
 }
 ```
 
@@ -87,12 +91,12 @@ function logUserAction(user: User, action: string) {
 import { redact } from "@visulima/redact";
 
 app.use((req, res, next) => {
-  const originalJson = res.json;
-  res.json = function(data) {
-    const sanitized = redact(data, ["password", "token", "secret"]);
-    return originalJson.call(this, sanitized);
-  };
-  next();
+    const originalJson = res.json;
+    res.json = function (data) {
+        const sanitized = redact(data, ["password", "token", "secret"]);
+        return originalJson.call(this, sanitized);
+    };
+    next();
 });
 ```
 
@@ -102,22 +106,22 @@ app.use((req, res, next) => {
 import { stringAnonymize } from "@visulima/redact";
 
 function anonymizeUserReview(review: string) {
-  return stringAnonymize(review, {
-    include: ["Person", "Organization", "PhoneNumber", "Email"]
-  });
+    return stringAnonymize(review, {
+        include: ["Person", "Organization", "PhoneNumber", "Email"],
+    });
 }
 ```
 
 ## Next Steps
 
 <Cards>
-  <Card title="Installation" href="/installation">
-    Installation and setup guide
-  </Card>
-  <Card title="Usage Guide" href="/usage">
-    Complete usage examples
-  </Card>
-  <Card title="API Reference" href="/api">
-    Full API documentation
-  </Card>
+    <Card title="Installation" href="/installation">
+        Installation and setup guide
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Complete usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Full API documentation
+    </Card>
 </Cards>
