@@ -59,7 +59,7 @@ const OutputPanel = ({ duration, focused, output, scrollRef, showFullscreenHint,
     const topRightTitle = duration === undefined ? undefined : formatMs(duration);
 
     // Bottom hint: context-dependent
-    const bottomTitle = taskId ? (focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus") : undefined;
+    const bottomTitle = taskId ? focused && showFullscreenHint ? "<enter> full screen" : focused ? undefined : "<tab> or <enter> to focus" : undefined;
 
     // Empty state
     if (!taskId) {
