@@ -80,14 +80,14 @@ const parseDescription = (tag: Spec): { description: string | undefined; name: s
 
     let schema: object | undefined = isArray
         ? {
-            items: {
-                ...rootType,
-            },
-            type: "array",
-        }
+              items: {
+                  ...rootType,
+              },
+              type: "array",
+          }
         : {
-            ...rootType,
-        };
+              ...rootType,
+          };
 
     if (parsedType === "") {
         schema = undefined;
