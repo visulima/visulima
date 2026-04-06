@@ -13,10 +13,10 @@ export default createConfig(
             "vitest.config.ts",
             "packem.config.ts",
             ".secretlintrc.cjs",
-            ".prettierrc.cjs",
+            "prettier.config.js",
             "package.json",
             "README.md",
-            ".prettierrc.cjs",
+            "prettier.config.js",
         ],
     },
     {
