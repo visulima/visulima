@@ -10,6 +10,7 @@ Security-focused HTML utilities providing fast escaping, sanitization, entity en
 ## Key Features
 
 ### Security & XSS Protection
+
 - **Fast HTML escaping** - Optimized escaping from Svelte for content and attributes
 - **HTML template tags** - Automatic XSS protection for template literals
 - **CSS/JS escaping** - Prevent injection attacks in styles and scripts
@@ -17,12 +18,14 @@ Security-focused HTML utilities providing fast escaping, sanitization, entity en
 - **Multiple protection layers** - Escaping, sanitization, and validation working together
 
 ### HTML Processing
+
 - **Entity encoding/decoding** - Fastest HTML entity library with multiple standards
 - **Tag stripping** - Extract plain text while preserving legitimate brackets
 - **Custom element validation** - Validate HTML custom element names
 - **Tag lists** - Standard and void HTML tags for validation
 
 ### Developer Experience
+
 - **TypeScript support** - Full type definitions with CSS property autocomplete
 - **Template literal tags** - `html` and `css` template functions
 - **Multiple encoding modes** - specialChars, nonAscii, extensive, and more
@@ -38,7 +41,7 @@ const safe = escapeHtml('<script>alert("xss")</script>');
 // => '&lt;script>alert("xss")&lt;/script>'
 
 // Sanitize HTML content
-const clean = sanitizeHtml('<p>Hello <script>bad()</script>World</p>');
+const clean = sanitizeHtml("<p>Hello <script>bad()</script>World</p>");
 // => '<p>Hello World</p>'
 
 // Encode entities
@@ -67,7 +70,7 @@ function renderComment(username: string, comment: string) {
     `;
 }
 
-renderComment('Alice', '<script>alert("xss")</script>');
+renderComment("Alice", '<script>alert("xss")</script>');
 // Safe output with escaped script tags
 ```
 
@@ -129,17 +132,20 @@ function renderConfig(userData: unknown) {
 ### Escaping vs Sanitization
 
 **Use escaping when:**
+
 - Inserting plain text into HTML
 - The content should be displayed as-is
 - Maximum performance is needed
 - Building HTML strings manually
 
 **Use sanitization when:**
+
 - Users submit HTML content
 - Rich text formatting should be preserved
 - Fine-grained control over allowed elements is needed
 
 **Never:**
+
 - Render user input without escaping or sanitization
 - Use sanitization on already-escaped content
 - Trust client-side validation alone

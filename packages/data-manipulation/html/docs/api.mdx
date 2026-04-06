@@ -13,7 +13,7 @@ Fast HTML escaping for content and attributes.
 ### Signature
 
 ```typescript
-function escapeHtml(value: string | null | undefined, isAttributeValue?: boolean): string
+function escapeHtml(value: string | null | undefined, isAttributeValue?: boolean): string;
 ```
 
 ### Parameters
@@ -52,13 +52,13 @@ Template tag for XSS-safe HTML with automatic escaping of interpolated values.
 ### Signature (Template Tag)
 
 ```typescript
-function html(strings: TemplateStringsArray, ...values: unknown[]): string
+function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 ```
 
 ### Signature (Function)
 
 ```typescript
-function html(value: string, escape?: boolean): string
+function html(value: string, escape?: boolean): string;
 ```
 
 ### Parameters (Template Tag)
@@ -100,7 +100,7 @@ Escape strings for safe CSS interpolation.
 ### Signature
 
 ```typescript
-function escapeCss(value: string): string
+function escapeCss(value: string): string;
 ```
 
 ### Parameters
@@ -130,19 +130,19 @@ Template tag and function for CSS strings with object support.
 ### Signature (Template Tag)
 
 ```typescript
-function css(strings: TemplateStringsArray, ...values: unknown[]): string
+function css(strings: TemplateStringsArray, ...values: unknown[]): string;
 ```
 
 ### Signature (Function - String)
 
 ```typescript
-function css(value: string, escape?: boolean): string
+function css(value: string, escape?: boolean): string;
 ```
 
 ### Signature (Function - Object)
 
 ```typescript
-function css(styles: Properties, escape?: boolean): string
+function css(styles: Properties, escape?: boolean): string;
 ```
 
 ### Parameters
@@ -161,7 +161,11 @@ import { css } from "@visulima/html";
 
 // Template tag
 const color = "red";
-css`.theme { color: ${color}; }`;
+css`
+    .theme {
+        color: ${color};
+    }
+`;
 
 // CSS object with TypeScript autocomplete
 css({ padding: "10px", marginTop: "20px" });
@@ -180,7 +184,7 @@ Escape JavaScript for safe script tag interpolation.
 ### Signature
 
 ```typescript
-function escapeJs(value: string): string
+function escapeJs(value: string): string;
 ```
 
 ### Parameters
@@ -210,7 +214,7 @@ Validate custom element names per HTML specification.
 ### Signature
 
 ```typescript
-function isValidCustomElementName(name: string): boolean
+function isValidCustomElementName(name: string): boolean;
 ```
 
 ### Parameters
@@ -249,7 +253,7 @@ Encode HTML entities with multiple modes and standards.
 ### Signature
 
 ```typescript
-function encode(text: string, options?: EncodeOptions): string
+function encode(text: string, options?: EncodeOptions): string;
 ```
 
 ### Options
@@ -298,7 +302,7 @@ Decode HTML entities with scope control.
 ### Signature
 
 ```typescript
-function decode(html: string, options?: DecodeOptions): string
+function decode(html: string, options?: DecodeOptions): string;
 ```
 
 ### Options
@@ -342,7 +346,7 @@ Decode a single HTML entity.
 ### Signature
 
 ```typescript
-function decodeEntity(entity: string, options?: DecodeEntityOptions): string
+function decodeEntity(entity: string, options?: DecodeEntityOptions): string;
 ```
 
 ### Options
@@ -383,7 +387,7 @@ Clean user-submitted HTML.
 ### Signature
 
 ```typescript
-function sanitizeHtml(dirty: string, options?: SanitizeOptions): string
+function sanitizeHtml(dirty: string, options?: SanitizeOptions): string;
 ```
 
 ### Key Options
@@ -416,7 +420,7 @@ interface SanitizeOptions {
 import { sanitizeHtml } from "@visulima/html";
 
 // Basic
-sanitizeHtml('<p>Hello <script>bad</script></p>');
+sanitizeHtml("<p>Hello <script>bad</script></p>");
 // => '<p>Hello </p>'
 
 // Custom config
@@ -451,7 +455,7 @@ Remove HTML tags and extract plain text.
 ### Signature
 
 ```typescript
-function stripHtml(html: string, options?: StripOptions): StripResult
+function stripHtml(html: string, options?: StripOptions): StripResult;
 ```
 
 ### Options
@@ -578,12 +582,7 @@ interface EncodeOptions {
      * Which characters to encode
      * @default "specialChars"
      */
-    mode?:
-        | "specialChars"
-        | "nonAscii"
-        | "nonAsciiPrintable"
-        | "nonAsciiPrintableOnly"
-        | "extensive";
+    mode?: "specialChars" | "nonAscii" | "nonAsciiPrintable" | "nonAsciiPrintableOnly" | "extensive";
 
     /**
      * Numeric entity format

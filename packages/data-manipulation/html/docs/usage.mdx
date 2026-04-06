@@ -97,12 +97,7 @@ const result = html`
 import { html } from "@visulima/html";
 
 function renderUserBadge(user: { name: string; isAdmin: boolean }) {
-    return html`
-        <div class="user">
-            ${user.name}
-            ${user.isAdmin ? html`<span class="badge">Admin</span>` : ""}
-        </div>
-    `;
+    return html` <div class="user">${user.name} ${user.isAdmin ? html`<span class="badge">Admin</span>` : ""}</div> `;
 }
 ```
 
@@ -311,10 +306,7 @@ import { isValidCustomElementName } from "@visulima/html";
 
 function safeRegister(name: string, constructor: CustomElementConstructor) {
     if (!isValidCustomElementName(name)) {
-        throw new Error(
-            `Invalid custom element name: "${name}". ` +
-                "Custom element names must contain a hyphen.",
-        );
+        throw new Error(`Invalid custom element name: "${name}". ` + "Custom element names must contain a hyphen.");
     }
 
     customElements.define(name, constructor);
@@ -495,7 +487,7 @@ const safe = sanitizeHtml(input);
 import { sanitizeHtml } from "@visulima/html";
 
 // Allow specific tags
-const html = '<p>Text <b>bold</b> <script>bad</script></p>';
+const html = "<p>Text <b>bold</b> <script>bad</script></p>";
 const clean = sanitizeHtml(html, {
     allowedTags: ["p", "b", "i", "strong"],
 });
@@ -579,21 +571,7 @@ import { sanitizeHtml } from "@visulima/html";
 
 function sanitizeRichText(html: string): string {
     return sanitizeHtml(html, {
-        allowedTags: [
-            "p",
-            "br",
-            "strong",
-            "em",
-            "u",
-            "a",
-            "ul",
-            "ol",
-            "li",
-            "blockquote",
-            "h1",
-            "h2",
-            "h3",
-        ],
+        allowedTags: ["p", "br", "strong", "em", "u", "a", "ul", "ol", "li", "blockquote", "h1", "h2", "h3"],
         allowedAttributes: {
             a: ["href", "title"],
         },
@@ -642,7 +620,7 @@ const text = stripHtml(html, {
 // => 'Text more text'
 
 // Remove code blocks
-const html2 = 'Text <pre><code>code block</code></pre> more text';
+const html2 = "Text <pre><code>code block</code></pre> more text";
 const text2 = stripHtml(html2, {
     stripTogetherWithTheirContents: ["pre", "code"],
 }).result;
@@ -672,13 +650,7 @@ import { stripHtml } from "@visulima/html";
 
 function extractEmailText(htmlEmail: string): string {
     return stripHtml(htmlEmail, {
-        stripTogetherWithTheirContents: [
-            "script",
-            "style",
-            "head",
-            "title",
-            "meta",
-        ],
+        stripTogetherWithTheirContents: ["script", "style", "head", "title", "meta"],
     }).result;
 }
 ```
@@ -726,9 +698,7 @@ import { sanitizeHtml, htmlTags, voidHtmlTags } from "@visulima/html";
 
 // Use tag lists for configuration
 const clean = sanitizeHtml(dirtyHtml, {
-    allowedTags: htmlTags.filter((tag) =>
-        ["p", "a", "b", "i", "div"].includes(tag),
-    ),
+    allowedTags: htmlTags.filter((tag) => ["p", "a", "b", "i", "div"].includes(tag)),
     selfClosing: voidHtmlTags,
 });
 ```
