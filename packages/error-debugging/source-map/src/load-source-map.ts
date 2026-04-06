@@ -8,11 +8,12 @@ import { dirname, resolve, toNamespacedPath } from "@visulima/path";
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
 // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/regex-complexity, sonarjs/slow-regex
 const SOURCEMAP_REGEX = /\/\/[@#][ \t]+sourceMappingURL=([^\s'"]+)[ \t]*$|\/\*[@#][ \t]+sourceMappingURL=([^*]+?)[ \t]*\*\/[ \t]*$/;
+const LINE_SPLIT_REGEX = /\r?\n/;
 
 const isInlineMap = (url: string): boolean => INLINE_SOURCEMAP_REGEX.test(url);
 
 const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | undefined => {
-    const lines = sourceFile.split(/\r?\n/);
+    const lines = sourceFile.split(LINE_SPLIT_REGEX);
 
     let sourceMapUrl: RegExpExecArray | undefined;
 
@@ -31,6 +32,7 @@ const resolveSourceMapUrl = (sourceFile: string, sourcePath: string): string | u
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     return isInlineMap(url) ? url : (resolve(sourcePath, url) as string);
 };
 
@@ -45,14 +47,15 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
 
     try {
         sourceMapContent = readFileSync(filename, { encoding: "utf8" });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        error.message = `Error reading sourcemap for file "${toNamespacedPath(filename)}":\n${toNamespacedPath(error.message)}`;
+    } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        (error as Error).message = `Error reading sourcemap for file "${toNamespacedPath(filename) as string}":\n${toNamespacedPath((error as Error).message) as string}`;
 
         throw error;
     }
 
-    const sourceMapUrl = resolveSourceMapUrl(sourceMapContent, dirname(filename));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const sourceMapUrl = resolveSourceMapUrl(sourceMapContent, dirname(filename) as string);
 
     if (!sourceMapUrl) {
         return undefined;
@@ -67,9 +70,9 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
         try {
             // Load actual source map from given path
             traceMapContent = readFileSync(sourceMapUrl, { encoding: "utf8" });
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            error.message = `Error reading sourcemap for file "${toNamespacedPath(filename)}":\n${toNamespacedPath(error.message)}`;
+        } catch (error: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            (error as Error).message = `Error reading sourcemap for file "${toNamespacedPath(filename) as string}":\n${toNamespacedPath((error as Error).message) as string}`;
 
             throw error;
         }
@@ -77,9 +80,9 @@ const loadSourceMap = (filename: string): TraceMap | undefined => {
 
     try {
         return new AnyMap(traceMapContent, sourceMapUrl);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-        error.message = `Error parsing sourcemap for file "${toNamespacedPath(filename)}":\n${error.message}`;
+    } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        (error as Error).message = `Error parsing sourcemap for file "${toNamespacedPath(filename) as string}":\n${(error as Error).message}`;
 
         throw error;
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access */
 import { fileURLToPath } from "node:url";
 
 import type { TraceMap } from "@jridgewell/trace-mapping";
