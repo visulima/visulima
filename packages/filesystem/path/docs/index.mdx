@@ -15,12 +15,12 @@ Node.js's built-in `path` module behaves differently on Windows vs. macOS/Linux:
 
 ```javascript
 // On Windows
-const path = require('node:path');
-path.join('C:', 'Users', 'John');  // 'C:\\Users\\John'
+const path = require("node:path");
+path.join("C:", "Users", "John"); // 'C:\\Users\\John'
 
 // On macOS/Linux
-const path = require('node:path');
-path.join('C:', 'Users', 'John');  // 'C:/Users/John'
+const path = require("node:path");
+path.join("C:", "Users", "John"); // 'C:/Users/John'
 ```
 
 This creates **inconsistent code behavior** across operating systems, leading to bugs that only appear on specific platforms.
@@ -30,32 +30,36 @@ This creates **inconsistent code behavior** across operating systems, leading to
 **@visulima/path** normalizes all path operations to use forward slashes (`/`) consistently across all platforms, while maintaining full compatibility with Node.js `path` API.
 
 ```javascript
-import { join } from '@visulima/path';
+import { join } from "@visulima/path";
 
 // Works consistently on ALL platforms
-join('C:', 'Users', 'John');  // 'C:/Users/John'
-join('/home', 'user', 'docs'); // '/home/user/docs'
+join("C:", "Users", "John"); // 'C:/Users/John'
+join("/home", "user", "docs"); // '/home/user/docs'
 ```
 
 ## Key Features
 
 **Cross-Platform Consistency**
+
 - **Normalized paths** - Always uses forward slashes (`/`) regardless of OS
 - **Predictable behavior** - Same output on Windows, macOS, and Linux
 - **No surprises** - Write once, works everywhere
 
 **Drop-in Replacement**
+
 - **100% compatible** with Node.js `path` API
 - **No code changes** required for migration
 - **Same function signatures** as Node.js path module
 
 **Modern & Lightweight**
+
 - **Written in TypeScript** with full type definitions
 - **ESM and CommonJS** support
 - **No Node.js dependency** - Works in any JavaScript runtime
 - **Zero dependencies** (except for binary detection)
 
 **Extra Utilities**
+
 - **Alias resolution** - Resolve path aliases like TypeScript/Webpack
 - **Binary detection** - Check if a path points to a binary file
 - **Relative path checking** - Determine if a path is relative
@@ -206,10 +210,12 @@ const resolved = resolveAlias("@/config/app", aliases);
 ## Browser and Server Support
 
 ### Node.js
+
 - ✅ Node.js 22.13 - 25.x
 - ✅ ESM and CommonJS support
 
 ### Runtimes
+
 - ✅ Node.js
 - ✅ Deno
 - ✅ Bun
@@ -217,6 +223,7 @@ const resolved = resolveAlias("@/config/app", aliases);
 - ✅ Edge runtimes (Cloudflare Workers, Vercel Edge)
 
 ### Operating Systems
+
 - ✅ Windows
 - ✅ macOS
 - ✅ Linux
