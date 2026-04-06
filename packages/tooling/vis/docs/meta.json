@@ -11,6 +11,7 @@
                 "commands/run",
                 "commands/affected",
                 "commands/graph",
+                "commands/add",
                 "commands/check",
                 "commands/update",
                 "commands/install",

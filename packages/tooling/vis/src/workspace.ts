@@ -210,6 +210,14 @@ interface VisConfig {
         };
 
         /**
+         * Package names to skip during typosquat detection.
+         * Use this for internal packages or known-safe names that happen to
+         * look similar to popular packages.
+         * @example ["my-internal-axois", "@myorg/recat"]
+         */
+        typosquatAllowlist?: string[];
+
+        /**
          * When true, prevents transitive dependencies from using exotic sources
          * (git repositories, direct tarball URLs). Only direct dependencies may
          * use such sources. Equivalent to pnpm's `blockExoticSubdeps`.
