@@ -7,6 +7,7 @@ import { coerce } from "semver";
 
 import { info, note, warn } from "../output";
 import { detectPm, runAdd } from "../pm-runner";
+import { runTyposquatCheck } from "../typosquats";
 import {
     buildSocketOptions,
     DEFAULT_LOW_SCORE_THRESHOLD,
@@ -294,12 +295,40 @@ const add: Command = {
         ["vis add -g typescript", "Add globally (uses npm)"],
         ["vis add lodash -w", "Add to workspace root"],
         ["vis add lodash --no-socket-check", "Add without Socket.dev check"],
+        ["vis add lodash --no-typosquat-check", "Skip typosquat name check"],
     ],
     execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
-        const packages = argument;
+        let packages = argument as string[];
 
         if (!packages || packages.length === 0) {
             throw new Error("No packages specified. Usage: vis add <packages...>");
+        }
+
+        // Typosquat check (unless disabled)
+        if (!options["no-typosquat-check"]) {
+            const packageNames = packages.map((p: string) => parseAddArgument(p).name);
+
+            const result = await runTyposquatCheck(packageNames);
+
+            if (!result.ok) {
+                process.exitCode = 1;
+
+                return;
+            }
+
+            // If user chose the suggested names, rebuild the packages array
+            // preserving any version specifiers from the original arguments.
+            if (result.packages !== packageNames) {
+                packages = packages.map((original: string, index: number) => {
+                    const parsed = parseAddArgument(original);
+
+                    if (parsed.name !== result.packages[index]) {
+                        return parsed.versionSpec ? `${result.packages[index]}@${parsed.versionSpec}` : result.packages[index];
+                    }
+
+                    return original;
+                });
+            }
         }
 
         // Socket.dev pre-add check (unless disabled)
@@ -354,6 +383,7 @@ const add: Command = {
         { alias: "w", defaultValue: false, description: "Add to workspace root", name: "workspace-root", type: Boolean },
         { defaultValue: false, description: "Use workspace protocol (pnpm)", name: "workspace", type: Boolean },
         { alias: "F", description: "Filter by workspace package name", multiple: true, name: "filter", type: String },
+        { defaultValue: false, description: "Skip typosquat name check before adding", name: "no-typosquat-check", type: Boolean },
         { defaultValue: false, description: "Skip Socket.dev security check before adding", name: "no-socket-check", type: Boolean },
     ],
 };

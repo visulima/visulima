@@ -33,6 +33,7 @@ import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import { buildSocketOptions, scoreColor } from "../socket-security";
+import { runTyposquatCheck } from "../typosquats";
 import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -443,13 +444,28 @@ const update: Command = {
         ["vis update --rollback", "Restore catalog from last backup"],
         ["vis update --ai", "Run AI analysis before applying updates"],
     ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument: rawArgument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
+        let argument = rawArgument as string[];
+
         const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
+
+        // Typosquat check on explicit package arguments
+        if (argument.length > 0 && !options["no-typosquat-check"]) {
+            const result = await runTyposquatCheck(argument);
+
+            if (!result.ok) {
+                process.exitCode = 1;
+
+                return;
+            }
+
+            argument = result.packages;
+        }
 
         // Rollback mode
         if (options.rollback) {
@@ -624,6 +640,12 @@ const update: Command = {
             description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
             name: "ai-type",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Skip typosquat name check for package arguments",
+            name: "no-typosquat-check",
+            type: Boolean,
         },
     ],
 };
