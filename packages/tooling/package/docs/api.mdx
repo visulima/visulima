@@ -9,8 +9,9 @@ title: "API Reference"
 Find monorepo root directory and strategy.
 
 **Signature:**
+
 ```typescript
-function findMonorepoRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>
+function findMonorepoRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>;
 ```
 
 **Strategies:** `pnpm`, `npm`, `yarn`, `lerna`, `turborepo`
@@ -20,8 +21,9 @@ function findMonorepoRoot(cwd?: string): Promise<{ path: string; strategy: strin
 Find package root directory.
 
 **Signature:**
+
 ```typescript
-function findPackageRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>
+function findPackageRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>;
 ```
 
 ## findPackageJson()
@@ -29,14 +31,19 @@ function findPackageRoot(cwd?: string): Promise<{ path: string; strategy: string
 Find and parse package.json/yaml/json5.
 
 **Signature:**
+
 ```typescript
-function findPackageJson(cwd?: string, options?: Options): Promise<{
+function findPackageJson(
+    cwd?: string,
+    options?: Options,
+): Promise<{
     packageJson: PackageJson;
     path: string;
-} | null>
+} | null>;
 ```
 
 **Options:**
+
 - `yaml` - Enable package.yaml support
 - `json5` - Enable package.json5 support
 - `resolveCatalog` - Resolve pnpm catalog dependencies
@@ -46,8 +53,9 @@ function findPackageJson(cwd?: string, options?: Options): Promise<{
 Read and parse package.json file.
 
 **Signature:**
+
 ```typescript
-function readPackageJson(path: string, options?: Options): Promise<PackageJson>
+function readPackageJson(path: string, options?: Options): Promise<PackageJson>;
 ```
 
 ## detectPackageManager()
@@ -55,6 +63,7 @@ function readPackageJson(path: string, options?: Options): Promise<PackageJson>
 Detect which package manager is used.
 
 **Signature:**
+
 ```typescript
-function detectPackageManager(cwd?: string): Promise<"pnpm" | "npm" | "yarn" | null>
+function detectPackageManager(cwd?: string): Promise<"pnpm" | "npm" | "yarn" | null>;
 ```
