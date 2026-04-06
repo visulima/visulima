@@ -41,8 +41,7 @@ export class LayoutNode {
             this.yogaNode.unsetMeasureFunc();
         } else {
             this.yogaNode.setMeasureFunc((width, widthMode, height, heightMode) => {
-                if (value.length === 0)
-                    return { height: 0, width: 0 };
+                if (value.length === 0) return { height: 0, width: 0 };
 
                 const unconstrained = measureTextBlock(value, Number.MAX_SAFE_INTEGER);
 
@@ -145,15 +144,13 @@ export class LayoutNode {
      * The _destroyed guard prevents double-free if free() is also called.
      */
     destroy(): void {
-        if (this._destroyed)
-            return;
+        if (this._destroyed) return;
 
         this._destroyed = true;
 
         // Clear parent reference on children before clearing our own bookkeeping
         for (const child of this.children) {
-            if (child.parent === this)
-                child.parent = null;
+            if (child.parent === this) child.parent = null;
         }
 
         this.children = [];

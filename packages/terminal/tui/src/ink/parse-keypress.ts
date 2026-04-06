@@ -276,11 +276,9 @@ const safeFromCodePoint = (cp: number): string => (isValidCodepoint(cp) ? String
 type EventType = "press" | "repeat" | "release";
 
 function resolveEventType(value: number): EventType {
-    if (value === 3)
-        return "release";
+    if (value === 3) return "release";
 
-    if (value === 2)
-        return "repeat";
+    if (value === 2) return "repeat";
 
     return "press";
 }
@@ -301,8 +299,7 @@ function parseKittyModifiers(modifiers: number): Pick<ParsedKey, "ctrl" | "shift
 const parseKittyKeypress = (s: string): ParsedKey | null => {
     const match = kittyKeyRe.exec(s);
 
-    if (!match)
-        return null;
+    if (!match) return null;
 
     const codepoint = Number.parseInt(match[1]!, 10);
     const modifiers = match[2] ? Math.max(0, Number.parseInt(match[2], 10) - 1) : 0;
@@ -370,8 +367,7 @@ const parseKittyKeypress = (s: string): ParsedKey | null => {
 const parseKittySpecialKey = (s: string): ParsedKey | null => {
     const match = kittySpecialKeyRe.exec(s);
 
-    if (!match)
-        return null;
+    if (!match) return null;
 
     const number = Number.parseInt(match[1]!, 10);
     const modifiers = Math.max(0, Number.parseInt(match[2]!, 10) - 1);
@@ -380,8 +376,7 @@ const parseKittySpecialKey = (s: string): ParsedKey | null => {
 
     const name = terminator === "~" ? kittySpecialNumberKeys[number] : kittySpecialLetterKeys[terminator];
 
-    if (!name)
-        return null;
+    if (!name) return null;
 
     return {
         name,
@@ -413,13 +408,11 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
     // Try kitty keyboard protocol parsers first
     const kittyResult = parseKittyKeypress(s);
 
-    if (kittyResult)
-        return kittyResult;
+    if (kittyResult) return kittyResult;
 
     const kittySpecialResult = parseKittySpecialKey(s);
 
-    if (kittySpecialResult)
-        return kittySpecialResult;
+    if (kittySpecialResult) return kittySpecialResult;
 
     // If the input matched the kitty CSI-u pattern but was rejected (e.g.,
     // invalid codepoint), return a safe empty keypress instead of falling
@@ -519,11 +512,11 @@ const parseKeypress = (s: Buffer | string = ""): ParsedKey => {
                 // shift+letter
                 key.name = s.toLowerCase();
                 key.shift = true;
-            } else if (parts = metaKeyCodeRe.exec(s)) {
+            } else if ((parts = metaKeyCodeRe.exec(s))) {
                 // meta+character key
                 key.meta = true;
                 key.shift = /^[A-Z]$/.test(parts[1]!);
-            } else if (parts = functionKeyRe.exec(s)) {
+            } else if ((parts = functionKeyRe.exec(s))) {
                 const segs = [...s];
 
                 if (segs[0] === "\u001B" && segs[1] === "\u001B") {

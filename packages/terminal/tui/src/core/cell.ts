@@ -12,11 +12,9 @@ export const Cell = {
 
     /** Read the char character from a raw char slot value (buffer[idx*2]) */
     getChar(charSlot: number): string {
-        if (charSlot === 0)
-            return " ";
+        if (charSlot === 0) return " ";
 
-        if (charSlot > 0x10_ff_ff)
-            return "";
+        if (charSlot > 0x10_ff_ff) return "";
 
         return String.fromCodePoint(charSlot);
     },

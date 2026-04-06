@@ -405,10 +405,7 @@ export class Selection {
  * get the INVERSE style flag applied. Returns a new StyledLine with the
  * selection highlighting — the original is not mutated.
  */
-export const applySelectionToStyledLine = (
-    line: StyledLine,
-    range: { end: number; start: number },
-): StyledLine => {
+export const applySelectionToStyledLine = (line: StyledLine, range: { end: number; start: number }): StyledLine => {
     if (line.length === 0 || range.start >= range.end) {
         return line;
     }

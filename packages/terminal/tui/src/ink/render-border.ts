@@ -86,9 +86,11 @@ const buildBorderWithTitle = (
     const leftFill = Math.floor(middleWidth / 2);
     const rightFill = middleWidth - leftFill;
 
-    return stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim)
-        + leftTitle
-        + stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim);
+    return (
+        stylePiece(borderChar.repeat(leftFill), borderFg, borderBg, borderDim) +
+        leftTitle +
+        stylePiece(borderChar.repeat(rightFill), borderFg, borderBg, borderDim)
+    );
 };
 
 const renderBorder = (x: number, y: number, node: DOMNode, output: Output): void => {

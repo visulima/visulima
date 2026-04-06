@@ -167,14 +167,7 @@ export {
     getVerticalScrollbarBoundingBox,
 } from "./measure-element";
 export type { StringWidthFunction } from "./measure-text";
-export {
-    clearStringWidthCache,
-    clearStyledLineCache,
-    inkCharacterWidth,
-    setEnableStyledLineCache,
-    setStringWidthFunction,
-    toStyledLine,
-} from "./measure-text";
+export { clearStringWidthCache, clearStyledLineCache, inkCharacterWidth, setEnableStyledLineCache, setStringWidthFunction, toStyledLine } from "./measure-text";
 export type {
     MouseAction,
     MouseButton,

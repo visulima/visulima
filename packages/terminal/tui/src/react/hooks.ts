@@ -135,11 +135,9 @@ export const useInput = (handler: InputHandler): void => {
         };
 
         const handleData = (data: string, flags?: { ctrl?: boolean; meta?: boolean }) => {
-            if (data.startsWith("\u001B"))
-                return; // unhandled escape sequences
+            if (data.startsWith("\u001B")) return; // unhandled escape sequences
 
-            if (data === "\r" || data === "\n")
-                return;
+            if (data === "\r" || data === "\n") return;
 
             handlerRef.current(
                 data,
@@ -200,8 +198,7 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
     });
 
     useEffect(() => {
-        if (!isActive)
-            return;
+        if (!isActive) return;
 
         const onPaste = (text: string) => {
             handlerRef.current(text);
@@ -222,8 +219,7 @@ export const usePaste = (handler: PasteHandler, options: UsePasteOptions = {}): 
 export const useRatatatContext = (): RatatatContextProps => {
     const context = useContext(RatatatContext);
 
-    if (!context)
-        throw new Error("useRatatatContext must be used within a Ratatat App environment");
+    if (!context) throw new Error("useRatatatContext must be used within a Ratatat App environment");
 
     return context;
 };
@@ -337,8 +333,7 @@ export const useStdin = (): { isRawModeSupported: boolean; setRawMode: (value: b
  * Ink-compatible: measureElement(ref.current)
  */
 export const measureElement = (node: LayoutNode | null): { height: number; width: number } => {
-    if (!node || !node.yogaNode)
-        return { height: 0, width: 0 };
+    if (!node || !node.yogaNode) return { height: 0, width: 0 };
 
     return {
         height: node.yogaNode.getComputedHeight() ?? 0,
@@ -392,8 +387,7 @@ export const useBoxMetrics = (ref: RefObject<LayoutNode | null>): UseBoxMetricsR
 
     // Update on terminal resize
     useEffect(() => {
-        if (!context?.app)
-            return;
+        if (!context?.app) return;
 
         context.app.on("resize", updateMetrics);
 
@@ -517,8 +511,7 @@ export type MouseHandler = (event: MouseEvent) => void;
 export const useMouse = (handler: MouseHandler): void => {
     const context = useContext(RatatatContext);
 
-    if (!context)
-        throw new Error("useMouse must be used within a Ratatat App environment");
+    if (!context) throw new Error("useMouse must be used within a Ratatat App environment");
 
     const handlerRef = useRef<MouseHandler>(handler);
 
@@ -611,8 +604,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
     }, []);
 
     useInput((input, key) => {
-        if (!isActive)
-            return;
+        if (!isActive) return;
 
         const { current } = cursorRef;
         const value_ = valueRef.current;
@@ -623,8 +615,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
             return;
         }
 
-        if (key.escape)
-            return;
+        if (key.escape) return;
 
         if (key.leftArrow) {
             setCursor(Math.max(0, current - 1));
@@ -651,8 +642,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         if (key.backspace) {
-            if (current === 0)
-                return;
+            if (current === 0) return;
 
             const next = value_.slice(0, current - 1) + value_.slice(current);
 
@@ -664,8 +654,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         if (key.delete) {
-            if (current >= value_.length)
-                return;
+            if (current >= value_.length) return;
 
             const next = value_.slice(0, current) + value_.slice(current + 1);
 
@@ -710,8 +699,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
         }
 
         // Ignore other ctrl/meta combos
-        if (key.ctrl || key.meta)
-            return;
+        if (key.ctrl || key.meta) return;
 
         // Printable character — insert at cursor
         if (input && input.length > 0) {
@@ -727,8 +715,7 @@ export const useTextInput = ({ initialValue = "", isActive = true, onChange, onS
     const context = useContext(RatatatContext);
 
     useEffect(() => {
-        if (!context || !isActive)
-            return;
+        if (!context || !isActive) return;
 
         const onPaste = (text: string) => {
             // Strip control characters; convert CR/CRLF → space

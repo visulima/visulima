@@ -24,25 +24,25 @@ export type State<T> = {
 
 // ─── Actions ────────────────────────────────────────────────────────────────
 
-export type Action<T>
-    = | { nodeId: string; type: "collapse-node" }
-        | { nodeId: string; type: "expand-node" }
-        | { nodeId: string; type: "set-children-error" }
-        | { children: TreeNode<T>[]; parentId: string; type: "insert-children" }
-        | { isLoading: boolean; nodeId: string; type: "set-loading" }
-        | { state: State<T>; type: "reset" }
-        | { type: "collapse" }
-        | { type: "collapse-all" }
-        | { type: "expand" }
-        | { type: "expand-all" }
-        | { type: "focus-first" }
-        | { type: "focus-first-child" }
-        | { type: "focus-last" }
-        | { type: "focus-next" }
-        | { type: "focus-parent" }
-        | { type: "focus-previous" }
-        | { type: "select" }
-        | { type: "toggle-expanded" };
+export type Action<T> =
+    | { nodeId: string; type: "collapse-node" }
+    | { nodeId: string; type: "expand-node" }
+    | { nodeId: string; type: "set-children-error" }
+    | { children: TreeNode<T>[]; parentId: string; type: "insert-children" }
+    | { isLoading: boolean; nodeId: string; type: "set-loading" }
+    | { state: State<T>; type: "reset" }
+    | { type: "collapse" }
+    | { type: "collapse-all" }
+    | { type: "expand" }
+    | { type: "expand-all" }
+    | { type: "focus-first" }
+    | { type: "focus-first-child" }
+    | { type: "focus-last" }
+    | { type: "focus-next" }
+    | { type: "focus-parent" }
+    | { type: "focus-previous" }
+    | { type: "select" }
+    | { type: "toggle-expanded" };
 
 // ─── Index helper ──────────────────────────────────────────────────────────
 
@@ -642,48 +642,86 @@ export function useTreeViewState<T = Record<string, unknown>>({
     }, [state.selectedIds, state.previousSelectedIds]);
 
     // Compute viewportNodes from state
-    const viewportNodes = useMemo(() => state.visibleIds.slice(state.viewportFromIndex, state.viewportToIndex).map((id) => {
-        const flat = state.nodeMap.get(id)!;
+    const viewportNodes = useMemo(
+        () =>
+            state.visibleIds.slice(state.viewportFromIndex, state.viewportToIndex).map((id) => {
+                const flat = state.nodeMap.get(id)!;
 
-        return {
-            node: flat.node,
-            state: {
-                depth: flat.depth,
-                hasChildren: flat.hasChildren,
-                isExpanded: state.expandedIds.has(id),
-                isFocused: id === state.focusedId,
-                isLoading: state.loadingIds.has(id),
-                isSelected: state.selectedIds.has(id),
-            } satisfies TreeNodeState,
-        };
-    }), [
-        state.visibleIds,
-        state.viewportFromIndex,
-        state.viewportToIndex,
-        state.focusedId,
-        state.expandedIds,
-        state.selectedIds,
-        state.nodeMap,
-        state.loadingIds,
-    ]);
+                return {
+                    node: flat.node,
+                    state: {
+                        depth: flat.depth,
+                        hasChildren: flat.hasChildren,
+                        isExpanded: state.expandedIds.has(id),
+                        isFocused: id === state.focusedId,
+                        isLoading: state.loadingIds.has(id),
+                        isSelected: state.selectedIds.has(id),
+                    } satisfies TreeNodeState,
+                };
+            }),
+        [
+            state.visibleIds,
+            state.viewportFromIndex,
+            state.viewportToIndex,
+            state.focusedId,
+            state.expandedIds,
+            state.selectedIds,
+            state.nodeMap,
+            state.loadingIds,
+        ],
+    );
 
-    const focusNext = useCallback(() => { dispatch({ type: "focus-next" }); }, []);
-    const focusPrevious = useCallback(() => { dispatch({ type: "focus-previous" }); }, []);
-    const focusFirst = useCallback(() => { dispatch({ type: "focus-first" }); }, []);
-    const focusLast = useCallback(() => { dispatch({ type: "focus-last" }); }, []);
-    const expand = useCallback(() => { dispatch({ type: "expand" }); }, []);
-    const expandNode = useCallback((nodeId: string) => { dispatch({ nodeId, type: "expand-node" }); }, []);
-    const collapse = useCallback(() => { dispatch({ type: "collapse" }); }, []);
-    const collapseNode = useCallback((nodeId: string) => { dispatch({ nodeId, type: "collapse-node" }); }, []);
-    const toggleExpanded = useCallback(() => { dispatch({ type: "toggle-expanded" }); }, []);
-    const expandAll = useCallback(() => { dispatch({ type: "expand-all" }); }, []);
-    const collapseAll = useCallback(() => { dispatch({ type: "collapse-all" }); }, []);
-    const select = useCallback(() => { dispatch({ type: "select" }); }, []);
-    const focusParent = useCallback(() => { dispatch({ type: "focus-parent" }); }, []);
-    const focusFirstChild = useCallback(() => { dispatch({ type: "focus-first-child" }); }, []);
-    const setLoading = useCallback((nodeId: string, isLoading: boolean) => { dispatch({ isLoading, nodeId, type: "set-loading" }); }, []);
-    const setChildrenError = useCallback((nodeId: string) => { dispatch({ nodeId, type: "set-children-error" }); }, []);
-    const insertChildren = useCallback((parentId: string, children: TreeNode<T>[]) => { dispatch({ children, parentId, type: "insert-children" }); }, []);
+    const focusNext = useCallback(() => {
+        dispatch({ type: "focus-next" });
+    }, []);
+    const focusPrevious = useCallback(() => {
+        dispatch({ type: "focus-previous" });
+    }, []);
+    const focusFirst = useCallback(() => {
+        dispatch({ type: "focus-first" });
+    }, []);
+    const focusLast = useCallback(() => {
+        dispatch({ type: "focus-last" });
+    }, []);
+    const expand = useCallback(() => {
+        dispatch({ type: "expand" });
+    }, []);
+    const expandNode = useCallback((nodeId: string) => {
+        dispatch({ nodeId, type: "expand-node" });
+    }, []);
+    const collapse = useCallback(() => {
+        dispatch({ type: "collapse" });
+    }, []);
+    const collapseNode = useCallback((nodeId: string) => {
+        dispatch({ nodeId, type: "collapse-node" });
+    }, []);
+    const toggleExpanded = useCallback(() => {
+        dispatch({ type: "toggle-expanded" });
+    }, []);
+    const expandAll = useCallback(() => {
+        dispatch({ type: "expand-all" });
+    }, []);
+    const collapseAll = useCallback(() => {
+        dispatch({ type: "collapse-all" });
+    }, []);
+    const select = useCallback(() => {
+        dispatch({ type: "select" });
+    }, []);
+    const focusParent = useCallback(() => {
+        dispatch({ type: "focus-parent" });
+    }, []);
+    const focusFirstChild = useCallback(() => {
+        dispatch({ type: "focus-first-child" });
+    }, []);
+    const setLoading = useCallback((nodeId: string, isLoading: boolean) => {
+        dispatch({ isLoading, nodeId, type: "set-loading" });
+    }, []);
+    const setChildrenError = useCallback((nodeId: string) => {
+        dispatch({ nodeId, type: "set-children-error" });
+    }, []);
+    const insertChildren = useCallback((parentId: string, children: TreeNode<T>[]) => {
+        dispatch({ children, parentId, type: "insert-children" });
+    }, []);
 
     return {
         collapse,
