@@ -20,7 +20,7 @@ const mockFetch = vi.fn();
 class CustomMockXMLHttpRequest extends MockXMLHttpRequest {
     public override getResponseHeader = vi.fn((name: string) => {
         if (name === "ETag") {
-            return "\"test-etag\"";
+            return '"test-etag"';
         }
 
         if (name === "Location") {
@@ -75,7 +75,7 @@ describe("query-client", () => {
             const headers = new Headers({
                 "Content-Length": "1024",
                 "Content-Type": "image/jpeg",
-                ETag: "\"test-etag\"",
+                ETag: '"test-etag"',
                 "Last-Modified": "Wed, 21 Oct 2015 07:28:00 GMT",
             });
 
@@ -292,7 +292,7 @@ describe("query-client", () => {
 
             const result = await putFile("https://api.example.com/file/123", file, onProgress);
 
-            expect(result.etag).toBe("\"test-etag\"");
+            expect(result.etag).toBe('"test-etag"');
             expect(result.location).toBe("https://api.example.com/file/123");
             expect(onProgress).toHaveBeenCalledWith(expect.any(Number));
         });
@@ -304,7 +304,7 @@ describe("query-client", () => {
 
             const result = await putFile("https://api.example.com/file/123", file);
 
-            expect(result.etag).toBe("\"test-etag\"");
+            expect(result.etag).toBe('"test-etag"');
         });
     });
 
@@ -316,7 +316,7 @@ describe("query-client", () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers({
-                    ETag: "\"chunk-etag\"",
+                    ETag: '"chunk-etag"',
                     "X-Upload-Complete": "false",
                     "X-Upload-Offset": "100",
                 }),
@@ -327,7 +327,7 @@ describe("query-client", () => {
 
             expect(result.uploadOffset).toBe(100);
             expect(result.uploadComplete).toBe(false);
-            expect(result.etag).toBe("\"chunk-etag\"");
+            expect(result.etag).toBe('"chunk-etag"');
         });
 
         it("should include checksum in headers when provided", async () => {

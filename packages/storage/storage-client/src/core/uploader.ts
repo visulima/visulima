@@ -54,19 +54,19 @@ export interface BatchState {
 /**
  * Uploader event types
  */
-export type UploaderEventType
-    = | "ITEM_START"
-        | "ITEM_PROGRESS"
-        | "ITEM_FINISH"
-        | "ITEM_ERROR"
-        | "ITEM_ABORT"
-        | "BATCH_START"
-        | "BATCH_PROGRESS"
-        | "BATCH_FINISH"
-        | "BATCH_ERROR"
-        | "BATCH_CANCELLED"
-        | "BATCH_FINALIZE"
-        | "BATCH_COMPLETE";
+export type UploaderEventType =
+    | "ITEM_START"
+    | "ITEM_PROGRESS"
+    | "ITEM_FINISH"
+    | "ITEM_ERROR"
+    | "ITEM_ABORT"
+    | "BATCH_START"
+    | "BATCH_PROGRESS"
+    | "BATCH_FINISH"
+    | "BATCH_ERROR"
+    | "BATCH_CANCELLED"
+    | "BATCH_FINALIZE"
+    | "BATCH_COMPLETE";
 
 /**
  * Event handler function type

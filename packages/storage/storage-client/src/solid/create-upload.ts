@@ -129,45 +129,45 @@ const createUpload = (options: CreateUploadOptions): CreateUploadReturn => {
 
     const chunkedRestOptions: CreateChunkedRestUploadOptions | undefined = endpointChunkedRest
         ? {
-            chunkSize,
-            endpoint: endpointChunkedRest,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointChunkedRest,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const multipartOptions: CreateMultipartUploadOptions | undefined = endpointMultipart
         ? {
-            endpoint: endpointMultipart,
-            metadata,
-            onError,
-            onProgress,
-            onStart,
-            onSuccess,
-        }
+              endpoint: endpointMultipart,
+              metadata,
+              onError,
+              onProgress,
+              onStart,
+              onSuccess,
+          }
         : undefined;
 
     const tusOptions: CreateTusUploadOptions | undefined = endpointTus
         ? {
-            chunkSize,
-            endpoint: endpointTus,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointTus,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : undefined;

@@ -26,32 +26,32 @@ const uploader = createUploader({
 
 **Options: `UploaderOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Upload endpoint URL |
-| `metadata` | `Record<string, string>` | No | Additional metadata to include with the upload |
-| `retry` | `boolean` | No | Enable automatic retry on failure |
-| `maxRetries` | `number` | No | Maximum number of retry attempts |
+| Property     | Type                     | Required | Description                                    |
+| ------------ | ------------------------ | -------- | ---------------------------------------------- |
+| `endpoint`   | `string`                 | Yes      | Upload endpoint URL                            |
+| `metadata`   | `Record<string, string>` | No       | Additional metadata to include with the upload |
+| `retry`      | `boolean`                | No       | Enable automatic retry on failure              |
+| `maxRetries` | `number`                 | No       | Maximum number of retry attempts               |
 
 **Returns: `Uploader`**
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `add` | `(file: File, batchId?: string) => string` | Adds a file to the upload queue. Returns item ID. |
-| `addBatch` | `(files: File[]) => string[]` | Adds multiple files as a batch. Returns item IDs. |
-| `getItem` | `(id: string) => UploadItem \| undefined` | Gets an item by ID |
-| `getItems` | `() => UploadItem[]` | Gets all items |
-| `getBatch` | `(batchId: string) => BatchState \| undefined` | Gets batch state by batch ID |
-| `getBatches` | `() => BatchState[]` | Gets all batches |
-| `getBatchItems` | `(batchId: string) => UploadItem[]` | Gets all items in a batch |
-| `abortItem` | `(id: string) => void` | Aborts a specific upload |
-| `abortBatch` | `(batchId: string) => void` | Aborts all uploads in a batch |
-| `abort` | `() => void` | Aborts all uploads |
-| `clear` | `() => void` | Clears all items and aborts active uploads |
-| `retryItem` | `(id: string) => void` | Retries a failed upload item |
-| `retryBatch` | `(batchId: string) => void` | Retries all failed items in a batch |
-| `on` | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Subscribes to uploader events |
-| `off` | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Unsubscribes from uploader events |
+| Method          | Signature                                                           | Description                                       |
+| --------------- | ------------------------------------------------------------------- | ------------------------------------------------- |
+| `add`           | `(file: File, batchId?: string) => string`                          | Adds a file to the upload queue. Returns item ID. |
+| `addBatch`      | `(files: File[]) => string[]`                                       | Adds multiple files as a batch. Returns item IDs. |
+| `getItem`       | `(id: string) => UploadItem \| undefined`                           | Gets an item by ID                                |
+| `getItems`      | `() => UploadItem[]`                                                | Gets all items                                    |
+| `getBatch`      | `(batchId: string) => BatchState \| undefined`                      | Gets batch state by batch ID                      |
+| `getBatches`    | `() => BatchState[]`                                                | Gets all batches                                  |
+| `getBatchItems` | `(batchId: string) => UploadItem[]`                                 | Gets all items in a batch                         |
+| `abortItem`     | `(id: string) => void`                                              | Aborts a specific upload                          |
+| `abortBatch`    | `(batchId: string) => void`                                         | Aborts all uploads in a batch                     |
+| `abort`         | `() => void`                                                        | Aborts all uploads                                |
+| `clear`         | `() => void`                                                        | Clears all items and aborts active uploads        |
+| `retryItem`     | `(id: string) => void`                                              | Retries a failed upload item                      |
+| `retryBatch`    | `(batchId: string) => void`                                         | Retries all failed items in a batch               |
+| `on`            | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Subscribes to uploader events                     |
+| `off`           | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Unsubscribes from uploader events                 |
 
 ### `createMultipartAdapter`
 
@@ -69,24 +69,24 @@ const result = await adapter.upload(file);
 
 **Options: `MultipartAdapterOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Upload endpoint URL |
-| `metadata` | `Record<string, string>` | No | Additional metadata |
-| `retry` | `boolean` | No | Enable automatic retry |
-| `maxRetries` | `number` | No | Maximum retry attempts |
+| Property     | Type                     | Required | Description            |
+| ------------ | ------------------------ | -------- | ---------------------- |
+| `endpoint`   | `string`                 | Yes      | Upload endpoint URL    |
+| `metadata`   | `Record<string, string>` | No       | Additional metadata    |
+| `retry`      | `boolean`                | No       | Enable automatic retry |
+| `maxRetries` | `number`                 | No       | Maximum retry attempts |
 
 **Returns: `MultipartAdapter`**
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `upload` | `(file: File) => Promise<UploadResult>` | Uploads a file and returns the result |
-| `uploadBatch` | `(files: File[]) => string[]` | Uploads multiple files as a batch, returns item IDs |
-| `abort` | `() => void` | Aborts all uploads |
-| `abortBatch` | `(batchId: string) => void` | Aborts a batch of uploads |
-| `abortItem` | `(id: string) => void` | Aborts a specific upload item |
-| `clear` | `() => void` | Clears all uploads |
-| `uploader` | `Uploader` | The underlying uploader instance |
+| Method        | Signature                               | Description                                         |
+| ------------- | --------------------------------------- | --------------------------------------------------- |
+| `upload`      | `(file: File) => Promise<UploadResult>` | Uploads a file and returns the result               |
+| `uploadBatch` | `(files: File[]) => string[]`           | Uploads multiple files as a batch, returns item IDs |
+| `abort`       | `() => void`                            | Aborts all uploads                                  |
+| `abortBatch`  | `(batchId: string) => void`             | Aborts a batch of uploads                           |
+| `abortItem`   | `(id: string) => void`                  | Aborts a specific upload item                       |
+| `clear`       | `() => void`                            | Clears all uploads                                  |
+| `uploader`    | `Uploader`                              | The underlying uploader instance                    |
 
 ### `createTusAdapter`
 
@@ -105,29 +105,29 @@ const result = await adapter.upload(file);
 
 **Options: `TusAdapterOptions`**
 
-| Property | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | - | TUS upload endpoint URL |
-| `chunkSize` | `number` | No | `1048576` (1MB) | Chunk size for TUS uploads |
-| `metadata` | `Record<string, string>` | No | `{}` | Additional metadata |
-| `retry` | `boolean` | No | `true` | Enable automatic retry |
-| `maxRetries` | `number` | No | `3` | Maximum retry attempts |
+| Property     | Type                     | Required | Default         | Description                |
+| ------------ | ------------------------ | -------- | --------------- | -------------------------- |
+| `endpoint`   | `string`                 | Yes      | -               | TUS upload endpoint URL    |
+| `chunkSize`  | `number`                 | No       | `1048576` (1MB) | Chunk size for TUS uploads |
+| `metadata`   | `Record<string, string>` | No       | `{}`            | Additional metadata        |
+| `retry`      | `boolean`                | No       | `true`          | Enable automatic retry     |
+| `maxRetries` | `number`                 | No       | `3`             | Maximum retry attempts     |
 
 **Returns: `TusAdapter`**
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `upload` | `(file: File) => Promise<UploadResult>` | Uploads a file using TUS protocol |
-| `pause` | `() => void` | Pauses the current upload |
-| `resume` | `() => Promise<void>` | Resumes a paused upload |
-| `abort` | `() => void` | Aborts the current upload |
-| `clear` | `() => void` | Clears all uploads |
-| `getOffset` | `() => number` | Gets current upload offset |
-| `isPaused` | `() => boolean` | Whether upload is paused |
-| `setOnStart` | `(callback?) => void` | Sets start callback |
-| `setOnProgress` | `(callback?) => void` | Sets progress callback `(progress, offset)` |
-| `setOnFinish` | `(callback?) => void` | Sets finish callback |
-| `setOnError` | `(callback?) => void` | Sets error callback |
+| Method          | Signature                               | Description                                 |
+| --------------- | --------------------------------------- | ------------------------------------------- |
+| `upload`        | `(file: File) => Promise<UploadResult>` | Uploads a file using TUS protocol           |
+| `pause`         | `() => void`                            | Pauses the current upload                   |
+| `resume`        | `() => Promise<void>`                   | Resumes a paused upload                     |
+| `abort`         | `() => void`                            | Aborts the current upload                   |
+| `clear`         | `() => void`                            | Clears all uploads                          |
+| `getOffset`     | `() => number`                          | Gets current upload offset                  |
+| `isPaused`      | `() => boolean`                         | Whether upload is paused                    |
+| `setOnStart`    | `(callback?) => void`                   | Sets start callback                         |
+| `setOnProgress` | `(callback?) => void`                   | Sets progress callback `(progress, offset)` |
+| `setOnFinish`   | `(callback?) => void`                   | Sets finish callback                        |
+| `setOnError`    | `(callback?) => void`                   | Sets error callback                         |
 
 ### `createChunkedRestAdapter`
 
@@ -146,47 +146,57 @@ const result = await adapter.upload(file);
 
 **Options: `ChunkedRestAdapterOptions`**
 
-| Property | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | - | Chunked REST upload endpoint URL |
-| `chunkSize` | `number` | No | `5242880` (5MB) | Chunk size in bytes |
-| `metadata` | `Record<string, string>` | No | `{}` | Additional metadata |
-| `retry` | `boolean` | No | `true` | Enable automatic retry |
-| `maxRetries` | `number` | No | `3` | Maximum retry attempts |
+| Property     | Type                     | Required | Default         | Description                      |
+| ------------ | ------------------------ | -------- | --------------- | -------------------------------- |
+| `endpoint`   | `string`                 | Yes      | -               | Chunked REST upload endpoint URL |
+| `chunkSize`  | `number`                 | No       | `5242880` (5MB) | Chunk size in bytes              |
+| `metadata`   | `Record<string, string>` | No       | `{}`            | Additional metadata              |
+| `retry`      | `boolean`                | No       | `true`          | Enable automatic retry           |
+| `maxRetries` | `number`                 | No       | `3`             | Maximum retry attempts           |
 
 **Returns: `ChunkedRestAdapter`**
 
-| Method | Signature | Description |
-| --- | --- | --- |
-| `upload` | `(file: File) => Promise<UploadResult>` | Uploads a file in chunks |
-| `pause` | `() => void` | Pauses the upload |
-| `resume` | `() => Promise<void>` | Resumes a paused upload |
-| `abort` | `() => void` | Aborts current upload |
-| `clear` | `() => void` | Clears upload state |
-| `getOffset` | `() => Promise<number>` | Gets current upload offset |
-| `isPaused` | `() => boolean` | Whether upload is paused |
-| `setOnStart` | `(callback?) => void` | Sets start callback |
-| `setOnProgress` | `(callback?) => void` | Sets progress callback `(progress, offset)` |
-| `setOnFinish` | `(callback?) => void` | Sets finish callback |
-| `setOnError` | `(callback?) => void` | Sets error callback |
+| Method          | Signature                               | Description                                 |
+| --------------- | --------------------------------------- | ------------------------------------------- |
+| `upload`        | `(file: File) => Promise<UploadResult>` | Uploads a file in chunks                    |
+| `pause`         | `() => void`                            | Pauses the upload                           |
+| `resume`        | `() => Promise<void>`                   | Resumes a paused upload                     |
+| `abort`         | `() => void`                            | Aborts current upload                       |
+| `clear`         | `() => void`                            | Clears upload state                         |
+| `getOffset`     | `() => Promise<number>`                 | Gets current upload offset                  |
+| `isPaused`      | `() => boolean`                         | Whether upload is paused                    |
+| `setOnStart`    | `(callback?) => void`                   | Sets start callback                         |
+| `setOnProgress` | `(callback?) => void`                   | Sets progress callback `(progress, offset)` |
+| `setOnFinish`   | `(callback?) => void`                   | Sets finish callback                        |
+| `setOnError`    | `(callback?) => void`                   | Sets error callback                         |
 
 ### Utility Functions
 
 ```ts
-import { buildUrl, fetchFile, fetchJson, fetchHead, deleteRequest, putFile, patchChunk, parseApiError, extractFileMetaFromHeaders } from "@visulima/storage-client";
+import {
+    buildUrl,
+    fetchFile,
+    fetchJson,
+    fetchHead,
+    deleteRequest,
+    putFile,
+    patchChunk,
+    parseApiError,
+    extractFileMetaFromHeaders,
+} from "@visulima/storage-client";
 ```
 
-| Function | Signature | Description |
-| --- | --- | --- |
-| `buildUrl` | `(baseUrl, path, params?) => string` | Builds URL with query parameters |
-| `fetchFile` | `(url) => Promise<Blob>` | Fetches a file as Blob with error handling |
-| `fetchJson` | `<T>(url) => Promise<T>` | Fetches JSON with error handling |
-| `fetchHead` | `(url) => Promise<Headers>` | Fetches metadata via HEAD request |
-| `deleteRequest` | `(url) => Promise<void>` | Sends DELETE request with error handling |
-| `putFile` | `(url, file, onProgress?) => Promise<{...}>` | PUT request with progress tracking |
-| `patchChunk` | `(url, chunk, offset, checksum?) => Promise<{...}>` | PATCH request for chunk uploads |
-| `parseApiError` | `(response) => Promise<Error>` | Parses error response from API |
-| `extractFileMetaFromHeaders` | `(id, headers) => FileMeta` | Extracts file metadata from response headers |
+| Function                     | Signature                                           | Description                                  |
+| ---------------------------- | --------------------------------------------------- | -------------------------------------------- |
+| `buildUrl`                   | `(baseUrl, path, params?) => string`                | Builds URL with query parameters             |
+| `fetchFile`                  | `(url) => Promise<Blob>`                            | Fetches a file as Blob with error handling   |
+| `fetchJson`                  | `<T>(url) => Promise<T>`                            | Fetches JSON with error handling             |
+| `fetchHead`                  | `(url) => Promise<Headers>`                         | Fetches metadata via HEAD request            |
+| `deleteRequest`              | `(url) => Promise<void>`                            | Sends DELETE request with error handling     |
+| `putFile`                    | `(url, file, onProgress?) => Promise<{...}>`        | PUT request with progress tracking           |
+| `patchChunk`                 | `(url, chunk, offset, checksum?) => Promise<{...}>` | PATCH request for chunk uploads              |
+| `parseApiError`              | `(response) => Promise<Error>`                      | Parses error response from API               |
+| `extractFileMetaFromHeaders` | `(id, headers) => FileMeta`                         | Extracts file metadata from response headers |
 
 ### `storageQueryKeys`
 
@@ -260,9 +270,9 @@ interface UploadItem {
     id: string;
     file: File;
     status: "pending" | "uploading" | "completed" | "error" | "aborted";
-    completed: number;   // Progress percentage (0-100)
-    loaded: number;      // Bytes uploaded so far
-    size: number;        // Total file size in bytes
+    completed: number; // Progress percentage (0-100)
+    loaded: number; // Bytes uploaded so far
+    size: number; // Total file size in bytes
     error?: string;
     batchId?: string;
     retryCount?: number;
@@ -280,7 +290,7 @@ interface BatchState {
     id: string;
     itemIds: string[];
     status: "pending" | "uploading" | "completed" | "error" | "cancelled";
-    progress: number;       // Aggregate progress (0-100)
+    progress: number; // Aggregate progress (0-100)
     totalCount: number;
     completedCount: number;
     errorCount: number;
@@ -291,9 +301,18 @@ interface BatchState {
 
 ```ts
 type UploaderEventType =
-    | "ITEM_START" | "ITEM_PROGRESS" | "ITEM_FINISH" | "ITEM_ERROR" | "ITEM_ABORT"
-    | "BATCH_START" | "BATCH_PROGRESS" | "BATCH_FINISH" | "BATCH_ERROR"
-    | "BATCH_CANCELLED" | "BATCH_FINALIZE" | "BATCH_COMPLETE";
+    | "ITEM_START"
+    | "ITEM_PROGRESS"
+    | "ITEM_FINISH"
+    | "ITEM_ERROR"
+    | "ITEM_ABORT"
+    | "BATCH_START"
+    | "BATCH_PROGRESS"
+    | "BATCH_FINISH"
+    | "BATCH_ERROR"
+    | "BATCH_CANCELLED"
+    | "BATCH_FINALIZE"
+    | "BATCH_COMPLETE";
 ```
 
 ### `ApiError`
@@ -355,8 +374,8 @@ Options for file transformation (images, etc.).
 interface TransformOptions {
     width?: number;
     height?: number;
-    quality?: number;         // 0-100
-    format?: string;          // "jpeg", "png", "webp", etc.
+    quality?: number; // 0-100
+    format?: string; // "jpeg", "png", "webp", etc.
     fit?: "cover" | "contain" | "fill" | "inside" | "outside";
     [key: string]: string | number | boolean | undefined;
 }
@@ -396,40 +415,40 @@ Unified upload hook with automatic method selection based on provided endpoints 
 
 ```ts
 const {
-    upload,       // (file: File) => Promise<UploadResult>
-    abort,        // () => void
-    reset,        // () => void
-    progress,     // number (0-100)
-    isUploading,  // boolean
-    isPaused,     // boolean | undefined
-    error,        // Error | undefined
-    result,       // UploadResult | undefined
-    currentMethod,// UploadMethod
-    offset,       // number | undefined
-    pause,        // (() => void) | undefined
-    resume,       // (() => Promise<void>) | undefined
+    upload, // (file: File) => Promise<UploadResult>
+    abort, // () => void
+    reset, // () => void
+    progress, // number (0-100)
+    isUploading, // boolean
+    isPaused, // boolean | undefined
+    error, // Error | undefined
+    result, // UploadResult | undefined
+    currentMethod, // UploadMethod
+    offset, // number | undefined
+    pause, // (() => void) | undefined
+    resume, // (() => Promise<void>) | undefined
 } = useUpload(options);
 ```
 
 **Options: `UseUploadOptions`**
 
-| Property | Type | Default | Description |
-| --- | --- | --- | --- |
-| `endpointMultipart` | `string` | - | Multipart upload endpoint URL |
-| `endpointTus` | `string` | - | TUS upload endpoint URL |
-| `endpointChunkedRest` | `string` | - | Chunked REST upload endpoint URL |
-| `method` | `UploadMethod` | auto-detected | Upload method to use |
-| `chunkSize` | `number` | 1MB (TUS) / 5MB (chunked) | Chunk size |
-| `tusThreshold` | `number` | `10485760` (10MB) | File size threshold for auto-selecting TUS |
-| `metadata` | `Record<string, string>` | - | Additional metadata |
-| `retry` | `boolean` | - | Enable automatic retry (TUS/chunked only) |
-| `maxRetries` | `number` | - | Maximum retry attempts (TUS/chunked only) |
-| `onStart` | `() => void` | - | Called when upload starts |
-| `onProgress` | `(progress: number) => void` | - | Called when progress updates |
-| `onSuccess` | `(file: UploadResult) => void` | - | Called on success |
-| `onError` | `(error: Error) => void` | - | Called on failure |
-| `onPause` | `() => void` | - | Called when paused (TUS/chunked only) |
-| `onResume` | `() => void` | - | Called when resumed (TUS/chunked only) |
+| Property              | Type                           | Default                   | Description                                |
+| --------------------- | ------------------------------ | ------------------------- | ------------------------------------------ |
+| `endpointMultipart`   | `string`                       | -                         | Multipart upload endpoint URL              |
+| `endpointTus`         | `string`                       | -                         | TUS upload endpoint URL                    |
+| `endpointChunkedRest` | `string`                       | -                         | Chunked REST upload endpoint URL           |
+| `method`              | `UploadMethod`                 | auto-detected             | Upload method to use                       |
+| `chunkSize`           | `number`                       | 1MB (TUS) / 5MB (chunked) | Chunk size                                 |
+| `tusThreshold`        | `number`                       | `10485760` (10MB)         | File size threshold for auto-selecting TUS |
+| `metadata`            | `Record<string, string>`       | -                         | Additional metadata                        |
+| `retry`               | `boolean`                      | -                         | Enable automatic retry (TUS/chunked only)  |
+| `maxRetries`          | `number`                       | -                         | Maximum retry attempts (TUS/chunked only)  |
+| `onStart`             | `() => void`                   | -                         | Called when upload starts                  |
+| `onProgress`          | `(progress: number) => void`   | -                         | Called when progress updates               |
+| `onSuccess`           | `(file: UploadResult) => void` | -                         | Called on success                          |
+| `onError`             | `(error: Error) => void`       | -                         | Called on failure                          |
+| `onPause`             | `() => void`                   | -                         | Called when paused (TUS/chunked only)      |
+| `onResume`            | `() => void`                   | -                         | Called when resumed (TUS/chunked only)     |
 
 #### `useMultipartUpload`
 
@@ -443,14 +462,14 @@ const { upload, progress, isUploading, error, result, reset } = useMultipartUplo
 
 **Options: `UseMultipartUploadOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Upload endpoint URL |
-| `metadata` | `Record<string, string>` | No | Additional metadata |
-| `onStart` | `() => void` | No | Called when upload starts |
-| `onProgress` | `(progress: number) => void` | No | Called when progress updates |
-| `onSuccess` | `(file: UploadResult) => void` | No | Called on success |
-| `onError` | `(error: Error) => void` | No | Called on failure |
+| Property     | Type                           | Required | Description                  |
+| ------------ | ------------------------------ | -------- | ---------------------------- |
+| `endpoint`   | `string`                       | Yes      | Upload endpoint URL          |
+| `metadata`   | `Record<string, string>`       | No       | Additional metadata          |
+| `onStart`    | `() => void`                   | No       | Called when upload starts    |
+| `onProgress` | `(progress: number) => void`   | No       | Called when progress updates |
+| `onSuccess`  | `(file: UploadResult) => void` | No       | Called on success            |
+| `onError`    | `(error: Error) => void`       | No       | Called on failure            |
 
 #### `useTusUpload`
 
@@ -464,19 +483,19 @@ const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, e
 
 **Options: `UseTusUploadOptions`**
 
-| Property | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | - | TUS upload endpoint URL |
-| `chunkSize` | `number` | No | `1048576` (1MB) | Chunk size |
-| `metadata` | `Record<string, string>` | No | - | Additional metadata |
-| `retry` | `boolean` | No | - | Enable automatic retry |
-| `maxRetries` | `number` | No | - | Maximum retry attempts |
-| `onStart` | `() => void` | No | - | Called when upload starts |
-| `onProgress` | `(progress: number) => void` | No | - | Called when progress updates |
-| `onSuccess` | `(file: UploadResult) => void` | No | - | Called on success |
-| `onError` | `(error: Error) => void` | No | - | Called on failure |
-| `onPause` | `() => void` | No | - | Called when paused |
-| `onResume` | `() => void` | No | - | Called when resumed |
+| Property     | Type                           | Required | Default         | Description                  |
+| ------------ | ------------------------------ | -------- | --------------- | ---------------------------- |
+| `endpoint`   | `string`                       | Yes      | -               | TUS upload endpoint URL      |
+| `chunkSize`  | `number`                       | No       | `1048576` (1MB) | Chunk size                   |
+| `metadata`   | `Record<string, string>`       | No       | -               | Additional metadata          |
+| `retry`      | `boolean`                      | No       | -               | Enable automatic retry       |
+| `maxRetries` | `number`                       | No       | -               | Maximum retry attempts       |
+| `onStart`    | `() => void`                   | No       | -               | Called when upload starts    |
+| `onProgress` | `(progress: number) => void`   | No       | -               | Called when progress updates |
+| `onSuccess`  | `(file: UploadResult) => void` | No       | -               | Called on success            |
+| `onError`    | `(error: Error) => void`       | No       | -               | Called on failure            |
+| `onPause`    | `() => void`                   | No       | -               | Called when paused           |
+| `onResume`   | `() => void`                   | No       | -               | Called when resumed          |
 
 #### `useChunkedRestUpload`
 
@@ -491,19 +510,19 @@ const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, e
 
 **Options: `UseChunkedRestUploadOptions`**
 
-| Property | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | - | Chunked REST upload endpoint URL |
-| `chunkSize` | `number` | No | `5242880` (5MB) | Chunk size |
-| `metadata` | `Record<string, string>` | No | - | Additional metadata |
-| `retry` | `boolean` | No | - | Enable automatic retry |
-| `maxRetries` | `number` | No | - | Maximum retry attempts |
-| `onStart` | `() => void` | No | - | Called when upload starts |
-| `onProgress` | `(progress: number, offset: number) => void` | No | - | Called when progress updates |
-| `onSuccess` | `(file: UploadResult) => void` | No | - | Called on success |
-| `onError` | `(error: Error) => void` | No | - | Called on failure |
-| `onPause` | `() => void` | No | - | Called when paused |
-| `onResume` | `() => void` | No | - | Called when resumed |
+| Property     | Type                                         | Required | Default         | Description                      |
+| ------------ | -------------------------------------------- | -------- | --------------- | -------------------------------- |
+| `endpoint`   | `string`                                     | Yes      | -               | Chunked REST upload endpoint URL |
+| `chunkSize`  | `number`                                     | No       | `5242880` (5MB) | Chunk size                       |
+| `metadata`   | `Record<string, string>`                     | No       | -               | Additional metadata              |
+| `retry`      | `boolean`                                    | No       | -               | Enable automatic retry           |
+| `maxRetries` | `number`                                     | No       | -               | Maximum retry attempts           |
+| `onStart`    | `() => void`                                 | No       | -               | Called when upload starts        |
+| `onProgress` | `(progress: number, offset: number) => void` | No       | -               | Called when progress updates     |
+| `onSuccess`  | `(file: UploadResult) => void`               | No       | -               | Called on success                |
+| `onError`    | `(error: Error) => void`                     | No       | -               | Called on failure                |
+| `onPause`    | `() => void`                                 | No       | -               | Called when paused               |
+| `onResume`   | `() => void`                                 | No       | -               | Called when resumed              |
 
 #### `useBatchUpload`
 
@@ -517,28 +536,28 @@ const { uploadBatch, abortBatch, progress, isUploading, items, completedCount, e
 
 **Options: `UseBatchUploadOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Upload endpoint URL |
-| `metadata` | `Record<string, string>` | No | Additional metadata |
-| `onStart` | `(batchId: string) => void` | No | Called when batch starts |
-| `onProgress` | `(progress: number, batchId: string) => void` | No | Called when progress updates |
-| `onSuccess` | `(results: UploadResult[], batchId: string) => void` | No | Called on success |
-| `onError` | `(error: Error, batchId: string) => void` | No | Called on failure |
+| Property     | Type                                                 | Required | Description                  |
+| ------------ | ---------------------------------------------------- | -------- | ---------------------------- |
+| `endpoint`   | `string`                                             | Yes      | Upload endpoint URL          |
+| `metadata`   | `Record<string, string>`                             | No       | Additional metadata          |
+| `onStart`    | `(batchId: string) => void`                          | No       | Called when batch starts     |
+| `onProgress` | `(progress: number, batchId: string) => void`        | No       | Called when progress updates |
+| `onSuccess`  | `(results: UploadResult[], batchId: string) => void` | No       | Called on success            |
+| `onError`    | `(error: Error, batchId: string) => void`            | No       | Called on failure            |
 
 **Returns: `UseBatchUploadReturn`**
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `uploadBatch` | `(files: File[]) => string[]` | Uploads files as a batch, returns item IDs |
-| `abortBatch` | `(batchId: string) => void` | Aborts a specific batch |
-| `items` | `UploadItem[]` | All upload items in current batch |
-| `progress` | `number` | Current batch progress (0-100) |
-| `isUploading` | `boolean` | Whether a batch is uploading |
-| `completedCount` | `number` | Number of completed items |
-| `errorCount` | `number` | Number of failed items |
-| `error` | `Error \| undefined` | Last batch error |
-| `reset` | `() => void` | Reset batch state |
+| Property         | Type                          | Description                                |
+| ---------------- | ----------------------------- | ------------------------------------------ |
+| `uploadBatch`    | `(files: File[]) => string[]` | Uploads files as a batch, returns item IDs |
+| `abortBatch`     | `(batchId: string) => void`   | Aborts a specific batch                    |
+| `items`          | `UploadItem[]`                | All upload items in current batch          |
+| `progress`       | `number`                      | Current batch progress (0-100)             |
+| `isUploading`    | `boolean`                     | Whether a batch is uploading               |
+| `completedCount` | `number`                      | Number of completed items                  |
+| `errorCount`     | `number`                      | Number of failed items                     |
+| `error`          | `Error \| undefined`          | Last batch error                           |
+| `reset`          | `() => void`                  | Reset batch state                          |
 
 ### File Input Hooks
 
@@ -555,24 +574,24 @@ const { files, inputRef, handleFileChange, handleDrop, handleDragOver, handleDra
 
 **Options: `UseFileInputOptions`**
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `accept` | `string` | Accept file types (e.g., `"image/*"`, `".pdf"`) |
-| `multiple` | `boolean` | Whether to allow multiple file selection |
-| `onFilesSelected` | `(files: File[]) => void` | Callback when files are selected |
+| Property          | Type                      | Description                                     |
+| ----------------- | ------------------------- | ----------------------------------------------- |
+| `accept`          | `string`                  | Accept file types (e.g., `"image/*"`, `".pdf"`) |
+| `multiple`        | `boolean`                 | Whether to allow multiple file selection        |
+| `onFilesSelected` | `(files: File[]) => void` | Callback when files are selected                |
 
 **Returns: `UseFileInputReturn`**
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `files` | `File[]` | Currently selected files |
-| `inputRef` | `React.RefObject<HTMLInputElement>` | Ref for the file input element |
-| `handleFileChange` | `(event) => void` | Handler for input change events |
-| `handleDrop` | `(event) => void` | Handler for drop events |
-| `handleDragOver` | `(event) => void` | Handler for drag over events |
-| `handleDragLeave` | `(event) => void` | Handler for drag leave events |
-| `openFileDialog` | `() => void` | Opens file dialog programmatically |
-| `reset` | `() => void` | Resets selected files |
+| Property           | Type                                | Description                        |
+| ------------------ | ----------------------------------- | ---------------------------------- |
+| `files`            | `File[]`                            | Currently selected files           |
+| `inputRef`         | `React.RefObject<HTMLInputElement>` | Ref for the file input element     |
+| `handleFileChange` | `(event) => void`                   | Handler for input change events    |
+| `handleDrop`       | `(event) => void`                   | Handler for drop events            |
+| `handleDragOver`   | `(event) => void`                   | Handler for drag over events       |
+| `handleDragLeave`  | `(event) => void`                   | Handler for drag leave events      |
+| `openFileDialog`   | `() => void`                        | Opens file dialog programmatically |
+| `reset`            | `() => void`                        | Resets selected files              |
 
 #### `usePasteUpload`
 
@@ -587,18 +606,18 @@ const { handlePaste, pastedFiles, reset } = usePasteUpload({
 
 **Options: `UsePasteUploadOptions`**
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `filter` | `(file: File) => boolean` | Filter function to accept/reject files |
-| `onFilesPasted` | `(files: File[]) => void` | Callback when files are pasted |
+| Property        | Type                      | Description                            |
+| --------------- | ------------------------- | -------------------------------------- |
+| `filter`        | `(file: File) => boolean` | Filter function to accept/reject files |
+| `onFilesPasted` | `(files: File[]) => void` | Callback when files are pasted         |
 
 **Returns: `UsePasteUploadReturn`**
 
-| Property | Type | Description |
-| --- | --- | --- |
+| Property      | Type              | Description              |
+| ------------- | ----------------- | ------------------------ |
 | `handlePaste` | `(event) => void` | Handler for paste events |
-| `pastedFiles` | `File[]` | Files that were pasted |
-| `reset` | `() => void` | Resets pasted files |
+| `pastedFiles` | `File[]`          | Files that were pasted   |
+| `reset`       | `() => void`      | Resets pasted files      |
 
 ### File Operation Hooks (Queries)
 
@@ -615,24 +634,24 @@ const { data, isLoading, error, meta, refetch } = useGetFile({
 
 **Options: `UseGetFileOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `id` | `string` | Yes | File ID to fetch |
-| `enabled` | `boolean` | No | Whether to enable the query (default: `true`) |
-| `transform` | `Record<string, string \| number \| boolean>` | No | Transformation parameters |
-| `onSuccess` | `(data: Blob, meta?) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                                          | Required | Description                                   |
+| ----------- | --------------------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                                      | Yes      | Base endpoint URL                             |
+| `id`        | `string`                                      | Yes      | File ID to fetch                              |
+| `enabled`   | `boolean`                                     | No       | Whether to enable the query (default: `true`) |
+| `transform` | `Record<string, string \| number \| boolean>` | No       | Transformation parameters                     |
+| `onSuccess` | `(data: Blob, meta?) => void`                 | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`                      | No       | Error callback                                |
 
 **Returns: `UseGetFileReturn`**
 
-| Property | Type | Description |
-| --- | --- | --- |
-| `data` | `Blob \| undefined` | File data as Blob |
-| `meta` | `FileMeta \| undefined` | File metadata from response headers |
-| `isLoading` | `boolean` | Whether request is in progress |
-| `error` | `Error \| undefined` | Last request error |
-| `refetch` | `() => void` | Refetch the file |
+| Property    | Type                    | Description                         |
+| ----------- | ----------------------- | ----------------------------------- |
+| `data`      | `Blob \| undefined`     | File data as Blob                   |
+| `meta`      | `FileMeta \| undefined` | File metadata from response headers |
+| `isLoading` | `boolean`               | Whether request is in progress      |
+| `error`     | `Error \| undefined`    | Last request error                  |
+| `refetch`   | `() => void`            | Refetch the file                    |
 
 #### `useGetFileList`
 
@@ -648,14 +667,14 @@ const { data, isLoading, error, refetch } = useGetFileList({
 
 **Options: `UseGetFileListOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `page` | `number` | No | Page number |
-| `limit` | `number` | No | Maximum elements to retrieve |
-| `enabled` | `boolean` | No | Whether to enable the query (default: `true`) |
-| `onSuccess` | `(data: FileListResponse) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                               | Required | Description                                   |
+| ----------- | ---------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                           | Yes      | Base endpoint URL                             |
+| `page`      | `number`                           | No       | Page number                                   |
+| `limit`     | `number`                           | No       | Maximum elements to retrieve                  |
+| `enabled`   | `boolean`                          | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(data: FileListResponse) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`           | No       | Error callback                                |
 
 #### `useGetFileMeta`
 
@@ -670,13 +689,13 @@ const { data, isLoading, error, refetch } = useGetFileMeta({
 
 **Options: `UseGetFileMetaOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `id` | `string` | Yes | File ID |
-| `enabled` | `boolean` | No | Whether to enable the query (default: `true`) |
-| `onSuccess` | `(meta: FileMeta) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                       | Required | Description                                   |
+| ----------- | -------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                   | Yes      | Base endpoint URL                             |
+| `id`        | `string`                   | Yes      | File ID                                       |
+| `enabled`   | `boolean`                  | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(meta: FileMeta) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`   | No       | Error callback                                |
 
 #### `useHeadFile`
 
@@ -691,13 +710,13 @@ const { data, isLoading, error, refetch } = useHeadFile({
 
 **Options: `UseHeadFileOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `id` | `string` | Yes | File ID |
-| `enabled` | `boolean` | No | Whether to enable the query (default: `true`) |
-| `onSuccess` | `(meta: FileHeadMetadata) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                               | Required | Description                                   |
+| ----------- | ---------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                           | Yes      | Base endpoint URL                             |
+| `id`        | `string`                           | Yes      | File ID                                       |
+| `enabled`   | `boolean`                          | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(meta: FileHeadMetadata) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`           | No       | Error callback                                |
 
 ### File Operation Hooks (Mutations)
 
@@ -715,11 +734,11 @@ await deleteFile("file-123");
 
 **Options: `UseDeleteFileOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `onSuccess` | `() => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                     | Required | Description       |
+| ----------- | ------------------------ | -------- | ----------------- |
+| `endpoint`  | `string`                 | Yes      | Base endpoint URL |
+| `onSuccess` | `() => void`             | No       | Success callback  |
+| `onError`   | `(error: Error) => void` | No       | Error callback    |
 
 #### `useBatchDeleteFiles`
 
@@ -736,11 +755,11 @@ const result = await batchDeleteFiles(["file-1", "file-2"]);
 
 **Options: `UseBatchDeleteFilesOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `onSuccess` | `(result: BatchDeleteResult) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                                  | Required | Description       |
+| ----------- | ------------------------------------- | -------- | ----------------- |
+| `endpoint`  | `string`                              | Yes      | Base endpoint URL |
+| `onSuccess` | `(result: BatchDeleteResult) => void` | No       | Success callback  |
+| `onError`   | `(error: Error) => void`              | No       | Error callback    |
 
 #### `usePutFile`
 
@@ -756,12 +775,12 @@ await putFile("file-123", file);
 
 **Options: `UsePutFileOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `onProgress` | `(progress: number) => void` | No | Progress callback |
-| `onSuccess` | `(result: UploadResult) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property     | Type                             | Required | Description       |
+| ------------ | -------------------------------- | -------- | ----------------- |
+| `endpoint`   | `string`                         | Yes      | Base endpoint URL |
+| `onProgress` | `(progress: number) => void`     | No       | Progress callback |
+| `onSuccess`  | `(result: UploadResult) => void` | No       | Success callback  |
+| `onError`    | `(error: Error) => void`         | No       | Error callback    |
 
 #### `usePatchChunk`
 
@@ -777,11 +796,11 @@ await patchChunk("file-123", chunkBlob, offset, checksum);
 
 **Options: `UsePatchChunkOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `onSuccess` | `(result: UploadResult) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                             | Required | Description       |
+| ----------- | -------------------------------- | -------- | ----------------- |
+| `endpoint`  | `string`                         | Yes      | Base endpoint URL |
+| `onSuccess` | `(result: UploadResult) => void` | No       | Success callback  |
+| `onError`   | `(error: Error) => void`         | No       | Error callback    |
 
 ### Transform Hooks
 
@@ -799,14 +818,14 @@ const { data, isLoading, error, meta, refetch } = useTransformFile({
 
 **Options: `UseTransformFileOptions`**
 
-| Property | Type | Required | Description |
-| --- | --- | --- | --- |
-| `endpoint` | `string` | Yes | Base endpoint URL |
-| `id` | `string` | Yes | File ID |
-| `transform` | `TransformOptions` | Yes | Transformation parameters |
-| `enabled` | `boolean` | No | Whether to enable the query |
-| `onSuccess` | `(data: Blob, meta?) => void` | No | Success callback |
-| `onError` | `(error: Error) => void` | No | Error callback |
+| Property    | Type                          | Required | Description                 |
+| ----------- | ----------------------------- | -------- | --------------------------- |
+| `endpoint`  | `string`                      | Yes      | Base endpoint URL           |
+| `id`        | `string`                      | Yes      | File ID                     |
+| `transform` | `TransformOptions`            | Yes      | Transformation parameters   |
+| `enabled`   | `boolean`                     | No       | Whether to enable the query |
+| `onSuccess` | `(data: Blob, meta?) => void` | No       | Success callback            |
+| `onError`   | `(error: Error) => void`      | No       | Error callback              |
 
 #### `useTransformMetadata`
 
@@ -861,16 +880,16 @@ retryBatch("batch-123");
 
 All listener hooks accept `endpoint` and `metadata` options, plus an event-specific callback.
 
-| Hook | Callback | Callback Signature |
-| --- | --- | --- |
-| `useBatchStartListener` | `onBatchStart` | `(batch: BatchState) => void` |
-| `useBatchProgressListener` | `onBatchProgress` | `(batch: BatchState) => void` |
-| `useBatchFinishListener` | `onBatchFinish` | `(batch: BatchState) => void` |
-| `useBatchErrorListener` | `onBatchError` | `(batch: BatchState) => void` |
+| Hook                        | Callback           | Callback Signature            |
+| --------------------------- | ------------------ | ----------------------------- |
+| `useBatchStartListener`     | `onBatchStart`     | `(batch: BatchState) => void` |
+| `useBatchProgressListener`  | `onBatchProgress`  | `(batch: BatchState) => void` |
+| `useBatchFinishListener`    | `onBatchFinish`    | `(batch: BatchState) => void` |
+| `useBatchErrorListener`     | `onBatchError`     | `(batch: BatchState) => void` |
 | `useBatchCancelledListener` | `onBatchCancelled` | `(batch: BatchState) => void` |
-| `useBatchFinalizeListener` | `onBatchFinalize` | `(batch: BatchState) => void` |
-| `useRetryListener` | `onRetry` | `(item: UploadItem) => void` |
-| `useAllAbortListener` | `onAbortAll` | `() => void` |
+| `useBatchFinalizeListener`  | `onBatchFinalize`  | `(batch: BatchState) => void` |
+| `useRetryListener`          | `onRetry`          | `(item: UploadItem) => void`  |
+| `useAllAbortListener`       | `onAbortAll`       | `() => void`                  |
 
 ---
 
@@ -882,68 +901,68 @@ Solid primitives follow the same API patterns as React hooks but use Solid's rea
 
 ### Upload Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createUpload` | Unified upload with automatic method selection |
-| `createMultipartUpload` | Multipart/form-data uploads |
-| `createTusUpload` | TUS resumable uploads with pause/resume |
-| `createChunkedRestUpload` | Chunked REST uploads with pause/resume |
-| `createBatchUpload` | Batch upload for multiple files |
+| Primitive                 | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `createUpload`            | Unified upload with automatic method selection |
+| `createMultipartUpload`   | Multipart/form-data uploads                    |
+| `createTusUpload`         | TUS resumable uploads with pause/resume        |
+| `createChunkedRestUpload` | Chunked REST uploads with pause/resume         |
+| `createBatchUpload`       | Batch upload for multiple files                |
 
 ### File Input Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createFileInput` | File input with drag and drop support |
-| `createPasteUpload` | Clipboard paste upload handling |
+| Primitive           | Description                           |
+| ------------------- | ------------------------------------- |
+| `createFileInput`   | File input with drag and drop support |
+| `createPasteUpload` | Clipboard paste upload handling       |
 
 ### File Operation Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createGetFile` | Fetch/download a file by ID |
-| `createGetFileList` | Fetch paginated file list |
-| `createGetFileMeta` | Fetch file metadata |
-| `createHeadFile` | HEAD request for file status |
-| `createDeleteFile` | Delete a file |
-| `createBatchDeleteFiles` | Batch delete files |
-| `createPutFile` | Create/update a file via PUT |
-| `createPatchChunk` | Upload individual chunks |
+| Primitive                | Description                  |
+| ------------------------ | ---------------------------- |
+| `createGetFile`          | Fetch/download a file by ID  |
+| `createGetFileList`      | Fetch paginated file list    |
+| `createGetFileMeta`      | Fetch file metadata          |
+| `createHeadFile`         | HEAD request for file status |
+| `createDeleteFile`       | Delete a file                |
+| `createBatchDeleteFiles` | Batch delete files           |
+| `createPutFile`          | Create/update a file via PUT |
+| `createPatchChunk`       | Upload individual chunks     |
 
 ### Transform Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createTransformFile` | Fetch transformed file |
+| Primitive                 | Description                       |
+| ------------------------- | --------------------------------- |
+| `createTransformFile`     | Fetch transformed file            |
 | `createTransformMetadata` | Fetch transformation capabilities |
 
 ### Abort Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createAbortAll` | Abort all uploads |
-| `createAbortBatch` | Abort a batch |
-| `createAbortItem` | Abort a specific item |
+| Primitive          | Description           |
+| ------------------ | --------------------- |
+| `createAbortAll`   | Abort all uploads     |
+| `createAbortBatch` | Abort a batch         |
+| `createAbortItem`  | Abort a specific item |
 
 ### Retry Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createRetry` | Retry a failed item |
+| Primitive          | Description                   |
+| ------------------ | ----------------------------- |
+| `createRetry`      | Retry a failed item           |
 | `createBatchRetry` | Retry failed items in a batch |
 
 ### Event Listener Primitives
 
-| Primitive | Description |
-| --- | --- |
-| `createBatchStartListener` | Listen to batch start events |
-| `createBatchProgressListener` | Listen to batch progress events |
-| `createBatchFinishListener` | Listen to batch finish events |
-| `createBatchErrorListener` | Listen to batch error events |
+| Primitive                      | Description                      |
+| ------------------------------ | -------------------------------- |
+| `createBatchStartListener`     | Listen to batch start events     |
+| `createBatchProgressListener`  | Listen to batch progress events  |
+| `createBatchFinishListener`    | Listen to batch finish events    |
+| `createBatchErrorListener`     | Listen to batch error events     |
 | `createBatchCancelledListener` | Listen to batch cancelled events |
-| `createBatchFinalizeListener` | Listen to batch finalize events |
-| `createRetryListener` | Listen to retry events |
-| `createAllAbortListener` | Listen to abort all events |
+| `createBatchFinalizeListener`  | Listen to batch finalize events  |
+| `createRetryListener`          | Listen to retry events           |
+| `createAllAbortListener`       | Listen to abort all events       |
 
 ---
 

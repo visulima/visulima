@@ -125,45 +125,45 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
 
     const chunkedRestOptions: CreateChunkedRestUploadOptions | undefined = endpointChunkedRest
         ? {
-            chunkSize,
-            endpoint: endpointChunkedRest,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointChunkedRest,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const multipartOptions: CreateMultipartUploadOptions | undefined = endpointMultipart
         ? {
-            endpoint: endpointMultipart,
-            metadata,
-            onError,
-            onProgress,
-            onStart,
-            onSuccess,
-        }
+              endpoint: endpointMultipart,
+              metadata,
+              onError,
+              onProgress,
+              onStart,
+              onSuccess,
+          }
         : undefined;
 
     const tusOptions: CreateTusUploadOptions | undefined = endpointTus
         ? {
-            chunkSize,
-            endpoint: endpointTus,
-            maxRetries,
-            metadata,
-            onError,
-            onPause,
-            onProgress,
-            onResume,
-            onStart,
-            onSuccess,
-            retry,
-        }
+              chunkSize,
+              endpoint: endpointTus,
+              maxRetries,
+              metadata,
+              onError,
+              onPause,
+              onProgress,
+              onResume,
+              onStart,
+              onSuccess,
+              retry,
+          }
         : undefined;
 
     const chunkedRestUpload = chunkedRestOptions ? createChunkedRestUpload(chunkedRestOptions) : undefined;
@@ -289,11 +289,11 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.error ?? { subscribe: () => () => {} },
         ],
         ([current, tusError, chunkedRestError, multipartError]) =>
-            (current === "tus" ? tusError : current === "chunked-rest" ? chunkedRestError : (multipartError ?? undefined)),
+            current === "tus" ? tusError : current === "chunked-rest" ? chunkedRestError : (multipartError ?? undefined),
     );
     const isPaused = derived(
         [currentMethod, tusUpload?.isPaused ?? { subscribe: () => () => {} }, chunkedRestUpload?.isPaused ?? { subscribe: () => () => {} }],
-        ([current, tusPaused, chunkedRestPaused]) => current === "tus" ? tusPaused : current === "chunked-rest" ? chunkedRestPaused : undefined,
+        ([current, tusPaused, chunkedRestPaused]) => (current === "tus" ? tusPaused : current === "chunked-rest" ? chunkedRestPaused : undefined),
     );
     const isUploading = derived(
         [
@@ -303,11 +303,11 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.isUploading ?? { subscribe: () => () => {} },
         ],
         ([current, tusIsUploading, chunkedRestIsUploading, multipartIsUploading]) =>
-            (current === "tus" ? (tusIsUploading ?? false) : current === "chunked-rest" ? (chunkedRestIsUploading ?? false) : (multipartIsUploading ?? false)),
+            current === "tus" ? (tusIsUploading ?? false) : current === "chunked-rest" ? (chunkedRestIsUploading ?? false) : (multipartIsUploading ?? false),
     );
     const offset = derived(
         [currentMethod, tusUpload?.offset ?? { subscribe: () => () => {} }, chunkedRestUpload?.offset ?? { subscribe: () => () => {} }],
-        ([current, tusOffset, chunkedRestOffset]) => current === "tus" ? tusOffset : current === "chunked-rest" ? chunkedRestOffset : undefined,
+        ([current, tusOffset, chunkedRestOffset]) => (current === "tus" ? tusOffset : current === "chunked-rest" ? chunkedRestOffset : undefined),
     );
     const progress = derived(
         [
@@ -317,7 +317,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.progress ?? { subscribe: () => () => {} },
         ],
         ([current, tusProgress, chunkedRestProgress, multipartProgress]) =>
-            (current === "tus" ? (tusProgress ?? 0) : current === "chunked-rest" ? (chunkedRestProgress ?? 0) : (multipartProgress ?? 0)),
+            current === "tus" ? (tusProgress ?? 0) : current === "chunked-rest" ? (chunkedRestProgress ?? 0) : (multipartProgress ?? 0),
     );
     const result = derived(
         [
@@ -327,7 +327,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             multipartUpload?.result ?? { subscribe: () => () => {} },
         ],
         ([current, tusRes, chunkedRestRes, multipartRes]) =>
-            (current === "tus" ? (tusRes ?? undefined) : current === "chunked-rest" ? (chunkedRestRes ?? undefined) : (multipartRes ?? undefined)),
+            current === "tus" ? (tusRes ?? undefined) : current === "chunked-rest" ? (chunkedRestRes ?? undefined) : (multipartRes ?? undefined),
     );
 
     // Create derived stores for functions (they return functions based on current method)

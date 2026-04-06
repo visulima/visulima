@@ -8,12 +8,7 @@ const config = defineConfig({
     resolve: {
         tsconfigPaths: true,
     },
-    plugins: [
-        devtools(),
-        nitro(),
-        tanstackStart(),
-        viteReact(),
-    ],
+    plugins: [devtools(), nitro(), tanstackStart(), viteReact()],
 });
 
 export default config;

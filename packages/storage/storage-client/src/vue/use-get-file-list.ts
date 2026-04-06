@@ -61,9 +61,9 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
             return Array.isArray(data)
                 ? { data }
                 : {
-                    data: data.data || (data as unknown as FileMeta[]),
-                    meta: (data as FileListResponse).meta,
-                };
+                      data: data.data || (data as unknown as FileMeta[]),
+                      meta: (data as FileListResponse).meta,
+                  };
         },
         queryKey: computed(() => storageQueryKeys.files.list(endpoint, { limit: toValue(limit), page: toValue(page) })),
     });
