@@ -17,6 +17,9 @@ export default createConfig(
             "prettier.config.js",
             "README.md",
         ],
+    typescript: {
+        tsconfigPath: "./tsconfig.eslint.json",
+    },
         rules: {
             "jsdoc/match-description": "off",
         },
