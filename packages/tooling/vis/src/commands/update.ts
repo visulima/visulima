@@ -33,6 +33,8 @@ import CheckProgressApp from "../tui/components/CheckProgressApp";
 import { UpdateStore } from "../tui/components/update/UpdateStore";
 import VisUpdateApp from "../tui/components/update/VisUpdateApp";
 import { buildSocketOptions, scoreColor } from "../socket-security";
+import { runTyposquatCheck, scanDepsForTyposquats } from "../typosquats";
+import { parsePackageArgument } from "../utils";
 import type { VisConfig } from "../workspace";
 
 type CatalogPackageManager = "bun" | "npm" | "pnpm" | "yarn";
@@ -443,13 +445,51 @@ const update: Command = {
         ["vis update --rollback", "Restore catalog from last backup"],
         ["vis update --ai", "Run AI analysis before applying updates"],
     ],
-    execute: async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
+    execute: async ({ argument: rawArgument, logger, options, visConfig, workspaceRoot: wsRoot }) => {
         if (!wsRoot) {
             throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
         }
 
+        let argument = rawArgument as string[];
+
         const workspaceRoot = wsRoot;
         const { packageManager } = findPackageManagerSync(workspaceRoot);
+
+        // Typosquat check
+        if (!options["no-typosquat-check"]) {
+            if (argument.length > 0) {
+                // Explicit package arguments: offer name correction
+                const parsed = argument.map((a: string) => parsePackageArgument(a));
+                const allowlist = visConfig?.security?.typosquatAllowlist;
+                const result = await runTyposquatCheck(parsed.map((p) => p.name), allowlist);
+
+                if (!result.ok) {
+                    process.exitCode = 1;
+
+                    return;
+                }
+
+                // Rebuild args with corrected names, preserving version specifiers
+                argument = parsed.map((p, i) => {
+                    const corrected = result.packages[i];
+
+                    if (corrected !== p.name) {
+                        return p.versionSpec ? `${corrected}@${p.versionSpec}` : corrected;
+                    }
+
+                    return argument[i];
+                });
+            } else {
+                // No explicit args: scan package.json deps for typosquats
+                const shouldContinue = await scanDepsForTyposquats(workspaceRoot, visConfig?.security?.typosquatAllowlist);
+
+                if (!shouldContinue) {
+                    process.exitCode = 1;
+
+                    return;
+                }
+            }
+        }
 
         // Rollback mode
         if (options.rollback) {
@@ -624,6 +664,12 @@ const update: Command = {
             description: "AI analysis type: impact, security, compatibility, or recommend (default: impact)",
             name: "ai-type",
             type: String,
+        },
+        {
+            defaultValue: false,
+            description: "Skip typosquat name check for package arguments",
+            name: "no-typosquat-check",
+            type: Boolean,
         },
     ],
 };
