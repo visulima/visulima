@@ -13,7 +13,7 @@ export default createConfig(
             "packem.config.ts",
             ".secretlintrc.cjs",
             "package.json",
-            ".prettierrc.cjs",
+            "prettier.config.js",
             "**/README.md",
             "README.md",
         ],
