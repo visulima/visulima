@@ -325,7 +325,9 @@ const stackTraceViewer = async (
               }
 
               function __openEditorScheme__(file, line, column) {
-                if (!file) return;
+                if (!file) {
+                    return;
+                }
                 var editor = __getSelectedEditor__();
                 var tpl = __EDITOR_SCHEMES__[editor] || __EDITOR_SCHEMES__['vscode'];
                 var url = __buildEditorUrl__(tpl, file, line, column);
@@ -345,7 +347,9 @@ const stackTraceViewer = async (
               // Server-side open-in-editor
               document.addEventListener('click', function(e){
                 var btn = (e.target && e.target.closest) ? e.target.closest('[data-open-in-editor]') : null;
-                if (!btn) return;
+                if (!btn) {
+                    return;
+                }
                 var url = btn.getAttribute('data-url');
                 var file = btn.getAttribute('data-path');
                 var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
@@ -360,7 +364,9 @@ const stackTraceViewer = async (
                     try { localStorage.setItem('ono:editor', sel.value); } catch (_) {}
                   }
                 } catch (_) {}
-                if (!url || !file) return;
+                if (!url || !file) {
+                    return;
+                }
                 var body = { file: file, line: line, column: column };
                 if (selectedEditor) body.editor = selectedEditor;
                 try { fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); } catch (_) {}
@@ -369,7 +375,9 @@ const stackTraceViewer = async (
               // Client-side fallback: open via editor URL scheme
               document.addEventListener('click', function(e){
                 var btn = (e.target && e.target.closest) ? e.target.closest('[data-editor-link]') : null;
-                if (!btn) return;
+                if (!btn) {
+                    return;
+                }
                 e.preventDefault();
                 var file = btn.getAttribute('data-path');
                 var line = parseInt(btn.getAttribute('data-line') || '1', 10) || 1;
@@ -444,7 +452,9 @@ const stackTraceViewer = async (
           groupToggles.forEach(function(t){
             var targetId = t.getAttribute('data-target-id');
             var details = targetId ? document.getElementById(targetId) : null;
-            if (!details) return;
+            if (!details) {
+                return;
+            }
 
             // Initialize checkbox state from details
             syncCheckboxWithDetails(t, details);
