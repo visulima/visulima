@@ -26,25 +26,21 @@ const mail = createMail(
 
 The `MailPaceConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                                | Description                      |
-| ---------- | --------- | -------- | -------------------------------------- | -------------------------------- |
-| `apiToken` | `string`  | Yes      | -                                      | Your MailPace API token          |
-| `endpoint` | `string`  | No       | `https://app.mailpace.com/api/v1`      | Custom API endpoint              |
-| `debug`    | `boolean` | No       | `false`                                | Enable debug logging             |
-| `logger`   | `Console` | No       | -                                      | Custom logger instance           |
-| `retries`  | `number`  | No       | `3`                                    | Number of retry attempts         |
-| `timeout`  | `number`  | No       | `30000`                                | Request timeout in milliseconds  |
+| Option     | Type      | Required | Default                           | Description                     |
+| ---------- | --------- | -------- | --------------------------------- | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                                 | Your MailPace API token         |
+| `endpoint` | `string`  | No       | `https://app.mailpace.com/api/v1` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                           | Enable debug logging            |
+| `logger`   | `Console` | No       | -                                 | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                               | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                           | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from MailPace")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from MailPace").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -66,12 +62,12 @@ const options: MailPaceEmailOptions = {
 };
 ```
 
-| Option              | Type                      | Description                          |
-| ------------------- | ------------------------- | ------------------------------------ |
-| `tags`              | `string[]`                | Tags for categorization              |
-| `templateId`        | `number`                  | MailPace template ID                 |
-| `templateVariables` | `Record<string, unknown>` | Template variables                   |
-| `listUnsubscribe`   | `string`                  | List-Unsubscribe header value        |
+| Option              | Type                      | Description                   |
+| ------------------- | ------------------------- | ----------------------------- |
+| `tags`              | `string[]`                | Tags for categorization       |
+| `templateId`        | `number`                  | MailPace template ID          |
+| `templateVariables` | `Record<string, unknown>` | Template variables            |
+| `listUnsubscribe`   | `string`                  | List-Unsubscribe header value |
 
 ### Attachments
 
@@ -95,14 +91,14 @@ const options: MailPaceEmailOptions = {
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

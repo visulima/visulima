@@ -10,14 +10,14 @@ describe(retry, () => {
         vi.useRealTimers();
     });
 
-    const createSuccessFunction = (): () => Promise<Result<string>> => async () => {
+    const createSuccessFunction = (): (() => Promise<Result<string>>) => async () => {
         return {
             data: "success",
             success: true,
         };
     };
 
-    const createFailureFunction = (failCount: number = 0): () => Promise<Result<string>> => {
+    const createFailureFunction = (failCount: number = 0): (() => Promise<Result<string>>) => {
         let callCount = 0;
 
         return async () => {
@@ -37,7 +37,7 @@ describe(retry, () => {
         };
     };
 
-    const createThrowingFunction = (throwCount: number = 0): () => Promise<Result<string>> => {
+    const createThrowingFunction = (throwCount: number = 0): (() => Promise<Result<string>>) => {
         let callCount = 0;
 
         return async () => {

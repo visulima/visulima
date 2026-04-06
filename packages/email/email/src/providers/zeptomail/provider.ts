@@ -27,7 +27,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
         }
 
         if (!config.token.startsWith("Zoho-enczapikey ")) {
-            throw new EmailError(PROVIDER_NAME, "Token should be in the format \"Zoho-enczapikey <your_api_key>\"");
+            throw new EmailError(PROVIDER_NAME, 'Token should be in the format "Zoho-enczapikey <your_api_key>"');
         }
 
         const options: Pick<ZeptomailConfig, "logger" | "token"> & Required<Omit<ZeptomailConfig, "logger" | "token">> = {
@@ -163,8 +163,8 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
 
                     if (emailOptions.bcc) {
                         if (Array.isArray(emailOptions.bcc)) {
-                            payload.bcc
-                                = emailOptions.bcc.length === 1 ? (emailOptions.bcc[0] as EmailAddress).email : emailOptions.bcc.map((addr) => addr.email);
+                            payload.bcc =
+                                emailOptions.bcc.length === 1 ? (emailOptions.bcc[0] as EmailAddress).email : emailOptions.bcc.map((addr) => addr.email);
                         } else {
                             payload.bcc = emailOptions.bcc.email;
                         }

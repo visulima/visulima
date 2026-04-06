@@ -320,8 +320,8 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                 }
 
                 const responseData = result.data as { body?: { id?: string; messageId?: string } };
-                const messageId
-                    = responseData?.body && typeof responseData.body === "object"
+                const messageId =
+                    responseData?.body && typeof responseData.body === "object"
                         ? responseData.body.id || responseData.body.messageId || generateMessageId()
                         : generateMessageId();
 

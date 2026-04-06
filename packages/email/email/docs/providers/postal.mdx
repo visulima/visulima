@@ -27,26 +27,22 @@ const mail = createMail(
 
 The `PostalConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                                | Description                           |
-| ---------- | --------- | -------- | -------------------------------------- | ------------------------------------- |
-| `apiKey`   | `string`  | Yes      | -                                      | Your Postal server API key            |
-| `host`     | `string`  | Yes      | -                                      | Your Postal server host               |
-| `endpoint` | `string`  | No       | `https://{host}/api/v1`                | Custom API endpoint                   |
-| `debug`    | `boolean` | No       | `false`                                | Enable debug logging                  |
-| `logger`   | `Console` | No       | -                                      | Custom logger instance                |
-| `retries`  | `number`  | No       | `3`                                    | Number of retry attempts              |
-| `timeout`  | `number`  | No       | `30000`                                | Request timeout in milliseconds       |
+| Option     | Type      | Required | Default                 | Description                     |
+| ---------- | --------- | -------- | ----------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                       | Your Postal server API key      |
+| `host`     | `string`  | Yes      | -                       | Your Postal server host         |
+| `endpoint` | `string`  | No       | `https://{host}/api/v1` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                 | Enable debug logging            |
+| `logger`   | `Console` | No       | -                       | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                     | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                 | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Postal")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Postal").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -55,23 +51,23 @@ const result = await mail.send(message);
 
 The Postal provider supports additional options through `PostalEmailOptions`:
 
-| Option              | Type                      | Description                      |
-| ------------------- | ------------------------- | -------------------------------- |
-| `tags`              | `string[]`                | Tags for categorization          |
-| `templateId`        | `number`                  | Postal template ID               |
-| `templateVariables` | `Record<string, unknown>` | Template variables               |
-| `postalMessageId`   | `string`                  | Postal message ID for tracking   |
+| Option              | Type                      | Description                    |
+| ------------------- | ------------------------- | ------------------------------ |
+| `tags`              | `string[]`                | Tags for categorization        |
+| `templateId`        | `number`                  | Postal template ID             |
+| `templateVariables` | `Record<string, unknown>` | Template variables             |
+| `postalMessageId`   | `string`                  | Postal message ID for tracking |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

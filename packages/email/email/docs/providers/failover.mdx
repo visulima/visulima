@@ -33,12 +33,12 @@ const mail = createMail(
 
 The `FailoverConfig` interface extends `BaseConfig` with the following options:
 
-| Option       | Type        | Required | Default | Description                                                    |
-| ------------ | ----------- | -------- | ------- | -------------------------------------------------------------- |
-| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions       |
-| `retryAfter` | `number`    | No       | `60`    | Time in milliseconds to wait before trying the next provider   |
-| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                           |
-| `logger`     | `Console`   | No       | -       | Custom logger instance                                         |
+| Option       | Type        | Required | Default | Description                                                  |
+| ------------ | ----------- | -------- | ------- | ------------------------------------------------------------ |
+| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions    |
+| `retryAfter` | `number`    | No       | `60`    | Time in milliseconds to wait before trying the next provider |
+| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                         |
+| `logger`     | `Console`   | No       | -       | Custom logger instance                                       |
 
 ## How It Works
 
@@ -52,11 +52,7 @@ The `FailoverConfig` interface extends `BaseConfig` with the following options:
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello with Failover")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello with Failover").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```

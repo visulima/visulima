@@ -19,10 +19,7 @@ import { sendGridProvider } from "@visulima/email/providers/sendgrid";
 
 const mail = createMail(
     roundRobinProvider({
-        mailers: [
-            resendProvider({ apiKey: process.env.RESEND_API_KEY! }),
-            sendGridProvider({ apiKey: process.env.SENDGRID_API_KEY! }),
-        ],
+        mailers: [resendProvider({ apiKey: process.env.RESEND_API_KEY! }), sendGridProvider({ apiKey: process.env.SENDGRID_API_KEY! })],
     }),
 );
 ```
@@ -31,12 +28,12 @@ const mail = createMail(
 
 The `RoundRobinConfig` interface extends `BaseConfig` with the following options:
 
-| Option       | Type        | Required | Default | Description                                                              |
-| ------------ | ----------- | -------- | ------- | ------------------------------------------------------------------------ |
-| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions                 |
+| Option       | Type        | Required | Default | Description                                                                 |
+| ------------ | ----------- | -------- | ------- | --------------------------------------------------------------------------- |
+| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions                   |
 | `retryAfter` | `number`    | No       | `60`    | Time in milliseconds to wait before retrying with next unavailable provider |
-| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                                     |
-| `logger`     | `Console`   | No       | -       | Custom logger instance                                                   |
+| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                                        |
+| `logger`     | `Console`   | No       | -       | Custom logger instance                                                      |
 
 ## How It Works
 

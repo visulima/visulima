@@ -57,14 +57,14 @@ const mail = createMail(
 
 The `NodemailerConfig` interface extends `BaseConfig` with the following options:
 
-| Option        | Type                              | Required | Default | Description                                   |
-| ------------- | --------------------------------- | -------- | ------- | --------------------------------------------- |
-| `transport`   | `Record<string, unknown> \| string` | Yes    | -       | Nodemailer transport configuration             |
-| `defaultFrom` | `EmailAddress`                    | No       | -       | Default from address                           |
-| `debug`       | `boolean`                         | No       | `false` | Enable debug logging                           |
-| `logger`      | `Console`                         | No       | -       | Custom logger instance                         |
-| `retries`     | `number`                          | No       | `3`     | Number of retry attempts                       |
-| `timeout`     | `number`                          | No       | `30000` | Request timeout in milliseconds                |
+| Option        | Type                                | Required | Default | Description                        |
+| ------------- | ----------------------------------- | -------- | ------- | ---------------------------------- |
+| `transport`   | `Record<string, unknown> \| string` | Yes      | -       | Nodemailer transport configuration |
+| `defaultFrom` | `EmailAddress`                      | No       | -       | Default from address               |
+| `debug`       | `boolean`                           | No       | `false` | Enable debug logging               |
+| `logger`      | `Console`                           | No       | -       | Custom logger instance             |
+| `retries`     | `number`                            | No       | `3`     | Number of retry attempts           |
+| `timeout`     | `number`                            | No       | `30000` | Request timeout in milliseconds    |
 
 The `transport` option accepts any valid Nodemailer transport configuration. See [Nodemailer transports documentation](https://nodemailer.com/transports/) for all available options.
 
@@ -73,11 +73,7 @@ The `transport` option accepts any valid Nodemailer transport configuration. See
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello via Nodemailer")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello via Nodemailer").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -86,20 +82,20 @@ const result = await mail.send(message);
 
 The Nodemailer provider supports additional options through `NodemailerEmailOptions`:
 
-| Option             | Type                              | Description                                  |
-| ------------------ | --------------------------------- | -------------------------------------------- |
-| `transportOverride`| `Record<string, unknown> \| string` | Override transport for this specific email |
+| Option              | Type                                | Description                                |
+| ------------------- | ----------------------------------- | ------------------------------------------ |
+| `transportOverride` | `Record<string, unknown> \| string` | Override transport for this specific email |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | No        |
-| Templates        | No        |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

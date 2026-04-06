@@ -26,25 +26,21 @@ const mail = createMail(
 
 The `MailtrapConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                              | Description                      |
-| ---------- | --------- | -------- | ------------------------------------ | -------------------------------- |
-| `apiToken` | `string`  | Yes      | -                                    | Your Mailtrap API token          |
-| `endpoint` | `string`  | No       | `https://send.api.mailtrap.io`       | Custom API endpoint              |
-| `debug`    | `boolean` | No       | `false`                              | Enable debug logging             |
-| `logger`   | `Console` | No       | -                                    | Custom logger instance           |
-| `retries`  | `number`  | No       | `3`                                  | Number of retry attempts         |
-| `timeout`  | `number`  | No       | `30000`                              | Request timeout in milliseconds  |
+| Option     | Type      | Required | Default                        | Description                     |
+| ---------- | --------- | -------- | ------------------------------ | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                              | Your Mailtrap API token         |
+| `endpoint` | `string`  | No       | `https://send.api.mailtrap.io` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                        | Enable debug logging            |
+| `logger`   | `Console` | No       | -                              | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                            | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                        | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Mailtrap")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mailtrap").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -68,23 +64,23 @@ const options: MailtrapEmailOptions = {
 };
 ```
 
-| Option              | Type                      | Description                      |
-| ------------------- | ------------------------- | -------------------------------- |
-| `category`          | `string`                  | Category for categorization      |
-| `templateUuid`      | `string`                  | Mailtrap template UUID           |
-| `templateVariables` | `Record<string, unknown>` | Template variables               |
-| `customVariables`   | `Record<string, unknown>` | Custom variables (key-value)     |
+| Option              | Type                      | Description                  |
+| ------------------- | ------------------------- | ---------------------------- |
+| `category`          | `string`                  | Category for categorization  |
+| `templateUuid`      | `string`                  | Mailtrap template UUID       |
+| `templateVariables` | `Record<string, unknown>` | Template variables           |
+| `customVariables`   | `Record<string, unknown>` | Custom variables (key-value) |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

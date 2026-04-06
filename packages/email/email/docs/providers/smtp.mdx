@@ -30,23 +30,23 @@ const mail = createMail(
 
 The `SmtpConfig` interface extends `BaseConfig` with the following options:
 
-| Option               | Type                                         | Required | Default   | Description                                     |
-| -------------------- | -------------------------------------------- | -------- | --------- | ----------------------------------------------- |
-| `host`               | `string`                                     | Yes      | -         | SMTP server hostname                            |
-| `port`               | `number`                                     | Yes      | -         | SMTP server port (25, 465, 587, etc.)           |
-| `secure`             | `boolean`                                    | No       | `false`   | Use TLS (true for port 465)                     |
-| `user`               | `string`                                     | No       | -         | SMTP username                                   |
-| `password`           | `string`                                     | No       | -         | SMTP password                                   |
-| `authMethod`         | `"LOGIN" \| "PLAIN" \| "CRAM-MD5" \| "OAUTH2"` | No    | -         | Authentication method                           |
-| `pool`               | `boolean`                                    | No       | `false`   | Enable connection pooling                       |
-| `maxConnections`     | `number`                                     | No       | -         | Maximum pool connections                        |
-| `rejectUnauthorized` | `boolean`                                    | No       | -         | Reject unauthorized TLS certificates            |
-| `dkim`               | `object`                                     | No       | -         | DKIM signing configuration                      |
-| `oauth2`             | `object`                                     | No       | -         | OAuth2 authentication configuration             |
-| `debug`              | `boolean`                                    | No       | `false`   | Enable debug logging                            |
-| `logger`             | `Console`                                    | No       | -         | Custom logger instance                          |
-| `retries`            | `number`                                     | No       | `3`       | Number of retry attempts                        |
-| `timeout`            | `number`                                     | No       | `30000`   | Request timeout in milliseconds                 |
+| Option               | Type                                           | Required | Default | Description                           |
+| -------------------- | ---------------------------------------------- | -------- | ------- | ------------------------------------- |
+| `host`               | `string`                                       | Yes      | -       | SMTP server hostname                  |
+| `port`               | `number`                                       | Yes      | -       | SMTP server port (25, 465, 587, etc.) |
+| `secure`             | `boolean`                                      | No       | `false` | Use TLS (true for port 465)           |
+| `user`               | `string`                                       | No       | -       | SMTP username                         |
+| `password`           | `string`                                       | No       | -       | SMTP password                         |
+| `authMethod`         | `"LOGIN" \| "PLAIN" \| "CRAM-MD5" \| "OAUTH2"` | No       | -       | Authentication method                 |
+| `pool`               | `boolean`                                      | No       | `false` | Enable connection pooling             |
+| `maxConnections`     | `number`                                       | No       | -       | Maximum pool connections              |
+| `rejectUnauthorized` | `boolean`                                      | No       | -       | Reject unauthorized TLS certificates  |
+| `dkim`               | `object`                                       | No       | -       | DKIM signing configuration            |
+| `oauth2`             | `object`                                       | No       | -       | OAuth2 authentication configuration   |
+| `debug`              | `boolean`                                      | No       | `false` | Enable debug logging                  |
+| `logger`             | `Console`                                      | No       | -       | Custom logger instance                |
+| `retries`            | `number`                                       | No       | `3`     | Number of retry attempts              |
+| `timeout`            | `number`                                       | No       | `30000` | Request timeout in milliseconds       |
 
 ### DKIM Configuration
 
@@ -91,11 +91,7 @@ const mail = createMail(
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello via SMTP")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello via SMTP").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -130,26 +126,26 @@ const options: SmtpEmailOptions = {
 };
 ```
 
-| Option              | Type                               | Description                                     |
-| ------------------- | ---------------------------------- | ----------------------------------------------- |
-| `priority`          | `"high" \| "normal" \| "low"`      | Message priority                                |
-| `inReplyTo`         | `string`                           | Reference to a previous message ID (threading)  |
-| `references`        | `string \| string[]`               | References to related message IDs               |
-| `listUnsubscribe`   | `string \| string[]`               | List-Unsubscribe header                         |
-| `useDkim`           | `boolean`                          | Sign the email with DKIM                        |
-| `dsn`               | `object`                           | Delivery Status Notification options             |
-| `googleMailHeaders` | `object`                           | Google Mail-specific headers                    |
+| Option              | Type                          | Description                                    |
+| ------------------- | ----------------------------- | ---------------------------------------------- |
+| `priority`          | `"high" \| "normal" \| "low"` | Message priority                               |
+| `inReplyTo`         | `string`                      | Reference to a previous message ID (threading) |
+| `references`        | `string \| string[]`          | References to related message IDs              |
+| `listUnsubscribe`   | `string \| string[]`          | List-Unsubscribe header                        |
+| `useDkim`           | `boolean`                     | Sign the email with DKIM                       |
+| `dsn`               | `object`                      | Delivery Status Notification options           |
+| `googleMailHeaders` | `object`                      | Google Mail-specific headers                   |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | No        |
-| Templates        | No        |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

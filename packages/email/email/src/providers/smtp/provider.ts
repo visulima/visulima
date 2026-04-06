@@ -237,10 +237,10 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             try {
                 socket = options.secure
                     ? connect({
-                        host: options.host,
-                        port: options.port,
-                        rejectUnauthorized: options.rejectUnauthorized,
-                    })
+                          host: options.host,
+                          port: options.port,
+                          rejectUnauthorized: options.rejectUnauthorized,
+                      })
                     : createConnection(options.port, options.host);
 
                 socket.on("error", (error) => {
@@ -794,14 +794,11 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     if (emailOptions.dsn) {
                         const dsnOptions = [];
 
-                        if (emailOptions.dsn.success)
-                            dsnOptions.push("SUCCESS");
+                        if (emailOptions.dsn.success) dsnOptions.push("SUCCESS");
 
-                        if (emailOptions.dsn.failure)
-                            dsnOptions.push("FAILURE");
+                        if (emailOptions.dsn.failure) dsnOptions.push("FAILURE");
 
-                        if (emailOptions.dsn.delay)
-                            dsnOptions.push("DELAY");
+                        if (emailOptions.dsn.delay) dsnOptions.push("DELAY");
 
                         if (dsnOptions.length > 0) {
                             additionalHeaders.push(`X-DSN-NOTIFY: ${dsnOptions.join(",")}`);

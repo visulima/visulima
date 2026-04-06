@@ -159,11 +159,7 @@ const smtpMail = createMail(smtp);
 const resendMail = createMail(resend);
 
 // Send via specific provider
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello").html("<h1>Hello World</h1>");
 
 await resendMail.send(message);
 ```

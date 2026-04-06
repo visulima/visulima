@@ -30,16 +30,16 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
 
         const endpoint = config.endpoint || DEFAULT_ENDPOINT;
 
-        const options: Pick<BrevoConfig, "logger">
-            & Required<Omit<BrevoConfig, "logger" | "endpoint" | "hardValidation">> & { endpoint: string; hardValidation: boolean } = {
-                apiKey: config.apiKey,
-                debug: config.debug || false,
-                endpoint,
-                hardValidation: config.hardValidation || false,
-                retries: config.retries || DEFAULT_RETRIES,
-                timeout: config.timeout || DEFAULT_TIMEOUT,
-                ...(config.logger && { logger: config.logger }),
-            };
+        const options: Pick<BrevoConfig, "logger"> &
+            Required<Omit<BrevoConfig, "logger" | "endpoint" | "hardValidation">> & { endpoint: string; hardValidation: boolean } = {
+            apiKey: config.apiKey,
+            debug: config.debug || false,
+            endpoint,
+            hardValidation: config.hardValidation || false,
+            retries: config.retries || DEFAULT_RETRIES,
+            timeout: config.timeout || DEFAULT_TIMEOUT,
+            ...(config.logger && { logger: config.logger }),
+        };
 
         const providerState = new ProviderState();
         const logger = createProviderLogger(PROVIDER_NAME, config.logger);
@@ -158,13 +158,13 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                     });
 
                     return Boolean(
-                        result.success
-                        && result.data
-                        && typeof result.data === "object"
-                        && "statusCode" in result.data
-                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
-                        && (result.data as { statusCode: number }).statusCode >= 200
-                        && (result.data as { statusCode: number }).statusCode < 300,
+                        result.success &&
+                        result.data &&
+                        typeof result.data === "object" &&
+                        "statusCode" in result.data &&
+                        typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
+                        (result.data as { statusCode: number }).statusCode >= 200 &&
+                        (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -276,8 +276,8 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                     }
 
                     if (emailOptions.scheduledAt) {
-                        const scheduledDate
-                            = typeof emailOptions.scheduledAt === "number" ? new Date(emailOptions.scheduledAt * 1000).toISOString() : emailOptions.scheduledAt;
+                        const scheduledDate =
+                            typeof emailOptions.scheduledAt === "number" ? new Date(emailOptions.scheduledAt * 1000).toISOString() : emailOptions.scheduledAt;
 
                         payload.scheduledAt = scheduledDate;
                     }

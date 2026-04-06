@@ -23,26 +23,22 @@ const mail = createMail(mock);
 
 The `MockConfig` interface extends `BaseConfig` with the following options:
 
-| Option            | Type                            | Required | Default | Description                                          |
-| ----------------- | ------------------------------- | -------- | ------- | ---------------------------------------------------- |
-| `simulateFailure` | `boolean`                       | No       | `false` | When true, `sendEmail` always returns an error       |
-| `failureRate`     | `number`                        | No       | `0`     | Failure rate (0-1) for random failures               |
-| `delay`           | `number`                        | No       | `0`     | Delay in milliseconds before resolving               |
-| `randomDelayRange`| `{ min: number; max: number }`  | No       | -       | Random delay range in milliseconds                   |
-| `defaultResponse` | `Receipt`                       | No       | -       | Default response to return for send operations       |
-| `debug`           | `boolean`                       | No       | `false` | Enable debug logging                                 |
-| `logger`          | `Console`                       | No       | -       | Custom logger instance                               |
+| Option             | Type                           | Required | Default | Description                                    |
+| ------------------ | ------------------------------ | -------- | ------- | ---------------------------------------------- |
+| `simulateFailure`  | `boolean`                      | No       | `false` | When true, `sendEmail` always returns an error |
+| `failureRate`      | `number`                       | No       | `0`     | Failure rate (0-1) for random failures         |
+| `delay`            | `number`                       | No       | `0`     | Delay in milliseconds before resolving         |
+| `randomDelayRange` | `{ min: number; max: number }` | No       | -       | Random delay range in milliseconds             |
+| `defaultResponse`  | `Receipt`                      | No       | -       | Default response to return for send operations |
+| `debug`            | `boolean`                      | No       | `false` | Enable debug logging                           |
+| `logger`           | `Console`                      | No       | -       | Custom logger instance                         |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Test email")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Test email").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 
@@ -92,14 +88,14 @@ const mock = mockProvider({
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | No        |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | No        |
-| Tagging          | Yes       |
-| Templates        | No        |
-| Tracking         | No        |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | No        |
+| Tracking       | No        |

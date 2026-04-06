@@ -105,7 +105,7 @@ export class SmimeSigner implements EmailSigner {
     private static formatAddress(address: { email: string; name?: string }): string {
         if (address.name) {
             // Escape backslashes and double quotes per RFC 5322
-            const escapedName = address.name.replaceAll("\\", "\\\\").replaceAll("\"", String.raw`\"`);
+            const escapedName = address.name.replaceAll("\\", "\\\\").replaceAll('"', String.raw`\"`);
 
             return `"${escapedName}" <${address.email}>`;
         }
@@ -147,9 +147,9 @@ export class SmimeSigner implements EmailSigner {
         try {
             privateKeyObject = this.options.passphrase
                 ? createPrivateKey({
-                    key: privateKeyPem,
-                    passphrase: this.options.passphrase,
-                })
+                      key: privateKeyPem,
+                      passphrase: this.options.passphrase,
+                  })
                 : createPrivateKey(privateKeyPem);
         } catch (error) {
             throw new Error(`Failed to parse private key: ${(error as Error).message}`);
@@ -170,7 +170,7 @@ export class SmimeSigner implements EmailSigner {
                 return new Certificate({ schema: intermediateAsn1.result });
             });
 
-            intermediateCerts.push(...await Promise.all(certPromises));
+            intermediateCerts.push(...(await Promise.all(certPromises)));
         }
 
         const message = this.buildMessage(email);

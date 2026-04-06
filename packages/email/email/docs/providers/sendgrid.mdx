@@ -26,25 +26,21 @@ const mail = createMail(
 
 The `SendGridConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                        | Description                      |
-| ---------- | --------- | -------- | ------------------------------ | -------------------------------- |
-| `apiKey`   | `string`  | Yes      | -                              | Your SendGrid API key            |
-| `endpoint` | `string`  | No       | `https://api.sendgrid.com`     | Custom API endpoint              |
-| `debug`    | `boolean` | No       | `false`                        | Enable debug logging             |
-| `logger`   | `Console` | No       | -                              | Custom logger instance           |
-| `retries`  | `number`  | No       | `3`                            | Number of retry attempts         |
-| `timeout`  | `number`  | No       | `30000`                        | Request timeout in milliseconds  |
+| Option     | Type      | Required | Default                    | Description                     |
+| ---------- | --------- | -------- | -------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                          | Your SendGrid API key           |
+| `endpoint` | `string`  | No       | `https://api.sendgrid.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                    | Enable debug logging            |
+| `logger`   | `Console` | No       | -                          | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                        | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                    | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from SendGrid")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from SendGrid").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -115,27 +111,27 @@ const options: SendGridEmailOptions = {
 };
 ```
 
-| Option              | Type                      | Description                                    |
-| ------------------- | ------------------------- | ---------------------------------------------- |
-| `templateId`        | `string`                  | SendGrid dynamic template ID                   |
-| `templateData`      | `Record<string, unknown>` | Dynamic template data                          |
-| `sendAt`            | `number`                  | Send at (Unix timestamp)                       |
-| `batchId`           | `string`                  | Batch ID for batch sending                     |
-| `asmGroupId`        | `number`                  | Advanced Suppression Management group ID       |
-| `ipPoolName`        | `string`                  | IP pool name                                   |
-| `mailSettings`      | `object`                  | Mail settings (sandbox, footer, etc.)          |
-| `trackingSettings`  | `object`                  | Tracking settings (clicks, opens, analytics)   |
+| Option             | Type                      | Description                                  |
+| ------------------ | ------------------------- | -------------------------------------------- |
+| `templateId`       | `string`                  | SendGrid dynamic template ID                 |
+| `templateData`     | `Record<string, unknown>` | Dynamic template data                        |
+| `sendAt`           | `number`                  | Send at (Unix timestamp)                     |
+| `batchId`          | `string`                  | Batch ID for batch sending                   |
+| `asmGroupId`       | `number`                  | Advanced Suppression Management group ID     |
+| `ipPoolName`       | `string`                  | IP pool name                                 |
+| `mailSettings`     | `object`                  | Mail settings (sandbox, footer, etc.)        |
+| `trackingSettings` | `object`                  | Tracking settings (clicks, opens, analytics) |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

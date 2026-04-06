@@ -26,25 +26,21 @@ const mail = createMail(
 
 The `MailerSendConfig` interface extends `BaseConfig` with the following options:
 
-| Option     | Type      | Required | Default                          | Description                      |
-| ---------- | --------- | -------- | -------------------------------- | -------------------------------- |
-| `apiToken` | `string`  | Yes      | -                                | Your MailerSend API token        |
-| `endpoint` | `string`  | No       | `https://api.mailersend.com`     | Custom API endpoint              |
-| `debug`    | `boolean` | No       | `false`                          | Enable debug logging             |
-| `logger`   | `Console` | No       | -                                | Custom logger instance           |
-| `retries`  | `number`  | No       | `3`                              | Number of retry attempts         |
-| `timeout`  | `number`  | No       | `30000`                          | Request timeout in milliseconds  |
+| Option     | Type      | Required | Default                      | Description                     |
+| ---------- | --------- | -------- | ---------------------------- | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                            | Your MailerSend API token       |
+| `endpoint` | `string`  | No       | `https://api.mailersend.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                      | Enable debug logging            |
+| `logger`   | `Console` | No       | -                            | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                          | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                      | Request timeout in milliseconds |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from MailerSend")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from MailerSend").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -73,24 +69,24 @@ const options: MailerSendEmailOptions = {
 };
 ```
 
-| Option               | Type                                           | Description                            |
-| -------------------- | ---------------------------------------------- | -------------------------------------- |
-| `templateId`         | `string`                                       | MailerSend template ID                 |
-| `templateVariables`  | `Record<string, unknown>`                      | Template variables                     |
-| `personalization`    | `{ email: string; data: Record<string, unknown> }[]` | Per-recipient variables          |
-| `scheduledAt`        | `number`                                       | Scheduled delivery (Unix timestamp)    |
-| `domainId`           | `string`                                       | Domain ID for domain-specific sending  |
+| Option              | Type                                                 | Description                           |
+| ------------------- | ---------------------------------------------------- | ------------------------------------- |
+| `templateId`        | `string`                                             | MailerSend template ID                |
+| `templateVariables` | `Record<string, unknown>`                            | Template variables                    |
+| `personalization`   | `{ email: string; data: Record<string, unknown> }[]` | Per-recipient variables               |
+| `scheduledAt`       | `number`                                             | Scheduled delivery (Unix timestamp)   |
+| `domainId`          | `string`                                             | Domain ID for domain-specific sending |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

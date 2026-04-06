@@ -26,26 +26,22 @@ const mail = createMail(
 
 The `BrevoConfig` interface extends `BaseConfig` with the following options:
 
-| Option           | Type      | Required | Default                      | Description                                                                 |
-| ---------------- | --------- | -------- | ---------------------------- | --------------------------------------------------------------------------- |
-| `apiKey`         | `string`  | Yes      | -                            | Your Brevo API key                                                          |
-| `endpoint`       | `string`  | No       | `https://api.brevo.com/v3`   | Custom API endpoint                                                         |
-| `hardValidation` | `boolean` | No       | `false`                      | If true, replyTo arrays are rejected. If false, the first address is used.  |
-| `debug`          | `boolean` | No       | `false`                      | Enable debug logging                                                        |
-| `logger`         | `Console` | No       | -                            | Custom logger instance                                                      |
-| `retries`        | `number`  | No       | `3`                          | Number of retry attempts on failure                                         |
-| `timeout`        | `number`  | No       | `30000`                      | Request timeout in milliseconds                                             |
+| Option           | Type      | Required | Default                    | Description                                                                |
+| ---------------- | --------- | -------- | -------------------------- | -------------------------------------------------------------------------- |
+| `apiKey`         | `string`  | Yes      | -                          | Your Brevo API key                                                         |
+| `endpoint`       | `string`  | No       | `https://api.brevo.com/v3` | Custom API endpoint                                                        |
+| `hardValidation` | `boolean` | No       | `false`                    | If true, replyTo arrays are rejected. If false, the first address is used. |
+| `debug`          | `boolean` | No       | `false`                    | Enable debug logging                                                       |
+| `logger`         | `Console` | No       | -                          | Custom logger instance                                                     |
+| `retries`        | `number`  | No       | `3`                        | Number of retry attempts on failure                                        |
+| `timeout`        | `number`  | No       | `30000`                    | Request timeout in milliseconds                                            |
 
 ## Basic Usage
 
 ```typescript
 import { MailMessage } from "@visulima/email";
 
-const message = new MailMessage()
-    .to("user@example.com")
-    .from("sender@example.com")
-    .subject("Hello from Brevo")
-    .html("<h1>Hello World</h1>");
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Brevo").html("<h1>Hello World</h1>");
 
 const result = await mail.send(message);
 ```
@@ -98,28 +94,28 @@ const options: BrevoEmailOptions = {
 };
 ```
 
-| Option             | Type                            | Description                                      |
-| ------------------ | ------------------------------- | ------------------------------------------------ |
-| `tags`             | `string[]`                      | Tags for categorization                          |
-| `templateId`       | `number`                        | Brevo template ID                                |
-| `templateParams`   | `Record<string, unknown>`       | Template parameters                              |
-| `scheduledAt`      | `string \| number`              | ISO 8601 date string or Unix timestamp (seconds) |
-| `batchId`          | `string`                        | Batch ID for batch sending                       |
-| `replyTo`          | `EmailAddress \| EmailAddress[]`| Reply-to address (only one allowed by Brevo)     |
+| Option           | Type                             | Description                                      |
+| ---------------- | -------------------------------- | ------------------------------------------------ |
+| `tags`           | `string[]`                       | Tags for categorization                          |
+| `templateId`     | `number`                         | Brevo template ID                                |
+| `templateParams` | `Record<string, unknown>`        | Template parameters                              |
+| `scheduledAt`    | `string \| number`               | ISO 8601 date string or Unix timestamp (seconds) |
+| `batchId`        | `string`                         | Batch ID for batch sending                       |
+| `replyTo`        | `EmailAddress \| EmailAddress[]` | Reply-to address (only one allowed by Brevo)     |
 
 ## Supported Features
 
-| Feature          | Supported |
-| ---------------- | --------- |
-| Attachments      | Yes       |
-| Batch Sending    | Yes       |
-| Custom Headers   | Yes       |
-| HTML             | Yes       |
-| Reply-To         | Yes       |
-| Scheduling       | Yes       |
-| Tagging          | Yes       |
-| Templates        | Yes       |
-| Tracking         | Yes       |
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |
 
 ## Additional Methods
 
