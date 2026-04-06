@@ -7,22 +7,25 @@
 import { SPACE_16_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel } from "./types";
 
+// eslint-disable-next-line regexp/no-unused-capturing-group
+const CHROME_CHROMIUM_RE = /\b(Chrome|Chromium)\//;
+
 const isColorSupported = (): ColorSupportLevel =>
     (() => {
         if (typeof navigator !== "undefined") {
             // @ts-expect-error - `navigator` is not defined in Node.
             if (navigator.userAgentData) {
                 // @ts-expect-error - `navigator` is not defined in Node.
-
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                 const brand = navigator.userAgentData.brands.find(({ b }: { b: string }) => b === "Chromium");
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 if (brand?.version > 93) {
                     return SPACE_TRUE_COLORS;
                 }
             }
 
-            // eslint-disable-next-line regexp/no-unused-capturing-group
-            if (/\b(Chrome|Chromium)\//.test(navigator.userAgent)) {
+            if (CHROME_CHROMIUM_RE.test(navigator.userAgent)) {
                 return SPACE_16_COLORS;
             }
         }
