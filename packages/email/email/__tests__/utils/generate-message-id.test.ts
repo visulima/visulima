@@ -8,6 +8,7 @@ describe(generateMessageId, () => {
 
         const messageId = generateMessageId();
 
+        // eslint-disable-next-line e18e/prefer-static-regex
         expect(messageId).toMatch(/^<.+@visulima\.local>$/);
     });
 

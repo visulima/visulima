@@ -21,7 +21,7 @@ const DEFAULT_RETRIES = 3;
 /**
  * Scaleway Provider for sending emails through Scaleway API
  */
-const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOptions> = defineProvider((config: ScalewayConfig = {} as ScalewayConfig) => {
+const scalewayProvider: ProviderFactory<ScalewayConfig> = defineProvider((config: ScalewayConfig = {} as ScalewayConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
@@ -30,15 +30,15 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
         throw new RequiredOptionError(PROVIDER_NAME, "region");
     }
 
-    const endpoint = config.endpoint || DEFAULT_ENDPOINT;
+    const endpoint = config.endpoint ?? DEFAULT_ENDPOINT;
 
     const options: Pick<ScalewayConfig, "logger" | "endpoint"> & Required<Omit<ScalewayConfig, "logger" | "endpoint">> & { endpoint: string } = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         endpoint,
         region: config.region,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -63,7 +63,7 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -109,6 +109,7 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -137,6 +138,7 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
          * Checks if the Scaleway API is available and credentials are valid.
          * @returns True if the API is available and credentials are valid, false otherwise.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             try {
                 logger.debug("Checking Scaleway API availability");
@@ -253,7 +255,7 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
                             return {
                                 content,
                                 name: attachment.filename,
-                                type: attachment.contentType || "application/octet-stream",
+                                type: attachment.contentType ?? "application/octet-stream",
                             };
                         }),
                     );
@@ -287,14 +289,15 @@ const scalewayProvider: ProviderFactory<ScalewayConfig, unknown, ScalewayEmailOp
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Scaleway returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { id?: string } })?.body;
-                const messageId = responseBody?.id || generateMessageId();
+                const messageId = responseBody?.id ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

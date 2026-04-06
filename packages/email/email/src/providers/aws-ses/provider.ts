@@ -13,6 +13,7 @@ import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { AwsSesConfig, AwsSesEmailOptions } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 const getBuffer = (): typeof globalThis.Buffer => {
@@ -38,7 +39,7 @@ const defaultOptions: Partial<AwsSesConfig> = {
  * AWS SES Email Provider Implementation - Zero dependency version
  * Uses native Node.js APIs instead of AWS SDK
  */
-const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions> = defineProvider((config: AwsSesConfig = {} as AwsSesConfig) => {
+const awsSesProvider: ProviderFactory<AwsSesConfig> = defineProvider((config: AwsSesConfig = {} as AwsSesConfig) => {
     const options = { ...defaultOptions, ...config } as Required<AwsSesConfig>;
 
     const logger = createLogger("AWS-SES", config.logger);
@@ -54,6 +55,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
      */
     const createCanonicalRequest = (method: string, path: string, query: Record<string, string>, headers: Record<string, string>, payload: string): string => {
         const canonicalQueryString = Object.keys(query)
+            // eslint-disable-next-line sonarjs/no-alphabetical-sort
             .toSorted()
             .map((key) => {
                 const value = query[key];
@@ -64,11 +66,14 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
             .join("&");
 
         const canonicalHeaders = `${Object.keys(headers)
+            // eslint-disable-next-line sonarjs/no-alphabetical-sort
             .toSorted()
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             .map((key) => `${key.toLowerCase()}:${headers[key]}`)
             .join("\n")}\n`;
 
         const signedHeaders = Object.keys(headers)
+            // eslint-disable-next-line sonarjs/no-alphabetical-sort
             .toSorted()
             .map((key) => key.toLowerCase())
             .join(";");
@@ -126,6 +131,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
     const createAuthHeader = (accessKeyId: string, timestamp: string, region: string, headers: Record<string, string>, signature: string): string => {
         const date = timestamp.slice(0, 8);
         const signedHeaders = Object.keys(headers)
+            // eslint-disable-next-line sonarjs/no-alphabetical-sort
             .toSorted()
             .map((key) => key.toLowerCase())
             .join(";");
@@ -167,6 +173,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
 
             Object.entries(params).forEach(([key, value]) => {
                 if (value !== undefined && value !== null) {
+                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     body.append(key, String(value));
                 }
             });
@@ -214,15 +221,18 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
             );
 
             if (!result.success) {
-                throw result.error || new Error("AWS SES API request failed");
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
+                throw result.error ?? new Error("AWS SES API request failed");
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const responseData = (result.data as { body?: string; statusCode?: number })?.body;
 
             if (!responseData) {
                 throw new Error("No response body from AWS SES");
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const responseStatus = (result.data as { body?: string; statusCode?: number })?.statusCode;
 
             logger.debug("Response status:", responseStatus);
@@ -234,6 +244,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
                 const parsedResult: Record<string, unknown> = {};
 
                 if (action === "SendRawEmail") {
+                    // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
                     const messageIdMatch = responseData.match(/<MessageId>(.*?)<\/MessageId>/);
 
                     if (messageIdMatch) {
@@ -243,9 +254,10 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
                         logger.debug("Extracted MessageId:", parsedResult.MessageId);
                     }
                 } else if (action === "GetSendQuota") {
+                    // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
                     const maxMatch = responseData.match(/<Max24HourSend>(.*?)<\/Max24HourSend>/);
 
-                    if (maxMatch && maxMatch[1]) {
+                    if (maxMatch?.[1]) {
                         parsedResult.Max24HourSend = Number.parseFloat(maxMatch[1]);
                         logger.debug("Extracted Max24HourSend:", parsedResult.Max24HourSend);
                     }
@@ -254,10 +266,12 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
                 return parsedResult;
             }
 
+            // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
             const errorMatch = responseData.match(/<Message>(.*?)<\/Message>/);
             const errorMessage = errorMatch ? errorMatch[1] : "Unknown AWS SES error";
 
             logger.debug("AWS SES Error:", errorMessage);
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             throw new Error(`AWS SES API Error: ${errorMessage}`);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -276,6 +290,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
         const boundary = `----=${randomUUID().replaceAll("-", "")}`;
         const now = new Date().toUTCString();
         const domain = emailOptions.from.email.includes("@") ? emailOptions.from.email.split("@")[1] : "localhost";
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const messageId = `<${randomUUID().replaceAll("-", "")}@${domain}>`;
         const Buffer = getBuffer();
 
@@ -311,6 +326,7 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
         if (emailOptions.headers) {
             const headersRecord = headersToRecord(emailOptions.headers);
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [name, value] of Object.entries(headersRecord)) {
                 const sanitizedName = sanitizeHeaderName(name);
                 const sanitizedValue = sanitizeHeaderValue(value);
@@ -467,7 +483,9 @@ const awsSesProvider: ProviderFactory<AwsSesConfig, unknown, AwsSesEmailOptions>
 
                 if (emailOptions.messageTags && Object.keys(emailOptions.messageTags).length > 0) {
                     Object.entries(emailOptions.messageTags).forEach(([name, value], index) => {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         params[`Tags.member.${index + 1}.Name`] = name;
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         params[`Tags.member.${index + 1}.Value`] = value;
                     });
                 }

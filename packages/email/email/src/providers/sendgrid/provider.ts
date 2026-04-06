@@ -19,18 +19,18 @@ const DEFAULT_RETRIES = 3;
 /**
  * SendGrid Provider for sending emails through SendGrid API
  */
-const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOptions> = defineProvider((config: SendGridConfig = {} as SendGridConfig) => {
+const sendGridProvider: ProviderFactory<SendGridConfig> = defineProvider((config: SendGridConfig = {} as SendGridConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<SendGridConfig, "logger"> & Required<Omit<SendGridConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         ...(config.logger && { logger: config.logger }),
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
     };
 
     const providerState = new ProviderState();
@@ -56,7 +56,7 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -102,6 +102,7 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -133,6 +134,7 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
          */
         async isAvailable(): Promise<boolean> {
             try {
+                // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
                 if (options.apiKey && options.apiKey.startsWith("SG.")) {
                     logger.debug("API key format is valid, assuming SendGrid is available");
 
@@ -154,18 +156,19 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
 
                 logger.debug("SendGrid API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -217,6 +220,7 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                     const customArgs: Record<string, string> = {};
 
                     for (let index = 0; index < emailOptions.tags.length; index += 1) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         customArgs[`tag_${index}`] = emailOptions.tags[index] as string;
                     }
 
@@ -324,14 +328,15 @@ const sendGridProvider: ProviderFactory<SendGridConfig, unknown, SendGridEmailOp
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseHeaders = (result.data as { headers?: Headers })?.headers;
                 const headerMessageId = responseHeaders && responseHeaders instanceof Headers ? responseHeaders.get("X-Message-Id") : undefined;
-                const messageId: string = headerMessageId || generateMessageId();
+                const messageId: string = headerMessageId ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

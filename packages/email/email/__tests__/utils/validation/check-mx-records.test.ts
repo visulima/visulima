@@ -162,6 +162,7 @@ describe(checkMxRecords, () => {
         const noOpCache: Cache<MxCheckResult> = {
             clear: async () => {},
             delete: async () => {},
+            // eslint-disable-next-line @typescript-eslint/require-await
             get: async () => undefined,
             set: async () => {},
         };

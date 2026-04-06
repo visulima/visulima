@@ -21,7 +21,7 @@ const DEFAULT_RETRIES = 3;
 /**
  * MailerSend Provider for sending emails through MailerSend API
  */
-const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendEmailOptions> = defineProvider(
+const mailerSendProvider: ProviderFactory<MailerSendConfig> = defineProvider(
     (config: MailerSendConfig = {} as MailerSendConfig) => {
         if (!config.apiToken) {
             throw new RequiredOptionError(PROVIDER_NAME, "apiToken");
@@ -29,10 +29,10 @@ const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendE
 
         const options: Pick<MailerSendConfig, "logger"> & Required<Omit<MailerSendConfig, "logger">> = {
             apiToken: config.apiToken,
-            debug: config.debug || false,
-            endpoint: config.endpoint || DEFAULT_ENDPOINT,
-            retries: config.retries || DEFAULT_RETRIES,
-            timeout: config.timeout || DEFAULT_TIMEOUT,
+            debug: config.debug ?? false,
+            endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+            retries: config.retries ?? DEFAULT_RETRIES,
+            timeout: config.timeout ?? DEFAULT_TIMEOUT,
             ...(config.logger && { logger: config.logger }),
         };
 
@@ -57,7 +57,7 @@ const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendE
              * @param id The email ID to retrieve.
              * @returns A result object containing the email details or an error.
              */
-            async getEmail(id: string): Promise<Result<unknown>> {
+            async getEmail(id: string): Promise<Result> {
                 try {
                     if (!id) {
                         return {
@@ -103,6 +103,7 @@ const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendE
                     logger.debug("Email details retrieved successfully");
 
                     return {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         data: (result.data as { body?: unknown })?.body,
                         success: true,
                     };
@@ -150,18 +151,19 @@ const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendE
 
                     logger.debug("MailerSend API availability check response:", {
                         error: result.error instanceof Error ? result.error.message : undefined,
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         statusCode: (result.data as { statusCode?: number })?.statusCode,
                         success: result.success,
                     });
 
                     return Boolean(
-                        result.success &&
-                        result.data &&
-                        typeof result.data === "object" &&
-                        "statusCode" in result.data &&
-                        typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                        (result.data as { statusCode: number }).statusCode >= 200 &&
-                        (result.data as { statusCode: number }).statusCode < 300,
+                        result.success
+                        && result.data
+                        && typeof result.data === "object"
+                        && "statusCode" in result.data
+                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                        && (result.data as { statusCode: number }).statusCode >= 200
+                        && (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -321,14 +323,15 @@ const mailerSendProvider: ProviderFactory<MailerSendConfig, unknown, MailerSendE
                         logger.debug("API request failed when sending email", result.error);
 
                         return {
-                            error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                            error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                             success: false,
                         };
                     }
 
                     // MailerSend returns message ID in response body
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     const responseBody = (result.data as { body?: { message_id?: string } })?.body;
-                    const messageId = responseBody?.message_id || generateMessageId();
+                    const messageId = responseBody?.message_id ?? generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });
 

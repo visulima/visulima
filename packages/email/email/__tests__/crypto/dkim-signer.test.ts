@@ -219,6 +219,7 @@ describe(DkimSigner, () => {
 
             expect(signed.headers["DKIM-Signature"]).toBeDefined();
             expect(signed.headers.To).toContain("recipient1@example.com");
+            // eslint-disable-next-line @stylistic/quotes
             expect(signed.headers.To).toContain('"Recipient 2" <recipient2@example.com>');
         });
 
@@ -354,7 +355,6 @@ describe(DkimSigner, () => {
             const options: DkimOptions = {
                 domainName: "example.com",
                 keySelector: "default",
-                // eslint-disable-next-line sonarjs/no-hardcoded-passwords
                 passphrase: "test-passphrase",
                 privateKey: TEST_PRIVATE_KEY,
             };

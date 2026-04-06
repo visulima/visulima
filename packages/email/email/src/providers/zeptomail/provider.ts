@@ -20,22 +20,22 @@ const DEFAULT_RETRIES = 3;
 /**
  * Zeptomail Provider for sending emails through Zeptomail API
  */
-const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmailOptions> = defineProvider(
+const zeptomailProvider: ProviderFactory<ZeptomailConfig> = defineProvider(
     (config: ZeptomailConfig = {} as ZeptomailConfig) => {
         if (!config.token) {
             throw new RequiredOptionError(PROVIDER_NAME, "token");
         }
 
         if (!config.token.startsWith("Zoho-enczapikey ")) {
-            throw new EmailError(PROVIDER_NAME, 'Token should be in the format "Zoho-enczapikey <your_api_key>"');
+            throw new EmailError(PROVIDER_NAME, "Token should be in the format \"Zoho-enczapikey <your_api_key>\"");
         }
 
         const options: Pick<ZeptomailConfig, "logger" | "token"> & Required<Omit<ZeptomailConfig, "logger" | "token">> = {
-            debug: config.debug || false,
-            endpoint: config.endpoint || DEFAULT_ENDPOINT,
+            debug: config.debug ?? false,
+            endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
             logger: config.logger,
-            retries: config.retries || DEFAULT_RETRIES,
-            timeout: config.timeout || DEFAULT_TIMEOUT,
+            retries: config.retries ?? DEFAULT_RETRIES,
+            timeout: config.timeout ?? DEFAULT_TIMEOUT,
             token: config.token,
         };
 
@@ -73,8 +73,10 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
              * Checks if the Zeptomail API is available and credentials are valid.
              * @returns True if the API is available and credentials are valid, false otherwise.
              */
+            // eslint-disable-next-line @typescript-eslint/require-await
             async isAvailable(): Promise<boolean> {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
                     if (options.token && options.token.startsWith("Zoho-enczapikey ")) {
                         logger.debug("Token format is valid, assuming Zeptomail is available");
 
@@ -163,8 +165,8 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
 
                     if (emailOptions.bcc) {
                         if (Array.isArray(emailOptions.bcc)) {
-                            payload.bcc =
-                                emailOptions.bcc.length === 1 ? (emailOptions.bcc[0] as EmailAddress).email : emailOptions.bcc.map((addr) => addr.email);
+                            payload.bcc
+                                = emailOptions.bcc.length === 1 ? (emailOptions.bcc[0] as EmailAddress).email : emailOptions.bcc.map((addr) => addr.email);
                         } else {
                             payload.bcc = emailOptions.bcc.email;
                         }
@@ -189,6 +191,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                     if (emailOptions.mimeHeaders && Object.keys(emailOptions.mimeHeaders).length > 0) {
                         const mimeHeaders: Record<string, string> = {};
 
+                        // eslint-disable-next-line no-for-of-array/no-for-of-array
                         for (const [key, value] of Object.entries(emailOptions.mimeHeaders)) {
                             mimeHeaders[key] = value;
                         }
@@ -200,9 +203,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         const headersRecord = headersToRecord(emailOptions.headers);
 
                         if (Object.keys(headersRecord).length > 0) {
-                            if (!payload.mime_headers) {
-                                payload.mime_headers = {};
-                            }
+                            payload.mime_headers ??= {};
 
                             Object.entries(headersRecord).forEach(([key, value]) => {
                                 if (payload.mime_headers) {
@@ -219,6 +220,7 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                             };
 
                             if (attachment.content) {
+                                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                                 attachmentData.content = typeof attachment.content === "string" ? attachment.content : attachment.content.toString("base64");
 
                                 if (attachment.contentType) {
@@ -276,8 +278,9 @@ const zeptomailProvider: ProviderFactory<ZeptomailConfig, unknown, ZeptomailEmai
                         };
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     const responseData = (result.data as { body?: { request_id?: string } })?.body;
-                    const messageId = responseData?.request_id || generateMessageId();
+                    const messageId = responseData?.request_id ?? generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });
 

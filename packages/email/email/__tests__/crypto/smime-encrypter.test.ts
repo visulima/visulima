@@ -12,6 +12,7 @@ vi.mock(import("@visulima/fs"), () => {
 });
 
 vi.mock(import("node:crypto"), async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const actualCrypto = (await vi.importActual("node:crypto")) as typeof import("node:crypto");
 
     return {
@@ -72,7 +73,8 @@ vi.mock(import("pkijs"), async () => {
                 toSchema: vi.fn(() => {
                     return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
                 }),
-                version: options?.version || 0,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                version: options?.version ?? 0,
             });
         }
     }
@@ -86,7 +88,8 @@ vi.mock(import("pkijs"), async () => {
                     rid: {},
                     version: 0,
                 },
-                variant: options?.variant || 0,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                variant: options?.variant ?? 0,
             });
         }
     }
@@ -96,8 +99,10 @@ vi.mock(import("pkijs"), async () => {
         AlgorithmIdentifier: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    algorithmId: options?.algorithmId || "",
-                    algorithmParams: options?.algorithmParams || null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    algorithmId: options?.algorithmId ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    algorithmParams: options?.algorithmParams ?? null,
                 });
             }
         },
@@ -116,9 +121,12 @@ vi.mock(import("pkijs"), async () => {
         EncryptedContentInfo: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    contentEncryptionAlgorithm: options?.contentEncryptionAlgorithm || null,
-                    contentType: options?.contentType || "",
-                    encryptedContent: options?.encryptedContent || null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    contentEncryptionAlgorithm: options?.contentEncryptionAlgorithm ?? null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    contentType: options?.contentType ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    encryptedContent: options?.encryptedContent ?? null,
                     toSchema: vi.fn(() => {
                         return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
                     }),
@@ -131,18 +139,24 @@ vi.mock(import("pkijs"), async () => {
         IssuerAndSerialNumber: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    issuer: options?.issuer || {},
-                    serialNumber: options?.serialNumber || {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    issuer: options?.issuer ?? {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    serialNumber: options?.serialNumber ?? {},
                 });
             }
         },
         KeyTransRecipientInfo: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    encryptedKey: options?.encryptedKey || new Uint8Array([1, 2, 3]),
-                    keyEncryptionAlgorithm: options?.keyEncryptionAlgorithm || {},
-                    rid: options?.rid || {},
-                    version: options?.version || 0,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    encryptedKey: options?.encryptedKey ?? new Uint8Array([1, 2, 3]),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    keyEncryptionAlgorithm: options?.keyEncryptionAlgorithm ?? {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    rid: options?.rid ?? {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    version: options?.version ?? 0,
                 });
             }
         },
@@ -164,7 +178,8 @@ vi.mock(import("asn1js"), async () => {
         OctetString: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    valueHex: options?.valueHex || new ArrayBuffer(0),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    valueHex: options?.valueHex ?? new ArrayBuffer(0),
                 });
             }
         },
@@ -377,6 +392,7 @@ describe(SmimeEncrypter, () => {
 
             const asn1js = await import("asn1js");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vi.mocked(asn1js.fromBER).mockReturnValueOnce({
                 offset: -1,
                 result: {},
@@ -405,6 +421,7 @@ describe(SmimeEncrypter, () => {
 
             const asn1js = await import("asn1js");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vi.mocked(asn1js.fromBER).mockReturnValueOnce({
                 offset: -1,
                 result: {},

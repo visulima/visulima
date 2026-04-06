@@ -9,7 +9,7 @@ import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { OpenTelemetryConfig, OpenTelemetryEmailOptions } from "./types";
 
-const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
+const isProviderFactory = (value: unknown): value is ProviderFactory => typeof value === "function";
 
 const isProvider = (value: unknown): value is Provider =>
     value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
@@ -23,7 +23,7 @@ const DEFAULT_SPAN_NAME = "email.send";
  * @param address The email address to format (string, EmailAddress, or array).
  * @returns A formatted string representation of the email address.
  */
-const formatEmailAddress = (address: EmailOptions["from"] | EmailOptions["to"] | EmailOptions["cc"] | EmailOptions["bcc"] | undefined): string => {
+const formatEmailAddress = (address: EmailOptions["from"] | EmailOptions["to"] | EmailOptions["cc"] | undefined): string => {
     if (!address) {
         return "";
     }
@@ -52,6 +52,7 @@ const createSpanAttributes = (emailOptions: EmailOptions, recordContent: boolean
         "email.subject": emailOptions.subject,
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (emailOptions.to) {
         attributes["email.to"] = formatEmailAddress(emailOptions.to);
     }
@@ -104,26 +105,25 @@ const createSpanAttributes = (emailOptions: EmailOptions, recordContent: boolean
 /**
  * OpenTelemetry Provider for instrumenting email sending with OpenTelemetry traces and metrics
  */
-const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unknown, unknown, EmailOptions>, EmailOptions> = defineProvider<
+const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider> = defineProvider<
     OpenTelemetryConfig,
-    Provider<unknown, unknown, EmailOptions>,
-    EmailOptions
+    Provider
 >((config?: OpenTelemetryConfig) => {
     if (!config?.provider) {
         throw new RequiredOptionError(PROVIDER_NAME, "provider");
     }
 
-    const options: Pick<OpenTelemetryConfig, "logger"> &
-        Required<Omit<OpenTelemetryConfig, "logger" | "provider" | "tracer">> & { provider: Provider | ProviderFactory; tracer?: Tracer } = {
-        debug: config.debug || false,
-        logger: config.logger,
-        provider: config.provider,
-        recordContent: config.recordContent || false,
-        retries: config.retries || 3,
-        serviceName: config.serviceName || DEFAULT_SERVICE_NAME,
-        timeout: config.timeout || 30_000,
-        tracer: config.tracer,
-    };
+    const options: Pick<OpenTelemetryConfig, "logger">
+        & Required<Omit<OpenTelemetryConfig, "logger" | "provider" | "tracer">> & { provider: Provider | ProviderFactory; tracer?: Tracer } = {
+            debug: config.debug ?? false,
+            logger: config.logger,
+            provider: config.provider,
+            recordContent: config.recordContent ?? false,
+            retries: config.retries ?? 3,
+            serviceName: config.serviceName ?? DEFAULT_SERVICE_NAME,
+            timeout: config.timeout ?? 30_000,
+            tracer: config.tracer,
+        };
 
     let isInitialized = false;
     let wrappedProvider: Provider;
@@ -156,13 +156,14 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
             }
 
             await wrappedProvider.initialize();
-            logger.debug(`Initialized wrapped provider: ${wrappedProvider.name || "unknown"}`);
+            logger.debug(`Initialized wrapped provider: ${wrappedProvider.name ?? "unknown"}`);
         } catch (error) {
             throw new EmailError(PROVIDER_NAME, `Failed to initialize wrapped provider: ${(error as Error).message}`, { cause: error as Error });
         }
     };
 
     const getFeatures = (): Provider["features"] => {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (wrappedProvider?.features) {
             return wrappedProvider.features;
         }
@@ -191,6 +192,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
          * @throws {EmailError} When the provider is not initialized.
          */
         getInstance(): Provider {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!wrappedProvider) {
                 throw new EmailError(PROVIDER_NAME, "Provider not initialized. Call initialize() first.");
             }
@@ -222,6 +224,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
          */
         async isAvailable(): Promise<boolean> {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!wrappedProvider) {
                     await initializeProvider();
                 }
@@ -247,6 +250,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
             const span = tracer.startSpan(DEFAULT_SPAN_NAME);
 
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!wrappedProvider) {
                     await initializeProvider();
                 }
@@ -266,22 +270,24 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
                     span.setAttribute("email.message_id", result.data.messageId);
                     span.setAttribute("email.sent", true);
 
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     if (result.data.timestamp) {
                         span.setAttribute("email.timestamp", result.data.timestamp.toISOString());
                     }
 
-                    logger.debug(`Email sent successfully via ${wrappedProvider.name || "unknown"}`);
+                    logger.debug(`Email sent successfully via ${wrappedProvider.name ?? "unknown"}`);
 
                     return {
                         data: {
                             ...result.data,
-                            provider: `${PROVIDER_NAME}(${wrappedProvider.name || "unknown"})`,
+                            provider: `${PROVIDER_NAME}(${wrappedProvider.name ?? "unknown"})`,
                         },
                         success: true,
                     };
                 }
 
-                const errorMessage = result.error instanceof Error ? result.error.message : String(result.error || "Unknown error");
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                const errorMessage = result.error instanceof Error ? result.error.message : String(result.error ?? "Unknown error");
 
                 span.setStatus({
                     code: SpanStatusCode.ERROR,
@@ -290,7 +296,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
                 span.setAttribute("email.sent", false);
                 span.recordException(result.error instanceof Error ? result.error : new Error(errorMessage));
 
-                logger.debug(`Failed to send email via ${wrappedProvider.name || "unknown"}:`, errorMessage);
+                logger.debug(`Failed to send email via ${wrappedProvider.name ?? "unknown"}:`, errorMessage);
 
                 return result;
             } catch (error) {
@@ -318,7 +324,8 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
          * Shuts down the wrapped provider and cleans up resources.
          */
         async shutdown(): Promise<void> {
-            if (wrappedProvider && wrappedProvider.shutdown) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (wrappedProvider?.shutdown) {
                 await wrappedProvider.shutdown();
             }
 
@@ -331,6 +338,7 @@ const opentelemetryProvider: ProviderFactory<OpenTelemetryConfig, Provider<unkno
          */
         async validateCredentials(): Promise<boolean> {
             try {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!wrappedProvider) {
                     await initializeProvider();
                 }

@@ -15,6 +15,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 // Mock the retry function
 vi.mock(import("../../src/utils/retry"), () => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -28,6 +29,7 @@ describe(brevoProvider, () => {
         it("should throw error if apiKey is missing", () => {
             expect.assertions(1);
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 brevoProvider({} as any);
             }).toThrow(RequiredOptionError);
         });
@@ -98,6 +100,7 @@ describe(brevoProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             expect(makeRequest).toHaveBeenCalledWith(`${provider.endpoint}/account`, {
                 headers: {
                     "api-key": "test123",
@@ -160,6 +163,7 @@ describe(brevoProvider, () => {
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 {
                     headers: {
@@ -217,8 +221,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -229,12 +235,18 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.sender.email).toBe("sender@example.com");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.sender.name).toBe("Sender");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.to).toHaveLength(2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.to[0].email).toBe("user1@example.com");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.to[0].name).toBe("User 1");
         });
 
@@ -272,8 +284,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -284,9 +298,12 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.cc).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.bcc).toBeDefined();
         });
 
@@ -333,9 +350,12 @@ describe(brevoProvider, () => {
             expect(sendEmailCall).toBeDefined();
             expect(sendEmailCall?.[2]).toBeDefined();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(sendEmailCall[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.templateId).toBe(12_345);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.params).toStrictEqual({ name: "John" });
         });
 
@@ -372,8 +392,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -384,9 +406,12 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.tags).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.tags).toStrictEqual(["tag1", "tag2"]);
         });
 
@@ -424,8 +449,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -436,10 +463,13 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.scheduledAt).toBeDefined();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expectTypeOf(payload.scheduledAt).toBeString();
         });
 
@@ -476,8 +506,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -488,9 +520,12 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.headers).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.headers["X-Custom"]).toBe("value");
         });
 
@@ -533,8 +568,10 @@ describe(brevoProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/smtp/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "api-key": "test123",
                         "Content-Type": "application/json",
@@ -545,10 +582,14 @@ describe(brevoProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.attachment).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.attachment).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.attachment[0].name).toBe("test.pdf");
         });
 

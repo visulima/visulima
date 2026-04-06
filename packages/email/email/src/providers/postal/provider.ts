@@ -20,7 +20,7 @@ const DEFAULT_RETRIES = 3;
 /**
  * Postal Provider for sending emails through Postal API.
  */
-const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions> = defineProvider((config: PostalConfig = {} as PostalConfig) => {
+const postalProvider: ProviderFactory<PostalConfig> = defineProvider((config: PostalConfig = {} as PostalConfig) => {
     if (!config.host) {
         throw new RequiredOptionError(PROVIDER_NAME, "host");
     }
@@ -29,15 +29,15 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    const endpoint = config.endpoint || `https://${config.host}/api/v1`;
+    const endpoint = config.endpoint ?? `https://${config.host}/api/v1`;
 
     const options: Pick<PostalConfig, "logger"> & Required<Omit<PostalConfig, "logger" | "endpoint">> & { endpoint: string } = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         endpoint,
         host: config.host,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -62,7 +62,7 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -106,6 +106,7 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -154,18 +155,19 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
 
                 logger.debug("Postal API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -272,7 +274,7 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
                             }
 
                             return {
-                                content_type: attachment.contentType || "application/octet-stream",
+                                content_type: attachment.contentType ?? "application/octet-stream",
                                 data: content,
                                 name: attachment.filename,
                             };
@@ -308,14 +310,15 @@ const postalProvider: ProviderFactory<PostalConfig, unknown, PostalEmailOptions>
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Postal returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { message_id?: number } })?.body;
-                const messageId = responseBody?.message_id?.toString() || generateMessageId();
+                const messageId = responseBody?.message_id?.toString() ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

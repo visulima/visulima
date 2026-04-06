@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
@@ -23,7 +24,7 @@ const toBase64 = (content: string | Buffer | Uint8Array | ArrayLike<number>): st
             const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
 
             // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
-            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+            binaryString += String.fromCharCode(...chunk as unknown as number[]);
         }
 
         return btoa(binaryString);
@@ -33,7 +34,7 @@ const toBase64 = (content: string | Buffer | Uint8Array | ArrayLike<number>): st
         return content.toString("base64");
     }
 
-    const uint8Array = content instanceof Uint8Array ? content : new Uint8Array(content as ArrayLike<number>);
+    const uint8Array = content instanceof Uint8Array ? content : new Uint8Array(content);
 
     if (hasBuffer) {
         return Buffer.from(uint8Array).toString("base64");
@@ -47,7 +48,7 @@ const toBase64 = (content: string | Buffer | Uint8Array | ArrayLike<number>): st
         const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
 
         // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data
-        binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+        binaryString += String.fromCharCode(...chunk as unknown as number[]);
     }
 
     return btoa(binaryString);

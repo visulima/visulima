@@ -63,6 +63,7 @@ export const verifySmtp = async (email: string, options: SmtpVerificationOptions
     }
 
     const { smtpCache } = options;
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const cacheKey = `smtp:${normalizedEmail}:${fromEmail}:${port}`;
 
     if (smtpCache) {
@@ -75,7 +76,7 @@ export const verifySmtp = async (email: string, options: SmtpVerificationOptions
 
     const domain = normalizedEmail.slice(atIndex + 1);
 
-    const mxCache = options.cache as Cache<MxCheckResult> | undefined;
+    const mxCache = options.cache;
 
     const mxCheck = await checkMxRecords(domain, {
         cache: mxCache,
@@ -83,7 +84,7 @@ export const verifySmtp = async (email: string, options: SmtpVerificationOptions
 
     if (!mxCheck.valid || !mxCheck.records || mxCheck.records.length === 0) {
         const result: SmtpVerificationResult = {
-            error: mxCheck.error || "No MX records found",
+            error: mxCheck.error ?? "No MX records found",
             mxRecords: mxCheck.records,
             valid: false,
         };

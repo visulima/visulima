@@ -24,6 +24,7 @@ const DEFAULT_RETRIES = 3;
  */
 const validateTag = (tag: ResendEmailTag): string[] => {
     const errors: string[] = [];
+    // eslint-disable-next-line e18e/prefer-static-regex
     const validPattern = /^[\w-]+$/;
 
     if (!validPattern.test(tag.name)) {
@@ -54,11 +55,11 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
 
     const options: Pick<ResendConfig, "logger"> & Required<Omit<ResendConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         logger: config.logger,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
     };
 
     const providerState = new ProviderState();
@@ -84,7 +85,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -128,6 +129,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -159,6 +161,7 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
          */
         async isAvailable(): Promise<boolean> {
             try {
+                // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
                 if (options.apiKey && options.apiKey.startsWith("re_")) {
                     logger.debug("API key format is valid, assuming Resend is available");
 
@@ -179,13 +182,13 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                 });
 
                 if (
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "body" in result.data &&
-                    result.data.body &&
-                    typeof result.data.body === "object" &&
-                    "name" in result.data.body &&
-                    result.data.body.name === "restricted_api_key"
+                    result.data
+                    && typeof result.data === "object"
+                    && "body" in result.data
+                    && result.data.body
+                    && typeof result.data.body === "object"
+                    && "name" in result.data.body
+                    && result.data.body.name === "restricted_api_key"
                 ) {
                     logger.debug("API key is valid but restricted to only sending emails");
 
@@ -194,18 +197,19 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
 
                 logger.debug("Resend API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -355,14 +359,15 @@ const resendProvider: ProviderFactory<ResendConfig, unknown, ResendEmailOptions>
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 const responseData = result.data as { body?: { id?: string } };
-                const messageId =
-                    responseData?.body && typeof responseData.body === "object" && responseData.body.id ? responseData.body.id : generateMessageId();
+                const messageId
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    = responseData?.body && typeof responseData.body === "object" && responseData.body.id ? responseData.body.id : generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

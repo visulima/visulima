@@ -33,6 +33,7 @@ const htmlToText = (
     },
 ): string => {
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         return convert(html, {
             longWordSplit: options?.longWordSplit,
             preserveNewlines: options?.preserveNewlines ?? false,

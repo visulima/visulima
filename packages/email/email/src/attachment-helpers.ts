@@ -10,7 +10,7 @@ import mime from "mime";
  * @param filename The filename or path.
  * @returns MIME type or application/octet-stream as fallback.
  */
-export const detectMimeType = (filename: string): string => mime.getType(filename) || "application/octet-stream";
+export const detectMimeType = (filename: string): string => mime.getType(filename) ?? "application/octet-stream";
 
 /**
  * Generates a Content-ID for inline attachments.
@@ -21,7 +21,7 @@ export const generateContentId = (filename: string): string => {
     const name = filename
         .replaceAll(/[^a-z0-9]/gi, "-")
         .replaceAll(/-+/g, "-")
-        // eslint-disable-next-line sonarjs/anchor-precedence
+
         .replaceAll(/^-|-$/g, "")
         .toLowerCase();
     // eslint-disable-next-line sonarjs/pseudo-random

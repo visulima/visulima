@@ -8,6 +8,7 @@ const generateMessageId = (): string => {
     // eslint-disable-next-line sonarjs/pseudo-random
     const random = Math.random().toString(36).slice(2, 10);
 
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return `<${timestamp}.${random}@${domain}>`;
 };
 

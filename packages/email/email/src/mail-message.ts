@@ -203,13 +203,13 @@ export class MailMessage {
     public async attachFromPath(filePath: string, options?: AttachmentOptions): Promise<this> {
         try {
             const content = await readFileAsBuffer(filePath);
-            const filename = options?.filename || basename(filePath) || "attachment";
-            const contentType = options?.contentType || detectMimeType(filename);
+            const filename = options?.filename ?? basename(filePath) || "attachment";
+            const contentType = options?.contentType ?? detectMimeType(filename);
 
             this.attachments.push({
                 cid: options?.cid,
                 content,
-                contentDisposition: options?.contentDisposition || "attachment",
+                contentDisposition: options?.contentDisposition ?? "attachment",
                 contentType,
                 encoding: options?.encoding,
                 filename,
@@ -243,12 +243,12 @@ export class MailMessage {
      * ```
      */
     public attachData(content: string | Buffer, options: AttachmentDataOptions): this {
-        const contentType = options.contentType || detectMimeType(options.filename);
+        const contentType = options.contentType ?? detectMimeType(options.filename);
 
         this.attachments.push({
             cid: options.cid,
             content,
-            contentDisposition: options.contentDisposition || "attachment",
+            contentDisposition: options.contentDisposition ?? "attachment",
             contentType,
             encoding: options.encoding,
             filename: options.filename,
@@ -278,8 +278,8 @@ export class MailMessage {
     public async embedFromPath(filePath: string, options?: Omit<AttachmentOptions, "contentDisposition" | "cid">): Promise<string> {
         try {
             const content = await readFileAsBuffer(filePath);
-            const filename = options?.filename || basename(filePath) || "inline";
-            const contentType = options?.contentType || detectMimeType(filename);
+            const filename = options?.filename ?? basename(filePath) || "inline";
+            const contentType = options?.contentType ?? detectMimeType(filename);
             const cid = generateContentId(filename);
 
             this.attachments.push({
@@ -320,7 +320,7 @@ export class MailMessage {
      * ```
      */
     public embedData(content: string | Buffer, filename: string, options?: Omit<AttachmentDataOptions, "filename" | "contentDisposition" | "cid">): string {
-        const contentType = options?.contentType || detectMimeType(filename);
+        const contentType = options?.contentType ?? detectMimeType(filename);
         const cid = generateContentId(filename);
 
         this.attachments.push({
@@ -673,6 +673,7 @@ export class MailMessage {
                 this.logger.error("Failed to render template", error);
             }
 
+            // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to render template: ${(error as Error).message}`);
         }
 
@@ -714,6 +715,7 @@ export class MailMessage {
                 this.logger.error("Failed to render text template", error);
             }
 
+            // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to render text template: ${(error as Error).message}`);
         }
 
@@ -785,6 +787,7 @@ export class MailMessage {
             emailOptions.attachments = this.attachments;
 
             if (this.logger) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 this.logger.debug(`Email includes ${this.attachments.length} attachment(s)`);
             }
         }
@@ -812,7 +815,7 @@ export class MailMessage {
         // Add date header if set
         if (this.dateValue) {
             emailOptions.headers = {
-                ...headersToRecord(emailOptions.headers || {}),
+                ...headersToRecord(emailOptions.headers ?? {}),
                 Date: this.dateValue.toUTCString(),
             };
         }
@@ -820,7 +823,7 @@ export class MailMessage {
         // Add return-path header if set
         if (this.returnPathAddress) {
             emailOptions.headers = {
-                ...headersToRecord(emailOptions.headers || {}),
+                ...headersToRecord(emailOptions.headers ?? {}),
                 "Return-Path": this.returnPathAddress.email,
             };
         }
@@ -828,7 +831,7 @@ export class MailMessage {
         // Add sender header if set
         if (this.senderAddress) {
             emailOptions.headers = {
-                ...headersToRecord(emailOptions.headers || {}),
+                ...headersToRecord(emailOptions.headers ?? {}),
                 Sender: this.senderAddress.email,
             };
         }
@@ -1025,7 +1028,7 @@ export class MailMessage {
         const error = new Error(message);
 
         if (this.logger) {
-            this.logger.error(logMessage || message);
+            this.logger.error(logMessage ?? message);
         }
 
         throw error;

@@ -16,7 +16,7 @@ const PROVIDER_NAME = "nodemailer";
 /**
  * Nodemailer Provider for sending emails via nodemailer
  */
-const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerEmailOptions> = defineProvider(
+const nodemailerProvider: ProviderFactory<NodemailerConfig> = defineProvider(
     (options: NodemailerConfig = {} as NodemailerConfig) => {
         // Validate required options
         if (!options.transport) {
@@ -32,7 +32,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerE
          * @returns A nodemailer transporter instance.
          */
         const createTransporter = (transport?: Record<string, unknown> | string) => {
-            const transportConfig = transport || options.transport;
+            const transportConfig = transport ?? options.transport;
 
             // eslint-disable-next-line sonarjs/no-clear-text-protocols
             return nodemailerModule.createTransport(transportConfig as Parameters<typeof nodemailerModule.createTransport>[0]);
@@ -71,7 +71,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerE
 
             const formatToAddress = (address: EmailAddress): string => (address.name ? `${address.name} <${address.email}>` : address.email);
 
-            const fromAddress = options.defaultFrom || emailOptions.from;
+            const fromAddress = options.defaultFrom ?? emailOptions.from;
             const mailOptions: Record<string, unknown> = {
                 from: formatFromAddress(fromAddress),
                 subject: emailOptions.subject,
@@ -172,9 +172,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerE
              */
             isAvailable: async () => {
                 try {
-                    if (!transporter) {
-                        transporter = createTransporter();
-                    }
+                    transporter ??= createTransporter();
 
                     await transporter.verify();
 
@@ -246,6 +244,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerE
             /**
              * Shuts down the nodemailer provider and cleans up resources.
              */
+            // eslint-disable-next-line @typescript-eslint/require-await
             shutdown: async () => {
                 if (transporter && typeof transporter.close === "function") {
                     transporter.close();
@@ -261,9 +260,7 @@ const nodemailerProvider: ProviderFactory<NodemailerConfig, unknown, NodemailerE
              */
             validateCredentials: async (): Promise<boolean> => {
                 try {
-                    if (!transporter) {
-                        transporter = createTransporter();
-                    }
+                    transporter ??= createTransporter();
 
                     await transporter.verify();
 

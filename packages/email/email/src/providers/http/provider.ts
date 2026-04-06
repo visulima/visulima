@@ -16,16 +16,16 @@ const DEFAULT_TIMEOUT = 30_000;
 /**
  * HTTP Email Provider for sending emails via HTTP API.
  */
-const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> = defineProvider((options_: HttpEmailConfig = {} as HttpEmailConfig) => {
+const httpProvider: ProviderFactory<HttpEmailConfig> = defineProvider((options_: HttpEmailConfig = {} as HttpEmailConfig) => {
     if (!options_.endpoint) {
         throw new RequiredOptionError(PROVIDER_NAME, "endpoint");
     }
 
     const options: Required<HttpEmailConfig> = {
-        apiKey: options_.apiKey || "",
+        apiKey: options_.apiKey ?? "",
         endpoint: options_.endpoint,
-        headers: options_.headers || {},
-        method: options_.method || DEFAULT_METHOD,
+        headers: options_.headers ?? {},
+        method: options_.method ?? DEFAULT_METHOD,
     };
 
     /**
@@ -117,6 +117,7 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
                     return true;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const statusCode = (result.data as { statusCode?: number })?.statusCode;
 
                 if (statusCode === 401 || statusCode === 403) {
@@ -167,9 +168,9 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
 
                 const payload = formatRequest(emailOptions);
 
-                const endpoint = emailOptions.endpointOverride || options.endpoint;
+                const endpoint = emailOptions.endpointOverride ?? options.endpoint;
 
-                const method = emailOptions.methodOverride || options.method;
+                const method = emailOptions.methodOverride ?? options.method;
 
                 const result = await makeRequest(
                     endpoint,
@@ -183,6 +184,7 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
 
                 if (!result.success) {
                     return {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         error: new EmailError(PROVIDER_NAME, `Failed to send email: ${(result.error as Error)?.message || "Unknown error"}`, {
                             cause: result.error as Error,
                         }),
@@ -192,25 +194,25 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
 
                 // Extract message ID from the response following various patterns
                 let messageId: string | undefined;
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: Record<string, unknown> })?.body;
 
                 if (responseBody && typeof responseBody === "object") {
-                    messageId =
-                        (responseBody.id as string | undefined) ||
-                        (responseBody.messageId as string | undefined) ||
-                        ((responseBody.data &&
-                            typeof responseBody.data === "object" &&
-                            ((responseBody.data as { id?: string }).id || (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
+                    messageId
+                        = (responseBody.id as string | undefined)
+                            ?? (responseBody.messageId as string | undefined)
+                            ?? ((responseBody.data
+                                && typeof responseBody.data === "object"
+                                && ((responseBody.data as { id?: string }).id ?? (responseBody.data as { messageId?: string }).messageId)) as string | undefined);
                 }
 
-                if (!messageId) {
-                    messageId = generateMessageId();
-                }
+                messageId ??= generateMessageId();
 
                 return {
                     data: {
                         messageId,
                         provider: PROVIDER_NAME,
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         response: (result.data as { body?: unknown })?.body,
                         sent: true,
                         timestamp: new Date(),
@@ -237,12 +239,12 @@ const httpProvider: ProviderFactory<HttpEmailConfig, unknown, HttpEmailOptions> 
                 });
 
                 return Boolean(
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof result.data.statusCode === "number" &&
-                    result.data.statusCode >= 200 &&
-                    result.data.statusCode < 300,
+                    result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof result.data.statusCode === "number"
+                    && result.data.statusCode >= 200
+                    && result.data.statusCode < 300,
                 );
             } catch {
                 return false;

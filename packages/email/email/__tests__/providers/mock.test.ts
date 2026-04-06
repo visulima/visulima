@@ -105,9 +105,11 @@ describe(mockProvider, () => {
             expect(result.data?.sent).toBe(true);
             expect(result.data?.provider).toBe("mock");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(sentEmails[0]?.options.subject).toBe("Test Subject");
         });
 
@@ -142,9 +144,11 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(sentEmails[0]?.options).toStrictEqual(emailOptions);
         });
 
@@ -161,6 +165,7 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(1);
@@ -183,6 +188,7 @@ describe(mockProvider, () => {
 
             expect(result.success).toBe(false);
             expect(result.error?.message).toContain("Simulated failure");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentEmails()).toHaveLength(0);
         });
     });
@@ -225,6 +231,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setFailureRate(0.75);
 
             expect(provider.options?.failureRate).toBe(0.75);
@@ -236,10 +243,12 @@ describe(mockProvider, () => {
             const provider = mockProvider();
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 provider.setFailureRate(-0.1);
             }).toThrow(RangeError);
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 provider.setFailureRate(1.1);
             }).toThrow(RangeError);
         });
@@ -270,6 +279,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setDelay(200);
 
             expect(provider.options?.delay).toBe(200);
@@ -282,6 +292,7 @@ describe(mockProvider, () => {
             const provider = mockProvider();
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 provider.setDelay(-1);
             }).toThrow(RangeError);
         });
@@ -293,6 +304,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setRandomDelay(50, 100);
 
             expect(provider.options?.delay).toBe(0);
@@ -304,6 +316,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setRandomDelay(10, 20);
             const emailOptions: MockEmailOptions = {
                 from: { email: "sender@example.com" },
@@ -326,10 +339,12 @@ describe(mockProvider, () => {
             const provider = mockProvider();
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 provider.setRandomDelay(-1, 10);
             }).toThrow(RangeError);
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 provider.setRandomDelay(10, 5);
             }).toThrow(RangeError);
         });
@@ -348,6 +363,7 @@ describe(mockProvider, () => {
                 timestamp: new Date("2024-01-01"),
             } as const;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setNextResponse(customReceipt);
 
             const emailOptions: MockEmailOptions = {
@@ -379,6 +395,7 @@ describe(mockProvider, () => {
                 successful: false,
             } as const;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setNextResponse(failureReceipt);
 
             const emailOptions: MockEmailOptions = {
@@ -407,6 +424,7 @@ describe(mockProvider, () => {
                 timestamp: new Date("2024-01-01"),
             } as const;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setDefaultResponse(defaultReceipt);
 
             const emailOptions: MockEmailOptions = {
@@ -433,6 +451,7 @@ describe(mockProvider, () => {
                 timestamp: new Date(),
             } as const;
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setDefaultResponse(defaultReceipt);
 
             const emailOptions: MockEmailOptions = {
@@ -464,10 +483,13 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions);
             await provider.sendEmail({ ...emailOptions, subject: "Test 2" });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(sentEmails[0]?.options.subject).toBe("Test");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(sentEmails[1]?.options.subject).toBe("Test 2");
         });
 
@@ -476,6 +498,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const sentEmails = provider.getSentEmails();
 
             expect(sentEmails).toHaveLength(0);
@@ -496,9 +519,11 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages = provider.getSentMessages();
 
             expect(messages).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(messages[0]?.options.subject).toBe("Test");
         });
     });
@@ -524,8 +549,10 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions1);
             await provider.sendEmail(emailOptions2);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const lastMessage = provider.getLastSentMessage();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(lastMessage?.options.subject).toBe("Last");
         });
 
@@ -534,6 +561,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const lastMessage = provider.getLastSentMessage();
 
             expect(lastMessage).toBeUndefined();
@@ -552,14 +580,17 @@ describe(mockProvider, () => {
                 to: { email: "user@example.com" },
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(0);
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(1);
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(2);
         });
     });
@@ -579,10 +610,13 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions);
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(2);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.clearSentMessages();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(0);
         });
 
@@ -591,8 +625,11 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setFailureRate(0.5);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setDelay(100);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.clearSentMessages();
 
             expect(provider.options?.failureRate).toBe(0.5);
@@ -621,9 +658,11 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions1);
             await provider.sendEmail(emailOptions2);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const message = provider.findMessageBy((message_) => message_.options.subject === "First");
 
             expect(message).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(message?.options.subject).toBe("First");
         });
 
@@ -640,6 +679,7 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const message = provider.findMessageBy((message_) => message_.options.subject === "NonExistent");
 
             expect(message).toBeUndefined();
@@ -674,6 +714,7 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions2);
             await provider.sendEmail(emailOptions3);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const messages = provider.findMessagesBy((message) => message.options.subject === "Test");
 
             expect(messages).toHaveLength(2);
@@ -701,9 +742,11 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions1);
             await provider.sendEmail(emailOptions2);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages = provider.getMessagesTo("user@example.com");
 
             expect(messages).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(messages[0]?.options.subject).toBe("Test 1");
         });
 
@@ -721,6 +764,7 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages = provider.getMessagesTo("cc@example.com");
 
             expect(messages).toHaveLength(1);
@@ -740,6 +784,7 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages = provider.getMessagesTo("bcc@example.com");
 
             expect(messages).toHaveLength(1);
@@ -758,7 +803,9 @@ describe(mockProvider, () => {
 
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages1 = provider.getMessagesTo("user1@example.com");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages2 = provider.getMessagesTo("user2@example.com");
 
             expect(messages1).toHaveLength(1);
@@ -794,10 +841,13 @@ describe(mockProvider, () => {
             await provider.sendEmail(emailOptions2);
             await provider.sendEmail(emailOptions3);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const messages = provider.getMessagesBySubject("Welcome");
 
             expect(messages).toHaveLength(2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(messages[0]?.options.subject).toBe("Welcome");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(messages[1]?.options.subject).toBe("Welcome");
         });
     });
@@ -815,10 +865,12 @@ describe(mockProvider, () => {
             };
 
             const sendPromise = provider.sendEmail(emailOptions);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             const waitPromise = provider.waitForMessageCount(1, 1000);
 
             await Promise.all([sendPromise, waitPromise]);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(1);
         });
 
@@ -827,6 +879,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             await expect(provider.waitForMessageCount(1, 100)).rejects.toThrow("Timeout");
         });
     });
@@ -844,10 +897,13 @@ describe(mockProvider, () => {
             };
 
             const sendPromise = provider.sendEmail(emailOptions);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             const waitPromise = provider.waitForMessage((message_) => message_.options.subject === "Special", 1000);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const [, message] = await Promise.all([sendPromise, waitPromise]);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(message.options.subject).toBe("Special");
         });
 
@@ -856,6 +912,7 @@ describe(mockProvider, () => {
 
             const provider = mockProvider();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
             await expect(provider.waitForMessage((message) => message.options.subject === "NonExistent", 100)).rejects.toThrow("Timeout");
         });
     });
@@ -872,8 +929,11 @@ describe(mockProvider, () => {
                 to: { email: "user@example.com" },
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setFailureRate(0.5);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setDelay(100);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.setNextResponse({
                 messageId: "test-id",
                 successful: true,
@@ -881,8 +941,10 @@ describe(mockProvider, () => {
             });
             await provider.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             provider.reset();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(0);
             expect(provider.options?.failureRate).toBe(0);
             expect(provider.options?.delay).toBe(0);
@@ -915,6 +977,7 @@ describe(mockProvider, () => {
 
             expect(getResult.success).toBe(true);
             expect(getResult.data).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect((getResult.data as any)?.id).toBe(messageId);
         });
 
@@ -980,6 +1043,7 @@ describe(mockProvider, () => {
 
             // After shutdown, storage should be cleared for this instance
             // Note: The implementation clears the instance from global storage
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider.getSentMessagesCount()).toBe(0);
         });
     });
@@ -999,7 +1063,9 @@ describe(mockProvider, () => {
 
             await provider1.sendEmail(emailOptions);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider1.getSentMessagesCount()).toBe(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             expect(provider2.getSentMessagesCount()).toBe(0);
         });
     });

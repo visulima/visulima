@@ -6,13 +6,16 @@ import validateEmailDefault from "./validate-email";
  * @param options The email options to validate.
  * @returns Array of error messages (empty if validation passes).
  */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
     const errors: string[] = [];
 
-    if (!options.from || !options.from.email) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!options.from?.email) {
         errors.push("Missing required field: from");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!options.to) {
         errors.push("Missing required field: to");
     }
@@ -25,6 +28,7 @@ const validateEmailOptions = <T extends EmailOptions>(options: T): string[] => {
         errors.push("Either text or html content is required");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-optional-chain
     if (options.from && options.from.email && !validateEmailDefault(options.from.email)) {
         errors.push(`Invalid from email address: ${options.from.email}`);
     }

@@ -14,6 +14,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 
 vi.mock(import("../../src/utils/retry"), () => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -27,6 +28,7 @@ describe(mailjetProvider, () => {
         it("should throw error if apiKey is missing", () => {
             expect.assertions(1);
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mailjetProvider({ apiSecret: "secret123" } as any);
             }).toThrow(RequiredOptionError);
         });
@@ -34,6 +36,7 @@ describe(mailjetProvider, () => {
         it("should throw error if apiSecret is missing", () => {
             expect.assertions(1);
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mailjetProvider({ apiKey: "key123" } as any);
             }).toThrow(RequiredOptionError);
         });
@@ -105,6 +108,7 @@ describe(mailjetProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/v3.1/REST/user`, {
                 headers: {
                     Authorization: "Basic a2V5MTIzOnNlY3JldDEyMw==",
@@ -163,6 +167,7 @@ describe(mailjetProvider, () => {
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
             expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/v3.1/send`,
                 {
                     headers: {
@@ -226,12 +231,18 @@ describe(mailjetProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].From.Email).toBe("sender@example.com");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].From.Name).toBe("Sender");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].To).toHaveLength(2);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].To[0].Email).toBe("user1@example.com");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].To[0].Name).toBe("User 1");
         });
 
@@ -275,9 +286,12 @@ describe(mailjetProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Cc).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Bcc).toBeDefined();
         });
 
@@ -328,9 +342,12 @@ describe(mailjetProvider, () => {
             expect(sendEmailCall).toBeDefined();
             expect(sendEmailCall?.[2]).toBeDefined();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(sendEmailCall[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].TemplateID).toBe(12_345);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Variables).toStrictEqual({ name: "John" });
         });
 
@@ -373,8 +390,10 @@ describe(mailjetProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].CustomCampaign).toBe("tag1,tag2");
         });
 
@@ -417,11 +436,16 @@ describe(mailjetProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Headers).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(Array.isArray(payload.Messages[0].Headers)).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Headers[0].Name).toBe("X-Custom");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Headers[0].Value).toBe("value");
         });
 
@@ -470,10 +494,14 @@ describe(mailjetProvider, () => {
             await provider.sendEmail(emailOptions);
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Attachments).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Attachments).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Messages[0].Attachments[0].Filename).toBe("test.pdf");
         });
 

@@ -22,17 +22,17 @@ const DEFAULT_RETRIES = 3;
 /**
  * Mandrill Provider for sending emails through Mandrill API
  */
-const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOptions> = defineProvider((config: MandrillConfig = {} as MandrillConfig) => {
+const mandrillProvider: ProviderFactory<MandrillConfig> = defineProvider((config: MandrillConfig = {} as MandrillConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<MandrillConfig, "logger"> & Required<Omit<MandrillConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -57,7 +57,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -112,6 +112,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -165,18 +166,19 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
 
                 logger.debug("Mandrill API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -210,9 +212,9 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                 // Build message for Mandrill API
                 const message: Record<string, unknown> = {
                     from_email: emailOptions.from.email,
-                    html: emailOptions.html || "",
+                    html: emailOptions.html ?? "",
                     subject: emailOptions.subject,
-                    text: emailOptions.text || "",
+                    text: emailOptions.text ?? "",
                     ...(emailOptions.from.name && { from_name: emailOptions.from.name }),
                     to: formatMandrillAddresses(emailOptions.to, "to"),
                 };
@@ -221,6 +223,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                 if (emailOptions.cc) {
                     const ccAddresses = formatMandrillAddresses(emailOptions.cc, "cc");
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const addr of ccAddresses) {
                         addr.type = "cc";
                     }
@@ -232,6 +235,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                 if (emailOptions.bcc) {
                     const bccAddresses = formatMandrillAddresses(emailOptions.bcc, "bcc");
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const addr of bccAddresses) {
                         addr.type = "bcc";
                     }
@@ -311,7 +315,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                             return {
                                 content,
                                 name: attachment.filename,
-                                type: attachment.contentType || "application/octet-stream",
+                                type: attachment.contentType ?? "application/octet-stream",
                             };
                         }),
                     );
@@ -378,14 +382,15 @@ const mandrillProvider: ProviderFactory<MandrillConfig, unknown, MandrillEmailOp
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Mandrill returns array of results, one per recipient
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { id?: string }[] })?.body;
-                const messageId = responseBody?.[0]?.id || generateMessageId();
+                const messageId = responseBody?.[0]?.id ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

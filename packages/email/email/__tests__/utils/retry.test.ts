@@ -10,21 +10,24 @@ describe(retry, () => {
         vi.useRealTimers();
     });
 
-    const createSuccessFunction = (): (() => Promise<Result<string>>) => async () => {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    const createSuccessFunction = (): () => Promise<Result<string>> => async () => {
         return {
             data: "success",
             success: true,
         };
     };
 
-    const createFailureFunction = (failCount: number = 0): (() => Promise<Result<string>>) => {
+    const createFailureFunction = (failCount: number = 0): () => Promise<Result<string>> => {
         let callCount = 0;
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         return async () => {
             callCount += 1;
 
             if (callCount <= failCount) {
                 return {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     error: new EmailError("test", `Attempt ${callCount} failed`),
                     success: false,
                 };
@@ -37,13 +40,15 @@ describe(retry, () => {
         };
     };
 
-    const createThrowingFunction = (throwCount: number = 0): (() => Promise<Result<string>>) => {
+    const createThrowingFunction = (throwCount: number = 0): () => Promise<Result<string>> => {
         let callCount = 0;
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         return async () => {
             callCount += 1;
 
             if (callCount <= throwCount) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`Attempt ${callCount} threw`);
             }
 
@@ -102,11 +107,13 @@ describe(retry, () => {
             vi.useFakeTimers();
 
             let callCount = 0;
+            // eslint-disable-next-line @typescript-eslint/require-await
             const retryFunction = vi.fn(async () => {
                 callCount += 1;
 
                 if (callCount <= 2) {
                     return {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         error: new EmailError("test", `Attempt ${callCount} failed`),
                         success: false,
                     };
@@ -205,7 +212,9 @@ describe(retry, () => {
 
             vi.useFakeTimers();
 
+            // eslint-disable-next-line @typescript-eslint/require-await
             const retryFunction = vi.fn(async () => {
+                // eslint-disable-next-line @typescript-eslint/only-throw-error
                 throw "string error";
             });
             const retryPromise = retry(retryFunction, 1, 100);

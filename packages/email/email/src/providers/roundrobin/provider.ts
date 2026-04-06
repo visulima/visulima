@@ -1,13 +1,13 @@
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
-import type { EmailOptions, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { createLogger } from "../../utils/create-logger";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { RoundRobinConfig, RoundRobinEmailOptions } from "./types";
 
 // Type guard to check if something is a ProviderFactory
-const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
+const isProviderFactory = (value: unknown): value is ProviderFactory => typeof value === "function";
 
 // Type guard to check if something is a Provider
 const isProvider = (value: unknown): value is Provider =>
@@ -19,21 +19,22 @@ const PROVIDER_NAME = "roundrobin";
 /**
  * Round Robin Provider for distributing email sending across multiple providers
  */
-const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinEmailOptions> = defineProvider(
+const roundRobinProvider: ProviderFactory<RoundRobinConfig> = defineProvider(
     (config: RoundRobinConfig = {} as RoundRobinConfig) => {
         // Validate required options
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!config.mailers || config.mailers.length === 0) {
             throw new RequiredOptionError(PROVIDER_NAME, "mailers");
         }
 
         // Initialize with defaults
         const options: Pick<RoundRobinConfig, "logger"> & Required<Omit<RoundRobinConfig, "logger">> = {
-            debug: config.debug || false,
+            debug: config.debug ?? false,
             logger: config.logger,
             mailers: config.mailers,
-            retries: config.retries || 3,
+            retries: config.retries ?? 3,
             retryAfter: config.retryAfter ?? 60,
-            timeout: config.timeout || 30_000,
+            timeout: config.timeout ?? 30_000,
         };
 
         let isInitialized = false;
@@ -49,6 +50,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
         const initializeProviders = async (): Promise<void> => {
             providers.length = 0;
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const mailer of options.mailers) {
                 try {
                     // If mailer is a provider factory, call it with empty config
@@ -60,6 +62,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                     } else if (isProvider(mailer)) {
                         provider = mailer;
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         logger.debug(`Skipping invalid mailer: ${mailer}`);
                         continue;
                     }
@@ -69,9 +72,9 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                         // eslint-disable-next-line no-await-in-loop
                         await provider.initialize();
                         providers.push(provider);
-                        logger.debug(`Initialized provider: ${provider.name || "unknown"}`);
+                        logger.debug(`Initialized provider: ${provider.name ?? "unknown"}`);
                     } catch (error) {
-                        logger.debug(`Failed to initialize provider ${provider.name || "unknown"}:`, error);
+                        logger.debug(`Failed to initialize provider ${provider.name ?? "unknown"}:`, error);
                         // Continue with next provider
                     }
                 } catch (error) {
@@ -87,7 +90,8 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
             // Initialize currentIndex to a random provider
             // eslint-disable-next-line sonarjs/pseudo-random
             currentIndex = Math.floor(Math.random() * providers.length);
-            logger.debug(`Round robin starting at index ${currentIndex} (${providers[currentIndex]?.name || "unknown"})`);
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            logger.debug(`Round robin starting at index ${currentIndex} (${providers[currentIndex]?.name ?? "unknown"})`);
         };
 
         /**
@@ -112,7 +116,8 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                     continue;
                 }
 
-                const providerName = provider.name || `provider-${currentIndex + 1}`;
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                const providerName = provider.name ?? `provider-${currentIndex + 1}`;
 
                 // Check if provider is available
                 try {
@@ -122,6 +127,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                     if (isAvailable) {
                         // Move to next provider for next call
                         currentIndex = (currentIndex + 1) % providers.length;
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         logger.debug(`Selected provider: ${providerName} (index ${currentIndex === 0 ? providers.length - 1 : currentIndex - 1})`);
 
                         return provider;
@@ -146,9 +152,10 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
             }
 
             // If we've tried all providers and none are available, return the one at startIndex
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             logger.debug(`No available providers found, using provider at index ${startIndex}`);
 
-            return providers[startIndex] || undefined;
+            return providers[startIndex] ?? undefined;
         };
 
         return {
@@ -177,6 +184,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                 try {
                     await initializeProviders();
                     isInitialized = true;
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     logger.debug(`Round robin provider initialized with ${providers.length} provider(s)`);
                 } catch (error) {
                     throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
@@ -194,9 +202,10 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                     }
 
                     // Check if at least one provider is available (check in parallel for efficiency)
+                    // eslint-disable-next-line @typescript-eslint/await-thenable
                     const availabilityChecks = await Promise.allSettled(providers.map((provider) => provider.isAvailable()));
 
-                    return availabilityChecks.some((result) => result.status === "fulfilled" && result.value === true);
+                    return availabilityChecks.some((result) => result.status === "fulfilled" && result.value);
                 } catch {
                     return false;
                 }
@@ -237,7 +246,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                         };
                     }
 
-                    const providerName = provider.name || "unknown";
+                    const providerName = provider.name ?? "unknown";
 
                     logger.debug(`Sending email via ${providerName}`);
 
@@ -258,6 +267,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
 
                     // If send failed, try the next provider (failover behavior)
                     logger.debug(`Failed to send via ${providerName}, trying next provider`);
+                    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
                     const errors: (Error | unknown)[] = [];
 
                     if (result.error) {
@@ -275,7 +285,7 @@ const roundRobinProvider: ProviderFactory<RoundRobinConfig, unknown, RoundRobinE
                             break;
                         }
 
-                        const nextProviderName = nextProvider.name || "unknown";
+                        const nextProviderName = nextProvider.name ?? "unknown";
 
                         logger.debug(`Retrying with ${nextProviderName}`);
 

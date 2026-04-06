@@ -20,17 +20,17 @@ const DEFAULT_RETRIES = 3;
 /**
  * Postmark Provider for sending emails through Postmark API.
  */
-const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOptions> = defineProvider((config: PostmarkConfig = {} as PostmarkConfig) => {
+const postmarkProvider: ProviderFactory<PostmarkConfig> = defineProvider((config: PostmarkConfig = {} as PostmarkConfig) => {
     if (!config.serverToken) {
         throw new RequiredOptionError(PROVIDER_NAME, "serverToken");
     }
 
     const options: Pick<PostmarkConfig, "logger"> & Required<Omit<PostmarkConfig, "logger">> = {
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
         serverToken: config.serverToken,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -57,7 +57,7 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -103,6 +103,7 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -149,18 +150,19 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
 
                 logger.debug("Postmark API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -262,7 +264,9 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     const headersRecord = headersToRecord(emailOptions.headers);
                     const headersArray: { Name: string; Value: string }[] = [];
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const [key, value] of Object.entries(headersRecord)) {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
                         headersArray.push({ Name: sanitizeHeaderName(key), Value: sanitizeHeaderValue(String(value)) });
                     }
 
@@ -305,13 +309,14 @@ const postmarkProvider: ProviderFactory<PostmarkConfig, unknown, PostmarkEmailOp
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { MessageID?: string } })?.body;
-                const messageId = responseBody?.MessageID || generateMessageId();
+                const messageId = responseBody?.MessageID ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

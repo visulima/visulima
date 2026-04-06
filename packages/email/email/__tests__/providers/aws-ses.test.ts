@@ -33,6 +33,7 @@ describe(awsSesProvider, () => {
         it("should throw error if accessKeyId is missing when sending email", async () => {
             expect.assertions(3);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const provider = awsSesProvider({ region: "us-east-1", secretAccessKey: "test123" } as any);
 
             const emailOptions: AwsSesEmailOptions = {
@@ -52,6 +53,7 @@ describe(awsSesProvider, () => {
         it("should throw error if secretAccessKey is missing when sending email", async () => {
             expect.assertions(3);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const provider = awsSesProvider({ accessKeyId: "test123", region: "us-east-1" } as any);
 
             const emailOptions: AwsSesEmailOptions = {
@@ -77,6 +79,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
+                    // eslint-disable-next-line @stylistic/quotes
                     body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-123</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
@@ -242,6 +245,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
+                    // eslint-disable-next-line @stylistic/quotes
                     body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
@@ -273,6 +277,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
+                    // eslint-disable-next-line @stylistic/quotes
                     body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId></MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
@@ -304,6 +309,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
+                    // eslint-disable-next-line @stylistic/quotes
                     body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>   </MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
@@ -335,6 +341,7 @@ describe(awsSesProvider, () => {
 
             makeRequestMock.mockResolvedValueOnce({
                 data: {
+                    // eslint-disable-next-line @stylistic/quotes
                     body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id-456</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                     statusCode: 200,
                 },
@@ -371,6 +378,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
+                        // eslint-disable-next-line @stylistic/quotes
                         body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
@@ -394,6 +402,7 @@ describe(awsSesProvider, () => {
 
                 expect(result.success).toBe(true);
                 // Verify the request was made (CRLF should be sanitized)
+                // eslint-disable-next-line e18e/prefer-static-regex
                 expect(makeRequestMock).toHaveBeenCalledWith(expect.any(String), expect.any(Object), expect.stringMatching(/^Action=SendRawEmail/));
 
                 const callArgs = makeRequestMock.mock.calls[0];
@@ -409,6 +418,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
+                        // eslint-disable-next-line @stylistic/quotes
                         body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
@@ -431,6 +441,7 @@ describe(awsSesProvider, () => {
                 const result = await provider.sendEmail(emailOptions);
 
                 expect(result.success).toBe(true);
+                // eslint-disable-next-line e18e/prefer-static-regex
                 expect(makeRequestMock).toHaveBeenCalledWith(expect.any(String), expect.any(Object), expect.stringMatching(/^Action=SendRawEmail/));
 
                 const callArgs = makeRequestMock.mock.calls[0];
@@ -446,6 +457,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
+                        // eslint-disable-next-line @stylistic/quotes
                         body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
@@ -471,6 +483,7 @@ describe(awsSesProvider, () => {
                 const result = await provider.sendEmail(emailOptions);
 
                 expect(result.success).toBe(true);
+                // eslint-disable-next-line e18e/prefer-static-regex
                 expect(makeRequestMock).toHaveBeenCalledWith(expect.any(String), expect.any(Object), expect.stringMatching(/^Action=SendRawEmail/));
 
                 const callArgs = makeRequestMock.mock.calls[0];
@@ -486,6 +499,7 @@ describe(awsSesProvider, () => {
 
                 makeRequestMock.mockResolvedValueOnce({
                     data: {
+                        // eslint-disable-next-line @stylistic/quotes
                         body: '<?xml version="1.0" encoding="UTF-8"?><SendRawEmailResponse><SendRawEmailResult><MessageId>test-message-id</MessageId></SendRawEmailResult></SendRawEmailResponse>',
                         statusCode: 200,
                     },
@@ -511,6 +525,7 @@ describe(awsSesProvider, () => {
                 const result = await provider.sendEmail(emailOptions);
 
                 expect(result.success).toBe(true);
+                // eslint-disable-next-line e18e/prefer-static-regex
                 expect(makeRequestMock).toHaveBeenCalledWith(expect.any(String), expect.any(Object), expect.stringMatching(/^Action=SendRawEmail/));
 
                 const callArgs = makeRequestMock.mock.calls[0];

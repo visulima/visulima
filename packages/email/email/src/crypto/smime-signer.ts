@@ -31,6 +31,7 @@ const id_RSASSA_PKCS1_v1_5 = "1.2.840.113549.1.1.1";
 const SignedDataVersion = { v1: 1 } as const;
 const SignerInfoVersion = { v1: 1 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
@@ -78,13 +79,13 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
             const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
 
             // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data, not fromCodePoint
-            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+            binaryString += String.fromCharCode(...chunk as unknown as number[]);
         }
 
         base64 = btoa(binaryString);
     }
 
-    const lines = base64.match(/.{1,64}/g) || [];
+    const lines = base64.match(/.{1,64}/g) ?? [];
 
     return `-----BEGIN ${type}-----\n${lines.join("\n")}\n-----END ${type}-----\n`;
 };
@@ -105,7 +106,7 @@ export class SmimeSigner implements EmailSigner {
     private static formatAddress(address: { email: string; name?: string }): string {
         if (address.name) {
             // Escape backslashes and double quotes per RFC 5322
-            const escapedName = address.name.replaceAll("\\", "\\\\").replaceAll('"', String.raw`\"`);
+            const escapedName = address.name.replaceAll("\\", "\\\\").replaceAll("\"", String.raw`\"`);
 
             return `"${escapedName}" <${address.email}>`;
         }
@@ -147,11 +148,12 @@ export class SmimeSigner implements EmailSigner {
         try {
             privateKeyObject = this.options.passphrase
                 ? createPrivateKey({
-                      key: privateKeyPem,
-                      passphrase: this.options.passphrase,
-                  })
+                    key: privateKeyPem,
+                    passphrase: this.options.passphrase,
+                })
                 : createPrivateKey(privateKeyPem);
         } catch (error) {
+            // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to parse private key: ${(error as Error).message}`);
         }
 
@@ -170,7 +172,7 @@ export class SmimeSigner implements EmailSigner {
                 return new Certificate({ schema: intermediateAsn1.result });
             });
 
-            intermediateCerts.push(...(await Promise.all(certPromises)));
+            intermediateCerts.push(...await Promise.all(certPromises));
         }
 
         const message = this.buildMessage(email);
@@ -254,6 +256,7 @@ export class SmimeSigner implements EmailSigner {
 
         const signedDataPem = derToPem(cmsBuffer, "PKCS7");
 
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const boundary = `----_=_NextPart_${Date.now()}_${randomBytes(8).toString("hex")}`;
         const signedMessage = [
             `Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
@@ -275,6 +278,7 @@ export class SmimeSigner implements EmailSigner {
         return {
             ...email,
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...email.headers,
                 "Content-Type": `multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="${boundary}"`,
             },
@@ -302,7 +306,9 @@ export class SmimeSigner implements EmailSigner {
         lines.push(`Subject: ${email.subject}`, "MIME-Version: 1.0");
 
         if (email.headers) {
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(email.headers)) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 lines.push(`${key}: ${value}`);
             }
         }

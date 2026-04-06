@@ -16,6 +16,7 @@ import type { DkimOptions, EmailSigner } from "./types";
 const canonicalizeHeaders = (headers: Record<string, string>, method: "simple" | "relaxed" = "simple"): string => {
     const headerLines: string[] = [];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(headers)) {
         const normalizedKey = method === "relaxed" ? key.toLowerCase().trim() : key;
         const normalizedValue = method === "relaxed" ? value.replaceAll(/\s+/g, " ").trim() : value;
@@ -36,6 +37,7 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
     if (method === "simple") {
         // Simple: Remove empty lines (consecutive CRLFs) at the end, but preserve the CRLF
         // that terminates the last line of actual content. If no trailing CRLF, add one.
+        // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group
         const normalized = body.replace(/(\r\n|\r|\n)$/, "\n");
         // Remove trailing newlines efficiently without regex backtracking
         let endIndex = normalized.length;
@@ -61,7 +63,7 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
         const normalizedLine = line.replaceAll(/\s+/g, " ");
 
         // Remove trailing whitespace (but preserve the line itself)
-        // eslint-disable-next-line sonarjs/slow-regex -- Anchored pattern, safe from backtracking
+        // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/slow-regex -- Anchored pattern, safe from backtracking
         return normalizedLine.replace(/[ \t]+$/, "");
     });
 
@@ -88,8 +90,8 @@ const canonicalizeBody = (body: string, method: "simple" | "relaxed" = "simple")
  * @returns The DKIM signature header string (without the signature value).
  */
 const createDkimSignatureHeader = (headers: Record<string, string>, options: DkimOptions, bodyHash: string): string => {
-    const headerCanon = options.headerCanon || "simple";
-    const bodyCanon = options.bodyCanon || "simple";
+    const headerCanon = options.headerCanon ?? "simple";
+    const bodyCanon = options.bodyCanon ?? "simple";
     const headersToSign = Object.keys(headers)
         .filter((h) => !options.headersToIgnore?.some((ignore) => ignore.toLowerCase() === h.toLowerCase()))
         .map((h) => h.toLowerCase())
@@ -127,6 +129,7 @@ export class DkimSigner implements EmailSigner {
         // Strip non-printable control characters (outside ASCII printable range 0x20-0x7E)
         // This removes characters below space (0x20) and above tilde (0x7E)
         // Use character code filtering to avoid regex control character issues
+        // eslint-disable-next-line @typescript-eslint/no-misused-spread
         sanitized = [...sanitized]
             .filter((char) => {
                 const code = char.codePointAt(0);
@@ -143,7 +146,7 @@ export class DkimSigner implements EmailSigner {
 
         // Escape backslashes and double quotes per RFC 5322
         const backslashChar = "\\";
-        const quoteChar = '"';
+        const quoteChar = "\"";
 
         sanitized = sanitized.replaceAll(backslashChar, backslashChar + backslashChar).replaceAll(quoteChar, backslashChar + quoteChar);
 
@@ -212,7 +215,7 @@ export class DkimSigner implements EmailSigner {
         }
 
         const headers: Record<string, string> = {
-            ...(email.headers ? headersToRecord(email.headers) : {}),
+            ...email.headers ? headersToRecord(email.headers) : {},
             From: DkimSigner.formatAddress(email.from),
             To: DkimSigner.formatAddresses(email.to),
         };
@@ -240,8 +243,8 @@ export class DkimSigner implements EmailSigner {
 
         const body = bodyParts.join("\n\n");
 
-        const headerCanon = this.options.headerCanon || "simple";
-        const bodyCanon = this.options.bodyCanon || "simple";
+        const headerCanon = this.options.headerCanon ?? "simple";
+        const bodyCanon = this.options.bodyCanon ?? "simple";
         const canonicalHeaders = canonicalizeHeaders(headers, headerCanon);
         const canonicalBody = canonicalizeBody(body, bodyCanon);
 
@@ -264,10 +267,11 @@ export class DkimSigner implements EmailSigner {
 
             signature = signer.sign(key, "base64");
         } catch (error) {
+            // eslint-disable-next-line preserve-caught-error
             throw new Error(`Failed to create DKIM signature: ${(error as Error).message}`);
         }
 
-        const formattedSignature = signature.match(/.{1,72}/g)?.join("\r\n ") || signature;
+        const formattedSignature = signature.match(/.{1,72}/g)?.join("\r\n ") ?? signature;
 
         const signedHeaders = {
             ...headers,
