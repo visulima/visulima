@@ -13,7 +13,7 @@ export default createConfig({
         ".secretlintrc.cjs",
         "package.json",
         "README.md",
-        ".prettierrc.cjs",
+        "prettier.config.js",
     ],
     typescript: {
         tsconfigPath: "./tsconfig.eslint.json",
