@@ -7,6 +7,7 @@ import headersToRecord from "./headers-to-record";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "./sanitize-header";
 import toBase64 from "./to-base64";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
@@ -14,7 +15,7 @@ const hasBuffer = globalThis.Buffer !== undefined;
  * @param options The email options to build the MIME message from.
  * @returns The MIME-formatted email message as a string.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters, sonarjs/cognitive-complexity
 const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
     const boundary = generateBoundary();
     const message: string[] = [`From: ${formatEmailAddress(options.from)}`, `To: ${formatEmailAddresses(options.to)}`];
@@ -77,15 +78,16 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
             }),
         );
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const attachment of resolvedAttachments) {
             message.push(`--${boundary}`);
 
-            const contentType = attachment.contentType || "application/octet-stream";
+            const contentType = attachment.contentType ?? "application/octet-stream";
             const sanitizedFilename = sanitizeHeaderValue(attachment.filename);
 
             message.push(`Content-Type: ${contentType}; name="${sanitizedFilename}"`);
 
-            const disposition = attachment.contentDisposition || "attachment";
+            const disposition = attachment.contentDisposition ?? "attachment";
 
             message.push(`Content-Disposition: ${disposition}; filename="${sanitizedFilename}"`);
 
@@ -102,7 +104,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
                 });
             }
 
-            const encoding = attachment.encoding || "base64";
+            const encoding = attachment.encoding ?? "base64";
 
             message.push(`Content-Transfer-Encoding: ${encoding}`, "");
 

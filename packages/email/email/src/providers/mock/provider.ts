@@ -12,8 +12,8 @@ const PROVIDER_NAME = "mock";
 // Global storage for all mock providers (shared across instances)
 const emailStorage = new Map<string, MockEmailEntry[]>();
 
-type DefaultMockConfig = Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange"> &
-    Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">>;
+type DefaultMockConfig = Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
+    & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">>;
 
 /**
  * Creates a default mock configuration.
@@ -35,9 +35,9 @@ const createDefaultConfig = (): DefaultMockConfig => {
  * Mock Provider for testing emails without actually sending them
  * Stores emails in memory for later retrieval and inspection
  */
-const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptions> = defineProvider((options: MockConfig = {} as MockConfig) => {
+const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[]> = defineProvider((options: MockConfig = {} as MockConfig) => {
     // Use instance ID to separate storage for different provider instances
-    // eslint-disable-next-line sonarjs/pseudo-random
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, sonarjs/pseudo-random
     const instanceId = `mock-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
     if (!emailStorage.has(instanceId)) {
@@ -52,14 +52,14 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
 
     let isInitialized = false;
     let nextResponse: Receipt | undefined;
-    const config: Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange"> &
-        Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> = {
-        ...createDefaultConfig(),
-        defaultResponse: options.defaultResponse,
-        logger: options.logger,
-        randomDelayRange: options.randomDelayRange || { max: 0, min: 0 },
-        ...options,
-    };
+    const config: Pick<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">
+        & Required<Omit<MockConfig, "logger" | "defaultResponse" | "randomDelayRange">> = {
+            ...createDefaultConfig(),
+            defaultResponse: options.defaultResponse,
+            logger: options.logger,
+            randomDelayRange: options.randomDelayRange ?? { max: 0, min: 0 },
+            ...options,
+        };
 
     const logger = createLogger(PROVIDER_NAME, config.logger);
 
@@ -105,7 +105,8 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -152,7 +153,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
          * @returns The last sent email entry, or undefined if no messages have been sent.
          */
         getLastSentMessage(): MockEmailEntry | undefined {
-            return storage[storage.length - 1];
+            return storage.at(-1);
         },
 
         /**
@@ -239,6 +240,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
          * Checks if the mock provider is available (always true).
          * @returns Always returns true.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             return true;
         },
@@ -319,11 +321,12 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                     }
 
                     const messageId = response.messageId || generateMessageId();
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     const timestamp = response.timestamp || new Date();
 
                     const result: EmailResult = {
                         messageId,
-                        provider: response.provider || PROVIDER_NAME,
+                        provider: response.provider ?? PROVIDER_NAME,
                         response: response.response,
                         sent: true,
                         timestamp,
@@ -359,6 +362,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
                 }
 
                 const messageId = config.defaultResponse?.successful ? config.defaultResponse.messageId : generateMessageId();
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const timestamp = config.defaultResponse?.successful && config.defaultResponse.timestamp ? config.defaultResponse.timestamp : new Date();
 
                 const defaultResponse = config.defaultResponse && "response" in config.defaultResponse ? config.defaultResponse.response : undefined;
@@ -470,6 +474,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
         /**
          * Shuts down the mock provider and cleans up resources.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async shutdown(): Promise<void> {
             storage.length = 0;
             emailStorage.delete(instanceId);
@@ -480,6 +485,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
          * Validates credentials (always true for mock).
          * @returns Always returns true.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async validateCredentials(): Promise<boolean> {
             return true;
         },
@@ -496,6 +502,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
         async waitForMessage(predicate: (message: MockEmailEntry) => boolean, timeout: number = 5000): Promise<MockEmailEntry> {
             const startTime = Date.now();
 
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             while (true) {
                 const message = storage.find((message_) => predicate(message_));
 
@@ -529,6 +536,7 @@ const mockProvider: ProviderFactory<MockConfig, MockEmailEntry[], MockEmailOptio
 
             while (storage.length < count) {
                 if (Date.now() - startTime > timeout) {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     throw new Error(`Timeout waiting for ${count} messages (got ${storage.length})`);
                 }
 

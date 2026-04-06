@@ -1,6 +1,7 @@
 import EmailError from "../errors/email-error";
 import type { Result } from "../types";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
@@ -21,7 +22,7 @@ export interface RequestOptions {
  * @returns A result object containing the response data or error.
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export const makeRequest = async (url: string | URL, options: RequestOptions = {}, data?: string | Buffer | Uint8Array): Promise<Result<unknown>> => {
+export const makeRequest = async (url: string | URL, options: RequestOptions = {}, data?: string | Buffer | Uint8Array): Promise<Result> => {
     const urlObject = typeof url === "string" ? new URL(url) : url;
 
     try {
@@ -35,7 +36,7 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
 
         const fetchOptions: RequestInit = {
             headers,
-            method: options.method || (data ? "POST" : "GET"),
+            method: options.method ?? (data ? "POST" : "GET"),
         };
 
         if (data) {
@@ -70,7 +71,7 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
                 clearTimeout(timeoutId);
             }
 
-            const contentType = response.headers.get("content-type") || "";
+            const contentType = response.headers.get("content-type") ?? "";
             const isJson = contentType.includes("application/json");
 
             let parsedBody: unknown;
@@ -99,6 +100,7 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
                     headers: headersObject,
                     statusCode: response.status,
                 },
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 error: isSuccess ? undefined : new EmailError("http", `Request failed with status ${response.status}`, { code: response.status.toString() }),
                 success: isSuccess,
             };
@@ -109,6 +111,7 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
 
             if (error instanceof Error && error.name === "AbortError") {
                 return {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     error: new EmailError("http", `Request timed out after ${options.timeout}ms`),
                     success: false,
                 };

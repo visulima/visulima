@@ -40,6 +40,7 @@ describe("attachment-helpers", () => {
 
             const cid = generateContentId("test-image.png");
 
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(cid).toMatch(/^test-image-png-[a-z0-9]{7}@email$/);
         });
 
@@ -48,6 +49,7 @@ describe("attachment-helpers", () => {
 
             const cid = generateContentId("test image (1).png");
 
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(cid).toMatch(/^test-image-1-png-[a-z0-9]{7}@email$/);
         });
 
@@ -56,6 +58,7 @@ describe("attachment-helpers", () => {
 
             const cid = generateContentId("TEST-IMAGE.PNG");
 
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(cid).toMatch(/^test-image-png-[a-z0-9]{7}@email$/);
         });
 
@@ -66,7 +69,9 @@ describe("attachment-helpers", () => {
             const cid2 = generateContentId("test.png");
 
             expect(cid1).not.toBe(cid2);
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(cid1).toMatch(/^test-png-[a-z0-9]{7}@email$/);
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(cid2).toMatch(/^test-png-[a-z0-9]{7}@email$/);
         });
     });

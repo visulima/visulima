@@ -26,14 +26,14 @@ const DEFAULT_POOL_WAIT_TIMEOUT = 30_000;
 /**
  * SMTP provider for sending emails via SMTP protocol
  */
-const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = defineProvider((config: SmtpConfig = {} as SmtpConfig) => {
+const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpConfig = {} as SmtpConfig) => {
     if (!config.host) {
         throw new RequiredOptionError(PROVIDER_NAME, "host");
     }
 
     type SmtpOptions = Pick<SmtpConfig, "user" | "password" | "oauth2" | "dkim"> & Required<Omit<SmtpConfig, "user" | "password" | "oauth2" | "dkim">>;
     const options: SmtpOptions = {
-        authMethod: config.authMethod || "LOGIN",
+        authMethod: config.authMethod ?? "LOGIN",
         debug: config.debug ?? false,
         dkim: config.dkim,
         host: config.host,
@@ -43,6 +43,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
         pool: config.pool ?? false,
 
         port: (() => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
             if (config.port !== undefined) {
                 return config.port;
             }
@@ -83,6 +84,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
         const lines = response.split("\r\n");
         const capabilities: Record<string, string[]> = {};
 
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const line of lines) {
             if (line.startsWith("250-") || line.startsWith("250 ")) {
                 const capLine = line.slice(4).trim();
@@ -115,6 +117,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             const timeoutHandle: NodeJS.Timeout = setTimeout(() => {
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 cleanup();
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/restrict-template-expressions
                 reject(new EmailError(PROVIDER_NAME, `Command timeout after ${options.timeout}ms: ${command?.slice(0, 50)}...`));
             }, options.timeout);
 
@@ -124,6 +127,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 socket.removeListener("error", onError);
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (timeoutHandle) {
                     clearTimeout(timeoutHandle);
                 }
@@ -135,9 +139,10 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 const lines = responseBuffer.split("\r\n").filter(Boolean);
 
                 if (lines.length > 0) {
-                    const lastLine = lines[lines.length - 1];
+                    const lastLine = lines.at(-1);
 
                     if (lastLine) {
+                        // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
                         const match = lastLine.match(/^(\d{3})[\s-]/);
 
                         if (match) {
@@ -203,6 +208,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                         connectionQueue.splice(index, 1);
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     reject(new EmailError(PROVIDER_NAME, `Connection queue timeout after ${DEFAULT_POOL_WAIT_TIMEOUT}ms`));
                 }, DEFAULT_POOL_WAIT_TIMEOUT);
 
@@ -216,6 +222,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             let socket: Socket | undefined;
 
             const cleanup = () => {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (connectionTimeout) {
                     clearTimeout(connectionTimeout);
                 }
@@ -230,6 +237,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
 
                     cleanup();
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     reject(new EmailError(PROVIDER_NAME, `Connection timeout to ${options.host}:${options.port} after ${options.timeout}ms`));
                 }
             }, options.timeout);
@@ -237,10 +245,10 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             try {
                 socket = options.secure
                     ? connect({
-                          host: options.host,
-                          port: options.port,
-                          rejectUnauthorized: options.rejectUnauthorized,
-                      })
+                        host: options.host,
+                        port: options.port,
+                        rejectUnauthorized: options.rejectUnauthorized,
+                    })
                     : createConnection(options.port, options.host);
 
                 socket.on("error", (error) => {
@@ -267,6 +275,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
                 });
             } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!isResolved) {
                     isResolved = true;
                     cleanup();
@@ -289,6 +298,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             let tlsSocket: Socket | undefined;
 
             const cleanup = () => {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (tlsTimeout) {
                     clearTimeout(tlsTimeout);
                 }
@@ -303,6 +313,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
 
                     cleanup();
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     reject(new EmailError(PROVIDER_NAME, `TLS connection timeout after ${options.timeout}ms`));
                 }
             }, options.timeout);
@@ -332,6 +343,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
                 });
             } catch (error) {
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!isResolved) {
                     isResolved = true;
                     cleanup();
@@ -393,7 +405,8 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 // Send QUIT command
                 socket.write("QUIT\r\n");
                 socket.end();
-                socket.once("close", () => resolve());
+                // eslint-disable-next-line @stylistic/max-statements-per-line
+                socket.once("close", () => { resolve(); });
             } catch {
                 // Just resolve even if there's an error during close
                 resolve();
@@ -424,10 +437,11 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
         }
 
         // Add null check before accessing capabilities with authCapability
-        const supportedMethods = authCapability ? capabilities[authCapability] || [] : [];
+        const supportedMethods = authCapability ? capabilities[authCapability] ?? [] : [];
 
         let { authMethod } = options;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!authMethod) {
             if (supportedMethods.includes("CRAM-MD5")) {
                 authMethod = "CRAM-MD5";
@@ -438,6 +452,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             }
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!authMethod) {
             throw new EmailError(PROVIDER_NAME, "No supported authentication methods");
         }
@@ -446,6 +461,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
         if (authMethod === "OAUTH2" && options.oauth2) {
             try {
                 const { accessToken, user } = options.oauth2;
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 const auth = `user=${user}\u0001auth=Bearer ${accessToken}\u0001\u0001`;
                 const authBase64 = Buffer.from(auth).toString("base64");
 
@@ -582,7 +598,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                 .map((h) => {
                     const parts = h.split(":");
 
-                    return parts[0]?.toLowerCase() || "";
+                    return parts[0]?.toLowerCase() ?? "";
                 })
                 .filter(Boolean)
                 .join(":");
@@ -647,6 +663,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             try {
                 // Check if SMTP server is available
                 if (!(await this.isAvailable())) {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     throw new EmailError(PROVIDER_NAME, `SMTP server not available at ${options.host}:${options.port}`);
                 }
 
@@ -735,7 +752,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                             }
                         } catch (error) {
                             // STARTTLS not supported or failed, continue with plain connection
-                            if (options.rejectUnauthorized !== false) {
+                            if (options.rejectUnauthorized) {
                                 throw new EmailError(PROVIDER_NAME, `STARTTLS failed or not supported: ${(error as Error).message}`, { cause: error as Error });
                             }
                         }
@@ -776,6 +793,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     }
 
                     // Send RCPT TO for each recipient
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const recipient of recipients) {
                         // eslint-disable-next-line no-await-in-loop
                         await sendSmtpCommand(socket, `RCPT TO:<${recipient}>`, "250");
@@ -794,11 +812,14 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                     if (emailOptions.dsn) {
                         const dsnOptions = [];
 
-                        if (emailOptions.dsn.success) dsnOptions.push("SUCCESS");
+                        if (emailOptions.dsn.success)
+                            dsnOptions.push("SUCCESS");
 
-                        if (emailOptions.dsn.failure) dsnOptions.push("FAILURE");
+                        if (emailOptions.dsn.failure)
+                            dsnOptions.push("FAILURE");
 
-                        if (emailOptions.dsn.delay) dsnOptions.push("DELAY");
+                        if (emailOptions.dsn.delay)
+                            dsnOptions.push("DELAY");
 
                         if (dsnOptions.length > 0) {
                             additionalHeaders.push(`X-DSN-NOTIFY: ${dsnOptions.join(",")}`);
@@ -937,6 +958,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
          */
         async shutdown(): Promise<void> {
             // Close all connections in the pool
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const socket of connectionPool) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
@@ -950,6 +972,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
             connectionPool.length = 0;
 
             // Reject any waiting connections
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const queueItem of connectionQueue) {
                 clearTimeout(queueItem.timeout);
                 queueItem.reject(new Error("Provider shutdown"));
@@ -997,7 +1020,7 @@ const smtpProvider: ProviderFactory<SmtpConfig, unknown, SmtpEmailOptions> = def
                             }
                         } catch {
                             // STARTTLS not supported or failed, continue with plain connection
-                            if (options.rejectUnauthorized !== false) {
+                            if (options.rejectUnauthorized) {
                                 return false;
                             }
                         }

@@ -19,6 +19,7 @@ import {
 import type { EmailAddress, EmailOptions } from "../types";
 import type { EmailEncrypter, SmimeEncryptOptions } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
@@ -68,13 +69,13 @@ const derToPem = (der: ArrayBuffer, type: string): string => {
             const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
 
             // eslint-disable-next-line unicorn/prefer-code-point -- fromCharCode is correct for binary data, not fromCodePoint
-            binaryString += String.fromCharCode.apply(undefined, chunk as unknown as number[]);
+            binaryString += String.fromCharCode(...chunk as unknown as number[]);
         }
 
         base64 = btoa(binaryString);
     }
 
-    const lines = base64.match(/.{1,64}/g) || [];
+    const lines = base64.match(/.{1,64}/g) ?? [];
 
     return `-----BEGIN ${type}-----\n${lines.join("\n")}\n-----END ${type}-----\n`;
 };
@@ -102,6 +103,7 @@ export class SmimeEncrypter implements EmailEncrypter {
 
             const normalized = Array.isArray(recipients) ? recipients : [recipients];
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const recipient of normalized) {
                 // Handle both string (for backward compatibility) and EmailAddress object
                 const emailAddress = typeof recipient === "string" ? recipient : recipient.email;
@@ -199,7 +201,7 @@ export class SmimeEncrypter implements EmailEncrypter {
                 return new Certificate({ schema: asn1.result });
             });
 
-            certificates.push(...(await Promise.all(certPromises)));
+            certificates.push(...await Promise.all(certPromises));
         }
 
         const message = await this.buildMessage(email);
@@ -213,7 +215,7 @@ export class SmimeEncrypter implements EmailEncrypter {
             contentType: id_ContentType_Data,
         });
 
-        const algorithm = this.options.algorithm || "aes-256-cbc";
+        const algorithm = this.options.algorithm ?? "aes-256-cbc";
         const algorithmLower = algorithm.toLowerCase();
 
         if (algorithmLower === "3des" || algorithmLower === "des-ede3-cbc") {
@@ -251,6 +253,7 @@ export class SmimeEncrypter implements EmailEncrypter {
         const iv = randomBytes(16);
         const ivArray = hasBuffer ? iv : new Uint8Array(iv);
 
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const cipher = createCipheriv(`aes-${keyLength * 8}-cbc`, contentEncryptionKey, iv);
         const messageBufferNode = Buffer.from(messageBuffer);
         const encryptedChunks: Buffer[] = [cipher.update(messageBufferNode), cipher.final()];
@@ -261,6 +264,7 @@ export class SmimeEncrypter implements EmailEncrypter {
         });
 
         const recipientInfos = await Promise.all(
+            // eslint-disable-next-line @typescript-eslint/require-await
             certificates.map(async (cert) => {
                 const certPem = cert.toSchema().toBER(false);
                 const certPemString = derToPem(certPem, "CERTIFICATE");
@@ -316,6 +320,7 @@ export class SmimeEncrypter implements EmailEncrypter {
         return {
             ...email,
             headers: {
+                // eslint-disable-next-line @typescript-eslint/no-misused-spread
                 ...email.headers,
                 "Content-Disposition": "attachment; filename=smime.p7m",
                 "Content-Transfer-Encoding": "base64",
@@ -331,12 +336,12 @@ export class SmimeEncrypter implements EmailEncrypter {
      * @param email The email options to build the message from.
      * @returns The formatted email message as a string.
      */
-    // eslint-disable-next-line class-methods-use-this
+    // eslint-disable-next-line @typescript-eslint/require-await, class-methods-use-this
     private async buildMessage(email: EmailOptions): Promise<string> {
         const lines: string[] = [
             `From: ${SmimeEncrypter.formatAddress(email.from)}`,
             `To: ${SmimeEncrypter.formatAddresses(email.to)}`,
-            ...(email.cc ? [`Cc: ${SmimeEncrypter.formatAddresses(email.cc)}`] : []),
+            ...email.cc ? [`Cc: ${SmimeEncrypter.formatAddresses(email.cc)}`] : [],
         ];
 
         if (email.replyTo) {
@@ -346,7 +351,9 @@ export class SmimeEncrypter implements EmailEncrypter {
         lines.push(`Subject: ${email.subject}`, "MIME-Version: 1.0");
 
         if (email.headers) {
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const [key, value] of Object.entries(email.headers)) {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 lines.push(`${key}: ${value}`);
             }
         }

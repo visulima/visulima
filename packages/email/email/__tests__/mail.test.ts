@@ -22,11 +22,13 @@ const createMockProvider = (): Provider => {
         async initialize(): Promise<void> {
             // Mock implementation
         },
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             return true;
         },
         name: "mock",
         options: {},
+        // eslint-disable-next-line @typescript-eslint/require-await
         async sendEmail(): Promise<Result<EmailResult>> {
             return {
                 data: {
@@ -138,6 +140,7 @@ describe("mail", () => {
 
             const eml = await mail.draft(message);
 
+            // eslint-disable-next-line e18e/prefer-static-regex
             expect(eml).toMatch(/X-Unsent:\s*1/i);
         });
 

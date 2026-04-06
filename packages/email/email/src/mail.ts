@@ -70,7 +70,8 @@ export class Mail {
             return [error.message];
         }
 
-        return [String(error || "Unknown error")];
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        return [String(error ?? "Unknown error")];
     }
 
     private provider: Provider;
@@ -117,9 +118,7 @@ export class Mail {
      * ```
      */
     public setFrom(from: EmailAddress): this {
-        if (!this.globalConfig) {
-            this.globalConfig = {};
-        }
+        this.globalConfig ??= {};
 
         this.globalConfig.from = from;
 
@@ -141,9 +140,7 @@ export class Mail {
      * ```
      */
     public setReplyTo(replyTo: EmailAddress): this {
-        if (!this.globalConfig) {
-            this.globalConfig = {};
-        }
+        this.globalConfig ??= {};
 
         this.globalConfig.replyTo = replyTo;
 
@@ -166,9 +163,7 @@ export class Mail {
      * ```
      */
     public setHeaders(headers: EmailHeaders): this {
-        if (!this.globalConfig) {
-            this.globalConfig = {};
-        }
+        this.globalConfig ??= {};
 
         this.globalConfig.headers = headers;
 
@@ -208,10 +203,10 @@ export class Mail {
      * ```
      */
     public async draft(message: SendableMessage | DraftMailMessage): Promise<string> {
-        let emailOptions: EmailOptions =
-            message instanceof MailMessage || message instanceof DraftMailMessage
+        let emailOptions: EmailOptions
+            = message instanceof MailMessage || message instanceof DraftMailMessage
                 ? await this.buildDraftFromMessage(message)
-                : await this.buildDraftFromOptions(message as EmailOptions);
+                : await this.buildDraftFromOptions(message);
 
         // Apply global configuration (for EmailOptions or to override message-specific values)
         emailOptions = this.applyGlobalConfig(emailOptions);
@@ -281,7 +276,7 @@ export class Mail {
 
             emailOptions = await message.build();
         } else {
-            const options = message as EmailOptions;
+            const options = message;
 
             if (this.logger) {
                 this.logger.debug("Sending email with options", {
@@ -297,7 +292,7 @@ export class Mail {
 
         const result = await this.provider.sendEmail(emailOptions);
 
-        logSendResult(this.logger, result, this.provider.name || "unknown");
+        logSendResult(this.logger, result, this.provider.name ?? "unknown");
 
         return result;
     }
@@ -326,7 +321,7 @@ export class Mail {
      * @returns An async iterable that yields receipts for each sent message.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async *sendMany(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, options?: { signal?: AbortSignal }): AsyncIterable<Receipt> {
+    public async* sendMany(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, options?: { signal?: AbortSignal }): AsyncIterable<Receipt> {
         const providerName = this.provider.name;
         let processedCount = 0;
         let successCount = 0;
@@ -368,6 +363,7 @@ export class Mail {
                     successCount += 1;
 
                     if (this.logger) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         this.logger.debug(`Email ${processedCount} sent successfully`, {
                             messageId: result.data.messageId,
                         });
@@ -375,7 +371,7 @@ export class Mail {
 
                     yield {
                         messageId: result.data.messageId,
-                        provider: result.data.provider || providerName,
+                        provider: result.data.provider ?? providerName,
                         response: result.data.response,
                         successful: true,
                         timestamp: result.data.timestamp,
@@ -384,6 +380,7 @@ export class Mail {
                     failureCount += 1;
 
                     if (this.logger) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         this.logger.error(`Email ${processedCount} send failed`, {
                             error: result.error,
                         });
@@ -399,6 +396,7 @@ export class Mail {
                 failureCount += 1;
 
                 if (this.logger) {
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     this.logger.error(`Email ${processedCount} send failed with exception`, error);
                 }
 
@@ -449,6 +447,7 @@ export class Mail {
      * @returns Email options.
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/require-await
     private async buildDraftFromOptions(options: EmailOptions): Promise<EmailOptions> {
         if (this.logger) {
             this.logger.debug("Creating draft from email options", {
@@ -502,6 +501,7 @@ export class Mail {
         const merged: EmailOptions = { ...emailOptions };
 
         // Apply default from if not set
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!merged.from && this.globalConfig.from) {
             merged.from = this.globalConfig.from;
 

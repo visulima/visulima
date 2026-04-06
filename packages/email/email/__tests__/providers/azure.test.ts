@@ -13,6 +13,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 
 vi.mock(import("../../src/utils/retry"), () => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -27,6 +28,7 @@ describe(azureProvider, () => {
             expect.assertions(1);
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 azureProvider({ accessToken: "test123" } as any);
             }).toThrow(RequiredOptionError);
         });
@@ -35,6 +37,7 @@ describe(azureProvider, () => {
             expect.assertions(1);
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 azureProvider({ region: "eastus" } as any);
             }).toThrow(RequiredOptionError);
         });

@@ -12,7 +12,7 @@ describe(failoverProvider, () => {
     });
 
     const createMockProvider = (name: string, options?: { available?: boolean; delay?: number; success?: boolean }): Provider => {
-        const { available = true, delay = 0, success = true } = options || {};
+        const { available = true, delay = 0, success = true } = options ?? {};
 
         return {
             features: {
@@ -140,6 +140,7 @@ describe(failoverProvider, () => {
             expect.assertions(1);
 
             const invalidProvider = {
+                // eslint-disable-next-line @typescript-eslint/require-await
                 async initialize(): Promise<void> {
                     throw new Error("Init failed");
                 },
@@ -214,6 +215,7 @@ describe(failoverProvider, () => {
             const provider1 = createMockProvider("provider1", { available: false });
             const provider2 = {
                 ...createMockProvider("provider2"),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 async isAvailable(): Promise<boolean> {
                     throw new Error("Check failed");
                 },
@@ -438,6 +440,7 @@ describe(failoverProvider, () => {
 
             const provider1 = {
                 ...createMockProvider("provider1"),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 async sendEmail(): Promise<Result<EmailResult>> {
                     throw new Error("Network error");
                 },
@@ -490,6 +493,7 @@ describe(failoverProvider, () => {
             const failover = failoverProvider({
                 mailers: [
                     {
+                        // eslint-disable-next-line @typescript-eslint/require-await
                         async initialize(): Promise<void> {
                             throw new Error("Init failed");
                         },
@@ -515,6 +519,7 @@ describe(failoverProvider, () => {
 
             const provider1 = {
                 ...createMockProvider("provider1", { success: true }),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 async sendEmail(): Promise<Result<EmailResult>> {
                     return {
                         data: {
@@ -644,6 +649,7 @@ describe(failoverProvider, () => {
             expect(result.success).toBe(true);
         });
 
+        // eslint-disable-next-line @typescript-eslint/require-await
         it("should use default retryAfter if not specified", async () => {
             expect.assertions(1);
 

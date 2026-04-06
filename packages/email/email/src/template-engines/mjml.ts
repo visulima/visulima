@@ -23,9 +23,11 @@ const mjml: TemplateRenderer = (template: unknown, _data?: Record<string, unknow
             fonts: options?.fonts as Record<string, string> | undefined,
             keepComments: (options?.keepComments as boolean | undefined) ?? true,
             minify: (options?.minify as boolean | undefined) ?? false,
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             validationLevel: (options?.validationLevel as "strict" | "soft" | "skip") ?? "soft",
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (result.errors && result.errors.length > 0) {
             const errorMessages = result.errors.map((error: { message: string }) => error.message).join("; ");
 

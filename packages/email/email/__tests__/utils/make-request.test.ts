@@ -20,12 +20,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
@@ -46,12 +48,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
@@ -73,12 +77,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
@@ -92,6 +98,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", options);
 
             const callArgs = mockFetch.mock.calls[0];
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const headers = callArgs[1].headers as Headers;
 
             expect(headers.get("Authorization")).toBe("Bearer token");
@@ -103,12 +110,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
@@ -117,6 +126,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", { method: "POST" }, buffer);
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].body).toBeInstanceOf(Uint8Array);
         });
 
@@ -125,12 +135,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
@@ -139,6 +151,7 @@ describe(makeRequest, () => {
             await makeRequest("https://api.example.com/test", { method: "POST" }, uint8Array);
 
             expect(mockFetch).toHaveBeenCalledTimes(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].body).toBeInstanceOf(Uint8Array);
         });
 
@@ -153,10 +166,12 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers,
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => responseData,
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify(responseData),
             });
 
@@ -165,6 +180,7 @@ describe(makeRequest, () => {
             expect(result.success).toBe(true);
 
             // JSON is parsed, so body should be an object
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             const body = (result.data as { body?: unknown })?.body;
 
             expect(body).toStrictEqual(responseData);
@@ -175,18 +191,21 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     throw new Error("Invalid JSON");
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "plain text response",
             });
 
             const result = await makeRequest("https://api.example.com/test");
 
             expect(result.success).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             expect((result.data as { body?: unknown })?.body).toBe("plain text response");
         });
 
@@ -195,18 +214,21 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { success: true };
                 },
                 ok: true,
                 status: 201,
                 statusText: "Created",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ success: true }),
             });
 
             const result = await makeRequest("https://api.example.com/test");
 
             expect(result.success).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             expect((result.data as { statusCode?: number })?.statusCode).toBe(201);
         });
     });
@@ -221,9 +243,11 @@ describe(makeRequest, () => {
             let rejectOnAbort: ((error: Error) => void) | undefined;
 
             mockFetch.mockImplementationOnce((url, options) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 abortSignal = options?.signal as AbortSignal;
 
                 // Listen for abort signal
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (abortSignal) {
                     abortSignal.addEventListener("abort", () => {
                         const abortError = new Error("AbortError");
@@ -263,6 +287,7 @@ describe(makeRequest, () => {
             let abortSignal: AbortSignal | undefined;
 
             mockFetch.mockImplementationOnce((url, options) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 abortSignal = options?.signal as AbortSignal;
 
                 return new Promise(() => {
@@ -270,6 +295,7 @@ describe(makeRequest, () => {
                 });
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             makeRequest("https://api.example.com/test", { timeout: 1000 });
 
             await vi.advanceTimersByTimeAsync(1000);
@@ -297,18 +323,21 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { error: "Server error" };
                 },
                 ok: false,
                 status: 500,
                 statusText: "Internal Server Error",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ error: "Server error" }),
             });
 
             const result = await makeRequest("https://api.example.com/test");
 
             expect(result.success).toBe(false);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             expect((result.data as { statusCode?: number })?.statusCode).toBe(500);
         });
 
@@ -317,18 +346,21 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return { error: "Unauthorized" };
                 },
                 ok: false,
                 status: 401,
                 statusText: "Unauthorized",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => JSON.stringify({ error: "Unauthorized" }),
             });
 
             const result = await makeRequest("https://api.example.com/test");
 
             expect(result.success).toBe(false);
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             expect((result.data as { statusCode?: number })?.statusCode).toBe(401);
         });
     });
@@ -339,12 +371,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return {};
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "{}",
             });
 
@@ -358,12 +392,14 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return {};
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "{}",
             });
 
@@ -381,17 +417,20 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return {};
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "{}",
             });
 
             await makeRequest("https://api.example.com/test");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("GET");
         });
 
@@ -400,17 +439,20 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return {};
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "{}",
             });
 
             await makeRequest("https://api.example.com/test", {}, "body");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("POST");
         });
 
@@ -419,17 +461,20 @@ describe(makeRequest, () => {
 
             mockFetch.mockResolvedValueOnce({
                 headers: new Headers(),
+                // eslint-disable-next-line @typescript-eslint/require-await
                 json: async () => {
                     return {};
                 },
                 ok: true,
                 status: 200,
                 statusText: "OK",
+                // eslint-disable-next-line @typescript-eslint/require-await
                 text: async () => "{}",
             });
 
             await makeRequest("https://api.example.com/test", { method: "PUT" });
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(mockFetch.mock.calls[0][1].method).toBe("PUT");
         });
     });

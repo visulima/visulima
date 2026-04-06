@@ -2,7 +2,7 @@ import { Buffer } from "node:buffer";
 
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
-import type { Attachment, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import headersToRecord from "../../utils/headers-to-record";
 import { makeRequest } from "../../utils/make-request";
@@ -26,18 +26,21 @@ const DEFAULT_RETRIES = 3;
 const objectToFormData = (data: Record<string, unknown>): string => {
     const formData: string[] = [];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const [key, value] of Object.entries(data)) {
         if (value === undefined || value === null) {
             continue;
         }
 
         if (Array.isArray(value)) {
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const item of value) {
                 formData.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(item))}`);
             }
         } else if (typeof value === "object") {
             formData.push(`${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(value))}`);
         } else {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             formData.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
         }
     }
@@ -48,7 +51,7 @@ const objectToFormData = (data: Record<string, unknown>): string => {
 /**
  * Mailgun Provider for sending emails through Mailgun API
  */
-const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptions> = defineProvider((config: MailgunConfig = {} as MailgunConfig) => {
+const mailgunProvider: ProviderFactory<MailgunConfig> = defineProvider((config: MailgunConfig = {} as MailgunConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
@@ -59,11 +62,11 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
     const options: Pick<MailgunConfig, "logger"> & Required<Omit<MailgunConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         domain: config.domain,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -90,7 +93,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -137,11 +140,12 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 // Mailgun Events API returns { items: [...] } structure
                 const responseData = result.data as { items?: { message?: { headers?: unknown }; storage?: { url?: string } }[] };
-                const items = responseData?.items || [];
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                const items = responseData?.items ?? [];
                 const eventData = items.length > 0 ? items[0] : undefined;
 
                 return {
-                    data: eventData?.message?.headers || eventData?.storage || undefined,
+                    data: eventData?.message?.headers ?? eventData?.storage ?? undefined,
                     success: true,
                 };
             } catch (error) {
@@ -188,6 +192,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 logger.debug("Mailgun API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
@@ -269,6 +274,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                     formData.template = emailOptions.template;
 
                     if (emailOptions.templateVariables) {
+                        // eslint-disable-next-line no-for-of-array/no-for-of-array
                         for (const [key, value] of Object.entries(emailOptions.templateVariables)) {
                             formData[`v:${key}`] = value;
                         }
@@ -287,8 +293,8 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
 
                 // Add delivery time
                 if (emailOptions.deliveryTime) {
-                    formData["o:deliverytime"] =
-                        typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
+                    formData["o:deliverytime"]
+                        = typeof emailOptions.deliveryTime === "number" ? new Date(emailOptions.deliveryTime * 1000).toUTCString() : emailOptions.deliveryTime;
                 }
 
                 // Add tracking options
@@ -323,6 +329,7 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                 if (emailOptions.headers) {
                     const headersRecord = headersToRecord(emailOptions.headers);
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const [key, value] of Object.entries(headersRecord)) {
                         formData[`h:${key}`] = value;
                     }
@@ -334,9 +341,10 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                     // For now, we'll use form-urlencoded and base64 encode attachments
                     // In a real implementation, you'd use FormData
                     const attachmentResults = await Promise.all(
-                        emailOptions.attachments.map((attachment, i) => createMailgunAttachment(attachment as Attachment, PROVIDER_NAME, i)),
+                        emailOptions.attachments.map((attachment, i) => createMailgunAttachment(attachment, PROVIDER_NAME, i)),
                     );
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const attachmentData of attachmentResults) {
                         formData[attachmentData.key] = attachmentData.content;
                     }
@@ -373,14 +381,15 @@ const mailgunProvider: ProviderFactory<MailgunConfig, unknown, MailgunEmailOptio
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Mailgun returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { id?: string; message?: string } })?.body;
-                const messageId = responseBody?.id || generateMessageId();
+                const messageId = responseBody?.id ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

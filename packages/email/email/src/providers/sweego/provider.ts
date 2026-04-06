@@ -21,17 +21,17 @@ const DEFAULT_RETRIES = 3;
 /**
  * Sweego Provider for sending emails through Sweego API
  */
-const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions> = defineProvider((config: SweegoConfig = {} as SweegoConfig) => {
+const sweegoProvider: ProviderFactory<SweegoConfig> = defineProvider((config: SweegoConfig = {} as SweegoConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<SweegoConfig, "logger"> & Required<Omit<SweegoConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -56,7 +56,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions>
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -100,6 +100,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions>
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -129,6 +130,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions>
          * Checks if the Sweego API is available and credentials are valid.
          * @returns True if the API is available and credentials are valid, false otherwise.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             try {
                 logger.debug("Checking Sweego API availability");
@@ -242,7 +244,7 @@ const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions>
 
                             return {
                                 content,
-                                contentType: attachment.contentType || "application/octet-stream",
+                                contentType: attachment.contentType ?? "application/octet-stream",
                                 filename: attachment.filename,
                                 ...(attachment.cid && { cid: attachment.cid }),
                             };
@@ -278,14 +280,15 @@ const sweegoProvider: ProviderFactory<SweegoConfig, unknown, SweegoEmailOptions>
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Sweego returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { id?: string; messageId?: string } })?.body;
-                const messageId = responseBody?.messageId || responseBody?.id || generateMessageId();
+                const messageId = responseBody?.messageId ?? responseBody?.id ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

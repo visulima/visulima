@@ -162,7 +162,7 @@ describe(buildMimeMessage, () => {
 
             expect(message).toContain("multipart/mixed");
             expect(message).toContain("Content-Disposition: attachment");
-            expect(message).toContain('filename="test.txt"');
+            expect(message).toContain("filename=\"test.txt\"");
         });
 
         it("should handle multiple attachments", async () => {
@@ -207,7 +207,7 @@ describe(buildMimeMessage, () => {
                     },
                 ],
                 from: { email: "sender@example.com" },
-                html: '<img src="cid:image1">',
+                html: "<img src=\"cid:image1\">",
                 subject: "Test",
                 to: { email: "recipient@example.com" },
             };
@@ -329,7 +329,9 @@ describe(buildMimeMessage, () => {
             const message2 = await buildMimeMessage(options);
 
             // Extract boundaries
+            // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
             const boundary1 = message1.match(/boundary="(.+)"/)?.[1];
+            // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
             const boundary2 = message2.match(/boundary="(.+)"/)?.[1];
 
             expect(boundary1).toBeDefined();

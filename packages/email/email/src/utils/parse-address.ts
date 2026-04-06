@@ -7,6 +7,7 @@ import validateEmailDefault from "./validation/validate-email";
  * @returns True if the local part is valid, false otherwise.
  */
 const isValidLocalPart = (localPart: string): boolean => {
+    // eslint-disable-next-line e18e/prefer-static-regex
     const unquoted = localPart.replace(/^"(.+)"$/, "$1");
 
     if (!unquoted || unquoted.length === 0) {
@@ -29,7 +30,7 @@ const isValidLocalPart = (localPart: string): boolean => {
  * @param email The email string to validate.
  * @returns True if the email format is valid, false otherwise.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
+
 const isValidEmailFormat = (email: string): boolean => {
     // Check for domain literal format without vulnerable regex backtracking
     // Pattern: localpart@[domain-literal]
@@ -66,9 +67,10 @@ const isValidEmailFormat = (email: string): boolean => {
         return false;
     }
 
+    // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec
     const quotedLocalMatch = email.match(/^"((?:[^"\\]|\\.)+)"@(.+)$/);
 
-    if (quotedLocalMatch && quotedLocalMatch[2]) {
+    if (quotedLocalMatch?.[2]) {
         const domain = quotedLocalMatch[2];
 
         if (domain.startsWith("[")) {
@@ -118,6 +120,7 @@ const parseAddress = (address: string): EmailAddress | undefined => {
 
         if (email && isValidEmailFormat(email)) {
             if (name) {
+                // eslint-disable-next-line e18e/prefer-static-regex
                 const cleanName = name.replace(/^"(.+)"$/, "$1");
 
                 return { email, name: cleanName };
@@ -127,9 +130,10 @@ const parseAddress = (address: string): EmailAddress | undefined => {
         }
     }
 
+    // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/prefer-regexp-exec
     const angleBracketMatch = trimmed.match(/^<([^>]+)>$/);
 
-    if (angleBracketMatch && angleBracketMatch[1]) {
+    if (angleBracketMatch?.[1]) {
         const email = angleBracketMatch[1].trim();
 
         if (!isValidEmailFormat(email)) {
@@ -143,22 +147,22 @@ const parseAddress = (address: string): EmailAddress | undefined => {
         return undefined;
     }
 
-    if (trimmed.includes('"') && !trimmed.startsWith('"')) {
-        const quoteIndex = trimmed.indexOf('"');
+    if (trimmed.includes("\"") && !trimmed.startsWith("\"")) {
+        const quoteIndex = trimmed.indexOf("\"");
 
         if (quoteIndex < trimmed.indexOf("@")) {
             return undefined;
         }
     }
 
-    if (trimmed.startsWith('"')) {
+    if (trimmed.startsWith("\"")) {
         let i = 1;
         let foundClosingQuote = false;
 
         while (i < trimmed.length) {
             if (trimmed[i] === "\\" && i + 1 < trimmed.length) {
                 i += 2;
-            } else if (trimmed[i] === '"') {
+            } else if (trimmed[i] === "\"") {
                 if (i + 1 < trimmed.length && trimmed[i + 1] === "@") {
                     foundClosingQuote = true;
                     break;
@@ -172,7 +176,7 @@ const parseAddress = (address: string): EmailAddress | undefined => {
 
         if (!foundClosingQuote && trimmed.includes("@")) {
             const firstAt = trimmed.indexOf("@");
-            const firstQuoteAfterStart = trimmed.slice(1).indexOf('"');
+            const firstQuoteAfterStart = trimmed.slice(1).indexOf("\"");
 
             if (firstQuoteAfterStart === -1 || firstAt < firstQuoteAfterStart + 1) {
                 return undefined;

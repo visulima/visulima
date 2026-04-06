@@ -29,19 +29,19 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
         throw new RequiredOptionError(PROVIDER_NAME, "connectionString or accessToken");
     }
 
-    const endpoint = config.endpoint || `https://${config.region}.communication.azure.com`;
+    const endpoint = config.endpoint ?? `https://${config.region}.communication.azure.com`;
 
-    const options: Pick<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken"> &
-        Required<Omit<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">> & { endpoint: string } = {
-        debug: config.debug || false,
-        endpoint,
-        region: config.region,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
-        ...(config.connectionString && { connectionString: config.connectionString }),
-        ...(config.accessToken && { accessToken: config.accessToken }),
-        ...(config.logger && { logger: config.logger }),
-    };
+    const options: Pick<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">
+        & Required<Omit<AzureConfig, "logger" | "endpoint" | "connectionString" | "accessToken">> & { endpoint: string } = {
+            debug: config.debug ?? false,
+            endpoint,
+            region: config.region,
+            retries: config.retries ?? DEFAULT_RETRIES,
+            timeout: config.timeout ?? DEFAULT_TIMEOUT,
+            ...(config.connectionString && { connectionString: config.connectionString }),
+            ...(config.accessToken && { accessToken: config.accessToken }),
+            ...(config.logger && { logger: config.logger }),
+        };
 
     const providerState = new ProviderState();
     const logger = createProviderLogger(PROVIDER_NAME, config.logger);
@@ -64,7 +64,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -83,9 +83,11 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                     headers.Authorization = `Bearer ${options.accessToken}`;
                 } else if (options.connectionString) {
                     // Extract key from connection string for basic auth
+                    // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec
                     const match = options.connectionString.match(/endpoint=([^;]+);accesskey=([^;]+)/);
 
                     if (match) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         headers.Authorization = `Bearer ${match[2]}`;
                     }
                 }
@@ -118,6 +120,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -156,9 +159,11 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                 if (options.accessToken) {
                     headers.Authorization = `Bearer ${options.accessToken}`;
                 } else if (options.connectionString) {
+                    // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec
                     const match = options.connectionString.match(/endpoint=([^;]+);accesskey=([^;]+)/);
 
                     if (match) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         headers.Authorization = `Bearer ${match[2]}`;
                     } else {
                         return false;
@@ -187,6 +192,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                     return true;
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const statusCode = (result.data as { statusCode?: number })?.statusCode;
 
                 if (statusCode === 401 || statusCode === 403) {
@@ -306,16 +312,18 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                             if (attachment.content) {
                                 if (typeof attachment.content === "string") {
                                     content = Buffer.from(attachment.content, "utf8").toString("base64");
+                                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                                 } else if (attachment.content && typeof (attachment.content as PromiseLike<unknown>).then === "function") {
                                     const buffer = await attachment.content;
 
                                     content = Buffer.from(buffer).toString("base64");
                                 } else {
+                                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                                     content = attachment.content.toString("base64");
                                 }
                             } else if (attachment.raw) {
-                                content =
-                                    typeof attachment.raw === "string"
+                                content
+                                    = typeof attachment.raw === "string"
                                         ? Buffer.from(attachment.raw, "utf8").toString("base64")
                                         : attachment.raw.toString("base64");
                             } else {
@@ -324,7 +332,7 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
 
                             return {
                                 contentInBase64: content,
-                                contentType: attachment.contentType || "application/octet-stream",
+                                contentType: attachment.contentType ?? "application/octet-stream",
                                 name: attachment.filename,
                             };
                         }),
@@ -343,9 +351,11 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                 if (options.accessToken) {
                     headers.Authorization = `Bearer ${options.accessToken}`;
                 } else if (options.connectionString) {
+                    // eslint-disable-next-line e18e/prefer-static-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec
                     const match = options.connectionString.match(/endpoint=([^;]+);accesskey=([^;]+)/);
 
                     if (match) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         headers.Authorization = `Bearer ${match[2]}`;
                     } else {
                         return {
@@ -373,14 +383,15 @@ const azureProvider: ProviderFactory<AzureConfig, unknown, AzureEmailOptions> = 
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Azure returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { messageId?: string } })?.body;
-                const messageId = responseBody?.messageId || generateMessageId();
+                const messageId = responseBody?.messageId ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

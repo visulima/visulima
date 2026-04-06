@@ -36,10 +36,10 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
     const options: Pick<MailjetConfig, "logger"> & Required<Omit<MailjetConfig, "logger">> = {
         apiKey: config.apiKey,
         apiSecret: config.apiSecret,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -66,7 +66,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -111,6 +111,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -158,18 +159,19 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
 
                 logger.debug("Mailjet API availability check response:", {
                     error: result.error instanceof Error ? result.error.message : undefined,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     statusCode: (result.data as { statusCode?: number })?.statusCode,
                     success: result.success,
                 });
 
                 return Boolean(
-                    result.success &&
-                    result.data &&
-                    typeof result.data === "object" &&
-                    "statusCode" in result.data &&
-                    typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                    (result.data as { statusCode: number }).statusCode >= 200 &&
-                    (result.data as { statusCode: number }).statusCode < 300,
+                    result.success
+                    && result.data
+                    && typeof result.data === "object"
+                    && "statusCode" in result.data
+                    && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                    && (result.data as { statusCode: number }).statusCode >= 200
+                    && (result.data as { statusCode: number }).statusCode < 300,
                 );
             } catch (error) {
                 logger.debug("Error checking availability:", error);
@@ -287,7 +289,9 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                     const headersRecord = headersToRecord(emailOptions.headers);
                     const headersArray: { Name: string; Value: string }[] = [];
 
+                    // eslint-disable-next-line no-for-of-array/no-for-of-array
                     for (const [key, value] of Object.entries(headersRecord)) {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-conversion
                         headersArray.push({ Name: key, Value: String(value) });
                     }
 
@@ -320,7 +324,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
 
                             return {
                                 Base64Content: content,
-                                ContentType: attachment.contentType || "application/octet-stream",
+                                ContentType: attachment.contentType ?? "application/octet-stream",
                                 Filename: attachment.filename,
                                 ...(attachment.cid && { ContentID: attachment.cid }),
                             };
@@ -361,14 +365,15 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Mailjet returns message IDs in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { Messages?: { To?: { MessageID?: number }[] }[] } })?.body;
-                const messageId = responseBody?.Messages?.[0]?.To?.[0]?.MessageID?.toString() || generateMessageId();
+                const messageId = responseBody?.Messages?.[0]?.To?.[0]?.MessageID?.toString() ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

@@ -28,18 +28,18 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
             throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
         }
 
-        const endpoint = config.endpoint || DEFAULT_ENDPOINT;
+        const endpoint = config.endpoint ?? DEFAULT_ENDPOINT;
 
-        const options: Pick<BrevoConfig, "logger"> &
-            Required<Omit<BrevoConfig, "logger" | "endpoint" | "hardValidation">> & { endpoint: string; hardValidation: boolean } = {
-            apiKey: config.apiKey,
-            debug: config.debug || false,
-            endpoint,
-            hardValidation: config.hardValidation || false,
-            retries: config.retries || DEFAULT_RETRIES,
-            timeout: config.timeout || DEFAULT_TIMEOUT,
-            ...(config.logger && { logger: config.logger }),
-        };
+        const options: Pick<BrevoConfig, "logger">
+            & Required<Omit<BrevoConfig, "logger" | "endpoint" | "hardValidation">> & { endpoint: string; hardValidation: boolean } = {
+                apiKey: config.apiKey,
+                debug: config.debug ?? false,
+                endpoint,
+                hardValidation: config.hardValidation ?? false,
+                retries: config.retries ?? DEFAULT_RETRIES,
+                timeout: config.timeout ?? DEFAULT_TIMEOUT,
+                ...(config.logger && { logger: config.logger }),
+            };
 
         const providerState = new ProviderState();
         const logger = createProviderLogger(PROVIDER_NAME, config.logger);
@@ -64,7 +64,7 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
              * @param id The email ID to retrieve.
              * @returns A result object containing the email details or an error.
              */
-            async getEmail(id: string): Promise<Result<unknown>> {
+            async getEmail(id: string): Promise<Result> {
                 try {
                     if (!id) {
                         return {
@@ -108,6 +108,7 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                     logger.debug("Email details retrieved successfully");
 
                     return {
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         data: (result.data as { body?: unknown })?.body,
                         success: true,
                     };
@@ -153,18 +154,19 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
 
                     logger.debug("Brevo API availability check response:", {
                         error: result.error instanceof Error ? result.error.message : undefined,
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         statusCode: (result.data as { statusCode?: number })?.statusCode,
                         success: result.success,
                     });
 
                     return Boolean(
-                        result.success &&
-                        result.data &&
-                        typeof result.data === "object" &&
-                        "statusCode" in result.data &&
-                        typeof (result.data as { statusCode?: unknown }).statusCode === "number" &&
-                        (result.data as { statusCode: number }).statusCode >= 200 &&
-                        (result.data as { statusCode: number }).statusCode < 300,
+                        result.success
+                        && result.data
+                        && typeof result.data === "object"
+                        && "statusCode" in result.data
+                        && typeof (result.data as { statusCode?: unknown }).statusCode === "number"
+                        && (result.data as { statusCode: number }).statusCode >= 200
+                        && (result.data as { statusCode: number }).statusCode < 300,
                     );
                 } catch (error) {
                     logger.debug("Error checking availability:", error);
@@ -276,8 +278,8 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                     }
 
                     if (emailOptions.scheduledAt) {
-                        const scheduledDate =
-                            typeof emailOptions.scheduledAt === "number" ? new Date(emailOptions.scheduledAt * 1000).toISOString() : emailOptions.scheduledAt;
+                        const scheduledDate
+                            = typeof emailOptions.scheduledAt === "number" ? new Date(emailOptions.scheduledAt * 1000).toISOString() : emailOptions.scheduledAt;
 
                         payload.scheduledAt = scheduledDate;
                     }
@@ -350,13 +352,14 @@ const brevoProvider: ProviderFactory<BrevoConfig, unknown, BrevoEmailOptions> = 
                         logger.debug("API request failed when sending email", result.error);
 
                         return {
-                            error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                            error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                             success: false,
                         };
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     const responseBody = (result.data as { body?: { messageId?: string } })?.body;
-                    const messageId = responseBody?.messageId || generateMessageId();
+                    const messageId = responseBody?.messageId ?? generateMessageId();
 
                     logger.debug("Email sent successfully", { messageId });
 

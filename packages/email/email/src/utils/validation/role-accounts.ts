@@ -204,7 +204,9 @@ const checkCombinedParts = (parts: string[], customPrefixes?: Set<string>): bool
 
     const separators = ["-", ".", "_"];
 
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const separator of separators) {
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         const combined = `${parts[0]}${separator}${parts[1]}`;
 
         if (checkRolePrefix(combined, customPrefixes)) {
@@ -216,6 +218,7 @@ const checkCombinedParts = (parts: string[], customPrefixes?: Set<string>): bool
 };
 
 const checkAllPartsAreRoleAccounts = (parts: string[], customPrefixes?: Set<string>): boolean => {
+    // eslint-disable-next-line no-for-of-array/no-for-of-array
     for (const part of parts) {
         if (!checkRolePrefix(part, customPrefixes)) {
             return false;
@@ -257,6 +260,7 @@ export const isRoleAccount = (email: string, customPrefixes?: Set<string>): bool
         return true;
     }
 
+    // eslint-disable-next-line e18e/prefer-static-regex
     const parts = localPart.split(/[+._-]/);
 
     if (parts.length === 1) {

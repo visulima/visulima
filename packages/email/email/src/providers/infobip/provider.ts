@@ -21,21 +21,21 @@ const DEFAULT_RETRIES = 3;
 /**
  * Infobip Provider for sending emails through Infobip API
  */
-const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptions> = defineProvider((config: InfobipConfig = {} as InfobipConfig) => {
+const infobipProvider: ProviderFactory<InfobipConfig> = defineProvider((config: InfobipConfig = {} as InfobipConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
-    const baseUrl = config.baseUrl || DEFAULT_BASE_URL;
-    const endpoint = config.endpoint || `${baseUrl}/email/3/send`;
+    const baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
+    const endpoint = config.endpoint ?? `${baseUrl}/email/3/send`;
 
     const options: Pick<InfobipConfig, "logger"> & Required<Omit<InfobipConfig, "logger" | "baseUrl" | "endpoint">> & { baseUrl: string; endpoint: string } = {
         apiKey: config.apiKey,
         baseUrl,
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         endpoint,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -60,7 +60,7 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -104,6 +104,7 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -257,7 +258,7 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
 
                             return {
                                 content,
-                                contentType: attachment.contentType || "application/octet-stream",
+                                contentType: attachment.contentType ?? "application/octet-stream",
                                 name: attachment.filename,
                             };
                         }),
@@ -292,13 +293,14 @@ const infobipProvider: ProviderFactory<InfobipConfig, unknown, InfobipEmailOptio
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { messages?: { messageId?: string }[] } })?.body;
-                const messageId = responseBody?.messages?.[0]?.messageId || generateMessageId();
+                const messageId = responseBody?.messages?.[0]?.messageId ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

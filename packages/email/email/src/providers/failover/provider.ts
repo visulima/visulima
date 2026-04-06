@@ -1,13 +1,13 @@
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
-import type { EmailOptions, EmailResult, Result } from "../../types";
+import type { EmailResult, Result } from "../../types";
 import { createLogger } from "../../utils/create-logger";
 import generateMessageId from "../../utils/generate-message-id";
 import type { Provider, ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import type { FailoverConfig, FailoverEmailOptions } from "./types";
 
-const isProviderFactory = (value: unknown): value is ProviderFactory<unknown, unknown, EmailOptions> => typeof value === "function";
+const isProviderFactory = (value: unknown): value is ProviderFactory => typeof value === "function";
 
 const isProvider = (value: unknown): value is Provider =>
     value !== null && typeof value === "object" && "sendEmail" in value && "initialize" in value && "isAvailable" in value;
@@ -17,13 +17,14 @@ const PROVIDER_NAME = "failover";
 /**
  * Failover Provider for sending emails with automatic failover to backup providers.
  */
-const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> = defineProvider((config: FailoverConfig = {} as FailoverConfig) => {
+const provider: ProviderFactory<FailoverConfig> = defineProvider((config: FailoverConfig = {} as FailoverConfig) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!config.mailers || config.mailers.length === 0) {
         throw new RequiredOptionError(PROVIDER_NAME, "mailers");
     }
 
     const options: FailoverConfig & { debug: boolean; retryAfter: number } = {
-        debug: config.debug || false,
+        debug: config.debug ?? false,
         mailers: config.mailers,
         retryAfter: config.retryAfter ?? 60,
     };
@@ -46,6 +47,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
         initializationPromise = (async () => {
             providers.length = 0;
 
+            // eslint-disable-next-line no-for-of-array/no-for-of-array
             for (const mailer of options.mailers) {
                 try {
                     let mailerProvider: Provider;
@@ -55,6 +57,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                     } else if (isProvider(mailer)) {
                         mailerProvider = mailer;
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         logger.debug(`Skipping invalid mailer: ${mailer}`);
                         continue;
                     }
@@ -63,9 +66,9 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                         // eslint-disable-next-line no-await-in-loop -- Sequential initialization is required
                         await mailerProvider.initialize();
                         providers.push(mailerProvider);
-                        logger.debug(`Initialized provider: ${mailerProvider.name || "unknown"}`);
+                        logger.debug(`Initialized provider: ${mailerProvider.name ?? "unknown"}`);
                     } catch (error) {
-                        logger.debug(`Failed to initialize provider ${mailerProvider.name || "unknown"}:`, error);
+                        logger.debug(`Failed to initialize provider ${mailerProvider.name ?? "unknown"}:`, error);
                     }
                 } catch (error) {
                     logger.debug(`Error processing mailer:`, error);
@@ -104,6 +107,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
             try {
                 await initializeProviders();
                 isInitialized = true;
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 logger.debug(`Failover provider initialized with ${providers.length} provider(s)`);
             } catch (error) {
                 throw new EmailError(PROVIDER_NAME, `Failed to initialize: ${(error as Error).message}`, { cause: error as Error });
@@ -119,6 +123,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                     await initializeProviders();
                 }
 
+                // eslint-disable-next-line no-for-of-array/no-for-of-array
                 for (const providerToCheck of providers) {
                     try {
                         // eslint-disable-next-line no-await-in-loop -- Sequential checking is required
@@ -158,7 +163,9 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                     };
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
                 const errors: (Error | unknown)[] = [];
+                // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
                 let lastError: Error | unknown | undefined;
 
                 for (let i = 0; i < providers.length; i += 1) {
@@ -168,8 +175,10 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                         continue;
                     }
 
-                    const providerName = currentProvider.name || `provider-${i + 1}`;
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    const providerName = currentProvider.name ?? `provider-${i + 1}`;
 
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                     logger.debug(`Attempting to send email via ${providerName} (${i + 1}/${providers.length})`);
 
                     try {
@@ -201,6 +210,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                         if (result.error) {
                             lastError = result.error;
                             errors.push(result.error);
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
                             const errorMessage = result.error instanceof Error ? result.error.message : String(result.error);
 
                             logger.debug(`Failed to send via ${providerName}:`, errorMessage);
@@ -214,6 +224,7 @@ const provider: ProviderFactory<FailoverConfig, unknown, FailoverEmailOptions> =
                     }
 
                     if (i < providers.length - 1 && options.retryAfter > 0) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                         logger.debug(`Waiting ${options.retryAfter}ms before trying next provider`);
                         // eslint-disable-next-line no-await-in-loop -- Sequential delay is required for failover
                         await new Promise<void>((resolve) => {

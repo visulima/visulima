@@ -25,6 +25,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 // Mock the retry function
 vi.mock(import("../../src/utils/retry"), () => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -39,6 +40,7 @@ describe(postmarkProvider, () => {
             expect.assertions(1);
 
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 postmarkProvider({} as any);
             }).toThrow(RequiredOptionError);
         });
@@ -109,6 +111,7 @@ describe(postmarkProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             expect(makeRequest).toHaveBeenCalledWith(`${provider.endpoint}/server`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -171,8 +174,10 @@ describe(postmarkProvider, () => {
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
             expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -227,8 +232,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -239,9 +246,12 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.From).toBe("Sender <sender@example.com>");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.To).toBe("User 1 <user1@example.com>,user2@example.com");
         });
 
@@ -279,8 +289,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -291,9 +303,12 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Cc).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Bcc).toBeDefined();
         });
 
@@ -338,9 +353,12 @@ describe(postmarkProvider, () => {
             expect(sendEmailCall).toBeDefined();
             expect(sendEmailCall?.[2]).toBeDefined();
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(sendEmailCall[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TemplateId).toBe(12_345);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TemplateModel).toStrictEqual({ name: "John" });
         });
 
@@ -378,8 +396,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -390,9 +410,12 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TemplateAlias).toBe("welcome-template");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TemplateModel).toStrictEqual({ name: "John" });
         });
 
@@ -430,8 +453,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -442,9 +467,12 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TrackOpens).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.TrackLinks).toBe("HtmlAndText");
         });
 
@@ -481,8 +509,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -493,8 +523,10 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Tag).toBe("tag1"); // Only first tag
         });
 
@@ -531,8 +563,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -543,11 +577,16 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Headers).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(Array.isArray(payload.Headers)).toBe(true);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Headers[0].Name).toBe("X-Custom");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Headers[0].Value).toBe("value");
         });
 
@@ -590,8 +629,10 @@ describe(postmarkProvider, () => {
             await provider.sendEmail(emailOptions);
 
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/email`,
                 expect.objectContaining({
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                     headers: expect.objectContaining({
                         "Content-Type": "application/json",
                         "X-Postmark-Server-Token": "test123",
@@ -602,10 +643,14 @@ describe(postmarkProvider, () => {
             );
 
             const callArgs = makeRequestMock.mock.calls[1]; // Second call is sendEmail
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const payload = JSON.parse(callArgs[2] as string);
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Attachments).toBeDefined();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Attachments).toHaveLength(1);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             expect(payload.Attachments[0].Name).toBe("test.pdf");
         });
 

@@ -21,17 +21,17 @@ const DEFAULT_RETRIES = 3;
 /**
  * Mailomat Provider for sending emails through Mailomat API.
  */
-const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOptions> = defineProvider((config: MailomatConfig = {} as MailomatConfig) => {
+const mailomatProvider: ProviderFactory<MailomatConfig> = defineProvider((config: MailomatConfig = {} as MailomatConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<MailomatConfig, "logger"> & Required<Omit<MailomatConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
         ...(config.logger && { logger: config.logger }),
     };
 
@@ -56,7 +56,7 @@ const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOp
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -102,6 +102,7 @@ const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOp
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -130,6 +131,7 @@ const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOp
          * Checks if the Mailomat API is available and credentials are valid.
          * @returns True if the API is available and credentials are valid, false otherwise.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             try {
                 logger.debug("Checking Mailomat API availability");
@@ -242,7 +244,7 @@ const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOp
 
                             return {
                                 content,
-                                contentType: attachment.contentType || "application/octet-stream",
+                                contentType: attachment.contentType ?? "application/octet-stream",
                                 filename: attachment.filename,
                                 ...(attachment.cid && { cid: attachment.cid }),
                             };
@@ -278,14 +280,15 @@ const mailomatProvider: ProviderFactory<MailomatConfig, unknown, MailomatEmailOp
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 // Mailomat returns message ID in response body
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 const responseBody = (result.data as { body?: { id?: string; messageId?: string } })?.body;
-                const messageId = responseBody?.messageId || responseBody?.id || generateMessageId();
+                const messageId = responseBody?.messageId ?? responseBody?.id ?? generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });
 

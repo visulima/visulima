@@ -24,6 +24,7 @@ vi.mock(import("../../src/utils/make-request"), () => {
 // Mock the retry function
 vi.mock(import("../../src/utils/retry"), () => {
     return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
         default: vi.fn(async (function_) => await function_()),
     };
 });
@@ -37,6 +38,7 @@ describe(mailgunProvider, () => {
         it("should throw error if apiKey is missing", () => {
             expect.assertions(1);
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mailgunProvider({ domain: "example.com" } as any);
             }).toThrow(RequiredOptionError);
         });
@@ -44,6 +46,7 @@ describe(mailgunProvider, () => {
         it("should throw error if domain is missing", () => {
             expect.assertions(1);
             expect(() => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 mailgunProvider({ apiKey: "test123" } as any);
             }).toThrow(RequiredOptionError);
         });
@@ -115,6 +118,7 @@ describe(mailgunProvider, () => {
 
             const isAvailable = await provider.isAvailable();
 
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             expect(makeRequest as ReturnType<typeof vi.fn>).toHaveBeenCalledWith(`${provider.endpoint}/v3/domains/example.com`, {
                 headers: {
                     Authorization: "Basic YXBpOnRlc3QxMjM=",
@@ -177,6 +181,7 @@ describe(mailgunProvider, () => {
             expect(result.success).toBe(true);
             expect(result.data?.messageId).toBeDefined();
             expect(makeRequestMock).toHaveBeenCalledWith(
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 `${provider.endpoint}/v3/example.com/messages`,
                 {
                     headers: {

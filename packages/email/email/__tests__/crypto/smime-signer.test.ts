@@ -12,6 +12,7 @@ vi.mock(import("@visulima/fs"), () => {
 });
 
 vi.mock(import("node:crypto"), async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const actualCrypto = (await vi.importActual("node:crypto")) as typeof import("node:crypto");
 
     return {
@@ -74,7 +75,8 @@ vi.mock(import("pkijs"), async () => {
                 toSchema: vi.fn(() => {
                     return { toBER: vi.fn(() => new Uint8Array([1, 2, 3])) };
                 }),
-                version: options?.version || 1,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                version: options?.version ?? 1,
             });
         }
     }
@@ -87,7 +89,8 @@ vi.mock(import("pkijs"), async () => {
                 signature: new Uint8Array([1, 2, 3]),
                 signatureAlgorithm: {},
                 signedAttrs: {},
-                version: options?.version || 1,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                version: options?.version ?? 1,
             });
         }
     }
@@ -97,16 +100,20 @@ vi.mock(import("pkijs"), async () => {
         AlgorithmIdentifier: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    algorithmId: options?.algorithmId || "",
-                    algorithmParams: options?.algorithmParams || null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    algorithmId: options?.algorithmId ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    algorithmParams: options?.algorithmParams ?? null,
                 });
             }
         },
         Attribute: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    type: options?.type || "",
-                    values: options?.values || [],
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    type: options?.type ?? "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    values: options?.values ?? [],
                 });
             }
         },
@@ -125,8 +132,10 @@ vi.mock(import("pkijs"), async () => {
         EncapsulatedContentInfo: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    eContent: options?.eContent || null,
-                    eContentType: options?.eContentType || "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    eContent: options?.eContent ?? null,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    eContentType: options?.eContentType ?? "",
                 });
             }
         },
@@ -136,8 +145,10 @@ vi.mock(import("pkijs"), async () => {
         IssuerAndSerialNumber: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    issuer: options?.issuer || {},
-                    serialNumber: options?.serialNumber || {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    issuer: options?.issuer ?? {},
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    serialNumber: options?.serialNumber ?? {},
                 });
             }
         },
@@ -149,7 +160,8 @@ vi.mock(import("pkijs"), async () => {
             public encodedValue: ArrayBuffer;
 
             public constructor(options?: any) {
-                this.attributes = options?.attributes || [];
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                this.attributes = options?.attributes ?? [];
                 this.type = 0;
                 this.encodedValue = new ArrayBuffer(0);
             }
@@ -181,21 +193,24 @@ vi.mock(import("asn1js"), async () => {
         ObjectIdentifier: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    value: options?.value || "",
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    value: options?.value ?? "",
                 });
             }
         },
         OctetString: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    valueHex: options?.valueHex || new ArrayBuffer(0),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    valueHex: options?.valueHex ?? new ArrayBuffer(0),
                 });
             }
         },
         UTCTime: class {
             public constructor(options?: any) {
                 Object.assign(this, {
-                    valueDate: options?.valueDate || new Date(),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+                    valueDate: options?.valueDate ?? new Date(),
                 });
             }
         },
@@ -320,7 +335,6 @@ describe(SmimeSigner, () => {
 
             const options: SmimeSignOptions = {
                 certificate: "/path/to/certificate.crt",
-                // eslint-disable-next-line sonarjs/no-hardcoded-passwords
                 passphrase: "test-passphrase",
                 privateKey: "/path/to/private-key.key",
             };
@@ -397,6 +411,7 @@ describe(SmimeSigner, () => {
 
             const asn1js = await import("asn1js");
 
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             vi.mocked(asn1js.fromBER).mockReturnValueOnce({
                 offset: -1,
                 result: {},
@@ -453,11 +468,13 @@ describe(SmimeSigner, () => {
 
             // Mock sequence: main cert (succeeds), intermediate cert (fails)
             vi.mocked(asn1js.fromBER)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 .mockReturnValueOnce({
                     // Main certificate - succeeds
                     offset: 0,
                     result: { valueHex: new Uint8Array([1, 2, 3, 4]) },
                 } as any)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 .mockReturnValueOnce({
                     // Intermediate certificate - should fail
                     offset: -1,

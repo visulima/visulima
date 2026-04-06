@@ -22,18 +22,18 @@ const DEFAULT_RETRIES = 3;
 /**
  * Plunk Provider for sending emails through Plunk API.
  */
-const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = defineProvider((config: PlunkConfig = {} as PlunkConfig) => {
+const plunkProvider: ProviderFactory<PlunkConfig> = defineProvider((config: PlunkConfig = {} as PlunkConfig) => {
     if (!config.apiKey) {
         throw new RequiredOptionError(PROVIDER_NAME, "apiKey");
     }
 
     const options: Pick<PlunkConfig, "logger"> & Required<Omit<PlunkConfig, "logger">> = {
         apiKey: config.apiKey,
-        debug: config.debug || false,
-        endpoint: config.endpoint || DEFAULT_ENDPOINT,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
         logger: config.logger,
-        retries: config.retries || DEFAULT_RETRIES,
-        timeout: config.timeout || DEFAULT_TIMEOUT,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
     };
 
     const providerState = new ProviderState();
@@ -57,7 +57,7 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
          * @param id The email ID to retrieve.
          * @returns A result object containing the email details or an error.
          */
-        async getEmail(id: string): Promise<Result<unknown>> {
+        async getEmail(id: string): Promise<Result> {
             try {
                 if (!id) {
                     return {
@@ -101,6 +101,7 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                 logger.debug("Email details retrieved successfully");
 
                 return {
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     data: (result.data as { body?: unknown })?.body,
                     success: true,
                 };
@@ -129,6 +130,7 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
          * Checks if the Plunk API is available and credentials are valid.
          * @returns True if the API is available and credentials are valid, false otherwise.
          */
+        // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
             try {
                 // Check if API key exists and has valid format
@@ -177,13 +179,14 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                 };
 
                 // Determine subscriber email (use first 'to' address if not provided)
-                const subscriberEmail = emailOptions.subscriber || (Array.isArray(emailOptions.to) ? emailOptions.to[0]?.email : emailOptions.to.email);
+                const subscriberEmail = emailOptions.subscriber ?? (Array.isArray(emailOptions.to) ? emailOptions.to[0]?.email : emailOptions.to.email);
 
                 const payload: Record<string, unknown> = {
                     to: subscriberEmail,
                 };
 
                 // Add from address
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (emailOptions.from) {
                     payload.from = emailOptions.from.email;
 
@@ -280,7 +283,7 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                             return {
                                 content,
                                 filename: attachment.filename,
-                                type: attachment.contentType || "application/octet-stream",
+                                type: attachment.contentType ?? "application/octet-stream",
                             };
                         }),
                     );
@@ -314,15 +317,16 @@ const plunkProvider: ProviderFactory<PlunkConfig, unknown, PlunkEmailOptions> = 
                     logger.debug("API request failed when sending email", result.error);
 
                     return {
-                        error: result.error || new EmailError(PROVIDER_NAME, "Failed to send email"),
+                        error: result.error ?? new EmailError(PROVIDER_NAME, "Failed to send email"),
                         success: false,
                     };
                 }
 
                 const responseData = result.data as { body?: { id?: string; messageId?: string } };
-                const messageId =
-                    responseData?.body && typeof responseData.body === "object"
-                        ? responseData.body.id || responseData.body.messageId || generateMessageId()
+                const messageId
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    = responseData?.body && typeof responseData.body === "object"
+                        ? responseData.body.id ?? responseData.body.messageId ?? generateMessageId()
                         : generateMessageId();
 
                 logger.debug("Email sent successfully", { messageId });

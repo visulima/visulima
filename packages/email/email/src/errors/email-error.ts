@@ -12,6 +12,7 @@ class EmailError extends VisulimaError {
 
     public readonly code?: string;
 
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     public constructor(component: string, message: string, options?: { cause?: Error | unknown; code?: string; hint?: string | string[] }) {
         super({
             cause: options?.cause,

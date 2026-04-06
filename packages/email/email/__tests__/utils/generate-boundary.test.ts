@@ -16,6 +16,7 @@ describe(generateBoundary, () => {
 
         const boundary = generateBoundary();
 
+        // eslint-disable-next-line e18e/prefer-static-regex
         expect(boundary).toMatch(/^----_=_NextPart_/);
     });
 
@@ -47,6 +48,7 @@ describe(generateBoundary, () => {
         const boundary = generateBoundary();
 
         // MIME boundaries should not contain spaces or certain special chars
+        // eslint-disable-next-line e18e/prefer-static-regex
         expect(boundary).toMatch(/^[\w=-]+$/);
     });
 });

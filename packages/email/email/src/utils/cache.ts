@@ -64,16 +64,20 @@ export class InMemoryCache<T extends object = Record<string, unknown>> implement
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public clear = async (): Promise<void> => {
         this.cache.clear();
     };
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public delete = async (key: string): Promise<void> => {
         this.cache.delete(key);
     };
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public get = async (key: string): Promise<T | undefined> => this.cache.get(key);
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     public set = async (key: string, value: T, ttl: number): Promise<void> => {
         this.cache.set(key, value, { ttl });
     };

@@ -52,8 +52,8 @@ export const createStandardAttachment = async (
 
     return {
         content,
-        contentType: attachment.contentType || "application/octet-stream",
-        disposition: attachment.contentDisposition || "attachment",
+        contentType: attachment.contentType ?? "application/octet-stream",
+        disposition: attachment.contentDisposition ?? "attachment",
         filename: attachment.filename,
         ...(attachment.cid && { contentId: attachment.cid }),
     };
@@ -79,9 +79,9 @@ export const createSendGridAttachment = async (
 
     return {
         content,
-        disposition: attachment.contentDisposition || "attachment",
+        disposition: attachment.contentDisposition ?? "attachment",
         filename: attachment.filename,
-        type: attachment.contentType || "application/octet-stream",
+        type: attachment.contentType ?? "application/octet-stream",
         ...(attachment.cid && { content_id: attachment.cid }),
     };
 };
@@ -105,7 +105,7 @@ export const createPostmarkAttachment = async (
 
     return {
         Content: content,
-        ContentType: attachment.contentType || "application/octet-stream",
+        ContentType: attachment.contentType ?? "application/octet-stream",
         Name: attachment.filename,
         ...(attachment.cid && { ContentID: attachment.cid }),
     };
@@ -130,6 +130,7 @@ export const createMailgunAttachment = async (
 
     return {
         content,
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         key: `attachment[${index}]`,
     };
 };

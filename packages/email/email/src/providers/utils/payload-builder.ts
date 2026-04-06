@@ -31,6 +31,7 @@ export class PayloadBuilder {
      * @returns This instance for method chaining.
      */
     public setMultiple(fields: Record<string, unknown>): this {
+        // eslint-disable-next-line no-for-of-array/no-for-of-array
         for (const [key, value] of Object.entries(fields)) {
             this.set(key, value);
         }
@@ -45,6 +46,7 @@ export class PayloadBuilder {
      * @returns This instance for method chaining.
      */
     public addRecipients(emailOptions: EmailOptions, formatter: (addresses: EmailAddress | EmailAddress[]) => unknown): this {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (emailOptions.to) {
             this.set("to", formatter(emailOptions.to));
         }

@@ -128,7 +128,7 @@ export const verifyEmail = async (email: string, options: EmailVerificationOptio
         mxValid = mxCheck.valid;
 
         if (!mxCheck.valid) {
-            errors.push(mxCheck.error || "No valid MX records found");
+            errors.push(mxCheck.error ?? "No valid MX records found");
         }
     }
 
@@ -146,6 +146,7 @@ export const verifyEmail = async (email: string, options: EmailVerificationOptio
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const valid = formatValid && errors.length === 0;
 
     return {

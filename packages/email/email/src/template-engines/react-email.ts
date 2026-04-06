@@ -13,7 +13,7 @@ import type { TemplateRenderer } from "./types";
  */
 const reactEmail: TemplateRenderer = async (template: unknown, _data?: Record<string, unknown>, options?: Record<string, unknown>): Promise<string> => {
     try {
-        return await render(template as unknown as Parameters<typeof render>[0], {
+        return await render(template as Parameters<typeof render>[0], {
             plainText: options?.plainText as boolean | undefined,
             pretty: options?.pretty as boolean | undefined,
         });

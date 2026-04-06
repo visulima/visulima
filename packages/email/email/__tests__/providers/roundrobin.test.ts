@@ -12,7 +12,7 @@ describe(roundRobinProvider, () => {
     });
 
     const createMockProvider = (name: string, options?: { available?: boolean; delay?: number; success?: boolean }): Provider => {
-        const { available = true, delay = 0, success = true } = options || {};
+        const { available = true, delay = 0, success = true } = options ?? {};
 
         return {
             features: {
@@ -125,6 +125,7 @@ describe(roundRobinProvider, () => {
             expect.assertions(1);
 
             const invalidProvider = {
+                // eslint-disable-next-line @typescript-eslint/require-await
                 async initialize(): Promise<void> {
                     throw new Error("Init failed");
                 },
@@ -392,6 +393,7 @@ describe(roundRobinProvider, () => {
             const roundRobin = roundRobinProvider({
                 mailers: [
                     {
+                        // eslint-disable-next-line @typescript-eslint/require-await
                         async initialize(): Promise<void> {
                             throw new Error("Init failed");
                         },

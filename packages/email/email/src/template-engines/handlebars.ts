@@ -20,7 +20,7 @@ export const renderHandlebars: TemplateRenderer = (template: unknown, data?: Rec
 
         const compiled = Handlebars.compile(template, options);
 
-        return compiled(data || {});
+        return compiled(data ?? {});
     } catch (error) {
         if (error instanceof Error && error.message.includes("Cannot find module")) {
             throw new EmailError("handlebars", "Handlebars is not installed. Please install it: pnpm add handlebars", { cause: error });

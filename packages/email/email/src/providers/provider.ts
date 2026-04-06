@@ -6,7 +6,7 @@ import type { EmailOptions, EmailResult, FeatureFlags, MaybePromise, Result } fr
 export interface Provider<OptionsT = unknown, InstanceT = unknown, EmailOptionsT extends EmailOptions = EmailOptions> {
     endpoint?: string;
     features?: FeatureFlags;
-    getEmail?: (id: string) => MaybePromise<Result<unknown>>;
+    getEmail?: (id: string) => MaybePromise<Result>;
     getInstance?: () => InstanceT;
     initialize: (options?: Record<string, unknown>) => MaybePromise<void>;
 
